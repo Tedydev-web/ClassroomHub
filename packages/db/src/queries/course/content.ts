@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 
-import { ContentType } from '@cio/utils/constants';
+import { ContentType, ROLE } from '@cio/utils/constants';
 import { db, sql as drizzleSql } from '@db/drizzle';
 
 export type CourseContentItemRow = {
@@ -72,6 +72,25 @@ export async function getCourseContentItems(courseId: string, profileId?: string
           false
         )`
       : drizzleSql`false`;
+    const exerciseVisibilitySql = profileId
+      ? drizzleSql`AND EXISTS (
+          SELECT 1
+          FROM groupmember viewer_member
+          INNER JOIN course viewer_course ON viewer_course.group_id = viewer_member.group_id
+          WHERE viewer_course.id = ${courseId}
+            AND viewer_member.profile_id = ${profileId}
+            AND (
+              viewer_member.role_id <> ${ROLE.STUDENT}
+              OR exercise.assignment_mode = 'ALL_STUDENTS'
+              OR EXISTS (
+                SELECT 1
+                FROM exercise_assignment
+                WHERE exercise_assignment.exercise_id = exercise.id
+                  AND exercise_assignment.group_member_id = viewer_member.id
+              )
+            )
+        )`
+      : drizzleSql``;
 
     const result = await db.execute(drizzleSql`
       SELECT
@@ -162,7 +181,8 @@ export async function getCourseContentItems(courseId: string, profileId?: string
         exercise.due_by AS "dueBy"
       FROM exercise
       LEFT JOIN lesson ON lesson.id = exercise.lesson_id
-      WHERE exercise.course_id = ${courseId} OR lesson.course_id = ${courseId}
+      WHERE (exercise.course_id = ${courseId} OR lesson.course_id = ${courseId})
+      ${exerciseVisibilitySql}
     `);
 
     const rows = result.map((row) => row as CourseContentItemRow);

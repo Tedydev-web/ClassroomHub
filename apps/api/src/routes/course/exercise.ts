@@ -1,6 +1,7 @@
 import { ErrorCodes, handleError } from '@api/utils/errors';
 import {
   ZExerciseCreate,
+  ZExerciseAssignmentUpdate,
   ZExerciseFromTemplate,
   ZExerciseGetParam,
   ZExerciseListQuery,
@@ -45,6 +46,7 @@ import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/s
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
+import { getExerciseAssignmentsService, updateExerciseAssignmentsService } from '@api/services/exercise/assignment';
 
 export const exerciseRouter = new Hono()
   // Exercise CRUD routes
@@ -88,6 +90,36 @@ export const exerciseRouter = new Hono()
       return handleError(c, error, 'Failed to fetch exercise submissions overview');
     }
   })
+  .get('/:exerciseId/assignment', authMiddleware, courseTeamMemberMiddleware, async (c) => {
+    try {
+      const courseId = c.req.param('courseId')!;
+      const exerciseId = c.req.param('exerciseId')!;
+      const data = await getExerciseAssignmentsService(courseId, exerciseId);
+
+      return c.json({ success: true, data }, 200);
+    } catch (error) {
+      return handleError(c, error, 'Failed to fetch exercise assignments');
+    }
+  })
+  .put(
+    '/:exerciseId/assignment',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('json', ZExerciseAssignmentUpdate),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const exerciseId = c.req.param('exerciseId')!;
+        const user = c.get('user')!;
+        const data = c.req.valid('json');
+        const assignments = await updateExerciseAssignmentsService(courseId, exerciseId, user.id, data);
+
+        return c.json({ success: true, data: assignments }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to update exercise assignments');
+      }
+    }
+  )
   .post('/:exerciseId/notify', authMiddleware, courseTeamMemberMiddleware, async (c) => {
     try {
       const courseId = c.req.param('courseId')!;
@@ -327,6 +359,13 @@ export const exerciseRouter = new Hono()
         const { exerciseId, questionId } = c.req.valid('param');
         const data = c.req.valid('json');
 
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
+
         const upload = await initVideoRecordingUpload(courseId, exerciseId, questionId, user.id, data);
 
         return c.json({ success: true, data: upload }, 200);
@@ -347,6 +386,13 @@ export const exerciseRouter = new Hono()
         const courseId = c.req.param('courseId')!;
         const { exerciseId, questionId } = c.req.valid('param');
         const data = c.req.valid('json');
+
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
 
         const answer = await completeVideoRecordingUpload(courseId, exerciseId, questionId, user.id, data);
 

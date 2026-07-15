@@ -84,7 +84,22 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(or(inArray(schema.exercise.courseId, courseIds), inArray(schema.lesson.courseId, courseIds)));
+      .where(
+        and(
+          or(inArray(schema.exercise.courseId, courseIds), inArray(schema.lesson.courseId, courseIds)),
+          or(
+            eq(schema.exercise.assignmentMode, 'ALL_STUDENTS'),
+            sql`EXISTS (
+              SELECT 1
+              FROM ${schema.exerciseAssignment}
+              INNER JOIN ${schema.groupmember}
+                ON ${schema.groupmember.id} = ${schema.exerciseAssignment.groupMemberId}
+              WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
+                AND ${schema.groupmember.profileId} = ${profileId}
+            )`
+          )
+        )
+      );
 
     if (exercises.length === 0) {
       return [];

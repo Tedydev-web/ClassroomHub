@@ -19,8 +19,13 @@ export async function processNotifyCourseExercise(rawPayload: unknown, jobId: st
   const payload = ZNotifyCourseExercisePayload.parse(rawPayload);
 
   const members = await getCourseMembers(payload.courseId);
+  const recipientGroupMemberIds = payload.recipientGroupMemberIds
+    ? new Set(payload.recipientGroupMemberIds)
+    : undefined;
   const recipients = members
-    .filter((member) => member.roleId === ROLE.STUDENT)
+    .filter(
+      (member) => member.roleId === ROLE.STUDENT && (!recipientGroupMemberIds || recipientGroupMemberIds.has(member.id))
+    )
     .map((member) => ({
       email: member.profile?.email,
       profileId: member.profile?.id

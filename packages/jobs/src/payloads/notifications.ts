@@ -30,6 +30,7 @@ export const ZNotifyCourseExercisePayload = z.object({
   organizationId: z.string().min(1),
   fromName: z.string().min(1),
   quizUrl: z.string().min(1),
+  recipientGroupMemberIds: z.array(z.string().uuid()).optional(),
   branding: ZNotifyBranding
 });
 export type TNotifyCourseExercisePayload = z.infer<typeof ZNotifyCourseExercisePayload>;

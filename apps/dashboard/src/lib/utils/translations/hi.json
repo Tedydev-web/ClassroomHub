@@ -1909,6 +1909,12 @@
             "settings_manual_grading_warning": "मैन्युअल रूप से जाँचे गए सबमिशन को पास माना जा सके, उससे पहले उन्हें ग्रेड करना होगा।",
             "settings_single_attempt_warning": "एक ही प्रयास में असफल छात्रों को आगे बढ़ने से पहले प्रशिक्षक की कार्रवाई की आवश्यकता होगी।",
             "settings_existing_submissions_warning": "पास मानदंड बदलने से मौजूदा पूर्णता और प्रगति प्रभावित हो सकती है।",
+            "settings_assignment": "अभ्यास असाइन करें",
+            "settings_assignment_helper": "चुनें कि सभी छात्र या केवल चुने गए छात्र इस अभ्यास को देख सकते हैं।",
+            "settings_assignment_all": "सभी छात्र",
+            "settings_assignment_selected": "चुने गए छात्र",
+            "settings_assignment_empty": "इस पाठ्यक्रम में कोई छात्र नामांकित नहीं है।",
+            "settings_assignment_required": "कम से कम एक छात्र चुनें।",
             "question_auto_graded_badge": "स्वचालित रूप से ग्रेड किया गया",
             "question_manual_grading_badge": "मैन्युअल ग्रेडिंग",
             "guard": {

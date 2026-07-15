@@ -101,6 +101,7 @@ export const scormCompletionStatus = pgEnum('SCORM_COMPLETION_STATUS', [
 ]);
 export const scormSuccessStatus = pgEnum('SCORM_SUCCESS_STATUS', ['unknown', 'passed', 'failed']);
 export const scormAttemptStatus = pgEnum('SCORM_ATTEMPT_STATUS', ['active', 'terminated', 'abandoned', 'error']);
+export const exerciseAssignmentMode = pgEnum('EXERCISE_ASSIGNMENT_MODE', ['ALL_STUDENTS', 'SELECTED_STUDENTS']);
 
 export const user = pgTable('user', {
   id: uuid()
@@ -1377,6 +1378,7 @@ export const exercise = pgTable(
     sectionDisplayMode: varchar('section_display_mode').default('one_question'),
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),
+    assignmentMode: exerciseAssignmentMode('assignment_mode').default('ALL_STUDENTS').notNull(),
     slug: varchar()
   },
   (table) => [
@@ -1461,6 +1463,37 @@ export const groupmember = pgTable(
     unique('unique_entries').on(table.groupId, table.profileId, table.email),
     unique('unique_group_email').on(table.groupId, table.email),
     unique('unique_group_profile').on(table.groupId, table.profileId)
+  ]
+);
+
+export const exerciseAssignment = pgTable(
+  'exercise_assignment',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    exerciseId: uuid('exercise_id').notNull(),
+    groupMemberId: uuid('group_member_id').notNull(),
+    assignedByProfileId: uuid('assigned_by_profile_id'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.exerciseId],
+      foreignColumns: [exercise.id],
+      name: 'exercise_assignment_exercise_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.groupMemberId],
+      foreignColumns: [groupmember.id],
+      name: 'exercise_assignment_group_member_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.assignedByProfileId],
+      foreignColumns: [profile.id],
+      name: 'exercise_assignment_assigned_by_profile_id_fkey'
+    }).onDelete('set null'),
+    unique('exercise_assignment_exercise_group_member_unique').on(table.exerciseId, table.groupMemberId),
+    index('idx_exercise_assignment_exercise_id').on(table.exerciseId),
+    index('idx_exercise_assignment_group_member_id').on(table.groupMemberId)
   ]
 );
 
