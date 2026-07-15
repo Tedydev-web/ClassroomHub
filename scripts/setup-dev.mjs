@@ -125,6 +125,7 @@ export function buildManagedEnvMaps({
         ['WEBHOOK_ENCRYPTION_KEY', managedValue(webhookEncryptionKey, true)],
         ['HLS_SIGNING_SECRET', managedValue(hlsSigningSecret, true)],
         ['PUBLIC_IS_SELFHOSTED', managedValue(isSelfHosted)],
+        ['PUBLIC_IS_SELF_OWNED', managedValue('true')],
         ...objectStorage,
         ...smtp
       ])
@@ -136,6 +137,7 @@ export function buildManagedEnvMaps({
         ['PRIVATE_SERVER_URL', managedValue('http://localhost:3002')],
         ['PRIVATE_SERVER_KEY', managedValue(privateServerKey, true)],
         ['PUBLIC_IS_SELFHOSTED', managedValue(isSelfHosted)],
+        ['PUBLIC_IS_SELF_OWNED', managedValue('true')],
         ['PRIVATE_APP_HOST', managedValue('localhost')],
         ['PRIVATE_APP_SUBDOMAINS', managedValue('app')],
         ['VITE_ALLOWED_HOST', managedValue(publicHost)],
@@ -150,6 +152,7 @@ export function buildManagedEnvMaps({
         ['REDIS_URL', managedValue(redisUrl)],
         ['WEBHOOK_ENCRYPTION_KEY', managedValue(webhookEncryptionKey, true)],
         ['PUBLIC_IS_SELFHOSTED', managedValue(isSelfHosted)],
+        ['PUBLIC_IS_SELF_OWNED', managedValue('true')],
         ...objectStorage,
         ...smtp
       ])

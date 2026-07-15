@@ -9,7 +9,8 @@ set -e  # Exit on error
 # Configuration
 IMAGE_NAMESPACE="${IMAGE_NAMESPACE:-ghcr.io/tedydev-web}"
 VERSION="${VERSION:?set VERSION to the tag to publish, e.g. VERSION=1.4.2 — this script never pushes :latest (CI owns latest from main)}"
-PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED:-true}"
+PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED:-false}"
+PUBLIC_IS_SELF_OWNED="${PUBLIC_IS_SELF_OWNED:-true}"
 PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
 
 # This manual/local helper pushes ONLY the explicit ${VERSION} tag. `latest` is published
@@ -51,10 +52,12 @@ echo ""
 # Build and push Dashboard
 echo -e "${GREEN}Building + pushing Dashboard image...${NC}"
 echo "Dashboard build arg PUBLIC_IS_SELFHOSTED=${PUBLIC_IS_SELFHOSTED}"
+echo "Dashboard build arg PUBLIC_IS_SELF_OWNED=${PUBLIC_IS_SELF_OWNED}"
 docker buildx build \
     --platform "${PLATFORMS}" \
     -f docker/Dockerfile.dashboard \
     --build-arg PUBLIC_IS_SELFHOSTED=${PUBLIC_IS_SELFHOSTED} \
+    --build-arg PUBLIC_IS_SELF_OWNED=${PUBLIC_IS_SELF_OWNED} \
     -t ${IMAGE_NAMESPACE}/classroom-dashboard:${VERSION} \
     --push \
     .

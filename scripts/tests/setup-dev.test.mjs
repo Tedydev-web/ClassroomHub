@@ -48,6 +48,9 @@ test('creates all env files with shared secrets and preserves unknown values', a
   assert.ok((api.get('HLS_SIGNING_SECRET') ?? '').length >= 32);
   assert.equal(api.get('UNKNOWN_API_KEY'), 'preserve-me');
   assert.equal(api.get('PUBLIC_IS_SELFHOSTED'), 'false');
+  assert.equal(api.get('PUBLIC_IS_SELF_OWNED'), 'true');
+  assert.equal(dashboard.get('PUBLIC_IS_SELF_OWNED'), 'true');
+  assert.equal(jobs.get('PUBLIC_IS_SELF_OWNED'), 'true');
   assert.equal(dashboard.get('PRIVATE_APP_HOST'), 'localhost');
 });
 
@@ -84,6 +87,8 @@ test('explicit mode updates only mode values while local-default consent resolve
 
   assert.equal(api.get('PUBLIC_IS_SELFHOSTED'), 'true');
   assert.equal(dashboard.get('PUBLIC_IS_SELFHOSTED'), 'true');
+  assert.equal(api.get('PUBLIC_IS_SELF_OWNED'), 'true');
+  assert.equal(dashboard.get('PUBLIC_IS_SELF_OWNED'), 'true');
 
   await writeFile(path.join(rootDirectory, 'packages/db/.env'), 'DATABASE_URL="postgresql://external/db"\n');
   await runSetupEnv({ args: ['--apply-local-defaults'], rootDirectory });

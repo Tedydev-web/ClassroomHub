@@ -111,7 +111,8 @@ services:
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
       REDIS_URL: redis://redis:6379
-      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
+      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-false}
+      PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-docker-local-client-id}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-docker-local-client-secret}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -152,7 +153,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile.dashboard
       args:
-        PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
+        PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-false}
+        PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
     container_name: cio-dashboard
     ports:
       - '3082:3082'
@@ -163,7 +165,8 @@ services:
       NODE_ENV: production
       PORT: 3082
       ORIGIN: ${DASHBOARD_ORIGIN:-http://localhost:3082}
-      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
+      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-false}
+      PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
       PRIVATE_SERVER_URL: ${PRIVATE_SERVER_URL:-http://api:3081}
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set a strong PRIVATE_SERVER_KEY in .env}
       PRIVATE_APP_HOST: ${PRIVATE_APP_HOST:-localhost}
@@ -201,7 +204,8 @@ services:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
-      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
+      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-false}
+      PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
       WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set a strong WEBHOOK_ENCRYPTION_KEY in .env}
       # Object storage (workers stream object bytes). Mirrors the api service.
       OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
