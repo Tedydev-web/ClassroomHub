@@ -50,6 +50,10 @@ case "${SERVICE}" in
     ;;
 
   jobs)
+    docker run --rm --network host \
+      -e DATABASE_URL="${DB_URL}" -e PRIVATE_DATABASE_URL="${DB_URL}" \
+      "${IMAGE}" pnpm --filter @cio/db db:setup
+
     docker run -d --name "${NAME}" --network host \
       -e NODE_ENV=production -e DATABASE_URL="${DB_URL}" -e REDIS_URL="${REDIS_URL}" \
       -e PUBLIC_IS_SELFHOSTED=false -e PUBLIC_IS_SELF_OWNED=true \
