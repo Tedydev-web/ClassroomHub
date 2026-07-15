@@ -78,38 +78,58 @@ export const exerciseRouter = new Hono()
       }
     }
   )
-  .get('/:exerciseId/submissions', authMiddleware, courseMemberMiddleware, async (c) => {
-    try {
-      const courseId = c.req.param('courseId')!;
-      const exerciseId = c.req.param('exerciseId')!;
-      const user = c.get('user')!;
+  .get(
+    '/:exerciseId/submissions',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId } = c.req.valid('param');
+        const user = c.get('user')!;
 
-      const data = await listExerciseSubmissionsOverview(courseId, exerciseId, user.id);
-      return c.json({ success: true, data }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch exercise submissions overview');
-    }
-  })
-  .get('/:exerciseId/assignment', authMiddleware, courseTeamMemberMiddleware, async (c) => {
-    try {
-      const courseId = c.req.param('courseId')!;
-      const exerciseId = c.req.param('exerciseId')!;
-      const data = await getExerciseAssignmentsService(courseId, exerciseId);
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
 
-      return c.json({ success: true, data }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch exercise assignments');
+        const data = await listExerciseSubmissionsOverview(courseId, exerciseId, user.id);
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch exercise submissions overview');
+      }
     }
-  })
+  )
+  .get(
+    '/:exerciseId/assignment',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId } = c.req.valid('param');
+        const data = await getExerciseAssignmentsService(courseId, exerciseId);
+
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch exercise assignments');
+      }
+    }
+  )
   .put(
     '/:exerciseId/assignment',
     authMiddleware,
     courseTeamMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
     zValidator('json', ZExerciseAssignmentUpdate),
     async (c) => {
       try {
         const courseId = c.req.param('courseId')!;
-        const exerciseId = c.req.param('exerciseId')!;
+        const { exerciseId } = c.req.valid('param');
         const user = c.get('user')!;
         const data = c.req.valid('json');
         const assignments = await updateExerciseAssignmentsService(courseId, exerciseId, user.id, data);

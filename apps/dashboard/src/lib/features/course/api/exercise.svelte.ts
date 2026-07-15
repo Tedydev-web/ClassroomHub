@@ -41,6 +41,7 @@ import { t } from '$lib/utils/functions/translations';
 export class ExerciseApi extends BaseApiWithErrors {
   exercise = $state<Exercise | null>(null);
   assignments = $state<ExerciseAssignments | null>(null);
+  assignmentsError = $state<string | null>(null);
 
   /**
    * Gets an exercise by ID
@@ -68,6 +69,9 @@ export class ExerciseApi extends BaseApiWithErrors {
   }
 
   async getAssignments(courseId: string, exerciseId: string) {
+    this.assignments = null;
+    this.assignmentsError = null;
+
     return this.execute<GetExerciseAssignmentsRequest>({
       requestFn: () =>
         classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$get({
@@ -76,11 +80,16 @@ export class ExerciseApi extends BaseApiWithErrors {
       logContext: 'fetching exercise assignments',
       onSuccess: (response) => {
         this.assignments = response.data;
+      },
+      onError: () => {
+        this.assignmentsError = 'fetch_failed';
       }
     });
   }
 
   async updateAssignments(courseId: string, exerciseId: string, data: TExerciseAssignmentUpdate) {
+    this.assignmentsError = null;
+
     return this.execute<UpdateExerciseAssignmentsRequest>({
       requestFn: () =>
         classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$put({
@@ -90,6 +99,9 @@ export class ExerciseApi extends BaseApiWithErrors {
       logContext: 'updating exercise assignments',
       onSuccess: (response) => {
         this.assignments = response.data;
+      },
+      onError: () => {
+        this.assignmentsError = 'update_failed';
       }
     });
   }
@@ -214,7 +226,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       return;
     }
     this.errors = {};
-    await this.execute<UpdateExerciseRequest>({
+    return this.execute<UpdateExerciseRequest>({
       requestFn: () =>
         classroomio.course[':courseId'].exercise[':exerciseId'].$put({
           param: { courseId, exerciseId },

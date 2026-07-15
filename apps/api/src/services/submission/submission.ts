@@ -36,7 +36,11 @@ import {
 } from '@cio/question-types';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
 import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/course/people';
-import { getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import {
+  getExerciseById,
+  getExerciseWithRelationsOptimized,
+  resolveGroupMemberExerciseAccess
+} from '@cio/db/queries/exercise';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 
 import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
@@ -560,6 +564,11 @@ export async function createSubmissionService(
   answers: Array<{ questionId: number; optionId?: number; answer?: string }>
 ): Promise<TSubmission & { answers?: any[] }> {
   try {
+    const exerciseAccess = await resolveGroupMemberExerciseAccess(courseId, exerciseId, submittedBy);
+    if (!exerciseAccess.hasAccess) {
+      throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
+    }
+
     const [exerciseWithRelations, courseRows] = await Promise.all([
       getExerciseWithRelationsOptimized(exerciseId),
       getCourseById(courseId)
