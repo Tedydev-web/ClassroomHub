@@ -29,6 +29,13 @@
       "when": 1783909129074,
       "tag": "0003_profile_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784103493447,
+      "tag": "0004_brief_marvex",
+      "breakpoints": true
     }
   ]
 }

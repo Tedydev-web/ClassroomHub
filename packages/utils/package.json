@@ -21,10 +21,6 @@
       "types": "./dist/plans/index.d.ts",
       "default": "./dist/plans/index.js"
     },
-    "./license": {
-      "types": "./dist/license/index.d.ts",
-      "default": "./dist/license/index.js"
-    },
     "./senja": {
       "types": "./dist/senja/index.d.ts",
       "default": "./dist/senja/index.js"
@@ -78,7 +74,7 @@
     "build": "rimraf dist tsconfig.tsbuildinfo && tsc && tsc-alias",
     "dev": "tsc --watch",
     "format": "prettier --write .",
-    "test": "tsx --test scripts/*.test.ts"
+    "test": "tsx --test scripts/exercise-assignment.test.ts"
   },
   "peerDependencies": {
     "zod": "^4.1.8"
