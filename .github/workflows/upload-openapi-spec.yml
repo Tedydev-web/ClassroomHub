@@ -8,9 +8,6 @@ on:
       - 'packages/utils/src/openapi/**'
   workflow_dispatch:
 
-env:
-  NODE_VERSION: '20'
-
 jobs:
   generate-and-upload-openapi:
     runs-on: ubuntu-latest
@@ -23,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -60,6 +57,9 @@ jobs:
       - name: Upload to Cloudflare R2
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
+          test -n "$CLOUDFLARE_ACCESS_KEY"
+          test -n "$CLOUDFLARE_SECRET_ACCESS_KEY"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
           cd apps/api
           pnpm run upload:openapi
         env:
