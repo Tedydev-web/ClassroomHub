@@ -2,8 +2,13 @@ import { CustomerPortal } from '@polar-sh/sveltekit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import type { RequestEvent } from './$types';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 export const GET = async (event: RequestEvent) => {
+  if (isSelfOwnedDeployment) {
+    return new Response('Not found', { status: 404 });
+  }
+
   const { user, organizations } = event.locals;
 
   if (!user) {

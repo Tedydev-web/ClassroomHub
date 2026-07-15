@@ -7,6 +7,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 ARG PUBLIC_IS_SELFHOSTED=true
+ARG PUBLIC_IS_SELF_OWNED=true
 
 RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 
@@ -24,6 +25,7 @@ RUN pnpm install --offline --frozen-lockfile --ignore-scripts \
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN NODE_OPTIONS="--max-old-space-size=8072" \
     PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED}" \
+    PUBLIC_IS_SELF_OWNED="${PUBLIC_IS_SELF_OWNED}" \
     pnpm -r --filter @cio/dashboard... build
 
 RUN test -f apps/dashboard/build/index.js || (echo "ERROR: Dashboard build output not found at apps/dashboard/build/index.js" && exit 1)
@@ -32,7 +34,8 @@ EXPOSE 3000
 
 ENV NODE_ENV=production \
     PORT=3000 \
-    PUBLIC_IS_SELFHOSTED=${PUBLIC_IS_SELFHOSTED}
+    PUBLIC_IS_SELFHOSTED=${PUBLIC_IS_SELFHOSTED} \
+    PUBLIC_IS_SELF_OWNED=${PUBLIC_IS_SELF_OWNED}
 
 WORKDIR /app/apps/dashboard
 CMD ["node", "build/index.js"]

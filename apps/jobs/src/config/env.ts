@@ -31,6 +31,7 @@ const envSchema = z.object({
   AGENT_COURSE_GENERATION_WORKER_CONCURRENCY: z.string().optional(),
   WEBHOOK_ENCRYPTION_KEY: z.string().optional(),
   PUBLIC_IS_SELFHOSTED: z.string().optional(),
+  PUBLIC_IS_SELF_OWNED: z.string().optional(),
 
   /** Optional OpenAI key — when unset, transcribe-audio jobs no-op and OpenAI-backed agent runs fail config checks. */
   OPENAI_API_KEY: z.string().optional()

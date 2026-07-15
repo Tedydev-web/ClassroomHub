@@ -9,6 +9,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
+  import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
   let lastFetchedOrgId = $state<string | null>(null);
 
@@ -35,5 +36,7 @@
   <p class="ui:text-muted-foreground -mt-4 text-sm">{$t('settings.ai_credits.cost_note')}</p>
   <UsageChart usage={aiCreditsApi.usage} />
   <TeamLeaderboard leaderboard={aiCreditsApi.leaderboard} />
-  <BuyTokensCard onBeforeRedirect={() => aiCreditsApi.fetchAll()} />
+  {#if !isSelfOwnedDeployment}
+    <BuyTokensCard onBeforeRedirect={() => aiCreditsApi.fetchAll()} />
+  {/if}
 </div>

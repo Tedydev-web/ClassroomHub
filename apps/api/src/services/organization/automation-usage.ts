@@ -1,4 +1,5 @@
 import { env } from '@cio/core/config/env';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   countActiveOrganizationApiKeys,
@@ -37,6 +38,19 @@ export type OrganizationAutomationUsageSummary = {
   }>;
 };
 
+const SELF_OWNED_AUTOMATION_ALLOWANCE = Number.MAX_SAFE_INTEGER;
+
+function getAutomationLimits(planName: TPlan): ReturnType<typeof getMcpAutomationLimits> {
+  const limits = getMcpAutomationLimits(planName);
+  if (!isSelfOwnedDeployment) return limits;
+
+  return {
+    ...limits,
+    monthlyCredits: SELF_OWNED_AUTOMATION_ALLOWANCE,
+    maxActiveKeys: SELF_OWNED_AUTOMATION_ALLOWANCE
+  };
+}
+
 function getBillingPeriodStart(date: Date = new Date()) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0, 0));
 }
@@ -63,7 +77,7 @@ export async function assertOrganizationAutomationKeyCreationAllowed(
   if (type === AUTOMATION_TYPE.API) {
     const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
 
-    if (!canUsePublicApi(planName, isSelfHosted)) {
+    if (!isSelfOwnedDeployment && !canUsePublicApi(planName, isSelfHosted)) {
       throw new AppError(
         isSelfHosted
           ? 'Public API keys require an Enterprise plan'
@@ -78,7 +92,7 @@ export async function assertOrganizationAutomationKeyCreationAllowed(
     return;
   }
 
-  const limits = getMcpAutomationLimits(planName);
+  const limits = getAutomationLimits(planName);
   const activeKeys = await countActiveOrganizationApiKeys(organizationId, type);
 
   if (activeKeys >= limits.maxActiveKeys) {
@@ -117,7 +131,7 @@ export async function getOrganizationAutomationUsageSummaryService(
     };
   }
 
-  const limits = getMcpAutomationLimits(planName);
+  const limits = getAutomationLimits(planName);
   const [monthlyCreditsUsed, activeKeys, recentActions] = await Promise.all([
     getOrganizationAutomationCreditsUsedSince(organizationId, type, billingPeriodStart.toISOString()),
     countActiveOrganizationApiKeys(organizationId, type),
@@ -148,7 +162,7 @@ export async function assertMcpAutomationUsageAllowed(
   toolName: TMcpToolName
 ): Promise<void> {
   const planName = await getOrganizationPlanName(automationKey.organizationId);
-  const limits = getMcpAutomationLimits(planName);
+  const limits = getAutomationLimits(planName);
   const category = getMcpAutomationCategory(toolName);
   const now = new Date();
   const billingPeriodStart = getBillingPeriodStart(now).toISOString();

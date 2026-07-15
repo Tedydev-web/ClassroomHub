@@ -47,6 +47,8 @@ const envSchema = z.object({
   UNSPLASH_API_KEY: z.string().optional(),
   /** When 'true', instance runs in self-hosted mode: single org, auto-enroll as student, no org switching */
   PUBLIC_IS_SELFHOSTED: z.string().optional(),
+  /** When 'true', this deployment owns product entitlements and does not enforce upstream commercial plan limits. */
+  PUBLIC_IS_SELF_OWNED: z.string().optional(),
   /** Dashboard origin for invite/email links. When set, all email links use this deployment-specific origin. */
   DASHBOARD_ORIGIN: z.string().optional(),
   /**

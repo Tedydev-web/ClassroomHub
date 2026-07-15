@@ -3,6 +3,7 @@ import { initPosthog, type PosthogBootstrapUser } from '$lib/utils/services/post
 import { initUmami } from '$lib/utils/services/umami';
 import { initUserJot } from '$lib/utils/services/userjot';
 import { licenseApi } from '$features/license/api/license.svelte';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 let isTrackingInitialized = false;
 
@@ -15,18 +16,22 @@ function setupTracking(user?: PosthogBootstrapUser) {
 }
 
 export function setupAnalytics(user?: PosthogBootstrapUser) {
+  if (isSelfOwnedDeployment) return;
+
   initUserJot();
   setupTracking(user);
 }
 
 /** Checks if this is cloud deployment and initializes analytics */
 export function setupCloudAnalytics(user?: PosthogBootstrapUser) {
-  if (PUBLIC_IS_SELFHOSTED !== 'true') {
+  if (PUBLIC_IS_SELFHOSTED !== 'true' && !isSelfOwnedDeployment) {
     setupAnalytics(user);
   }
 }
 
 export function setupAnalyticsBasedOnLicense(user?: PosthogBootstrapUser) {
+  if (isSelfOwnedDeployment) return;
+
   initUserJot();
 
   if (licenseApi.hasAccess('no-tracking')) {

@@ -20,6 +20,7 @@ import {
 import type { TWidget } from '@db/types';
 import * as csstree from 'css-tree';
 import { env } from '@cio/core/config/env';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 
 const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const DEFAULT_EMBED_CDN_BASE_URL = EMBED_PUBLIC_BASE_URL;
@@ -210,7 +211,7 @@ export async function buildWidgetPayload(
   }
 
   const activePlan = await getActiveOrganizationPlan(widget.organizationId);
-  const planName = activePlan?.planName ?? null;
+  const planName = isSelfOwnedDeployment ? PLAN.ENTERPRISE : (activePlan?.planName ?? null);
   const normalizedConfig = normalizeWidgetConfig(widget.config as Record<string, unknown>, planName);
   const selectedCourseIds =
     overrideSelectedCourseIds ?? (await listWidgetCourses(widget.id)).map((course) => course.courseId);
@@ -262,6 +263,8 @@ export async function listWidgetAvailableEditorData(orgId: string) {
     coursesResult.items.map((course) => course.id)
   );
 
+  const planName = isSelfOwnedDeployment ? PLAN.ENTERPRISE : (activePlan?.planName ?? null);
+
   return {
     availableCourses: coursesResult.items.map((course) =>
       formatCourseForWidget(course, tagsByCourseId[course.id] ?? [])
@@ -275,7 +278,7 @@ export async function listWidgetAvailableEditorData(orgId: string) {
         groupId: group.id
       }))
     ),
-    planGatedFields: resolveWidgetPlanGatedFields(activePlan?.planName, 'classroomio'),
-    planName: activePlan?.planName ?? null
+    planGatedFields: resolveWidgetPlanGatedFields(planName, 'classroomio'),
+    planName
   };
 }

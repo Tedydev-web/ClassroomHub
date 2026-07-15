@@ -4,8 +4,13 @@ import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import type { RequestEvent } from './$types';
 import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 export const GET = async ({ url, locals, cookies }: RequestEvent) => {
+  if (isSelfOwnedDeployment) {
+    return new Response('Not found', { status: 404 });
+  }
+
   const { user } = locals;
 
   if (!user) {

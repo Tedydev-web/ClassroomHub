@@ -4,6 +4,7 @@
   import { PricingToggle } from '@cio/ui/custom/pricing-toggle';
 
   import { PageSignupCTA, PageHeader } from '$lib/components';
+  import { env } from '$env/dynamic/public';
 
   let isYearlyPlan = $state(false);
 
@@ -33,18 +34,20 @@
       />
     </div>
 
-    <script
-      src="https://widget.senja.io/widget/b43ac234-427e-4d6f-8c23-633208154e54/platform.js"
-      type="text/javascript"
-      async
-    ></script>
-    <div
-      class="senja-embed mt-5"
-      data-id="b43ac234-427e-4d6f-8c23-633208154e54"
-      data-mode="shadow"
-      data-lazyload="false"
-      style="display: block;"
-    ></div>
+    {#if env.PUBLIC_IS_SELF_OWNED !== 'true'}
+      <script
+        src="https://widget.senja.io/widget/b43ac234-427e-4d6f-8c23-633208154e54/platform.js"
+        type="text/javascript"
+        async
+      ></script>
+      <div
+        class="senja-embed mt-5"
+        data-id="b43ac234-427e-4d6f-8c23-633208154e54"
+        data-mode="shadow"
+        data-lazyload="false"
+        style="display: block;"
+      ></div>
+    {/if}
   </PageHeader>
 
   <div class="w-full px-2 py-16">
@@ -64,6 +67,11 @@
             isDisabled={false}
             perOrgLabel={isYearlyPlan ? 'per year' : 'per month'}
             handleClick={() => {
+              if (env.PUBLIC_IS_SELF_OWNED === 'true') {
+                window.location.assign('/signup');
+                return;
+              }
+
               window.open(plan.CTA.LINK, '_blank');
             }}
           />

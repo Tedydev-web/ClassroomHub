@@ -34,6 +34,7 @@ case "${SERVICE}" in
     docker run -d --name "${NAME}" --network host \
       -e NODE_ENV=production -e PORT=3081 \
       -e DATABASE_URL="${DB_URL}" -e PRIVATE_DATABASE_URL="${DB_URL}" -e REDIS_URL="${REDIS_URL}" \
+      -e PUBLIC_IS_SELFHOSTED=false -e PUBLIC_IS_SELF_OWNED=true \
       -e BETTER_AUTH_SECRET=smoke-test-secret-not-for-production \
       -e PRIVATE_SERVER_KEY=smoke \
       "${IMAGE}"
@@ -51,6 +52,7 @@ case "${SERVICE}" in
   jobs)
     docker run -d --name "${NAME}" --network host \
       -e NODE_ENV=production -e DATABASE_URL="${DB_URL}" -e REDIS_URL="${REDIS_URL}" \
+      -e PUBLIC_IS_SELFHOSTED=false -e PUBLIC_IS_SELF_OWNED=true \
       "${IMAGE}"
     for _ in $(seq 1 30); do
       container_alive || dump_and_fail "worker container exited during startup"
@@ -65,7 +67,7 @@ case "${SERVICE}" in
   dashboard)
     docker run -d --name "${NAME}" --network host \
       -e NODE_ENV=production -e PORT=3082 -e ORIGIN=http://localhost:3082 \
-      -e PUBLIC_IS_SELFHOSTED=true \
+      -e PUBLIC_IS_SELFHOSTED=false -e PUBLIC_IS_SELF_OWNED=true \
       -e PRIVATE_SERVER_URL=http://localhost:3081 -e PRIVATE_SERVER_KEY=smoke \
       "${IMAGE}"
     # Boot check: the SvelteKit server should listen even if the API is absent.

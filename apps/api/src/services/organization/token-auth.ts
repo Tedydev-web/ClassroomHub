@@ -8,8 +8,11 @@ import {
 import { getOrganizationPlanStatus } from '@cio/db/queries/organization/organization';
 import type { TOrganizationTokenAuth } from '@db/types';
 import { randomBytes } from 'crypto';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 
 async function assertEnterprisePlan(orgId: string): Promise<void> {
+  if (isSelfOwnedDeployment) return;
+
   const plans = await getOrganizationPlanStatus(orgId);
   const hasEnterprise = plans.some(
     (p: { planName: string | null; isActive: boolean | null }) => p.planName === 'ENTERPRISE' && p.isActive

@@ -51,8 +51,11 @@ PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # generate once; use 
 PUBLIC_SERVER_URL="http://localhost:3002"
 PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required for login
 PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must match the API (paste the value generated above)
-PUBLIC_IS_SELFHOSTED=true
+PUBLIC_IS_SELFHOSTED=false
+PUBLIC_IS_SELF_OWNED=true
 ```
+
+`PUBLIC_IS_SELFHOSTED=false` keeps multi-tenant organizations and custom-domain routing available. `PUBLIC_IS_SELF_OWNED=true` enables all local product entitlements and disables upstream billing and product telemetry. Use `PUBLIC_IS_SELFHOSTED=true` only for a single-organization deployment.
 
 **`apps/jobs/.env`** — only if you'll run the background workers (`pnpm api:dev` starts
 them). Simplest: copy the API env, which already has `REDIS_URL` + `DATABASE_URL`.

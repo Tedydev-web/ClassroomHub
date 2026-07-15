@@ -33,6 +33,12 @@ import {
   getWidgetHostedEmbedUrl,
   listWidgetAvailableEditorData
 } from './widget-payload';
+import { PLAN } from '@cio/utils/plans';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
+
+function getWidgetPlanName(planName: string | null | undefined): string | null {
+  return isSelfOwnedDeployment ? PLAN.ENTERPRISE : (planName ?? null);
+}
 
 export async function listOrganizationWidgets(orgId: string) {
   try {
@@ -55,7 +61,7 @@ export async function createOrganizationWidget(orgId: string, userId: string, da
       layoutType: data.layoutType,
       selectionMode: data.selectionMode,
       publicKey: generateWidgetPublicKey(),
-      config: normalizeWidgetConfig(data.config ?? getDefaultWidgetConfig(), activePlan?.planName ?? null),
+      config: normalizeWidgetConfig(data.config ?? getDefaultWidgetConfig(), getWidgetPlanName(activePlan?.planName)),
       createdByUserId: userId,
       updatedByUserId: userId
     });
@@ -147,7 +153,7 @@ export async function updateOrganizationWidget(orgId: string, widgetId: string, 
       selectionMode: data.selectionMode ?? existingWidget.selectionMode,
       config: normalizeWidgetConfig(
         (data.config ?? existingWidget.config) as Record<string, unknown>,
-        activePlan?.planName ?? null
+        getWidgetPlanName(activePlan?.planName)
       ),
       hasUnpublishedChanges: true,
       updatedByUserId: userId

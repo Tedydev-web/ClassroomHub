@@ -9,6 +9,7 @@ import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 import { BRAND_ROOT_DOMAIN, ROLE, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { STEPS } from '../constants/quiz';
 import type { Writable } from 'svelte/store';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 /** Deep-merge with this when hydrating an org from the API so nested `customization` keys stay stable. */
 export const DEFAULT_ORG_CUSTOMIZATION = {
@@ -156,13 +157,13 @@ export const currentOrgDomain = derived(currentOrg, ($currentOrg) => getOrgPubli
 export const isFreePlan = derived(currentOrg, ($currentOrg) =>
   isOrgOnFreePlan({
     plans: $currentOrg.plans,
-    isSelfHosted: PUBLIC_IS_SELFHOSTED === 'true',
+    isSelfHosted: PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment,
     orgId: $currentOrg.id
   })
 );
 
 export const isEnterprisePlan = derived(currentOrg, ($currentOrg) => {
-  if (PUBLIC_IS_SELFHOSTED === 'true') return true;
+  if (PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment) return true;
 
   const plan = getActivePlan($currentOrg);
 
@@ -170,12 +171,16 @@ export const isEnterprisePlan = derived(currentOrg, ($currentOrg) => {
 });
 
 export const hasPublicApiAccess = derived(currentOrg, ($currentOrg) => {
+  if (isSelfOwnedDeployment) return true;
+
   const plan = getActivePlan($currentOrg);
 
   return canUsePublicApi(plan?.planName, PUBLIC_IS_SELFHOSTED === 'true');
 });
 
 export const currentOrgMaxAudience = derived(currentOrgPlan, ($plan) => {
+  if (isSelfOwnedDeployment) return Number.MAX_SAFE_INTEGER;
+
   const limit = getStudentLimit($plan?.planName);
   return Number.isFinite(limit) ? limit : Number.MAX_SAFE_INTEGER;
 });

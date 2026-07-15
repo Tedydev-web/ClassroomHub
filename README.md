@@ -156,11 +156,13 @@ The repository also contains shared packages under `packages/` (for example `pac
      PUBLIC_SERVER_URL="http://localhost:3002"
      PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required, or login returns "API target not configured"
      PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must match the API (paste the value generated above)
-     PUBLIC_IS_SELFHOSTED=true
+     PUBLIC_IS_SELFHOSTED=false
+     PUBLIC_IS_SELF_OWNED=true
      ```
 
    - Running the background workers? Also create `apps/jobs/.env` (e.g. `cp apps/api/.env apps/jobs/.env`); it needs `REDIS_URL`. The `packages/db/.env` used by the DB scripts is set up in step 6.
-   - SSO, token-auth, no-tracking, and the other deployment capabilities are enabled locally; no external license key or license service is required.
+   - `PUBLIC_IS_SELFHOSTED` controls tenant topology. Keep it `false` for multi-tenant organizations and custom domains; set it to `true` only for a single-organization installation.
+   - `PUBLIC_IS_SELF_OWNED=true` grants the deployment all product entitlements and disables upstream billing and product telemetry. SSO, token-auth, no-tracking, and other deployment capabilities do not require an external license service.
    - Optional upload size limits: set matching `UPLOAD_MAX_*_MB` values in **both** `apps/api/.env` and `apps/dashboard/.env` (see `apps/api/.env.example`). Defaults are 5 MB documents, 2 MB assignment files, 800 MB videos.
 
 6. Start local infrastructure for API (Postgres + Redis) and seed the DB:
@@ -251,7 +253,7 @@ cp .env.example .env   # copy env template, edit for your domain
 
 The script reads root `.env` via `docker compose --env-file .env` and auto-generates secure `PRIVATE_SERVER_KEY`, `BETTER_AUTH_SECRET`, and `WEBHOOK_ENCRYPTION_KEY` values when missing. The `--provision-only` mode also randomizes first-run MinIO credentials, then exits before pulling images or starting services.
 
-Published dashboard images target self-hosted mode because public Svelte environment variables are fixed at build time. When `.env` sets `PUBLIC_IS_SELFHOSTED=false`, the script automatically builds the dashboard from source with cloud mode baked in.
+Published dashboard images target self-owned multi-tenant mode because public Svelte environment variables are fixed at build time. Set `PUBLIC_IS_SELFHOSTED=true` only when building a single-organization installation. Keep `PUBLIC_IS_SELF_OWNED=true` to use local entitlements without an external license or billing service.
 
 See [`.env.example`](.env.example) for the full list of environment variables with required/optional grouping, and [`docker/docs/SELF_HOST.md`](docker/docs/SELF_HOST.md) for the complete Docker self-hosting guide. To raise upload caps (documents, videos, assignment files), set the `UPLOAD_MAX_*_MB` vars in `.env` — see the [docs](https://docs.classroom.tedydev.io.vn/docs/self-hosted/docker#optional--upload-file-size-limits).
 

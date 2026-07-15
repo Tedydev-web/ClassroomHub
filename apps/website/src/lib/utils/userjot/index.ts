@@ -1,11 +1,12 @@
 import { dev } from '$app/environment';
+import { env } from '$env/dynamic/public';
 
-const USERJOT_APP_ID = 'cm4a6vcmp00jpmdb5n66rmkzz';
+const USERJOT_APP_ID = env.PUBLIC_USERJOT_APP_ID?.trim();
 
 let isInitialized = false;
 
 function isWidgetAllowed(): boolean {
-  return !dev;
+  return !dev && env.PUBLIC_IS_SELF_OWNED !== 'true' && Boolean(USERJOT_APP_ID);
 }
 
 function ensureSdkLoaded(): void {
@@ -34,7 +35,7 @@ export function initUserJot(): void {
 
   ensureSdkLoaded();
 
-  window.uj.init(USERJOT_APP_ID, {
+  window.uj.init(USERJOT_APP_ID!, {
     trigger: 'custom',
     position: 'right',
     theme: 'auto'
