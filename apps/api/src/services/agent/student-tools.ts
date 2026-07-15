@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, or } from 'drizzle-orm';
+import { and, asc, eq, ilike, inArray, or } from 'drizzle-orm';
 import { tool } from 'ai';
 import { z } from 'zod';
 
@@ -10,9 +10,10 @@ import { getLesson } from '@cio/core/services/lesson/lesson';
 import { getLessonVideoTranscript } from '@cio/core/services/agent/lesson-transcript';
 import { getExercise } from '@cio/core/services/exercise/exercise';
 import { listCourseSections } from '@cio/core/services/course/section';
-import { AppError } from '@api/utils/errors';
+import { AppError, ErrorCodes } from '@api/utils/errors';
 import { AgentEvent, trackAgentEvent } from '@cio/core/utils/tinybird';
 import { verifyExerciseBelongsToCourse, verifyLessonBelongsToCourse } from '@cio/core/services/agent/chat-context';
+import { getExercisesByCourseId, resolveViewerExerciseAccess } from '@cio/db/queries/exercise';
 
 /**
  * Student agent tools — read-only, course-scoped.
@@ -128,6 +129,17 @@ const searchCourseParam = z.object({
   limit: z.number().int().min(1).max(20).default(8)
 });
 
+export async function assertStudentExerciseAccess(
+  courseId: string,
+  exerciseId: string,
+  profileId: string
+): Promise<void> {
+  const exerciseAccess = await resolveViewerExerciseAccess(courseId, exerciseId, profileId);
+  if (!exerciseAccess.hasAccess) {
+    throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
+  }
+}
+
 export function buildStudentAgentTools(orgId: string, userId: string, courseId: string, _settings: AiTutorSettings) {
   return {
     list_course_outline: tool({
@@ -136,7 +148,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
       inputSchema: listCourseOutlineParam,
       execute: async () => {
         return executeStudentTool('list_course_outline', { orgId, userId, courseId }, async () => {
-          const [sections, lessons, exercises] = await Promise.all([
+          const [sections, lessons, accessibleExercises] = await Promise.all([
             listCourseSections(courseId),
             db
               .select({
@@ -148,18 +160,11 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
               .from(schema.lesson)
               .where(eq(schema.lesson.courseId, courseId))
               .orderBy(asc(schema.lesson.order)),
-            db
-              .select({
-                id: schema.exercise.id,
-                title: schema.exercise.title,
-                lessonId: schema.exercise.lessonId,
-                sectionId: schema.exercise.sectionId,
-                order: schema.exercise.order
-              })
-              .from(schema.exercise)
-              .where(eq(schema.exercise.courseId, courseId))
-              .orderBy(asc(schema.exercise.order))
+            getExercisesByCourseId(courseId, {}, userId)
           ]);
+          const exercises = accessibleExercises
+            .sort((left, right) => Number(left.order ?? 0) - Number(right.order ?? 0))
+            .map(({ id, title, lessonId, sectionId, order }) => ({ id, title, lessonId, sectionId, order }));
 
           return { sections, lessons, exercises };
         });
@@ -211,7 +216,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
       inputSchema: readExerciseParam,
       execute: async (args) => {
         return executeStudentTool('read_exercise', { orgId, userId, courseId, args }, async () => {
-          await verifyExerciseBelongsToCourse(args.exerciseId, courseId);
+          await assertStudentExerciseAccess(courseId, args.exerciseId, userId);
           const exercise = await getExercise(args.exerciseId);
 
           const questions = (exercise.questions ?? []).map((q) =>
@@ -243,6 +248,8 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
         return executeStudentTool('search_course', { orgId, userId, courseId, args }, async () => {
           const pattern = `%${args.query}%`;
           const limit = args.limit ?? 8;
+          const accessibleExercises = await getExercisesByCourseId(courseId, {}, userId);
+          const accessibleExerciseIds = accessibleExercises.map((exercise) => exercise.id);
 
           const [lessonMatches, exerciseMatches] = await Promise.all([
             db
@@ -263,20 +270,22 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
                 )
               )
               .limit(limit),
-            db
-              .select({
-                id: schema.exercise.id,
-                title: schema.exercise.title,
-                description: schema.exercise.description
-              })
-              .from(schema.exercise)
-              .where(
-                and(
-                  eq(schema.exercise.courseId, courseId),
-                  or(ilike(schema.exercise.title, pattern), ilike(schema.exercise.description, pattern))
-                )
-              )
-              .limit(limit)
+            accessibleExerciseIds.length > 0
+              ? db
+                  .select({
+                    id: schema.exercise.id,
+                    title: schema.exercise.title,
+                    description: schema.exercise.description
+                  })
+                  .from(schema.exercise)
+                  .where(
+                    and(
+                      inArray(schema.exercise.id, accessibleExerciseIds),
+                      or(ilike(schema.exercise.title, pattern), ilike(schema.exercise.description, pattern))
+                    )
+                  )
+                  .limit(limit)
+              : Promise.resolve([])
           ]);
 
           const lessonsResult = lessonMatches.map((lm) => ({

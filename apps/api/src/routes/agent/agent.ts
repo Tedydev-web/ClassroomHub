@@ -39,7 +39,7 @@ import {
   getTutorLearnerLeaderboard,
   incrementStudentTutorCount
 } from '@api/services/agent/tutor-usage';
-import { buildStudentAgentTools } from '@api/services/agent/student-tools';
+import { assertStudentExerciseAccess, buildStudentAgentTools } from '@api/services/agent/student-tools';
 import { parseAndStoreDocument } from '@cio/core/services/agent/document';
 import { recordCreditPurchase } from '@api/services/agent/credit-purchase';
 import { generateCourseMeta } from '@api/services/agent/title-generation';
@@ -477,10 +477,17 @@ const agentCoreRouter = new Hono()
       }
 
       let exerciseTitle: string | undefined;
+      let accessibleExerciseId: string | undefined;
       if (context?.exerciseId) {
         try {
-          await verifyExerciseBelongsToCourse(context.exerciseId, courseId);
+          if (role === AgentRole.STUDENT) {
+            await assertStudentExerciseAccess(courseId, context.exerciseId, user.id);
+          } else {
+            await verifyExerciseBelongsToCourse(context.exerciseId, courseId);
+          }
+
           const exercise = await getExercise(context.exerciseId);
+          accessibleExerciseId = exercise.id;
           exerciseTitle = exercise.title;
         } catch {
           // Exercise not found or doesn't belong — continue without exercise context
@@ -498,7 +505,7 @@ const agentCoreRouter = new Hono()
         lessonId: context?.lessonId,
         lessonTitle,
         lessonContent,
-        exerciseId: context?.exerciseId,
+        exerciseId: accessibleExerciseId,
         exerciseTitle,
         documentId: context?.documentId,
         documentText,

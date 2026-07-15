@@ -1,8 +1,11 @@
 import * as z from 'zod';
 
-const ZGroupMemberIds = z.array(z.string().uuid()).refine((ids) => new Set(ids).size === ids.length, {
-  message: 'Student assignments must be unique'
-});
+const ZGroupMemberIds = z
+  .array(z.string().uuid())
+  .max(1000)
+  .refine((ids) => new Set(ids).size === ids.length, {
+    message: 'Student assignments must be unique'
+  });
 
 export const ZExerciseAssignmentUpdate = z.discriminatedUnion('mode', [
   z.object({

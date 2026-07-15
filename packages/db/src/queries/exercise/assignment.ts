@@ -1,5 +1,5 @@
 import { ROLE } from '@cio/utils/constants';
-import { and, db, eq, inArray, or, sql } from '@db/drizzle';
+import { and, db, eq, inArray, isNotNull, or, sql } from '@db/drizzle';
 import type { DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 
@@ -29,6 +29,12 @@ export function getExerciseVisibilityCondition(groupMemberId: string, roleId: nu
   )!;
 }
 
+export async function lockExerciseAssignmentState(exerciseId: string, dbClient: DbOrTxClient): Promise<void> {
+  await dbClient.execute(
+    sql`SELECT ${schema.exercise.id} FROM ${schema.exercise} WHERE ${schema.exercise.id} = ${exerciseId} FOR UPDATE`
+  );
+}
+
 export async function listExerciseAssignments(exerciseId: string, dbClient: DbOrTxClient = db) {
   try {
     return await dbClient
@@ -53,6 +59,50 @@ export async function listExerciseAssignments(exerciseId: string, dbClient: DbOr
   } catch (error) {
     console.error('listExerciseAssignments error:', error);
     throw new Error('Failed to list exercise assignments');
+  }
+}
+
+export async function listExerciseNotificationRecipients(
+  courseId: string,
+  exerciseId: string,
+  dbClient: DbOrTxClient = db
+): Promise<Array<{ email: string; profileId: string }>> {
+  try {
+    const rows = await dbClient
+      .select({ email: schema.profile.email, profileId: schema.profile.id })
+      .from(schema.exercise)
+      .leftJoin(schema.lesson, eq(schema.lesson.id, schema.exercise.lessonId))
+      .innerJoin(
+        schema.course,
+        and(
+          eq(schema.course.id, courseId),
+          or(eq(schema.course.id, schema.exercise.courseId), eq(schema.course.id, schema.lesson.courseId))
+        )
+      )
+      .innerJoin(
+        schema.groupmember,
+        and(eq(schema.groupmember.groupId, schema.course.groupId), eq(schema.groupmember.roleId, ROLE.STUDENT))
+      )
+      .innerJoin(schema.profile, eq(schema.profile.id, schema.groupmember.profileId))
+      .leftJoin(
+        schema.exerciseAssignment,
+        and(
+          eq(schema.exerciseAssignment.exerciseId, schema.exercise.id),
+          eq(schema.exerciseAssignment.groupMemberId, schema.groupmember.id)
+        )
+      )
+      .where(
+        and(
+          eq(schema.exercise.id, exerciseId),
+          isNotNull(schema.profile.email),
+          or(eq(schema.exercise.assignmentMode, 'ALL_STUDENTS'), isNotNull(schema.exerciseAssignment.id))
+        )
+      );
+
+    return rows.filter((row): row is { email: string; profileId: string } => row.email !== null);
+  } catch (error) {
+    console.error('listExerciseNotificationRecipients error:', error);
+    throw new Error('Failed to list exercise notification recipients');
   }
 }
 
