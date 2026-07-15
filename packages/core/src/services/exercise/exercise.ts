@@ -26,6 +26,7 @@ import {
   updateOptions,
   updateQuestions
 } from '@cio/db/queries/exercise';
+import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
@@ -757,7 +758,9 @@ export async function listExercises(
   profileId?: string
 ): Promise<ExerciseWithCompletion[]> {
   try {
-    const exercises = await getExercisesByCourseId(courseId, filters);
+    const isTeamMember = profileId ? await isCourseTeamMemberOrOrgAdmin(courseId, profileId) : false;
+    const viewerProfileId = isTeamMember ? undefined : profileId;
+    const exercises = await getExercisesByCourseId(courseId, filters, viewerProfileId);
 
     if (!profileId) {
       return exercises.map((exercise) => ({

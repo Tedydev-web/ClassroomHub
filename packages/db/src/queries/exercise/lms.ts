@@ -1,6 +1,7 @@
 import * as schema from '@db/schema';
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import { db } from '@db/drizzle';
+import { getExerciseVisibilityCondition } from './assignment';
 
 export interface LMSExerciseQueryResult {
   id: string;
@@ -57,7 +58,8 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
         courseId: schema.course.id,
         courseTitle: schema.course.title,
         groupId: schema.group.id,
-        groupMemberId: schema.groupmember.id
+        groupMemberId: schema.groupmember.id,
+        roleId: schema.groupmember.roleId
       })
       .from(schema.course)
       .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
@@ -68,7 +70,12 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
       return [];
     }
 
-    const courseIds = [...new Set(coursesWithMembership.map((c) => c.courseId))];
+    const visibleCourseExerciseConditions = coursesWithMembership.map((membership) =>
+      and(
+        or(eq(schema.exercise.courseId, membership.courseId), eq(schema.lesson.courseId, membership.courseId)),
+        getExerciseVisibilityCondition(membership.groupMemberId, membership.roleId)
+      )
+    );
 
     const exercises = await db
       .select({
@@ -84,22 +91,7 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(
-        and(
-          or(inArray(schema.exercise.courseId, courseIds), inArray(schema.lesson.courseId, courseIds)),
-          or(
-            eq(schema.exercise.assignmentMode, 'ALL_STUDENTS'),
-            sql`EXISTS (
-              SELECT 1
-              FROM ${schema.exerciseAssignment}
-              INNER JOIN ${schema.groupmember}
-                ON ${schema.groupmember.id} = ${schema.exerciseAssignment.groupMemberId}
-              WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
-                AND ${schema.groupmember.profileId} = ${profileId}
-            )`
-          )
-        )
-      );
+      .where(or(...visibleCourseExerciseConditions));
 
     if (exercises.length === 0) {
       return [];

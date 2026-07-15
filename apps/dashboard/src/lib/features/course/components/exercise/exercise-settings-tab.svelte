@@ -12,8 +12,10 @@
   import * as Select from '@cio/ui/base/select';
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { ROLE } from '@cio/utils/constants';
-  import { onMount } from 'svelte';
+  import { untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import * as Dialog from '@cio/ui/base/dialog';
+  import type { ExerciseAssignments } from '$features/course/utils/types';
 
   type Props = {
     exerciseId: string;
@@ -25,26 +27,84 @@
 
   let saving = $state(false);
   let assignmentsLoading = $state(true);
+  let assignmentLoadFailed = $state(false);
+  let saveError = $state<'settings' | 'assignment' | 'partial' | null>(null);
+  let removalConfirmationOpen = $state(false);
+  let assignmentLoadRequestId = 0;
   let assignmentMode = $state<'ALL_STUDENTS' | 'SELECTED_STUDENTS'>('ALL_STUDENTS');
   let selectedStudentIds = new SvelteSet<string>();
+  let loadedAssignments = $state<ExerciseAssignments | null>(null);
+  let savedSettings = $state<{
+    allowMultipleAttempts: boolean;
+    completionPolicy: 'submitted' | 'passed';
+    passThreshold: number;
+    slug?: string;
+  } | null>(null);
   let slug = $derived($questionnaire.slug ?? '');
   const students = $derived(courseApi.group.people.filter((member) => member.roleId === ROLE.STUDENT));
 
   const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
 
-  onMount(async () => {
+  const currentSettings = $derived({
+    allowMultipleAttempts: !!$questionnaire.allowMultipleAttempts,
+    completionPolicy: $questionnaire.completionPolicy ?? 'submitted',
+    passThreshold: $questionnaire.passThreshold ?? 100,
+    slug: isPublicCourse && slug ? slug : undefined
+  });
+  const settingsChanged = $derived(
+    savedSettings !== null && JSON.stringify(currentSettings) !== JSON.stringify(savedSettings)
+  );
+  const assignmentChanged = $derived.by(() => {
+    if (!loadedAssignments) return false;
+
+    const savedIds = loadedAssignments.assignments.map((assignment) => assignment.groupMemberId).sort();
+    const currentIds = assignmentMode === 'SELECTED_STUDENTS' ? [...selectedStudentIds].sort() : [];
+
+    return loadedAssignments.mode !== assignmentMode || savedIds.join(',') !== currentIds.join(',');
+  });
+  const removedAssignmentsWithSubmissions = $derived.by(() => {
+    if (!loadedAssignments || loadedAssignments.mode !== 'SELECTED_STUDENTS') return [];
+
+    return loadedAssignments.assignments.filter(
+      (assignment) =>
+        (assignmentMode === 'ALL_STUDENTS' || !selectedStudentIds.has(assignment.groupMemberId)) &&
+        assignment.submissionCount > 0
+    );
+  });
+  const removedSubmissionCount = $derived(
+    removedAssignmentsWithSubmissions.reduce((total, assignment) => total + assignment.submissionCount, 0)
+  );
+
+  $effect(() => {
+    const requestedExerciseId = exerciseId;
+    savedSettings = untrack(() => currentSettings);
+    void loadAssignments(requestedExerciseId);
+  });
+
+  async function loadAssignments(requestedExerciseId = exerciseId) {
     if (!courseApi.course?.id) return;
 
-    const response = await exerciseApi.getAssignments(courseApi.course.id, exerciseId);
+    const requestId = ++assignmentLoadRequestId;
+    assignmentsLoading = true;
+    assignmentLoadFailed = false;
+    saveError = null;
+
+    const response = await exerciseApi.getAssignments(courseApi.course.id, requestedExerciseId);
+    if (requestId !== assignmentLoadRequestId || requestedExerciseId !== exerciseId) return;
+
     if (response?.success) {
       assignmentMode = response.data.mode;
       selectedStudentIds.clear();
       for (const assignment of response.data.assignments) {
         selectedStudentIds.add(assignment.groupMemberId);
       }
+      loadedAssignments = response.data;
+    } else {
+      loadedAssignments = null;
+      assignmentLoadFailed = true;
     }
     assignmentsLoading = false;
-  });
+  }
 
   function toggleStudent(memberId: string) {
     if (selectedStudentIds.has(memberId)) {
@@ -55,26 +115,36 @@
     selectedStudentIds.add(memberId);
   }
 
+  async function requestSave() {
+    if (assignmentChanged && removedAssignmentsWithSubmissions.length > 0) {
+      removalConfirmationOpen = true;
+      return;
+    }
+
+    await saveSettings();
+  }
+
   async function saveSettings() {
     if (!courseApi.course?.id) return;
     const canSave = await onBeforeSave();
     if (!canSave) return;
 
     saving = true;
+    saveError = null;
+    removalConfirmationOpen = false;
+    const hadSettingsChanges = settingsChanged;
 
-    const allowMultipleAttempts = !!$questionnaire.allowMultipleAttempts;
-    const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
-    const passThreshold = $questionnaire.passThreshold ?? 100;
-    const slugPayload = isPublicCourse && slug ? slug : undefined;
+    if (hadSettingsChanges) {
+      const settingsResponse = await exerciseApi.update(courseApi.course.id, exerciseId, currentSettings);
+      if (!settingsResponse?.success) {
+        saveError = 'settings';
+        saving = false;
+        return;
+      }
+      savedSettings = currentSettings;
+    }
 
-    await exerciseApi.update(courseApi.course.id, exerciseId, {
-      allowMultipleAttempts,
-      completionPolicy,
-      passThreshold,
-      slug: slugPayload
-    });
-
-    if (exerciseApi.success) {
+    if (assignmentChanged) {
       const assignmentPayload =
         assignmentMode === 'ALL_STUDENTS'
           ? { mode: 'ALL_STUDENTS' as const, groupMemberIds: [] }
@@ -84,13 +154,15 @@
         exerciseId,
         assignmentPayload
       );
-      exerciseApi.success = Boolean(assignmentResponse?.success);
+      if (!assignmentResponse?.success) {
+        saveError = hadSettingsChanges ? 'partial' : 'assignment';
+        saving = false;
+        return;
+      }
+      loadedAssignments = assignmentResponse.data;
     }
     saving = false;
-
-    if (exerciseApi.success) {
-      snackbar.success('snackbar.exercise.success');
-    }
+    snackbar.success('snackbar.exercise.success');
   }
 </script>
 
@@ -176,7 +248,10 @@
     {/if}
   </div>
 
-  <div class="space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+  <div
+    class="space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700"
+    aria-busy={assignmentsLoading}
+  >
     <div class="space-y-1">
       <Label class="block text-sm font-medium dark:text-gray-100">
         {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment')}
@@ -186,28 +261,39 @@
       </p>
     </div>
 
-    <Select.Root
-      type="single"
-      value={assignmentMode}
-      disabled={assignmentsLoading}
-      onValueChange={(value) => {
-        if (value === 'ALL_STUDENTS' || value === 'SELECTED_STUDENTS') assignmentMode = value;
-      }}
-    >
-      <Select.Trigger class="w-full">
-        {assignmentMode === 'ALL_STUDENTS'
-          ? $t('course.navItem.lessons.exercises.all_exercises.settings_assignment_all')
-          : $t('course.navItem.lessons.exercises.all_exercises.settings_assignment_selected')}
-      </Select.Trigger>
-      <Select.Content>
-        <Select.Item value="ALL_STUDENTS">
-          {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_all')}
-        </Select.Item>
-        <Select.Item value="SELECTED_STUDENTS">
-          {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_selected')}
-        </Select.Item>
-      </Select.Content>
-    </Select.Root>
+    {#if assignmentLoadFailed}
+      <div class="space-y-3" role="alert">
+        <p class="text-sm text-red-600 dark:text-red-400">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_load_failed')}
+        </p>
+        <Button variant="outline" onclick={loadAssignments} loading={assignmentsLoading}>
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_retry')}
+        </Button>
+      </div>
+    {:else}
+      <Select.Root
+        type="single"
+        value={assignmentMode}
+        disabled={assignmentsLoading}
+        onValueChange={(value) => {
+          if (value === 'ALL_STUDENTS' || value === 'SELECTED_STUDENTS') assignmentMode = value;
+        }}
+      >
+        <Select.Trigger class="w-full">
+          {assignmentMode === 'ALL_STUDENTS'
+            ? $t('course.navItem.lessons.exercises.all_exercises.settings_assignment_all')
+            : $t('course.navItem.lessons.exercises.all_exercises.settings_assignment_selected')}
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Item value="ALL_STUDENTS">
+            {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_all')}
+          </Select.Item>
+          <Select.Item value="SELECTED_STUDENTS">
+            {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_selected')}
+          </Select.Item>
+        </Select.Content>
+      </Select.Root>
+    {/if}
 
     {#if assignmentMode === 'SELECTED_STUDENTS'}
       <div class="max-h-64 space-y-2 overflow-y-auto rounded border p-3">
@@ -246,12 +332,50 @@
   {/if}
 
   <Button
-    onclick={saveSettings}
+    onclick={requestSave}
     loading={saving}
     disabled={!courseApi.course?.id ||
       assignmentsLoading ||
+      assignmentLoadFailed ||
+      (!settingsChanged && !assignmentChanged) ||
       (assignmentMode === 'SELECTED_STUDENTS' && selectedStudentIds.size === 0)}
   >
     {$t('course.navItem.lessons.exercises.all_exercises.settings_save')}
   </Button>
+
+  {#if saveError}
+    <p class="text-sm text-red-600 dark:text-red-400" role="alert">
+      {$t(
+        saveError === 'partial'
+          ? 'course.navItem.lessons.exercises.all_exercises.settings_partial_save_failed'
+          : saveError === 'assignment'
+            ? 'course.navItem.lessons.exercises.all_exercises.settings_assignment_save_failed'
+            : 'course.navItem.lessons.exercises.all_exercises.settings_save_failed'
+      )}
+    </p>
+  {/if}
 </div>
+
+<Dialog.Root bind:open={removalConfirmationOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>
+        {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_removal_title')}
+      </Dialog.Title>
+      <Dialog.Description>
+        {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_removal_description', {
+          students: removedAssignmentsWithSubmissions.length,
+          submissions: removedSubmissionCount
+        })}
+      </Dialog.Description>
+    </Dialog.Header>
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (removalConfirmationOpen = false)}>
+        {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_removal_cancel')}
+      </Button>
+      <Button variant="destructive" onclick={saveSettings} loading={saving} disabled={saving}>
+        {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment_removal_confirm')}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
