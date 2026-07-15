@@ -9,7 +9,7 @@ import { runSetupEnv } from '../setup-dev.mjs';
 const EXAMPLES = new Map([
   [
     '.env.dev.example',
-    'DEV_PUBLIC_HOST=localhost\nDEV_PUBLIC_PROTOCOL=http\nDEV_DASHBOARD_PUBLIC_PORT=5173\nDEV_API_PUBLIC_PORT=3002\nDEV_REDIRECT_HOST=\nPOSTGRES_PORT=5432\nREDIS_PORT=6379\nMINIO_API_PORT=9000\nMINIO_CONSOLE_PORT=9001\nMAILPIT_SMTP_PORT=1025\nMAILPIT_UI_PORT=8025\n'
+    'DEV_PUBLIC_HOST=localhost\nDEV_API_PUBLIC_HOST=localhost\nDEV_PUBLIC_PROTOCOL=http\nDEV_DASHBOARD_PUBLIC_PORT=5173\nDEV_API_PUBLIC_PORT=3002\nDEV_OBJECT_STORAGE_PUBLIC_URL=http://localhost:9000\nDEV_PRIVATE_APP_HOST=localhost\nDEV_REDIRECT_HOST=\nPOSTGRES_PORT=5432\nREDIS_PORT=6379\nMINIO_API_PORT=9000\nMINIO_CONSOLE_PORT=9001\nMAILPIT_SMTP_PORT=1025\nMAILPIT_UI_PORT=8025\n'
   ],
   ['apps/api/.env.example', 'DATABASE_URL=""\nREDIS_URL=""\nBETTER_AUTH_SECRET=""\nUNKNOWN_API_KEY="preserve-me"\n'],
   [
@@ -133,40 +133,50 @@ test('uses alternate infrastructure ports in generated endpoints', async () => {
   assert.equal(api.get('REDIS_URL'), 'redis://localhost:16379');
   assert.equal(api.get('OBJECT_STORAGE_ENDPOINT'), 'http://localhost:19000');
   assert.equal(api.get('SMTP_PORT'), '11025');
+  assert.equal(api.get('SMTP_HOST'), '127.0.0.1');
 });
 
 test('uses a configured public host while keeping the private dashboard API URL local', async () => {
   const rootDirectory = await createFixture();
-  await runSetupEnv({ environment: { DEV_PUBLIC_HOST: '100.127.1.234' }, rootDirectory });
+  await runSetupEnv({
+    environment: { DEV_API_PUBLIC_HOST: 'dev.example.test', DEV_PUBLIC_HOST: 'dev.example.test' },
+    rootDirectory
+  });
   const api = await readValues(rootDirectory, 'apps/api/.env');
   const dashboard = await readValues(rootDirectory, 'apps/dashboard/.env');
 
-  assert.equal(api.get('PUBLIC_SERVER_URL'), 'http://100.127.1.234:3002');
-  assert.equal(api.get('DASHBOARD_ORIGIN'), 'http://100.127.1.234:5173');
-  assert.equal(api.get('TRUSTED_ORIGINS'), 'http://100.127.1.234:5173,http://localhost:5173');
-  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'http://100.127.1.234:3002');
+  assert.equal(api.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:3002');
+  assert.equal(api.get('DASHBOARD_ORIGIN'), 'http://dev.example.test:5173');
+  assert.equal(api.get('TRUSTED_ORIGINS'), 'http://dev.example.test:5173,http://localhost:5173');
+  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:3002');
   assert.equal(dashboard.get('PRIVATE_SERVER_URL'), 'http://localhost:3002');
 });
 
-test('uses standard HTTPS without adding port 443 to the dashboard origin', async () => {
+test('uses separate Cloudflare Tunnel hosts without adding standard HTTPS ports', async () => {
   const rootDirectory = await createFixture();
   await runSetupEnv({
     environment: {
-      DEV_API_PUBLIC_PORT: '3002',
+      DEV_API_PUBLIC_HOST: 'api.classroom.example.com',
+      DEV_API_PUBLIC_PORT: '443',
       DEV_DASHBOARD_PUBLIC_PORT: '443',
-      DEV_PUBLIC_HOST: 'server.example.ts.net',
+      DEV_OBJECT_STORAGE_PUBLIC_URL: 'https://assets.classroom.example.com',
+      DEV_PRIVATE_APP_HOST: 'classroom.example.com',
+      DEV_PUBLIC_HOST: 'app.classroom.example.com',
       DEV_PUBLIC_PROTOCOL: 'https',
-      DEV_REDIRECT_HOST: '100.127.1.234:5173'
+      DEV_REDIRECT_HOST: ''
     },
     rootDirectory
   });
   const api = await readValues(rootDirectory, 'apps/api/.env');
   const dashboard = await readValues(rootDirectory, 'apps/dashboard/.env');
 
-  assert.equal(api.get('PUBLIC_SERVER_URL'), 'https://server.example.ts.net:3002');
-  assert.equal(api.get('DASHBOARD_ORIGIN'), 'https://server.example.ts.net');
-  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'https://server.example.ts.net:3002');
-  assert.equal(dashboard.get('VITE_ALLOWED_HOST'), 'server.example.ts.net');
-  assert.equal(dashboard.get('VITE_CANONICAL_ORIGIN'), 'https://server.example.ts.net');
-  assert.equal(dashboard.get('VITE_REDIRECT_HOST'), '100.127.1.234:5173');
+  assert.equal(api.get('PUBLIC_SERVER_URL'), 'https://api.classroom.example.com');
+  assert.equal(api.get('DASHBOARD_ORIGIN'), 'https://app.classroom.example.com');
+  assert.equal(api.get('OBJECT_STORAGE_PUBLIC_ENDPOINT'), 'https://assets.classroom.example.com');
+  assert.equal(api.get('OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL'), 'https://assets.classroom.example.com/media');
+  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'https://api.classroom.example.com');
+  assert.equal(dashboard.get('PRIVATE_APP_HOST'), 'classroom.example.com');
+  assert.equal(dashboard.get('VITE_ALLOWED_HOST'), 'app.classroom.example.com');
+  assert.equal(dashboard.get('VITE_CANONICAL_ORIGIN'), 'https://app.classroom.example.com');
+  assert.equal(dashboard.get('VITE_REDIRECT_HOST'), '');
 });
