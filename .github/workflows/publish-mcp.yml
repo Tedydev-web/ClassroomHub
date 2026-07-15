@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Build MCP workspace dependencies
+        run: pnpm turbo run build --filter=@tedydev/classroom-mcp^...
+
       - name: Build publishable MCP package
         run: pnpm mcp:build
 
