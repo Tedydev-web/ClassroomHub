@@ -1,6 +1,6 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
-import { getExerciseById } from '@cio/db/queries/exercise';
+import { getExerciseById, listExerciseAssignments } from '@cio/db/queries/exercise';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { QUEUE_NAMES, enqueueNotifyCourseExercise, getQueueJobEnvelope, type JobEnvelope } from '@cio/jobs';
@@ -53,6 +53,9 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
   }
 
   const orgName = orgData.orgName || 'Classroom';
+  const assignments =
+    exercise.assignmentMode === 'SELECTED_STUDENTS' ? await listExerciseAssignments(exerciseId) : undefined;
+  const recipientGroupMemberIds = assignments?.map((assignment) => assignment.groupMemberId);
 
   const jobId = await enqueueNotifyCourseExercise({
     courseId,
@@ -62,6 +65,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
     organizationId: orgData.orgId,
     fromName: buildEmailFromName(`${orgName} (via Classroom)`),
     quizUrl,
+    recipientGroupMemberIds,
     branding: buildEmailBranding({
       name: orgData.orgName,
       avatarUrl: orgData.orgAvatarUrl,

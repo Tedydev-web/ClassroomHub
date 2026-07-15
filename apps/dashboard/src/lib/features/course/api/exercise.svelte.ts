@@ -4,8 +4,11 @@ import type {
   CreateExerciseRequest,
   DeleteExerciseRequest,
   Exercise,
+  ExerciseAssignments,
+  GetExerciseAssignmentsRequest,
   GetExerciseRequest,
   SubmitExerciseRequest,
+  UpdateExerciseAssignmentsRequest,
   UpdateExerciseRequest,
   VideoRecordingPlaybackRequest,
   VideoRecordingUploadCompleteRequest,
@@ -13,6 +16,7 @@ import type {
 } from '../utils/types';
 import type {
   TExerciseCreate,
+  TExerciseAssignmentUpdate,
   TExerciseSubmissionCreate,
   TExerciseUpdate,
   TExerciseVideoRecordingUploadComplete,
@@ -36,6 +40,7 @@ import { t } from '$lib/utils/functions/translations';
  */
 export class ExerciseApi extends BaseApiWithErrors {
   exercise = $state<Exercise | null>(null);
+  assignments = $state<ExerciseAssignments | null>(null);
 
   /**
    * Gets an exercise by ID
@@ -58,6 +63,33 @@ export class ExerciseApi extends BaseApiWithErrors {
         if (typeof result === 'string') {
           snackbar.error('Failed to fetch exercise');
         }
+      }
+    });
+  }
+
+  async getAssignments(courseId: string, exerciseId: string) {
+    return this.execute<GetExerciseAssignmentsRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$get({
+          param: { courseId, exerciseId }
+        }),
+      logContext: 'fetching exercise assignments',
+      onSuccess: (response) => {
+        this.assignments = response.data;
+      }
+    });
+  }
+
+  async updateAssignments(courseId: string, exerciseId: string, data: TExerciseAssignmentUpdate) {
+    return this.execute<UpdateExerciseAssignmentsRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$put({
+          param: { courseId, exerciseId },
+          json: data
+        }),
+      logContext: 'updating exercise assignments',
+      onSuccess: (response) => {
+        this.assignments = response.data;
       }
     });
   }

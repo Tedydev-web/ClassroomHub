@@ -196,6 +196,15 @@ export type CreateExerciseFromTemplateSuccess = Extract<CreateExerciseFromTempla
 export type CreateExerciseFromTemplateData = CreateExerciseFromTemplateSuccess['data'];
 
 export type UpdateExerciseRequest = (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['$put'];
+export type GetExerciseAssignmentsRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['assignment']['$get'];
+export type UpdateExerciseAssignmentsRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['assignment']['$put'];
+export type GetExerciseAssignmentsSuccess = Extract<
+  InferResponseType<GetExerciseAssignmentsRequest>,
+  { success: true }
+>;
+export type ExerciseAssignments = GetExerciseAssignmentsSuccess['data'];
 export type DeleteExerciseRequest = (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['$delete'];
 export type SubmitExerciseRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['submission']['$post'];
