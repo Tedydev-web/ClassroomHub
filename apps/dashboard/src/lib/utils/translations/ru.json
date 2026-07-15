@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Отправки с ручной оценкой должны быть оценены, прежде чем они смогут считаться пройденными.",
             "settings_single_attempt_warning": "При одной попытке студентам, не прошедшим задание, потребуется действие преподавателя, прежде чем они смогут продолжить.",
             "settings_existing_submissions_warning": "Изменение критериев прохождения может повлиять на существующие завершения и прогресс.",
+            "settings_assignment": "Назначить упражнение",
+            "settings_assignment_helper": "Выберите, смогут ли получить доступ все учащиеся или только выбранные.",
+            "settings_assignment_all": "Все учащиеся",
+            "settings_assignment_selected": "Выбранные учащиеся",
+            "settings_assignment_empty": "На этот курс не зачислены учащиеся.",
+            "settings_assignment_required": "Выберите хотя бы одного учащегося.",
             "question_auto_graded_badge": "Оценивается автоматически",
             "question_manual_grading_badge": "Ручная оценка",
             "guard": {

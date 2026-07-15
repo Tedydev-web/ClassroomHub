@@ -3,6 +3,7 @@ import * as schema from '@db/schema';
 import { and, desc, eq, inArray, or, sql } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
+import { ROLE } from '@cio/utils/constants';
 
 function toIsoTimestamp(value: string | Date | null | undefined): string | null {
   if (!value) {
@@ -137,7 +138,27 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)));
+      .where(
+        and(
+          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
+          sql`EXISTS (
+            SELECT 1
+            FROM ${schema.groupmember} viewer_member
+            INNER JOIN ${schema.course} viewer_course ON viewer_course.group_id = viewer_member.group_id
+            WHERE viewer_course.id = ${courseId}
+              AND viewer_member.profile_id = ${userId}
+              AND (
+                viewer_member.role_id <> ${ROLE.STUDENT}
+                OR ${schema.exercise.assignmentMode} = 'ALL_STUDENTS'
+                OR EXISTS (
+                  SELECT 1 FROM ${schema.exerciseAssignment}
+                  WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
+                    AND ${schema.exerciseAssignment.groupMemberId} = viewer_member.id
+                )
+              )
+          )`
+        )
+      );
 
     if (exercises.length === 0) {
       return [];
@@ -266,7 +287,27 @@ export async function getLessonsWithCompletion(courseId: string, userId: string)
         lessonId: schema.exercise.lessonId
       })
       .from(schema.exercise)
-      .where(inArray(schema.exercise.lessonId, lessonIds));
+      .where(
+        and(
+          inArray(schema.exercise.lessonId, lessonIds),
+          sql`EXISTS (
+            SELECT 1
+            FROM ${schema.groupmember} viewer_member
+            INNER JOIN ${schema.course} viewer_course ON viewer_course.group_id = viewer_member.group_id
+            WHERE viewer_course.id = ${courseId}
+              AND viewer_member.profile_id = ${userId}
+              AND (
+                viewer_member.role_id <> ${ROLE.STUDENT}
+                OR ${schema.exercise.assignmentMode} = 'ALL_STUDENTS'
+                OR EXISTS (
+                  SELECT 1 FROM ${schema.exerciseAssignment}
+                  WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
+                    AND ${schema.exerciseAssignment.groupMemberId} = viewer_member.id
+                )
+              )
+          )`
+        )
+      );
 
     const completionSet = new Set(completions.map((c) => c.lessonId).filter((id): id is string => id !== null));
     const exerciseCounts = new Map<string, number>();

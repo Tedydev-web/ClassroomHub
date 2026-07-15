@@ -600,6 +600,21 @@ export async function getCourseProgress(
     const roleId = groupMemberResult[0].roleId;
     const certificateEarnedAt = groupMemberResult[0].certificateEarnedAt ?? null;
     const certificationEmailSentAt = groupMemberResult[0].certificationEmailSentAt ?? null;
+    const courseExerciseCondition = or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId));
+    const visibleExerciseCondition =
+      roleId === ROLE.STUDENT
+        ? and(
+            courseExerciseCondition,
+            or(
+              eq(schema.exercise.assignmentMode, 'ALL_STUDENTS'),
+              sql`EXISTS (
+                SELECT 1 FROM ${schema.exerciseAssignment}
+                WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
+                  AND ${schema.exerciseAssignment.groupMemberId} = ${groupMemberId}
+              )`
+            )
+          )
+        : courseExerciseCondition;
 
     const [lessons, completedLessons, exercises, [completedRow]] = await Promise.all([
       db.select({ id: schema.lesson.id }).from(schema.lesson).where(eq(schema.lesson.courseId, courseId)),
@@ -620,7 +635,7 @@ export async function getCourseProgress(
         .select({ id: schema.exercise.id })
         .from(schema.exercise)
         .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-        .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId))),
+        .where(visibleExerciseCondition),
 
       db
         .select({

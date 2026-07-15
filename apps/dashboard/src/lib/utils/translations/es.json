@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Los envíos con calificación manual deben calificarse antes de que puedan contar como aprobados.",
             "settings_single_attempt_warning": "Con un solo intento, los estudiantes que no aprueben necesitarán una acción del instructor antes de poder continuar.",
             "settings_existing_submissions_warning": "Cambiar los criterios de aprobación puede afectar la finalización y el progreso existentes.",
+            "settings_assignment": "Asignar ejercicio",
+            "settings_assignment_helper": "Elige si todos los estudiantes o solo los seleccionados pueden acceder a este ejercicio.",
+            "settings_assignment_all": "Todos los estudiantes",
+            "settings_assignment_selected": "Estudiantes seleccionados",
+            "settings_assignment_empty": "No hay estudiantes inscritos en este curso.",
+            "settings_assignment_required": "Selecciona al menos un estudiante.",
             "question_auto_graded_badge": "Calificación automática",
             "question_manual_grading_badge": "Calificación manual",
             "guard": {

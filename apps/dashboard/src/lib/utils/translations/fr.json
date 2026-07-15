@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Les soumissions notées manuellement doivent être corrigées avant de pouvoir compter comme réussies.",
             "settings_single_attempt_warning": "Avec une seule tentative, les étudiants en échec ont besoin d’une action de l’enseignant avant de pouvoir continuer.",
             "settings_existing_submissions_warning": "Modifier les critères de réussite peut affecter les validations et la progression existantes.",
+            "settings_assignment": "Attribuer l’exercice",
+            "settings_assignment_helper": "Choisissez si tous les apprenants ou seulement ceux sélectionnés peuvent accéder à cet exercice.",
+            "settings_assignment_all": "Tous les apprenants",
+            "settings_assignment_selected": "Apprenants sélectionnés",
+            "settings_assignment_empty": "Aucun apprenant n’est inscrit à ce cours.",
+            "settings_assignment_required": "Sélectionnez au moins un apprenant.",
             "question_auto_graded_badge": "Notation automatique",
             "question_manual_grading_badge": "Notation manuelle",
             "guard": {

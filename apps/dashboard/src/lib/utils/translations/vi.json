@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Bài nộp chấm thủ công phải được chấm trước khi có thể tính là đạt.",
             "settings_single_attempt_warning": "Với một lần làm, học viên không đạt cần giảng viên can thiệp trước khi có thể tiếp tục.",
             "settings_existing_submissions_warning": "Việc thay đổi tiêu chí đạt có thể ảnh hưởng đến trạng thái hoàn thành và tiến trình hiện có.",
+            "settings_assignment": "Giao bài tập",
+            "settings_assignment_helper": "Chọn tất cả học viên hoặc chỉ những học viên được chọn có thể truy cập bài tập này.",
+            "settings_assignment_all": "Tất cả học viên",
+            "settings_assignment_selected": "Học viên được chọn",
+            "settings_assignment_empty": "Chưa có học viên nào trong khóa học này.",
+            "settings_assignment_required": "Chọn ít nhất một học viên.",
             "question_auto_graded_badge": "Chấm tự động",
             "question_manual_grading_badge": "Chấm thủ công",
             "guard": {

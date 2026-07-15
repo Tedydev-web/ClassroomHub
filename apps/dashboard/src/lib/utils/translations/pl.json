@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Zgłoszenia oceniane ręcznie muszą zostać ocenione, zanim będą mogły liczyć się jako zaliczone.",
             "settings_single_attempt_warning": "Przy jednej próbie uczniowie, którzy nie zaliczą, będą potrzebować działania instruktora, zanim będą mogli kontynuować.",
             "settings_existing_submissions_warning": "Zmiana kryteriów zaliczenia może wpłynąć na istniejące ukończenia i postęp.",
+            "settings_assignment": "Przypisz ćwiczenie",
+            "settings_assignment_helper": "Wybierz, czy dostęp do ćwiczenia mają wszyscy, czy tylko wybrani uczniowie.",
+            "settings_assignment_all": "Wszyscy uczniowie",
+            "settings_assignment_selected": "Wybrani uczniowie",
+            "settings_assignment_empty": "W tym kursie nie ma zapisanych uczniów.",
+            "settings_assignment_required": "Wybierz co najmniej jednego ucznia.",
             "question_auto_graded_badge": "Oceniane automatycznie",
             "question_manual_grading_badge": "Ocena ręczna",
             "guard": {

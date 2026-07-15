@@ -1875,6 +1875,12 @@
             "settings_manual_grading_warning": "Manuelt bedømte afleveringer skal bedømmes, før de kan tælle som bestået.",
             "settings_single_attempt_warning": "Med ét forsøg skal studerende, der ikke består, have handling fra underviseren, før de kan fortsætte.",
             "settings_existing_submissions_warning": "Ændring af beståelseskriterier kan påvirke eksisterende gennemførelse og progression.",
+            "settings_assignment": "Tildel øvelse",
+            "settings_assignment_helper": "Vælg, om alle eller kun udvalgte elever kan få adgang til denne øvelse.",
+            "settings_assignment_all": "Alle elever",
+            "settings_assignment_selected": "Udvalgte elever",
+            "settings_assignment_empty": "Der er ingen elever tilmeldt dette kursus.",
+            "settings_assignment_required": "Vælg mindst én elev.",
             "question_auto_graded_badge": "Automatisk bedømt",
             "question_manual_grading_badge": "Manuel bedømmelse",
             "guard": {
