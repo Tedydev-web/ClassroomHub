@@ -2,29 +2,29 @@
 
 Use this file to keep a single prioritized view of all PRDs.
 
-## TODO (Pending PRDs)
+## Tracked PRDs
 
 | Rank | List # | PRD | Status |
 | --- | --- | --- | --- |
 | - | - | `prd/super-admin` | draft |
 | - | - | `prd/embed-link-platforms` | draft |
-| 1 | - | `prd/notification-system` | todo |
+| 1 | - | `prd/notification-system` | partial (inbox/read state and initial triggers shipped; broader event coverage remains) |
 | 2 | 14 | `prd/course-templates` | todo |
-| 3 | 5 | `prd/course-import` | todo |
+| 3 | 5 | `prd/course-import` | done |
 | 4 | 8 | `prd/exercise-question-types [DONE]` | in-progress (dedicated shipped work: exercise sections + video recording; see DONE) |
 | 5 | 3 | `prd/course-cohorts` | todo |
 | 6 | 7 | `prd/email-template-customization` | todo |
-| 7 | - | `prd/selective-exercise-assignment` | todo |
-| - | - | `prd/scorm-support` | todo |
+| 7 | - | `prd/selective-exercise-assignment` | done |
+| - | - | `prd/scorm-support` | done |
 | - | 4 | `prd/course-content-search` | todo |
 | - | 9 | `prd/onboarding-ai-bootstrap` | todo |
 | - | 10 | `prd/pricing-improvements` | todo |
-| - | 12 | `prd/public-courses` | todo |
+| - | 12 | `prd/public-courses` | done |
 | - | - | `prd/customer-course-documentation` | todo |
 | - | - | `prd/walkthrough-widget` | draft |
 | - | - | `prd/copy-page-as-markdown` | todo |
-| - | - | `prd/reset-student-course-progress` | todo |
-| - | 15 | `prd/webhooks` | todo |
+| - | - | `prd/reset-student-course-progress` | done |
+| - | 15 | `prd/webhooks` | done |
 | - | - | `prd/zapier` | draft |
 
 ## DONE (Completed PRDs)
