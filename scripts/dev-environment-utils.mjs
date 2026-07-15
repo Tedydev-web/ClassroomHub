@@ -81,6 +81,7 @@ export async function inspectEnvFileSafely(filePath, options = {}) {
   if (!(await pathExists(filePath))) {
     return {
       exists: false,
+      deploymentOwnership: null,
       missingKeys: [...requiredKeys].sort(),
       presentKeys: [],
       productMode: null
@@ -88,27 +89,16 @@ export async function inspectEnvFileSafely(filePath, options = {}) {
   }
 
   const content = await readFile(filePath, 'utf8');
-  const presentKeys = new Set();
-  let productMode = null;
-
-  for (const line of content.split(/\r?\n/)) {
-    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
-    if (!match) continue;
-
-    const [, key, rawValue] = match;
-    presentKeys.add(key);
-
-    if (key === 'PUBLIC_IS_SELFHOSTED') {
-      const normalizedValue = rawValue
-        .trim()
-        .replace(/^(?:"(.*)"|'(.*)')$/, '$1$2')
-        .toLowerCase();
-      if (normalizedValue === 'true') productMode = 'self-hosted';
-      if (normalizedValue === 'false') productMode = 'cloud';
-    }
-  }
+  const values = parseEnvValues(content);
+  const presentKeys = new Set(values.keys());
+  const selfHostedValue = values.get('PUBLIC_IS_SELFHOSTED')?.toLowerCase();
+  const selfOwnedValue = values.get('PUBLIC_IS_SELF_OWNED')?.toLowerCase();
+  const productMode = selfHostedValue === 'true' ? 'self-hosted' : selfHostedValue === 'false' ? 'cloud' : null;
+  const deploymentOwnership =
+    selfOwnedValue === 'true' ? 'self-owned' : selfOwnedValue === 'false' ? 'upstream-managed' : null;
 
   return {
+    deploymentOwnership,
     exists: true,
     missingKeys: requiredKeys.filter((key) => !presentKeys.has(key)).sort(),
     presentKeys: [...presentKeys].sort(),
@@ -116,20 +106,22 @@ export async function inspectEnvFileSafely(filePath, options = {}) {
   };
 }
 
-export function resolveProductModeConsistency(apiMode, dashboardMode) {
-  if (!apiMode && !dashboardMode) {
+export function resolveDeploymentSettingConsistency(...modes) {
+  const configuredModes = modes.filter(Boolean);
+
+  if (configuredModes.length === 0) {
     return { blocking: false, mode: null, status: 'unknown' };
   }
 
-  if (!apiMode || !dashboardMode) {
+  if (configuredModes.length !== modes.length) {
     return { blocking: true, mode: null, status: 'incomplete' };
   }
 
-  if (apiMode !== dashboardMode) {
+  if (new Set(configuredModes).size !== 1) {
     return { blocking: true, mode: null, status: 'mismatch' };
   }
 
-  return { blocking: false, mode: apiMode, status: 'ready' };
+  return { blocking: false, mode: configuredModes[0], status: 'ready' };
 }
 
 export function probePort(port, host = '127.0.0.1', timeoutMs = 750) {

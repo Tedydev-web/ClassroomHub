@@ -15,7 +15,7 @@ import {
   parseUserAgentPnpmVersion,
   probeHttp,
   probePort,
-  resolveProductModeConsistency,
+  resolveDeploymentSettingConsistency,
   runCommandCheck
 } from '../dev-environment-utils.mjs';
 
@@ -64,7 +64,8 @@ test('inspects env metadata without returning secret values', async () => {
         '# local fixture',
         'DATABASE_URL="postgresql://secret-user:secret-password@localhost:5432/classroomio"',
         'PRIVATE_SERVER_KEY="super-secret-value"',
-        'PUBLIC_IS_SELFHOSTED=false'
+        'PUBLIC_IS_SELFHOSTED=false',
+        'PUBLIC_IS_SELF_OWNED=true'
       ].join('\n')
     );
 
@@ -75,6 +76,7 @@ test('inspects env metadata without returning secret values', async () => {
 
     assert.equal(metadata.exists, true);
     assert.deepEqual(metadata.missingKeys, ['REDIS_URL']);
+    assert.equal(metadata.deploymentOwnership, 'self-owned');
     assert.equal(metadata.productMode, 'cloud');
     assert.equal(serialized.includes('secret-password'), false);
     assert.equal(serialized.includes('super-secret-value'), false);
@@ -84,20 +86,30 @@ test('inspects env metadata without returning secret values', async () => {
 });
 
 test('detects mismatched product modes', () => {
-  assert.deepEqual(resolveProductModeConsistency('cloud', 'self-hosted'), {
+  assert.deepEqual(resolveDeploymentSettingConsistency('cloud', 'self-hosted'), {
     blocking: true,
     mode: null,
     status: 'mismatch'
   });
-  assert.deepEqual(resolveProductModeConsistency('cloud', 'cloud'), {
+  assert.deepEqual(resolveDeploymentSettingConsistency('cloud', 'cloud'), {
     blocking: false,
     mode: 'cloud',
     status: 'ready'
   });
-  assert.deepEqual(resolveProductModeConsistency('cloud', null), {
+  assert.deepEqual(resolveDeploymentSettingConsistency('cloud', null), {
     blocking: true,
     mode: null,
     status: 'incomplete'
+  });
+  assert.deepEqual(resolveDeploymentSettingConsistency('self-owned', 'self-owned', 'self-owned'), {
+    blocking: false,
+    mode: 'self-owned',
+    status: 'ready'
+  });
+  assert.deepEqual(resolveDeploymentSettingConsistency('self-owned', 'upstream-managed', 'self-owned'), {
+    blocking: true,
+    mode: null,
+    status: 'mismatch'
   });
 });
 

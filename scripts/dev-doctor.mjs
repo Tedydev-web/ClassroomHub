@@ -12,7 +12,7 @@ import {
   pathExists,
   probeHttp,
   probePort,
-  resolveProductModeConsistency,
+  resolveDeploymentSettingConsistency,
   runCommandCheck
 } from './dev-environment-utils.mjs';
 
@@ -44,6 +44,14 @@ const REQUIRED_DASHBOARD_ENV_KEYS = [
   'PUBLIC_SERVER_URL',
   'PRIVATE_SERVER_URL',
   'PRIVATE_SERVER_KEY',
+  'PUBLIC_IS_SELFHOSTED',
+  'PUBLIC_IS_SELF_OWNED'
+];
+
+const REQUIRED_JOBS_ENV_KEYS = [
+  'DATABASE_URL',
+  'REDIS_URL',
+  'WEBHOOK_ENCRYPTION_KEY',
   'PUBLIC_IS_SELFHOSTED',
   'PUBLIC_IS_SELF_OWNED'
 ];
@@ -286,11 +294,13 @@ async function checkLocalApplications(diagnostics) {
 async function checkEnvFilesAndProductMode(diagnostics) {
   const apiEnvPath = path.resolve('apps/api/.env');
   const dashboardEnvPath = path.resolve('apps/dashboard/.env');
+  const jobsEnvPath = path.resolve('apps/jobs/.env');
 
   const apiEnv = await inspectEnvFileSafely(apiEnvPath, { requiredKeys: REQUIRED_API_ENV_KEYS });
   const dashboardEnv = await inspectEnvFileSafely(dashboardEnvPath, { requiredKeys: REQUIRED_DASHBOARD_ENV_KEYS });
+  const jobsEnv = await inspectEnvFileSafely(jobsEnvPath, { requiredKeys: REQUIRED_JOBS_ENV_KEYS });
 
-  if (!apiEnv.exists || !dashboardEnv.exists) {
+  if (!apiEnv.exists || !dashboardEnv.exists || !jobsEnv.exists) {
     addDiagnostic(
       diagnostics,
       'warning',
@@ -311,28 +321,45 @@ async function checkEnvFilesAndProductMode(diagnostics) {
     );
   }
 
-  const modeConsistency = resolveProductModeConsistency(apiEnv.productMode, dashboardEnv.productMode);
-
-  if (modeConsistency.status === 'mismatch') {
-    addDiagnostic(
-      diagnostics,
-      'error',
-      'PUBLIC_IS_SELFHOSTED differs between apps/api/.env and apps/dashboard/.env. Set the same value in both files, then restart the dev servers.'
-    );
-    return;
+  if (jobsEnv.missingKeys.length > 0) {
+    addDiagnostic(diagnostics, 'warning', `apps/jobs/.env is missing keys: ${jobsEnv.missingKeys.join(', ')}.`);
   }
 
-  if (modeConsistency.status === 'incomplete') {
+  const deploymentSettings = [
+    {
+      key: 'PUBLIC_IS_SELFHOSTED',
+      values: [apiEnv.productMode, dashboardEnv.productMode, jobsEnv.productMode]
+    },
+    {
+      key: 'PUBLIC_IS_SELF_OWNED',
+      values: [apiEnv.deploymentOwnership, dashboardEnv.deploymentOwnership, jobsEnv.deploymentOwnership]
+    }
+  ];
+  const [modeConsistency, ownershipConsistency] = deploymentSettings.map(({ key, values }) => {
+    const consistency = resolveDeploymentSettingConsistency(...values);
+
+    if (consistency.status === 'mismatch') {
+      addDiagnostic(
+        diagnostics,
+        'error',
+        `${key} differs across API, dashboard, and jobs env files. Set the same value in all three files, then restart the dev servers.`
+      );
+    } else if (consistency.status === 'incomplete') {
+      addDiagnostic(diagnostics, 'warning', `${key} is not set in every API, dashboard, and jobs env file.`);
+    }
+
+    return consistency;
+  });
+
+  if (modeConsistency.blocking || ownershipConsistency.blocking) return;
+
+  if (modeConsistency.status === 'ready' && ownershipConsistency.status === 'ready') {
+    const topology = modeConsistency.mode === 'self-hosted' ? 'single-org' : 'multi-tenant';
     addDiagnostic(
       diagnostics,
-      'warning',
-      'PUBLIC_IS_SELFHOSTED is set in only one of apps/api/.env or apps/dashboard/.env. Set it in both files to the same value.'
+      'info',
+      `Deployment configuration agrees across API, dashboard, and jobs: topology=${topology}, ownership=${ownershipConsistency.mode}.`
     );
-    return;
-  }
-
-  if (modeConsistency.status === 'ready') {
-    addDiagnostic(diagnostics, 'info', `API and dashboard agree on product mode: ${modeConsistency.mode}.`);
   }
 }
 
