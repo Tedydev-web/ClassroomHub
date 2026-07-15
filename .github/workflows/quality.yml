@@ -1,0 +1,107 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-and-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate secret-free build environment
+        run: pnpm setup:env
+
+      - name: Check repository formatting
+        run: pnpm format:all:check
+
+      - name: Build API dependency graph
+        run: pnpm turbo run build --filter=@cio/api...
+
+      - name: Build dashboard dependency graph
+        run: pnpm turbo run build --filter=@cio/dashboard...
+
+      - name: Run focused unit suites
+        run: |
+          pnpm --filter @cio/utils test
+          pnpm --filter @cio/jobs test
+          pnpm --filter @cio/api test
+          pnpm --filter @cio/dashboard test
+
+      - name: Lint application code
+        run: |
+          pnpm --filter @cio/api lint
+          pnpm --filter @cio/dashboard lint
+
+  selective-assignment-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: classroomio
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d classroomio"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/classroomio
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply database migrations
+        run: pnpm --filter @cio/db db:migrate
+
+      - name: Verify selective assignment contracts
+        run: pnpm --filter @cio/db exec tsx scripts/selective-exercise-assignment.integration.check.ts

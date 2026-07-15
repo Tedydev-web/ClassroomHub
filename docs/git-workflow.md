@@ -93,7 +93,7 @@ Detailed sync and rollback rules are in [upstream-sync.md](./upstream-sync.md).
 `main` requires:
 
 - a pull request before merge;
-- the `Quality / static-and-unit` check;
+- the `Quality / static-and-unit` and `Quality / selective-assignment-integration` checks;
 - resolved review conversations;
 - no force pushes or branch deletion;
 - linear history for normal product work, except explicit upstream merge commits.
