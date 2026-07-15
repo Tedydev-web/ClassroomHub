@@ -75,10 +75,15 @@ export function buildManagedEnvMaps({
   const minioApiPort = environment.MINIO_API_PORT ?? '9000';
   const mailpitSmtpPort = environment.MAILPIT_SMTP_PORT ?? '1025';
   const publicHost = environment.DEV_PUBLIC_HOST ?? 'localhost';
+  const apiPublicHost = environment.DEV_API_PUBLIC_HOST ?? publicHost;
   const publicProtocol = environment.DEV_PUBLIC_PROTOCOL ?? 'http';
   const apiPublicPort = environment.DEV_API_PUBLIC_PORT ?? '3002';
   const dashboardPublicPort = environment.DEV_DASHBOARD_PUBLIC_PORT ?? '5173';
-  const apiPublicUrl = `${publicProtocol}://${publicHost}:${apiPublicPort}`;
+  const apiPortSuffix =
+    (publicProtocol === 'https' && apiPublicPort === '443') || (publicProtocol === 'http' && apiPublicPort === '80')
+      ? ''
+      : `:${apiPublicPort}`;
+  const apiPublicUrl = `${publicProtocol}://${apiPublicHost}${apiPortSuffix}`;
   const dashboardPortSuffix =
     (publicProtocol === 'https' && dashboardPublicPort === '443') ||
     (publicProtocol === 'http' && dashboardPublicPort === '80')
@@ -90,19 +95,20 @@ export function buildManagedEnvMaps({
     postgresPort === '5432' ? DATABASE_URL : `postgresql://postgres:postgres@localhost:${postgresPort}/classroomio`;
   const redisUrl = `redis://localhost:${redisPort}`;
   const minioEndpoint = `http://localhost:${minioApiPort}`;
+  const objectStoragePublicUrl = environment.DEV_OBJECT_STORAGE_PUBLIC_URL ?? minioEndpoint;
   const objectStorage = new Map([
     ['OBJECT_STORAGE_ENDPOINT', managedValue(minioEndpoint)],
-    ['OBJECT_STORAGE_PUBLIC_ENDPOINT', managedValue(minioEndpoint)],
+    ['OBJECT_STORAGE_PUBLIC_ENDPOINT', managedValue(objectStoragePublicUrl)],
     ['OBJECT_STORAGE_ACCESS_KEY_ID', managedValue('classroomio')],
     ['OBJECT_STORAGE_SECRET_ACCESS_KEY', managedValue('classroomio-dev-only')],
     ['OBJECT_STORAGE_FORCE_PATH_STYLE', managedValue('true')],
     ['OBJECT_STORAGE_BUCKET_VIDEOS', managedValue('videos')],
     ['OBJECT_STORAGE_BUCKET_DOCUMENTS', managedValue('documents')],
     ['OBJECT_STORAGE_BUCKET_MEDIA', managedValue('media')],
-    ['OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL', managedValue(`${minioEndpoint}/media`)]
+    ['OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL', managedValue(`${objectStoragePublicUrl}/media`)]
   ]);
   const smtp = new Map([
-    ['SMTP_HOST', managedValue('localhost')],
+    ['SMTP_HOST', managedValue('127.0.0.1')],
     ['SMTP_PORT', managedValue(mailpitSmtpPort)],
     ['SMTP_SECURE', managedValue('false')],
     ['SMTP_REQUIRE_TLS', managedValue('false')],
@@ -138,7 +144,7 @@ export function buildManagedEnvMaps({
         ['PRIVATE_SERVER_KEY', managedValue(privateServerKey, true)],
         ['PUBLIC_IS_SELFHOSTED', managedValue(isSelfHosted)],
         ['PUBLIC_IS_SELF_OWNED', managedValue('true')],
-        ['PRIVATE_APP_HOST', managedValue('localhost')],
+        ['PRIVATE_APP_HOST', managedValue(environment.DEV_PRIVATE_APP_HOST ?? 'localhost')],
         ['PRIVATE_APP_SUBDOMAINS', managedValue('app')],
         ['VITE_ALLOWED_HOST', managedValue(publicHost)],
         ['VITE_CANONICAL_ORIGIN', managedValue(dashboardPublicUrl)],
