@@ -11,7 +11,7 @@
     '      <span class="text-sky-300">"command"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"npx"</span><span class="text-slate-500">,</span>',
     '      <span class="text-sky-300">"args"</span><span class="text-slate-500">: [</span><span class="text-emerald-300">"-y"</span><span class="text-slate-500">,</span> <span class="text-emerald-300">"@tedydev/classroom-mcp"</span><span class="text-slate-500">],</span>',
     '      <span class="text-sky-300">"env"</span><span class="text-slate-500">: {</span>',
-    '        <span class="text-sky-300">"CLASSROOM_API_URL"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"https://api.classroom.tedydev.io.vn"</span><span class="text-slate-500">,</span>',
+    '        <span class="text-sky-300">"CLASSROOM_API_URL"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"https://classroom-api.tedydev.io.vn"</span><span class="text-slate-500">,</span>',
     '        <span class="text-sky-300">"CLASSROOM_API_KEY"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"&lt;your-mcp-key&gt;"</span>',
     '      <span class="text-slate-500">}</span>',
     '    <span class="text-slate-500">}</span>',

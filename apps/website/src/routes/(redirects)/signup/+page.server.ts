@@ -9,5 +9,5 @@ export const load = ({ request, url }) => {
     event: 'signup'
   });
 
-  redirect(307, `https://app.classroom.tedydev.io.vn/signup${url.search ?? ''}`);
+  redirect(307, `https://classroom-app.tedydev.io.vn/signup${url.search ?? ''}`);
 };

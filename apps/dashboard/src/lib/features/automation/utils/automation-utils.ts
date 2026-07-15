@@ -103,7 +103,7 @@ export function getClaudeCodeSnippet(secret: string | null) {
   "command": "npx",
   "args": ["-y", "@tedydev/classroom-mcp"],
   "env": {
-    "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+    "CLASSROOM_API_URL": "https://classroom-api.tedydev.io.vn",
     "CLASSROOM_API_KEY": "${apiKey}"
   }
 }'`;
@@ -113,7 +113,7 @@ export function getCodexSnippet(secret: string | null) {
   const apiKey = getAutomationSetupSecret(secret);
 
   return `codex mcp add classroomio \\
-  --env CLASSROOM_API_URL=https://api.classroom.tedydev.io.vn \\
+  --env CLASSROOM_API_URL=https://classroom-api.tedydev.io.vn \\
   --env CLASSROOM_API_KEY=${apiKey} \\
   -- npx -y @tedydev/classroom-mcp`;
 }
@@ -129,7 +129,7 @@ export function getOpenCodeSnippet(secret: string | null) {
       "command": ["npx", "-y", "@tedydev/classroom-mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+        "CLASSROOM_API_URL": "https://classroom-api.tedydev.io.vn",
         "CLASSROOM_API_KEY": "${apiKey}"
       }
     }
@@ -146,7 +146,7 @@ export function getCursorSnippet(secret: string | null) {
       "command": "npx",
       "args": ["-y", "@tedydev/classroom-mcp"],
       "env": {
-        "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+        "CLASSROOM_API_URL": "https://classroom-api.tedydev.io.vn",
         "CLASSROOM_API_KEY": "${apiKey}"
       }
     }

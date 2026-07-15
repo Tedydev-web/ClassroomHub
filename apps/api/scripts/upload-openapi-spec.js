@@ -219,7 +219,7 @@ var OpenAPISpecGenerator = /** @class */ (function () {
                   },
                   servers: [
                     {
-                      url: 'https://api.classroom.tedydev.io.vn',
+                      url: 'https://classroom-api.tedydev.io.vn',
                       description: 'Production environment'
                     },
                     {

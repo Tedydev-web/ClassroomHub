@@ -37,5 +37,5 @@ _Pranav's experience using ClassroomIO_
 Are you looking to launch your course or bootcamp? Register for a free account today and start building.
 
 <div class="flex justify-center">
-  <a href="https://app.classroom.tedydev.io.vn/login" target="_blank" nofollow="nofollow" class="bg-black text-white px-4 py-2 rounded-md">Register for free</a>
+  <a href="https://classroom-app.tedydev.io.vn/login" target="_blank" nofollow="nofollow" class="bg-black text-white px-4 py-2 rounded-md">Register for free</a>
 </div>

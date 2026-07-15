@@ -5,7 +5,7 @@
  *   - classroom.tedydev.io.vn/*     — product apex
  *   - *.classroom.tedydev.io.vn/*   — tenant sites
  *   - learn.classroom.tedydev.io.vn/* — legacy learning apex redirect
- *   - app.classroom.tedydev.io.vn/* — admin dashboard
+ *   - classroom-app.tedydev.io.vn/* — admin dashboard
  *   - embed.classroom.tedydev.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
  *   - <BYOD>/*                      — customer-owned domains via Cloudflare for SaaS
  *

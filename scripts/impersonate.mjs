@@ -29,7 +29,7 @@ try {
 
 // --- config (env wins; otherwise fill these in) -----------------------------
 const BETTER_AUTH_SECRET = process.env.BETTER_AUTH_SECRET ?? '';
-const APP_URL = process.env.APP_URL ?? 'https://app.classroom.tedydev.io.vn';
+const APP_URL = process.env.APP_URL ?? 'https://classroom-app.tedydev.io.vn';
 // ----------------------------------------------------------------------------
 
 const [userId, email, redirect = '/', ttl = '10m'] = process.argv.slice(2);

@@ -7,7 +7,7 @@
 
   const apiCurl = [
     '<span class="text-slate-500"># Enroll a learner in a course</span>',
-    '<span class="text-pink-400">curl</span> <span class="text-emerald-300">"https://api.classroom.tedydev.io.vn/v1/enrollments"</span> \\',
+    '<span class="text-pink-400">curl</span> <span class="text-emerald-300">"https://classroom-api.tedydev.io.vn/v1/enrollments"</span> \\',
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Authorization: Bearer $CIO_API_KEY"</span> \\',
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Content-Type: application/json"</span> \\',
     '  <span class="text-sky-300">-d</span> <span class="text-emerald-300">\'{ "courseId": "crs_…", "userId": "usr_…" }\'</span>'

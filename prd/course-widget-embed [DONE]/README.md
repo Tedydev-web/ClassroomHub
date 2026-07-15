@@ -520,7 +520,7 @@ interface WidgetPayload {
 
 #### Security Rules
 1. **Origin Validation**:
-   - Production: `targetOrigin` must match `VITE_DASHBOARD_URL` (e.g., `https://app.classroom.tedydev.io.vn`)
+   - Production: `targetOrigin` must match `VITE_DASHBOARD_URL` (e.g., `https://classroom-app.tedydev.io.vn`)
    - Development: allow `http://localhost:*` with port wildcard
    - Never use `*` in production
    

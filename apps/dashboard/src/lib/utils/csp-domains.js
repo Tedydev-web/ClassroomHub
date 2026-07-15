@@ -4,7 +4,7 @@
 
 const saasDefaults = {
   scriptSrc: [
-    'https://assets.classroom.tedydev.io.vn',
+    'https://classroom-assets.tedydev.io.vn',
     'https://embed.classroom.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
     'https://*.posthog.com',
@@ -19,14 +19,14 @@ const saasDefaults = {
   styleSrc: [
     'https://cdn.plyr.io',
     'https://unpkg.com/katex@0.12.0/dist/katex.min.css',
-    'https://assets.classroom.tedydev.io.vn/eqneditor_1.css',
+    'https://classroom-assets.tedydev.io.vn/eqneditor_1.css',
     'https://fonts.googleapis.com'
   ],
   connectSrc: [
     'https://*.classroom.tedydev.io.vn',
     'https://classroom.tedydev.io.vn',
     'wss://*.classroom.tedydev.io.vn',
-    'https://assets.classroom.tedydev.io.vn',
+    'https://classroom-assets.tedydev.io.vn',
     'https://cdn.plyr.io',
     'https://*.posthog.com',
     // Optional analytics origins are appended from deployment environment variables.

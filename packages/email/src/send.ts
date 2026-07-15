@@ -66,7 +66,7 @@ export function defineEmail<TSchema extends z.ZodType>(config: DefineEmailConfig
  *   fields: {
  *     name: 'John Doe',
  *     email: 'user@example.com',
- *     link: 'https://app.classroom.tedydev.io.vn/reset?token=abc123'
+ *     link: 'https://classroom-app.tedydev.io.vn/reset?token=abc123'
  *   }
  * });
  * ```

@@ -33,6 +33,6 @@ The Early Adopter plan is our way of saying thank you. It locks you into our cur
 
 Once we announce the new pricing, the Early Adopter door closes. So if you've been on the fence, now is the time.
 
-[Sign up for the Early Adopter plan](https://app.classroom.tedydev.io.vn) and lock in your rate today.
+[Sign up for the Early Adopter plan](https://classroom-app.tedydev.io.vn) and lock in your rate today.
 
 We're building the future of training, and we're glad to have you with us from the start.

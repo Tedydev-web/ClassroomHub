@@ -52,7 +52,7 @@ The MCP server forwards that credential to ClassroomIO on every request.
 Example environment:
 
 ```bash
-CLASSROOM_API_URL=https://api.classroom.tedydev.io.vn
+CLASSROOM_API_URL=https://classroom-api.tedydev.io.vn
 CLASSROOM_API_KEY=classroom_mcp_xxxxx
 ```
 
