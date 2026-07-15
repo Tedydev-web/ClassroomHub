@@ -11,6 +11,7 @@ import type {
 import { and, asc, db, eq, inArray, isNull, or, sql } from '@db/drizzle';
 
 import type { DbOrTxClient } from '@db/drizzle';
+import { getExerciseVisibilityCondition } from './assignment';
 
 export async function createExercises(values: TNewExercise[], dbClient: DbOrTxClient = db) {
   try {
@@ -98,11 +99,27 @@ export async function getExercisesByLessonIds(lessonIds: string[], dbClient: DbO
 export async function getExercisesByCourseId(
   courseId: string,
   filters: { lessonId?: string; sectionId?: string } = {},
+  profileId?: string,
   dbClient: DbOrTxClient = db
 ): Promise<TExercise[]> {
   try {
     const { lessonId, sectionId } = filters;
     const conditions = [or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId))];
+
+    if (profileId) {
+      const [viewerMember] = await dbClient
+        .select({ id: schema.groupmember.id, roleId: schema.groupmember.roleId })
+        .from(schema.groupmember)
+        .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
+        .where(and(eq(schema.course.id, courseId), eq(schema.groupmember.profileId, profileId)))
+        .limit(1);
+
+      if (!viewerMember) {
+        return [];
+      }
+
+      conditions.push(getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId));
+    }
 
     if (lessonId) {
       conditions.push(eq(schema.exercise.lessonId, lessonId));

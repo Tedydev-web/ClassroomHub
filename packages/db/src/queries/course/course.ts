@@ -16,6 +16,7 @@ import { and, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sql } 
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { getCourseContentItems, type CourseContentItemRow } from './content';
+import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 import { getUpcomingSessionsForCourseIds, type CourseUpcomingSession } from './session';
 
 /**
@@ -601,20 +602,10 @@ export async function getCourseProgress(
     const certificateEarnedAt = groupMemberResult[0].certificateEarnedAt ?? null;
     const certificationEmailSentAt = groupMemberResult[0].certificationEmailSentAt ?? null;
     const courseExerciseCondition = or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId));
-    const visibleExerciseCondition =
-      roleId === ROLE.STUDENT
-        ? and(
-            courseExerciseCondition,
-            or(
-              eq(schema.exercise.assignmentMode, 'ALL_STUDENTS'),
-              sql`EXISTS (
-                SELECT 1 FROM ${schema.exerciseAssignment}
-                WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
-                  AND ${schema.exerciseAssignment.groupMemberId} = ${groupMemberId}
-              )`
-            )
-          )
-        : courseExerciseCondition;
+    const visibleExerciseCondition = and(
+      courseExerciseCondition,
+      getExerciseVisibilityCondition(groupMemberId, roleId)
+    );
 
     const [lessons, completedLessons, exercises, [completedRow]] = await Promise.all([
       db.select({ id: schema.lesson.id }).from(schema.lesson).where(eq(schema.lesson.courseId, courseId)),
@@ -644,12 +635,7 @@ export async function getCourseProgress(
         .from(schema.submission)
         .innerJoin(schema.exercise, eq(schema.submission.exerciseId, schema.exercise.id))
         .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-        .where(
-          and(
-            or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
-            eq(schema.submission.submittedBy, groupMemberId)
-          )
-        )
+        .where(and(visibleExerciseCondition, eq(schema.submission.submittedBy, groupMemberId)))
     ]);
 
     return {
@@ -1465,6 +1451,27 @@ export async function getCourseTypeById(courseId: string): Promise<string | unde
   } catch (error) {
     console.error('getCourseTypeById error:', error);
     throw new Error(`Failed to get course type: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function hasSelectivelyAssignedExercises(courseId: string): Promise<boolean> {
+  try {
+    const [exercise] = await db
+      .select({ id: schema.exercise.id })
+      .from(schema.exercise)
+      .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
+      .where(
+        and(
+          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
+          eq(schema.exercise.assignmentMode, 'SELECTED_STUDENTS')
+        )
+      )
+      .limit(1);
+
+    return Boolean(exercise);
+  } catch (error) {
+    console.error('hasSelectivelyAssignedExercises error:', error);
+    throw new Error('Failed to check selective exercise assignments');
   }
 }
 

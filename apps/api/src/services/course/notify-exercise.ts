@@ -59,6 +59,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
 
   const jobId = await enqueueNotifyCourseExercise({
     courseId,
+    exerciseId,
     exerciseTitle: exercise.title,
     courseName: course.title,
     orgName,

@@ -2,6 +2,7 @@ import * as schema from '@db/schema';
 
 import type { TNewQuestionAnswer, TNewSubmission, TQuestionAnswer, TSubmission } from '@db/types';
 import { and, count, db, eq, inArray, sql } from '@db/drizzle';
+import type { DbOrTxClient } from '@db/drizzle';
 
 /**
  * Gets a submission by ID
@@ -24,9 +25,13 @@ export async function getSubmissionById(submissionId: string): Promise<TSubmissi
   }
 }
 
-export async function hasSubmission(exerciseId: string, submittedBy: string): Promise<boolean> {
+export async function hasSubmission(
+  exerciseId: string,
+  submittedBy: string,
+  dbClient: DbOrTxClient = db
+): Promise<boolean> {
   try {
-    const [result] = await db
+    const [result] = await dbClient
       .select({ total: count() })
       .from(schema.submission)
       .where(and(eq(schema.submission.exerciseId, exerciseId), eq(schema.submission.submittedBy, submittedBy)))
@@ -195,9 +200,9 @@ export async function getSubmissionsForGrading(courseId: string) {
  * @param data Submission data
  * @returns Created submission
  */
-export async function createSubmission(data: TNewSubmission): Promise<TSubmission> {
+export async function createSubmission(data: TNewSubmission, dbClient: DbOrTxClient = db): Promise<TSubmission> {
   try {
-    const [submission] = await db.insert(schema.submission).values(data).returning();
+    const [submission] = await dbClient.insert(schema.submission).values(data).returning();
     if (!submission) {
       throw new Error('Failed to create submission');
     }

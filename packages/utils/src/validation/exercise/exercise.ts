@@ -235,7 +235,7 @@ export const ZExerciseUpdate = z.object({
 export type TExerciseUpdate = z.infer<typeof ZExerciseUpdate>;
 
 export const ZExerciseGetParam = z.object({
-  exerciseId: z.string().min(1)
+  exerciseId: z.string().uuid()
 });
 export type TExerciseGetParam = z.infer<typeof ZExerciseGetParam>;
 

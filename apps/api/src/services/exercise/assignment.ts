@@ -1,14 +1,15 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
-import { getCourseMembers } from '@cio/db/queries/course/people';
+import { getCourseTypeById } from '@cio/db/queries/course/course';
 import {
   getExerciseById,
+  lockExerciseAssignmentState,
   listExerciseAssignments,
   replaceExerciseAssignments,
+  validateExerciseStudentGroupMembers,
   updateExercise
 } from '@cio/db/queries/exercise';
 import { getLessonById } from '@cio/db/queries/lesson';
-import { ROLE } from '@cio/utils/constants';
 import type { TExerciseAssignmentUpdate } from '@cio/utils/validation/exercise';
 
 async function assertExerciseBelongsToCourse(courseId: string, exerciseId: string) {
@@ -41,18 +42,24 @@ export async function updateExerciseAssignmentsService(
   await assertExerciseBelongsToCourse(courseId, exerciseId);
 
   if (data.mode === 'SELECTED_STUDENTS') {
-    const members = await getCourseMembers(courseId);
-    const studentMemberIds = new Set(
-      members.filter((member) => member.roleId === ROLE.STUDENT).map((member) => member.id)
-    );
-    const invalidMemberId = data.groupMemberIds.find((memberId) => !studentMemberIds.has(memberId));
-    if (invalidMemberId) {
-      throw new AppError('Assignment contains a non-student course member', ErrorCodes.VALIDATION_ERROR, 400);
+    const courseType = await getCourseTypeById(courseId);
+    if (courseType === 'PUBLIC') {
+      throw new AppError(
+        'Selective exercise assignment is not available for public courses',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
     }
   }
 
   await db.transaction(async (tx) => {
     const txClient = tx as DbOrTxClient;
+    await lockExerciseAssignmentState(exerciseId, txClient);
+    const memberValidation = await validateExerciseStudentGroupMembers(exerciseId, data.groupMemberIds, txClient);
+    if (!memberValidation.isValid) {
+      throw new AppError('Assignment contains a non-student course member', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
     await updateExercise(exerciseId, { assignmentMode: data.mode }, txClient);
     await replaceExerciseAssignments(exerciseId, data.groupMemberIds, assignedByProfileId, txClient);
   });

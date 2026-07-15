@@ -44,3 +44,13 @@ Fixes # (place issue number here without bracket)
 
 - [ ] If a UI change was made: Added a screen recording or screenshots to this PR
 - [ ] Updated the Classroom docs if changes were necessary
+
+## Fork workflow
+
+- [ ] This branch contains one coherent product, fix, refactor, infrastructure, or upstream-sync scope
+- [ ] The branch was updated from `origin/main` without force-pushing shared history
+- [ ] Database migrations, when present, were reviewed and tested on a temporary database
+- [ ] Upstream sync pull requests use a merge commit; all other pull requests use squash merge
+- [ ] Concurrent AI-agent work was isolated in separate branches and worktrees
+
+See `docs/git-workflow.md` for the canonical branch, merge, agent-isolation, and upstream-sync rules.

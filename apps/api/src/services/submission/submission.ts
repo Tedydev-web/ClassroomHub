@@ -36,7 +36,11 @@ import {
 } from '@cio/question-types';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
 import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/course/people';
-import { getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import {
+  getExerciseById,
+  getExerciseWithRelationsOptimized,
+  resolveGroupMemberExerciseAccess
+} from '@cio/db/queries/exercise';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 
 import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
@@ -48,6 +52,8 @@ import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExercisePassedForMember } from '@cio/db/queries/course/progression';
 import { createNotification } from '@cio/db/queries/notifications';
 import { emitWebhookEvent } from '@api/services/webhook';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
+import { lockExerciseAssignmentState } from '@cio/db/queries/exercise';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
@@ -568,13 +574,6 @@ export async function createSubmissionService(
     ]);
     const course = courseRows[0];
 
-    if (!exerciseWithRelations.exercise.allowMultipleAttempts) {
-      const alreadySubmitted = await hasSubmission(exerciseId, submittedBy);
-      if (alreadySubmitted) {
-        throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
-      }
-    }
-
     const overallStatus = resolveOverallStatusFromTypenames(
       exerciseWithRelations.questions
         .map((question) => question.questionType?.typename ?? '')
@@ -593,7 +592,28 @@ export async function createSubmissionService(
       total: 0
     };
 
-    let submission = await createSubmission(submissionData);
+    let submission = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
+      const lockedExercise = await getExerciseById(exerciseId, txClient);
+      if (!lockedExercise) {
+        throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+      }
+
+      const exerciseAccess = await resolveGroupMemberExerciseAccess(courseId, exerciseId, submittedBy, txClient);
+      if (!exerciseAccess.hasAccess) {
+        throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
+      }
+
+      if (!lockedExercise.allowMultipleAttempts) {
+        const alreadySubmitted = await hasSubmission(exerciseId, submittedBy, txClient);
+        if (alreadySubmitted) {
+          throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
+        }
+      }
+
+      return createSubmission(submissionData, txClient);
+    });
 
     const questionById = new Map(
       exerciseWithRelations.questions.map((q) => {

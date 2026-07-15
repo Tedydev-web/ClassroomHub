@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, or, sql } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
 import { ROLE } from '@cio/utils/constants';
+import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 
 function toIsoTimestamp(value: string | Date | null | undefined): string | null {
   if (!value) {
@@ -129,6 +130,17 @@ export async function getLastSeenForUserIds(userIds: string[]): Promise<Map<stri
  */
 export async function getUserExercisesStats(courseId: string, userId: string) {
   try {
+    const [viewerMember] = await db
+      .select({ id: schema.groupmember.id, roleId: schema.groupmember.roleId })
+      .from(schema.groupmember)
+      .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
+      .where(and(eq(schema.course.id, courseId), eq(schema.groupmember.profileId, userId)))
+      .limit(1);
+
+    if (!viewerMember) {
+      return [];
+    }
+
     const exercises = await db
       .select({
         id: schema.exercise.id,
@@ -141,22 +153,7 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
       .where(
         and(
           or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
-          sql`EXISTS (
-            SELECT 1
-            FROM ${schema.groupmember} viewer_member
-            INNER JOIN ${schema.course} viewer_course ON viewer_course.group_id = viewer_member.group_id
-            WHERE viewer_course.id = ${courseId}
-              AND viewer_member.profile_id = ${userId}
-              AND (
-                viewer_member.role_id <> ${ROLE.STUDENT}
-                OR ${schema.exercise.assignmentMode} = 'ALL_STUDENTS'
-                OR EXISTS (
-                  SELECT 1 FROM ${schema.exerciseAssignment}
-                  WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
-                    AND ${schema.exerciseAssignment.groupMemberId} = viewer_member.id
-                )
-              )
-          )`
+          getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId)
         )
       );
 
@@ -175,31 +172,6 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
       .from(schema.question)
       .where(inArray(schema.question.exerciseId, exerciseIds));
 
-    // Get groupmember for the user in this course's group
-    const course = await db
-      .select({
-        groupId: schema.course.groupId
-      })
-      .from(schema.course)
-      .where(eq(schema.course.id, courseId))
-      .limit(1);
-
-    if (!course[0] || !course[0].groupId) {
-      return [];
-    }
-
-    const groupMember = await db
-      .select({
-        id: schema.groupmember.id
-      })
-      .from(schema.groupmember)
-      .where(and(eq(schema.groupmember.groupId, course[0].groupId), eq(schema.groupmember.profileId, userId)))
-      .limit(1);
-
-    if (!groupMember[0]) {
-      return [];
-    }
-
     // Get submissions for these exercises by this user
     const submissions = await db
       .select({
@@ -210,7 +182,7 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
       })
       .from(schema.submission)
       .where(
-        and(inArray(schema.submission.exerciseId, exerciseIds), eq(schema.submission.submittedBy, groupMember[0].id))
+        and(inArray(schema.submission.exerciseId, exerciseIds), eq(schema.submission.submittedBy, viewerMember.id))
       );
 
     // Build exercise stats
@@ -368,7 +340,8 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
 
     const groupMember = await db
       .select({
-        id: schema.groupmember.id
+        id: schema.groupmember.id,
+        roleId: schema.groupmember.roleId
       })
       .from(schema.groupmember)
       .where(and(eq(schema.groupmember.groupId, course[0].groupId), eq(schema.groupmember.profileId, profileId)))
@@ -382,6 +355,12 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
         exercises_completed: 0
       };
     }
+
+    const courseExerciseCondition = or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId));
+    const visibleExerciseCondition = and(
+      courseExerciseCondition,
+      getExerciseVisibilityCondition(groupMember[0].id, groupMember[0].roleId)
+    );
 
     // Get lessons count
     const lessonsResult = await db
@@ -417,7 +396,7 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)));
+      .where(visibleExerciseCondition);
 
     const exercisesCount = Number(exercisesResult[0]?.count || 0);
 
@@ -429,12 +408,7 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
       .from(schema.submission)
       .innerJoin(schema.exercise, eq(schema.submission.exerciseId, schema.exercise.id))
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(
-        and(
-          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
-          eq(schema.submission.submittedBy, groupMember[0].id)
-        )
-      );
+      .where(and(visibleExerciseCondition, eq(schema.submission.submittedBy, groupMember[0].id)));
 
     const exercisesCompleted = Number(exercisesCompletedResult[0]?.count || 0);
 

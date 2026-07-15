@@ -1,5 +1,9 @@
 import { AppError, ErrorCodes } from '@cio/utils/errors';
-import { findNonAutoGradableQuestionsInCourse, getCourseTypeById } from '@cio/db/queries/course';
+import {
+  findNonAutoGradableQuestionsInCourse,
+  getCourseTypeById,
+  hasSelectivelyAssignedExercises
+} from '@cio/db/queries/course';
 import { AUTO_GRADABLE_QUESTION_TYPE_IDS, isAutoGradableQuestionTypeId } from '@cio/question-types';
 
 /**
@@ -45,6 +49,15 @@ export async function guardCourseTypeTransition(params: {
   if (!params.nextType) return;
   if (params.nextType !== 'PUBLIC') return;
   if (params.currentType === 'PUBLIC') return;
+
+  if (await hasSelectivelyAssignedExercises(params.courseId)) {
+    throw new AppError(
+      'Set every exercise assignment to All students before converting this course to Public',
+      ErrorCodes.PUBLIC_COURSE_CONVERSION_BLOCKED,
+      400,
+      'type'
+    );
+  }
 
   const offenders = await findNonAutoGradableQuestionsInCourse(params.courseId, AUTO_GRADABLE_QUESTION_TYPE_IDS);
   if (offenders.length === 0) return;

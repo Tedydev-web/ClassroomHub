@@ -23,3 +23,18 @@ test('validates exercise assignment modes', () => {
     true
   );
 });
+
+test('limits selective assignment batch size', () => {
+  const oversizedGroupMemberIds = Array.from(
+    { length: 1001 },
+    (_, index) => `d290f1ee-6c54-4b01-90e6-${index.toString(16).padStart(12, '0')}`
+  );
+
+  assert.equal(
+    ZExerciseAssignmentUpdate.safeParse({
+      mode: 'SELECTED_STUDENTS',
+      groupMemberIds: oversizedGroupMemberIds
+    }).success,
+    false
+  );
+});

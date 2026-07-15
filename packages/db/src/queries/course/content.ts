@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm';
 
-import { ContentType, ROLE } from '@cio/utils/constants';
-import { db, sql as drizzleSql } from '@db/drizzle';
+import { ContentType } from '@cio/utils/constants';
+import { and, db, eq, sql as drizzleSql } from '@db/drizzle';
+import * as schema from '@db/schema';
+import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 
 export type CourseContentItemRow = {
   id: string;
@@ -29,6 +31,14 @@ export type CourseContentItemRow = {
  */
 export async function getCourseContentItems(courseId: string, profileId?: string): Promise<CourseContentItemRow[]> {
   try {
+    const [viewerMember] = profileId
+      ? await db
+          .select({ id: schema.groupmember.id, roleId: schema.groupmember.roleId })
+          .from(schema.groupmember)
+          .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
+          .where(and(eq(schema.course.id, courseId), eq(schema.groupmember.profileId, profileId)))
+          .limit(1)
+      : [];
     const lessonCompletionSql = profileId
       ? drizzleSql`COALESCE(
           (
@@ -73,23 +83,7 @@ export async function getCourseContentItems(courseId: string, profileId?: string
         )`
       : drizzleSql`false`;
     const exerciseVisibilitySql = profileId
-      ? drizzleSql`AND EXISTS (
-          SELECT 1
-          FROM groupmember viewer_member
-          INNER JOIN course viewer_course ON viewer_course.group_id = viewer_member.group_id
-          WHERE viewer_course.id = ${courseId}
-            AND viewer_member.profile_id = ${profileId}
-            AND (
-              viewer_member.role_id <> ${ROLE.STUDENT}
-              OR exercise.assignment_mode = 'ALL_STUDENTS'
-              OR EXISTS (
-                SELECT 1
-                FROM exercise_assignment
-                WHERE exercise_assignment.exercise_id = exercise.id
-                  AND exercise_assignment.group_member_id = viewer_member.id
-              )
-            )
-        )`
+      ? drizzleSql`AND ${viewerMember ? getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId) : drizzleSql`false`}`
       : drizzleSql``;
 
     const result = await db.execute(drizzleSql`
