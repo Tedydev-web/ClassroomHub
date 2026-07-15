@@ -5,25 +5,27 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_COMPOSE_FILE="${ROOT_DIR}/docker-compose.yaml"
 IMAGES_COMPOSE_FILE="${ROOT_DIR}/docker-compose.images.yaml"
-PROJECT_NAME="classroomio"
+PROJECT_NAME="classroom"
 ENV_FILE="${ROOT_DIR}/.env"
 # Default to PULLING pre-built images (fast). Pass --build to build from source instead.
 USE_IMAGES=true
 BUILD_IMAGES=false
 COMPOSE_FILE="${IMAGES_COMPOSE_FILE}"
 COMPOSE_PROFILES="--profile minio"
+PROVISION_ONLY=false
 
 print_usage() {
   cat <<'USAGE'
-Usage: ./run-docker-full-stack.sh [--build] [--no-build] [--no-minio]
+Usage: ./run-docker-full-stack.sh [--build] [--no-build] [--no-minio] [--provision-only]
 
-By default this PULLS the pre-built classroomio/* images from Docker Hub at the tag in
-CIO_VERSION (.env) — no local build, no full repo needed.
+By default this pulls the pre-built ghcr.io/tedydev-web/classroom-* images at the tag in
+CLASSROOM_VERSION (.env) — no local build, no full repo needed.
 
 Options:
   --build     Build the images from source (docker-compose.yaml) instead of pulling.
   --no-build  With --build, start containers without rebuilding.
   --no-minio  Exclude MinIO (object storage). By default MinIO is included.
+  --provision-only  Create and harden .env without starting containers.
   --images    Deprecated alias — pulling images is now the default.
   -h, --help  Show this help message.
 USAGE
@@ -50,6 +52,10 @@ while [[ $# -gt 0 ]]; do
       USE_IMAGES=true
       BUILD_IMAGES=false
       COMPOSE_FILE="${IMAGES_COMPOSE_FILE}"
+      shift
+      ;;
+    --provision-only)
+      PROVISION_ONLY=true
       shift
       ;;
     -h|--help)
@@ -173,6 +179,20 @@ ensure_secure_betterauth_secret() {
   fi
 }
 
+ensure_secure_webhook_encryption_key() {
+  if [[ ! -f "${ENV_FILE}" ]]; then
+    touch "${ENV_FILE}"
+  fi
+
+  local secret
+  secret="$(get_env_value WEBHOOK_ENCRYPTION_KEY)"
+
+  if is_insecure_token_value "${secret}"; then
+    upsert_env_value WEBHOOK_ENCRYPTION_KEY "$(generate_secure_token)"
+    echo "Generated secure WEBHOOK_ENCRYPTION_KEY in .env"
+  fi
+}
+
 is_local_origin() {
   local value="$1"
   case "${value}" in
@@ -202,11 +222,11 @@ derive_public_storage_urls() {
     # dashboard origin would break presigned URLs for the non-public videos/documents buckets.
     if is_local_origin "${media_base}"; then
       upsert_env_value OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL "${origin}/media"
+      echo "Derived OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL from DASHBOARD_ORIGIN (${origin}/media)."
+      echo "  -> Ensure your reverse proxy routes ${origin}/media to MinIO (port 9000)."
+      echo "  -> For presigned access to the videos/documents buckets behind a domain, expose"
+      echo "     MinIO's S3 API on its own route and set OBJECT_STORAGE_PUBLIC_ENDPOINT explicitly."
     fi
-    echo "Derived OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL from DASHBOARD_ORIGIN (${origin}/media)."
-    echo "  -> Ensure your reverse proxy routes ${origin}/media to MinIO (port 9000)."
-    echo "  -> For presigned access to the videos/documents buckets behind a domain, expose"
-    echo "     MinIO's S3 API on its own route and set OBJECT_STORAGE_PUBLIC_ENDPOINT explicitly."
   else
     # Local demo: ensure localhost defaults are present.
     if [[ -z "${public_endpoint}" ]]; then
@@ -255,6 +275,7 @@ fi
 
 ensure_secure_auth_tokens
 ensure_secure_betterauth_secret
+ensure_secure_webhook_encryption_key
 
 if [[ "${COMPOSE_PROFILES}" == *"minio"* ]]; then
   ensure_minio_env
@@ -273,12 +294,24 @@ else
   derive_public_storage_urls
 fi
 
-echo "Starting ClassroomIO Docker full stack..."
+if [[ "${PROVISION_ONLY}" == "true" ]]; then
+  echo "Provisioned Classroom production environment in .env without starting containers."
+  exit 0
+fi
+
+if [[ "$(get_env_value PUBLIC_IS_SELFHOSTED)" != "true" && "${USE_IMAGES}" == "true" ]]; then
+  USE_IMAGES=false
+  BUILD_IMAGES=true
+  COMPOSE_FILE="${BUILD_COMPOSE_FILE}"
+  echo "Cloud mode requires a dashboard built with PUBLIC_IS_SELFHOSTED=false; building from source."
+fi
+
+echo "Starting Classroom Docker full stack..."
 if [[ "${COMPOSE_PROFILES}" != "" ]]; then
   echo "Including MinIO (object storage, default)..."
 fi
 if [[ "${USE_IMAGES}" == "true" ]]; then
-  echo "Using pre-built images from Docker Hub (CIO_VERSION=$(get_env_value CIO_VERSION))..."
+  echo "Using pre-built images from GHCR (CLASSROOM_VERSION=$(get_env_value CLASSROOM_VERSION))..."
   docker compose --env-file "${ENV_FILE}" -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" ${COMPOSE_PROFILES} pull
   docker compose --env-file "${ENV_FILE}" -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" ${COMPOSE_PROFILES} up -d
 elif [[ "${BUILD_IMAGES}" == "true" ]]; then

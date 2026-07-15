@@ -36,8 +36,8 @@ export const QUEUE_DEFAULTS: Record<QueueName, JobsOptions> = {
     removeOnFail: { age: 7 * 86_400 }
   },
   [QUEUE_NAMES.webhooks]: {
-    attempts: 8,
-    backoff: { type: 'exponential', delay: 30_000 },
+    attempts: 6,
+    backoff: { type: 'exponential', delay: 10_000 },
     removeOnComplete: { age: 86_400, count: 5_000 },
     removeOnFail: { age: 14 * 86_400 }
   },

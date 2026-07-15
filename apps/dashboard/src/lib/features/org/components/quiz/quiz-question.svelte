@@ -5,10 +5,27 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { t } from '$lib/utils/functions/translations';
 
+  interface QuizOption {
+    id: string;
+    label: string;
+    isCorrect: boolean;
+  }
+
+  interface QuizQuestionData {
+    label: string;
+    type?: string;
+    options?: QuizOption[];
+  }
+
+  interface QuizQuestionError {
+    isLabelEmpty?: boolean;
+    options?: Array<{ id: string; error: boolean }>;
+  }
+
   interface Props {
-    currentQuestion?: any;
-    currentError?: any;
-    optionHasError?: any;
+    currentQuestion?: QuizQuestionData;
+    currentError?: QuizQuestionError;
+    optionHasError?: (optionId: string, errors?: Array<{ id: string; error: boolean }>) => boolean;
     isPreview?: boolean;
   }
 
@@ -20,6 +37,10 @@
     optionHasError = () => false,
     isPreview = false
   }: Props = $props();
+
+  function getOptionImage(optionId: string): string {
+    return optionImage[optionId as keyof typeof optionImage] ?? '';
+  }
 </script>
 
 {#if isPreview}
@@ -37,9 +58,9 @@
 
 <!-- Options -->
 <div class="flex w-full flex-wrap justify-between">
-  {#each currentQuestion.options || [] as option}
+  {#each currentQuestion.options || [] as option (option.id)}
     <div class="relative mb-5 w-2/5 rounded bg-white p-5 dark:bg-neutral-800">
-      <img src={optionImage[option.id]} alt={option.id} />
+      <img src={getOptionImage(option.id)} alt={option.id} />
 
       {#if isPreview}
         <p class="mt-5">{option.label}</p>

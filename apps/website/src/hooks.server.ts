@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 
-const DOCS_ORIGIN = 'https://cio-docs.digdippa.workers.dev';
+const DOCS_ORIGIN = 'https://docs.classroom.tedydev.io.vn';
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;

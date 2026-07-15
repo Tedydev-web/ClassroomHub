@@ -12,13 +12,12 @@
     >
       Get Started Free →
     </a>
-    <button
-      data-cal-link="classroomio/demo"
-      data-cal-config="'layout':'month_view'"
+    <a
+      href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
       class="cursor-pointer rounded-lg border-[1.5px] border-gray-200 bg-transparent px-7 py-3.5 text-sm font-medium text-gray-950 transition-all duration-200 hover:border-gray-950 lg:text-base"
     >
       Book a Demo
-    </button>
+    </a>
   </div>
   <div class="text-sm text-gray-500">Open source · Self-hosted · No credit card required</div>
 </section>

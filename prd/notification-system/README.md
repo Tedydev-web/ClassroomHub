@@ -1120,7 +1120,7 @@ async function sendNewsfeedNotifications(feedId: string, authorId: string, cours
 
   const orgName = feedData.organization?.name || 'ClassroomIO';
   const orgSiteName = feedData.organization?.siteName || 'app';
-  const postLink = `https://${orgSiteName}.classroomio.com/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
+  const postLink = `https://${orgSiteName}.classroom.tedydev.io.vn/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
 
   const recipients = feedData.courseMembers
     .filter((m) => m.email && m.profileId)
@@ -1143,7 +1143,7 @@ async function sendNewsfeedNotifications(feedId: string, authorId: string, cours
           orgName
         },
         from: buildEmailFromName(`${orgName} - ClassroomIO`),
-        replyTo: feedData.author?.email || 'noreply@classroomio.com'
+        replyTo: feedData.author?.email || 'noreply@classroom.tedydev.io.vn'
       }
     }));
 
@@ -1589,7 +1589,7 @@ await notify({
     to: recipientEmail,
     fields: {
       userName: 'John',
-      link: 'https://app.classroomio.com/some/deep/link',
+      link: 'https://app.classroom.tedydev.io.vn/some/deep/link',
       orgName: 'Acme School'
     }
   }

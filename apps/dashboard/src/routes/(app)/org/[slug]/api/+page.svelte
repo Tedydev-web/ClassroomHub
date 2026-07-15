@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
   import { ApiAutomationPage } from '$features/automation/pages';
   import { automationApi } from '$features/automation/api/automation.svelte';
   import { t } from '$lib/utils/functions/translations';
@@ -16,7 +17,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.get('automation.tabs.api')} - ClassroomIO</title>
+  <title>{t.get('automation.tabs.api')} - {PRODUCT_NAME}</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-4xl">
@@ -26,7 +27,7 @@
       <Page.Subtitle>{$t('automation.api.subtitle')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
-      <Button variant="outline" onclick={() => window.open('https://classroomio.com/docs/api/reference', '_blank')}>
+      <Button variant="outline" onclick={() => window.open(`https://${PRODUCT_HOSTS.marketing}`, '_blank')}>
         <ArrowUpRightIcon size={16} />
         {$t('automation.api.view_docs')}
       </Button>

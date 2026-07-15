@@ -1,6 +1,6 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { sanitizeHtml } from '@cio/core/utils/sanitize-html';
-import { TENANT_ROOT_DOMAIN } from '@cio/utils/constants/domains';
+import { OPERATOR_EMAIL, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 import type { TCourseNewsfeed, TNewCourseNewsfeed, TNewCourseNewsfeedComment } from '@cio/db/types';
 import type { TNewsfeedCreate, TNewsfeedUpdate } from '@cio/utils/validation/newsfeed';
 import {
@@ -21,6 +21,8 @@ import {
 import { env } from '@cio/core/config/env';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
+import { createNotification, createNotifications } from '@cio/db/queries/notifications';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 /**
  * Lists newsfeed items for a course
@@ -110,6 +112,12 @@ export async function createNewsfeedService(
     // Send email notifications to course members (async, don't wait)
     sendNewsfeedPostEmail(feed.id, authorId).catch((error) => {
       console.error('Failed to send newsfeed post email:', error);
+    });
+    emitNewsfeedWebhook(feed.id, 'course.newsfeed.post.created', {
+      authorId,
+      feedId: feed.id
+    }).catch((error) => {
+      console.error('Failed to emit newsfeed post webhook:', error);
     });
 
     return feed;
@@ -278,6 +286,13 @@ export async function createNewsfeedCommentService(feedId: string, authorId: str
     sendNewsfeedCommentEmail(feedId, sanitizedContent).catch((error) => {
       console.error('Failed to send newsfeed comment email:', error);
     });
+    emitNewsfeedWebhook(feedId, 'course.newsfeed.comment.created', {
+      authorId,
+      commentId: comment.id,
+      feedId
+    }).catch((error) => {
+      console.error('Failed to emit newsfeed comment webhook:', error);
+    });
 
     return comment;
   } catch (error) {
@@ -357,7 +372,7 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
       return;
     }
 
-    const orgName = feedData.organization?.name || 'ClassroomIO';
+    const orgName = feedData.organization?.name || 'Classroom';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,
@@ -365,6 +380,22 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
       theme: feedData.organization?.theme
     });
     const postLink = `https://${orgSiteName}.${TENANT_ROOT_DOMAIN}/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
+    const inAppLink = `/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
+    const notifications = feedData.courseMembers
+      .filter((member): member is typeof member & { profileId: string } => Boolean(member.profileId))
+      .map((member) => ({
+        profileId: member.profileId,
+        organizationId: feedData.organization!.id,
+        courseId: feedData.courseId!,
+        type: 'NEWSFEED_POST' as const,
+        title: `New post in ${feedData.courseTitle}`,
+        body: feedData.author?.fullname
+          ? `${feedData.author.fullname} posted an update.`
+          : 'A teacher posted an update.',
+        metadata: { feedId: feedData.feedId, link: inAppLink }
+      }));
+
+    await createNotifications(notifications);
 
     const recipients = feedData.courseMembers
       .map((member) => member.email)
@@ -382,8 +413,8 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
         orgName,
         branding
       },
-      from: buildEmailFromName(`${orgName} - ClassroomIO`),
-      replyTo: feedData.author?.email || 'noreply@classroomio.com',
+      from: buildEmailFromName(`${orgName} - Classroom`),
+      replyTo: feedData.author?.email || OPERATOR_EMAIL,
       idempotencyKey: `newsfeed:post:${feedId}`,
       preference: { organizationId: feedData.organization.id }
     });
@@ -408,7 +439,7 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
       return;
     }
 
-    const orgName = feedData.organization?.name || 'ClassroomIO';
+    const orgName = feedData.organization?.name || 'Classroom';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,
@@ -416,6 +447,19 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
       theme: feedData.organization?.theme
     });
     const postLink = `https://${orgSiteName}.${TENANT_ROOT_DOMAIN}/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
+    const inAppLink = `/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
+
+    if (feedData.author.profileId) {
+      await createNotification({
+        profileId: feedData.author.profileId,
+        organizationId: feedData.organization.id,
+        courseId: feedData.courseId,
+        type: 'NEWSFEED_COMMENT',
+        title: `New comment in ${feedData.courseTitle}`,
+        body: commentContent,
+        metadata: { feedId: feedData.feedId, link: inAppLink }
+      });
+    }
 
     await enqueueTransactionalEmail('newsfeedComment', {
       to: feedData.author.email,
@@ -426,12 +470,28 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
         orgName,
         branding
       },
-      from: buildEmailFromName(`${orgName} - ClassroomIO`),
-      replyTo: 'noreply@classroomio.com',
+      from: buildEmailFromName(`${orgName} - Classroom`),
+      replyTo: OPERATOR_EMAIL,
       preference: { organizationId: feedData.organization.id }
     });
   } catch (error) {
     console.error('Error sending newsfeed comment email:', error);
     // Don't throw - email failures shouldn't break the API
   }
+}
+
+async function emitNewsfeedWebhook(
+  feedId: string,
+  eventType: 'course.newsfeed.post.created' | 'course.newsfeed.comment.created',
+  data: Record<string, unknown>
+) {
+  const feedData = await getNewsfeedForEmail(feedId);
+  if (!feedData?.organization || !feedData.courseId) {
+    return;
+  }
+
+  await emitWebhookEvent(feedData.organization.id, eventType, {
+    ...data,
+    courseId: feedData.courseId
+  });
 }

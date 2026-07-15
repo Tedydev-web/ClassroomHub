@@ -137,7 +137,7 @@
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {#each filterPeople(searchValue, people) as person}
+        {#each filterPeople(searchValue, people) as person (person.id)}
           <Table.Row>
             <!-- first column -->
             <Table.Cell class="w-4/6 md:w-3/6">

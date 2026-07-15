@@ -41,7 +41,7 @@
   <div class="mb-6 px-2">
     <UnderlineTabs.Root value={currentTab} onValueChange={(event) => handleTabChange(event)}>
       <UnderlineTabs.List class="flex flex-wrap gap-2 border-b">
-        {#each orgSettingsTabs as tab}
+        {#each orgSettingsTabs as tab (tab.value)}
           <UnderlineTabs.Trigger value={tab.value}>
             {$t(tab.label)}
           </UnderlineTabs.Trigger>

@@ -40,9 +40,7 @@
       title={$t('analytics.student_progress_overview')}
       description={$t('analytics.course_metrics.students_table_description')}
     >
-      {#snippet children()}
-        <StudentTable students={courseAnalytics?.students ?? []} />
-      {/snippet}
+      <StudentTable students={courseAnalytics?.students ?? []} />
     </AnalyticsPanelCard>
   </div>
 {:else}

@@ -1,13 +1,13 @@
-# ClassroomIO — pull-based stack (pre-built images, no local build).
+# Classroom — pull-based stack (pre-built images, no local build).
 #
 # This is the same topology as docker-compose.yaml but the app services pull
-# published images from Docker Hub instead of building from source. You only need
+# published images from GHCR instead of building from source. You only need
 # THIS file + a .env — no repository checkout, no 8 GB dashboard build.
 #
-#   CIO_VERSION=1.4.2 docker compose -f docker-compose.images.yaml --env-file .env pull
-#   CIO_VERSION=1.4.2 docker compose -f docker-compose.images.yaml --env-file .env up -d
+#   CLASSROOM_VERSION=1.4.2 docker compose -f docker-compose.images.yaml --env-file .env pull
+#   CLASSROOM_VERSION=1.4.2 docker compose -f docker-compose.images.yaml --env-file .env up -d
 #
-# CIO_VERSION pins the release. Use a specific version (e.g. 1.4.2) in production;
+# CLASSROOM_VERSION pins the release. Use a specific version (e.g. 1.4.2) in production;
 # "latest" = freshest main build (moves on every merge — rolling, may include unreleased code).
 #
 # KEEP IN SYNC with docker-compose.yaml: the api/dashboard/jobs `environment`,
@@ -88,7 +88,7 @@ services:
       - minio
 
   api:
-    image: classroomio/api:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_VERSION:-latest}
     container_name: cio-api
     ports:
       - '3081:3081'
@@ -98,7 +98,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      # node:slim has no curl/wget; use Node's global fetch (Node 20+).
+      # node:slim has no curl/wget; use Node's global fetch (Node 22+).
       test:
         [
           'CMD',
@@ -117,6 +117,7 @@ services:
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
       REDIS_URL: redis://redis:6379
+      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-docker-local-client-id}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-docker-local-client-secret}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -136,8 +137,12 @@ services:
       # generate them); the stack refuses to start otherwise.
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set a strong PRIVATE_SERVER_KEY in .env}
       DASHBOARD_ORIGIN: ${DASHBOARD_ORIGIN:-}
-      LICENSE_KEY: ${LICENSE_KEY:-}
       UNSPLASH_API_KEY: ${UNSPLASH_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set a strong WEBHOOK_ENCRYPTION_KEY in .env}
       # Upload size limits (megabytes). Unset = built-in defaults — see .env.example.
       UPLOAD_MAX_DOCUMENT_MB: ${UPLOAD_MAX_DOCUMENT_MB:-}
       UPLOAD_MAX_IMAGE_MB: ${UPLOAD_MAX_IMAGE_MB:-}
@@ -149,7 +154,7 @@ services:
     restart: unless-stopped
 
   dashboard:
-    image: classroomio/dashboard:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_VERSION:-latest}
     container_name: cio-dashboard
     ports:
       - '3082:3082'
@@ -185,7 +190,7 @@ services:
   # Background worker (BullMQ). Drains the Redis queue: video processing, transcription,
   # AI course generation, and emails.
   jobs:
-    image: classroomio/jobs:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_VERSION:-latest}
     container_name: cio-jobs
     depends_on:
       postgres:
@@ -196,6 +201,8 @@ services:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
+      PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
+      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set a strong WEBHOOK_ENCRYPTION_KEY in .env}
       # Object storage (workers stream object bytes). Mirrors the api service.
       OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
       OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:-}
@@ -214,8 +221,11 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_SENDER: ${SMTP_SENDER:-}
-      # Transcription + OpenAI-backed agent runs.
+      # Transcription + provider-backed agent runs.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
     restart: unless-stopped
 
 volumes:

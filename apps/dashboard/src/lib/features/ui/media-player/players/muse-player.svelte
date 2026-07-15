@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
   import type { MediaPlayerOptions } from '../types';
 
   interface Props {
@@ -10,7 +11,7 @@
 
   const embedUrl = $derived(
     svid
-      ? `https://muse.ai/embed/${svid}?logo=https://app.classroomio.com/logo-512.png&subtitles=auto&cover_play_position=center`
+      ? `https://muse.ai/embed/${svid}?logo=https://${PRODUCT_HOSTS.dashboard}/logo-512.png&subtitles=auto&cover_play_position=center`
       : ''
   );
 </script>

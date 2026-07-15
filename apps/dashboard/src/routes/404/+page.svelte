@@ -3,12 +3,13 @@
   import { Button } from '@cio/ui/base/button';
   import SearchXIcon from '@lucide/svelte/icons/search-x';
   import { Empty } from '@cio/ui/custom/empty';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
   let query = $derived(new URLSearchParams(page.url.search));
   let isOrg = $derived(query.get('type') === 'org');
 
   function handleClick() {
-    window.location.href = isOrg ? 'https://classroomio.com' : '/';
+    window.location.href = isOrg ? `https://${PRODUCT_HOSTS.marketing}` : '/';
   }
 </script>
 

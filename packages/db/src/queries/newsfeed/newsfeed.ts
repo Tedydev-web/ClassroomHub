@@ -395,6 +395,7 @@ export async function getNewsfeedForEmail(
   content: string | null;
   author: {
     groupMemberId: string | null;
+    profileId: string | null;
     fullname: string | null;
     email: string | null;
   } | null;
@@ -406,6 +407,7 @@ export async function getNewsfeedForEmail(
     theme: string | null;
   } | null;
   courseMembers: Array<{
+    profileId: string | null;
     email: string | null;
     fullname: string | null;
   }>;
@@ -458,6 +460,7 @@ export async function getNewsfeedForEmail(
       author: row.authorGroupMember
         ? {
             groupMemberId: row.authorGroupMember.id,
+            profileId: row.authorProfile?.id || null,
             fullname: row.authorProfile?.fullname || null,
             email: row.authorProfile?.email || null
           }
@@ -472,6 +475,7 @@ export async function getNewsfeedForEmail(
       courseMembers: membersResult
         .filter((m) => m.profile?.email) // Only include members with email
         .map((m) => ({
+          profileId: m.profile?.id || null,
           email: m.profile?.email || null,
           fullname: m.profile?.fullname || null
         }))

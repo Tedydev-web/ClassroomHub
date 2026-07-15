@@ -43,7 +43,7 @@
     <Button
       variant="ghost"
       data-cal-config="'layout':'month_view'"
-      data-cal-link="classroomio/demo"
+      href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
       class="relative z-10 mt-8 bg-white!"
     >
       {btnLabel}

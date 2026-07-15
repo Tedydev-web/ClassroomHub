@@ -183,7 +183,7 @@
 </script>
 
 <svelte:head>
-  <title>Partner Training | ClassroomIO</title>
+  <title>Partner Training | Classroom</title>
   <meta
     name="description"
     content="Run a partner academy alongside your customer one. Separate brand, separate domain, same account. Certify resellers, agencies, and integrators with programs, certificates, and analytics."
@@ -206,7 +206,9 @@
         resellers, agencies, and integrators with programs and assessments that stay in sync as your product changes.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" data-cal-link="classroomio/demo">Book a Demo</Button>
+        <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+          >Book a Demo</Button
+        >
         <Button href="/signup" variant="outline">Start free</Button>
       </div>
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
@@ -221,7 +223,7 @@
     <div class="mx-auto mt-14 w-full max-w-[1100px]">
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
-          src="https://assets.cdn.clsrio.com/www/partner-training/latest-courses.jpeg"
+          src="/assets/assets/www/partner-training/latest-courses.jpeg"
           alt="Partner academy — latest courses, cohort structure, and learner state"
           class="block h-auto w-full"
           loading="eager"
@@ -254,7 +256,7 @@
     eyebrow="Public course pages"
     title="Open a few courses to the public, gate the rest."
     description="Pick the courses you want anyone to see. Partners (and the curious ones who aren’t partners yet) can jump in without signing up, watch a few lessons, and if they’re hooked they create an account to unlock the rest of your catalog."
-    imageSrc="https://assets.cdn.clsrio.com/www/partner-training/public-courses.jpeg"
+    imageSrc="/assets/assets/www/partner-training/public-courses.jpeg"
     imageAlt="Public partner course pages — open courses up front, sign-up gates the rest"
   />
 
@@ -267,11 +269,11 @@
   <EmbedCodePreview
     eyebrow="Embed anywhere"
     title="Drop a learning widget into any site."
-    description="Generate a published widget payload for any course, paste the snippet into your partner portal, intranet, or marketing page. Progress, marks, and certificates sync back to ClassroomIO automatically."
+    description="Generate a published widget payload for any course, paste the snippet into your partner portal, intranet, or marketing page. Progress, marks, and certificates sync back to Classroom automatically."
     fileName="partner-portal.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your partner portal --&gt;</span>',
-      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://cdn.classroomio.com/widget.js"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
+      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://embed.classroom.tedydev.io.vn/course-widget"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
       '',
       '<span class="text-pink-400">&lt;div</span> <span class="text-sky-300">data-cio-widget</span><span class="text-slate-500">=</span><span class="text-emerald-300">"partner-onboarding"</span>',
       '  <span class="text-sky-300">data-org</span><span class="text-slate-500">=</span><span class="text-emerald-300">"yourcompany"</span>',
@@ -281,7 +283,7 @@
     ]}
     statusBar="connected · org: yourcompany · widget: partner-onboarding"
     previewUrl="partners.yourcompany.com / academy"
-    previewImageSrc="https://assets.cdn.clsrio.com/www/partner-training/embeddable-widget.jpeg"
+    previewImageSrc="/assets/assets/www/partner-training/embeddable-widget.jpeg"
     previewAlt="Course widget embedded inside a partner portal"
     capabilities={[
       { label: 'One script tag', sub: 'Drop-in install, no SDK required' },

@@ -2,7 +2,7 @@
 
 ## Problem
 
-When a user opens an organization via its subdomain (e.g. `myorg.classroomio.com`), the entire dashboard application was loaded before the landing page could render. This includes heavy dependencies like `UpgradeModal`, `PageLoadProgress`, `appInitApi`, `authClient`, and all theme components — none of which are needed to display a public landing page.
+When a user opens an organization via its subdomain (e.g. `myorg.classroom.tedydev.io.vn`), the entire dashboard application was loaded before the landing page could render. This includes heavy dependencies like `UpgradeModal`, `PageLoadProgress`, `appInitApi`, `authClient`, and all theme components — none of which are needed to display a public landing page.
 
 The result: slow initial load for org landing pages, which should be lightweight and fast.
 

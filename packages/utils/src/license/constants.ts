@@ -1,8 +1,6 @@
 /**
- * License-gated feature identifiers.
- * Add new features here to make them require a license key.
- *
- * Expected from external license API response: { valid: boolean, features: string[] }
+ * Deployment capability identifiers.
+ * Add new premium capabilities here so API and dashboard gates share one contract.
  */
 export const LICENSE_FEATURE = {
   SSO: 'sso',

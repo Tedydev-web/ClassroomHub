@@ -13,6 +13,7 @@ import {
   ZLessonUpdate,
   ZUpdateLessonWatchProgress
 } from '@cio/utils/validation/lesson';
+import { ZScormRuntimeCommit, ZScormRuntimeParams, ZScormRuntimeTerminate } from '@cio/utils/validation/scorm';
 import {
   createLesson,
   createLessonCommentService,
@@ -42,9 +43,18 @@ import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member'
 import { notifyCourseSessionUpdateService } from '@api/services/course/notify-session';
 import { generateLessonPdf } from '@api/utils/lesson';
 import { getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
-import { handleError } from '@api/utils/errors';
+import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
+import { getCourseWithOrgData } from '@cio/db/queries/course';
+import { emitWebhookEvent } from '@api/services/webhook';
 import { lessonLanguageRouter } from '@api/routes/course/lesson-language';
 import { zValidator } from '@hono/zod-validator';
+import {
+  getScormLessonAsset,
+  getScormLessonMetadata,
+  getScormRuntimeState,
+  launchScormRuntime,
+  saveScormRuntime
+} from '@api/services/scorm';
 
 export const lessonRouter = new Hono()
   // Lesson CRUD routes
@@ -271,6 +281,21 @@ export const lessonRouter = new Hono()
 
         const completion = await upsertLessonCompletionService(lessonId, user.id, isComplete);
 
+        void getCourseWithOrgData(courseId)
+          .then((course) => {
+            if (!course?.orgId) return;
+
+            return emitWebhookEvent(course.orgId, 'lesson.completion.updated', {
+              courseId,
+              isComplete,
+              lessonId,
+              profileId: user.id
+            });
+          })
+          .catch((error) => {
+            console.error('Failed to emit lesson completion webhook:', error);
+          });
+
         if (isComplete) {
           void evaluateCourseCertification(courseId, user.id).catch((certError) => {
             console.error('Failed to evaluate course certification after lesson completion:', certError);
@@ -343,6 +368,127 @@ export const lessonRouter = new Hono()
       }
     }
   )
+  .post(
+    '/:lessonId/scorm/launch',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZScormRuntimeParams),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const { courseId, lessonId } = c.req.valid('param');
+        const result = await launchScormRuntime(courseId, lessonId, user.id);
+
+        return c.json({ success: true, data: result }, 201);
+      } catch (error) {
+        return handleError(c, error, 'Failed to launch SCORM lesson');
+      }
+    }
+  )
+  .get(
+    '/:lessonId/scorm/content',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZScormRuntimeParams),
+    async (c) => {
+      try {
+        const { courseId, lessonId } = c.req.valid('param');
+        const result = await getScormLessonMetadata(courseId, lessonId);
+
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to get SCORM lesson content');
+      }
+    }
+  )
+  .get(
+    '/:lessonId/scorm/state',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZScormRuntimeParams),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const { courseId, lessonId } = c.req.valid('param');
+        const result = await getScormRuntimeState(courseId, lessonId, user.id);
+
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to get SCORM state');
+      }
+    }
+  )
+  .post(
+    '/:lessonId/scorm/commit',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZScormRuntimeParams),
+    zValidator('json', ZScormRuntimeCommit),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const { courseId, lessonId } = c.req.valid('param');
+        const result = await saveScormRuntime(courseId, lessonId, user.id, c.req.valid('json'), false);
+
+        if (result.registration.status === 'completed') {
+          void evaluateCourseCertification(courseId, user.id).catch((certError) => {
+            console.error('Failed to evaluate course certification after SCORM completion:', certError);
+          });
+        }
+
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to commit SCORM state');
+      }
+    }
+  )
+  .post(
+    '/:lessonId/scorm/terminate',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZScormRuntimeParams),
+    zValidator('json', ZScormRuntimeTerminate),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const { courseId, lessonId } = c.req.valid('param');
+        const result = await saveScormRuntime(courseId, lessonId, user.id, c.req.valid('json'), true);
+
+        if (result.registration.status === 'completed') {
+          void evaluateCourseCertification(courseId, user.id).catch((certError) => {
+            console.error('Failed to evaluate course certification after SCORM completion:', certError);
+          });
+        }
+
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to terminate SCORM attempt');
+      }
+    }
+  )
+  .get('/:lessonId/scorm/assets/*', authMiddleware, courseMemberMiddleware, async (c) => {
+    try {
+      const courseId = c.req.param('courseId')!;
+      const lessonId = c.req.param('lessonId')!;
+      const marker = `/${lessonId}/scorm/assets/`;
+      let assetPath: string;
+      try {
+        assetPath = decodeURIComponent(c.req.path.split(marker)[1] ?? '');
+      } catch {
+        throw new AppError(new Error('Invalid SCORM asset path encoding'), ErrorCodes.VALIDATION_ERROR, 400);
+      }
+      const asset = await getScormLessonAsset(courseId, lessonId, assetPath, c.req.header('range'));
+      c.header('Content-Type', asset.contentType);
+      c.header('Accept-Ranges', 'bytes');
+      c.header('Cache-Control', 'private, max-age=3600');
+      if (asset.contentLength !== undefined) c.header('Content-Length', String(asset.contentLength));
+      if (asset.contentRange) c.header('Content-Range', asset.contentRange);
+
+      return c.body(asset.body, asset.status);
+    } catch (error) {
+      return handleError(c, error, 'Failed to load SCORM asset');
+    }
+  })
   /**
    * GET /course/:courseId/lesson/:lessonId/history
    * Gets lesson version history for a lesson and locale

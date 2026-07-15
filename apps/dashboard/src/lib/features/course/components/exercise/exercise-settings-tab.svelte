@@ -18,11 +18,7 @@
   let { exerciseId }: Props = $props();
 
   let saving = $state(false);
-  let slug = $state($questionnaire.slug ?? '');
-
-  $effect(() => {
-    slug = $questionnaire.slug ?? '';
-  });
+  let slug = $derived($questionnaire.slug ?? '');
 
   const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
 

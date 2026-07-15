@@ -1,7 +1,7 @@
 ---
 title: 'Teach with Data and Analytics'
 description: 'Insights to how students are picking up the concepts you teach are very crucial and we think you should track that metric to enhance your students learning outcome.'
-imageUrl: 'https://classroomio.com/blog/analytics-classroom-by-dalle3-classroomio.jpeg'
+imageUrl: 'https://classroom.tedydev.io.vn/blog/analytics-classroom-by-dalle3-classroomio.jpeg'
 date: '2024-01-02'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -31,4 +31,4 @@ ClassroomIO isn't just about quizzes and data; it's about empowering educators t
 
 ## Join the Movement
 
-We invite you to be part of the change. Whether you're a classroom teacher, school principal, or online educator, [ClassroomIO](https://classroomio.com) is your partner in crafting the future of education. Embrace the shift to a data-informed teaching approach with [ClassroomIO](https://classroomio.com) — where every lesson becomes an opportunity for growth, for you and your students.
+We invite you to be part of the change. Whether you're a classroom teacher, school principal, or online educator, [ClassroomIO](https://classroom.tedydev.io.vn) is your partner in crafting the future of education. Embrace the shift to a data-informed teaching approach with [ClassroomIO](https://classroom.tedydev.io.vn) — where every lesson becomes an opportunity for growth, for you and your students.

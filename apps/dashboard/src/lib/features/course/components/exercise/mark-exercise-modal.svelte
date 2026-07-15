@@ -21,11 +21,11 @@
 
   interface Props {
     open?: boolean;
-    onClose?: any;
-    handleSave?: any;
+    onClose?: () => void;
+    handleSave?: (data: SubmissionIdData) => void | Promise<void>;
     isGradeWithAI?: boolean;
     data: SubmissionIdData;
-    deleteSubmission?: any;
+    deleteSubmission?: (id: string, statusId: number) => void | Promise<void>;
     isSaving?: boolean;
   }
 
@@ -72,13 +72,9 @@
       : []
   );
 
-  let answersToDisplay = $state<Record<string, AnswerData>>({});
+  let answersToDisplay = $derived(data?.answers ? (data.answers as Record<string, AnswerData>) : {});
 
-  $effect(() => {
-    answersToDisplay = data?.answers ? (data.answers as Record<string, AnswerData>) : {};
-  });
-
-  function getMaxPoints(questions) {
+  function getMaxPoints(questions: SubmissionIdData['questions']) {
     return (questions || []).reduce((acc, question) => acc + question.points, 0);
   }
 
@@ -367,7 +363,7 @@
                 {status.text}
               </Select.Trigger>
               <Select.Content class="z-menu-elevated">
-                {#each SELECTABLE_STATUS as statusOption}
+                {#each SELECTABLE_STATUS as statusOption (statusOption.id)}
                   <Select.Item value={statusOption.id.toString()}>
                     {statusOption.text}
                   </Select.Item>
@@ -406,7 +402,7 @@
           </div>
           <!-- <div class="flex items-center text-sm p-3">
         <p class="dark:text-white w-1/2">Teacher</p>
-        <p class="dark:text-white">rotimi-best</p>
+        <p class="dark:text-white">Tedydev-web</p>
       </div> -->
         </div>
       </div>

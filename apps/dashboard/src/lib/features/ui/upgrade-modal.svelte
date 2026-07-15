@@ -16,6 +16,7 @@
   import { toggleConfetti } from './confetti/store';
   import { currentOrg, isFreePlan } from '$lib/utils/store/org';
   import Confetti from './confetti/confetti.svelte';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
   const planNames = Object.keys(PLANS);
 
@@ -24,12 +25,8 @@
   let isYearlyPlan = $state(false);
 
   const query = $derived(new URLSearchParams(page.url.search));
-  let open = $state(false);
+  let open = $derived((query.get('upgrade') || '') === 'true');
   let isConfirming = $derived((query.get('confirmation') || '') === 'true');
-
-  $effect(() => {
-    open = (query.get('upgrade') || '') === 'true';
-  });
 
   async function handleClick(plan, planName: string) {
     if (plan.CTA.IS_DISABLED || !$profile.id || !$profile.email || !$currentOrg.memberId) {
@@ -82,7 +79,7 @@
   }
 
   function onLearnMore() {
-    window.open('https://classroomio.com/blog/early-adopter', '_blank');
+    window.open(`https://${PRODUCT_HOSTS.marketing}`, '_blank');
   }
 
   function handleUpgradeSuccess(upgradeSuccessful: boolean) {
@@ -143,7 +140,7 @@
           />
         </div>
         <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-          {#each planNames as planName}
+          {#each planNames as planName (planName)}
             {@const plan = PLANS[planName]}
             {@const isPopular = planName === 'EARLY_ADOPTER'}
             <PricingCard

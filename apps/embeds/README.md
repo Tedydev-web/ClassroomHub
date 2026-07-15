@@ -48,7 +48,7 @@ Set these locally (e.g. `.env` in `apps/embeds`, loaded by the upload script) or
 
 - `CLOUDFLARE_API_TOKEN` — API token with **Zone → Cache Purge → Purge** on the zone that serves the asset hostname (not the R2 S3 access key).
 - `CLOUDFLARE_ZONE_ID` — that zone’s ID (dashboard → site → Overview → API).
-- `EMBED_CDN_BASE_URL` — public origin for URLs to purge, default `https://assets.cdn.clsrio.com` (no trailing slash). Override if your embeds are served under another host.
+- `EMBED_CDN_BASE_URL` — public origin for URLs to purge, default `/assets/assets` (no trailing slash). Override if your embeds are served under another host.
 - `EMBED_SKIP_CDN_PURGE=1` — skip purge (e.g. local testing).
 
 If `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ZONE_ID` is missing, upload still succeeds and purge is skipped.
@@ -136,8 +136,8 @@ The course widget uses three different URL concerns:
 1. **Embed script host**
 
 - this is where the browser downloads `course-widget.js`
-- production script URL: `https://embed.classroomio.com/course-widget`
-- production hosted iframe: `https://embed.classroomio.com/course-widget?key=<public-key>`
+- production script URL: `https://embed.classroom.tedydev.io.vn/course-widget`
+- production hosted iframe: `https://embed.classroom.tedydev.io.vn/course-widget?key=<public-key>`
 - configured on the API side with `PUBLIC_EMBED_BASE_URL`
 
 2. **Payload API host**
@@ -166,7 +166,7 @@ Generated snippet:
 
 ```html
 <div data-cio-widget="course-widget" data-widget-key="wgt_xxx"></div>
-<script async type="module" src="https://embed.classroomio.com/course-widget"></script>
+<script async type="module" src="https://embed.classroom.tedydev.io.vn/course-widget"></script>
 ```
 
 ### Dev server path shape

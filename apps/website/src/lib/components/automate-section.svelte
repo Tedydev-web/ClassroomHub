@@ -28,7 +28,7 @@
       Set it up once.<br />Let it run.
     </h2>
     <p class="mb-14 max-w-[520px] text-base leading-relaxed text-gray-500 lg:text-lg">
-      Connect ClassroomIO to everything you already use. New hire joins Slack? They're enrolled. Course completed? Your
+      Connect Classroom to everything you already use. New hire joins Slack? They're enrolled. Course completed? Your
       HRIS knows.
     </p>
 

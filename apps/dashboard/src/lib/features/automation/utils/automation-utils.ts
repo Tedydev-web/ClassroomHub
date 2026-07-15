@@ -4,7 +4,7 @@ import { PUBLIC_API_BASE_URL } from '@cio/utils/openapi/public-api';
 const PUBLIC_API_SETUP_SECRET_PLACEHOLDER = '<paste-your-api-key>';
 
 function getServerPath() {
-  return 'npx -y @classroomio/mcp';
+  return 'npx -y @tedydev/classroom-mcp';
 }
 
 export function getPublicApiSetupSecret(secret: string | null) {
@@ -101,10 +101,10 @@ export function getClaudeCodeSnippet(secret: string | null) {
 
   return `claude mcp add-json classroomio '{
   "command": "npx",
-  "args": ["-y", "@classroomio/mcp"],
+  "args": ["-y", "@tedydev/classroom-mcp"],
   "env": {
-    "CLASSROOMIO_API_URL": "https://api.classroomio.com",
-    "CLASSROOMIO_API_KEY": "${apiKey}"
+    "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+    "CLASSROOM_API_KEY": "${apiKey}"
   }
 }'`;
 }
@@ -113,9 +113,9 @@ export function getCodexSnippet(secret: string | null) {
   const apiKey = getAutomationSetupSecret(secret);
 
   return `codex mcp add classroomio \\
-  --env CLASSROOMIO_API_URL=https://api.classroomio.com \\
-  --env CLASSROOMIO_API_KEY=${apiKey} \\
-  -- npx -y @classroomio/mcp`;
+  --env CLASSROOM_API_URL=https://api.classroom.tedydev.io.vn \\
+  --env CLASSROOM_API_KEY=${apiKey} \\
+  -- npx -y @tedydev/classroom-mcp`;
 }
 
 export function getOpenCodeSnippet(secret: string | null) {
@@ -126,11 +126,11 @@ export function getOpenCodeSnippet(secret: string | null) {
   "mcp": {
     "classroomio": {
       "type": "local",
-      "command": ["npx", "-y", "@classroomio/mcp"],
+      "command": ["npx", "-y", "@tedydev/classroom-mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOMIO_API_URL": "https://api.classroomio.com",
-        "CLASSROOMIO_API_KEY": "${apiKey}"
+        "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+        "CLASSROOM_API_KEY": "${apiKey}"
       }
     }
   }
@@ -144,10 +144,10 @@ export function getCursorSnippet(secret: string | null) {
   "mcpServers": {
     "classroomio": {
       "command": "npx",
-      "args": ["-y", "@classroomio/mcp"],
+      "args": ["-y", "@tedydev/classroom-mcp"],
       "env": {
-        "CLASSROOMIO_API_URL": "https://api.classroomio.com",
-        "CLASSROOMIO_API_KEY": "${apiKey}"
+        "CLASSROOM_API_URL": "https://api.classroom.tedydev.io.vn",
+        "CLASSROOM_API_KEY": "${apiKey}"
       }
     }
   }
@@ -157,11 +157,11 @@ export function getCursorSnippet(secret: string | null) {
 export function getDefaultAutomationKeyLabel(type: AutomationKeyType) {
   switch (type) {
     case 'mcp':
-      return 'ClassroomIO MCP';
+      return 'Classroom MCP';
     case 'api':
-      return 'ClassroomIO API';
+      return 'Classroom API';
     case 'zapier':
-      return 'ClassroomIO Zapier';
+      return 'Classroom Zapier';
   }
 }
 

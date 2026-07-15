@@ -1,5 +1,5 @@
 {
-  "name": "@classroomio/course-app",
+  "name": "@tedydev/classroom-course-app",
   "version": "0.0.16",
   "private": false,
   "main": "dist/create-template.js",
@@ -8,17 +8,17 @@
     "build": "vite build && node scripts/postbuild.js"
   },
   "bin": {
-    "@classroomio/course-app": "./dist/create-template.js"
+    "classroom-course-app": "./dist/create-template.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/classroomio/classroomio.git"
+    "url": "git+https://github.com/Tedydev-web/classroomio.git"
   },
   "bugs": {
-    "url": "https://github.com/classroomio/classroomio/issues"
+    "url": "https://github.com/Tedydev-web/classroomio/issues"
   },
-  "homepage": "https://github.com/classroomio/classroomio/blob/main/packages/course-app#readme",
-  "author": "ClassroomIO <help@classroomio.com>",
+  "homepage": "https://github.com/Tedydev-web/classroomio/blob/main/packages/course-app#readme",
+  "author": "Classroom <hieudat2310.bh@gmail.com>",
   "license": "MIT",
   "files": [
     "dist",

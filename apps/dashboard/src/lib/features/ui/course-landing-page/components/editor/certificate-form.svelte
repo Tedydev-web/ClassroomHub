@@ -13,7 +13,7 @@
 
   interface Props {
     course: Course;
-    setter: (value: any, key: string) => void;
+    setter: (value: unknown, key: string) => void;
   }
 
   let { course = $bindable(), setter }: Props = $props();

@@ -1,4 +1,4 @@
-# ClassroomIO — Local Dev Setup Guide
+# Classroom — Local Dev Setup Guide
 
 A practical guide to running classroomio locally for development, plus a
 troubleshooting reference for the errors you're likely to hit. Use it to set up a
@@ -14,7 +14,7 @@ fresh machine or to onboard a new contributor.
 
 | Tool | Version | Required? | Notes |
 |------|---------|-----------|-------|
-| Node.js | 20.x (`.nvmrc` = v20.19.3) | **Required** | `nvm install && nvm use` |
+| Node.js | 22.x LTS (`.nvmrc` = v22.23.1) | **Required** | `nvm install && nvm use` |
 | pnpm | 10.x | **Required** | The package scripts call `pnpm` directly (e.g. `build:clean` runs `pnpm run build`) — npm/yarn are not supported substitutes. `corepack enable` then `corepack prepare pnpm@latest --activate`, or `npm i -g pnpm` |
 | Docker (Desktop) | latest | **Required** | Runs Postgres + Redis (and optionally MinIO). No local install of those needed. |
 | Git | latest | **Required** | Windows: includes Git Bash |
@@ -154,9 +154,9 @@ Seeded accounts use password **`123456`** (verified against the seed's bcrypt ha
 | `'rm'/'cp' is not recognized` or `spawn EINVAL` (Windows) | Unix command / `.cmd` spawn in a script | Already fixed in-repo (rimraf, Node copy, `shell:true`). Run `pnpm i` to get latest. |
 | `invalid task configuration … N persistent tasks … concurrency` | `pnpm dev` starts the whole monorepo past turbo's cap | Use scoped `pnpm api:dev` + `pnpm dashboard:dev` instead |
 | `ZodError … REDIS_URL ... expected string, received undefined` | `apps/jobs/.env` missing `REDIS_URL` | `cp apps/api/.env apps/jobs/.env` and set `REDIS_URL=redis://localhost:6379` |
-| `API upstream not configured` (502) on login | dashboard SSR proxy has no upstream | Set `PRIVATE_SERVER_URL=http://localhost:3002` in `apps/dashboard/.env`, restart dashboard |
+| `API target not configured` (502) on login | dashboard SSR proxy has no API target | Set `PRIVATE_SERVER_URL=http://localhost:3002` in `apps/dashboard/.env`, restart dashboard |
 | Login `Invalid email or password` | wrong demo password | Use `admin@test.com` / **`123456`** |
-| Login still fails after upstream fix | API auth env empty | Fill `BETTER_AUTH_SECRET`, `TRUSTED_ORIGINS=http://localhost:5173`, `PUBLIC_SERVER_URL` in `apps/api/.env`, restart API |
+| Login still fails after proxy target fix | API auth env empty | Fill `BETTER_AUTH_SECRET`, `TRUSTED_ORIGINS=http://localhost:5173`, `PUBLIC_SERVER_URL` in `apps/api/.env`, restart API |
 | Changed a `.env` but nothing changed | env is read at process start | Restart the affected `*:dev` server |
 
 > After editing any `.env`, **restart** the relevant dev server.
@@ -181,4 +181,3 @@ Seeded accounts use password **`123456`** (verified against the seed's bcrypt ha
 - The repo's package scripts were made cross-platform (`rimraf` instead of `rm -rf`,
   a Node postinstall, a Node file-copy, and `shell:true` when scripts spawn pnpm), so
   `pnpm i` / `pnpm build` work in `cmd.exe`/PowerShell too.
-

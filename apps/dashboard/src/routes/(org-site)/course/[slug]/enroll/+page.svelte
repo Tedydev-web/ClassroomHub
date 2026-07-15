@@ -12,6 +12,7 @@
   import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { resolve } from '$app/paths';
   import { authClient } from '$lib/utils/services/auth/client';
+  import { SvelteURLSearchParams } from 'svelte/reactivity';
   import { appInitApi } from '$features/app/init.svelte';
   import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
 
@@ -178,7 +179,7 @@
 
     const inviteEmail = data.inviteEmail ?? '';
     const target = data.inviteEmailExists ? '/login' : '/signup';
-    const params = new URLSearchParams({ redirect: redirectUrl });
+    const params = new SvelteURLSearchParams({ redirect: redirectUrl });
     if (inviteEmail) params.set('email', inviteEmail);
 
     goto(resolve(`${target}?${params.toString()}`, {}));
@@ -215,7 +216,7 @@
 </script>
 
 <svelte:head>
-  <title>Join {data.course?.title ?? 'Course'} on ClassroomIO</title>
+  <title>Join {data.course?.title ?? 'Course'} on Classroom</title>
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

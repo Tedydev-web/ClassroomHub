@@ -5,13 +5,13 @@
 
   interface Props {
     openDeleteModal?: boolean;
-    deleteLesson?: any;
+    deleteLesson?: () => void | Promise<void>;
   }
 
   let { openDeleteModal = $bindable(false), deleteLesson = () => {} }: Props = $props();
 
   async function handleDelete() {
-    deleteLesson();
+    await deleteLesson();
     openDeleteModal = false;
   }
 </script>

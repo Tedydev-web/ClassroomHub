@@ -184,7 +184,7 @@
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {#each filterPeople(searchValue, members) as person}
+              {#each filterPeople(searchValue, members) as person (person.id)}
                 <Table.Row>
                   <Table.Cell class="w-4/6 md:w-3/6">
                     {#if person.profile}

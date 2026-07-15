@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Our Open-source Friends | ClassroomIO</title>
+  <title>Our Open-source Friends | Classroom</title>
 </svelte:head>
 
 <section>
@@ -15,7 +15,7 @@
       Our <span class="text-blue-700">Open-source</span> Friends
     </h1>
     <p class="mt-10 w-[90%] text-center text-lg font-normal text-slate-700 md:w-[60%] lg:mt-7">
-      In ClassroomIO, we are committed to building a commercial open source company and here are some of our friends on
+      In Classroom, we are committed to building a commercial open source company and here are some of our friends on
       the same mission.
     </p>
   </PageHeader>

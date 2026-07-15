@@ -1,8 +1,10 @@
-export const EMBED_PUBLIC_HOST = 'embed.classroomio.com';
+import { PRODUCT_HOSTS } from './product-identity';
+
+export const EMBED_PUBLIC_HOST = PRODUCT_HOSTS.embed;
 
 export const EMBED_PUBLIC_BASE_URL = `https://${EMBED_PUBLIC_HOST}`;
 
-/** Widget names exposed at `https://embed.classroomio.com/{name}`. */
+/** Widget names exposed at `https://${EMBED_PUBLIC_HOST}/{name}`. */
 export type EmbedWidgetName = 'course-widget' | 'question-type-picker';
 
 export function getEmbedBaseUrl(override?: string): string {

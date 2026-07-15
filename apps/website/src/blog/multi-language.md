@@ -1,7 +1,7 @@
 ---
 title: 'Introducing Multi-language Support'
 description: 'We now support 8 languages in both our admin dashboard and student dashboard.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/multi-language-support.png'
+imageUrl: '/assets/assets/blog/multi-language-support.png'
 date: '2024-10-08'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Launch Week', 'LMS', 'Internationalisation']
 published: true
 ---
 
-![multi-language-support](https://assets.cdn.clsrio.com/blog/multi-language-support.png)
+![multi-language-support](/assets/assets/blog/multi-language-support.png)
 _ClassroomIO now supports 8 languages_
 
 We are happy to share that within the ClassroomIO dashboard and your dedicated student dashboard we now support 8 languages including English. These 8 languages include:
@@ -28,7 +28,7 @@ The best thing about this feature is that you can have students from different c
 
 To change your language within the dashboard, you can go to the settings page by clicking your profile picture at the bottom left and select your preferred language in the drop down in the Profiles tab.
 
-![select-language-settings](https://assets.cdn.clsrio.com/blog/select-language-settings.png)
+![select-language-settings](/assets/assets/blog/select-language-settings.png)
 _Language selector in ClassroomIO Dashboard._
 
 ## We went a step further 😁
@@ -41,13 +41,13 @@ Oh we even hooked up our AI content generator with it as well, you can switch to
 
 ### Quick demo
 
-<video class="embed mb-5" controls poster="https://assets.cdn.clsrio.com/blog/multi-language-support.png">
-  <source src="https://assets.cdn.clsrio.com/blog/language-editor-demo.mov" type="video/mp4">
+<video class="embed mb-5" controls poster="/assets/assets/blog/multi-language-support.png">
+  <source src="/assets/assets/blog/language-editor-demo.mov" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
 ## Next steps
 
-All translations in our app are stored in a JSON file which we generate and keep up to date using Google translate. This means that it might not be 100% accurate and there could be some mistakes when use our dashboard in other languages. If you do find any issues with our translations, please do open an [issue on Github](https://github.com/classroomio/classroomio/issues/new/choose) with the correct translation and we'd be so happy to fix it.
+All translations in our app are stored in a JSON file which we generate and keep up to date using Google translate. This means that it might not be 100% accurate and there could be some mistakes when use our dashboard in other languages. If you do find any issues with our translations, please do open an [issue on Github](https://github.com/Tedydev-web/classroomio/issues/new/choose) with the correct translation and we'd be so happy to fix it.
 
-If you are a native speaker of any of the 7 languages and want to contribute, please feel free to nitpick into our [translations](https://github.com/classroomio/classroomio/tree/main/apps/dashboard/src/lib/utils/translations) and open a PR with the fixes. Every contribution is valuable and will be gladly welcomed 😊
+If you are a native speaker of any of the 7 languages and want to contribute, please feel free to nitpick into our [translations](https://github.com/Tedydev-web/classroomio/tree/main/apps/dashboard/src/lib/utils/translations) and open a PR with the fixes. Every contribution is valuable and will be gladly welcomed 😊

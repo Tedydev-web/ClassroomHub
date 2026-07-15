@@ -440,7 +440,7 @@
         </div>
         <ResourceListRow.End class="ui:flex-col ui:items-end ui:gap-1 ui:self-start">
           <span class="ui:text-muted-foreground ui:text-xs">Mar 29</span>
-          <span class="ui:text-muted-foreground ui:text-xs">by rotimi-best</span>
+          <span class="ui:text-muted-foreground ui:text-xs">by Tedydev-web</span>
           <Avatar.Root class="ui:size-6">
             <Avatar.Image src="https://github.com/maxleiter.png" alt="" />
             <Avatar.Fallback>R</Avatar.Fallback>

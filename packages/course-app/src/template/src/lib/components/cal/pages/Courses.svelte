@@ -51,9 +51,7 @@
    */
   function applyFilter() {
     const activeFilters = new Set(
-      filter
-        .filter((filterItem) => filterItem.checked)
-        .map((filterItem) => filterItem.type.toLowerCase())
+      filter.filter((filterItem) => filterItem.checked).map((filterItem) => filterItem.type.toLowerCase())
     );
 
     filteredCourses =
@@ -144,7 +142,7 @@
           {#if filteredCourses.length > 2}
             <div class="flex w-full items-center justify-center py-8">
               <Button
-                on:click={() => (viewAll = !viewAll)}
+                onclick={() => (viewAll = !viewAll)}
                 class="rounded-2xl border-[1.5px] border-white  py-6 uppercase text-white shadow-[0px_3px_white] hover:bg-white hover:text-black"
               >
                 {viewAll === true ? 'Show less' : 'View more courses'}

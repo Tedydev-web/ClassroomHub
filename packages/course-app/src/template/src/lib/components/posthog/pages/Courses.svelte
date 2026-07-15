@@ -51,9 +51,7 @@
    */
   function applyFilter() {
     const activeFilters = new Set(
-      filter
-        .filter((filterItem) => filterItem.checked)
-        .map((filterItem) => filterItem.type.toLowerCase())
+      filter.filter((filterItem) => filterItem.checked).map((filterItem) => filterItem.type.toLowerCase())
     );
 
     filteredCourses =
@@ -64,7 +62,7 @@
   }
 </script>
 
-<main class="bg-posthog-background overflow-x-hidden dark:bg-black dark:text-white">
+<main class="overflow-x-hidden bg-posthog-background dark:bg-black dark:text-white">
   {#if section.header?.show}
     <section class="flex min-h-full items-center justify-center px-4 py-10 md:px-14">
       <section
@@ -117,11 +115,7 @@
           <div class="max-h-screen w-full p-4 md:p-8">
             <section class="flex w-full flex-wrap items-center justify-center gap-4">
               {#each filteredCourses.slice(0, viewAll ? filteredCourses.length : 3) as courseData}
-                <CourseCard
-                  slug={courseData.slug}
-                  title={courseData.title}
-                  description={courseData.description}
-                />
+                <CourseCard slug={courseData.slug} title={courseData.title} description={courseData.description} />
               {/each}
             </section>
 
@@ -135,7 +129,7 @@
           {#if filteredCourses.length > 3}
             <div class="my-5 flex w-full items-center justify-center">
               <Button
-                on:click={() => (viewAll = !viewAll)}
+                onclick={() => (viewAll = !viewAll)}
                 class="mb-4 bg-transparent font-bold uppercase text-black shadow-[0px_3px_#B17816] ring-1 ring-[#B17816] hover:scale-95 hover:bg-[#EB9D2A] dark:bg-[#EB9D2A] dark:text-black"
                 >{viewAll === true ? 'Show less' : 'View more courses'}</Button
               >

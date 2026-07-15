@@ -9,6 +9,7 @@
   import ZoomInIcon from '@lucide/svelte/icons/zoom-in';
   import ZoomOutIcon from '@lucide/svelte/icons/zoom-out';
   import { onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import DocumentList from './document-list.svelte';
   import { t } from '$lib/utils/functions/translations';
   import type { LessonDocument } from '$features/course/utils/types';
@@ -18,31 +19,56 @@
     mode?: (typeof MODES)[keyof typeof MODES];
   }
 
+  interface PdfRenderTask {
+    promise: Promise<void>;
+    cancel: () => void;
+  }
+
+  interface PdfPage {
+    getViewport: (options: { scale: number }) => { height: number; width: number };
+    render: (context: {
+      canvasContext: CanvasRenderingContext2D;
+      viewport: { height: number; width: number };
+    }) => PdfRenderTask;
+  }
+
+  interface PdfDocument {
+    numPages: number;
+    getPage: (pageNumber: number) => Promise<PdfPage>;
+  }
+
+  interface PdfJs {
+    GlobalWorkerOptions: { workerSrc: string };
+    getDocument: (options: { data: ArrayBuffer }) => { promise: Promise<PdfDocument> };
+  }
+
   let { mode = MODES.view }: Props = $props();
 
-  let downloadingDocuments = $state(new Set<string>());
+  let downloadingDocuments = new SvelteSet<string>();
   let openDeleteDocumentModal = $state(false);
   let documentIndexToDelete = $state<number | null>(null);
-  let viewingPDF: any = $state(null);
+  let viewingPDF: LessonDocument | null = $state(null);
   let pdfViewerOpen = $state(false);
   let pdfCanvas: HTMLCanvasElement | undefined = $state();
-  let pdfDoc: any = null;
+  let pdfDoc: PdfDocument | null = null;
   let pageNum = $state(1);
   let pageCount = $state(0);
   let scale = $state(1.0);
   let isLoading = $state(false);
   let error: string | null = $state(null);
-  let pdfjsLib: any = null;
-  let renderTimeout: any = null;
-  let currentRenderTask: any = null;
+  let pdfjsLib: PdfJs | null = null;
+  let renderTimeout: ReturnType<typeof setTimeout> | null = null;
+  let currentRenderTask: PdfRenderTask | null = null;
 
   onMount(() => {
     // Load PDF.js dynamically
     const script = document.createElement('script');
     script.src = '/js/pdf.js/pdf.min.js';
     script.onload = () => {
-      pdfjsLib = (window as any).pdfjsLib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.js/pdf.worker.min.js';
+      pdfjsLib = (window as Window & { pdfjsLib?: PdfJs }).pdfjsLib ?? null;
+      if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.js/pdf.worker.min.js';
+      }
     };
     document.head.appendChild(script);
 
@@ -84,7 +110,6 @@
 
   async function downloadDocument(doc: LessonDocument) {
     downloadingDocuments.add(doc.name);
-    downloadingDocuments = downloadingDocuments;
 
     if (!doc.key) {
       snackbar.error('Document not loaded correctly');
@@ -110,7 +135,6 @@
       window.open(doc.link, '_blank');
     } finally {
       downloadingDocuments.delete(doc.name);
-      downloadingDocuments = downloadingDocuments;
     }
   }
 
@@ -125,7 +149,7 @@
   }
   // Wait for PDF.js to load
   const checkPDFJS = () => {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       const check = () => {
         if (pdfjsLib) {
           resolve(true);
@@ -167,6 +191,10 @@
       }
 
       const arrayBuffer = await response.arrayBuffer();
+      if (!pdfjsLib) {
+        throw new Error('PDF.js failed to load');
+      }
+
       pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
       pageCount = pdfDoc.numPages;
@@ -212,6 +240,10 @@
       pdfCanvas.width = viewport.width;
 
       const ctx = pdfCanvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Canvas 2D context is unavailable');
+      }
+
       const renderContext = {
         canvasContext: ctx,
         viewport: viewport
@@ -409,7 +441,10 @@
               </svg>
             </div>
             <p class="mb-2 text-red-600">{$t(error)}</p>
-            <button onclick={() => viewPDF(viewingPDF)} class="text-blue-600 underline hover:text-blue-800">
+            <button
+              onclick={() => viewingPDF && viewPDF(viewingPDF)}
+              class="text-blue-600 underline hover:text-blue-800"
+            >
               {$t('course.navItem.lessons.materials.tabs.document.try_again')}
             </button>
           </div>

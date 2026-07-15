@@ -95,8 +95,8 @@
     {
       key: 'self-hosting',
       title: 'Self-hosting & Docs',
-      subtitle: 'Run ClassroomIO in your own VPC.',
-      href: 'https://classroomio.com/docs'
+      subtitle: 'Run Classroom in your own VPC.',
+      href: 'https://classroom.tedydev.io.vn/docs'
     },
     {
       key: 'mcp-recipes',
@@ -108,7 +108,7 @@
       key: 'storybook',
       title: 'Storybook',
       subtitle: 'Browse and reuse UI components.',
-      href: 'https://ui.classroomio.dev'
+      href: 'https://classroom.tedydev.io.vn'
     }
   ];
 
@@ -252,7 +252,7 @@
     <a href="/" class="w-[10%]">
       <div class="flex w-full items-center">
         <img loading="lazy" width="28" height="28" src="/logo-512.png" alt="classroomio logo" class="w-7" />
-        <h1 class="ml-2 text-base font-medium">ClassroomIO</h1>
+        <h1 class="ml-2 text-base font-medium">Classroom</h1>
       </div>
     </a>
 
@@ -308,7 +308,7 @@
         <img
           loading="lazy"
           alt="discord logo"
-          src="https://assets.cdn.clsrio.com/www/home/discord-blue.png"
+          src="/assets/assets/www/home/discord-blue.png"
           class="h-5 w-6 cursor-pointer"
         />
       </a>
@@ -321,7 +321,7 @@
           <img
             loading="lazy"
             alt="github logo"
-            src="https://assets.cdn.clsrio.com/www/home/github-mark.png"
+            src="/assets/assets/www/home/github-mark.png"
             class="h-5 w-5 cursor-pointer transition-transform duration-200 group-hover:scale-110"
           />
           <span
@@ -333,7 +333,7 @@
       </div>
       <a
         class="text-sm font-medium transition-opacity duration-200 after:ml-2 after:content-['→'] hover:opacity-80"
-        href="https://app.classroomio.com"
+        href="https://app.classroom.tedydev.io.vn"
       >
         Dashboard
       </a>
@@ -410,7 +410,7 @@
             <img
               loading="lazy"
               alt="discord logo"
-              src="https://assets.cdn.clsrio.com/www/home/discord-blue.png"
+              src="/assets/assets/www/home/discord-blue.png"
               class="mr-2 h-5 w-6 cursor-pointer"
             />
             <span>Discord</span>
@@ -423,7 +423,7 @@
             <img
               loading="lazy"
               alt="github logo"
-              src="https://assets.cdn.clsrio.com/www/home/github-mark.png"
+              src="/assets/assets/www/home/github-mark.png"
               class="h-5 w-5 cursor-pointer transition-transform duration-200 group-hover:scale-110"
             />
             <span class="ml-3 transition-colors duration-200 group-hover:text-black">Github</span>
@@ -433,7 +433,7 @@
           </a>
           <a
             class="w-full rounded-md px-4 py-4 text-left text-sm font-semibold transition-all duration-200 after:ml-2 after:content-['→'] hover:bg-gray-100 md:text-lg"
-            href="https://app.classroomio.com"
+            href="https://app.classroom.tedydev.io.vn"
           >
             Dashboard
           </a>

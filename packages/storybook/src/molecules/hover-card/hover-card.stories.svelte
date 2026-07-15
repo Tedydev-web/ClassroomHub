@@ -87,16 +87,16 @@
     <HoverCard.Root>
       <HoverCard.Trigger class="text-primary ui:flex ui:items-center ui:gap-2 underline-offset-4 hover:underline">
         <Avatar.Root>
-          <Avatar.Image src="https://github.com/rotimi-best.png" />
+          <Avatar.Image src="https://github.com/Tedydev-web.png" />
           <Avatar.Fallback>AM</Avatar.Fallback>
         </Avatar.Root>
-        @rotimi-best
+        @Tedydev-web
       </HoverCard.Trigger>
       <HoverCard.Content class="w-80">
         <div class="space-y-3">
           <div class="flex items-center gap-3">
             <Avatar.Root>
-              <Avatar.Image src="https://github.com/rotimi-best.png" />
+              <Avatar.Image src="https://github.com/Tedydev-web.png" />
               <Avatar.Fallback>AM</Avatar.Fallback>
             </Avatar.Root>
             <div>

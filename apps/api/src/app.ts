@@ -33,6 +33,7 @@ import { mediaRouter } from '@api/routes/media';
 import { transcriptsRouter } from '@api/routes/transcripts';
 import { mountQueueDashboard } from '@api/routes/admin/queues';
 import { onboardingRouter } from '@api/routes/onboarding';
+import { notificationRouter } from '@api/routes/notification';
 import { organizationRouter } from '@api/routes/organization';
 import { organizationSsoRouter } from '@api/routes/organization/sso';
 import { organizationTokenAuthRouter } from '@api/routes/organization/token-auth';
@@ -107,7 +108,7 @@ export const app = new Hono()
   // Routes
   .get('/', (c) =>
     c.json({
-      message: `"Welcome to Classroomio.com API - docs are at ${API_SERVER_URL}/docs"`
+      message: `"Welcome to Classroom API - docs are at ${API_SERVER_URL}/docs"`
     })
   )
   .use('/api/auth/sign-up/*', signupGuard)
@@ -232,6 +233,7 @@ export const app = new Hono()
     });
   })
   .route('/onboarding', onboardingRouter)
+  .route('/notifications', notificationRouter)
   .route('/account', accountRouter)
   .route('/course', courseRouter)
   .route('/domain', domainRouter)

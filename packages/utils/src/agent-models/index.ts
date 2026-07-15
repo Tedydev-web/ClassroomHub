@@ -7,7 +7,7 @@
  *   even though it isn't currently exposed to users.
  */
 
-export const AGENT_MODEL_IDS = ['gemini-3.1-flash-lite', 'gpt-5.4-mini', 'claude-sonnet-3-5', 'kimi-k2.6'] as const;
+export const AGENT_MODEL_IDS = ['gemini-2.5-flash-lite', 'gpt-5.4-mini', 'claude-sonnet-3-5', 'kimi-k2.6'] as const;
 
 export type AgentModelId = (typeof AGENT_MODEL_IDS)[number];
 export type AgentModelProvider = 'google' | 'openai' | 'anthropic' | 'moonshot';
@@ -27,10 +27,10 @@ export interface AgentModelDescriptor {
 }
 
 export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
-  'gemini-3.1-flash-lite': {
+  'gemini-2.5-flash-lite': {
     provider: 'google',
-    label: 'Gemini 3.1 Flash Lite',
-    backendModelId: 'gemini-3.1-flash-lite',
+    label: 'Gemini 2.5 Flash Lite',
+    backendModelId: 'gemini-2.5-flash-lite',
     isFree: true,
     costTier: 'low',
     contextWindow: 1_048_576
@@ -63,9 +63,9 @@ export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
 
 export const UI_PICKER_MODEL_IDS = [
   'kimi-k2.6',
-  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash-lite',
   'gpt-5.4-mini',
   'claude-sonnet-3-5'
 ] as const satisfies readonly AgentModelId[];
 
-export const DEFAULT_PICKER_MODEL_ID: AgentModelId = 'gemini-3.1-flash-lite';
+export const DEFAULT_PICKER_MODEL_ID: AgentModelId = 'gemini-2.5-flash-lite';

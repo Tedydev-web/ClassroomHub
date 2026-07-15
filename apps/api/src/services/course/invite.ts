@@ -38,12 +38,14 @@ import { assertStudentCapacityOrThrow } from '../organization/student-limit';
 import { getWelcomeSessionIcs } from './session-invite';
 import { db } from '@cio/db/drizzle';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 /**
  * Minimal org-url bundle threaded through invite/email paths so every URL
  * we generate respects the org's verified custom domain.
  */
 type OrgUrlInfo = {
+  organizationId?: string;
   siteName: string | null;
   customDomain: string | null;
   isCustomDomainVerified: boolean | null;
@@ -348,6 +350,15 @@ async function createSingleInvite(
       expiresAt: created.expiresAt
     }
   });
+  if (org.organizationId) {
+    void emitWebhookEvent(org.organizationId, 'course.invite.created', {
+      courseId,
+      inviteId: created.id,
+      targetEmail
+    }).catch((error) => {
+      console.error('Failed to emit course invite created webhook:', error);
+    });
+  }
 
   return {
     ...created,
@@ -378,7 +389,7 @@ async function sendStudentJoinEmails(input: {
         customMessage: input.welcomeEmailMessage ?? undefined,
         branding: input.branding
       },
-      from: buildEmailFromName(`${input.orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(`${input.orgName} (via Classroom)`),
       idempotencyKey: `course-welcome:${input.courseId}:${input.studentId}`,
       ics,
       preference: { organizationId: input.organizationId, recipientProfileId: input.studentId }
@@ -408,7 +419,7 @@ async function sendStudentJoinEmails(input: {
         studentEmail: input.studentEmail,
         branding: input.branding
       },
-      from: buildEmailFromName('ClassroomIO'),
+      from: buildEmailFromName('Classroom'),
       idempotencyKey: `teacher-student-joined:${input.courseId}:${input.studentId}`,
       preference: { organizationId: input.organizationId }
     });
@@ -466,7 +477,7 @@ async function createEmailInviteAndSend(input: {
         expiresAt: getExpiryLabel(createdInvite.expiresAt),
         branding: input.branding
       },
-      from: buildEmailFromName(`${input.orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(`${input.orgName} (via Classroom)`),
       idempotencyKey: `course-invite-email:${createdInvite.id}`
     });
 
@@ -529,6 +540,7 @@ export async function createStudentInvite(courseId: string, createdByProfileId: 
   const courseTitle = course[0].title;
   const courseSlug = course[0].slug ?? (await ensureCourseSlug(course[0].id, courseTitle));
   const orgUrlInfo: OrgUrlInfo = {
+    organizationId: courseOrgData.orgId,
     siteName: courseOrgData.orgSiteName ?? null,
     customDomain: courseOrgData.orgCustomDomain ?? null,
     isCustomDomainVerified: courseOrgData.orgIsCustomDomainVerified ?? null
@@ -561,7 +573,7 @@ export async function createStudentInvite(courseId: string, createdByProfileId: 
     };
   }
 
-  const orgName = courseOrgData.orgName || 'ClassroomIO';
+  const orgName = courseOrgData.orgName || 'Classroom';
   const courseName = courseOrgData.courseTitle || course[0].title || 'Course';
   const orgBranding = buildEmailBranding({
     name: courseOrgData.orgName,
@@ -827,6 +839,15 @@ export async function revokeStudentInvite(courseId: string, inviteId: string, re
   await recordInviteAudit(revoked.id, courseId, 'REVOKED', {
     actorProfileId: revokedByProfileId
   });
+  const course = await getCourseWithOrgData(courseId);
+  if (course?.orgId) {
+    void emitWebhookEvent(course.orgId, 'course.invite.revoked', {
+      courseId,
+      inviteId: revoked.id
+    }).catch((error) => {
+      console.error('Failed to emit course invite revoked webhook:', error);
+    });
+  }
 
   return {
     id: revoked.id,
@@ -1093,6 +1114,12 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
       userId: user.id,
       courseId: result.courseId,
       props: { path: 'invite' }
+    });
+    void emitWebhookEvent(result.organizationId, 'course.invite.accepted', {
+      courseId: result.courseId,
+      profileId: user.id
+    }).catch((error) => {
+      console.error('Failed to emit course invite accepted webhook:', error);
     });
   }
 

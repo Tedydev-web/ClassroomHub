@@ -5,7 +5,7 @@
   import { courseApi } from '$features/course/api';
   import { qrInviteNodeStore } from './store';
 
-  let node: any = $state();
+  let node: HTMLElement | null = $state(null);
 
   $effect(() => {
     qrInviteNodeStore.set(node);

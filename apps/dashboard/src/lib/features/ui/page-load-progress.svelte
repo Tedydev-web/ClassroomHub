@@ -23,7 +23,7 @@
     maximum?: number;
     settleTime?: number;
     intervalTime?: number;
-    stepSizes?: any;
+    stepSizes?: number[];
     displayThresholdMs?: number;
     noNavigationProgress?: boolean;
   }

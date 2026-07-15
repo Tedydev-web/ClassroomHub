@@ -20,6 +20,7 @@
 
   let hoveredIndex = $state(-1);
 
+  /** @param {number} index */
   function isActive(index) {
     if (hoveredIndex === -1) return index === 0;
     return index <= hoveredIndex;

@@ -9,13 +9,13 @@
 
   let isOpen = $state(false);
   let contentHeight = $state('0px'); // Track the height of the content
-  let contentRef: HTMLDivElement = $state(); // Reference to the content div
+  let contentRef = $state<HTMLDivElement | null>(null); // Reference to the content div
 
   function toggleAccordion() {
     isOpen = !isOpen;
     if (isOpen) {
       // Measure and set the height when opening
-      contentHeight = `${contentRef.scrollHeight}px`;
+      contentHeight = `${contentRef?.scrollHeight ?? 0}px`;
     } else {
       // Set to 0 height when closing
       contentHeight = '0px';
@@ -24,20 +24,17 @@
 </script>
 
 <div
-  class="hover:bg-[#282828] text-white space-y-2 shadow-md bg-[#282828] {isOpen
+  class="space-y-2 bg-[#282828] text-white shadow-md hover:bg-[#282828] {isOpen
     ? 'bg-[#282828]'
-    : 'bg-inherit'} border border-[#282828] rounded"
+    : 'bg-inherit'} rounded border border-[#282828]"
 >
   <!-- Accordion Header -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="flex justify-between items-center cursor-pointer p-4 bg-inherit rounded"
-    onclick={toggleAccordion}
-  >
-    <p class="font-semibold text-lg">{title}</p>
+  <div class="flex cursor-pointer items-center justify-between rounded bg-inherit p-4" onclick={toggleAccordion}>
+    <p class="text-lg font-semibold">{title}</p>
     <!-- Icon changes based on the state -->
-    <div class="flex items-center justify-center p-[2px] bg-[#232429]">
+    <div class="flex items-center justify-center bg-[#232429] p-[2px]">
       {#if isOpen}
         <Subtract class="text-xl transition-transform duration-200 ease-in" />
       {:else}
@@ -51,7 +48,7 @@
     bind:this={contentRef}
     style="max-height: {contentHeight}; transition: max-height 0.3s ease-in-out; overflow: hidden;"
   >
-    <div class="p-4 bg-inherit rounded-b">
+    <div class="rounded-b bg-inherit p-4">
       <p>
         {content}
       </p>

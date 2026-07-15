@@ -1,5 +1,7 @@
-export const PUBLIC_API_BASE_URL = 'https://api.classroomio.com/public-api/v1';
-export const PUBLIC_API_OPENAPI_URL = 'https://api.cdn.clsrio.com/openapi/public-api/openapi-latest.json';
+import { PRODUCT_HOSTS } from '../constants/product-identity';
+
+export const PUBLIC_API_BASE_URL = `https://${PRODUCT_HOSTS.api}/public-api/v1`;
+export const PUBLIC_API_OPENAPI_URL = `https://${PRODUCT_HOSTS.assets}/openapi/public-api/openapi-latest.json`;
 export const PUBLIC_API_BEARER_SCHEME = 'bearerAuth';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const;
@@ -10,8 +12,8 @@ All public API endpoints require an **organization-scoped API key** sent as a Be
 
 ## Get an API key
 
-1. Sign in to [ClassroomIO](https://app.classroomio.com) as an **organization admin**.
-2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://app.classroomio.com/org/*/api) — \`*\` picks your current organization automatically).
+1. Sign in to [Classroom](https://${PRODUCT_HOSTS.dashboard}) as an **organization admin**.
+2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://${PRODUCT_HOSTS.dashboard}/org/*/api) — \`*\` picks your current organization automatically).
 3. Click **Generate API key** and copy the secret immediately (it is shown only once).
 4. Keys look like \`cio_api_...\` and include the \`public_api:*\` scope.
 
@@ -31,7 +33,7 @@ Use the **Authorize** button (lock icon) on this page, choose **bearerAuth**, pa
 
 ## Plan access
 
-On ClassroomIO Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.
+On Classroom Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.
 `;
 
 type OpenApiDocument = Record<string, unknown>;
@@ -66,7 +68,7 @@ export function enrichPublicApiOpenApiSpec<T extends OpenApiDocument>(spec: T): 
     ...spec,
     info: {
       ...info,
-      title: typeof info.title === 'string' ? info.title : 'ClassroomIO Public API',
+      title: typeof info.title === 'string' ? info.title : 'Classroom Public API',
       version: typeof info.version === 'string' ? info.version : '1.0.0',
       description: PUBLIC_API_OPENAPI_DESCRIPTION
     },

@@ -60,7 +60,7 @@ export async function processSessionReminderScan(): Promise<ScanResult> {
       const ics =
         offset === 1440
           ? buildSessionIcs({
-              uid: `session-${row.lessonId}@classroomio`,
+              uid: `session-${row.lessonId}@classroom.tedydev.io.vn`,
               sequence: 0,
               method: 'PUBLISH',
               start: row.lessonAt,
@@ -97,7 +97,7 @@ export async function processSessionReminderScan(): Promise<ScanResult> {
               joinUrl: row.callUrl,
               branding
             },
-            from: buildEmailFromName(`${row.organizationName} (via ClassroomIO.com)`),
+            from: buildEmailFromName(`${row.organizationName} (via Classroom)`),
             ...(ics ? { ics } : {})
           },
           { idempotencyKey: `session-reminder:${row.lessonId}:${row.profileId}:${offset}` }

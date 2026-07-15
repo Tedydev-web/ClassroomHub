@@ -1,6 +1,7 @@
 import { buildOrgSiteOgApiUrl, buildOrgSiteOgCdnUrl } from '@cio/utils/org-site/og-public-url';
+import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
-const DEFAULT_CLOUD_MEDIA_CDN_URL = 'https://img.cdn.clsrio.com';
+const DEFAULT_CLOUD_MEDIA_CDN_URL = `https://${PRODUCT_HOSTS.assets}`;
 
 function isValidHttpUrl(value: string): boolean {
   try {
@@ -89,7 +90,7 @@ export function resolveOrgSiteOgWarmUrl(options: {
   }
 
   if (!options.isSelfHosted) {
-    return buildOrgSiteOgApiUrl(siteName, 'https://api.classroomio.com');
+    return buildOrgSiteOgApiUrl(siteName, `https://${PRODUCT_HOSTS.api}`);
   }
 
   return null;

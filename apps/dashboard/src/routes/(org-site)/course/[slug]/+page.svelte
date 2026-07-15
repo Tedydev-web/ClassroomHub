@@ -6,7 +6,7 @@
 
   let { data } = $props();
 
-  const orgName = $derived(data.org?.name ?? data.course?.org?.name ?? 'ClassroomIO');
+  const orgName = $derived(data.org?.name ?? data.course?.org?.name ?? 'Classroom');
 
   const courseJsonLd = $derived.by(() => {
     if (!data.course) return null;
@@ -30,7 +30,10 @@
 
 <svelte:head>
   {#if courseJsonLd}
-    {@html `<script type="application/ld+json">${courseJsonLd}</script>`}
+    <!-- prettier-ignore -->
+    <script type="application/ld+json">
+{courseJsonLd}
+    </script>
   {/if}
 </svelte:head>
 

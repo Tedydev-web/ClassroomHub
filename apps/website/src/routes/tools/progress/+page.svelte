@@ -15,29 +15,39 @@
   import { ToolsHeader } from '$lib/components';
   import DownloadButton from '$lib/features/tools/progress/download-button.svelte';
 
+  type EditableHtmlBodyField = Extract<keyof HtmlBody, 'name' | 'learning' | 'progress'>;
+
   const MAX_CHARS = 160;
   let remainingChars = $state(MAX_CHARS);
   let showReport: boolean = $state(false);
   let showSetter: boolean = $state(true);
   let isDownloading: boolean = false;
-  let isDisabled: boolean = $state();
+  let isDisabled = $state(false);
 
   // sets the result of the mini validation for the htmlBody store
   const unsubscribe = isFormComplete.subscribe((value) => {
     isDisabled = value;
   });
 
-  function handleInputChange(event: any, property: keyof HtmlBody) {
-    $htmlBody[property] = event.target.value;
+  function handleInputChange(event: Event, property: EditableHtmlBodyField) {
+    const input = event.currentTarget as HTMLInputElement | HTMLTextAreaElement;
+
+    if (property === 'progress') {
+      $htmlBody.progress = Number(input.value);
+    } else if (property === 'name') {
+      $htmlBody.name = input.value;
+    } else {
+      $htmlBody.learning = input.value;
+    }
 
     if (property === 'learning') {
-      remainingChars = MAX_CHARS - event.target.value.length;
+      remainingChars = MAX_CHARS - input.value.length;
     }
   }
 
   function shareTemplate() {
     return encodeURIComponent(
-      `Learning Progress Update: ${$htmlBody.learning} and I'm ${$htmlBody.mood.text}. \nGenerated yours on classroomio.com\n`
+      `Learning Progress Update: ${$htmlBody.learning} and I'm ${$htmlBody.mood.text}. \nGenerated yours on classroom.tedydev.io.vn\n`
     );
   }
 
@@ -50,9 +60,8 @@
 
   function shareOnFacebook() {
     const text = shareTemplate();
-    window.open(
-      `https://www.facebook.com/dialog/share?app_id=145634995501895&display=popup&href=https%3A%2F%2Fclassroomio.com%2Fdocs%2F&redirect_uri=https%3A%2F%2Fclassroomio.com%2Ftools%2Fexplorer&hashtag=${text}`
-    );
+    const target = encodeURIComponent('https://classroom.tedydev.io.vn/tools/progress');
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${target}&quote=${text}`);
   }
 
   function shareOnLinkedIn() {
@@ -67,22 +76,22 @@
 </script>
 
 <svelte:head>
-  <title>Random Name Picker | ClassroomIO</title>
-  <meta property="og:image" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
-  <meta property="og:title" content="Random Name Picker | ClassroomIO" />
+  <title>Random Name Picker | Classroom</title>
+  <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
+  <meta property="og:title" content="Random Name Picker | Classroom" />
   <meta
     property="og:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."
   />
 
-  <meta property="og:image:secure_url" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Random Name Picker | ClassroomIO" />
+  <meta name="twitter:title" content="Random Name Picker | Classroom" />
   <meta
     name="twitter:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."
   />
-  <meta name="twitter:image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta name="twitter:image" content="/assets/brand/og/free-tools.png" />
 </svelte:head>
 
 <section class=" w-full px-1 md:w-full md:px-0">
@@ -152,7 +161,7 @@
                   <span class="flex items-center gap-1">
                     <p class="text-[9px] font-semibold md:text-xs">is {$htmlBody.mood.text}</p>
                     <img
-                      src="https://assets.cdn.clsrio.com/progress-report/emojis/{$htmlBody.mood.iconSrc}.png"
+                      src="/assets/assets/progress-report/emojis/{$htmlBody.mood.iconSrc}.png"
                       alt={$htmlBody.mood.text}
                       class="w-3"
                     />
@@ -206,7 +215,7 @@
               class="mt-3 flex w-full items-center justify-between gap-2 bg-[#F7F7F7] px-5 py-1.5 md:w-[65%] md:justify-center md:px-0"
             >
               <img
-                src={`https://assets.cdn.clsrio.com/progress-report/avatars/${$htmlBody.avatar || 'avatar_m'}.svg`}
+                src={`/assets/assets/progress-report/avatars/${$htmlBody.avatar || 'avatar_m'}.svg`}
                 alt=""
                 class="w-[15%] md:w-[30%]"
               />
@@ -227,7 +236,7 @@
               class="mt-3 flex w-full items-center justify-between gap-2 bg-[#F7F7F7] px-5 py-1.5 md:w-[65%] md:justify-center md:px-0"
             >
               <img
-                src={`https://assets.cdn.clsrio.com/progress-report/backgrounds/${
+                src={`/assets/assets/progress-report/backgrounds/${
                   $htmlBody.background || 'blue_tetiary_background'
                 }.webp`}
                 alt="An avatar"

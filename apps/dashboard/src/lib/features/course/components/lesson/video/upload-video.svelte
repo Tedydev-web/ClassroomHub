@@ -15,6 +15,7 @@
   import { JobPoller, jobsApi, type MediaJobEnvelope } from '$features/jobs';
   import { onDestroy } from 'svelte';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import axios from 'axios';
 
   const ADD_VIDEO = 'course.navItem.lessons.materials.tabs.video.add_video';
   const PROCESSING_BASE = `${ADD_VIDEO}.processing`;
@@ -36,14 +37,16 @@
    */
   const hlsEnabled = $derived(publicEnv.PUBLIC_IS_SELFHOSTED !== 'true');
 
-  let formRes: {
+  interface UploadFormResponse {
     url?: string;
     fileKey?: string;
     status?: number;
     type?: string;
     message?: string;
     thumbnailUrl?: string;
-  } | null = $state(null);
+  }
+
+  let formRes: UploadFormResponse | null = $state(null);
   let isLoaded = $state(false);
   let fileName = $state('');
   let processingJob: MediaJobEnvelope['job'] | null = $state(null);
@@ -306,8 +309,9 @@
       }
 
       isLoaded = false;
-    } catch (err: any) {
-      console.error('Error uploading video', err, '\n\n', err.response);
+    } catch (err: unknown) {
+      const response = axios.isAxiosError<UploadFormResponse>(err) ? err.response : undefined;
+      console.error('Error uploading video', err, '\n\n', response);
 
       if ($lessonVideoUpload.isCancelled) {
         formRes = {
@@ -315,8 +319,8 @@
           status: 0,
           message: t.get(`${ADD_VIDEO}.upload_cancelled`)
         };
-      } else if (err.response) {
-        formRes = err.response.data;
+      } else if (response) {
+        formRes = response.data;
       } else {
         let message = 'An error occurred while uploading the video';
         if (err instanceof Error) {

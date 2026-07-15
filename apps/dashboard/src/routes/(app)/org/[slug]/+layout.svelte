@@ -23,7 +23,9 @@
   }
 
   $effect(() => {
-    data.orgName === '*' && redirect($currentOrg.siteName);
+    if (data.orgName === '*') {
+      void redirect($currentOrg.siteName);
+    }
   });
 
   $effect(() => {

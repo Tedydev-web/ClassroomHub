@@ -3,7 +3,13 @@ import { getActiveOrganizationPlan, getOrganizationById } from '@cio/db/queries/
 import { getCourseTagsByCourseIdsForOrganization, getTagGroupsWithTags } from '@cio/db/queries/tag';
 import { listWidgetCourses } from '@cio/db/queries/widget';
 import { PLAN } from '@cio/utils/plans';
-import { EMBED_PUBLIC_BASE_URL, getEmbedBaseUrl, getEmbedPublicUrl, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
+import {
+  EMBED_PUBLIC_BASE_URL,
+  getEmbedBaseUrl,
+  getEmbedPublicUrl,
+  PRODUCT_HOSTS,
+  TENANT_ROOT_DOMAIN
+} from '@cio/utils/constants';
 import {
   buildWidgetPayload as buildWidgetPayloadShared,
   normalizeWidgetConfig,
@@ -18,7 +24,7 @@ import { env } from '@cio/core/config/env';
 const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const DEFAULT_EMBED_CDN_BASE_URL = EMBED_PUBLIC_BASE_URL;
 const DEFAULT_LOCAL_EMBED_BASE_URL = 'http://localhost:5180';
-const DEFAULT_WIDGET_APP_BASE_URL = 'https://classroomio.com';
+const DEFAULT_WIDGET_APP_BASE_URL = `https://${PRODUCT_HOSTS.marketing}`;
 
 const ALLOWED_CUSTOM_CSS_PROPERTIES = new Set([
   'align-items',

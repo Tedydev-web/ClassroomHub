@@ -49,11 +49,7 @@
     { value: 'workspace', labelKey: 'aiTutor.groundingScope.workspace' as const }
   ];
 
-  let forbiddenTopicsInput = $state($store.forbiddenTopics.join(', '));
-
-  $effect(() => {
-    forbiddenTopicsInput = $store.forbiddenTopics.join(', ');
-  });
+  let forbiddenTopicsInput = $derived($store.forbiddenTopics.join(', '));
 
   function syncForbiddenTopics() {
     const list = forbiddenTopicsInput

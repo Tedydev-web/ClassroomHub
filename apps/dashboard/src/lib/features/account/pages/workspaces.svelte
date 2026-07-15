@@ -104,7 +104,7 @@
         {#if accountApi.isLoading && workspaces.length === 0}
           <Spinner class="size-10! text-blue-700!" />
         {:else}
-          {#each workspaces as workspace}
+          {#each workspaces as workspace (workspace.id)}
             <Field.Field>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

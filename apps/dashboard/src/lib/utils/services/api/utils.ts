@@ -21,7 +21,7 @@ export const getErrMsg = (error: unknown, fallback = 'Something went wrong'): st
 };
 
 // Helper function to handle JSON responses
-export const handleJsonResponse = async <T = any>(response: Response): Promise<T> => {
+export const handleJsonResponse = async <T = unknown>(response: Response): Promise<T> => {
   if (!response.ok) {
     throw new ApiError(
       `HTTP ${response.status}: ${response.statusText}`,
@@ -33,7 +33,7 @@ export const handleJsonResponse = async <T = any>(response: Response): Promise<T
 
   try {
     return await response.json();
-  } catch (error) {
+  } catch {
     throw new ApiError('Failed to parse JSON response', response.status, response.statusText, response);
   }
 };
@@ -81,7 +81,7 @@ export const isTimeoutError = (error: unknown): boolean => {
 export type Result<T, E = ApiError> = { success: true; data: T } | { success: false; error: E };
 
 // Generic safe request wrapper
-export const safeRequest = async <T = any>(requestFn: () => Promise<Response>): Promise<Result<T>> => {
+export const safeRequest = async <T = unknown>(requestFn: () => Promise<Response>): Promise<Result<T>> => {
   try {
     const response = await requestFn();
     const data = await handleJsonResponse<T>(response);

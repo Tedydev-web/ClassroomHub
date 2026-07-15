@@ -26,9 +26,7 @@
   <Dialog.Content class="sm:max-w-[425px]">
     <Dialog.Header>
       <Dialog.Title>Buy A Custom Template</Dialog.Title>
-      <Dialog.Description>
-        Place an order for a custom template and we will ship it in 48 hours.
-      </Dialog.Description>
+      <Dialog.Description>Place an order for a custom template and we will ship it in 48 hours.</Dialog.Description>
     </Dialog.Header>
     <div class="grid gap-4 py-4">
       <p>What you get for <strong>ONLY $50</strong>:</p>
@@ -42,14 +40,9 @@
       </ul>
     </div>
     <Dialog.Footer>
-      <ShimmerButton
-        href={PAYMENT_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="w-full px-6 shadow-2xl"
-      >
+      <ShimmerButton href={PAYMENT_LINK} target="_blank" rel="noopener noreferrer" class="w-full px-6 shadow-2xl">
         <span
-          class="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg dark:from-white dark:to-slate-900/10"
+          class="text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10"
         >
           Buy ($50)
         </span>

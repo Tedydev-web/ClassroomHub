@@ -85,12 +85,7 @@
   }
 
   // Local editable copy of the plan
-  let editablePlan: CoursePlan = $state(clonePlan(plan));
-
-  // Reset editable plan when the prop changes (e.g., agent revises the plan)
-  $effect(() => {
-    editablePlan = clonePlan(plan);
-  });
+  let editablePlan: CoursePlan = $derived(clonePlan(plan));
 
   let expandedSections = new SvelteSet<number>();
 

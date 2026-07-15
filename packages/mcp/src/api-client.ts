@@ -186,10 +186,10 @@ export class ClassroomIoApiClient {
       body?: unknown;
     }
   ): Promise<TResponse> {
-    const response = await fetch(new URL(path, this.config.CLASSROOMIO_API_URL), {
+    const response = await fetch(new URL(path, this.config.CLASSROOM_API_URL), {
       method: options.method,
       headers: {
-        Authorization: `Bearer ${this.config.CLASSROOMIO_API_KEY}`,
+        Authorization: `Bearer ${this.config.CLASSROOM_API_KEY}`,
         'content-type': 'application/json',
         'user-agent': this.config.CLASSROOMIO_USER_AGENT
       },
@@ -201,7 +201,7 @@ export class ClassroomIoApiClient {
     if (!response.ok) {
       const errorPayload = json as ApiFailure | null;
       throw new ClassroomIoApiError(
-        errorPayload?.error ?? errorPayload?.message ?? `ClassroomIO request failed with status ${response.status}`,
+        errorPayload?.error ?? errorPayload?.message ?? `Classroom request failed with status ${response.status}`,
         response.status,
         errorPayload?.code,
         errorPayload?.field
@@ -209,7 +209,7 @@ export class ClassroomIoApiClient {
     }
 
     if (!json || typeof json !== 'object' || !('success' in json) || !json.success) {
-      throw new ClassroomIoApiError('ClassroomIO returned an invalid response payload', response.status);
+      throw new ClassroomIoApiError('Classroom returned an invalid response payload', response.status);
     }
 
     return json.data;

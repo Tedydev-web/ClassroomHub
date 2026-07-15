@@ -18,45 +18,45 @@
   const templates = [
     {
       name: 'Bootcamps',
-      image: 'https://cdn.courseapp.oncws.com/templates/bootcamp-template.png',
-      url: 'https://bootcamp.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/bootcamp-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'Cal',
-      image: 'https://cdn.courseapp.oncws.com/templates/cal-template.png',
-      url: 'https://cal.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/cal-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'Classic',
-      image: 'https://cdn.courseapp.oncws.com/templates/classic-template.png',
-      url: 'https://classic.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/classic-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'Examprep',
-      image: 'https://cdn.courseapp.oncws.com/templates/examprep-template.png',
-      url: 'https://examprep.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/examprep-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'Minimal',
-      image: 'https://cdn.courseapp.oncws.com/templates/minimal-template.png',
-      url: 'https://minimal.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/minimal-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'PostHog',
-      image: 'https://cdn.courseapp.oncws.com/templates/posthog-template.png',
-      url: 'https://posthog.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/posthog-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     },
     {
       name: 'Webflow',
-      image: 'https://cdn.courseapp.oncws.com/templates/webflow-template.png',
-      url: 'https://webflow.courseapp.oncws.com',
-      github: 'https://github.com/classroomio/classroomio'
+      image: '/assets/templates/webflow-template.png',
+      url: '#templates',
+      github: 'https://github.com/Tedydev-web/classroomio'
     }
   ];
 
@@ -92,20 +92,19 @@
 <section class="my-5 w-full md:my-0">
   <div>
     <CardContainer className="md:px-20">
-      <CardBody
-        className="py-10 max-w-4xl mx-auto flex flex-col items-center justify-center px-30 gap-2 md:gap-5"
-      >
+      <CardBody className="py-10 max-w-4xl mx-auto flex flex-col items-center justify-center px-30 gap-2 md:gap-5">
         <BlurIn
-          class="pointer-events-none flex max-w-2xl flex-col items-center whitespace-pre-wrap bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-2xl font-semibold leading-none tracking-tighter text-transparent md:mb-4 md:block md:text-4xl lg:text-6xl"
+          class="pointer-events-none flex max-w-2xl flex-col items-center bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-2xl leading-none font-semibold tracking-tighter whitespace-pre-wrap text-transparent md:mb-4 md:block md:text-4xl lg:text-6xl"
         >
-          Create a <span class="font-mono italic text-blue-700">Course</span>
+          Create a <span class="font-mono text-blue-700 italic">Course</span>
           <span>Site for your Product in</span>
-          <span class="ml-1 font-mono italic text-blue-700">MINUTES</span>
+          <span class="ml-1 font-mono text-blue-700 italic">MINUTES</span>
         </BlurIn>
 
         <BlurFade delay={0.25}>
           <p class="text-md max-w-[500px] text-center">
-            With our prebuilt templates, you can setup a fully functional course website for your product & idea in minutes.<br />
+            With our prebuilt templates, you can setup a fully functional course website for your product & idea in
+            minutes.<br />
             <span>
               Similar to the likes of
 
@@ -124,13 +123,7 @@
           </p>
 
           <div class="mt-4 flex flex-col items-center justify-center gap-4 md:flex-row">
-            <Button
-              class="w-full md:w-auto"
-              variant="secondary"
-              target="_blank"
-              rel="noopener noreferrer"
-              href="/npm"
-            >
+            <Button class="w-full md:w-auto" variant="secondary" target="_blank" rel="noopener noreferrer" href="/npm">
               Install Template
             </Button>
 
@@ -139,16 +132,14 @@
         </BlurFade>
       </CardBody>
 
-      <section
-        class="relative mx-auto my-4 flex max-w-5xl flex-col items-center justify-center px-7"
-      >
+      <section class="relative mx-auto my-4 flex max-w-5xl flex-col items-center justify-center px-7">
         <div class="relative overflow-hidden rounded-2xl p-1">
           <BorderBeam />
           <HeroVideoDialog
             animationStyle="from-right"
             videoSrc="https://www.youtube.com/embed/P2I2HoyrjVo"
-            thumbnailSrc="https://cdn.courseapp.oncws.com/courseapp-og.png"
-            thumbnailAlt="Courseapp by ClassroomIO – Create your SAAS Academy in Minutes"
+            thumbnailSrc="/assets/courseapp-og.png"
+            thumbnailAlt="Courseapp by Classroom – Create your SAAS Academy in Minutes"
           />
         </div>
       </section>
@@ -160,15 +151,11 @@
 
 <!-- Templates -->
 <section id="templates" class="my-5 w-full pt-0 md:my-0 md:pt-24">
-  <div class="px-4 max-w- mx-auto">
-    <h2 class="mb-5 text-center text-3xl font-semibold md:mb-20 md:text-start md:text-5xl">
-      Browse Templates
-    </h2>
+  <div class="max-w- mx-auto px-4">
+    <h2 class="mb-5 text-center text-3xl font-semibold md:mb-20 md:text-start md:text-5xl">Browse Templates</h2>
 
     <BlurFade delay={0.25 * 2}>
-      <div
-        class="grid max-w-6xl grid-cols-1 place-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      >
+      <div class="grid max-w-6xl grid-cols-1 place-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {#each templates as template}
           <TemplateCard {template} />
         {/each}
@@ -183,11 +170,9 @@
 <Separator class="my-5 md:mt-20" />
 
 <!-- Features -->
-<section id="features" class="m-5 w-full px-4 pt-0 md:mb-10 md:mt-0 md:pt-24">
+<section id="features" class="m-5 w-full px-4 pt-0 md:mt-0 md:mb-10 md:pt-24">
   <div class="font-drawn mx-auto flex max-w-4xl flex-col items-center">
-    <h2 class="mb-2 text-center text-3xl font-semibold md:mb-10 md:text-start md:text-5xl">
-      Features
-    </h2>
+    <h2 class="mb-2 text-center text-3xl font-semibold md:mb-10 md:text-start md:text-5xl">Features</h2>
 
     <ul>
       {#each features as feature}
@@ -242,14 +227,12 @@
       >
         <Meteors number={30} />
         <div class="z-30">
-          <h1 class="mb-5 text-2xl font-semibold text-white md:text-5xl">
-            Kickstart Your Customer Education Journey
-          </h1>
+          <h1 class="mb-5 text-2xl font-semibold text-white md:text-5xl">Kickstart Your Customer Education Journey</h1>
 
           <div class=" flex items-center justify-center">
             <ShimmerButton href="/npm" target="_blank" rel="noopener noreferrer" class="shadow-2xl">
               <span
-                class="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg dark:from-white dark:to-slate-900/10"
+                class="text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10"
               >
                 Learn More
               </span>
@@ -268,8 +251,8 @@
 <section class="my-10 w-full">
   <div class="">
     <p class="text-center text-sm text-neutral-500">
-      Made with ❤️ by <a href="https://git.new/class" target="_blank" rel="noopener noreferrer">
-        classroomio
+      Made with ❤️ by <a href="https://github.com/Tedydev-web/classroomio" target="_blank" rel="noopener noreferrer">
+        Classroom
       </a>
     </p>
   </div>

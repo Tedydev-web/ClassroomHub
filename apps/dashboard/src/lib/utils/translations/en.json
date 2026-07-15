@@ -1,4 +1,32 @@
 {
+  "scorm": {
+    "title": "SCORM",
+    "subtitle": "Import SCORM packages, attach learning content, and review learner results.",
+    "packages": {
+      "heading": "Packages",
+      "description": "Upload a SCORM 1.2 or SCORM 2004 ZIP package.",
+      "drop_label": "Drop a SCORM ZIP here",
+      "drop_help": "One ZIP package",
+      "drop_size": "Up to {size}",
+      "title_label": "Package title",
+      "upload": "Import package",
+      "empty": "No SCORM packages yet.",
+      "delete": "Delete package"
+    },
+    "reports": {
+      "heading": "Learner reports",
+      "description": "Completion, success, scores, and time reported by SCORM content.",
+      "learner": "Learner",
+      "content": "Course / lesson",
+      "status": "Status",
+      "score": "Score",
+      "time": "Time",
+      "empty": "No learner reports yet.",
+      "page": "Page {page} of {totalPages}",
+      "previous": "Previous page",
+      "next": "Next page"
+    }
+  },
   "aiTutor": {
     "page": {
       "org": {
@@ -219,7 +247,7 @@
     },
     "powered_by": {
       "label": "Powered by",
-      "brand": "ClassroomIO"
+      "brand": "Classroom"
     },
     "exercise": {
       "submit": "Check my answers",
@@ -414,7 +442,7 @@
       "teams_tab": "Teams"
     },
     "profile": {
-      "page_subtitle": "Your name, email, and how you appear wherever you work in ClassroomIO.",
+      "page_subtitle": "Your name, email, and how you appear wherever you work in Classroom.",
       "profile_picture": {
         "heading": "Profile Picture",
         "upload_image": "Upload Image",
@@ -740,7 +768,7 @@
       "gallery": {
         "heading": "Popular themes",
         "description": "Made with core features you can easily customize — no coding needed.",
-        "by_classroomio": "by ClassroomIO",
+        "by_classroomio": "by Classroom",
         "add": "Add",
         "upgrade": "Upgrade",
         "apply_theme": "Apply Theme",
@@ -1009,7 +1037,7 @@
       "page_subtitle": "Connect Telegram to get notified when important things happen.",
       "heading": "Telegram",
       "sub_heading": "Connect your account to telegram to get notified of any change within the application.",
-      "step_authenticate": "Step 1: Authenticate your account via the ClassroomIO bot.",
+      "step_authenticate": "Step 1: Authenticate your account via the Classroom bot.",
       "open_bot_button": "Open Bot",
       "step_chatId": "Step 2: Enter the Chat ID given to you by the bot.",
       "connect_button": "Connect",
@@ -1017,7 +1045,7 @@
       "disconnect": "Disconnect"
     },
     "billing": {
-      "page_subtitle": "Your plan, billing portal, and how you pay for ClassroomIO.",
+      "page_subtitle": "Your plan, billing portal, and how you pay for Classroom.",
       "sub_title": "Billing details",
       "manage": "Manage your billing",
       "active": "You don't have any active billing",
@@ -1088,7 +1116,7 @@
     }
   },
   "media_manager": {
-    "page_title": "Media Manager - ClassroomIO",
+    "page_title": "Media Manager - Classroom",
     "heading": "Media Manager",
     "page_subtitle": "Keep files, videos, and links for your courses in one library.",
     "empty": "No assets found",
@@ -1232,7 +1260,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Tags - ClassroomIO",
+    "page_title": "Tags - Classroom",
     "heading": "Tags",
     "page_subtitle": "Organize courses with labels so filters and lists stay easy to scan.",
     "create": "Create",
@@ -1283,7 +1311,7 @@
     }
   },
   "public_courses": {
-    "page_title": "Courses - ClassroomIO",
+    "page_title": "Courses - Classroom",
     "heading": "Courses",
     "subtitle": "Browse all published courses",
     "clear_filters": "Clear Filters",
@@ -1619,13 +1647,13 @@
     "goto": "Go to",
     "courses": "Courses",
     "home": "Home",
-    "classroomio_home": "ClassroomIO Home",
+    "classroomio_home": "Classroom Home",
     "dashboard": "Dashboard",
     "discussion": "Discussion",
     "people": "People",
     "goto_lms": "Go to LMS",
     "goto_dashboard": "Dashboard",
-    "goto_home": "Go to ClassroomIO Home",
+    "goto_home": "Go to Classroom Home",
     "login": "Login",
     "signup": "Sign Up",
     "redirecting": "Redirecting",
@@ -1923,7 +1951,7 @@
   "course": {
     "creator": {
       "heading": "What course do you want to create?",
-      "placeholder": "Ask ClassroomIO to create a course for you...",
+      "placeholder": "Ask Classroom to create a course for you...",
       "drafting": {
         "heading": "Drafting your course idea",
         "subtext": "We're turning your prompt into a course title and workspace.",
@@ -3198,7 +3226,7 @@
           "audit_actor": "Actor",
           "audit_ip": "IP",
           "scan_qr": "Scan QR",
-          "classroomio_brand": "ClassroomIO.com",
+          "classroomio_brand": "Classroom",
           "snackbar_invite_link_copied": "Invite link copied",
           "snackbar_invite_link_regenerated": "A new invite link has been generated",
           "snackbar_failed_generate_link": "Failed to generate invite link",
@@ -3864,7 +3892,8 @@
     "tabs": {
       "mcp": "MCP",
       "zapier": "Zapier",
-      "api": "API"
+      "api": "API",
+      "webhooks": "Webhooks"
     },
     "clients": {
       "claude_code": "Claude Code",
@@ -3895,7 +3924,7 @@
       "rotate_confirm": "Rotate this automation key?"
     },
     "mcp": {
-      "page_subtitle": "Connect AI tools to ClassroomIO with org-scoped keys you can rotate anytime.",
+      "page_subtitle": "Connect AI tools to Classroom with org-scoped keys you can rotate anytime.",
       "usage": {
         "title": "Usage and limits",
         "description": "MCP is available on every plan, but usage is controlled with monthly automation credits and key limits.",
@@ -3909,14 +3938,14 @@
       },
       "keys": {
         "title": "MCP keys",
-        "description": "These keys authenticate the current organization when an MCP client calls ClassroomIO through `@classroomio/mcp`.",
+        "description": "These keys authenticate the current organization when an MCP client calls Classroom through `@tedydev/classroom-mcp`.",
         "generate": "Generate MCP key",
         "secret_once": "This secret is shown once. Copy it into your MCP client now.",
         "modal": {
           "title": "Create MCP key",
           "description": "Choose a name for this MCP key before it is generated.",
           "name_label": "Key name",
-          "name_placeholder": "ClassroomIO OpenCode",
+          "name_placeholder": "Classroom OpenCode",
           "cancel": "Cancel",
           "save": "Create key"
         }
@@ -3924,21 +3953,21 @@
       "setup": {
         "title": "Client setup",
         "description": "Use one org-scoped key per integration. If a key is rotated or revoked, the client stops working until the new secret is configured.",
-        "claude_code_description": "Registers `@classroomio/mcp` with Claude Code using the generated org-scoped key.",
-        "codex_description": "Adds the ClassroomIO MCP server to Codex with the same org-scoped key.",
+        "claude_code_description": "Registers `@tedydev/classroom-mcp` with Claude Code using the generated org-scoped key.",
+        "codex_description": "Adds the Classroom MCP server to Codex with the same org-scoped key.",
         "cursor_description": "Paste this into `~/.cursor/mcp.json` or your workspace MCP config.",
         "opencode_description": "Add this to `opencode.json` in your project root or `~/.config/opencode/opencode.json`."
       }
     },
     "api": {
-      "subtitle": "Manage API keys to integrate with the ClassroomIO public API.",
+      "subtitle": "Manage API keys to integrate with the Classroom public API.",
       "keys": {
         "title": "API keys",
-        "description": "These keys authenticate the current organization when calling the ClassroomIO public API.",
+        "description": "These keys authenticate the current organization when calling the Classroom public API.",
         "generate": "Generate API key",
         "secret_once": "This secret is shown once. Copy it and store it securely.",
         "empty_title": "No API keys yet",
-        "empty_description": "Create the first org-scoped API key to use the ClassroomIO public API.",
+        "empty_description": "Create the first org-scoped API key to use the Classroom public API.",
         "modal": {
           "title": "Create API key",
           "description": "Choose a name for this API key before it is generated.",
@@ -3955,7 +3984,44 @@
       "view_docs": "View Docs"
     },
     "zapier": {
-      "page_subtitle": "Automate ClassroomIO with thousands of apps through Zapier. Coming soon."
+      "page_subtitle": "Automate Classroom with thousands of apps through Zapier. Coming soon."
+    },
+    "webhooks": {
+      "subtitle": "Send signed Classroom events to your external systems.",
+      "endpoints_title": "Webhook endpoints",
+      "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
+      "add": "Add webhook",
+      "edit": "Edit webhook",
+      "delete": "Delete",
+      "delete_confirm": "Delete this webhook endpoint and its delivery history?",
+      "send_test": "Send test",
+      "deliveries": "Deliveries",
+      "actions": "Webhook actions",
+      "name": "Name",
+      "payload_url": "Payload URL",
+      "events": "Events",
+      "active": "Active",
+      "all_events": "All",
+      "secret": "Signing secret",
+      "secret_help": "Leave blank to generate a secure secret automatically.",
+      "secret_unchanged": "Leave blank to keep the current secret.",
+      "secret_once": "This signing secret is shown once. Store it securely.",
+      "events_help": "Select no events to receive every supported event.",
+      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "save": "Save webhook",
+      "cancel": "Cancel",
+      "empty_title": "No webhook endpoints",
+      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "event": "Event",
+      "status": "Status",
+      "attempt": "Attempt",
+      "http_status": "HTTP status",
+      "details": "Details",
+      "redeliver": "Redeliver",
+      "request_payload": "Request payload",
+      "response": "Response",
+      "no_response": "No response was recorded.",
+      "no_deliveries": "No deliveries yet."
     }
   },
   "lms_navigation": {
@@ -4015,6 +4081,12 @@
       "created": "Automation key created. Save it now because the full secret is only shown once.",
       "rotated": "Automation key rotated. Save the new secret now because it will not be shown again.",
       "revoked": "Automation key revoked."
+    },
+    "webhooks": {
+      "saved": "Webhook saved.",
+      "deleted": "Webhook deleted.",
+      "test_queued": "Test delivery queued.",
+      "redelivery_queued": "Webhook redelivery queued."
     },
     "token_auth": {
       "created": "Signing secret created. Save it now—it won't be shown again.",
@@ -4309,7 +4381,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Join {orgName} on ClassroomIO",
+      "page_title": "Join {orgName} on Classroom",
       "invitation_student": "You've been invited into {orgName} as a student.",
       "invitation_teacher": "You've been invited into {orgName} as a teacher.",
       "invitation_admin": "You've been invited into {orgName} as an admin.",
@@ -4328,7 +4400,7 @@
       }
     },
     "link": {
-      "page_title": "Join {orgName} on ClassroomIO",
+      "page_title": "Join {orgName} on Classroom",
       "invitation_student": "You've been invited to join {orgName} as a student.",
       "invitation_teacher": "You've been invited to join {orgName} as a teacher.",
       "invitation_admin": "You've been invited to join {orgName} as an admin.",

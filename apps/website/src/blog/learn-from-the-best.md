@@ -1,7 +1,7 @@
 ---
 title: 'Learn from the Best and Bypass the Gatekeepers'
 description: 'In today’s digital age, many industries have embraced online solutions, yet education in Africa remains largely tied to physical locations, limiting access to quality learning. Every student should have access to the best teachers in Africa.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/learn-from-the-best.png'
+imageUrl: '/assets/assets/blog/learn-from-the-best.png'
 date: '2024-11-13'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Marketplace', 'Future of Education']
 published: true
 ---
 
-![learn-from-the-best](https://assets.cdn.clsrio.com/blog/learn-from-the-best.png)
+![learn-from-the-best](/assets/assets/blog/learn-from-the-best.png)
 _Learn from the best and bypass the gatekeepers_
 
 ### Introduction

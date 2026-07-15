@@ -1,4 +1,4 @@
-const GITHUB_REPO_URL = 'https://api.github.com/repos/classroomio/classroomio';
+const GITHUB_REPO_URL = 'https://api.github.com/repos/Tedydev-web/classroomio';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 3;
 
 const starsCache = {

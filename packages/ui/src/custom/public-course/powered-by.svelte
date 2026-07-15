@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cn } from '../../tools';
+  import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
 
   interface Props {
     /** Course slug for attribution (passed as ?utm_content=...). */
@@ -8,7 +9,7 @@
     orgSlug?: string | null;
     /** Localized label. */
     label?: string;
-    /** Localized "ClassroomIO" brand label. */
+    /** Localized product brand label. */
     brand?: string;
     /** Logo-only footer (narrow sidebars). */
     compact?: boolean;
@@ -23,7 +24,7 @@
     courseSlug = null,
     orgSlug = null,
     label = 'Powered by',
-    brand = 'ClassroomIO',
+    brand = PRODUCT_NAME,
     compact = false,
     align = 'center',
     utmSource = 'public-course',
@@ -31,7 +32,7 @@
   }: Props = $props();
 
   const href = $derived.by(() => {
-    const url = new URL('https://classroomio.com');
+    const url = new URL(`https://${PRODUCT_HOSTS.marketing}`);
 
     url.searchParams.set('utm_source', utmSource);
     url.searchParams.set('utm_medium', 'powered-by');
@@ -65,7 +66,7 @@
       className
     )}
   >
-    <img src="/logo-192.png" class="ui:size-6" alt="ClassroomIO" />
+    <img src="/logo-192.png" class="ui:size-6" alt="Classroom" />
     {label}
     <a
       {href}

@@ -31,9 +31,7 @@
   });
 
   let rootBgImage = $derived(
-    `https://assets.cdn.clsrio.com/progress-report/backgrounds/${
-      $htmlBody.background || 'blue_tetiary_background'
-    }.webp`
+    `/assets/assets/progress-report/backgrounds/${$htmlBody.background || 'blue_tetiary_background'}.webp`
   );
 </script>
 
@@ -71,7 +69,7 @@
       <div class="relative flex h-full w-full flex-col items-center justify-center gap-3 px-2">
         <!-- avatar -->
         <img
-          src={`https://assets.cdn.clsrio.com/progress-report/avatar/${$htmlBody.avatar || 'avatar_a'}.svg`}
+          src={`/assets/assets/progress-report/avatar/${$htmlBody.avatar || 'avatar_a'}.svg`}
           alt=""
           class="absolute top-0 -mt-[2.2rem] ml-2 h-[25%] w-[25%]"
         />
@@ -90,7 +88,7 @@
                   is {$htmlBody.mood.text}
                 </p>
                 <img
-                  src="https://assets.cdn.clsrio.com/progress-report/emojis/{$htmlBody.mood.iconSrc}.png"
+                  src="/assets/assets/progress-report/emojis/{$htmlBody.mood.iconSrc}.png"
                   alt={$htmlBody.mood.text}
                   class="w-3"
                 />
@@ -131,7 +129,7 @@
       class="bottom-5 mx-auto mt-20 flex w-[50%] items-center justify-center gap-1 rounded-md border bg-white px-2 py-1"
     >
       <img src="/logo-192.png" alt="classroomio logo" class="w-4" />
-      <p class="text-[10px] font-bold">ClassroomIO.com</p>
+      <p class="text-[10px] font-bold">Classroom</p>
     </div>
     <!--  -->
   </div>

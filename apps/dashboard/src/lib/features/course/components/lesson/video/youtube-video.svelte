@@ -85,7 +85,7 @@
   </strong>
 </p>
 <div class="">
-  {#each lessonApi.lesson?.videos || [] as video, index}
+  {#each lessonApi.lesson?.videos || [] as video, index (video.key ?? video.link ?? index)}
     {#if video.type === 'youtube'}
       <div class="flex items-center gap-1">
         <Badge class="max-w-md truncate" variant="secondary">

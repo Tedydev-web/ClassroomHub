@@ -12,6 +12,7 @@
   import { GOALS, ONBOARDING_STEPS, SOURCES, DROPDOWN_ITEMS } from '$features/onboarding/utils/constants';
   import type { OnboardingField } from '$features/onboarding/utils/types';
   import { untrack } from 'svelte';
+  import { PRODUCT_NAME, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
   let fields: OnboardingField = $state({
     fullname: '',
@@ -57,8 +58,8 @@
       <!-- Header With Logo -->
       <div class="flex flex-col items-center">
         <div class="mb-4 flex w-full items-center justify-center">
-          <img src="/logo-192.png" alt="ClassroomIO logo" height="50" width="50" data-atf="1" />
-          <h4 class="text-xl dark:text-white">ClassroomIO</h4>
+          <img src="/logo-192.png" alt={`${PRODUCT_NAME} logo`} height="50" width="50" data-atf="1" />
+          <h4 class="text-xl dark:text-white">{PRODUCT_NAME}</h4>
         </div>
 
         <!-- Loggedin Email -->
@@ -99,7 +100,7 @@
                 bind:value={fields.siteName}
                 placeholder="myschool"
                 prefix="https://"
-                suffix=".classroomio.com"
+                suffix={`.${TENANT_ROOT_DOMAIN}`}
                 oninput={() => {
                   isSiteNameTouched = true;
                 }}
@@ -120,7 +121,7 @@
                 </label>
 
                 <!-- Loop through Goals -->
-                {#each GOALS as goal}
+                {#each GOALS as goal (goal.value)}
                   <label class="mb-1 inline-flex w-full items-center font-light dark:text-white">
                     <input type="radio" bind:group={fields.goal} name="goal" value={goal.value} class="mr-2" />
                     {$t(goal.label)}
@@ -141,7 +142,7 @@
                 </label>
 
                 <!-- Loop through Goals -->
-                {#each SOURCES as source}
+                {#each SOURCES as source (source.value)}
                   <label class="mb-1 inline-flex w-full items-center font-light dark:text-white">
                     <input type="radio" bind:group={fields.source} name="source" value={source.value} class="mr-2" />
                     {$t(source.label)}
@@ -163,7 +164,7 @@
                     <p>{DROPDOWN_ITEMS.find((item) => item.id === fields.locale)?.text}</p>
                   </Select.Trigger>
                   <Select.Content>
-                    {#each DROPDOWN_ITEMS as item}
+                    {#each DROPDOWN_ITEMS as item (item.value)}
                       <Select.Item value={item.id}>{item.text}</Select.Item>
                     {/each}
                   </Select.Content>

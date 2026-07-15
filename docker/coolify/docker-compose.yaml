@@ -1,8 +1,8 @@
-# documentation: https://classroomio.com/docs/self-hosted/coolify
+# documentation: https://classroom.tedydev.io.vn/docs/self-hosted/coolify
 # slogan: Open-source LMS to build and teach courses with lessons, quizzes, certificates, student management, and an AI tutor.
 # category: lms
 # tags: lms, education, courses, teaching, e-learning
-# logo: svgs/classroomio.svg
+# logo: svgs/classroom.svg
 # port: 3082
 
 services:
@@ -52,7 +52,7 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-    exclude_from_hc: true
+    # Coolify health-check exclusion is unnecessary because this is a one-shot init service.
     entrypoint: >
       /bin/sh -c "
       set -e;
@@ -64,7 +64,7 @@ services:
       "
 
   api:
-    image: classroomio/api:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_VERSION:-latest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,6 +78,7 @@ services:
       - PUBLIC_IS_SELFHOSTED=true
       - BETTER_AUTH_SECRET=$SERVICE_HEX_64_BETTERAUTH
       - PRIVATE_SERVER_KEY=$SERVICE_HEX_64_PRIVATESERVER
+      - WEBHOOK_ENCRYPTION_KEY=$SERVICE_HEX_64_WEBHOOKENCRYPTION
       - DASHBOARD_ORIGIN=$SERVICE_URL_DASHBOARD
       - PUBLIC_SERVER_URL=$SERVICE_URL_DASHBOARD
       - OBJECT_STORAGE_ENDPOINT=http://minio:9000
@@ -86,6 +87,10 @@ services:
       - OBJECT_STORAGE_SECRET_ACCESS_KEY=$SERVICE_PASSWORD_MINIO
       - OBJECT_STORAGE_FORCE_PATH_STYLE=true
       - OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=$SERVICE_URL_MINIO/media
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
@@ -99,7 +104,7 @@ services:
       start_period: 30s
 
   dashboard:
-    image: classroomio/dashboard:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_VERSION:-latest}
     depends_on:
       api:
         condition: service_healthy
@@ -114,7 +119,7 @@ services:
       - CSP_MEDIA_SRC_DOMAINS=$SERVICE_URL_MINIO
 
   jobs:
-    image: classroomio/jobs:${CIO_VERSION:-latest}
+    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_VERSION:-latest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,6 +129,8 @@ services:
       - NODE_ENV=production
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgres:5432/${POSTGRES_DB:-classroomio}
+      - PUBLIC_IS_SELFHOSTED=true
+      - WEBHOOK_ENCRYPTION_KEY=$SERVICE_HEX_64_WEBHOOKENCRYPTION
       - OBJECT_STORAGE_ENDPOINT=http://minio:9000
       - OBJECT_STORAGE_PUBLIC_ENDPOINT=$SERVICE_URL_MINIO
       - OBJECT_STORAGE_ACCESS_KEY_ID=$SERVICE_USER_MINIO
@@ -139,6 +146,9 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_SENDER=${SMTP_SENDER}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
 
 volumes:
   postgres-data:

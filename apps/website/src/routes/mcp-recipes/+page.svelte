@@ -91,8 +91,8 @@
       </h1>
 
       <HeroSubtitle>
-        Plug the ClassroomIO MCP server into Cursor, Claude Code, Codex, or OpenCode. Then paste one of these prompts.
-        The agent plans the work, waits for your approval, and runs it.
+        Plug the Classroom MCP server into Cursor, Claude Code, Codex, or OpenCode. Then paste one of these prompts. The
+        agent plans the work, waits for your approval, and runs it.
       </HeroSubtitle>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">

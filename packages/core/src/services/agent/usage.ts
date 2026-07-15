@@ -32,10 +32,11 @@ const PLAN_TOKEN_ALLOWANCES: Record<string, number> = {
 
 // ─── Model Cost Multipliers ───────────────────────────────────────────────────
 
-// Blended multiplier vs Gemini 3.1 Flash Lite baseline ($0.50/1M blended at 80/20 input/output mix); unknown → 1×.
-// gemini-2.5-flash kept for backward compat with historical usage records.
+// Blended multiplier vs Gemini 2.5 Flash Lite baseline ($0.16/1M blended at 80/20 input/output mix); unknown → 1×.
+// Older Gemini models remain for backward compatibility with historical usage records.
 const MODEL_COST_MULTIPLIER: Record<string, number> = {
-  'gemini-3.1-flash-lite': 1,
+  'gemini-2.5-flash-lite': 1,
+  'gemini-3.1-flash-lite': 3.125,
   'gemini-2.5-flash': 1.5,
   'gpt-5.4-mini': 4,
   'claude-sonnet-4-6': 11,

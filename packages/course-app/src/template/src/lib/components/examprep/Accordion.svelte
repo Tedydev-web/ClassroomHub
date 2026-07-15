@@ -9,7 +9,7 @@
 
   let isOpen = $state(false);
   let contentHeight = $state('0px'); // Track the height of the content
-  let contentRef: HTMLDivElement = $state(); // Reference to the content div
+  let contentRef = $state<HTMLDivElement | null>(null); // Reference to the content div
 
   function toggleAccordion() {
     isOpen = !isOpen;
@@ -17,7 +17,7 @@
     if (isOpen) {
       // Measure and set the height when opening
 
-      contentHeight = `${contentRef?.scrollHeight}px`;
+      contentHeight = `${contentRef?.scrollHeight ?? 0}px`;
     } else {
       // Set to 0 height when closing
       contentHeight = '0px';
@@ -29,10 +29,7 @@
   <!-- Accordion Header -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="flex cursor-pointer items-center justify-between rounded bg-white p-4"
-    onclick={toggleAccordion}
-  >
+  <div class="flex cursor-pointer items-center justify-between rounded bg-white p-4" onclick={toggleAccordion}>
     <p class="text-lg font-semibold">{title}</p>
     {#if isOpen}
       <Subtract class="text-xl transition-transform duration-200 ease-in" />

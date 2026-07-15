@@ -36,11 +36,13 @@ export type GetAccountDataResult = {
 export async function getAccountData(userId: string): Promise<GetAccountDataResult> {
   const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
 
-  let [profile, organizations, licenseStatus] = await Promise.all([
+  const [initialProfile, initialOrganizations, licenseStatus] = await Promise.all([
     getProfileById(userId),
     getOrganizationByProfileId(userId),
     isSelfHosted ? getLicenseStatus() : Promise.resolve({ valid: true, features: [] as string[] })
   ]);
+  let profile = initialProfile;
+  let organizations = initialOrganizations;
 
   if (!profile) {
     throw new AppError(`Account not found for user ID: ${userId}`, ErrorCodes.ACCOUNT_NOT_FOUND, 404);

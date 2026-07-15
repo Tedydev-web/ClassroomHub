@@ -53,7 +53,7 @@ export async function preloadVerifiedCustomDomainOrigins(): Promise<void> {
 
 /**
  * Resolves whether a browser `Origin` header value is allowed for CORS / Better Auth.
- * `staticTrustedOriginEntries` may include exact origins or `*` patterns (e.g. https://*.classroomio.com).
+ * `staticTrustedOriginEntries` may include exact origins or wildcard patterns.
  */
 export function resolveTrustedBrowserOrigin(
   origin: string | undefined | null,

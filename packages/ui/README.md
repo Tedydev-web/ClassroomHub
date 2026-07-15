@@ -31,7 +31,7 @@ We maintain a Storybook instance at `packages/storybook` to make it easy to brow
 
 This is especially useful when you're building a new feature and need to find the right existing component — check Storybook first before creating something from scratch.
 
-<img alt="Storybook Preview" src="https://brand.cdn.clsrio.com/storybook-preview.png" />
+<img alt="Storybook Preview" src="/assets/brand/storybook-preview.png" />
 
 To run it locally:
 

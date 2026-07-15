@@ -5,6 +5,7 @@ import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 export interface PaymentRequestData {
   courseId: string;
@@ -26,7 +27,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
     }
 
     const courseName = course.courseTitle || '';
-    const orgName = course.orgName || 'ClassroomIO';
+    const orgName = course.orgName || 'Classroom';
     const branding = buildEmailBranding({
       name: course.orgName,
       avatarUrl: course.orgAvatarUrl,
@@ -56,7 +57,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
           studentFullname: data.studentFullname,
           branding
         },
-        from: buildEmailFromName('ClassroomIO'),
+        from: buildEmailFromName('Classroom'),
         idempotencyKey: `payment-request:teacher:${data.courseId}:${data.studentEmail}`
       });
     } catch (emailError) {
@@ -73,7 +74,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
           orgName,
           branding
         },
-        from: buildEmailFromName(`${orgName} - ClassroomIO`),
+        from: buildEmailFromName(`${orgName} - Classroom`),
         replyTo: teacherEmail,
         idempotencyKey: `payment-request:student:${data.courseId}:${data.studentEmail}`
       });
@@ -85,6 +86,13 @@ export async function createPaymentRequest(data: PaymentRequestData) {
       eventType: SERVER_EVENTS.ENROLLMENT_STARTED,
       courseId: data.courseId,
       props: { path: 'payment-request', orgName }
+    });
+    void emitWebhookEvent(course.orgId, 'course.payment_request.created', {
+      courseId: data.courseId,
+      studentEmail: data.studentEmail,
+      studentFullname: data.studentFullname
+    }).catch((error) => {
+      console.error('Failed to emit payment request webhook:', error);
     });
 
     return {

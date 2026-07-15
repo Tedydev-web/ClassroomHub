@@ -1,4 +1,4 @@
-name: Publish @classroomio/mcp to NPM
+name: Publish @tedydev/classroom-mcp to NPM
 
 on:
   workflow_dispatch:
@@ -36,6 +36,6 @@ jobs:
 
       - name: Publish package
         if: github.event_name == 'workflow_dispatch'
-        run: pnpm --filter @classroomio/mcp publish --no-git-checks --access public
+        run: pnpm --filter @tedydev/classroom-mcp publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

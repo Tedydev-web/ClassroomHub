@@ -14,8 +14,8 @@
     isVisible: boolean;
   }
 
-  let addInput: HTMLInputElement = $state();
-  let buzzSound: HTMLAudioElement;
+  let addInput = $state<HTMLInputElement | null>(null);
+  let buzzSound: HTMLAudioElement | null = null;
   let todoList: TodoItem[] = $state([]);
 
   let countdownTime: number = 25 * 60;
@@ -23,7 +23,7 @@
   let timerState: string = $state('pomodoro');
 
   let isPaused: boolean = $state(true);
-  let timerInterval: any = null;
+  let timerInterval: ReturnType<typeof setInterval> | null = null;
   let isVisible: boolean = false;
 
   const timerSequence = ['pomodoro', 'long-break', 'short-break'];
@@ -73,7 +73,7 @@
     ];
 
     setTimeout(() => {
-      addInput.focus();
+      addInput?.focus();
     }, 50);
 
     saveTodoList();
@@ -91,9 +91,9 @@
         countdownTime--;
         updateCountdownDisplay();
       } else {
-        clearInterval(timerInterval);
+        if (timerInterval) clearInterval(timerInterval);
         countdownDisplay = '00:00';
-        buzzSound.play();
+        void buzzSound?.play();
       }
     }, 1000);
   }
@@ -104,11 +104,11 @@
     }
 
     isPaused = true;
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval);
   }
 
   function resetCountdown() {
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval);
 
     switch (timerState) {
       case 'pomodoro':
@@ -145,15 +145,15 @@
   }
 
   onMount(() => {
-    buzzSound = new Audio('https://assets.cdn.clsrio.com/beeping-sound.mp3');
+    buzzSound = new Audio('/assets/assets/beeping-sound.mp3');
     loadTodoList();
   });
 </script>
 
 <svelte:head>
-  <title>Pomodoro Timer | ClassroomIO</title>
+  <title>Pomodoro Timer | Classroom</title>
   <meta property="og:image" itemprop="image" content="" />
-  <meta property="og:title" content="Pomodoro Timer | ClassroomIO" />
+  <meta property="og:title" content="Pomodoro Timer | Classroom" />
   <meta
     property="og:description"
     content="Make your workday more engaging and effective with the Pomodoro timer, break work into 25-minute focused intervals called 'pomodoros', followed by 5-minute breaks"
@@ -161,7 +161,7 @@
 
   <meta property="og:image:secure_url" itemprop="image" content="" />
 
-  <meta name="twitter:title" content="Pomodoro Timer | ClassroomIO" />
+  <meta name="twitter:title" content="Pomodoro Timer | Classroom" />
   <meta
     name="twitter:description"
     content="Make your workday more engaging and effective with the Pomodoro timer, break work into 25-minute focused intervals called 'pomodoros', followed by 5-minute breaks"

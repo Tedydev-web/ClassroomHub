@@ -11,9 +11,7 @@
   <BorderBeam />
   <DotPattern />
   <img src={Santa} alt="Santa" class="z-20 h-28 w-28" />
-  <h3 class="z-20 mb-6 text-center font-sans text-3xl font-bold md:text-5xl">
-    Buy A Custom Template
-  </h3>
+  <h3 class="z-20 mb-6 text-center font-sans text-3xl font-bold md:text-5xl">Buy A Custom Template</h3>
 
   <BuyTemplate ctaLabel="Learn More" />
 </div>

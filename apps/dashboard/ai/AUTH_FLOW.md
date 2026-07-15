@@ -4,7 +4,7 @@ Documenting my thoughts on how authentication works in the app.
 
 ## Simplified breakdown
 
-### dashboard (app.classroomio.com)
+### dashboard (app.classroom.tedydev.io.vn)
 
 - sign up (email, password or google auth)
 - redirect to onboarding.
@@ -17,7 +17,7 @@ Documenting my thoughts on how authentication works in the app.
 - sign up or login
 - update org with role (as role in invite)
 
-### lms (school.classroomio.com)
+### lms (school.classroom.tedydev.io.vn)
 
 - create email and password
 - join org as student (automatically).

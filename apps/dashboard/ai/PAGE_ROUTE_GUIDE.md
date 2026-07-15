@@ -50,7 +50,7 @@ The dashboard has two main route contexts:
 </script>
 
 <svelte:head>
-  <title>Feature Name - ClassroomIO</title>
+  <title>Feature Name - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full">
@@ -176,7 +176,7 @@ Settings pages follow a specific pattern with layouts and subroutes.
 </script>
 
 <svelte:head>
-  <title>Settings - ClassroomIO</title>
+  <title>Settings - Classroom</title>
 </svelte:head>
 
 <Page.Header>
@@ -208,7 +208,7 @@ Settings pages follow a specific pattern with layouts and subroutes.
 </script>
 
 <svelte:head>
-  <title>Subroute Name - ClassroomIO</title>
+  <title>Subroute Name - Classroom</title>
 </svelte:head>
 
 <Page.Header>
@@ -579,7 +579,7 @@ export async function load({ params }) {
 </script>
 
 <svelte:head>
-  <title>Courses - ClassroomIO</title>
+  <title>Courses - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full">
@@ -621,7 +621,7 @@ export async function load({ params }) {
 </script>
 
 <svelte:head>
-  <title>Customize LMS - ClassroomIO</title>
+  <title>Customize LMS - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full md:max-w-4xl lg:mx-auto">

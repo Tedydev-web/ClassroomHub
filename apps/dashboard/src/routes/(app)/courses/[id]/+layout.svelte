@@ -41,7 +41,6 @@
 
   interface Props {
     children?: import('svelte').Snippet;
-    path: string;
     data: {
       course?: Course;
       courseId: string;
@@ -49,7 +48,8 @@
     };
   }
 
-  let { children, path, data }: Props = $props();
+  let { children, data }: Props = $props();
+  const path = $derived(page.url.pathname);
   let sidebarWidth = $state(COURSE_SIDEBAR_DEFAULT_WIDTH);
   let hasLoadedSidebarWidth = $state(false);
   let sidebarProviderElement = $state<HTMLDivElement | null>(null);
@@ -158,7 +158,7 @@
 </script>
 
 <svelte:head>
-  <title>{courseApi.course?.title || 'ClassroomIO Course'}</title>
+  <title>{courseApi.course?.title || 'Classroom Course'}</title>
 </svelte:head>
 
 {#if isCourseReady}

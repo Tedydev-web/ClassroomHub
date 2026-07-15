@@ -52,8 +52,8 @@ The MCP server forwards that credential to ClassroomIO on every request.
 Example environment:
 
 ```bash
-CLASSROOMIO_API_URL=https://api.classroomio.example
-CLASSROOMIO_API_KEY=cio_mcp_xxxxx
+CLASSROOM_API_URL=https://api.classroom.tedydev.io.vn
+CLASSROOM_API_KEY=classroom_mcp_xxxxx
 ```
 
 Recommended request header:

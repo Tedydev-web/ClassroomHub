@@ -3,7 +3,7 @@
  *
  * Approximated forwards customer domains straight to the dashboard Render
  * service, so `/proxy/*` and `/api/auth/*` never reach the API unless we
- * forward them here. Tenant subdomains on `*.myclassroomio.com` hit the
+ * forward them here. Tenant subdomains on the platform root hit the
  * Cloudflare Worker first and normally never exercise this path.
  */
 

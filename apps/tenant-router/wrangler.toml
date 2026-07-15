@@ -1,28 +1,28 @@
-name = "cio-tenant-router"
+name = "classroom-tenant-router"
+account_id = "da02bc7e271f6874328a990774afac5e"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
 # Production routes — bind the Worker to every browser-facing host.
-# Tenant subdomains and the apex live on the `myclassroomio.com` zone.
-# The admin app `app.classroomio.com` is routed through the Worker so
+# Tenant subdomains and platform hosts live on the `tedydev.io.vn` zone.
+# The admin app is routed through the Worker so
 # it can use same-origin `/api/*` paths with host-only auth cookies.
 routes = [
-  { pattern = "*.myclassroomio.com/*", zone_name = "myclassroomio.com" },
-  { pattern = "myclassroomio.com/*", zone_name = "myclassroomio.com" },
-  { pattern = "app.classroomio.com/*", zone_name = "classroomio.com" },
-  { pattern = "embed.classroomio.com/*", zone_name = "classroomio.com" }
+  { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "learn.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "app.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "embed.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
 ]
 
-# Override per environment. Both values are the `.onrender.com` hostnames
-# of the dashboard and API services (no scheme, no path).
+# Override per environment. Origins must bypass this Worker to prevent loops.
 [vars]
-# Despite the name, `cio-api.onrender.com` is the **dashboard** service
-# (apps/dashboard). The actual API service is `cio-api-vymh.onrender.com`.
-DASHBOARD_UPSTREAM_HOST = "cio-api.onrender.com"
-API_UPSTREAM_HOST = "cio-api-vymh.onrender.com"
-APEX_REDIRECT_TARGET = "https://classroomio.com"
-EMBED_HOST = "embed.classroomio.com"
-API_URL = "https://api.classroomio.com"
+DASHBOARD_UPSTREAM_HOST = "dashboard-origin.tedydev.io.vn"
+API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
+APEX_REDIRECT_HOST = "learn.classroom.tedydev.io.vn"
+APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
+EMBED_HOST = "embed.classroom.tedydev.io.vn"
+API_URL = "https://api.classroom.tedydev.io.vn"
 
 # R2 bucket binding so /hls/* can stream segments directly from Cloudflare,
 # bypassing Render. The bucket name matches the storage config in
@@ -38,7 +38,7 @@ bucket_name = "assets"
 
 # HLS_SIGNING_SECRET is set via `wrangler secret put HLS_SIGNING_SECRET` —
 # never commit it. The same value must be set as HLS_SIGNING_SECRET on the
-# API (Render env) so the cookie minted by the API verifies on the Worker.
+# API so the cookie minted by the API verifies on the Worker.
 
 [observability]
 enabled = true

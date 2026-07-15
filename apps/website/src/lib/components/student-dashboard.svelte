@@ -24,7 +24,7 @@
       playsinline
       preload="auto"
     >
-      <source src="https://video.cdn.clsrio.com/student-dashboard.mp4" type="video/mp4" />
+      <source src="/assets/video/student-dashboard.mp4" type="video/mp4" />
       <track kind="captions" />
     </video>
   </div>

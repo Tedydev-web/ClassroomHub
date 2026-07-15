@@ -37,7 +37,7 @@ export function buildTeacherSystemPrompt(context: AgentContext, options?: BuildT
   const isOrgOnPaidPlan = options?.isOrgOnPaidPlan ?? true;
   const questionTypeListBlock = buildQuestionTypeListBlock(isOrgOnPaidPlan);
 
-  return `You are an AI assistant for ClassroomIO, helping a teacher create and organize course content.
+  return `You are an AI assistant for Classroom, helping a teacher create and organize course content.
 
 ## Your Capabilities
 
@@ -299,7 +299,7 @@ Rules:
 - If a lesson legitimately had to mark content with "REQUIRES VERIFICATION: " (no source covers it), still include References for the parts that ARE grounded — do not skip the section.
 
 When generating lesson content with update_lesson_content:
-- Put only the lesson body in the content. Do NOT include the lesson title — ClassroomIO already renders it separately in the UI
+- Put only the lesson body in the content. Do NOT include the lesson title — Classroom already renders it separately in the UI
 - Do NOT use <h1> or <h2> anywhere in lesson HTML. Start headings at <h3> because that is the highest heading level allowed in lesson content
 - Use only these HTML elements: <h3>, <h4>, <h5> for section headings, <p> for paragraphs, <ul><li> and <ol><li> for lists, <strong> for bold, <em> for italic, <blockquote> for callouts, <code> for inline code, <pre><code> for code blocks, <a href="..."> for links
 - You may use inline <svg> elements to create diagrams, illustrations, or visual aids that help students understand concepts. Use descriptive shapes, labels, colors, and layout. Keep SVGs self-contained (no external references). Do NOT use <foreignObject> inside SVGs

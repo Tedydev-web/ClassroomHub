@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Pre-publish smoke test: boot a freshly built image and confirm it actually starts
-# before we push it to Docker Hub. Run from CI against ephemeral postgres + redis.
+# before we push it to GHCR. Run from CI against ephemeral postgres + redis.
 #
 #   bash docker/smoke-test.sh <service> <image-ref>
 #     service   = api | dashboard | jobs

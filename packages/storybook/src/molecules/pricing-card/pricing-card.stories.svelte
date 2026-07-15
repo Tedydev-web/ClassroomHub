@@ -31,7 +31,7 @@
       '20 Students',
       'AI Course Builder (no video upload)',
       '50K AI credits / month',
-      'ClassroomIO branding'
+      'Classroom branding'
     ],
     CTA: {
       LABEL: 'Signup Now',
@@ -83,9 +83,9 @@
     FEATURES: ['Everything in Early Adopters plus:', 'Unlimited students', 'Custom Domain', '24/7 Support'],
     CTA: {
       LABEL: 'Contact Us',
-      LINK: 'https://cal.com/classroomio/enterprise',
+      LINK: 'mailto:hieudat2310.bh@gmail.com?subject=Classroom enterprise',
       DASHBOARD_LABEL: 'Contact Us',
-      DASHBOARD_LINK: 'https://cal.com/classroomio/enterprise',
+      DASHBOARD_LINK: 'mailto:hieudat2310.bh@gmail.com?subject=Classroom enterprise',
       IS_DISABLED: false
     }
   };

@@ -29,12 +29,8 @@
   {#if $homePage}
     {@const content = getPageSection($homePage, SECTION.HERO)}
     {#if content?.show}
-      <section
-        class="flex min-h-full items-center justify-center overflow-hidden px-10 pt-24 md:px-14"
-      >
-        <section
-          class="flex flex-col-reverse items-center justify-center gap-5 text-center md:flex-col"
-        >
+      <section class="flex min-h-full items-center justify-center overflow-hidden px-10 pt-24 md:px-14">
+        <section class="flex flex-col-reverse items-center justify-center gap-5 text-center md:flex-col">
           <div class="mb-4 w-full space-y-6">
             <p class="mx-auto w-full text-3xl font-bold md:w-[80%] md:text-5xl lg:w-[70%]">
               {content.settings.title}
@@ -62,7 +58,7 @@
         </section>
       </section>
 
-      <hr class="border-posthog-border mb-10 mt-5" />
+      <hr class="mb-10 mt-5 border-posthog-border" />
     {/if}
   {/if}
 
@@ -71,24 +67,18 @@
     <section id="course" class="h-full px-4 pb-20 pt-4 md:px-10">
       <h1 class="mx-auto mb-8 w-full text-center text-3xl font-bold md:w-[90%] lg:w-[70%]">
         {coursesSection.settings.title}
-        <span class="text-[#F54E00] dark:text-[#EB9D2A]"
-          >{coursesSection.settings.titleHighlight}</span
-        >
+        <span class="text-[#F54E00] dark:text-[#EB9D2A]">{coursesSection.settings.titleHighlight}</span>
       </h1>
       {#if $courses.length > 0}
         <section class="mx-auto flex flex-wrap items-center justify-center gap-4">
           {#each $courses.slice(0, viewAll ? $courses.length : 3) as courseData}
-            <CourseCard
-              slug={courseData.slug}
-              title={courseData.title}
-              description={courseData.description}
-            />
+            <CourseCard slug={courseData.slug} title={courseData.title} description={courseData.description} />
           {/each}
         </section>
         {#if $courses.length > 3}
           <div class="my-5 flex w-full items-center justify-center">
             <Button
-              on:click={() => (viewAll = !viewAll)}
+              onclick={() => (viewAll = !viewAll)}
               class="mb-4 bg-white font-bold capitalize text-black shadow-[0px_3px_#B17816] ring-1 ring-[#B17816] hover:scale-95 hover:bg-[#EB9D2A] dark:bg-[#EB9D2A] dark:text-black"
             >
               {viewAll === true ? 'Show less' : 'View more courses'}
@@ -101,15 +91,12 @@
         </div>
       {/if}
     </section>
-    <hr class="border-posthog-border mb-10" />
+    <hr class="mb-10 border-posthog-border" />
   {/if}
 
   <!-- about -->
   {#if aboutSection?.show}
-    <section
-      id="about"
-      class="mx-auto h-full w-full px-4 pb-20 pt-4 md:w-[90%] md:px-10 lg:w-[80%]"
-    >
+    <section id="about" class="mx-auto h-full w-full px-4 pb-20 pt-4 md:w-[90%] md:px-10 lg:w-[80%]">
       <h1 class="mb-2 text-start text-3xl font-bold md:w-[50%]">{aboutSection.settings.title}</h1>
       <p class="mb-8 text-start text-sm font-semibold text-[#3D3D3D] dark:text-white md:w-[70%]">
         {aboutSection.settings.subtitle}
@@ -131,7 +118,7 @@
         </section>
       </div>
     </section>
-    <hr class="border-posthog-border mb-10" />
+    <hr class="mb-10 border-posthog-border" />
   {/if}
 
   <!-- faq -->
@@ -144,7 +131,7 @@
         {/each}
       </div>
     </div>
-    <hr class="border-posthog-border my-10" />
+    <hr class="my-10 border-posthog-border" />
   {/if}
 
   <!-- cta -->
@@ -154,9 +141,7 @@
         class="mx-auto flex w-fit flex-col items-center justify-between space-y-4 rounded-md bg-[#E5E7E0] px-2 py-20 dark:bg-[#232429] md:w-[80%] lg:px-5"
       >
         <div class="flex w-full items-center justify-center">
-          <p
-            class="mx-auto w-full text-center text-4xl font-bold capitalize lg:w-[90%] xl:text-start"
-          >
+          <p class="mx-auto w-full text-center text-4xl font-bold capitalize lg:w-[90%] xl:text-start">
             {ctaSection.settings.title}
 
             <span class="text-[#F54E00]">{ctaSection.settings.titleHighlight}</span>

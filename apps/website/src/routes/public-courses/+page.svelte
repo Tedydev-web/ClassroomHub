@@ -45,7 +45,7 @@
       Icon: Sparkles,
       title: 'Clean lesson pages',
       description:
-        'Public course pages use the same design system as the rest of ClassroomIO, so they feel like part of your product instead of a separate microsite.'
+        'Public course pages use the same design system as the rest of Classroom, so they feel like part of your product instead of a separate microsite.'
     },
     {
       Icon: Zap,
@@ -88,7 +88,7 @@
     {
       title: 'Switch type to PUBLIC',
       description:
-        'Change the course type to `PUBLIC`. If a question type is not supported, ClassroomIO flags it before publish.',
+        'Change the course type to `PUBLIC`. If a question type is not supported, Classroom flags it before publish.',
       label: 'Step 02'
     },
     {
@@ -108,7 +108,7 @@
     {
       question: 'Does hosting a public course cost extra?',
       answer:
-        'No. Public courses are part of your existing ClassroomIO workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course.'
+        'No. Public courses are part of your existing Classroom workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course.'
     },
     {
       question: 'Can I require payment, or capture leads on a public course?',
@@ -118,7 +118,7 @@
     {
       question: 'Do I need a custom domain?',
       answer:
-        'No. Every public course is available on your ClassroomIO public site by default. A custom domain is optional if you want the course to live at your own URL.'
+        'No. Every public course is available on your Classroom public site by default. A custom domain is optional if you want the course to live at your own URL.'
     },
     {
       question: 'Can search engines index a public course?',
@@ -144,12 +144,12 @@
 </script>
 
 <svelte:head>
-  <title>Public Courses | ClassroomIO</title>
+  <title>Public Courses | Classroom</title>
   <meta
     name="description"
     content="Publish public courses on your own branded page, with built-in quizzes, lesson callouts, and optional custom domains."
   />
-  <meta property="og:title" content="Public Courses | ClassroomIO" />
+  <meta property="og:title" content="Public Courses | Classroom" />
   <meta
     property="og:description"
     content="A branded public course page for sharing free lessons, quizzes, and previews before someone enrolls."
@@ -174,14 +174,16 @@
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" data-cal-link="classroomio/demo">Book a Demo</Button>
+        <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+          >Book a Demo</Button
+        >
         <Button href="/signup" variant="outline">Start free</Button>
       </div>
     </div>
 
     <div class="mx-auto mt-14 w-full max-w-[1100px]">
       <img
-        src="https://assets.cdn.clsrio.com/www/public-courses/public-courses-hero.jpeg"
+        src="/assets/assets/www/public-courses/public-courses-hero.jpeg"
         alt="Public course page on desktop"
         width="1920"
         height="1481"
@@ -307,7 +309,7 @@
         </ul>
       </div>
       <img
-        src="https://assets.cdn.clsrio.com/www/public-courses/public-course-empty-state.jpeg"
+        src="/assets/assets/www/public-courses/public-course-empty-state.jpeg"
         alt="Public course empty state in the dashboard"
         width="1920"
         height="1410"
@@ -324,7 +326,7 @@
   <WorkflowSteps
     eyebrow="How it works"
     title="Set it up in the same workflow you already use."
-    description="You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of ClassroomIO."
+    description="You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of Classroom."
     steps={workflow}
   />
 
@@ -341,7 +343,7 @@
   <!-- Final CTA -->
   <PageSignupCTA
     header="Publish a public course without spinning up a separate site."
-    subText="Use the same ClassroomIO workspace to share free lessons, add quizzes, and point interested learners toward the next step."
+    subText="Use the same Classroom workspace to share free lessons, add quizzes, and point interested learners toward the next step."
     btnLabel="Book a Demo"
   />
 </section>

@@ -20,7 +20,7 @@
     <QuizLoader />
     <QuizLoader />
   {:else}
-    {#each quizApi.quizzes as quiz}
+    {#each quizApi.quizzes as quiz (quiz.id)}
       <QuizCard {quiz} totalQuestions={quiz.questions?.length || 0} />
     {:else}
       <Empty

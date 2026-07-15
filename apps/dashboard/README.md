@@ -1,10 +1,10 @@
-<a href="https://classroomio.com/">
-  <img alt="A flexible, user-friendly platform for creating, managing, and delivering trainings for companies and training organisations" src="https://brand.cdn.clsrio.com/og/classroomio-opengraph.jpg" />
+<a href="https://classroom.tedydev.io.vn/">
+  <img alt="A flexible, user-friendly platform for creating, managing, and delivering trainings for companies and training organisations" src="/assets/brand/og/classroomio-opengraph.jpg" />
   <h1 align="center">ClassroomIO</h1>
   <p align="center">
     The Open Source Teaching Platform for Bootcamps
     <br />
-    <a href="https://classroomio.com">Website</a>  |  <a href="https://dub.sh/ciodiscord">Join Discord community</a>
+    <a href="https://classroom.tedydev.io.vn">Website</a>  |  <a href="https://dub.sh/ciodiscord">Join Discord community</a>
   </p>
 </a>
 
@@ -12,7 +12,7 @@
 
 ## ✨ About ClassroomIO
 
-<img alt="ClassroomIO Courses page" src="https://brand.cdn.clsrio.com/classroomio-courses.png" />
+<img alt="ClassroomIO Courses page" src="/assets/brand/classroomio-courses.png" />
 
 Streamline training for everyone with ClassroomIO.com. Our all-in-one platform empowers bootcamps, educators, and businesses to manage training programs easily. With our platform, anyone can run multiple classes and cohorts all from one UI. The application is mobile-first, which means that students can access your lesson materials from any device.
 
@@ -42,9 +42,9 @@ Please reach out to me on [twitter](https://x.com/rotimi_best) if you have any f
 
 ## Built With
 
-- [Svelekit](https://kit.svelte.dev/?ref=classroomio.com)
-- [Better Auth](https://www.better-auth.com/?ref=classroomio.com)
-- [TailwindCSS](https://tailwindcss.com/?ref=classroomio.com)
+- [Svelekit](https://kit.svelte.dev/?ref=classroom.tedydev.io.vn)
+- [Better Auth](https://www.better-auth.com/?ref=classroom.tedydev.io.vn)
+- [TailwindCSS](https://tailwindcss.com/?ref=classroom.tedydev.io.vn)
 
 ## Get a Demo
 
@@ -117,5 +117,5 @@ Here is what you need to be able to run Cal.com.
 
 You can find other repos related to classroomio here:
 
-- Help Docs: <https://github.com/rotimi-best/classroomio.com/docs>
-- ClassroomIO.com: <https://github.com/rotimi-best/classroomio.com>
+- Help Docs: <https://github.com/rotimi-best/classroom.tedydev.io.vn/docs>
+- ClassroomIO.com: <https://github.com/rotimi-best/classroom.tedydev.io.vn>

@@ -115,7 +115,7 @@
 </script>
 
 <svelte:head>
-  <title>Setup - ClassroomIO</title>
+  <title>Setup - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full md:max-w-4xl lg:mx-auto">
@@ -143,7 +143,7 @@
                 {$t('setup.completed')}
               </Item.Description>
               <div class="flex gap-1">
-                {#each Array(total) as _, i}
+                {#each Array(total) as _, i (i)}
                   <div
                     class="size-2 rounded-full {i < completed ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}"
                   ></div>
@@ -155,7 +155,7 @@
 
         <!-- Setup Items -->
         <Item.Group class="space-y-2">
-          {#each setupList as list}
+          {#each setupList as list (list.id)}
             <Item.Root variant="muted" class={list.is_completed ? 'opacity-60' : ''}>
               <Item.Media variant="icon">
                 {#if list.is_completed}

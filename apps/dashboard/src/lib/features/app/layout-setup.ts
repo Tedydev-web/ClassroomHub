@@ -6,6 +6,7 @@ import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 import { blockedSubdomain } from '$lib/utils/constants/app';
 import { env } from '$env/dynamic/private';
 import { getApiKeyHeaders } from '$lib/utils/services/api/server';
+import { BRAND_ROOT_DOMAIN, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
 export interface OrgSiteInfo {
   isOrgSite: boolean;
@@ -100,7 +101,7 @@ function isURLCustomDomain(url: URL) {
     return false;
   }
 
-  const notCustomDomainHosts = [env.PRIVATE_APP_HOST || '', 'classroomio.com', 'myclassroomio.com'].filter(Boolean);
+  const notCustomDomainHosts = [env.PRIVATE_APP_HOST || '', BRAND_ROOT_DOMAIN, TENANT_ROOT_DOMAIN].filter(Boolean);
 
   return !notCustomDomainHosts.some((host) => url.host.endsWith(host));
 }

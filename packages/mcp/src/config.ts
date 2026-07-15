@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 const ZConfig = z.object({
-  CLASSROOMIO_API_URL: z.url().default('https://api.classroomio.com'),
-  CLASSROOMIO_API_KEY: z.string().min(1),
-  CLASSROOMIO_USER_AGENT: z.string().min(1).default('classroomio-mcp/0.0.9')
+  CLASSROOM_API_URL: z.url().default('https://api.classroom.tedydev.io.vn'),
+  CLASSROOM_API_KEY: z.string().min(1),
+  CLASSROOMIO_USER_AGENT: z.string().min(1).default('classroom-mcp/0.0.9')
 });
 
 export type McpServerConfig = z.infer<typeof ZConfig>;

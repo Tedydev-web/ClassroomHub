@@ -49,7 +49,7 @@
 
   const currentTheme = $derived(normalized.theme as LandingPageTheme);
 
-  const CDN_BASE = 'https://assets.cdn.clsrio.com/templates';
+  const CDN_BASE = '/assets/templates';
 
   const themeCards = [
     {

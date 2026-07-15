@@ -14,4 +14,4 @@ export interface UserType {
   expiresAt: number;
 }
 
-export interface ProfileType {}
+export type ProfileType = Record<string, unknown>;

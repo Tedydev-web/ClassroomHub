@@ -2,10 +2,11 @@
  * @cio/tenant-router — Cloudflare Worker that fronts every browser-facing host.
  *
  * Routes (see wrangler.toml):
- *   - *.myclassroomio.com/*         — free-tier tenant sites (acme.myclassroomio.com)
- *   - myclassroomio.com/*           — apex (301 → classroomio.com)
- *   - app.classroomio.com/*         — admin dashboard
- *   - embed.classroomio.com/*       — public embed widgets (`/{name}` → R2 `assets`)
+ *   - classroom.tedydev.io.vn/*     — product apex
+ *   - *.classroom.tedydev.io.vn/*   — tenant sites
+ *   - learn.classroom.tedydev.io.vn/* — legacy learning apex redirect
+ *   - app.classroom.tedydev.io.vn/* — admin dashboard
+ *   - embed.classroom.tedydev.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
  *   - <BYOD>/*                      — customer-owned domains via Cloudflare for SaaS
  *
  * Per request, the Worker decides upstream by path:
@@ -42,9 +43,10 @@ interface Env {
   DASHBOARD_UPSTREAM_HOST: string;
   API_UPSTREAM_HOST: string;
   APEX_REDIRECT_TARGET: string;
-  /** Hostname that serves embed widget assets from R2 (e.g. embed.classroomio.com). */
+  APEX_REDIRECT_HOST: string;
+  /** Hostname that serves embed widget assets from R2. */
   EMBED_HOST: string;
-  /** Public API origin injected into embed scripts (e.g. https://api.classroomio.com). */
+  /** Public API origin injected into embed scripts. */
   API_URL: string;
   /** HMAC-SHA256 secret shared with the API to sign cio_hls tokens. */
   HLS_SIGNING_SECRET: string;
@@ -279,8 +281,8 @@ export default {
     const url = new URL(request.url);
     const originalHost = request.headers.get('host') ?? url.host;
 
-    // Apex on myclassroomio.com → permanent redirect to marketing apex.
-    if (originalHost === 'myclassroomio.com') {
+    // Legacy learning apex → permanent redirect to marketing apex.
+    if (originalHost === env.APEX_REDIRECT_HOST) {
       const target = new URL(env.APEX_REDIRECT_TARGET);
       target.pathname = url.pathname;
       target.search = url.search;

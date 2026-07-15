@@ -33,7 +33,8 @@
         {subheading}
       {:else}
         Can't find the answer you're looking for?
-        <a class="text-blue-700 hover:underline" href="mailto:help@classroomio.com" target="_blank">Shoot us an email</a
+        <a class="text-blue-700 hover:underline" href="mailto:hieudat2310.bh@gmail.com" target="_blank"
+          >Shoot us an email</a
         > and we'll get back to you ASAP.
       {/if}
     </p>
@@ -57,7 +58,7 @@
       header="Your Custom Academy – Up & Running in Minutes!"
       subText="Try before you buy. No credit card required."
       btnLabel="Book a demo"
-      link="classroomio/demo"
+      link="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
     />
   {/if}
 </div>

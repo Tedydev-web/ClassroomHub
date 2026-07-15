@@ -66,7 +66,9 @@
   });
 
   $effect(() => {
-    startCoursePayment && handleJoinCourse();
+    if (startCoursePayment) {
+      void handleJoinCourse();
+    }
   });
 </script>
 

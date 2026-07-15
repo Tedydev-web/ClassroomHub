@@ -41,14 +41,13 @@ const envSchema = z.object({
   ZOHO_TOKEN: z.string().optional(),
   TRUSTED_ORIGINS: z.string().optional(),
   PRIVATE_SERVER_KEY: z.string().optional(),
+  WEBHOOK_ENCRYPTION_KEY: z.string().optional(),
   PROJECT_ID_VERCEL: z.string().optional(),
   TEAM_ID_VERCEL: z.string().optional(),
   UNSPLASH_API_KEY: z.string().optional(),
   /** When 'true', instance runs in self-hosted mode: single org, auto-enroll as student, no org switching */
   PUBLIC_IS_SELFHOSTED: z.string().optional(),
-  /** License key for enterprise features (SSO, token-auth, no-tracking, etc.) */
-  LICENSE_KEY: z.string().optional(),
-  /** Dashboard origin for invite/email links (e.g. https://app.yourdomain.com). When set, all email links point here instead of app.classroomio.com. Required for self-hosted. */
+  /** Dashboard origin for invite/email links. When set, all email links use this deployment-specific origin. */
   DASHBOARD_ORIGIN: z.string().optional(),
   /**
    * Shared password for the /admin/queues HTTP Basic Auth prompt. When set, the

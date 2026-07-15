@@ -6,6 +6,7 @@ declare global {
         appId: string,
         options?: {
           widget?: boolean;
+          trigger?: 'custom';
           position?: 'left' | 'right';
           theme?: 'auto' | 'light' | 'dark';
         }

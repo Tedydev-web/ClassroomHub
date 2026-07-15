@@ -1,7 +1,7 @@
 ---
 title: 'Welcome to Launch Week <i>001</i>'
-description: 'We are excited to announce our first launch week for ClassroomIO.com. We will be sharing a new feature every day for 5 days.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/launch-week-001.png'
+description: 'We are excited to announce our first launch week for Classroom. We will be sharing a new feature every day for 5 days.'
+imageUrl: '/assets/assets/blog/launch-week-001.png'
 date: '2024-10-07'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,10 +10,10 @@ tags: ['Launch Week', 'Company Update']
 published: true
 ---
 
-![classroomio-launch-week-001](https://assets.cdn.clsrio.com/blog/launch-week-001.png)
+![classroomio-launch-week-001](/assets/assets/blog/launch-week-001.png)
 _ClassroomIO Launch Week 001_
 
-Welcome to our first launch week for ClassroomIO.com.
+Welcome to our first launch week for Classroom.
 
 I have personally enjoyed watching the likes of Supabase, Resend, Documenso and many other amazing products do launch weeks and I decided why not give it a try.
 

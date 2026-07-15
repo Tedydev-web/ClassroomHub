@@ -1,7 +1,7 @@
 {
   "name": "@cio/api",
   "version": "0.0.1",
-  "description": "ClassroomIO Backend for long processes",
+  "description": "Classroom API and background-process backend",
   "main": "dist/index.js",
   "type": "module",
   "files": [
@@ -15,22 +15,23 @@
     "dev:tsc": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "deploy": "wrangler deploy",
     "start": "node dist/index.js",
-    "test": "vitest NODE_ENV=test",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:scorm-smoke": "tsx scripts/scorm-smoke.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "upload:openapi": "tsx scripts/upload-openapi-spec.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/classroomio/classroomio.git"
+    "url": "git+https://github.com/Tedydev-web/classroomio.git"
   },
-  "author": "",
+  "author": "Classroom <hieudat2310.bh@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/classroomio/classroomio/issues"
+    "url": "https://github.com/Tedydev-web/classroomio/issues"
   },
-  "homepage": "https://github.com/classroomio/classroomio#readme",
+  "homepage": "https://github.com/Tedydev-web/classroomio#readme",
   "exports": {
     "./rpc-types": {
       "types": "./dist/rpc-types.d.ts",
@@ -40,10 +41,10 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.388.0",
     "@aws-sdk/s3-request-presigner": "^3.675.0",
-    "@cio/core": "workspace:*",
     "@cio/ai-assistant": "workspace:*",
     "@cio/analytics": "workspace:*",
     "@cio/certificates": "workspace:*",
+    "@cio/core": "workspace:*",
     "@cio/db": "workspace:*",
     "@cio/email": "workspace:*",
     "@cio/jobs": "workspace:*",
@@ -60,10 +61,12 @@
     "css-tree": "^3.2.1",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.44.7",
+    "fast-xml-parser": "5.2.5",
     "hono": "^4.11.3",
     "hono-openapi": "^1.0.8",
     "hono-rate-limiter": "^0.4.2",
     "isomorphic-dompurify": "^3.7.1",
+    "jszip": "3.10.1",
     "katex": "^0.16.10",
     "marked": "^7.0.3",
     "nanoid": "^5.1.5",
@@ -73,16 +76,17 @@
   },
   "devDependencies": {
     "@types/katex": "^0.16.7",
-    "@types/node": "^20.19.0",
-    "@typescript-eslint/eslint-plugin": "7.0.1",
-    "@typescript-eslint/parser": "7.0.1",
+    "@types/node": "^22.15.0",
+    "@eslint/js": "^9.36.0",
     "@vitest/coverage-v8": "^1.2.2",
     "eslint": "^9.31.0",
+    "globals": "^16.4.0",
     "prettier": "3.6.2",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.7.1",
     "typescript": "^5.5.2",
+    "typescript-eslint": "^8.44.1",
     "vitest": "^1.2.2",
     "wrangler": "4.21.x"
   }

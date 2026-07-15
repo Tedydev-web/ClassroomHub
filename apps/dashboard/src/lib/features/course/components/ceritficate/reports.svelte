@@ -8,10 +8,11 @@
   import { Checkbox } from '@cio/ui/base/checkbox';
 
   import { CertificateReportData, students } from './mockData';
+  import { SvelteSet } from 'svelte/reactivity';
 
   let searchValue = $state('');
   let selectAll = $state(false);
-  let selectedStudents = $state(new Set());
+  let selectedStudents = new SvelteSet();
 
   let currentPage = $state(1);
   const pageSize = 10;
@@ -24,9 +25,9 @@
   function toggleSelectAll() {
     selectAll = !selectAll;
     if (selectAll) {
-      selectedStudents = new Set(paginatedStudents.map((s) => s.id));
+      selectedStudents = new SvelteSet(paginatedStudents.map((s) => s.id));
     } else {
-      selectedStudents = new Set();
+      selectedStudents = new SvelteSet();
     }
   }
 
@@ -36,7 +37,6 @@
     } else {
       selectedStudents.add(id);
     }
-    selectedStudents = selectedStudents;
     selectAll = selectedStudents.size === paginatedStudents.length;
   }
 </script>

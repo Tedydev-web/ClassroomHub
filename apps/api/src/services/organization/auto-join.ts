@@ -65,7 +65,7 @@ async function linkExistingMemberByEmail(
 /**
  * Auto-join the authenticated user to the given org. Used by the dashboard when
  * a newly-signed-in user lands on a tenant site they aren't yet a member of
- * (free-tier `<org>.myclassroomio.com` or a verified BYOD domain).
+ * (platform tenant host or a verified custom domain).
  *
  * New members are created as STUDENT when no roster row or invite applies.
  * Idempotent: existing members get an `alreadyMember: true` no-op so invited

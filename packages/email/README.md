@@ -26,7 +26,7 @@ await send('forgotPassword', {
   fields: {
     name: 'John Doe',
     email: 'user@example.com',
-    link: 'https://app.classroomio.com/reset?token=abc123'
+    link: 'https://app.classroom.tedydev.io.vn/reset?token=abc123'
   }
 });
 ```
@@ -39,10 +39,10 @@ await send('forgotPassword', {
   fields: {
     name: 'John Doe',
     email: 'user@example.com',
-    link: 'https://app.classroomio.com/reset?token=abc123'
+    link: 'https://app.classroom.tedydev.io.vn/reset?token=abc123'
   },
-  from: '"Support Team" <support@classroomio.com>',
-  replyTo: 'help@classroomio.com'
+  from: '"Support Team" <support@classroom.tedydev.io.vn>',
+  replyTo: 'help@classroom.tedydev.io.vn'
 });
 ```
 

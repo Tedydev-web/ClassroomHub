@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import { resolve } from '$app/paths';
   import * as Page from '@cio/ui/base/page';
   import * as Table from '@cio/ui/base/table';
@@ -17,7 +18,7 @@
   const overviewRows = $derived(cohortGoalApi.overviewRows);
 
   const cohorts = $derived.by(() => {
-    const map = new Map<string, { cohortId: string; cohortName: string; goals: GoalsOverviewRow[] }>();
+    const map = new SvelteMap<string, { cohortId: string; cohortName: string; goals: GoalsOverviewRow[] }>();
 
     for (const row of overviewRows) {
       const bucket = map.get(row.cohortId) ?? {
@@ -46,7 +47,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('cohorts.goals.heading')} · ClassroomIO</title>
+  <title>{$t('cohorts.goals.heading')} · Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full">

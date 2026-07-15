@@ -4,7 +4,7 @@ Our aim is to keep this Agreement as readable as possible, but in some cases for
 
 ## Your Acceptance of this Agreement
 
-These terms of service are entered into by and between You and ClassroomIO ("Company," "we," "our," or "us"). The following terms and conditions, together with any documents they expressly incorporate by reference (collectively "Terms of Service"), govern your access to and use of classroomio.com, including any content, functionality, and services offered on or through classroomio.com (the "Website").
+These terms of service are entered into by and between You and Classroom ("Company," "we," "our," or "us"). The following terms and conditions, together with any documents they expressly incorporate by reference (collectively "Terms of Service"), govern your access to and use of classroom.tedydev.io.vn, including any content, functionality, and services offered on or through classroom.tedydev.io.vn (the "Website").
 
 Please read the Terms of Service carefully before you start to use the Website.
 
@@ -81,7 +81,7 @@ For your convenience, this Website may provide links or pointers to third-party 
 
 ## Software
 
-By downloading our software, you acknowledge and agree to the applicable open source or end user license terms published with that software (for example, our [LICENSE](https://github.com/classroomio/classroomio/blob/main/LICENSE) for the ClassroomIO project where applicable). Those terms will govern your use of the software.
+By downloading our software, you acknowledge and agree to the applicable open source or end user license terms published with that software (for example, our [LICENSE](https://github.com/Tedydev-web/classroomio/blob/main/LICENSE) for the Classroom project where applicable). Those terms will govern your use of the software.
 
 ## Payment and Fees
 
@@ -131,6 +131,6 @@ No failure to exercise, and no delay in exercising, on the part of either party,
 
 We may provide any notice to you under these Terms of Service by: (i) sending a message to the email address you provide to us and consent to us using; or (ii) by posting to the Website. Notices sent by email will be effective when we send the email and notices we provide by posting will be effective upon posting. It is your responsibility to keep your email address current.
 
-To give us notice under these Terms of Service, you must contact us as follows: (i) by personal delivery, overnight courier or registered or certified mail to ClassroomIO, 128 City Road, London, United Kingdom, EC1V 2NX. We may update the address for notices to us by posting a notice on this Website. Notices provided by personal delivery will be effective immediately once personally received by an authorized representative of Company. Notices provided by overnight courier or registered or certified mail will be effective once received and where confirmation has been provided to evidence the receipt of the notice.
+To give us notice under these Terms of Service, you must contact us as follows: (i) by personal delivery, overnight courier or registered or certified mail to Classroom, 128 City Road, London, United Kingdom, EC1V 2NX. We may update the address for notices to us by posting a notice on this Website. Notices provided by personal delivery will be effective immediately once personally received by an authorized representative of Company. Notices provided by overnight courier or registered or certified mail will be effective once received and where confirmation has been provided to evidence the receipt of the notice.
 
 **Last updated:** April 12, 2026

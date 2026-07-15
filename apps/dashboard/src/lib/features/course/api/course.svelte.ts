@@ -1,4 +1,5 @@
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { SvelteMap } from 'svelte/reactivity';
 
 import type {
   Course,
@@ -703,7 +704,7 @@ export class CourseApi extends BaseApiWithErrors {
         lessonTabsOrder.every((tab, index) => tab.id === legacyDefaultLessonTabIds[index]);
 
       if (isLegacyDefaultLessonMaterialsOrder) {
-        const entriesById = new Map(lessonTabsOrder.map((tab) => [tab.id, tab]));
+        const entriesById = new SvelteMap(lessonTabsOrder.map((tab) => [tab.id, tab]));
 
         lessonTabsOrder.length = 0;
         lessonMaterialsVideoFirstTabIds.forEach((id) => {

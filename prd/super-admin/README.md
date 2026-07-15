@@ -8,7 +8,7 @@ Build a password-gated super admin panel that lets the ClassroomIO operator mana
 2. **AI chat inspection** — view all AI assistant conversations for any user and copy an entire chat transcript with one click
 3. **Credit management** — top up AI credits for any org directly from the panel
 4. **Org creation** — create a new organization and assign an existing user as its admin
-5. **Impersonation** — "Login as" any user to act on their behalf on `app.classroomio.com`
+5. **Impersonation** — "Login as" any user to act on their behalf on `app.classroom.tedydev.io.vn`
 
 The panel has no user account of its own. Access is controlled by a single `SUPER_ADMIN_PASSWORD` env var, mirroring the existing `/admin/queues` pattern. It ships as a **separate app** (`apps/admin/`) so it never bloats the user-facing dashboard bundle and can be deployed independently.
 
@@ -20,7 +20,7 @@ The panel has no user account of its own. Access is controlled by a single `SUPE
 2. **Auth pattern**: `X-Super-Admin-Key` request header checked against `SUPER_ADMIN_PASSWORD` env var via timing-safe comparison on the API side. Same approach as `QUEUE_DASHBOARD_PASSWORD` in `apps/api/src/routes/admin/queues.ts`.
 3. **Password gate UX**: Custom login form in the admin app. Password stored in `sessionStorage` — survives page refresh, cleared on tab close.
 4. **API proxy**: `apps/admin/src/hooks.server.ts` forwards `/api/*` → `PRIVATE_SERVER_URL`. Client code calls `/api/admin/users` etc. No tenant routing complexity needed — this is internal only.
-5. **Impersonation**: Reuses `mintLoginLinkToken` from `packages/db/src/auth/login-link.ts`. Admin opens the resulting URL (`https://app.classroomio.com/api/auth/login-link?token=...&redirect=/home`) in a new tab. TTL: 60 minutes.
+5. **Impersonation**: Reuses `mintLoginLinkToken` from `packages/db/src/auth/login-link.ts`. Admin opens the resulting URL (`https://app.classroom.tedydev.io.vn/api/auth/login-link?token=...&redirect=/home`) in a new tab. TTL: 60 minutes.
 6. **AI credits**: `aiCreditBalance` is per-org. The UI shows a user's admin orgs with current credit balance; operator enters an amount to add. Calls existing `upsertCreditBalance` query.
 7. **Org creation**: Reuses `createOrganization` + `createOrganizationMember` query pattern, accepting a target `userId` instead of the session user.
 
@@ -281,7 +281,7 @@ apps/admin/
 **`.env.example`**:
 ```
 PRIVATE_SERVER_URL=http://localhost:3002
-PUBLIC_APP_URL=https://app.classroomio.com
+PUBLIC_APP_URL=https://app.classroom.tedydev.io.vn
 ```
 
 ### 2b. API proxy
@@ -426,5 +426,5 @@ Fields: Org name, Site name, Owner user ID. On submit → success state with "Lo
 6. Expand an AI chat → messages render; "Copy chat" copies plain-text transcript
 7. Add credits to an org → balance refreshes
 8. Create an org via `/orgs/new` → verify row in DB
-9. "Login as user" → new tab opens at `app.classroomio.com` as that user
+9. "Login as user" → new tab opens at `app.classroom.tedydev.io.vn` as that user
 10. `pnpm build` in `apps/admin/` — builds independently with no dashboard code in the bundle

@@ -25,7 +25,7 @@
     description,
     imageSrc,
     imageAlt = '',
-    suggestedFile,
+    suggestedFile = '',
     caption = '',
     aspect = 'aspect-[16/9]',
     bgClass = 'bg-gray-50'

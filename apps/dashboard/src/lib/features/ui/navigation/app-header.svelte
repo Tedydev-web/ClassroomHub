@@ -12,8 +12,15 @@
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import AppSetup from './app-setup.svelte';
   import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
+  import NotificationList from '$features/notification/components/notification-list.svelte';
+  import { notificationApi } from '$features/notification/api/notification.svelte';
+  import { onMount } from 'svelte';
 
   const siteName = $derived($currentOrg.siteName);
+
+  onMount(() => {
+    notificationApi.getNotifications();
+  });
 
   $effect(() => {
     if (!siteName) return;
@@ -45,24 +52,31 @@
       <Popover.Trigger>
         <Button variant="outline" size="icon">
           <BellIcon class="custom rounded-full" />
+          {#if notificationApi.unread > 0}
+            <span class="ui:bg-destructive absolute -top-1 -right-1 size-2 rounded-full"></span>
+          {/if}
         </Button>
       </Popover.Trigger>
       <Popover.Content>
-        <Empty.Root class="ui:from-muted/50 ui:to-background ui:h-full ui:bg-gradient-to-b ui:from-30%">
-          <Empty.Header>
-            <Empty.Media variant="icon">
-              <BellIcon />
-            </Empty.Media>
-            <Empty.Title>No Notifications</Empty.Title>
-            <Empty.Description>You're all caught up. New notifications will appear here.</Empty.Description>
-          </Empty.Header>
-          <Empty.Content>
-            <Button variant="outline" size="sm">
-              <RefreshCcwIcon />
-              Refresh
-            </Button>
-          </Empty.Content>
-        </Empty.Root>
+        {#if notificationApi.items.length > 0}
+          <NotificationList />
+        {:else}
+          <Empty.Root class="ui:from-muted/50 ui:to-background ui:h-full ui:bg-gradient-to-b ui:from-30%">
+            <Empty.Header>
+              <Empty.Media variant="icon">
+                <BellIcon />
+              </Empty.Media>
+              <Empty.Title>No Notifications</Empty.Title>
+              <Empty.Description>You're all caught up. New notifications will appear here.</Empty.Description>
+            </Empty.Header>
+            <Empty.Content>
+              <Button variant="outline" size="sm" onclick={() => notificationApi.getNotifications()}>
+                <RefreshCcwIcon />
+                Refresh
+              </Button>
+            </Empty.Content>
+          </Empty.Root>
+        {/if}
       </Popover.Content>
     </Popover.Root>
   </div>

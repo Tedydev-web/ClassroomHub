@@ -14,7 +14,7 @@
   let { isOrg = false, className = '' } = $props();
 
   function handleClick() {
-    return goto('https://classroomio.com');
+    return goto('https://classroom.tedydev.io.vn');
   }
 </script>
 

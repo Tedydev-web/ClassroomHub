@@ -13,7 +13,7 @@
 
   interface Props {
     course: Course;
-    setter: (value: any, key: string) => void;
+    setter: (value: unknown, key: string) => void;
   }
 
   let { course = $bindable(), setter }: Props = $props();
@@ -89,7 +89,7 @@
 <!-- Sections - Reviews -->
 <section id="reviews">
   <div class="">
-    {#each reviews || [] as review, index}
+    {#each reviews || [] as review, index (review.id)}
       <div
         id={String(review.id)}
         class="relative my-2.5 flex flex-col items-center rounded-lg border border-gray-300 p-2"

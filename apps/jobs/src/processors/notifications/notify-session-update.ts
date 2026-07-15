@@ -46,7 +46,7 @@ export async function processNotifyCourseSessionUpdate(rawPayload: unknown): Pro
   }
 
   const sessionTimezone = course.metadata?.sessionTimezone ?? null;
-  const orgName = orgData.orgName || 'ClassroomIO';
+  const orgName = orgData.orgName || 'Classroom';
   const branding = buildEmailBranding({
     name: orgData.orgName,
     avatarUrl: orgData.orgAvatarUrl,
@@ -56,7 +56,7 @@ export async function processNotifyCourseSessionUpdate(rawPayload: unknown): Pro
   const sequence = Math.floor(Date.parse(lesson.updatedAt ?? new Date().toISOString()) / 1000);
 
   const ics = buildSessionIcs({
-    uid: `session-${lesson.id}@classroomio`,
+    uid: `session-${lesson.id}@classroom.tedydev.io.vn`,
     sequence,
     method: 'REQUEST',
     start: lesson.lessonAt,
@@ -104,7 +104,7 @@ export async function processNotifyCourseSessionUpdate(rawPayload: unknown): Pro
             joinUrl: lesson.callUrl,
             branding
           },
-          from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+          from: buildEmailFromName(`${orgName} (via Classroom)`),
           ics
         },
         { idempotencyKey: `session-updated:${lesson.id}:${recipient.email}:${sequence}` }

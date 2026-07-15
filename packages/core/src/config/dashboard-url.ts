@@ -21,8 +21,8 @@ export type DashboardOrg = {
  *  1. Org's verified `customDomain`  → `https://<customDomain>`
  *  2. `DASHBOARD_ORIGIN` env var      → that value (self-hosted override)
  *  3. `NODE_ENV === 'development'`    → `http://localhost:5173`
- *  4. Org's `siteName`                → `https://<siteName>.myclassroomio.com`
- *  5. Final fallback                  → `https://app.classroomio.com`
+ *  4. Org's `siteName`                → `https://<siteName>.<tenant root>`
+ *  5. Final fallback                  → configured product dashboard host
  *
  * `customDomain` wins over `DASHBOARD_ORIGIN` because per-org BYOD must
  * override the platform-wide self-hosted dashboard host for that org's URLs.
@@ -48,7 +48,7 @@ export function getDashboardBaseUrl(org?: DashboardOrg): string {
 }
 
 /**
- * Returns the admin dashboard origin (`app.classroomio.com` in cloud).
+ * Returns the admin dashboard origin.
  * Use for team-member invite links (admin/tutor) — not student-facing URLs.
  */
 export function getAppBaseUrl(): string {

@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>Settings - ClassroomIO</title>
+  <title>Settings - Classroom</title>
 </svelte:head>
 
 <Page.Header isSticky>

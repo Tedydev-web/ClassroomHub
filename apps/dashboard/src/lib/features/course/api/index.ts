@@ -10,4 +10,5 @@ export * from './mark.svelte';
 export * from './newsfeed.svelte';
 export * from './people.svelte';
 export * from './presign.svelte';
+export * from './scorm.svelte';
 export * from './submission.svelte';

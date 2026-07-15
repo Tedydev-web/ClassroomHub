@@ -213,10 +213,7 @@ class AppInitApi extends BaseApi {
 
   private async autoJoinOnTenantSite(orgId: string): Promise<boolean> {
     try {
-      const response = await classroomio.organization['auto-join'].$post(
-        {},
-        { headers: { 'cio-org-id': orgId } }
-      );
+      const response = await classroomio.organization['auto-join'].$post({}, { headers: { 'cio-org-id': orgId } });
 
       if (!response.ok) {
         // 403 is expected for invite-only / disabled-signup orgs — the user

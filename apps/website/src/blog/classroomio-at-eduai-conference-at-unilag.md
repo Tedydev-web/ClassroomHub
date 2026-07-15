@@ -1,7 +1,7 @@
 ---
 title: 'Sharing ClassroomIO with Educators at the University of Lagos'
 description: 'EduAI Hub invited us to talk about ClassroomIO to Edtech AI reserchers and educators at the University of Lagos, Nigeria'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/classroomio-at-unilag-eduai-research.png'
+imageUrl: '/assets/assets/blog/classroomio-at-unilag-eduai-research.png'
 date: '2024-09-25'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Educators', 'University', 'AI']
 published: true
 ---
 
-![classroomio-at-unilag-eduai-event](https://assets.cdn.clsrio.com/blog/classroomio-at-unilag-eduai-research.png)
+![classroomio-at-unilag-eduai-event](/assets/assets/blog/classroomio-at-unilag-eduai-research.png)
 _Rotimi Best at the 2 day EduAI Hub Summit held at the University of Lagos_
 
 I was invited by [EduAI Hub](https://eduaihub.org/) to their 2 day summit at the University of Lagos to talk about the progress we've made as a company and how we are using AI in education.
@@ -45,12 +45,12 @@ Thanks to this summit and actually talking to real users, I know exactly some of
 
 <div class="gallery mt-2 max-w-full overflow-x-scroll">
   <div class="flex space-x-4 gap-2">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/speaking.JPG" alt="Speaking at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/speaking-2.JPG" alt="Speaking at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/market-size.JPG" alt="ClassroomIO market size at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/chatting.JPG" alt="Chatting at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/gmind-ai.jpg" alt="Gmind AI at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/chioma-cio.jpg" alt="Chioma, CIO at EduAI Summit">
-    <img src="https://assets.cdn.clsrio.com/blog/eduaihub-summit/teacher-pic.jpg" alt="With a teacher at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/speaking.JPG" alt="Speaking at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/speaking-2.JPG" alt="Speaking at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/market-size.JPG" alt="ClassroomIO market size at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/chatting.JPG" alt="Chatting at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/gmind-ai.jpg" alt="Gmind AI at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/chioma-cio.jpg" alt="Chioma, CIO at EduAI Summit">
+    <img src="/assets/assets/blog/eduaihub-summit/teacher-pic.jpg" alt="With a teacher at EduAI Summit">
   </div>
 </div>

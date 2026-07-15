@@ -13,8 +13,7 @@ export function getActivePlanName(plans: OrgPlan[] | undefined | null): string |
 }
 
 /**
- * Maps a cloud organization plan to dashboard license feature IDs.
- * Self-hosted instances use instance-level license keys instead.
+ * Maps an organization plan to dashboard capability IDs.
  */
 export function getLicenseFeaturesForPlan(planName: string | null | undefined): LicenseFeatureId[] {
   if (!planName || planName === PLAN.BASIC) {

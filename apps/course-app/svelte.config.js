@@ -17,7 +17,7 @@ const config = {
     alias: {
       $lib: path.resolve(__dirname, './src/lib'),
       '@cio/ui': path.resolve(__dirname, './node_modules/@cio/ui/src'),
-      '@cio/ui/*': path.resolve(__dirname, './node_modules/@cio/ui/src/*')
+      '@cio/ui/*': path.resolve(__dirname, './node_modules/@cio/ui/src')
     }
   }
 };

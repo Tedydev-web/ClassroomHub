@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "test": "vitest",
+    "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "preview": "vite preview",
@@ -36,10 +36,12 @@
     "vitest": "^2.1.4"
   },
   "dependencies": {
+    "bits-ui": "^2.16.1",
     "carbon-icons-svelte": "^12.13.0",
     "dotenv": "^16.5.0",
     "rehype-slug": "^6.0.0",
     "rehype-unwrap-images": "^1.0.0",
+    "lucide-svelte": "^0.468.0",
     "remark-toc": "^9.0.0",
     "shiki": "^1.23.1",
     "svelte-meta-tags": "^4.0.4",

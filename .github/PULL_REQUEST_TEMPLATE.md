@@ -43,4 +43,4 @@ Fixes # (place issue number here without bracket)
 ### Appreciated
 
 - [ ] If a UI change was made: Added a screen recording or screenshots to this PR
-- [ ] Updated the ClassroomIO Docs if changes were necessary
+- [ ] Updated the Classroom docs if changes were necessary

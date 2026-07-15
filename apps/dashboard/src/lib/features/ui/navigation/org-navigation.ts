@@ -17,6 +17,8 @@ import {
 
 import type { AccountOrg } from '$features/app/types';
 import BotIcon from '@lucide/svelte/icons/bot';
+import WebhookIcon from '@lucide/svelte/icons/webhook';
+import PackageOpenIcon from '@lucide/svelte/icons/package-open';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
 import type { PlanLimitResource } from '@cio/utils/plans';
@@ -136,6 +138,14 @@ export const baseNavConfig: NavItemConfig[] = [
   },
   {
     group: 'content',
+    titleKey: 'scorm.title',
+    path: '/scorm',
+    icon: PackageOpenIcon,
+    requiresAdmin: true,
+    matchPattern: '^/org/[^/]+/scorm(/.*)?$'
+  },
+  {
+    group: 'content',
     titleKey: 'org_navigation.tags',
     path: '/tags',
     icon: TagIcon,
@@ -197,6 +207,15 @@ export const baseNavConfig: NavItemConfig[] = [
     requiresAdmin: true,
     disableWhenNotAdmin: true,
     matchPattern: '^/org/[^/]+/zapier(/.*)?$'
+  },
+  {
+    group: 'automation',
+    titleKey: 'automation.tabs.webhooks',
+    path: '/webhooks',
+    icon: WebhookIcon,
+    requiresAdmin: true,
+    disableWhenNotAdmin: true,
+    matchPattern: '^/org/[^/]+/webhooks(/.*)?$'
   },
   {
     titleKey: 'org_navigation.settings',

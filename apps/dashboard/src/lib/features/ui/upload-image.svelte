@@ -42,11 +42,7 @@
   const defaultImg = 'https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-alt-512.png';
   const isSignaturePreview = $derived(previewVariant === 'signature');
 
-  let cropperSrc = $state('');
-
-  $effect(() => {
-    cropperSrc = src || '';
-  });
+  let cropperSrc = $derived(src || '');
 
   const onCropped = async (croppedUrl: string) => {
     // Convert the cropped data URL to a File object

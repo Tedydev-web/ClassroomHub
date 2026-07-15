@@ -28,6 +28,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.dev
 
 # turbo
 .turbo
@@ -68,3 +69,7 @@ apps/db-agent
 # Generated htpasswd files (hashes are safe to store in secrets/CI, plaintext never committed)
 .htpasswd
 *.htpasswd
+
+# Keep repository script tests even when a global ignore excludes tests/ directories.
+!scripts/tests/
+!scripts/tests/*.test.mjs

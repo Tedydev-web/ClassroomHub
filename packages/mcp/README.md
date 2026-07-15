@@ -94,7 +94,7 @@ node packages/mcp/dist/index.js
 Published package:
 
 ```bash
-CLASSROOMIO_API_URL=https://api.classroomio.com \
+CLASSROOMIO_API_URL=https://api.classroom.tedydev.io.vn \
 CLASSROOMIO_API_KEY=<cio_mcp_key> \
 npx -y @classroomio/mcp
 ```
@@ -108,7 +108,7 @@ claude mcp add-json classroomio '{
   "command": "npx",
   "args": ["-y", "@classroomio/mcp"],
   "env": {
-    "CLASSROOMIO_API_URL": "https://api.classroomio.com",
+    "CLASSROOMIO_API_URL": "https://api.classroom.tedydev.io.vn",
     "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
   }
 }'
@@ -118,7 +118,7 @@ claude mcp add-json classroomio '{
 
 ```bash
 codex mcp add classroomio \
-  --env CLASSROOMIO_API_URL=https://api.classroomio.com \
+  --env CLASSROOMIO_API_URL=https://api.classroom.tedydev.io.vn \
   --env CLASSROOMIO_API_KEY=<cio_mcp_key> \
   -- npx -y @classroomio/mcp
 ```
@@ -134,7 +134,7 @@ codex mcp add classroomio \
       "command": ["npx", "-y", "@classroomio/mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOMIO_API_URL": "https://api.classroomio.com",
+        "CLASSROOMIO_API_URL": "https://api.classroom.tedydev.io.vn",
         "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
       }
     }
@@ -151,7 +151,7 @@ codex mcp add classroomio \
       "command": "npx",
       "args": ["-y", "@classroomio/mcp"],
       "env": {
-        "CLASSROOMIO_API_URL": "https://api.classroomio.com",
+        "CLASSROOMIO_API_URL": "https://api.classroom.tedydev.io.vn",
         "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
       }
     }

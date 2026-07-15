@@ -9,5 +9,5 @@ export const load = ({ request }) => {
     event: 'feedback page visited'
   });
 
-  redirect(307, 'https://feedback.classroomio.com');
+  redirect(307, 'https://classroom.tedydev.io.vn');
 };

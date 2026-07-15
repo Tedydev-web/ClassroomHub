@@ -142,6 +142,19 @@ export type UpdateLessonWatchProgressSuccess = Extract<
 >;
 export type LessonWatchProgressUpdate = UpdateLessonWatchProgressSuccess['data'];
 
+export type GetScormContentRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['scorm']['content']['$get'];
+export type ScormContent = Extract<InferResponseType<GetScormContentRequest>, { success: true }>['data'];
+
+export type LaunchScormRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['scorm']['launch']['$post'];
+export type ScormLaunch = Extract<InferResponseType<LaunchScormRequest>, { success: true }>['data'];
+
+export type CommitScormRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['scorm']['commit']['$post'];
+export type TerminateScormRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['scorm']['terminate']['$post'];
+
 // Get lesson history types
 export type GetLessonHistoryRequest =
   (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['history']['$get'];

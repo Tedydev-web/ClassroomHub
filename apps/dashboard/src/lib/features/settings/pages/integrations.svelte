@@ -1,6 +1,7 @@
 <script lang="ts">
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
+  import { env } from '$env/dynamic/public';
   // import { snackbar } from '$lib/components/Snackbar/store';
   import { Input } from '@cio/ui/base/input';
   import { Button } from '@cio/ui/base/button';
@@ -56,7 +57,11 @@
       <Field.Group>
         <Field.Description>{$t('settings.integrations.sub_heading')}</Field.Description>
         <Field.Description>{$t('settings.integrations.step_authenticate')}</Field.Description>
-        <Button variant="outline" onclick={() => window.open('https://t.me/classroomio_bot', '_blank')}>
+        <Button
+          variant="outline"
+          disabled={!env.PUBLIC_TELEGRAM_BOT_URL}
+          onclick={() => env.PUBLIC_TELEGRAM_BOT_URL && window.open(env.PUBLIC_TELEGRAM_BOT_URL, '_blank')}
+        >
           <span class="mr-2">{$t('settings.integrations.open_bot_button')}</span>
           <ArrowTopRight />
         </Button>

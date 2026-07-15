@@ -276,7 +276,6 @@
                       <Table.Cell>
                         <Button variant="link" class="h-auto p-0" href={getTagCoursesHref(tag.slug)}>
                           {tag.courseCount}
-                          {' '}
                           {tag.courseCount === 1 ? $t('tags_admin.table.course') : $t('tags_admin.table.courses')}
                         </Button>
                       </Table.Cell>

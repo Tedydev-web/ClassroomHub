@@ -1,7 +1,7 @@
 ---
 title: 'Our first customer to hit 100 students'
 description: 'Paranv Singhal, a Web3 instructor, is the first customer to hit 100 students on ClassroomIO.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/pranav-web3-bootcamp-hit-100students.png'
+imageUrl: '/assets/assets/blog/pranav-web3-bootcamp-hit-100students.png'
 date: '2024-08-25'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Customers', 'Testimonials']
 published: true
 ---
 
-![pranav-web3-bootcamp-hit-100students](https://assets.cdn.clsrio.com/blog/pranav-web3-bootcamp-hit-100students.png)
+![pranav-web3-bootcamp-hit-100students](/assets/assets/blog/pranav-web3-bootcamp-hit-100students.png)
 _Paranv Singhal, a ClassroomIO customer hits 100 students in his Web3 bootcamp._
 
 Today is an exciting day for both Pranav and me.
@@ -25,7 +25,7 @@ It was a no-brainer for him, and long story short, Pranav is a happy customer wi
 
 Here is what he has to say:
 
-![pranav-experience-using-classroomio](https://assets.cdn.clsrio.com/blog/review-by-pranav.jpeg)
+![pranav-experience-using-classroomio](/assets/assets/blog/review-by-pranav.jpeg)
 _Pranav's experience using ClassroomIO_
 
 > ClassroomIO really helped me [bootstrap my program](https://dblocked.io/).
@@ -37,5 +37,5 @@ _Pranav's experience using ClassroomIO_
 Are you looking to launch your course or bootcamp? Register for a free account today and start building.
 
 <div class="flex justify-center">
-  <a href="https://app.classroomio.com/login" target="_blank" nofollow="nofollow" class="bg-black text-white px-4 py-2 rounded-md">Register for free</a>
+  <a href="https://app.classroom.tedydev.io.vn/login" target="_blank" nofollow="nofollow" class="bg-black text-white px-4 py-2 rounded-md">Register for free</a>
 </div>

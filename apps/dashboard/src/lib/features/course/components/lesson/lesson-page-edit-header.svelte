@@ -42,6 +42,7 @@
   }: Props = $props();
 
   // Slug field: commented out via `{#if false && ...}` below — drop `false &&` to show again.
+  const isSlugEditorEnabled = false;
 
   let openDeleteModal = $state(false);
 
@@ -60,7 +61,7 @@
           placeholder={$t('course.navItem.lessons.add_lesson.lesson_title')}
           onInputChange={(e) => onTitleChange(e.currentTarget.value)}
         />
-        {#if false && showSlugEditor}
+        {#if isSlugEditorEnabled && showSlugEditor}
           <InputField
             className="max-w-xl"
             label={$t('course.navItem.settings.slug.label')}

@@ -20,7 +20,7 @@
           {$t(getPresetLabelKey($inviteSettingsStore.preset))}
         </Select.Trigger>
         <Select.Content>
-          {#each INVITE_PRESET_OPTIONS as option}
+          {#each INVITE_PRESET_OPTIONS as option (option.value)}
             <Select.Item value={option.value}>{$t(option.labelKey)}</Select.Item>
           {/each}
         </Select.Content>

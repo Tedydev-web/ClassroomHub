@@ -1,10 +1,10 @@
-<a href="https://courseapp.oncws.com/">
+<a href="https://course-app.classroom.tedydev.io.vn/">
   <img alt="Create beautiful course websites to educate your customers" src="https://cdn.courseapp.oncws.com/courseapp-og.png" />
   <h1 align="center">CourseApp by ClassroomIO</h1>
   <p align="center">
     Create beautiful course websites to educate your customers.
     <br />
-    <a href="https://courseapp.oncws.com">Website</a>  |  <a href="https://www.youtube.com/watch?v=P2I2HoyrjVo">Demo</a>
+    <a href="https://course-app.classroom.tedydev.io.vn">Website</a>  |  <a href="https://www.youtube.com/watch?v=P2I2HoyrjVo">Demo</a>
   </p>
 </a>
 

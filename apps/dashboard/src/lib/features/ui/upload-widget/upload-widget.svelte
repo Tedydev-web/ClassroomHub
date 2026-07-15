@@ -120,7 +120,7 @@
     <div class="w-full bg-white p-2 dark:bg-inherit">
       <UnderlineTabs.Root bind:value={currentTab}>
         <UnderlineTabs.List>
-          {#each tabs as tab}
+          {#each tabs as tab (tab.value)}
             <UnderlineTabs.Trigger value={tab.value}>
               {tab.label}
             </UnderlineTabs.Trigger>

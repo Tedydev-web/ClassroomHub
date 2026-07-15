@@ -51,9 +51,9 @@
 <Story name="With Input Group">
   {#snippet template()}
     <InputGroup.Root class="ui:w-96">
-      <InputGroup.Input value="https://classroomio.com/courses/123" readonly />
+      <InputGroup.Input value="https://classroom.tedydev.io.vn/courses/123" readonly />
       <InputGroup.Addon align="inline-end">
-        <CopyButton text="https://classroomio.com/courses/123" size="icon-sm" />
+        <CopyButton text="https://classroom.tedydev.io.vn/courses/123" size="icon-sm" />
       </InputGroup.Addon>
     </InputGroup.Root>
   {/snippet}

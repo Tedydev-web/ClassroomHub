@@ -11,7 +11,7 @@
   import { createQuizValidation } from '$lib/utils/functions/validator';
   import { t } from '$lib/utils/functions/translations';
 
-  let open = $state(false);
+  let open = $derived($createQuizModal.openEdit || $createQuizModal.open);
   let errors: Record<string, string> = $state({
     title: ''
   });
@@ -85,14 +85,10 @@
       }
     }
   }
-
-  $effect(() => {
-    open = $createQuizModal.openEdit || $createQuizModal.open;
-  });
 </script>
 
 <svelte:head>
-  <title>{$t('components.quiz.title')} - ClassroomIO</title>
+  <title>{$t('components.quiz.title')} - Classroom</title>
 </svelte:head>
 
 <Dialog.Root

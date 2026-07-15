@@ -5,6 +5,16 @@ export type GetOrganizationResponse = InferResponseType<GetOrganizationRequest> 
 export type GetOrganizationSuccess = Extract<InferResponseType<GetOrganizationRequest>, { success: true }>;
 export type OrganizationRecord = GetOrganizationSuccess['data'][number];
 
+export type QuizListRequest = (typeof classroomio.organization)[':orgId']['quiz']['$get'];
+export type QuizGetRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$get'];
+export type QuizCreateRequest = (typeof classroomio.organization)[':orgId']['quiz']['$post'];
+export type QuizUpdateRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$put'];
+export type QuizDeleteRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$delete'];
+export type QuizListSuccess = Extract<InferResponseType<QuizListRequest>, { success: true }>;
+export type Quiz = QuizListSuccess['data'][number];
+export type QuizCreateData = NonNullable<InferRequestType<QuizCreateRequest>['json']>;
+export type QuizUpdateData = NonNullable<InferRequestType<QuizUpdateRequest>['json']>;
+
 export type GetFirstOrganizationRequest = typeof classroomio.organization.first.$get;
 export type GetFirstOrganizationResponse = InferResponseType<GetFirstOrganizationRequest> | null;
 export type GetFirstOrganizationSuccess = Extract<InferResponseType<GetFirstOrganizationRequest>, { success: true }>;

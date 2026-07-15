@@ -1,4 +1,5 @@
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { getErrMsg } from '$lib/utils/services/api/utils';
 import { snackbar } from '$features/ui/snackbar/store';
 import type { DeleteCourseContentRequest, UpdateCourseContentRequest } from '../utils/types';
 import { ContentType } from '@cio/utils/constants/content';
@@ -26,8 +27,7 @@ export class ContentApi extends BaseApiWithErrors {
         this.errors = {};
       },
       onError: (error) => {
-        const errorMessage = typeof error === 'string' ? error : (error as any)?.error;
-        snackbar.error(errorMessage || 'Failed to update content');
+        snackbar.error(getErrMsg(error, 'Failed to update content'));
       }
     });
 
@@ -50,8 +50,7 @@ export class ContentApi extends BaseApiWithErrors {
         this.errors = {};
       },
       onError: (error) => {
-        const errorMessage = typeof error === 'string' ? error : (error as any)?.error;
-        snackbar.error(errorMessage || 'Failed to delete content');
+        snackbar.error(getErrMsg(error, 'Failed to delete content'));
       }
     });
 

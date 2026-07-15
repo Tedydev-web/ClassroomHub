@@ -10,7 +10,7 @@
    * @property {boolean} [showDot]    Show a small pastel dot at the start of each pill (default true)
    * @property {boolean} [animate]    Wrap each pill in BlurFade (default true)
    * @property {string} [gap]         Gap class between pills (default "gap-3")
-   * @property {string} [size]        Padding/text size variant: "default" | "compact" (default "default")
+   * @property {'default' | 'compact'} [size] Padding/text size variant (default "default")
    */
 
   /** @type {Props} */

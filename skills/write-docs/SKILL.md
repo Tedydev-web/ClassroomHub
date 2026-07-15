@@ -21,7 +21,7 @@ Never describe behavior you haven't verified in the source code or UI.
 
 | Term | Meaning |
 |---|---|
-| **academy** | The public-facing org site (`<siteName>.myclassroomio.com` or custom domain) |
+| **academy** | The public-facing org site (`<siteName>.classroom.tedydev.io.vn` or custom domain) |
 | **LMS** | The authenticated student learning area (Home, My Learning, Explore, Programs) |
 | **organization** | The admin workspace holding courses, people, settings, branding |
 | **student** | A user enrolled in courses — never "learner" |
@@ -102,5 +102,5 @@ description: One sentence — shown in search results and link previews.
 - Don't say "workspace" — use "organization"
 - Don't use "learner" — use "student"
 - Don't say "org site" — say "your academy"
-- Don't hardcode customer site names — use `<siteName>.myclassroomio.com` as the placeholder
+- Don't hardcode customer site names — use `<siteName>.classroom.tedydev.io.vn` as the placeholder
 - Don't add the "Work in Progress" callout to pages you've completed

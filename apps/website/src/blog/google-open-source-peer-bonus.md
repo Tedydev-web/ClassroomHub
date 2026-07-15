@@ -1,7 +1,7 @@
 ---
 title: 'Google Open Source Peer Bonus'
 description: 'I am happy to announce that we were selected for the 2024 Google Peer Open Source Bonus'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/google-os-peer-bonus-classroomio.png'
+imageUrl: '/assets/assets/blog/google-os-peer-bonus-classroomio.png'
 date: '2024-05-25'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -17,7 +17,7 @@ I started my open source journey in October of 2023 by working on [Formbricks](h
 
 Later in November, a project I have been working on for over 3 years got accepted into an open source program by the amazing Codacy called [Codacy Pioneers](https://codacy.com/pioneers). Where they provide open source contributors with financial support, training from mentors and access to their suite of tools.
 
-After I made [ClassroomIO](https://git.new/class) open source, a lot of people helped us get traction from the community and soon enough we got noticed by several educators in the community.
+After I made [ClassroomIO](https://github.com/Tedydev-web/classroomio) open source, a lot of people helped us get traction from the community and soon enough we got noticed by several educators in the community.
 
 ## What is the Google Open Source Peer Bonus?
 
@@ -25,7 +25,7 @@ I will quote the official [documentation](https://opensource.google/documentatio
 
 > In the same way that a Google Peer Bonus is used to recognize a fellow Googler who has gone above and beyond, an Open Source Peer Bonus recognizes external people who have made exceptional contributions to open source. Googlers can nominate contributors who they feel deserve our recognition (and some cash)!
 
-I want to use this opportunity to thank [Ada Nduka Oyom](https://x.com/Kolokodess) for reaching out to me and recommending [ClassroomIO](https://git.new/class) internally at Google to receive the Google Open Source Peer Bonus.
+I want to use this opportunity to thank [Ada Nduka Oyom](https://x.com/Kolokodess) for reaching out to me and recommending [ClassroomIO](https://github.com/Tedydev-web/classroomio) internally at Google to receive the Google Open Source Peer Bonus.
 
 I received the award letter this week and the official blog post will be made on their website in the coming weeks.
 

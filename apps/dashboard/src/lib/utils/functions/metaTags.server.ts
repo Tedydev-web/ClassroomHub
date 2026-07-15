@@ -7,10 +7,10 @@ import { resolveOrgSiteOgImageUrl } from '$lib/utils/functions/org-site-og-url';
 
 const isSelfHosted = PUBLIC_IS_SELFHOSTED === 'true';
 
-const DEFAULT_TITLE = 'ClassroomIO | One Platform for Customer, Partner, and Employee Training';
+const DEFAULT_TITLE = 'Classroom | One Platform for Customer, Partner, and Employee Training';
 const DEFAULT_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
-const CLOUD_OG_IMAGE = 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.jpg';
+const CLOUD_OG_IMAGE = '/classroomio-opengraph-image.png';
 const ORG_OG_WIDTH = 1200;
 const ORG_OG_HEIGHT = 630;
 
@@ -105,7 +105,7 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
     orgMeta?.siteName ||
     publicEnv.PUBLIC_APP_TITLE?.trim() ||
     (isSelfHosted && orgSiteInfo.org?.name ? orgSiteInfo.org.name : null) ||
-    'ClassroomIO';
+    'Classroom';
 
   const ogImageUrl = await resolveOgImageUrl(url, orgSiteInfo);
   const usesDynamicOrgOg =
@@ -123,11 +123,11 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
           type: 'image/jpeg'
         },
         {
-          url: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
+          url: ogImageUrl,
           alt: `${siteName} platform for customer, partner, and employee education`,
           width: 1920,
           height: 1080,
-          secureUrl: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
+          secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
           type: 'image/webp'
         }
       ];
@@ -150,8 +150,8 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
       images: openGraphImages
     },
     twitter: {
-      handle: '@classroomio',
-      site: '@classroomio',
+      handle: undefined,
+      site: undefined,
       cardType: 'summary_large_image' as const,
       title,
       description,

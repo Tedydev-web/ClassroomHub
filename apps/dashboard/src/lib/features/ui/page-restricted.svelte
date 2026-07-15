@@ -2,6 +2,7 @@
   import { Button } from '@cio/ui/base/button';
   import LockIcon from '@lucide/svelte/icons/lock';
   import { Empty } from '@cio/ui/custom/empty';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
 </script>
 
 <div class="flex h-screen w-screen flex-col items-center justify-center">
@@ -13,6 +14,6 @@
     layout="full-page"
     showLogo={true}
   >
-    <Button href="https://classroomio.com">Go Home</Button>
+    <Button href={`https://${PRODUCT_HOSTS.marketing}`}>Go Home</Button>
   </Empty>
 </div>

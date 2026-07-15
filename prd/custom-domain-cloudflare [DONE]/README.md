@@ -110,7 +110,7 @@ As an existing organization admin with a previously configured domain, I want to
 ### 1) Setup Scope
 - Accept only subdomains such as `courses.example.com` or `www.example.com`.
 - Reject apex domains such as `example.com`.
-- Continue rejecting `*.classroomio.com` as a custom domain.
+- Continue rejecting `*.classroom.tedydev.io.vn` as a custom domain.
 
 ### 2) Reconnect Requirement
 - Existing organizations with `customDomain` set under the old system must not be treated as automatically healthy.

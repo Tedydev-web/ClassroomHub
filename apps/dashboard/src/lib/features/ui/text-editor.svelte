@@ -21,7 +21,7 @@
   import { cn } from '@cio/ui/tools';
 
   interface Props {
-    placeholder?: string | ((node: any) => string);
+    placeholder?: string | ((node: unknown) => string);
     content?: HTMLContent;
     showToolBar?: boolean;
     editable?: boolean;
@@ -44,7 +44,7 @@
     editableStorageKey = 'edra-editable',
     class: className = '',
     editorClass = '',
-    placeholder = 'Welcome to ClassroomIO',
+    placeholder = 'Welcome to Classroom',
     onChange,
     onReady,
     onEditorDestroy

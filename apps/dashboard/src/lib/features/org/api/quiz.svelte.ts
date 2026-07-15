@@ -1,23 +1,16 @@
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 
 import { snackbar } from '$features/ui/snackbar/store';
-
-export interface Quiz {
-  id: string;
-  title: string;
-  questions?: any[];
-  timelimit?: string;
-  theme?: string;
-  organizationId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type QuizListRequest = (typeof classroomio.organization)[':orgId']['quiz']['$get'];
-export type QuizGetRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$get'];
-export type QuizCreateRequest = (typeof classroomio.organization)[':orgId']['quiz']['$post'];
-export type QuizUpdateRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$put'];
-export type QuizDeleteRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$delete'];
+import type {
+  Quiz,
+  QuizCreateData,
+  QuizCreateRequest,
+  QuizDeleteRequest,
+  QuizGetRequest,
+  QuizListRequest,
+  QuizUpdateData,
+  QuizUpdateRequest
+} from '../utils/types';
 
 /**
  * API class for quiz operations
@@ -75,7 +68,7 @@ export class QuizApi extends BaseApiWithErrors {
   /**
    * Creates a new quiz
    */
-  async create(orgId: string, data: { title: string; questions?: any[]; timelimit?: string; theme?: string }) {
+  async create(orgId: string, data: QuizCreateData) {
     await this.execute<QuizCreateRequest>({
       requestFn: () =>
         classroomio.organization[':orgId'].quiz.$post({
@@ -101,11 +94,7 @@ export class QuizApi extends BaseApiWithErrors {
   /**
    * Updates a quiz
    */
-  async update(
-    orgId: string,
-    quizId: string,
-    data: { title?: string; questions?: any[]; timelimit?: string; theme?: string }
-  ) {
+  async update(orgId: string, quizId: string, data: QuizUpdateData) {
     await this.execute<QuizUpdateRequest>({
       requestFn: () =>
         classroomio.organization[':orgId'].quiz[':quizId'].$put({

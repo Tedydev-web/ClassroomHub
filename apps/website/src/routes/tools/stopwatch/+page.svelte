@@ -111,27 +111,27 @@
   }
 
   onMount(() => {
-    buzzSound = new Audio('https://assets.cdn.clsrio.com/beeping-sound.mp3');
+    buzzSound = new Audio('/assets/assets/beeping-sound.mp3');
   });
 </script>
 
 <svelte:head>
-  <title>Activity Stopwatch | ClassroomIO</title>
-  <meta property="og:image" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
-  <meta property="og:title" content="Activity Stopwatch | ClassroomIO" />
+  <title>Activity Stopwatch | Classroom</title>
+  <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
+  <meta property="og:title" content="Activity Stopwatch | Classroom" />
   <meta
     property="og:description"
     content="Stay on track with a customizable stopwatch for timed tasks, quizzes, and study sessions"
   />
 
-  <meta property="og:image:secure_url" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Activity Stopwatch | ClassroomIO" />
+  <meta name="twitter:title" content="Activity Stopwatch | Classroom" />
   <meta
     name="twitter:description"
     content="Stay on track with a customizable stopwatch for timed tasks, quizzes, and study sessions"
   />
-  <meta name="twitter:image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta name="twitter:image" content="/assets/brand/og/free-tools.png" />
 </svelte:head>
 
 <section class=" bg-white px-5 md:px-0">

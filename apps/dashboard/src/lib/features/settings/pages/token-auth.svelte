@@ -11,6 +11,7 @@
   import KeyIcon from '@lucide/svelte/icons/key';
   import CodeIcon from '@lucide/svelte/icons/code';
   import * as Code from '@cio/ui/custom/code';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
   let isDeleting = $state(false);
 
@@ -45,7 +46,7 @@
 async function main() {
   // Secret generated above
   const secret = process.env.TOKEN_AUTH_SECRET;
-  const baseUrl = 'https://api.classroomio.dev';
+  const baseUrl = 'https://${PRODUCT_HOSTS.api}';
 
   const token = await new SignJWT({
     sub: 'test-user-123',

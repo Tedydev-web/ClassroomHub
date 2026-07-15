@@ -10,9 +10,9 @@ export const load = async ({ request }) => {
 
   return {
     pageMetaTags: {
-      title: 'Privacy Policy | ClassroomIO',
+      title: 'Privacy Policy | Classroom',
       description:
-        'How ClassroomIO collects, uses, stores, and protects personal data when you use our websites and services.'
+        'How Classroom collects, uses, stores, and protects personal data when you use our websites and services.'
     }
   };
 };

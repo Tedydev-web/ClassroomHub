@@ -32,8 +32,6 @@ export function mapZodErrorsToTranslations(error: ZodError, entityName?: string)
     return errors;
   }
 
-  console.log('mapZodErrorsToTranslations error', error, error.issues);
-
   error.issues.forEach((issue: z.core.$ZodIssue) => {
     const fieldPath = issue.path.join('.');
     const fieldName = issue.path[issue.path.length - 1] as string;
@@ -45,11 +43,6 @@ export function mapZodErrorsToTranslations(error: ZodError, entityName?: string)
 
     let translatedMessage: string | null = null;
     for (const key of translationKeys) {
-      if (key === 'validations.generic.custom') {
-        translatedMessage = t.get(issue.message);
-        break;
-      }
-
       if (issue.code === 'invalid_type' && translationParams.received === 'undefined') {
         translatedMessage = t.get('validations.generic.required_field');
         break;
@@ -62,7 +55,6 @@ export function mapZodErrorsToTranslations(error: ZodError, entityName?: string)
           break;
         }
       } catch (_error) {
-        console.log('t.get validation error', _error);
         translatedMessage = issue.message;
         break;
       }
@@ -99,10 +91,6 @@ function buildTranslationParams(
   entityName?: string
 ): Record<string, unknown> {
   const params: Record<string, unknown> = {};
-  console.log('buildTranslationParams issue', issue);
-  console.log('buildTranslationParams fieldName', fieldName);
-  console.log('buildTranslationParams entityName', entityName);
-
   if (fieldName) params.field = fieldName;
   if (entityName) params.entity = entityName;
   if (issue.code) params.code = issue.code;
@@ -131,6 +119,7 @@ function buildTranslationParams(
       break;
     case 'invalid_format':
       if ('format' in details) params.validation = details.format;
+      else if ('validation' in details) params.validation = details.validation;
       if ('regex' in details) params.regex = details.regex;
       break;
     case 'not_multiple_of':

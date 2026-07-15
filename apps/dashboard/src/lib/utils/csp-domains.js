@@ -4,12 +4,12 @@
 
 const saasDefaults = {
   scriptSrc: [
-    'https://assets.cdn.clsrio.com',
-    'https://embed.classroomio.com',
+    'https://assets.classroom.tedydev.io.vn',
+    'https://embed.classroom.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
     'https://*.posthog.com',
     'https://*.senja.io',
-    'https://umami.hz.oncws.com',
+    // Optional analytics origins are appended from deployment environment variables.
     'https://www.youtube.com',
     'https://youtube.com',
     'https://google.com',
@@ -19,27 +19,23 @@ const saasDefaults = {
   styleSrc: [
     'https://cdn.plyr.io',
     'https://unpkg.com/katex@0.12.0/dist/katex.min.css',
-    'https://assets.cdn.clsrio.com/eqneditor_1.css',
+    'https://assets.classroom.tedydev.io.vn/eqneditor_1.css',
     'https://fonts.googleapis.com'
   ],
   connectSrc: [
-    'https://*.classroomio.com',
-    'https://classroomio.com',
-    'https://app.classroomio.com',
-    'https://api.classroomio.com',
-    'https://pgrest.classroomio.com',
-    'https://play.classroomio.com',
-    'wss://*.classroomio.com',
-    'https://assets.cdn.clsrio.com',
+    'https://*.classroom.tedydev.io.vn',
+    'https://classroom.tedydev.io.vn',
+    'wss://*.classroom.tedydev.io.vn',
+    'https://assets.classroom.tedydev.io.vn',
     'https://cdn.plyr.io',
     'https://*.posthog.com',
-    'https://umami.hz.oncws.com',
+    // Optional analytics origins are appended from deployment environment variables.
     'https://*.r2.cloudflarestorage.com',
     'https://*.senja.io',
     'https://*.ytimg.com',
     'https://noembed.com',
-    'https://www.googleapis.com',
-    'https://o476906.ingest.us.sentry.io'
+    'https://www.googleapis.com'
+    // Sentry origins are appended only when this deployment configures a DSN.
   ],
   frameSrc: [
     'https://www.youtube.com',

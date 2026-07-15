@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { SvelteSet } from 'svelte/reactivity';
+  import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import ChatHeader from '$features/ai-assistant/chat-header.svelte';
   import ChatMessageList from '$features/ai-assistant/chat-message-list.svelte';
   import ChatInput from '$features/ai-assistant/chat-input.svelte';
@@ -420,7 +420,7 @@
     const template = getCourseTemplate(templateId);
     const registryById = new Map((template?.fields ?? []).map((field) => [field.id, field]));
     const lines: string[] = ['Here are my answers for the course template:'];
-    const seen = new Set<string>();
+    const seen = new SvelteSet<string>();
 
     for (const field of fields) {
       if (!field?.id || seen.has(field.id)) {
@@ -948,7 +948,7 @@
     const course = courseApi.course;
     if (!course?.content) return () => undefined;
 
-    const titles = new Map<string, string>();
+    const titles = new SvelteMap<string, string>();
 
     const visitItems = (items: { id: string; title?: string; type?: unknown }[] | undefined) => {
       if (!items) return;

@@ -72,13 +72,13 @@
         Everything in the open-source core, plus the control, security, and support that compliance teams need at scale.
       </p>
 
-      <button
-        data-cal-link="classroomio/enterprise"
+      <a
+        href="mailto:hieudat2310.bh@gmail.com?subject=Classroom enterprise"
         data-cal-config="'layout':'month_view'"
         class="mb-14 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-800"
       >
         Talk to us →
-      </button>
+      </a>
     </BlurFade>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -133,7 +133,7 @@
             </div>
 
             <a
-              href="https://ui.classroomio.dev"
+              href="https://classroom.tedydev.io.vn"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 rounded-lg border border-white/[0.15] bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white no-underline transition-all duration-200 hover:border-blue-500/40 hover:bg-white/[0.1]"

@@ -1,7 +1,7 @@
-# ClassroomIO — Feature & Flow Map (QA Audit)
+# Classroom — Feature & Flow Map (QA Audit)
 
 > **Purpose of this document:** a reverse‑engineered, citation‑backed map of every
-> feature in the ClassroomIO application, produced for QA to build test cases and
+> feature in the Classroom application, produced for QA to build test cases and
 > record demo videos. **Files are the source of truth.** Every claim is backed by a
 > file reference. Claims that could not be traced to code are marked
 > `⚠️ UNVERIFIED`. Ambiguities live in **§7 Open Questions**, not in the body.
@@ -16,7 +16,7 @@
 
 ## 1. System Overview
 
-**What it is.** ClassroomIO is an open‑source **Learning Management System (LMS) for
+**What it is.** Classroom is an open‑source **Learning Management System (LMS) for
 companies** — compliance/employee training, customer education, and partner
 certification. It supports multi‑organization workspaces, courses/lessons/exercises,
 cohorts (cohorts), certificates, an AI course builder + in‑lesson tutor, a public
@@ -98,7 +98,7 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
 | 26 | Course widget embed | Embeddable course catalog widget | `apps/api/src/routes/widgets`, `apps/dashboard/src/routes/(app)/widgets`, `apps/embeds`, `schema.ts:2255` (`widget`) | Complete |
 | 27 | Public REST API (v1) | API‑key automation: courses, audience | `apps/api/src/routes/v1/*`, `apps/api/src/services/v1`, `schema.ts:2539` (`organizationApiKey`) | Complete |
 | 28 | Automation / API keys | Issue mcp/api/zapier keys with scopes | `apps/api/src/routes/organization/automation.ts`, `apps/api/src/middlewares/automation-key*.ts` | Complete |
-| 29 | MCP server | `@classroomio/mcp` AI‑native course authoring | `packages/mcp/src/*` | Complete |
+| 29 | MCP server | `@tedydev/classroom-mcp` AI‑native course authoring | `packages/mcp/src/*` | Complete |
 | 30 | Enterprise SSO | OIDC SSO (Okta/Google Workspace/Auth0) | `apps/api/src/routes/organization/sso.ts`, `apps/api/src/routes/sso/discovery.ts`, `schema.ts:2479` (`organizationSsoConfig`) | Complete (licensed) |
 | 31 | Token auth | Token‑based auth policy | `apps/api/src/routes/organization/token-auth.ts`, `schema.ts:2513` (`organizationTokenAuth`) | Complete (licensed) |
 | 32 | Licensing | Self‑host license‑gated features | `apps/api/src/routes/license.ts`, `apps/api/src/middlewares/license.ts`, `packages/utils/src/license/*` | Complete |
@@ -107,14 +107,13 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
 | 35 | Email / notifications | Transactional emails via jobs | `apps/api/src/routes/mail`, `packages/email`, `apps/api/src/services/jobs` | Complete |
 | 36 | Background jobs | Media/email queues, BullMQ dashboard | `apps/jobs`, `apps/api/src/routes/jobs`, `apps/api/src/routes/admin/queues.ts` | Complete |
 | 37 | Unsplash image search | Image picker for content | `apps/api/src/routes/unsplash/unsplash.ts` | Complete |
-| 38 | Marketing website | classroomio.com landing | `apps/website` | Complete |
-| 39 | Documentation site | classroomio.com/docs | `apps/docs` | Complete |
-| 40 | Outbound webhooks | Emit `certificate.issued`, etc. | `prd/webhooks` (todo) | **Stub/Planned ⚠️** |
-| 41 | SCORM support | SCORM package support | `prd/scorm-support` (todo) | **Stub/Planned ⚠️** |
-| 42 | Notification system | In‑app notifications | `prd/notification-system` (todo) | **Stub/Planned ⚠️** |
+| 38 | Marketing website | classroom.tedydev.io.vn landing | `apps/website` | Complete |
+| 39 | Documentation site | classroom.tedydev.io.vn/docs | `apps/docs` | Complete |
+| 40 | Outbound webhooks | Signed tenant webhooks, delivery history, retries | `apps/api/src/routes/organization/webhooks.ts`, `apps/jobs/src/workers/webhooks.ts`, `packages/db/src/queries/webhook` | Complete |
+| 41 | SCORM support | Import, launch, runtime tracking, admin reports | `apps/api/src/services/scorm`, `packages/db/src/queries/scorm`, `apps/dashboard/src/lib/features/scorm` | Complete |
+| 42 | Notification system | In-app notifications | `packages/db/src/queries/notifications`, `apps/api/src/routes/notification`, `apps/dashboard/src/lib/features/notification` | **Partial** |
 
-> Items 40–42 are listed in `PRD-TRACKER.md` → 9, 16, 24 as **todo**; treat as not yet
-> shipped. See **§7**.
+> Items 40-41 are now implemented beyond their original PRDs. Item 42 has a tenant-scoped inbox vertical slice but does not yet cover every planned trigger and reminder. See **§7**.
 
 ---
 
@@ -358,7 +357,7 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
 ### 3.23 MCP Server
 - **Purpose:** AI‑native course authoring through the Model Context Protocol.
 - **How it works:** `packages/mcp/src/{index.ts,api-client.ts,config.ts,tools/}`; published
-  as `@classroomio/mcp` (`README.md:258`). Talks to the public API using an automation key.
+  as `@tedydev/classroom-mcp` (`README.md:258`). Talks to the public API using an automation key.
   PRD `mcp-course-authoring [DONE]`.
 - **User flow:** Configure MCP client with API key → AI tools create/update courses.
 
@@ -369,22 +368,22 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
   `organizationSsoConfig` (`schema.ts:2479`), provider enum `OKTA|GOOGLE_WORKSPACE|AUTH0`
   (`schema.ts:2444`), `organizationAuthPolicy` (`2447`). Token auth:
   `apps/api/src/routes/organization/token-auth.ts`, `organizationTokenAuth` (`2513`).
-  **License‑gated on self‑host** via `requireLicense('sso'|'token-auth')`
+  **Capability-gated** via `requireLicense('sso'|'token-auth')`
   (`apps/api/src/middlewares/license.ts`). PRD `enterprise-sso [DONE]`.
 - **User flow:** Org → SSO settings → register IdP (discovery fetches
   `.well-known/openid-configuration`) → users sign in via IdP.
 - **Edge cases:** trusted OIDC origins allow‑listed (`packages/db/src/constants.ts:14–24`);
-  cloud has no license restriction (see §5).
+  the independently operated deployment owns all known capabilities (see §5).
 
-### 3.25 Licensing
-- **Purpose:** gate Enterprise self‑host features behind a license key.
+### 3.25 Deployment capabilities
+- **Purpose:** keep premium route and dashboard gates server-authoritative without an external license service.
 - **How it works:** `apps/api/src/routes/license.ts` (mounted `/license`, `app.ts:209`),
   `apps/api/src/services/license.ts` (`isFeatureLicensed`), feature ids `sso`,
   `token-auth`, `no-tracking` (`packages/utils/src/license/constants.ts:8–10`),
   plan→feature mapping `packages/utils/src/license/plan-features.ts`. Dashboard side
   `apps/dashboard/src/lib/features/license/api/license.svelte.ts` (`licenseApi.hasAccess`).
-- **User flow:** Set `LICENSE_KEY` (`.env.example:117–118`) → licensed features unlock.
-- **Edge cases:** `requireLicense` is a **no‑op on cloud** (`license.ts:15–19`).
+- **User flow:** the Classroom deployment publishes its known capabilities through `/license/features`.
+- **Edge cases:** unknown capability identifiers remain denied by `requireLicense`.
 
 ### 3.26 Billing (Polar) — cloud
 - **Purpose:** paid subscriptions and AI token packs.
@@ -477,9 +476,8 @@ both the API/db layer (`process.env.PUBLIC_IS_SELFHOSTED`) and the dashboard
   org‑site→LMS redirect is **skipped** (`.../+layout.server.ts:16`). PRD `self-host-single-org.md`.
 - **Signup:** requires org context unless bootstrapping the first org or the email already
   belongs to the org (`signup-guard.ts:75–91`).
-- **Licensing:** Enterprise features (`sso`, `token-auth`, `no-tracking`) are **gated by
-  `LICENSE_KEY`** — `requireLicense` actively checks (`middlewares/license.ts:15–22`);
-  `.env.example:117–118`.
+- **Capabilities:** Enterprise features (`sso`, `token-auth`, `no-tracking`) are owned by
+  the Classroom deployment and checked against the shared capability registry.
 - **Tracking:** cloud analytics (PostHog/Umami) are **disabled**
   (`apps/dashboard/src/lib/utils/functions/appSetup.ts:23–27`); a `no-tracking` license also
   suppresses tracking (`appSetup.ts:29–37`).
@@ -493,8 +491,7 @@ both the API/db layer (`process.env.PUBLIC_IS_SELFHOSTED`) and the dashboard
   shown (`+layout.svelte:29`).
 - **Billing:** Polar subscriptions + AI token packs are active
   (`apps/dashboard/src/routes/api/polar/*`); plan set via subscription webhooks
-  (`webhook/+server.ts`). License gate is a **no‑op** — cloud has no license restrictions
-  (`middlewares/license.ts:15–19`).
+  (`webhook/+server.ts`). Deployment capability checks remain active independently of billing plans.
 - **Tracking:** PostHog/Umami/UserJot analytics enabled (`appSetup.ts:17–27`).
 - **Signup:** org context optional unless org settings restrict it (`signup-guard.ts:132–139`).
 - **Infra:** hosted Postgres/Redis/S3; dashboard deployed on Cloudflare Workers
@@ -504,7 +501,7 @@ both the API/db layer (`process.env.PUBLIC_IS_SELFHOSTED`) and the dashboard
 | Concern | Self‑Hosted | Cloud |
 |---|---|---|
 | Number of orgs | One only (`onboarding.ts:28`) | Many |
-| Enterprise SSO / token‑auth | Requires `LICENSE_KEY` (`license.ts`) | Always allowed (no license) |
+| Enterprise SSO / token‑auth | Enabled by deployment capability | Enabled by deployment capability |
 | Billing (Polar) | Not used (plan = selfhosted ENTERPRISE) | Subscriptions + token packs |
 | Analytics tracking | Off (unless… still off) (`appSetup.ts:24`) | On |
 | API base / links | `DASHBOARD_ORIGIN` (`constants.ts:37`) | `PUBLIC_SERVER_URL` |
@@ -568,18 +565,16 @@ Upgrade or Buy tokens (api/polar/subscribe | buy-tokens)
 
 ## 7. Open Questions & Gaps
 
-1. **Outbound webhooks — doc vs code mismatch.** `README.md:42–43` advertises
-   "REST API + Webhooks … receive events (`certificate.issued`, `enrollment.completed`)",
-   but the only webhook code is **inbound Polar billing**
-   (`apps/dashboard/src/routes/api/polar/webhook`) and `prd/webhooks` is **todo**
-   (`PRD-TRACKER.md:24`). No outbound event‑emission/delivery system was found in
-   `apps/api/src` or `packages/db/src`. **Code wins: outbound webhooks appear unimplemented.**
-   QA should not test event delivery as a shipped feature. ⚠️
-2. **SCORM support** — README does not promise it, but `prd/scorm-support` is **todo**
-   (`PRD-TRACKER.md:16`). No SCORM code located. ⚠️ Treat as not shipped.
-3. **In‑app notification system** — `prd/notification-system` is **todo**
-   (`PRD-TRACKER.md:9`). Transactional *email* exists (§3.28); in‑app notifications appear
-   unbuilt. Verify before demoing. ⚠️
+1. **Outbound webhook event breadth.** Signed tenant-scoped delivery, retry workers,
+   dead-letter handling, delivery history, test delivery, and redelivery are implemented.
+   QA should still verify that every business event promised by product copy has an emitter.
+2. **SCORM browser interoperability.** SCORM 1.2 and 2004 import, launch, runtime commit,
+   completion, package administration, reports, and tenant isolation are implemented and
+   covered by service tests plus a real Postgres/MinIO smoke. Browser E2E against a wider
+   corpus of vendor-produced packages remains useful.
+3. **In-app notification system** — persistent tenant-scoped notifications, unread state,
+   mark-read APIs, dashboard popovers, and newsfeed post/comment triggers are implemented.
+   Remaining work includes broader event coverage, scheduled reminders, preferences, and browser E2E. ⚠️
 4. **Selective exercise assignment** — `prd/selective-exercise-assignment` is **todo**
    (`PRD-TRACKER.md:15`). Assigning specific exercises to specific students may not exist;
    confirm against `exercise.ts` behavior. ⚠️
@@ -592,10 +587,8 @@ Upgrade or Buy tokens (api/polar/subscribe | buy-tokens)
    picker UI" (`README.md:231`, `.env.example:112`). The picker exposes Gemini + GPT‑4o;
    note the `.env.example:111` "Gemini 3 Flash" vs `README.md:228` "Gemini 2.5 Flash"
    wording inconsistency — verify the actual model id in `packages/utils/src/agent-models`.
-7. **Two operating sub‑modes within self‑host** (single‑org bootstrap vs. licensed
-   Enterprise) interact with `signupGuard` and `requireLicense`. Exact UX when
-   `LICENSE_KEY` is absent on self‑host (SSO/token‑auth hidden vs. 403) should be confirmed
-   in the dashboard `license` feature before recording a self‑host SSO demo.
+7. **Two operating modes** (single‑org self-host vs. multi-org platform) still interact
+   with `signupGuard`; capability ownership no longer depends on an external license key.
 8. **Tenant‑router / domain routing** (`apps/tenant-router`, `/domain`) was inventoried but
    not deeply traced (infra scope). Custom‑domain happy‑path is PRD‑DONE; failure/SSL
    provisioning states are unverified here.
@@ -632,5 +625,7 @@ Every section traces to files read during the audit: `README.md`, `ARCHITECHTURE
 `AGENTS.md`, `.env.example`, `PRD-TRACKER.md`, `apps/api/src/app.ts`,
 `packages/db/src/schema.ts`, the role/RBAC middlewares, `signup-guard.ts`,
 `onboarding.ts`, `appSetup.ts`, the Polar webhook, the v1 public‑API router, and the
-license constants/middleware. No application was run and no tests were executed —
-functional testing is deferred to the QA phase per the audit brief.
+license constants/middleware, webhook workers, and SCORM services. The current application
+was run locally with Postgres, Redis, MinIO, Mailpit, API, jobs, and dashboard healthy.
+Verification included 150 API tests, 19 development-script tests, SCORM service tests and
+real storage/database smoke, plus successful API, dashboard, website, and course-app builds.

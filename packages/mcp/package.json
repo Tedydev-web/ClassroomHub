@@ -1,5 +1,5 @@
 {
-  "name": "@classroomio/mcp",
+  "name": "@tedydev/classroom-mcp",
   "version": "0.0.9",
   "private": false,
   "type": "module",
@@ -11,7 +11,7 @@
     "dist"
   ],
   "bin": {
-    "classroomio-mcp": "./dist/index.js"
+    "classroom-mcp": "./dist/index.js"
   },
   "scripts": {
     "build": "rimraf dist tsconfig.tsbuildinfo && node ./scripts/build.mjs",
@@ -22,13 +22,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/classroomio/classroomio.git"
+    "url": "git+https://github.com/Tedydev-web/classroomio.git"
   },
   "bugs": {
-    "url": "https://github.com/classroomio/classroomio/issues"
+    "url": "https://github.com/Tedydev-web/classroomio/issues"
   },
-  "homepage": "https://github.com/classroomio/classroomio/blob/main/packages/mcp#readme",
-  "author": "ClassroomIO <help@classroomio.com>",
+  "homepage": "https://github.com/Tedydev-web/classroomio/blob/main/packages/mcp#readme",
+  "author": "Classroom <hieudat2310.bh@gmail.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public",

@@ -26,11 +26,7 @@
     >
       <ArrowUpRight class="h-14 w-14 text-white" />
     </span>
-    <img
-      src={template.image}
-      class="h-full w-full rounded-lg object-contain hover:opacity-10"
-      alt={template.name}
-    />
+    <img src={template.image} class="h-full w-full rounded-lg object-contain hover:opacity-10" alt={template.name} />
   </Button>
   <div>
     <h3 class="text-md font-bold">{template.name}</h3>

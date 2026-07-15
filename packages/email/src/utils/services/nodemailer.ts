@@ -4,29 +4,19 @@ import type { Transporter } from 'nodemailer';
 import { env } from '../../config/env';
 import { EMAIL_FROM } from '../constants';
 import nodemailer from 'nodemailer';
+import { createSmtpTransportOptions } from './smtp-transport-options';
 
 let transporter: Transporter | undefined;
 
 const setupTransporter = async () => {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD) {
+  if (!env.SMTP_HOST) {
     console.error('SMTP configuration missing');
     return undefined;
   }
 
   try {
-    const smtpPort = parseInt(env.SMTP_PORT || '465', 10);
-    const useImplicitTls = smtpPort === 465;
-
-    transporter = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: smtpPort,
-      secure: useImplicitTls,
-      requireTLS: !useImplicitTls,
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD
-      }
-    });
+    const transportOptions = createSmtpTransportOptions(env);
+    transporter = nodemailer.createTransport(transportOptions);
 
     await transporter.verify();
 

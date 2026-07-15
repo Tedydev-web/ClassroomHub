@@ -7,6 +7,7 @@ import {
   deleteQuestionByQuestionId,
   editCommunityQuestion,
   getCommunityQuestion,
+  getCommunityQuestionContext,
   getCommunityQuestions,
   submitComment,
   upvoteAnswer,
@@ -16,6 +17,7 @@ import {
 import { getEnrolledCourses, getOrgCourses } from '@cio/db/queries/course';
 
 import { ROLE } from '@cio/utils/constants';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 export async function fetchCommunityQuestions(
   orgId: string,
@@ -42,18 +44,20 @@ export async function fetchCommunityQuestions(
         // Admins can see all questions in the organization - no need to fetch courses
         discussions = await getCommunityQuestions({ orgId });
         break;
-      case ROLE.TUTOR:
+      case ROLE.TUTOR: {
         // Tutors can see questions in courses they have access to
         const tutorCourses = await getOrgCourses({ orgId, profileId: userId });
         const tutorCourseIds = tutorCourses.items.map((course) => course.id);
         discussions = await getCommunityQuestions({ courseIds: tutorCourseIds });
         break;
-      case ROLE.STUDENT:
+      }
+      case ROLE.STUDENT: {
         // Students can see questions in courses they are enrolled in
         const studentCourses = await getEnrolledCourses({ orgId, profileId: userId });
         const studentCourseIds = studentCourses.map((course) => course.id);
         discussions = await getCommunityQuestions({ courseIds: studentCourseIds });
         break;
+      }
       default:
         throw new AppError('Invalid role', ErrorCodes.UNAUTHORIZED, 403);
     }
@@ -126,6 +130,15 @@ export async function createQuestion({
       throw new AppError('Failed to create community question', ErrorCodes.ADD_COMMUNITY_QUESTION_FAILED, 404);
     }
 
+    void emitWebhookEvent(organizationId, 'community.question.created', {
+      authorProfileId,
+      courseId,
+      questionId: result.id,
+      slug: result.slug
+    }).catch((error) => {
+      console.error('Failed to emit community question webhook:', error);
+    });
+
     return {
       id: result.id,
       title: result.title,
@@ -169,6 +182,21 @@ export async function createComment({ body, questionId, authorProfileId, votes }
     if (!result) {
       throw new AppError('Comment submission failed', ErrorCodes.COMMENT_SUBMISSION_FAILED, 404);
     }
+
+    void getCommunityQuestionContext(questionId)
+      .then((context) => {
+        if (!context?.organizationId) return;
+
+        return emitWebhookEvent(context.organizationId, 'community.answer.created', {
+          answerId: result.id,
+          authorProfileId,
+          courseId: context.courseId,
+          questionId
+        });
+      })
+      .catch((error) => {
+        console.error('Failed to emit community answer webhook:', error);
+      });
 
     return {
       id: result.id,

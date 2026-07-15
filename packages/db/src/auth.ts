@@ -25,7 +25,7 @@ export { mintLoginLinkToken } from './auth/login-link';
 /**
  * Cloud (multi-tenant) only. Routes OAuth/SSO callbacks to the canonical
  * production URL while completing the flow on whichever tenant host the
- * user signed in from (<org>.myclassroomio.com or a BYOD domain).
+ * user signed in from a platform tenant host or a custom domain.
  *
  * Self-hosted instances proxy browser auth through the dashboard origin, so
  * the OAuth proxy plugin is only needed for cloud tenant/BYOD domains.

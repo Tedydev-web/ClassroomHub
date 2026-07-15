@@ -123,9 +123,9 @@
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//ClassroomIO//Live Session//EN',
+      'PRODID:-//Classroom//Live Session//EN',
       'BEGIN:VEVENT',
-      `UID:session-${startMs}@classroomio`,
+      `UID:session-${startMs}@classroom.tedydev.io.vn`,
       `DTSTAMP:${toIcsUtc(now)}`,
       `DTSTART:${toIcsUtc(startMs)}`,
       `DTEND:${toIcsUtc(endMs)}`,

@@ -1,5 +1,21 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
+
+  interface ClusterSpec {
+    x: number;
+    y: number;
+    rx: number;
+    ry: number;
+    density: number;
+    warmth: number;
+  }
+
+  interface Props {
+    clusters?: ClusterSpec[];
+    intensity?: number;
+    highlights?: boolean;
+    class?: string;
+  }
 
   /**
    * Reusable animated particle cloud, same family as the hero.
@@ -32,28 +48,55 @@
     class: className = ''
   } = $props();
 
-  let canvas;
+  interface RuntimeCluster extends ClusterSpec {}
+
+  interface Particle {
+    bx: number;
+    by: number;
+    r: number;
+    a: number;
+    warmth: number;
+    phase: number;
+    speed: number;
+    amp: number;
+  }
+
+  interface Highlight {
+    x: number;
+    y: number;
+    r: number;
+    phase: number;
+    speed: number;
+    warmth: number;
+  }
+
+  let canvas = $state<HTMLCanvasElement | null>(null);
 
   onMount(() => {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+
+    const canvasElement: HTMLCanvasElement = canvas;
+    const candidateContext = canvasElement.getContext('2d');
+    if (!candidateContext) return;
+
+    const ctx: CanvasRenderingContext2D = candidateContext;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
     let h = 0;
-    let particles = [];
-    let highlights = [];
-    let clusters = [];
-    let rafId;
+    let particles: Particle[] = [];
+    let highlights: Highlight[] = [];
+    let clusters: RuntimeCluster[] = [];
+    let rafId = 0;
     let time = 0;
 
-    function warmRGB(wm) {
+    function warmRGB(wm: number): [number, number, number] {
       const r = Math.round(110 - wm * 80);
       const g = Math.round(130 - wm * 50);
       const b = Math.round(180 + wm * 50);
       return [r, g, b];
     }
 
-    function gaussian2d(rx, ry) {
+    function gaussian2d(rx: number, ry: number): [number, number] {
       const u1 = Math.max(Math.random(), 1e-6);
       const u2 = Math.random();
       const r = Math.sqrt(-2 * Math.log(u1));
@@ -62,11 +105,11 @@
     }
 
     function resize() {
-      const rect = canvas.getBoundingClientRect();
+      const rect = canvasElement.getBoundingClientRect();
       w = rect.width;
       h = rect.height;
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
+      canvasElement.width = Math.floor(w * dpr);
+      canvasElement.height = Math.floor(h * dpr);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       seed();
@@ -87,6 +130,8 @@
         density: c.density,
         warmth: c.warmth
       }));
+
+      if (clusters.length === 0) return;
 
       for (const c of clusters) {
         const count = Math.floor(((c.rx * c.ry) / 18) * c.density * intensity);

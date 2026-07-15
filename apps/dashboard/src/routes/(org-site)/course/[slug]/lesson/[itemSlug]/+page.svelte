@@ -77,7 +77,10 @@
 
 <svelte:head>
   {#if breadcrumbJsonLd}
-    {@html `<script type="application/ld+json">${breadcrumbJsonLd}</script>`}
+    <!-- prettier-ignore -->
+    <script type="application/ld+json">
+{breadcrumbJsonLd}
+    </script>
   {/if}
 </svelte:head>
 

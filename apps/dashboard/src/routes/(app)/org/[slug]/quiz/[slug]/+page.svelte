@@ -19,7 +19,7 @@
   import { allOptions, allThemes, booleanOptions, themeImages } from '$lib/utils/constants/quiz';
 
   interface QuizOption {
-    id: number;
+    id: string;
     label: string;
     isCorrect: boolean;
   }
@@ -51,15 +51,15 @@
     isLabelEmpty: boolean;
     hasOneAnswer: boolean;
     id: number;
-    options: Array<{ id: number; error: boolean }>;
+    options: Array<{ id: string; error: boolean }>;
   }> = $state([]);
   let currentError: {
     isLabelEmpty?: boolean;
     hasOneAnswer?: boolean;
     id?: number;
-    options: Array<{ id: number; error: boolean }>;
+    options: Array<{ id: string; error: boolean }>;
   } = $state({});
-  let isFocused = $state(false);
+  let _isFocused = $state(false);
 
   function activeClass(q, cq) {
     if (q.id === cq.id) {
@@ -81,14 +81,14 @@
 
   function addOption() {
     const cOptIds = currentQuestion.options.map((o) => o.id);
-    const nextOption = cloneDeep(allOptions).find((o) => !cOptIds.includes(Number(o.id)));
+    const nextOption = cloneDeep(allOptions).find((option) => !cOptIds.includes(option.id));
 
     if (!nextOption) return;
 
     currentQuestion.options = [
       ...currentQuestion.options,
       {
-        id: Number(nextOption.id),
+        id: nextOption.id,
         label: nextOption.label,
         isCorrect: nextOption.isCorrect
       }
@@ -107,12 +107,12 @@
         ? cloneDeep(allOptions)
             .filter((o, i) => i < 2)
             .map((o) => ({
-              id: Number(o.id),
+              id: o.id,
               label: o.label,
               isCorrect: o.isCorrect
             }))
         : cloneDeep(booleanOptions).map((o) => ({
-            id: Number(o.id),
+            id: o.id,
             label: o.label,
             isCorrect: o.isCorrect
           }));
@@ -137,12 +137,12 @@
       isLabelEmpty: boolean;
       hasOneAnswer: boolean;
       id: number;
-      options: Array<{ id: number; error: boolean }>;
+      options: Array<{ id: string; error: boolean }>;
     }> = [];
 
     $quizStore.questions.forEach((q) => {
       const labelError = !!((q.label?.length || 0) < 3);
-      const options: Array<{ id: number; error: boolean }> = [];
+      const options: Array<{ id: string; error: boolean }> = [];
       let hasOneAnswer = false;
 
       q.options.forEach((o) => {
@@ -194,13 +194,13 @@
     }
   }
 
-  function qHasError(qId, _errs) {
+  function qHasError(qId: number | null, _errs: typeof errors) {
     return _errs.some((qe) => {
       return (qId ? qe.id === qId : true) && (qe.isLabelEmpty || !qe.hasOneAnswer || !!qe.options.length);
     });
   }
 
-  function optionHasError(eId, _errs) {
+  function optionHasError(eId: string, _errs: Array<{ id: string; error: boolean }> = []) {
     if (Array.isArray(_errs) && _errs.length) {
       return _errs.some((e) => e.id === eId && e.error);
     }
@@ -257,7 +257,7 @@
       <h3 class="my-3">Quiz</h3>
 
       <div class="mb-3">
-        {#each $quizStore.questions as question, i}
+        {#each $quizStore.questions as question, i (question.id)}
           <button
             class="mb-3 flex w-full justify-between rounded p-3 text-left text-gray-500 dark:text-white {activeClass(
               question,
@@ -391,7 +391,7 @@
       <div class="my-3">
         <p class="mb-2">Choose a theme</p>
 
-        {#each allThemes as _theme}
+        {#each allThemes as _theme (_theme.id)}
           <div
             class="theme relative mb-5 w-full cursor-pointer rounded-md border {$quizStore.theme === _theme.id &&
               'border-primary-700'}"

@@ -52,7 +52,7 @@
   let deletingMemberId = $state<string | null>(null);
   let deleteCandidate = $state<OrganizationAudienceMember | null>(null);
   let deleteDialogOpen = $state(false);
-  let searchValue = $state(query.search ?? '');
+  let searchValue = $derived(query.search ?? '');
 
   async function handleResendInvite(email: string) {
     inviteActionEmail = email;

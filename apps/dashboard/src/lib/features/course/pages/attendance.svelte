@@ -70,10 +70,8 @@
     return attendanceLookup[studentId]?.[lessonId]?.isPresent ?? false;
   }
 
-  async function handleAttendanceChange(e: any, student: CourseMember, lesson: CourseContentItem) {
+  async function handleAttendanceChange(isPresent: boolean, student: CourseMember, lesson: CourseContentItem) {
     if ($isOrgStudent) return;
-
-    const isPresent = e.target.checked;
 
     const result = await attendanceApi.upsert({
       courseId,
@@ -150,7 +148,7 @@
       <Table.Header>
         <Table.Row>
           <Table.Head class="w-1/4">{$t('course.navItem.attendance.student')}</Table.Head>
-          {#each lessonItems as _lesson, index}
+          {#each lessonItems as lesson, index (lesson.id)}
             <Table.Head class="text-center"
               >{$t('course.navItem.attendance.lesson')} 0{getLectureNo(index + 1)}</Table.Head
             >
@@ -158,20 +156,19 @@
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {#each paginatedStudents as student}
+        {#each paginatedStudents as student (student.id)}
           <Table.Row>
             <Table.Cell class="font-semibold">
               {student.profile?.fullname}
             </Table.Cell>
-            {#each lessonItems as lesson}
+            {#each lessonItems as lesson (lesson.id)}
               <Table.Cell class="text-center">
                 <div class="flex justify-center">
                   <Checkbox
                     disabled={$isOrgStudent}
                     checked={getAttendanceStatus(student.id, lesson.id)}
                     onCheckedChange={(checked) => {
-                      const e = { target: { checked } };
-                      handleAttendanceChange(e, student, lesson);
+                      handleAttendanceChange(checked, student, lesson);
                     }}
                   />
                 </div>

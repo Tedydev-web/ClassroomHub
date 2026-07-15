@@ -6,14 +6,14 @@
 
   interface Props {
     isTitle?: boolean;
-    onClose?: any;
+    onClose?: () => void;
     scrollToQuestion?: boolean;
-    points?: any;
+    points?: number;
     hasError?: boolean;
     errorMsg?: string | null;
     /** Extra hint under points row (e.g. auto-grade requires non-zero points) */
     pointsHint?: string | null;
-    onPointsChange?: any;
+    onPointsChange?: (event: Event) => void;
     elementId?: string;
     key?: string;
     children?: import('svelte').Snippet;

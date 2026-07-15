@@ -35,6 +35,7 @@ import { getProfileById, markUserAndProfileEmailVerified } from '@cio/db/queries
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { buildEmailBranding, buildEmailFromName, sanitizeEmailSubject } from '@cio/email';
 import { ensureComplianceEnrollmentRecordsForProfiles } from '../course/compliance';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 type OrganizationInviteStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'ACCEPTED';
 
@@ -219,6 +220,16 @@ export async function inviteTeamMembers(orgId: string, emails: string[], roleId:
       })
     )
   );
+  void Promise.all(
+    revokedInvites.map((invite) =>
+      emitWebhookEvent(orgId, 'organization.invite.revoked', {
+        inviteId: invite.id,
+        targetEmail: invite.email
+      })
+    )
+  ).catch((error) => {
+    console.error('Failed to emit organization invite revoked webhooks:', error);
+  });
 
   const expiresAt = new Date(Date.now() + ORG_INVITE_EXPIRY_MS).toISOString();
   const roleName = getRoleLabel(roleId);
@@ -252,6 +263,13 @@ export async function inviteTeamMembers(orgId: string, emails: string[], roleId:
           expiresAt
         }
       });
+      void emitWebhookEvent(orgId, 'organization.invite.created', {
+        inviteId: invite.id,
+        roleId,
+        targetEmail: email
+      }).catch((error) => {
+        console.error('Failed to emit organization invite created webhook:', error);
+      });
 
       const inviteLink = buildTeamInviteLink(token);
 
@@ -268,8 +286,8 @@ export async function inviteTeamMembers(orgId: string, emails: string[], roleId:
             inviteLink,
             branding: buildEmailBranding(organization)
           },
-          from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
-          subject: sanitizeEmailSubject(`You have been invited to join ${organization.name} on ClassroomIO`),
+          from: buildEmailFromName(`${organization.name} (via Classroom)`),
+          subject: sanitizeEmailSubject(`You have been invited to join ${organization.name} on Classroom`),
           idempotencyKey: `org-invite-teacher:${invite.id}`
         });
 
@@ -403,6 +421,15 @@ export async function acceptOrganizationInvite(token: string, user: TAuthUser, c
       userAgent: context.userAgent,
       metadata: { alreadyAccepted: result.alreadyAccepted }
     });
+    if (!result.alreadyAccepted) {
+      void emitWebhookEvent(invite.invite.organizationId, 'organization.invite.accepted', {
+        inviteId: invite.invite.id,
+        profileId: user.id,
+        roleId: result.roleId
+      }).catch((error) => {
+        console.error('Failed to emit organization invite accepted webhook:', error);
+      });
+    }
   }
 
   // Auto-enroll in courses if invite metadata contains courseIds (from audience import).
@@ -701,6 +728,15 @@ export async function acceptOrganizationInviteById(
     userAgent: context.userAgent,
     metadata: { alreadyAccepted: result.alreadyAccepted }
   });
+  if (!result.alreadyAccepted) {
+    void emitWebhookEvent(result.invite.organizationId, 'organization.invite.accepted', {
+      inviteId: result.invite.id,
+      profileId: user.id,
+      roleId: result.roleId
+    }).catch((error) => {
+      console.error('Failed to emit organization invite accepted webhook:', error);
+    });
+  }
 
   const metadata = result.invite.metadata;
   const courseIds = parseCourseIdsFromInviteMetadata(metadata);

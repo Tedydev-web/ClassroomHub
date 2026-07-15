@@ -59,8 +59,8 @@ function getPageMetaTags(blog: RawBlogPost): MetaTagsProps {
       ]
     },
     twitter: {
-      handle: '@classroomio',
-      site: '@classroomio',
+      handle: '@Tedydev_web',
+      site: '@Tedydev_web',
       cardType: 'summary_large_image' as const,
       title: blog.metadata.title,
       description: blog.metadata.description,

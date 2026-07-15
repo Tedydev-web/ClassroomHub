@@ -201,7 +201,7 @@
 </script>
 
 <svelte:head>
-  <title>Customer academy software for SaaS | ClassroomIO</title>
+  <title>Customer academy software for SaaS | Classroom</title>
   <meta
     name="description"
     content="Launch a branded customer academy. Onboarding, feature adoption, admin training, and certification — under your own domain, with an AI tutor in every lesson."
@@ -224,7 +224,9 @@
         certify power-users, and drive adoption — under your own domain, with an AI tutor in every lesson.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" data-cal-link="classroomio/demo">Book a Demo</Button>
+        <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+          >Book a Demo</Button
+        >
         <Button href="/signup" variant="outline">Start free</Button>
       </div>
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
@@ -239,7 +241,7 @@
     <div class="mx-auto mt-14 w-full max-w-[1100px]">
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
-          src="https://assets.cdn.clsrio.com/www/customer-education/beautiful-academy-site.jpeg"
+          src="/assets/assets/www/customer-education/beautiful-academy-site.jpeg"
           alt="Branded customer academy on a custom domain — hero, catalog, themed branding"
           class="block h-auto w-full"
           loading="eager"
@@ -269,7 +271,7 @@
     eyebrow="Make it yours"
     title="Customize how your customer academy looks like."
     description="Theme the catalog, swap fonts and colors to match your brand, and build landing pages that feel like the rest of your product — without losing the LMS underneath."
-    imageSrc="https://assets.cdn.clsrio.com/www/customer-education/customizable-academy.jpeg"
+    imageSrc="/assets/assets/www/customer-education/customizable-academy.jpeg"
     imageAlt="Customizable customer academy — catalog, course page, certificate"
   />
 
@@ -305,11 +307,11 @@
   <EmbedCodePreview
     eyebrow="Embed anywhere"
     title="Bring lessons to your help center, your app, your marketing site."
-    description="Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to ClassroomIO."
+    description="Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to Classroom."
     fileName="help-center.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your help center --&gt;</span>',
-      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://cdn.classroomio.com/widget.js"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
+      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://embed.classroom.tedydev.io.vn/course-widget"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
       '',
       '<span class="text-pink-400">&lt;div</span> <span class="text-sky-300">data-cio-widget</span><span class="text-slate-500">=</span><span class="text-emerald-300">"getting-started"</span>',
       '  <span class="text-sky-300">data-org</span><span class="text-slate-500">=</span><span class="text-emerald-300">"yourcompany"</span>',
@@ -318,7 +320,7 @@
     ]}
     statusBar="connected · org: yourcompany · widget: getting-started"
     previewUrl="help.yourcompany.com / getting-started"
-    previewImageSrc="https://assets.cdn.clsrio.com/www/customer-education/embeddable-widget.jpeg"
+    previewImageSrc="/assets/assets/www/customer-education/embeddable-widget.jpeg"
     previewAlt="Lesson widget embedded inside a help-center page"
     capabilities={[
       { label: 'One script tag', sub: 'Drop-in install, no SDK required' },

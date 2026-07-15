@@ -1,7 +1,7 @@
 ---
 title: 'The Early Adopter Plan: Why We Created It'
 description: 'We created the Early Adopter plan to reward our earliest customers with exclusive access to new features and a locked-in rate before our upcoming pricing update.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/early-adopter.png'
+imageUrl: '/assets/assets/blog/early-adopter.png'
 date: '2026-06-15'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Pricing', 'Company Update']
 published: true
 ---
 
-![early-adopter-plan](https://assets.cdn.clsrio.com/blog/early-adopter.png)
+![early-adopter-plan](/assets/assets/blog/early-adopter.png)
 _ClassroomIO Early Adopter Plan_
 
 When we started ClassroomIO, our mission was simple: build the most powerful, customisable, and affordable learning management platform, one that puts brand and simplicity first.
@@ -33,6 +33,6 @@ The Early Adopter plan is our way of saying thank you. It locks you into our cur
 
 Once we announce the new pricing, the Early Adopter door closes. So if you've been on the fence, now is the time.
 
-[Sign up for the Early Adopter plan](https://app.classroomio.com) and lock in your rate today.
+[Sign up for the Early Adopter plan](https://app.classroom.tedydev.io.vn) and lock in your rate today.
 
 We're building the future of training, and we're glad to have you with us from the start.

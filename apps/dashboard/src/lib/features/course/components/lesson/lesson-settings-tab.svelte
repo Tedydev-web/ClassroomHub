@@ -13,6 +13,9 @@
   import { t } from '$lib/utils/functions/translations';
   import { getBrowserTimezone, instantToZonedWallClock, zonedWallClockToInstant } from '$lib/utils/functions/date';
   import { getVideoTitle, type LessonVideo } from './video/video-card-utils';
+  import { scormApi } from '$features/course/api';
+  import { scormAdminApi } from '$features/scorm/api/scorm-admin.svelte';
+  import type { ScormPackageDetail } from '$features/scorm/utils/types';
 
   type LessonCompletionPolicy = 'manual' | 'video_watch' | 'none';
 
@@ -32,6 +35,45 @@
   let sessionInitializedFor = $state<string | null>(null);
   let isSavingSession = $state(false);
   let confirmOpen = $state(false);
+  let selectedScormPackageId = $state('');
+  let selectedScormItemId = $state('');
+  let scormPackageDetail = $state<ScormPackageDetail | null>(null);
+  let isAttachingScorm = $state(false);
+
+  $effect(() => {
+    const courseId = courseApi.course?.id;
+    const lessonId = lessonApi.lesson?.id;
+    if (!courseId || !lessonId) return;
+
+    void Promise.all([scormAdminApi.listPackages(), scormApi.getContent(courseId, lessonId)]).then(([, content]) => {
+      const packageId = content?.data?.packageId ?? '';
+      selectedScormPackageId = packageId;
+    });
+  });
+
+  $effect(() => {
+    const packageId = selectedScormPackageId;
+    selectedScormItemId = '';
+    scormPackageDetail = null;
+    if (!packageId) return;
+
+    void scormAdminApi.getPackage(packageId).then((detail) => {
+      if (selectedScormPackageId !== packageId) return;
+
+      scormPackageDetail = detail;
+      selectedScormItemId = detail?.items.find((item) => item.isLaunchable)?.id ?? '';
+    });
+  });
+
+  async function attachScormContent() {
+    const courseId = courseApi.course?.id;
+    const lessonId = lessonApi.lesson?.id;
+    if (!courseId || !lessonId || !selectedScormPackageId || !selectedScormItemId) return;
+
+    isAttachingScorm = true;
+    await scormAdminApi.attach(selectedScormPackageId, courseId, lessonId, selectedScormItemId);
+    isAttachingScorm = false;
+  }
 
   $effect(() => {
     const lesson = lessonApi.lesson;
@@ -339,6 +381,55 @@
             {/if}
           </Field.Field>
         {/if}
+      </Field.Group>
+    </Field.Set>
+
+    <Field.Separator />
+
+    <Field.Set>
+      <Field.Legend>{$t('scorm.title')}</Field.Legend>
+      <Field.Description>{$t('scorm.subtitle')}</Field.Description>
+      <Field.Group>
+        <Field.Field>
+          <Field.Label>{$t('scorm.packages.heading')}</Field.Label>
+          <Select.Root type="single" bind:value={selectedScormPackageId}>
+            <Select.Trigger class="w-full">
+              {scormAdminApi.packages.find((item) => item.id === selectedScormPackageId)?.title ??
+                $t('scorm.packages.empty')}
+            </Select.Trigger>
+            <Select.Content>
+              {#each scormAdminApi.packages as item (item.id)}
+                <Select.Item value={item.id}>{item.title}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        </Field.Field>
+
+        {#if scormPackageDetail}
+          <Field.Field>
+            <Field.Label>{$t('scorm.reports.content')}</Field.Label>
+            <Select.Root type="single" bind:value={selectedScormItemId}>
+              <Select.Trigger class="w-full">
+                {scormPackageDetail.items.find((item) => item.id === selectedScormItemId)?.title ??
+                  $t('scorm.reports.content')}
+              </Select.Trigger>
+              <Select.Content>
+                {#each scormPackageDetail.items.filter((item) => item.isLaunchable) as item (item.id)}
+                  <Select.Item value={item.id}>{item.title}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </Field.Field>
+        {/if}
+
+        <Button
+          size="sm"
+          onclick={attachScormContent}
+          loading={isAttachingScorm}
+          disabled={!selectedScormPackageId || !selectedScormItemId}
+        >
+          {$t('scorm.packages.upload')}
+        </Button>
       </Field.Group>
     </Field.Set>
   </Field.Group>

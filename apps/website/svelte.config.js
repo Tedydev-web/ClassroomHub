@@ -35,11 +35,11 @@ const config = {
     alias: {
       $lib: path.resolve('./src/lib'),
       '$src/tools': path.resolve('./node_modules/@cio/ui/src/tools/index.ts'),
-      '$src/base/*': path.resolve('./node_modules/@cio/ui/src/base/*'),
+      '$src/base/*': path.resolve('./node_modules/@cio/ui/src/base'),
       '@cio/ui': path.resolve('./node_modules/@cio/ui/src'),
-      '@cio/ui/*': path.resolve('./node_modules/@cio/ui/src/*'),
+      '@cio/ui/*': path.resolve('./node_modules/@cio/ui/src'),
       '@cio/utils': path.resolve('./node_modules/@cio/utils/dist'),
-      '@cio/utils/*': path.resolve('./node_modules/@cio/utils/dist/*')
+      '@cio/utils/*': path.resolve('./node_modules/@cio/utils/dist')
     }
   },
   extensions: ['.svelte', '.md'],

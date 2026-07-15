@@ -55,18 +55,18 @@
           <div class="flex flex-wrap gap-3 text-xs">
             <span>
               <span class="font-medium">{completed}/{total}</span>
-              {' '}{$t('cohorts.goals.tile.completed_short')}
+              {$t('cohorts.goals.tile.completed_short')}
             </span>
             {#if atRisk > 0}
               <span class="text-amber-700">
                 <span class="font-medium">{atRisk}</span>
-                {' '}{$t('cohorts.goals.tile.at_risk_short')}
+                {$t('cohorts.goals.tile.at_risk_short')}
               </span>
             {/if}
             {#if overdue > 0}
               <span class="text-red-600">
                 <span class="font-medium">{overdue}</span>
-                {' '}{$t('cohorts.goals.tile.overdue_short')}
+                {$t('cohorts.goals.tile.overdue_short')}
               </span>
             {/if}
           </div>

@@ -4,10 +4,16 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      '@api': path.resolve(__dirname, 'src')
+      '@api': path.resolve(__dirname, 'src'),
+      '@cio/core': path.resolve(__dirname, '../../packages/core/src'),
+      '@cio/db': path.resolve(__dirname, '../../packages/db/src'),
+      '@db': path.resolve(__dirname, '../../packages/db/src')
     }
   },
   test: {
+    env: {
+      NODE_ENV: 'test'
+    },
     globals: true,
     environment: 'node',
     coverage: {

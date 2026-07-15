@@ -30,7 +30,7 @@
         <p>{value ? LANGUAGES.find((lang) => lang.id === value)?.text : 'Pick a Language'}</p>
       </Select.Trigger>
       <Select.Content>
-        {#each LANGUAGES as language}
+        {#each LANGUAGES as language (language.id)}
           <Select.Item value={language.id}>{language.text}</Select.Item>
         {/each}
       </Select.Content>

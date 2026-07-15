@@ -47,7 +47,7 @@
     </Dialog.Header>
 
     <img
-      src="https://assets.cdn.clsrio.com/cio-lms-plain.png"
+      src="/assets/cio-lms-plain.png"
       alt=""
       class="ui:border mx-auto my-4 w-full rounded-lg"
       width="2095"

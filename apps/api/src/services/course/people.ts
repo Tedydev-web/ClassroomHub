@@ -19,6 +19,7 @@ import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { ensureComplianceEnrollmentRecordsForProfiles } from './compliance';
 import { getWelcomeSessionIcs } from './session-invite';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 /**
  * Gets all course members (people) for a course
@@ -57,6 +58,10 @@ export async function addMember(
 
     const addedMember = await addCourseMember(courseId, data);
 
+    void emitCourseMemberAddedWebhook(courseId, addedMember.id, data).catch((error) => {
+      console.error('Failed to emit course member added webhook:', error);
+    });
+
     if (data.roleId === ROLE.STUDENT && data.profileId) {
       await ensureComplianceEnrollmentRecordsForProfiles([courseId], [data.profileId]);
     }
@@ -69,7 +74,7 @@ export async function addMember(
 
         if (courseOrgData) {
           const courseName = courseOrgData.courseTitle || '';
-          const orgName = courseOrgData.orgName || 'ClassroomIO';
+          const orgName = courseOrgData.orgName || 'Classroom';
           const branding = buildEmailBranding({
             name: courseOrgData.orgName,
             avatarUrl: courseOrgData.orgAvatarUrl,
@@ -108,7 +113,7 @@ export async function addMember(
                   customMessage: courseOrgData.welcomeEmailMessage ?? undefined,
                   branding
                 },
-                from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+                from: buildEmailFromName(`${orgName} (via Classroom)`),
                 idempotencyKey: `course-people-student-welcome:${courseId}:${studentEmail}`,
                 ics: await getWelcomeSessionIcs(courseId),
                 preference: { organizationId: courseOrgData.orgId, recipientProfileId: data.profileId }
@@ -133,7 +138,7 @@ export async function addMember(
                     studentEmail,
                     branding
                   },
-                  from: buildEmailFromName('ClassroomIO'),
+                  from: buildEmailFromName('Classroom'),
                   idempotencyKey: `course-people-teacher-joined:${courseId}:${studentEmail}`,
                   preference: { organizationId: courseOrgData.orgId }
                 });
@@ -193,7 +198,7 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
     }
 
     const courseName = courseOrgData.courseTitle || '';
-    const orgName = courseOrgData.orgName || 'ClassroomIO';
+    const orgName = courseOrgData.orgName || 'Classroom';
     const orgSiteName = courseOrgData.orgSiteName || '';
     const branding = buildEmailBranding({
       name: courseOrgData.orgName,
@@ -203,6 +208,11 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
 
     // Add all members
     const addedMembers = await Promise.all(members.map((member) => addCourseMember(courseId, member)));
+    void Promise.all(
+      addedMembers.map((addedMember, index) => emitCourseMemberAddedWebhook(courseId, addedMember.id, members[index]!))
+    ).catch((error) => {
+      console.error('Failed to emit course members added webhooks:', error);
+    });
     const studentProfileIds = members
       .filter((member) => member.roleId === ROLE.STUDENT && member.profileId)
       .map((member) => member.profileId!);
@@ -238,7 +248,7 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
               inviteLink,
               branding
             },
-            from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+            from: buildEmailFromName(`${orgName} (via Classroom)`),
             idempotencyKey: `teacher-course-welcome:${courseId}:${email}`,
             preference: { organizationId: courseOrgData.orgId }
           }).catch((emailError) => {
@@ -268,6 +278,22 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
       500
     );
   }
+}
+
+async function emitCourseMemberAddedWebhook(
+  courseId: string,
+  memberId: string,
+  member: { profileId?: string; roleId: number; email?: string; name?: string }
+) {
+  const course = await getCourseWithOrgData(courseId);
+  if (!course?.orgId) return;
+
+  await emitWebhookEvent(course.orgId, 'course.member.added', {
+    courseId,
+    memberId,
+    profileId: member.profileId ?? null,
+    roleId: member.roleId
+  });
 }
 
 /**

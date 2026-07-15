@@ -11,7 +11,7 @@ interface Customer {
   createdAt: string;
   modifiedAt: string | null;
   id: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   email: string;
   emailVerified: boolean;
   name: string;
@@ -71,11 +71,11 @@ interface Product {
   isRecurring: boolean;
   isArchived: boolean;
   organizationId: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   prices: Price[];
-  benefits: any[];
+  benefits: unknown[];
   medias: Media[];
-  attachedCustomFields: any[];
+  attachedCustomFields: unknown[];
 }
 
 export interface SubscriptionData {
@@ -106,13 +106,13 @@ export interface SubscriptionData {
     triggeredBy: string;
     kind?: string;
   };
-  customFieldData: Record<string, any>;
+  customFieldData: Record<string, unknown>;
   customer: Customer;
   userId: string;
   user: User;
   product: Product;
   price: Price;
-  discount: any | null;
+  discount: unknown | null;
 }
 
 export interface PolarOrderWebhookData {

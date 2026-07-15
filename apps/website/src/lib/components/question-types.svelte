@@ -5,7 +5,7 @@
       Exams that go beyond multiple choice.
     </h2>
     <p class="mx-auto max-w-[560px] text-base leading-relaxed text-gray-500 lg:text-lg">
-      Most LMS platforms give you multiple choice and call it a day. ClassroomIO supports the full range so your exams
+      Most LMS platforms give you multiple choice and call it a day. Classroom supports the full range so your exams
       actually test what matters.
     </p>
   </div>
@@ -16,5 +16,5 @@
 </section>
 
 <svelte:head>
-  <script type="module" src="https://embed.classroomio.com/question-type-picker"></script>
+  <script type="module" src="https://embed.classroom.tedydev.io.vn/question-type-picker"></script>
 </svelte:head>

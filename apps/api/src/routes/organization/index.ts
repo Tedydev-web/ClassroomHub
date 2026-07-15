@@ -5,3 +5,5 @@ export * from './token-auth';
 export * from './course-import';
 export * from './automation';
 export * from './widgets';
+export * from './webhooks';
+export * from './scorm';

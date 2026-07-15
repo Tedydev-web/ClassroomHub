@@ -15,7 +15,6 @@
   import FooterSocialIcon from '@cio/ui/custom/org-landing-page/footer-social-icon.svelte';
   import { FOOTER_SOCIAL_PLATFORMS } from '@cio/ui/custom/org-landing-page/footer-social-platform';
   import type { FooterSocialPlatform, OrgLandingPageJson } from '$lib/utils/types/org';
-  import ButtonLinkFields from './button-link-fields.svelte';
 
   const MAX_COLUMNS = 6;
   const MAX_LINKS_PER_COLUMN = 10;

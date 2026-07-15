@@ -98,8 +98,8 @@
 
   const sortedFeeds = $derived.by(() => {
     return [...newsfeedApi.feeds].sort((a, b) => {
-      const aPinned = (a as any).isPinned || (a as any).is_pinned || false;
-      const bPinned = (b as any).isPinned || (b as any).is_pinned || false;
+      const aPinned = a.isPinned ?? false;
+      const bPinned = b.isPinned ?? false;
       return Number(bPinned) - Number(aPinned);
     });
   });
@@ -146,7 +146,7 @@
       variant="page"
     />
   {:else}
-    {#each sortedFeeds as feed}
+    {#each sortedFeeds as feed (feed.id)}
       {#if feed.isPinned}
         <div class="flex items-center gap-2">
           <PinIcon size={16} class="filled" />

@@ -167,7 +167,7 @@
       {#if orgApi.isLoading && orgApi.teamMembers.length === 0}
         <Spinner class="size-10! text-blue-700!" />
       {:else if orgApi.teamMembers.length > 0}
-        {#each orgApi.teamMembers as teamMember}
+        {#each orgApi.teamMembers as teamMember (teamMember.id)}
           <Field.Field>
             <div class="flex items-center justify-between">
               <div class="flex items-center">

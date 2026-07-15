@@ -1,4 +1,5 @@
 import { presignApi } from '$features/course/api/presign.svelte';
+import { SvelteDate } from 'svelte/reactivity';
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import type {
   AssetStorageSummary,
@@ -346,7 +347,7 @@ export class MediaApi extends BaseApiWithErrors {
       isExternal: false,
       metadata: {
         fileName: params.fileName,
-        createdAt: new Date().toISOString()
+        createdAt: new SvelteDate().toISOString()
       }
     });
 
@@ -385,7 +386,7 @@ export class MediaApi extends BaseApiWithErrors {
       isExternal: false,
       metadata: {
         fileName: params.fileName,
-        createdAt: new Date().toISOString()
+        createdAt: new SvelteDate().toISOString()
       }
     });
 

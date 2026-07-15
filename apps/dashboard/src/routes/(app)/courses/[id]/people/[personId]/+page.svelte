@@ -83,7 +83,7 @@
 
     <div class="mt-5 px-0">
       <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {#each learningActivities as activity}
+        {#each learningActivities as activity (activity.title)}
           <ActivityCard {activity} />
         {/each}
       </div>
@@ -127,7 +127,7 @@
         </div>
       </div>
 
-      {#each filteredExercises as exercise, index}
+      {#each filteredExercises as exercise, index (exercise.id)}
         {#key index}
           <div
             class={`mt-5 flex items-center justify-between gap-4 rounded-md border p-5  ${

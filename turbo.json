@@ -17,6 +17,16 @@
     "lint": {
       "dependsOn": ["^build"]
     },
+    "check": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
     "format": { "cache": true },
     "dev": {
       "cache": false,

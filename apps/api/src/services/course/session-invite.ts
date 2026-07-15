@@ -21,7 +21,7 @@ export async function getWelcomeSessionIcs(courseId: string): Promise<string | u
     }
 
     return buildSessionIcs({
-      uid: `session-${upcoming.lessonId}@classroomio`,
+      uid: `session-${upcoming.lessonId}@classroom.tedydev.io.vn`,
       sequence: 0,
       method: 'PUBLISH',
       start: upcoming.lessonAt,

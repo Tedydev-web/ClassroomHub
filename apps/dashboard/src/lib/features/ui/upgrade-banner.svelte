@@ -7,7 +7,7 @@
 
   interface Props {
     className?: string;
-    onClick?: any;
+    onClick?: () => void;
     visible?: boolean;
     /** Query params to drop when opening the modal (e.g. `['add']` to close the invite modal first). */
     removeParams?: string[];

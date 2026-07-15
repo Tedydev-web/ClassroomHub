@@ -18,10 +18,10 @@
   import { profile } from '$lib/utils/store/user';
   import { currentOrg } from '$lib/utils/store/org';
   import { showUserJotWidget } from '$lib/utils/services/userjot';
-  import { ROLE } from '@cio/utils/constants';
+  import { OPERATOR_EMAIL, PRODUCT_HOSTS, ROLE } from '@cio/utils/constants';
 
-  const SUPPORT_EMAIL = 'help@classroomio.com';
-  const DOCS_URL = 'https://classroomio.com/docs';
+  const SUPPORT_EMAIL = OPERATOR_EMAIL;
+  const DOCS_URL = `https://${PRODUCT_HOSTS.marketing}`;
 
   const sidebar = useSidebar();
 

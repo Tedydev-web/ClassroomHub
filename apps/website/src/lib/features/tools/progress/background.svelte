@@ -66,7 +66,7 @@
           }}
           class="flex w-[30%] items-center shadow-sm transition-all duration-300 hover:scale-110"
         >
-          <img src="https://assets.cdn.clsrio.com/progress-report/backgrounds/{background.src}.webp" alt="" class="" />
+          <img src="/assets/assets/progress-report/backgrounds/{background.src}.webp" alt="" class="" />
         </button>
       {/each}
     </div>

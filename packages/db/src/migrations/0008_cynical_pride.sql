@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "scorm_attempt_one_active_registration_unique" ON "scorm_attempt" USING btree ("registration_id") WHERE "scorm_attempt"."status" = 'active';

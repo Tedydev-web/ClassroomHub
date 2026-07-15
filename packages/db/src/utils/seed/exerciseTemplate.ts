@@ -1,8 +1,9 @@
 import { db, exerciseTemplate } from '@db/drizzle';
 
 import { TExerciseTemplate } from '@db/types';
+import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
-const EXERCISE_TEMPLATES_CDN_URL = 'https://assets.cdn.clsrio.com/exerciseTemplates.json';
+const EXERCISE_TEMPLATES_CDN_URL = `https://${PRODUCT_HOSTS.dashboard}/assets/exercise-templates.json`;
 
 async function fetchExerciseTemplatesFromCDN(): Promise<TExerciseTemplate[]> {
   const response = await fetch(EXERCISE_TEMPLATES_CDN_URL);

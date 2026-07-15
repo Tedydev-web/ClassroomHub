@@ -35,7 +35,7 @@
       {triggerContent}
     </Select.Trigger>
     <Select.Content>
-      {#each LANGUAGES as lang}
+      {#each LANGUAGES as lang (lang.id)}
         <Select.Item value={lang.id} label={lang.text}>
           {lang.text}
         </Select.Item>

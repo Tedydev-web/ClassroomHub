@@ -106,22 +106,22 @@
 </script>
 
 <svelte:head>
-  <title>Random Name Picker | ClassroomIO</title>
-  <meta property="og:image" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
-  <meta property="og:title" content="Random Name Picker | ClassroomIO" />
+  <title>Random Name Picker | Classroom</title>
+  <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
+  <meta property="og:title" content="Random Name Picker | Classroom" />
   <meta
     property="og:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."
   />
 
-  <meta property="og:image:secure_url" itemprop="image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Random Name Picker | ClassroomIO" />
+  <meta name="twitter:title" content="Random Name Picker | Classroom" />
   <meta
     name="twitter:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."
   />
-  <meta name="twitter:image" content="https://brand.cdn.clsrio.com/og/free-tools.png" />
+  <meta name="twitter:image" content="/assets/brand/og/free-tools.png" />
 </svelte:head>
 
 <section class="bg-white px-5 md:px-0">

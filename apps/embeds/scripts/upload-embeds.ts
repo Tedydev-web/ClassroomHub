@@ -30,7 +30,7 @@ const EMBED_WIDGET_TARGETS = [
 /** Cloudflare allows a limited number of URLs per purge request. */
 const PURGE_URL_BATCH = 30;
 
-const DEFAULT_CDN_BASE = 'https://embed.classroomio.com';
+const DEFAULT_CDN_BASE = 'https://embed.classroom.tedydev.io.vn';
 
 function normalizePublicBaseUrl(raw: string | undefined): string {
   const value = raw != null && raw.trim() !== '' ? raw.trim() : DEFAULT_CDN_BASE;

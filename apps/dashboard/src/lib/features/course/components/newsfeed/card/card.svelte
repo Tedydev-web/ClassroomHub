@@ -3,7 +3,11 @@
 
   import type { Feed } from '$features/course/utils/types';
   import { newsfeedApi } from '$features/course/api';
-  import { getNewsfeedReactionCounts, getSelectedNewsfeedReactionType } from '@cio/ui/custom/newsfeed-reactions';
+  import {
+    getNewsfeedReactionCounts,
+    getSelectedNewsfeedReactionType,
+    type NewsfeedReactionType
+  } from '@cio/ui/custom/newsfeed-reactions';
 
   import DeleteConfirmation from './delete-confirmation.svelte';
   import type { NewsfeedCommentsByFeedId } from '$features/course/api';
@@ -23,11 +27,11 @@
       avatarUrl: string;
     };
     edit?: boolean;
-    deleteFeed?: any;
-    deleteComment?: any;
-    addNewComment?: any;
-    addNewReaction?: any;
-    onPin?: any;
+    deleteFeed?: (feedId: string) => void | Promise<void>;
+    deleteComment?: (feedId: string, commentId: string) => void | Promise<void>;
+    addNewComment?: (content: string, feedId: string) => void | Promise<void>;
+    addNewReaction?: (reactionType: NewsfeedReactionType, feedId: string, authorId: string) => void | Promise<void>;
+    onPin?: (feedId: Feed['id'], isPinned: Feed['isPinned']) => void | Promise<void>;
     isActive?: boolean;
     isReacting?: boolean;
   }

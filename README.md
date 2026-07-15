@@ -1,18 +1,18 @@
-<a href="https://classroomio.com/">
-  <img alt="ClassroomIO is a no-code tool that allows you build and scale your online bootcamp with ease." src="https://raw.githubusercontent.com/classroomio/classroomio/main/apps/website/static/classroomio-opengraph-image.jpg" />
-  <h1 align="center">ClassroomIO.com</h1>
+<a href="https://classroom.tedydev.io.vn/">
+  <img alt="Classroom is a no-code tool that allows you build and scale your online bootcamp with ease." src="apps/website/static/classroomio-opengraph-image.jpg" />
+  <h1 align="center">Classroom</h1>
   <p align="center">
     The Open Source Learning Management System for Companies
     <br />
-    <a href="https://classroomio.com">Website</a>  |  <a href="https://dub.sh/ciodiscord">Join Discord community</a>
+    <a href="https://classroom.tedydev.io.vn">Website</a>  |  <a href="https://github.com/Tedydev-web/classroomio/issues">Support</a>
   </p>
 </a>
 
-## ✨ About ClassroomIO.com
+## ✨ About Classroom
 
-<img alt="ClassroomIO Courses page" src="https://assets.cdn.clsrio.com/www/home/ai-course-builder.jpeg" />
+<img alt="Classroom Courses page" src="/assets/assets/www/home/ai-course-builder.jpeg" />
 
-ClassroomIO is an open source LMS for companies. Run compliance/employee training, customer education, and partner certification cohorts — all from one platform. Self-host it on your own infrastructure or use the cloud version.
+Classroom is an open source LMS for companies. Run compliance/employee training, customer education, and partner certification cohorts — all from one platform. Self-host it on your own infrastructure or use the cloud version.
 
 ### Who It's For
 
@@ -27,7 +27,7 @@ ClassroomIO is an open source LMS for companies. Run compliance/employee trainin
 **Course & Content**
 - **Course management** — unlimited courses, lessons, exercises, grading, and certificates
 - **Cohorts** — group courses into cohorts with goals, team management, and progress tracking
-- **AI Course Builder** — generate outlines, lesson content, and assignments (Gemini, GPT-4o, Claude)
+- **AI Course Builder** — generate outlines, lesson content, and assignments with Google, Moonshot, OpenAI, or Anthropic models
 - **AI Lesson Tutor** — in-lesson AI assistant that helps learners as they study
 
 **Compliance & Certification**
@@ -41,29 +41,27 @@ ClassroomIO is an open source LMS for companies. Run compliance/employee trainin
 
 **Integrations & Developer Tools**
 - **REST API + Webhooks** — enroll users, trigger automations, receive events (`certificate.issued`, `enrollment.completed`, and more)
-- **MCP server** — `@classroomio/mcp` on npm for AI-native integrations
+- **MCP server** — `@tedydev/classroom-mcp` on npm for AI-native integrations
 - **Embeddable widget** — embed your course catalog on any website
 
 **Platform**
 - **Fully open source** — self-host the entire stack on your own servers
 
-For what's coming next, see the [public roadmap](https://classroomio.com/roadmap).
+For what's coming next, see the [public roadmap](https://classroom.tedydev.io.vn/roadmap).
 
 ## Built With
 
-- [SvelteKit](https://kit.svelte.dev/?ref=classroomio.com)
+- [SvelteKit](https://kit.svelte.dev/?ref=classroom.tedydev.io.vn)
 - [Hono](https://hono.dev/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Better Auth](https://www.better-auth.com/)
-- [TailwindCSS](https://tailwindcss.com/?ref=classroomio.com)
+- [TailwindCSS](https://tailwindcss.com/?ref=classroom.tedydev.io.vn)
 
 ## Get a Demo
 
-You can book a quick 15 min demo to see if ClassroomIO is a good fit for you
+You can book a quick 15 min demo to see if Classroom is a good fit for you
 
-<a href="https://cal.com/classroomio/demo">
-  <img src="https://cal.com/book-with-cal-dark.svg" alt="Book a Call with ClassroomIO.com">
-</a>
+Contact [hieudat2310.bh@gmail.com](mailto:hieudat2310.bh@gmail.com) to schedule a demo.
 
 <!-- GETTING STARTED -->
 
@@ -73,7 +71,7 @@ To get a local copy up and running, please follow these simple steps.
 
 ### Prerequisites
 
-Here is what you need to be able to run ClassroomIO.com
+Here is what you need to be able to run Classroom
 
 - **[Node.js](https://nodejs.org/)** (Version: >=20.19.3) — _required_
 - **[pnpm](https://pnpm.io/installation)** (v10) — _required_; the package scripts call `pnpm` directly, so npm/yarn are not substitutes
@@ -83,10 +81,10 @@ Here is what you need to be able to run ClassroomIO.com
 
 This repo is a monorepo that consists of these primary apps:
 
-1. `website`: The landing page of ClassroomIO hosted [here](https://classroomio.com)
+1. `website`: The landing page of Classroom hosted [here](https://classroom.tedydev.io.vn)
 2. `api`: The api service that handles PDF, video processing, Emailing and Notifications.
-3. `dashboard`: The web application that runs the learning management system hosted [here](https://app.classroomio.com).
-4. `docs`: Official documentation of ClassroomIO hosted [here](https://classroomio.com/docs)
+3. `dashboard`: The web application that runs the learning management system hosted [here](https://app.classroom.tedydev.io.vn).
+4. `docs`: Official documentation of Classroom hosted [here](https://classroom.tedydev.io.vn/docs)
 
 The repository also contains shared packages under `packages/` (for example `packages/db`, `packages/utils`, and `packages/ui`).
 
@@ -102,7 +100,7 @@ The repository also contains shared packages under `packages/` (for example `pac
 1. Fork the repo, then clone it:
 
    ```bash
-   git clone https://github.com/classroomio/classroomio.git
+   git clone https://github.com/Tedydev-web/classroomio.git
    ```
 
 2. Go to project folder:
@@ -156,13 +154,13 @@ The repository also contains shared packages under `packages/` (for example `pac
 
      ```bash
      PUBLIC_SERVER_URL="http://localhost:3002"
-     PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required, or login returns "API upstream not configured"
+     PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required, or login returns "API target not configured"
      PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must match the API (paste the value generated above)
      PUBLIC_IS_SELFHOSTED=true
      ```
 
    - Running the background workers? Also create `apps/jobs/.env` (e.g. `cp apps/api/.env apps/jobs/.env`); it needs `REDIS_URL`. The `packages/db/.env` used by the DB scripts is set up in step 6.
-   - Optional for self-hosted Enterprise-only features (SSO, token-auth, no-tracking): set `LICENSE_KEY` in `apps/api/.env`.
+   - SSO, token-auth, no-tracking, and the other deployment capabilities are enabled locally; no external license key or license service is required.
    - Optional upload size limits: set matching `UPLOAD_MAX_*_MB` values in **both** `apps/api/.env` and `apps/dashboard/.env` (see `apps/api/.env.example`). Defaults are 5 MB documents, 2 MB assignment files, 800 MB videos.
 
 6. Start local infrastructure for API (Postgres + Redis) and seed the DB:
@@ -222,17 +220,19 @@ The repository also contains shared packages under `packages/` (for example `pac
     - Enter email: `admin@test.com`
     - Enter password: `123456`
 
-    To learn more about how to login with a dummy account, [go here.](https://classroomio.com/docs/contributor-guides/demo-accounts)
+    To learn more about how to login with a dummy account, [go here.](https://classroom.tedydev.io.vn/docs/contributor-guides/demo-accounts)
 
 ### Enabling the AI Course Assistant
 
 The in-course AI chat (course authoring, plan generation, lesson edits) is **disabled by default**. Enable it by setting at least one provider API key in `apps/api/.env` (or the root `.env` for the Docker stack):
 
 ```bash
-# Pick one or more — the dashboard model picker exposes Gemini 2.5 Flash and GPT-4o.
-OPENAI_API_KEY=sk-...        # enables GPT-4o
-GOOGLE_API_KEY=AIza...       # enables Gemini 2.5 Flash (default model in the picker)
-ANTHROPIC_API_KEY=sk-ant-... # supported in code; not currently in the picker UI
+# Pick one or more. The picker exposes Gemini 2.5 Flash Lite, Kimi K2.6,
+# GPT-5.4 Mini, and Claude Sonnet 4.6.
+OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=AIza...
+ANTHROPIC_API_KEY=sk-ant-...
+MOONSHOT_API_KEY=...
 ```
 
 Notes:
@@ -245,12 +245,15 @@ Notes:
 
 ```bash
 cp .env.example .env   # copy env template, edit for your domain
+./run-docker-full-stack.sh --provision-only # harden .env without starting containers
 ./run-docker-full-stack.sh
 ```
 
-The script reads root `.env` via `docker compose --env-file .env` and auto-generates a secure `PRIVATE_SERVER_KEY` (and `BETTER_AUTH_SECRET`) when missing.
+The script reads root `.env` via `docker compose --env-file .env` and auto-generates secure `PRIVATE_SERVER_KEY`, `BETTER_AUTH_SECRET`, and `WEBHOOK_ENCRYPTION_KEY` values when missing. The `--provision-only` mode also randomizes first-run MinIO credentials, then exits before pulling images or starting services.
 
-See [`.env.example`](.env.example) for the full list of environment variables with required/optional grouping, and [`docker/docs/SELF_HOST.md`](docker/docs/SELF_HOST.md) for the complete Docker self-hosting guide. To raise upload caps (documents, videos, assignment files), set the `UPLOAD_MAX_*_MB` vars in `.env` — see the [docs](https://docs.classroomio.com/docs/self-hosted/docker#optional--upload-file-size-limits).
+Published dashboard images target self-hosted mode because public Svelte environment variables are fixed at build time. When `.env` sets `PUBLIC_IS_SELFHOSTED=false`, the script automatically builds the dashboard from source with cloud mode baked in.
+
+See [`.env.example`](.env.example) for the full list of environment variables with required/optional grouping, and [`docker/docs/SELF_HOST.md`](docker/docs/SELF_HOST.md) for the complete Docker self-hosting guide. To raise upload caps (documents, videos, assignment files), set the `UPLOAD_MAX_*_MB` vars in `.env` — see the [docs](https://docs.classroom.tedydev.io.vn/docs/self-hosted/docker#optional--upload-file-size-limits).
 
 ## Publishing
 
@@ -259,4 +262,4 @@ When cutting releases for hosted assets or the npm MCP package, run:
 - **Storybook** — `pnpm --filter @cio/storybook storybook:publish`
 - **Course widget embed** — `pnpm --filter @cio/embeds embeds:publish`
 - **Question type picker** — `pnpm --filter @cio/embeds embeds:publish` (same script builds and uploads both embeds)
-- **MCP (`@classroomio/mcp`)** — bump the version in `packages/mcp/package.json`, then `pnpm mcp:build` and `pnpm --filter @classroomio/mcp publish`
+- **MCP (`@tedydev/classroom-mcp`)** — bump the version in `packages/mcp/package.json`, then `pnpm mcp:build` and `pnpm --filter @tedydev/classroom-mcp publish`

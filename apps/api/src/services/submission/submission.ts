@@ -46,6 +46,8 @@ import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUr
 import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExercisePassedForMember } from '@cio/db/queries/course/progression';
+import { createNotification } from '@cio/db/queries/notifications';
+import { emitWebhookEvent } from '@api/services/webhook';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
@@ -684,6 +686,9 @@ export async function createSubmissionService(
 
     const insertedAnswers = answerRows.length > 0 ? await insertQuestionAnswersBatch(answerRows) : [];
     await createVideoRecordingAssetUsages(insertedAnswers);
+    void emitSubmissionWebhook('course.submission.created', submission).catch((error) => {
+      console.error('Failed to emit submission created webhook:', error);
+    });
 
     if (shouldAutoGrade) {
       const dbQuestions = exerciseWithRelations.questions
@@ -792,6 +797,9 @@ export async function updateSubmissionService(submissionId: string, data: TSubmi
       void sendSubmissionUpdateEmail(submissionId, nextLegacyStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
+      void emitSubmissionWebhook('course.submission.status_changed', updated).catch((error) => {
+        console.error('Failed to emit submission status changed webhook:', error);
+      });
     }
 
     if (updated.gradingState === 'completed' && updated.courseId && updated.submittedBy) {
@@ -893,6 +901,9 @@ export async function updateSubmissionGradesBatch(
       void sendSubmissionUpdateEmail(submissionId, targetStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
+      void emitSubmissionWebhook('course.submission.status_changed', updated).catch((error) => {
+        console.error('Failed to emit submission status changed webhook:', error);
+      });
     }
 
     if (updated.courseId && updated.submittedBy) {
@@ -911,6 +922,25 @@ export async function updateSubmissionGradesBatch(
       500
     );
   }
+}
+
+async function emitSubmissionWebhook(
+  eventType: 'course.submission.created' | 'course.submission.status_changed',
+  submission: TSubmission
+) {
+  if (!submission.courseId) return;
+
+  const course = await getCourseWithOrgData(submission.courseId);
+  if (!course?.orgId) return;
+
+  await emitWebhookEvent(course.orgId, eventType, {
+    courseId: submission.courseId,
+    exerciseId: submission.exerciseId,
+    gradingState: submission.gradingState,
+    statusId: submission.statusId,
+    submissionId: submission.id,
+    submittedByGroupMemberId: submission.submittedBy
+  });
 }
 
 /**
@@ -968,7 +998,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
   // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(fullSubmission.courseId || '');
 
-  const orgName = orgResult?.orgName || 'ClassroomIO';
+  const orgName = orgResult?.orgName || 'Classroom';
 
   const statusText = LEGACY_BOARD_STATUS_LABELS[newStatusId] || 'Updated';
   const baseUrl = getDashboardBaseUrl({
@@ -987,6 +1017,22 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
   const score = isGraded ? `${totalMark}/${maxMark}` : undefined;
 
   try {
+    if (orgResult?.orgId) {
+      await createNotification({
+        profileId: fullSubmission.groupmember.profile.id,
+        organizationId: orgResult.orgId,
+        courseId: fullSubmission.courseId,
+        type: 'SUBMISSION_GRADED',
+        title: `${fullSubmission.exercise.title} was graded`,
+        body: score ? `${statusText}: ${score}` : statusText,
+        metadata: {
+          exerciseId: fullSubmission.exercise.id,
+          link: `/courses/${fullSubmission.courseId}/exercises/${fullSubmission.exercise.id}`,
+          submissionId
+        }
+      });
+    }
+
     await enqueueTransactionalEmail('submissionGraded', {
       to: fullSubmission.groupmember.profile.email,
       fields: {
@@ -1004,7 +1050,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(`${orgName} (via Classroom)`),
       idempotencyKey: `submission-update:${submissionId}:${newStatusId}`,
       preference: {
         organizationId: orgResult?.orgId,
@@ -1049,7 +1095,7 @@ async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: s
   // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(courseId);
 
-  const orgName = orgResult?.orgName || 'ClassroomIO';
+  const orgName = orgResult?.orgName || 'Classroom';
 
   const baseUrl = getDashboardBaseUrl({
     siteName: orgResult?.orgSiteName,
@@ -1079,7 +1125,7 @@ async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: s
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(`${orgName} (via Classroom)`),
       idempotencyKey: `exercise-submitted:${courseId}:${exerciseId}:${submittedBy}`,
       preference: { organizationId: orgResult?.orgId }
     });

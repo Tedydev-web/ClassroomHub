@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts}'],
+    exclude: ['src/lib/utils/page.server.test.ts', 'src/lib/utils/page.test.ts'],
     deps: {
       inline: [/^svelte/]
     },

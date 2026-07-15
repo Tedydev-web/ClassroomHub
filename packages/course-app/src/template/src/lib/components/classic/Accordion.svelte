@@ -9,13 +9,13 @@
 
   let isOpen = $state(false);
   let contentHeight = $state('0px'); // Track the height of the content
-  let contentRef: HTMLDivElement = $state(); // Reference to the content div
+  let contentRef = $state<HTMLDivElement | null>(null); // Reference to the content div
 
   function toggleAccordion() {
     isOpen = !isOpen;
     if (isOpen) {
       // Measure and set the height when opening
-      contentHeight = `${contentRef?.scrollHeight}px`;
+      contentHeight = `${contentRef?.scrollHeight ?? 0}px`;
     } else {
       // Set to 0 height when closing
       contentHeight = '0px';
@@ -23,15 +23,12 @@
   }
 </script>
 
-<div class="space-y-2 shadow-md bg-white">
+<div class="space-y-2 bg-white shadow-md">
   <!-- Accordion Header -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="flex justify-between items-center cursor-pointer p-4 bg-white rounded"
-    onclick={toggleAccordion}
-  >
-    <p class="font-semibold text-lg max-w-[90%]">{title}</p>
+  <div class="flex cursor-pointer items-center justify-between rounded bg-white p-4" onclick={toggleAccordion}>
+    <p class="max-w-[90%] text-lg font-semibold">{title}</p>
     <div>
       {#if isOpen}
         <Subtract size={20} class="text-xl transition-transform duration-200 ease-in" />
@@ -46,7 +43,7 @@
     bind:this={contentRef}
     style="max-height: {contentHeight}; transition: max-height 0.3s ease-in-out; overflow: hidden;"
   >
-    <div class="p-4 bg-white rounded-b">
+    <div class="rounded-b bg-white p-4">
       <p>{content}</p>
     </div>
   </div>

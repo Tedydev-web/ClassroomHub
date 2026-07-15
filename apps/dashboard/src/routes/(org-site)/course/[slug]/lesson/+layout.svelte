@@ -6,8 +6,9 @@
   import type { PublicCourseSidebarItem, PublicCourseSidebarSection } from '@cio/ui/custom/public-course';
   import { t } from '$lib/utils/functions/translations';
   import type { Snippet } from 'svelte';
+  import type { LayoutData } from './$types';
 
-  let { data, children }: { data: { tree: any }; children?: Snippet } = $props();
+  let { data, children }: { data: LayoutData; children?: Snippet } = $props();
 
   const sections: PublicCourseSidebarSection[] = $derived(toPublicSidebarSections(data.tree));
   const flatItems = $derived(sections.flatMap((section) => section.items));

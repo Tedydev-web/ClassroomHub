@@ -5,17 +5,17 @@
 </script>
 
 <svelte:head>
-  <title>Blog | ClassroomIO</title>
+  <title>Blog | Classroom</title>
 </svelte:head>
 
 <section>
   <PageHeader className="flex flex-col items-center justify-center text-center">
     <h1 class="mx-auto flex flex-col items-center text-4xl text-slate-900 md:text-6xl">
       <span>What's new on</span>
-      <span class="relative text-blue-700">ClassroomIO?</span>
+      <span class="relative text-blue-700">Classroom?</span>
     </h1>
     <p class="mt-10 w-[90%] text-center text-lg font-normal text-slate-700 md:w-[60%] lg:mt-7">
-      Get the latest news from ClassroomIO, including product updates, team announcements and more!
+      Get the latest news from Classroom, including product updates, team announcements and more!
     </p>
   </PageHeader>
   <div class="flex w-full items-center justify-center">
@@ -30,7 +30,7 @@
 
   <PageSignupCTA
     header="Turn what your team already knows into training."
-    subText="ClassroomIO helps you convert docs, policies, videos, and internal knowledge into courses, quizzes, certificates, and completion evidence."
+    subText="Classroom helps you convert docs, policies, videos, and internal knowledge into courses, quizzes, certificates, and completion evidence."
     btnLabel="Start for free"
     link="/signup"
     demo={false}

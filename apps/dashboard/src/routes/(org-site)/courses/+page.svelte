@@ -32,11 +32,7 @@
   let selectedTypes = $derived<string[]>(data.activeTypes || []);
   let activeSearch = $derived(data.activeSearch || '');
   let activePricing = $derived<'free' | 'paid' | undefined>(data.activePricing);
-  let searchInput = $state('');
-
-  $effect(() => {
-    searchInput = activeSearch;
-  });
+  let searchInput = $derived(activeSearch);
 
   const COURSE_TYPES = [
     { value: 'SELF_PACED', label: t.get('analytics.popularTypes.types.SELF_PACED') },
@@ -86,10 +82,14 @@
     const nextSearch = next.search !== undefined ? next.search : activeSearch;
     const nextPricing = 'pricing' in next ? next.pricing : activePricing;
 
-    nextTags.length ? params.set('tags', nextTags.join(',')) : params.delete('tags');
-    nextTypes.length ? params.set('types', nextTypes.join(',')) : params.delete('types');
-    nextSearch ? params.set('search', nextSearch) : params.delete('search');
-    nextPricing ? params.set('pricing', nextPricing) : params.delete('pricing');
+    if (nextTags.length) params.set('tags', nextTags.join(','));
+    else params.delete('tags');
+    if (nextTypes.length) params.set('types', nextTypes.join(','));
+    else params.delete('types');
+    if (nextSearch) params.set('search', nextSearch);
+    else params.delete('search');
+    if (nextPricing) params.set('pricing', nextPricing);
+    else params.delete('pricing');
     params.delete('page');
 
     const query = params.toString();
@@ -216,28 +216,26 @@
           {authAction}
         />
       {/snippet}
-      {#snippet children()}
-        <div class="ui:w-full ui:max-w-xl ui:mx-auto relative">
-          <Input
-            type="text"
-            value={searchInput}
-            oninput={(e) => onSearchInput(e.currentTarget.value)}
-            onkeydown={onSearchKeydown}
-            placeholder={$t('public_courses.filters.search_placeholder')}
-            class="ui:pr-8"
-          />
-          {#if searchInput}
-            <button
-              type="button"
-              onclick={clearSearch}
-              class="ui:text-muted-foreground ui:hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
-              aria-label="Clear search"
-            >
-              <XIcon class="ui:size-4" />
-            </button>
-          {/if}
-        </div>
-      {/snippet}
+      <div class="ui:w-full ui:max-w-xl ui:mx-auto relative">
+        <Input
+          type="text"
+          value={searchInput}
+          oninput={(e) => onSearchInput(e.currentTarget.value)}
+          onkeydown={onSearchKeydown}
+          placeholder={$t('public_courses.filters.search_placeholder')}
+          class="ui:pr-8"
+        />
+        {#if searchInput}
+          <button
+            type="button"
+            onclick={clearSearch}
+            class="ui:text-muted-foreground ui:hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
+            aria-label="Clear search"
+          >
+            <XIcon class="ui:size-4" />
+          </button>
+        {/if}
+      </div>
     </HeroComponent>
   {:else}
     <NavComponent
@@ -247,28 +245,26 @@
       {authAction}
     />
     <HeroComponent hero={heroProps} orgName={data.org.name} showActions={false} compact={true}>
-      {#snippet children()}
-        <div class="ui:w-full ui:max-w-xl ui:mx-auto relative">
-          <Input
-            type="text"
-            value={searchInput}
-            oninput={(e) => onSearchInput(e.currentTarget.value)}
-            onkeydown={onSearchKeydown}
-            placeholder={$t('public_courses.filters.search_placeholder')}
-            class="ui:pr-8"
-          />
-          {#if searchInput}
-            <button
-              type="button"
-              onclick={clearSearch}
-              class="ui:text-muted-foreground ui:hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
-              aria-label="Clear search"
-            >
-              <XIcon class="ui:size-4" />
-            </button>
-          {/if}
-        </div>
-      {/snippet}
+      <div class="ui:w-full ui:max-w-xl ui:mx-auto relative">
+        <Input
+          type="text"
+          value={searchInput}
+          oninput={(e) => onSearchInput(e.currentTarget.value)}
+          onkeydown={onSearchKeydown}
+          placeholder={$t('public_courses.filters.search_placeholder')}
+          class="ui:pr-8"
+        />
+        {#if searchInput}
+          <button
+            type="button"
+            onclick={clearSearch}
+            class="ui:text-muted-foreground ui:hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
+            aria-label="Clear search"
+          >
+            <XIcon class="ui:size-4" />
+          </button>
+        {/if}
+      </div>
     </HeroComponent>
   {/if}
 

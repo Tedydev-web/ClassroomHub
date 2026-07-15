@@ -3,7 +3,6 @@
   import { Button } from '@cio/ui/base/button';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
   import * as Item from '@cio/ui/base/item';
-  import { IconButton } from '@cio/ui/custom/icon-button';
 
   import DownloadIcon from '@lucide/svelte/icons/download';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';

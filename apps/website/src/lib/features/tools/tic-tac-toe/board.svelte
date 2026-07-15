@@ -18,7 +18,7 @@
 
   let { game = $bindable(), winner = null }: Props = $props();
 
-  let customDelay: number = $state();
+  let customDelay = $state(0);
 
   run(() => {
     if ($changeToComputer.change) {

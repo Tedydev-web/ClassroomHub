@@ -154,6 +154,19 @@ export async function submitComment({
   return response[0];
 }
 
+export async function getCommunityQuestionContext(questionId: number) {
+  const [context] = await db
+    .select({
+      courseId: communityQuestion.courseId,
+      organizationId: communityQuestion.organizationId
+    })
+    .from(communityQuestion)
+    .where(eq(communityQuestion.id, questionId))
+    .limit(1);
+
+  return context ?? null;
+}
+
 export async function upvoteQuestion({ id }: Partial<TCommunityQuestion>) {
   if (!id) throw new Error('Question ID is required for upvoting');
 

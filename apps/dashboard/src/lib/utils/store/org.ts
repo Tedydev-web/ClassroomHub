@@ -95,7 +95,7 @@ export const currentOrgPath = derived(currentOrg, ($currentOrg) =>
 type OrgPublicOrigin = Pick<AccountOrg, 'customDomain' | 'isCustomDomainVerified' | 'siteName'>;
 
 /**
- * Admin dashboard origin (`app.classroomio.com` in cloud). Use for team invite links
+ * Admin dashboard origin. Use for team invite links
  * and other admin-only URLs — not student-facing tenant pages.
  */
 export function getAppOrigin(): string {
@@ -109,7 +109,7 @@ export function getAppOrigin(): string {
 /**
  * Public origin for an org's tenant site (student LMS, public course pages, login-link handoff).
  * Self-hosted uses the current deployment URL. On cloud, verified custom domains win over the
- * admin host so `app.classroomio.com` still hands off to the org's `example.com` tenant site.
+ * admin host so the platform dashboard still hands off to the org's custom-domain tenant site.
  */
 export function getOrgPublicOrigin(org: OrgPublicOrigin): string {
   if (PUBLIC_IS_SELFHOSTED === 'true') {
@@ -208,7 +208,7 @@ export const deleteModal = writable({
 });
 
 interface QuizOption {
-  id: number;
+  id: string;
   label: string;
   isCorrect: boolean;
 }

@@ -1,5 +1,9 @@
 import { lstatSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const prettierEntryPoint = require.resolve('prettier/bin/prettier.cjs');
 
 const prettierMode = process.argv.includes('--check') ? '--check' : '--write';
 const stagedOnly = process.argv.includes('--staged');
@@ -52,7 +56,7 @@ function runPrettier(filePaths) {
 
   for (let index = 0; index < filePaths.length; index += chunkSize) {
     const chunk = filePaths.slice(index, index + chunkSize);
-    const result = spawnSync('prettier', [prettierMode, '--ignore-unknown', ...chunk], {
+    const result = spawnSync(process.execPath, [prettierEntryPoint, prettierMode, '--ignore-unknown', ...chunk], {
       cwd: process.cwd(),
       stdio: 'inherit'
     });

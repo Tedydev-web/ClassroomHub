@@ -62,7 +62,7 @@
       capability: 'Branded portal on your domain',
       docs: true,
       academy: true,
-      note: 'Both can. Help-doc tools usually charge extra for it. ClassroomIO doesn’t.'
+      note: 'Both can. Help-doc tools usually charge extra for it. Classroom doesn’t.'
     },
     {
       capability: 'Search & quick lookup',

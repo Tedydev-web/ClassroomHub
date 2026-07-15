@@ -70,6 +70,37 @@ export const organizationInviteEventType = pgEnum('ORGANIZATION_INVITE_EVENT_TYP
   'ABUSE_BLOCKED'
 ]);
 export const organizationInviteType = pgEnum('ORGANIZATION_INVITE_TYPE', ['EMAIL', 'LINK']);
+export const notificationType = pgEnum('NOTIFICATION_TYPE', [
+  'EXERCISE_DUE_REMINDER',
+  'LIVE_CLASS_REMINDER',
+  'NEWSFEED_POST',
+  'NEWSFEED_COMMENT',
+  'COMMUNITY_QUESTION',
+  'COMMUNITY_ANSWER',
+  'COURSE_COMPLETED',
+  'CERTIFICATE_EARNED',
+  'SUBMISSION_GRADED',
+  'COURSE_INVITE',
+  'ORGANIZATION_INVITE'
+]);
+export const webhookDeliveryStatus = pgEnum('WEBHOOK_DELIVERY_STATUS', [
+  'PENDING',
+  'RETRYING',
+  'SUCCESS',
+  'FAILED',
+  'GAVE_UP'
+]);
+export const scormVersion = pgEnum('SCORM_VERSION', ['1.2', '2004', 'unknown']);
+export const scormPackageStatus = pgEnum('SCORM_PACKAGE_STATUS', ['uploaded', 'parsed', 'failed', 'ready', 'archived']);
+export const scormRegistrationStatus = pgEnum('SCORM_REGISTRATION_STATUS', ['not_started', 'in_progress', 'completed']);
+export const scormCompletionStatus = pgEnum('SCORM_COMPLETION_STATUS', [
+  'unknown',
+  'not_attempted',
+  'incomplete',
+  'completed'
+]);
+export const scormSuccessStatus = pgEnum('SCORM_SUCCESS_STATUS', ['unknown', 'passed', 'failed']);
+export const scormAttemptStatus = pgEnum('SCORM_ATTEMPT_STATUS', ['active', 'terminated', 'abandoned', 'error']);
 
 export const user = pgTable('user', {
   id: uuid()
@@ -1108,6 +1139,134 @@ export const asset = pgTable(
   ]
 );
 
+export const scormPackage = pgTable(
+  'scorm_package',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    createdByProfileId: uuid('created_by_profile_id'),
+    sourceAssetId: uuid('source_asset_id'),
+    title: text().notNull(),
+    version: scormVersion().default('unknown').notNull(),
+    manifestIdentifier: text('manifest_identifier'),
+    entrypoint: text(),
+    status: scormPackageStatus().default('uploaded').notNull(),
+    manifestJson: jsonb('manifest_json').default({}).notNull(),
+    warningsJson: jsonb('warnings_json').default([]).notNull(),
+    fileCount: integer('file_count').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'scorm_package_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByProfileId],
+      foreignColumns: [profile.id],
+      name: 'scorm_package_created_by_profile_id_fkey'
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.sourceAssetId],
+      foreignColumns: [asset.id],
+      name: 'scorm_package_source_asset_id_fkey'
+    }).onDelete('set null'),
+    index('idx_scorm_package_organization_status').on(table.organizationId, table.status),
+    index('idx_scorm_package_created_at').on(table.createdAt)
+  ]
+);
+
+export const scormPackageItem = pgTable(
+  'scorm_package_item',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    packageId: uuid('package_id').notNull(),
+    parentItemId: uuid('parent_item_id'),
+    title: text().notNull(),
+    identifier: text().notNull(),
+    resourceIdentifier: text('resource_identifier'),
+    launchHref: text('launch_href'),
+    order: integer().default(0).notNull(),
+    isLaunchable: boolean('is_launchable').default(false).notNull(),
+    metadataJson: jsonb('metadata_json').default({}).notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.packageId],
+      foreignColumns: [scormPackage.id],
+      name: 'scorm_package_item_package_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.parentItemId],
+      foreignColumns: [table.id],
+      name: 'scorm_package_item_parent_item_id_fkey'
+    }).onDelete('cascade'),
+    unique('scorm_package_item_package_identifier_unique').on(table.packageId, table.identifier),
+    index('idx_scorm_package_item_package_order').on(table.packageId, table.order)
+  ]
+);
+
+export const scormLessonContent = pgTable(
+  'scorm_lesson_content',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    lessonId: uuid('lesson_id').notNull(),
+    packageId: uuid('package_id').notNull(),
+    packageItemId: uuid('package_item_id').notNull(),
+    createdByProfileId: uuid('created_by_profile_id'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'scorm_lesson_content_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.courseId],
+      foreignColumns: [course.id],
+      name: 'scorm_lesson_content_course_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.lessonId],
+      foreignColumns: [lesson.id],
+      name: 'scorm_lesson_content_lesson_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.packageId],
+      foreignColumns: [scormPackage.id],
+      name: 'scorm_lesson_content_package_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.packageItemId],
+      foreignColumns: [scormPackageItem.id],
+      name: 'scorm_lesson_content_package_item_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByProfileId],
+      foreignColumns: [profile.id],
+      name: 'scorm_lesson_content_created_by_profile_id_fkey'
+    }).onDelete('set null'),
+    unique('scorm_lesson_content_lesson_unique').on(table.lessonId),
+    index('idx_scorm_lesson_content_organization').on(table.organizationId),
+    index('idx_scorm_lesson_content_package').on(table.packageId)
+  ]
+);
+
 export const assetUsage = pgTable(
   'asset_usages',
   {
@@ -1576,6 +1735,130 @@ export const lessonCompletion = pgTable(
       name: 'lesson_completion_profile_id_fkey'
     }),
     unique('unique_lesson_profile').on(table.lessonId, table.profileId)
+  ]
+);
+
+export const scormRegistration = pgTable(
+  'scorm_registration',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    packageId: uuid('package_id').notNull(),
+    packageItemId: uuid('package_item_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    lessonId: uuid('lesson_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    groupMemberId: uuid('group_member_id'),
+    status: scormRegistrationStatus().default('not_started').notNull(),
+    completionStatus: scormCompletionStatus('completion_status').default('unknown').notNull(),
+    successStatus: scormSuccessStatus('success_status').default('unknown').notNull(),
+    scoreRaw: doublePrecision('score_raw'),
+    scoreScaled: doublePrecision('score_scaled'),
+    totalTimeSeconds: integer('total_time_seconds').default(0).notNull(),
+    lastLocation: text('last_location'),
+    suspendData: text('suspend_data'),
+    lastErrorCode: text('last_error_code'),
+    lastLaunchedAt: timestamp('last_launched_at', { withTimezone: true, mode: 'string' }),
+    lastCommittedAt: timestamp('last_committed_at', { withTimezone: true, mode: 'string' }),
+    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
+    passedAt: timestamp('passed_at', { withTimezone: true, mode: 'string' }),
+    failedAt: timestamp('failed_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.packageId],
+      foreignColumns: [scormPackage.id],
+      name: 'scorm_registration_package_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.packageItemId],
+      foreignColumns: [scormPackageItem.id],
+      name: 'scorm_registration_package_item_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.courseId],
+      foreignColumns: [course.id],
+      name: 'scorm_registration_course_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.lessonId],
+      foreignColumns: [lesson.id],
+      name: 'scorm_registration_lesson_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.profileId],
+      foreignColumns: [profile.id],
+      name: 'scorm_registration_profile_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.groupMemberId],
+      foreignColumns: [groupmember.id],
+      name: 'scorm_registration_group_member_id_fkey'
+    }).onDelete('set null'),
+    unique('scorm_registration_lesson_profile_unique').on(table.lessonId, table.profileId),
+    index('idx_scorm_registration_package').on(table.packageId),
+    index('idx_scorm_registration_course_status').on(table.courseId, table.status)
+  ]
+);
+
+export const scormAttempt = pgTable(
+  'scorm_attempt',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    registrationId: uuid('registration_id').notNull(),
+    attemptNumber: integer('attempt_number').notNull(),
+    status: scormAttemptStatus().default('active').notNull(),
+    initializedAt: timestamp('initialized_at', { withTimezone: true, mode: 'string' }),
+    terminatedAt: timestamp('terminated_at', { withTimezone: true, mode: 'string' }),
+    lastCommittedAt: timestamp('last_committed_at', { withTimezone: true, mode: 'string' }),
+    sessionTimeSeconds: integer('session_time_seconds').default(0).notNull(),
+    runtimeSnapshotJson: jsonb('runtime_snapshot_json').default({}).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.registrationId],
+      foreignColumns: [scormRegistration.id],
+      name: 'scorm_attempt_registration_id_fkey'
+    }).onDelete('cascade'),
+    unique('scorm_attempt_registration_number_unique').on(table.registrationId, table.attemptNumber),
+    uniqueIndex('scorm_attempt_one_active_registration_unique')
+      .on(table.registrationId)
+      .where(sql`${table.status} = 'active'`),
+    index('idx_scorm_attempt_registration_status').on(table.registrationId, table.status)
+  ]
+);
+
+export const scormRuntimeEvent = pgTable(
+  'scorm_runtime_event',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    attemptId: uuid('attempt_id').notNull(),
+    eventType: text('event_type').notNull(),
+    element: text(),
+    valuePreview: text('value_preview'),
+    errorCode: text('error_code'),
+    metaJson: jsonb('meta_json').default({}).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.attemptId],
+      foreignColumns: [scormAttempt.id],
+      name: 'scorm_runtime_event_attempt_id_fkey'
+    }).onDelete('cascade'),
+    index('idx_scorm_runtime_event_attempt_created_at').on(table.attemptId, table.createdAt)
   ]
 );
 
@@ -2228,6 +2511,150 @@ export const organization = pgTable(
       name: 'organization_parent_organization_id_fkey'
     }).onDelete('set null'),
     index('idx_organization_parent_id').on(table.parentOrganizationId)
+  ]
+);
+
+export const notification = pgTable(
+  'notification',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    profileId: uuid('profile_id').notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    courseId: uuid('course_id'),
+    type: notificationType().notNull(),
+    title: varchar({ length: 255 }).notNull(),
+    body: text(),
+    metadata: jsonb().default({}).notNull().$type<Record<string, unknown>>(),
+    isRead: boolean('is_read').default(false).notNull(),
+    readAt: timestamp('read_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.profileId],
+      foreignColumns: [profile.id],
+      name: 'notification_profile_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'notification_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.courseId],
+      foreignColumns: [course.id],
+      name: 'notification_course_id_fkey'
+    }).onDelete('cascade'),
+    index('idx_notification_profile_org_created').on(table.profileId, table.organizationId, table.createdAt),
+    index('idx_notification_profile_org_unread').on(table.profileId, table.organizationId, table.isRead)
+  ]
+);
+
+export const webhookEndpoint = pgTable(
+  'webhook_endpoint',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    name: varchar({ length: 100 }).notNull(),
+    payloadUrl: text('payload_url').notNull(),
+    secretCiphertext: text('secret_ciphertext'),
+    secretLast4: varchar('secret_last4', { length: 4 }),
+    verifySsl: boolean('verify_ssl').default(true).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    consecutiveFailures: integer('consecutive_failures').default(0).notNull(),
+    createdByProfileId: uuid('created_by_profile_id').notNull(),
+    updatedByProfileId: uuid('updated_by_profile_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'webhook_endpoint_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByProfileId],
+      foreignColumns: [profile.id],
+      name: 'webhook_endpoint_created_by_profile_id_fkey'
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.updatedByProfileId],
+      foreignColumns: [profile.id],
+      name: 'webhook_endpoint_updated_by_profile_id_fkey'
+    }).onDelete('restrict'),
+    index('idx_webhook_endpoint_org').on(table.organizationId)
+  ]
+);
+
+export const webhookSubscription = pgTable(
+  'webhook_subscription',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    webhookId: uuid('webhook_id').notNull(),
+    eventType: varchar('event_type', { length: 100 }).notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.webhookId],
+      foreignColumns: [webhookEndpoint.id],
+      name: 'webhook_subscription_webhook_id_fkey'
+    }).onDelete('cascade'),
+    unique('webhook_subscription_webhook_event_unique').on(table.webhookId, table.eventType)
+  ]
+);
+
+export const webhookEvent = pgTable(
+  'webhook_event',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    eventType: varchar('event_type', { length: 100 }).notNull(),
+    payload: jsonb().notNull().$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'webhook_event_organization_id_fkey'
+    }).onDelete('cascade'),
+    index('idx_webhook_event_org_created').on(table.organizationId, table.createdAt)
+  ]
+);
+
+export const webhookDelivery = pgTable(
+  'webhook_delivery',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    webhookId: uuid('webhook_id').notNull(),
+    eventId: uuid('event_id').notNull(),
+    status: webhookDeliveryStatus().default('PENDING').notNull(),
+    attempt: integer().default(0).notNull(),
+    responseStatus: integer('response_status'),
+    responseBody: text('response_body'),
+    errorMessage: text('error_message'),
+    durationMs: integer('duration_ms'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.webhookId],
+      foreignColumns: [webhookEndpoint.id],
+      name: 'webhook_delivery_webhook_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [webhookEvent.id],
+      name: 'webhook_delivery_event_id_fkey'
+    }).onDelete('cascade'),
+    index('idx_webhook_delivery_webhook_created').on(table.webhookId, table.createdAt),
+    index('idx_webhook_delivery_status').on(table.status)
   ]
 );
 

@@ -21,7 +21,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { RefreshPageData, UnsavedChanges } from '$features/ui';
   import LessonVersionHistory from '$features/course/components/lesson/lesson-version-history.svelte';
-  import { courseApi, lessonApi } from '$features/course/api';
+  import { courseApi, lessonApi, scormApi } from '$features/course/api';
   import { isHtmlValueEmpty } from '$lib/utils/functions/toHtml';
   import { lessonVideoUpload, lessonDocUpload } from '$features/course/components/lesson/store';
   import { t } from '$lib/utils/functions/translations';
@@ -47,7 +47,8 @@
     AddVideoModal,
     AddDocumentModal,
     LessonSettingsTab,
-    LessonSummarizeButton
+    LessonSummarizeButton,
+    ScormPlayer
   } from '$features/course/components/lesson';
 
   import type { TLocale } from '@cio/db/types';
@@ -57,6 +58,7 @@
   import { getOrderedNavigableContent } from '$features/course/utils/content';
   import StudentContentLockedNotice from '$features/course/components/student-content-locked-notice.svelte';
   import LiveSessionCard from '$features/course/components/lesson/live-session-card.svelte';
+  import type { ScormContent } from '$features/course/utils/types';
 
   interface Props {
     courseId: string;
@@ -179,7 +181,20 @@
 
   const viewModeComponents = $derived(getViewModeComponents(tabs));
 
-  const isMaterialsEmpty = $derived(tabs.every((tab) => tab.badgeValue === 0));
+  let scormContent = $state<ScormContent | undefined>(undefined);
+  $effect(() => {
+    const targetCourseId = courseId;
+    const targetLessonId = lessonId;
+    scormContent = undefined;
+
+    void scormApi.getContent(targetCourseId, targetLessonId).then((response) => {
+      if (courseId === targetCourseId && lessonId === targetLessonId) {
+        scormContent = response?.data ?? null;
+      }
+    });
+  });
+
+  const isMaterialsEmpty = $derived(tabs.every((tab) => tab.badgeValue === 0) && !scormContent);
   const hasLessonVideos = $derived((lessonApi.lesson?.videos?.length ?? 0) > 0);
 
   let timeoutId: NodeJS.Timeout | undefined;
@@ -526,6 +541,10 @@
       {:else if lessonApi.lesson && !isMaterialsEmpty}
         {#key lessonId}
           <div class="mb-20 flex w-full flex-col gap-2" in:fade={{ delay: 500 }} out:fade>
+            {#if scormContent}
+              <ScormPlayer content={scormContent} {courseId} {lessonId} />
+            {/if}
+
             {#if !hasLessonVideos}
               <div class="mb-2 flex flex-wrap gap-2">
                 <LessonSummarizeButton {lessonId} />

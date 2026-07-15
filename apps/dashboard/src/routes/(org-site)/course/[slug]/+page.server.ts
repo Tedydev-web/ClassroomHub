@@ -85,8 +85,8 @@ export const load = async ({ params = { slug: '' }, parent, url }) => {
       ]
     },
     twitter: {
-      handle: '@classroomio',
-      site: '@classroomio',
+      handle: '@Tedydev_web',
+      site: '@Tedydev_web',
       cardType: 'summary_large_image' as const,
       title: course.title,
       description: course.description,

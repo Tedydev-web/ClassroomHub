@@ -14,7 +14,7 @@ export default ({ mode }) => {
         }
       }
     },
-    plugins: [sveltekit()],
+    plugins: [redirectToCanonicalOrigin(process.env), sveltekit()],
     server: {
       ...getServer(process.env),
       fs: {
@@ -58,8 +58,28 @@ export default ({ mode }) => {
   });
 };
 
+function redirectToCanonicalOrigin(params) {
+  const { VITE_CANONICAL_ORIGIN, VITE_REDIRECT_HOST } = params || {};
+
+  return {
+    name: 'redirect-to-canonical-origin',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        if (!VITE_CANONICAL_ORIGIN || request.headers.host !== VITE_REDIRECT_HOST) {
+          next();
+          return;
+        }
+
+        response.statusCode = 302;
+        response.setHeader('Location', `${VITE_CANONICAL_ORIGIN}${request.url ?? '/'}`);
+        response.end();
+      });
+    }
+  };
+}
+
 function getServer(params) {
-  const { VITE_USE_HTTPS_ON_LOCALHOST } = params || {};
+  const { VITE_ALLOWED_HOST, VITE_USE_HTTPS_ON_LOCALHOST } = params || {};
   if (VITE_USE_HTTPS_ON_LOCALHOST === 'true') {
     return {
       https: {
@@ -70,7 +90,16 @@ function getServer(params) {
   }
 
   return {
-    allowedHosts: []
+    allowedHosts: VITE_ALLOWED_HOST
+      ? [
+          ...new Set([
+            ...VITE_ALLOWED_HOST.split(',')
+              .map((host) => host.trim())
+              .filter(Boolean),
+            '.tedydev.io.vn'
+          ])
+        ]
+      : ['.tedydev.io.vn']
   };
 }
 

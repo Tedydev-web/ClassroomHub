@@ -27,7 +27,7 @@ export interface RedisConnectionOptions extends RedisOptions {
 export class RedisNotConfiguredError extends Error {
   constructor() {
     super(
-      'REDIS_URL is not set. ClassroomIO requires Redis for the BullMQ job queue. ' +
+      'REDIS_URL is not set. Classroom requires Redis for the BullMQ job queue. ' +
         'Set REDIS_URL in your environment to a reachable Redis instance.'
     );
     this.name = 'RedisNotConfiguredError';

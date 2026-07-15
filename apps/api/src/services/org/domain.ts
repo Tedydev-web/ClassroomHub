@@ -1,6 +1,7 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 import { env } from '@cio/core/config/env';
+import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { parse } from 'tldts';
 
 export type DomainSetupStatus =
@@ -201,8 +202,8 @@ export function assertSupportedCustomDomain(domain: string) {
     );
   }
 
-  if (domain.includes('classroomio.com') || domain.includes('myclassroomio.com')) {
-    throw new AppError("Domain cannot contain 'classroomio'", ErrorCodes.VALIDATION_ERROR, 400, 'domain');
+  if (domain === PRODUCT_ROOT_DOMAIN || domain.endsWith(`.${PRODUCT_ROOT_DOMAIN}`)) {
+    throw new AppError('Domain belongs to the Classroom platform', ErrorCodes.VALIDATION_ERROR, 400, 'domain');
   }
 }
 

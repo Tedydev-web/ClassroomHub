@@ -442,7 +442,7 @@
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {#each historyRecords as record}
+            {#each historyRecords as record (record.id)}
               <Table.Row>
                 <Table.Cell>{record.cycleNumber}</Table.Cell>
                 <Table.Cell>
@@ -480,7 +480,7 @@
         </Card.Header>
         <Card.Content class="pt-0">
           <div class="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
-            {#each summaryCards as card}
+            {#each summaryCards as card (card.labelKey)}
               <div class="flex min-w-0 flex-col gap-1">
                 <p class="ui:text-muted-foreground text-xs font-medium tracking-wide uppercase">
                   {$t(card.labelKey)}
@@ -554,7 +554,7 @@
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {#each learnerRows as learner}
+            {#each learnerRows as learner (learner.profileId)}
               <Table.Row>
                 <Table.Cell>
                   {#if learner.profileId}

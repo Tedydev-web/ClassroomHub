@@ -64,7 +64,7 @@
       naturally instead of squeezing the cards.
     -->
     <Item.Group class="grid! w-full grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-x-5 gap-y-8">
-      {#each videos as video, index}
+      {#each videos as video, index (video.key ?? video.link ?? index)}
         <LessonVideoSimpleCard {video} {index} isEditMode={true} onRemove={() => requestRemoveVideo(index)} />
       {/each}
     </Item.Group>
@@ -81,7 +81,7 @@
   <!-- View Mode -->
   {#if videos.length}
     <div class="w-full">
-      {#each videos as video, index}
+      {#each videos as video, index (video.key ?? video.link ?? index)}
         <div class="mb-5 w-full overflow-hidden">
           {@render content(video, index)}
         </div>

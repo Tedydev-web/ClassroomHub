@@ -350,7 +350,7 @@ Design panel is grouped as:
   "orgId": "org_yyy",
   "createdAt": "2026-02-19T12:00:00Z",
   "runtime": {
-    "entryUrl": "https://assets.cdn.clsrio.com/embeds/course-widget/course-widget.js",
+    "entryUrl": "/assets/assets/embeds/course-widget/course-widget.js",
     "release": "2026-02-19-1"
   },
   "payload": {
@@ -520,7 +520,7 @@ interface WidgetPayload {
 
 #### Security Rules
 1. **Origin Validation**:
-   - Production: `targetOrigin` must match `VITE_DASHBOARD_URL` (e.g., `https://app.classroomio.com`)
+   - Production: `targetOrigin` must match `VITE_DASHBOARD_URL` (e.g., `https://app.classroom.tedydev.io.vn`)
    - Development: allow `http://localhost:*` with port wildcard
    - Never use `*` in production
    

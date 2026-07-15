@@ -45,7 +45,7 @@
 
 {#if storageSummary}
   <div class="flex w-full flex-wrap items-center justify-between gap-4">
-    {#each storageCards as card}
+    {#each storageCards as card (card.title)}
       <ActivityCard activity={card} className="max-w-[300px]" />
     {/each}
   </div>

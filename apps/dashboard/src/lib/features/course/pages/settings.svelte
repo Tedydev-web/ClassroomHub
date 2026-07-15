@@ -27,6 +27,7 @@
   import { isObject } from '$lib/utils/functions/isObject';
   import { snackbar } from '$features/ui/snackbar/store';
   import { generateSlug } from '@cio/utils/functions';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
   import { DEFAULT_COMPLIANCE_SETTINGS } from '../utils/compliance-utils';
   import { DeleteModal } from '$features/ui';
   import { courseApi } from '$features/course/api';
@@ -85,15 +86,11 @@
   }
 
   function toggleTagSelection(tagId: string) {
-    const selected = new Set(selectedTagIds);
-
-    if (selected.has(tagId)) {
-      selected.delete(tagId);
+    if (selectedTagIds.includes(tagId)) {
+      selectedTagIds = selectedTagIds.filter((id) => id !== tagId);
     } else {
-      selected.add(tagId);
+      selectedTagIds = [...selectedTagIds, tagId];
     }
-
-    selectedTagIds = Array.from(selected);
     hasUnsavedChanges = true;
   }
 
@@ -462,7 +459,7 @@
     <Field.Description>
       {$t('course.navItem.settings.course_type_desc')}
       <a
-        href="https://classroomio.com/docs/course-types"
+        href={`https://${PRODUCT_HOSTS.marketing}`}
         target="_blank"
         rel="noopener noreferrer"
         class="ui:text-primary underline"

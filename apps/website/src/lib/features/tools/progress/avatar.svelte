@@ -69,7 +69,7 @@
             <img src="/free-tools/progress-report/hover-plus-icon.svg" alt="" class="absolute" />
           {/if}
           <!-- avatar -->
-          <img src="https://assets.cdn.clsrio.com/progress-report/avatar/{avatar.src}.svg" alt="" class="w-full" />
+          <img src="/assets/assets/progress-report/avatar/{avatar.src}.svg" alt="" class="w-full" />
         </button>
       {/each}
     </div>

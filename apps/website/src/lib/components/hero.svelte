@@ -101,7 +101,9 @@
     </p>
 
     <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-      <Button data-cal-config="'layout':'month_view'" data-cal-link="classroomio/demo">Book a Demo</Button>
+      <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+        >Book a Demo</Button
+      >
       <Button href="/signup" variant="outline">Start free</Button>
     </div>
   </div>
@@ -109,7 +111,7 @@
   <div class="relative z-30 mx-auto mt-14 w-full max-w-[1100px]">
     <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
       <img
-        src="https://assets.cdn.clsrio.com/www/home/hero-academy.jpeg"
+        src="/assets/assets/www/home/hero-academy.jpeg"
         alt="Branded customer academy on a custom domain — catalog, cohorts, AI tutor"
         width="2560"
         height="1440"

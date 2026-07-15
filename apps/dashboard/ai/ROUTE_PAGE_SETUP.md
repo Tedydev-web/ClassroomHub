@@ -52,7 +52,7 @@ The route file should be minimal and only contain:
 </script>
 
 <svelte:head>
-  <title>Feature Name - ClassroomIO</title>
+  <title>Feature Name - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full">
@@ -200,7 +200,7 @@ export { default as FeaturePage } from './feature.svelte';
 </script>
 
 <svelte:head>
-  <title>Community - ClassroomIO</title>
+  <title>Community - Classroom</title>
 </svelte:head>
 
 <Page.Root class="w-full">

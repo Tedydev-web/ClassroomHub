@@ -7,8 +7,8 @@
   interface Props {
     reason?: string;
     isLoading?: boolean;
-    rejectGrade?: any;
-    acceptGrade?: any;
+    rejectGrade?: () => void | Promise<void>;
+    acceptGrade?: () => void | Promise<void>;
   }
 
   let { reason = '', isLoading = false, rejectGrade = () => {}, acceptGrade = () => {} }: Props = $props();

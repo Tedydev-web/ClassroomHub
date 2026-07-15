@@ -23,9 +23,7 @@
   <!-- Logo Section -->
   <Logo src={seo?.settings.logo} alt={seo?.settings.title} addAcademy />
 
-  <ul
-    class="hidden list-none items-center gap-14 text-base font-semibold text-[#1F2937] hover:no-underline lg:flex"
-  >
+  <ul class="hidden list-none items-center gap-14 text-base font-semibold text-[#1F2937] hover:no-underline lg:flex">
     {#each content?.settings.navItems as navItem}
       <li>
         <a
@@ -75,7 +73,7 @@
     <Button
       href="/courses"
       class="mx-auto my-4 flex w-fit items-center justify-center gap-1 rounded-full bg-[#141414] px-6 py-4 text-base font-semibold text-white"
-      on:click={toggleMenu}
+      onclick={toggleMenu}
     >
       Explore Courses
     </Button>

@@ -6,6 +6,7 @@
   import { Empty } from '@cio/ui/custom/empty';
   import OctagonAlertIcon from '@lucide/svelte/icons/octagon-alert';
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { OPERATOR_EMAIL, PRODUCT_NAME } from '@cio/utils/constants';
 
   let type = $derived($page.url.searchParams.get('error') || 'unknown');
 
@@ -42,12 +43,12 @@
   });
 
   function handleSupport() {
-    window.open('mailto:help@classroomio.com?subject=Email Verification Issue&body=Error Type: ' + type, '_blank');
+    window.open(`mailto:${OPERATOR_EMAIL}?subject=Email Verification Issue&body=Error Type: ${type}`, '_blank');
   }
 </script>
 
 <svelte:head>
-  <title>Email Verification Error - ClassroomIO</title>
+  <title>Email Verification Error - {PRODUCT_NAME}</title>
   <meta name="description" content="There was an issue verifying your email address." />
 </svelte:head>
 

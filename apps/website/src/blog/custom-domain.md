@@ -1,7 +1,7 @@
 ---
 title: 'Introducing Custom Domains'
 description: 'We are excited to announce that we have added support for custom domains into our admin dashboard.'
-imageUrl: 'https://assets.cdn.clsrio.com/blog/custom-domain.png'
+imageUrl: '/assets/assets/blog/custom-domain.png'
 date: '2024-10-11'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Launch Week', 'Custom Domains', 'Company Update']
 published: true
 ---
 
-![classroomio-custom-domain](https://assets.cdn.clsrio.com/blog/custom-domain.png)
+![classroomio-custom-domain](/assets/assets/blog/custom-domain.png)
 _ClassroomIO Custom Domains Banner_
 
 Today I am happy to announce that we've added support for custom domains into our admin dashboard. Companies and Training organisations can now take advantage of this feature to strengthen their brand using our learning management system.
@@ -27,7 +27,7 @@ Today I am happy to announce that we've added support for custom domains into ou
 
 ## Who has access to custom domains?
 
-Custom domains are only available within our [Early Adopters plan](https://classroomio.com/pricing). This is our only paid plan for now except our enterprise plans. If you need a demo of the product or contemplating on whether this plan is right for you, please [schedule a demo with us](https://classroomio.com/demo).
+Custom domains are only available within our [Early Adopters plan](https://classroom.tedydev.io.vn/pricing). This is our only paid plan for now except our enterprise plans. If you need a demo of the product or contemplating on whether this plan is right for you, please [schedule a demo with us](https://classroom.tedydev.io.vn/demo).
 
 ## Demo
 

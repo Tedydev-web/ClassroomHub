@@ -9,10 +9,10 @@
     '  <span class="text-sky-300">"mcpServers"</span><span class="text-slate-500">: {</span>',
     '    <span class="text-sky-300">"classroomio"</span><span class="text-slate-500">: {</span>',
     '      <span class="text-sky-300">"command"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"npx"</span><span class="text-slate-500">,</span>',
-    '      <span class="text-sky-300">"args"</span><span class="text-slate-500">: [</span><span class="text-emerald-300">"-y"</span><span class="text-slate-500">,</span> <span class="text-emerald-300">"@classroomio/mcp"</span><span class="text-slate-500">],</span>',
+    '      <span class="text-sky-300">"args"</span><span class="text-slate-500">: [</span><span class="text-emerald-300">"-y"</span><span class="text-slate-500">,</span> <span class="text-emerald-300">"@tedydev/classroom-mcp"</span><span class="text-slate-500">],</span>',
     '      <span class="text-sky-300">"env"</span><span class="text-slate-500">: {</span>',
-    '        <span class="text-sky-300">"CLASSROOMIO_API_URL"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"https://api.classroomio.com"</span><span class="text-slate-500">,</span>',
-    '        <span class="text-sky-300">"CLASSROOMIO_API_KEY"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"&lt;your-mcp-key&gt;"</span>',
+    '        <span class="text-sky-300">"CLASSROOM_API_URL"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"https://api.classroom.tedydev.io.vn"</span><span class="text-slate-500">,</span>',
+    '        <span class="text-sky-300">"CLASSROOM_API_KEY"</span><span class="text-slate-500">:</span> <span class="text-emerald-300">"&lt;your-mcp-key&gt;"</span>',
     '      <span class="text-slate-500">}</span>',
     '    <span class="text-slate-500">}</span>',
     '  <span class="text-slate-500">}</span>',
@@ -65,7 +65,7 @@
             Let your agent do<br />the course building.
           </h2>
           <p class="mb-14 max-w-[520px] text-base leading-relaxed text-gray-500 lg:text-lg">
-            Connect your favorite AI agent to ClassroomIO via MCP. Create, update, and publish entire courses from your
+            Connect your favorite AI agent to Classroom via MCP. Create, update, and publish entire courses from your
             terminal in seconds.
           </p>
         </BlurFade>

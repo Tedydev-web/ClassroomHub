@@ -4,13 +4,13 @@
 
   interface Props {
     openDeleteModal?: boolean;
-    deleteFeed?: any;
+    deleteFeed?: () => void | Promise<void>;
   }
 
   let { openDeleteModal = $bindable(false), deleteFeed = () => {} }: Props = $props();
 
   async function handleDelete() {
-    deleteFeed();
+    await deleteFeed();
     openDeleteModal = false;
   }
 </script>

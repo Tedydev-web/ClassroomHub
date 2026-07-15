@@ -5,17 +5,17 @@
 
   const whyStart = [
     {
-      src: 'https://assets.cdn.clsrio.com/www/teach/teach-from-anywhere.svg',
+      src: '/assets/assets/www/teach/teach-from-anywhere.svg',
       header: 'Fully Online; Teach from anywhere',
       subText: ' Facilitate a subject from the comfort of your space, engaging students from highly diverse background'
     },
     {
-      src: 'https://assets.cdn.clsrio.com/www/teach/get-paid.svg',
+      src: '/assets/assets/www/teach/get-paid.svg',
       header: 'Get paid extra commission',
       subText: 'Get paid for the course you design and earn extra comission based on course perfomance'
     },
     {
-      src: 'https://assets.cdn.clsrio.com/www/teach/inspire-learners.svg',
+      src: '/assets/assets/www/teach/inspire-learners.svg',
       header: 'Inspire learners',
       subText: 'Your opportunity to inspire thousands of learners to achieve dreams and academic pursue exellence'
     }
@@ -24,7 +24,7 @@
   const steps = [
     {
       title: 'Sign up',
-      subText: 'Create a free account on our platform by going to classroomio.com/signup'
+      subText: 'Create a free account on our platform at classroom.tedydev.io.vn/signup'
     },
     {
       title: 'Record a course',
@@ -44,13 +44,13 @@
   const faqs = [
     {
       value: 'tutors',
-      question: 'What kind of tutors does ClassroomIO look for?',
+      question: 'What kind of tutors does Classroom look for?',
       answer:
         'We are looking for all kinds of tutors. The most important thing is that you have some experience teaching and you have proven track record of excellent communication'
     },
     {
       value: 'equipment',
-      question: 'What equipment do I need to teach on ClassroomIO?',
+      question: 'What equipment do I need to teach on Classroom?',
       answer: 'You just need internet access and a laptop.'
     },
     {
@@ -69,16 +69,16 @@
 </script>
 
 <svelte:head>
-  <title>Teach | ClassroomIO</title>
-  <meta property="og:image" itemprop="image" content="https://brand.cdn.clsrio.com/og/teach.png" />
-  <meta property="og:title" content="Teach on ClassroomIO" />
-  <meta property="og:description" content="On ClassroomIO you can make side income while doing what you love." />
+  <title>Teach | Classroom</title>
+  <meta property="og:image" itemprop="image" content="/assets/brand/og/teach.png" />
+  <meta property="og:title" content="Teach on Classroom" />
+  <meta property="og:description" content="On Classroom you can make side income while doing what you love." />
 
-  <meta property="og:image:secure_url" itemprop="image" content="https://brand.cdn.clsrio.com/og/teach.png" />
+  <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/teach.png" />
 
-  <meta name="twitter:title" content="Teach on ClassroomIO" />
-  <meta name="twitter:description" content="On ClassroomIO you can make side income while doing what you love." />
-  <meta name="twitter:image" content="https://brand.cdn.clsrio.com/og/teach.png" />
+  <meta name="twitter:title" content="Teach on Classroom" />
+  <meta name="twitter:description" content="On Classroom you can make side income while doing what you love." />
+  <meta name="twitter:image" content="/assets/brand/og/teach.png" />
 </svelte:head>
 
 <section>
@@ -86,21 +86,21 @@
     <div>
       <h1 class="text-3xl lg:text-5xl">Teach with us</h1>
       <p class="my-5 text-center lg:w-[77%] lg:text-left">
-        With ClassroomIO, you can make side income while teaching the subject you love
+        With Classroom, you can make side income while teaching the subject you love
       </p>
 
       <Button href="/teach/register" target="_blank">Register</Button>
     </div>
 
     <div class=" ">
-      <img src="https://assets.cdn.clsrio.com/www/teach/teacher-hero.png" alt="" class="w-full" />
+      <img src="/assets/assets/www/teach/teacher-hero.png" alt="" class="w-full" />
     </div>
   </PageHeader>
 
   <div class="mx-auto mt-10">
     <div class="border-b border-slate-100 px-[10%] pb-10">
       <h1 class="flex items-center justify-center gap-3 pb-28 text-center text-3xl">
-        Why you should teach with us? <img src="https://assets.cdn.clsrio.com/www/teach/star.svg" alt="" />
+        Why you should teach with us? <img src="/assets/assets/www/teach/star.svg" alt="" />
       </h1>
 
       <div class="mt-10 flex flex-wrap justify-center lg:justify-between">
@@ -122,7 +122,7 @@
 
     <div class="mt-10 px-[10%] py-10">
       <h1 class="mb-28 flex items-center justify-center gap-3 text-center text-3xl">
-        How to get started <img src="https://assets.cdn.clsrio.com/www/teach/thumbs-up.svg" alt="" />
+        How to get started <img src="/assets/assets/www/teach/thumbs-up.svg" alt="" />
       </h1>
 
       <div class="mx-auto mt-5 flex flex-wrap justify-between gap-y-10">
@@ -150,11 +150,11 @@
         class="relative mx-auto mt-10 w-full rounded-md border bg-white py-6 text-center shadow-sm before:absolute before:top-0 before:left-0 before:h-full before:w-[4.5%] before:rounded-tl-md before:rounded-bl-md before:bg-[#0233BD] md:w-2/4"
       >
         <h1 class="mx-auto w-[77%] text-base leading-5 font-medium">
-          With ClassroomIO, I am training over 100 students. I am making more money than expected with little effort and
+          With Classroom, I am training over 100 students. I am making more money than expected with little effort and
           my students are happy. Love the product
         </h1>
         <div class="mt-3 flex flex-row items-center justify-center gap-4">
-          <img src="https://assets.cdn.clsrio.com/www/teach/user-profile.png" alt="" class="w-8" />
+          <img src="/assets/assets/www/teach/user-profile.png" alt="" class="w-8" />
           <p class="text-sm">
             <span class="mr-2 font-semibold"> Bilik Diana </span> English tutor
           </p>

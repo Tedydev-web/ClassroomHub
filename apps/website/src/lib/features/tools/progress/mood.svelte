@@ -81,11 +81,7 @@
           class="flex items-center gap-3 rounded-full bg-[#F1F6FF] px-4 py-1 shadow-sm transition-all duration-700 hover:bg-[#0233BD] hover:text-white"
         >
           <p class="text-xs font-semibold md:text-sm">{mood.text}</p>
-          <img
-            src="https://assets.cdn.clsrio.com/progress-report/emojis/{mood.iconSrc}.png"
-            alt={mood.text}
-            class="w-4"
-          />
+          <img src="/assets/assets/progress-report/emojis/{mood.iconSrc}.png" alt={mood.text} class="w-4" />
         </button>
       {/each}
     </div>

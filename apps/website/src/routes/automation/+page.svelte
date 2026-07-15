@@ -7,7 +7,7 @@
 
   const apiCurl = [
     '<span class="text-slate-500"># Enroll a learner in a course</span>',
-    '<span class="text-pink-400">curl</span> <span class="text-emerald-300">"https://api.classroomio.com/v1/enrollments"</span> \\',
+    '<span class="text-pink-400">curl</span> <span class="text-emerald-300">"https://api.classroom.tedydev.io.vn/v1/enrollments"</span> \\',
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Authorization: Bearer $CIO_API_KEY"</span> \\',
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Content-Type: application/json"</span> \\',
     '  <span class="text-sky-300">-d</span> <span class="text-emerald-300">\'{ "courseId": "crs_…", "userId": "usr_…" }\'</span>'
@@ -53,11 +53,11 @@
         <em class="text-blue-700 not-italic">No integration tax.</em>
       </h1>
       <HeroSubtitle>
-        ClassroomIO ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no "premium
+        Classroom ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no "premium
         connector" plans. Build the integration that fits your stack.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
-        <Button href="https://classroomio.com/docs/api">Read the API docs</Button>
+        <Button href="https://classroom.tedydev.io.vn/docs/api">Read the API docs</Button>
         <Button href="/github" variant="outline">Star on GitHub</Button>
       </div>
     </div>
@@ -141,13 +141,13 @@
           Or run the whole thing in your own VPC.
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          ClassroomIO is open source on GitHub. You can self-host the dashboard, the API, the AI assistant, and the MCP
+          Classroom is open source on GitHub. You can self-host the dashboard, the API, the AI assistant, and the MCP
           server, and bring your own AI keys. It's the same product with the same API surface.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
           <a
-            href="https://classroomio.com/docs/self-hosting"
+            href="https://classroom.tedydev.io.vn/docs/self-hosting"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-medium text-white no-underline transition-all hover:-translate-y-0.5 hover:bg-blue-700"
@@ -195,7 +195,7 @@
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >MCP</span
             >
-            Open-source server, <span class="font-mono text-xs">@classroomio/mcp</span>
+            Open-source server, <span class="font-mono text-xs">@tedydev/classroom-mcp</span>
           </li>
         </ul>
       </div>
@@ -206,7 +206,7 @@
     header="Programmable from day one."
     subText="API, Webhooks, and an MCP server in the box. Self-host it or use the hosted version. Same surface either way."
     btnLabel="Read the docs"
-    link="https://classroomio.com/docs/api"
+    link="https://classroom.tedydev.io.vn/docs/api"
     demo={false}
   />
 </section>

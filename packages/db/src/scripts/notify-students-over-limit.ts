@@ -11,6 +11,7 @@ import 'dotenv/config';
 
 import { sendEmail } from '@cio/email';
 import { PLAN, getStudentLimit } from '@cio/utils/plans';
+import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
 import {
   getFreePlanOrganizationsOverStudentLimit,
@@ -50,7 +51,7 @@ async function main() {
     );
 
     if (execute) {
-      const upgradeUrl = `https://app.classroomio.com/org/${org.siteName ?? ''}?upgrade=true`;
+      const upgradeUrl = `https://${PRODUCT_HOSTS.dashboard}/org/${org.siteName ?? ''}?upgrade=true`;
 
       await Promise.all(
         admins.map((admin) =>

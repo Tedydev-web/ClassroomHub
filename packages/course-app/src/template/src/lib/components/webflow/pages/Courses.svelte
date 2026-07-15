@@ -53,9 +53,7 @@
    */
   function applyFilter() {
     const activeFilters = new Set(
-      filter
-        .filter((filterItem) => filterItem.checked)
-        .map((filterItem) => filterItem.type.toLowerCase())
+      filter.filter((filterItem) => filterItem.checked).map((filterItem) => filterItem.type.toLowerCase())
     );
 
     filteredCourses =
@@ -73,9 +71,7 @@
           <section
             class="relative flex w-full flex-col-reverse items-center justify-center gap-5 text-center md:flex-col lg:ml-auto lg:w-[80%]"
           >
-            <DotPattern
-              class="[mask-image:radial-gradient(30vw_circle_at_center,white,transparent)]"
-            />
+            <DotPattern class="[mask-image:radial-gradient(30vw_circle_at_center,white,transparent)]" />
             <div class="z-10 mb-4 w-full space-y-6">
               <p class="mx-auto w-full text-3xl font-bold md:w-[90%] md:text-6xl">
                 {section.header.settings.title}
@@ -144,7 +140,7 @@
                 {#if filteredCourses.length > 3}
                   <div class="my-5 flex w-full items-center justify-center">
                     <Button
-                      on:click={() => (viewAll = !viewAll)}
+                      onclick={() => (viewAll = !viewAll)}
                       class="w-full gap-6 rounded-none bg-[#0737BE] text-white hover:bg-[#0737BE]"
                       >{viewAll === true ? 'Show less' : 'View more courses'}</Button
                     >

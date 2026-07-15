@@ -11,15 +11,15 @@
 </script>
 
 <header
-  class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+  class="border-border/40 bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur"
 >
   <p class="bg-blue-700 py-1.5 text-center text-sm font-medium text-white">
     brought to you by
     <a
-      href="https://classroomio.com"
+      href="https://classroom.tedydev.io.vn"
       target="_blank"
       class="inline-flex items-center font-semibold underline-offset-2 hover:underline"
-      >classroomio.com
+      >classroom.tedydev.io.vn
       <svg
         width="24"
         height="24"
@@ -35,7 +35,7 @@
       </svg>
     </a>
   </p>
-  <div class="flex h-14 max-w-5xl mx-auto items-center">
+  <div class="mx-auto flex h-14 max-w-5xl items-center">
     <div class="mr-4 flex">
       <a href="/" class="mr-6 flex items-center">
         <img src="/logo-512.png" alt="Course App" class="h-8 w-8" />
@@ -43,28 +43,22 @@
         <span class="inline-block font-bold">ourseapp</span>
       </a>{' '}
       <nav class="hidden items-center gap-6 text-sm md:flex">
-        <a
-          href="#templates"
-          class="hover:text-foreground/80 {activeClass.template} transition-colors"
-        >
+        <a href="#templates" class="hover:text-foreground/80 {activeClass.template} transition-colors">
           Templates
         </a>{' '}
-        <a
-          href="#features"
-          class="hover:text-foreground/80 {activeClass.features} transition-colors"
-        >
+        <a href="#features" class="hover:text-foreground/80 {activeClass.features} transition-colors">
           Features
         </a>{' '}
         <a
           href="/npm"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center gap-1 text-foreground/60 transition-colors hover:text-foreground/80"
+          class="text-foreground/60 hover:text-foreground/80 flex items-center gap-1 transition-colors"
         >
           NPM <ArrowUpRight class="h-4 w-4" />
         </a>{' '}
         <!-- <a
-					href="https://github.com/classroomio/classroomio"
+					href="https://github.com/Tedydev-web/classroomio"
 					class="hover:text-foreground/80 text-foreground/60 transition-colors"
 				>
 					Github
@@ -75,12 +69,12 @@
     <div class="flex flex-1 items-center justify-end space-x-2">
       <nav class="flex items-center">
         <a
-          href="https://github.com/classroomio/classroomio/tree/main/packages/course-app#readme"
+          href="https://github.com/Tedydev-web/classroomio/tree/main/packages/course-app#readme"
           target="_blank"
           rel="noopener noreferrer"
         >
           <div
-            class="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md px-0 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            class="hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-8 w-8 items-center justify-center rounded-md px-0 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <svg viewBox="0 0 438.549 438.549" class="h-4 w-4">
               <path
@@ -91,9 +85,9 @@
             <span class="sr-only" data-svelte-h="svelte-11yow7k"> GitHub </span>
           </div>
         </a>{' '}
-        <a href="https://twitter.com/classroomio" target="_blank" rel="noreferrer">
+        <a href="https://github.com/Tedydev-web" target="_blank" rel="noreferrer">
           <div
-            class="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md px-0 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            class="hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-8 w-8 items-center justify-center rounded-md px-0 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <svg
               height="23"
@@ -107,9 +101,7 @@
                 d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"
               ></path>
             </svg>{' '}
-            <span class="sr-only" data-svelte-h="svelte-13ytjzu">
-              X (formerly known as Twitter)
-            </span>
+            <span class="sr-only" data-svelte-h="svelte-13ytjzu"> X (formerly known as Twitter) </span>
           </div>
         </a>{' '}
       </nav>

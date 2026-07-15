@@ -130,17 +130,17 @@ class OpenAPISpecGenerator {
       const spec = await generateSpecs(app, {
         documentation: {
           info: {
-            title: 'ClassroomIO API',
+            title: 'Classroom API',
             version: '1.0.0',
             description: 'Manage your organization on classroomio via the API',
             contact: {
-              name: 'ClassroomIO',
-              url: 'https://classroomio.com'
+              name: 'Classroom',
+              url: 'https://classroom.tedydev.io.vn'
             }
           },
           servers: [
             {
-              url: 'https://api.classroomio.com',
+              url: 'https://api.classroom.tedydev.io.vn',
               description: 'Production environment'
             },
             {
@@ -251,7 +251,7 @@ Environment Variables Required for R2 Upload:
   CLOUDFLARE_SECRET_ACCESS_KEY
   CLOUDFLARE_ACCOUNT_ID
 
-Optional — purge Cloudflare CDN cache for api.cdn.clsrio.com (after upload):
+Optional — purge the deployment's Cloudflare CDN cache after upload:
   CLOUDFLARE_API_TOKEN   (Zone → Cache Purge → Purge)
   CLOUDFLARE_ZONE_ID
   OPENAPI_SKIP_CDN_PURGE=1 to skip purge

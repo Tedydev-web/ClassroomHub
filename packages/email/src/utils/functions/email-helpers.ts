@@ -31,7 +31,7 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-// format: "ClassroomIO Developers (via ClassroomIO.com)" <notify@mail.classroomio.com>
+// format: "Classroom Academy (via Classroom)" <hieudat2310.bh@gmail.com>
 export function extractNameAndEmail(str: string): FromData | undefined {
   // Use regular expressions to match the name and email
   const regex = /"(.*?)"\s+<\s*(.*?)@(.*?)\s*>/;

@@ -5,7 +5,7 @@
 
   interface Props {
     value?: number;
-    upVote?: any;
+    upVote?: () => void | Promise<void>;
     disabled?: boolean;
   }
 
