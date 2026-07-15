@@ -22,6 +22,7 @@ import PackageOpenIcon from '@lucide/svelte/icons/package-open';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
 import type { PlanLimitResource } from '@cio/utils/plans';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 export interface NavItem {
   title: string;
@@ -421,11 +422,18 @@ export function getOrgNavigationGroups(
   }
 
   for (const config of baseNavConfig) {
+    if (isSelfOwnedDeployment && config.path === '/settings/billing') {
+      continue;
+    }
+
     if (config.requiresAdmin && !isOrgAdmin && !config.disableWhenNotAdmin) {
       continue;
     }
 
-    const visibleSubConfigs = config.items?.filter((sub) => !sub.requiresAdmin || isOrgAdmin) ?? [];
+    const visibleSubConfigs =
+      config.items?.filter(
+        (sub) => (!sub.requiresAdmin || isOrgAdmin) && (!isSelfOwnedDeployment || sub.path !== '/settings/billing')
+      ) ?? [];
 
     if (config.items && visibleSubConfigs.length === 0) {
       continue;

@@ -1,8 +1,12 @@
 import { dev } from '$app/environment';
 import { licenseApi } from '$features/license/api/license.svelte';
 import posthog from 'posthog-js';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
+import { env } from '$env/dynamic/public';
 
 const hasNoTracking = () => {
+  if (isSelfOwnedDeployment) return true;
+
   const noTracking = licenseApi.hasAccess('no-tracking');
   console.log('license_no_tracking', noTracking);
   return noTracking;
@@ -37,11 +41,14 @@ export type PosthogBootstrapUser = {
 export const initPosthog = (user?: PosthogBootstrapUser): void => {
   if (dev || hasNoTracking()) return;
 
-  posthog.init('phc_JfdHOZ6v0cVlGELBYx1Tmoen2nxNOrAzvgvrPA6Ksov', {
+  const apiKey = env.PUBLIC_POSTHOG_KEY?.trim();
+  if (!apiKey) return;
+
+  posthog.init(apiKey, {
     // Route PostHog through our own domain via the tenant-router Worker so the
     // cookie is first-party and doesn't trigger the Lighthouse "third-party cookie" deduction.
     api_host: `${window.location.origin}/ingest`,
-    ui_host: 'https://eu.posthog.com',
+    ui_host: env.PUBLIC_POSTHOG_UI_HOST?.trim() || 'https://eu.posthog.com',
     ...(user && {
       bootstrap: { distinctID: user.id, isIdentifiedID: true }
     })

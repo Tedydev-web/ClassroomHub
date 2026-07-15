@@ -7,12 +7,11 @@ import { getActiveOrganizationPlan, getOrganizationBySiteName } from '@cio/db/qu
 import { extractOrgTagline, renderOrgSiteOg } from '@api/utils/org-site-og';
 import { isOrgOnFreePlan } from '@cio/utils/plans';
 import { PRODUCT_HOSTS } from '@cio/utils/constants';
-import { env } from '@cio/core/config/env';
 import { getCachedOrgSiteOgBuffer, getOrgSiteOgPublicUrl, persistOrgSiteOgImage } from '@api/services/org/og-cache';
+import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 
 const DEFAULT_OG_IMAGE = `https://${PRODUCT_HOSTS.dashboard}/classroomio-opengraph-image.png`;
 const OG_VIEWPORT = { width: 1200, height: 630, deviceScaleFactor: 2 } as const;
-const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
 
 export function normalizeOrgOgSiteName(rawSiteName: string): string {
   return rawSiteName.endsWith('.png') ? rawSiteName.slice(0, -4) : rawSiteName;
@@ -44,7 +43,7 @@ export async function generateOrgSiteOgImage(siteName: string): Promise<{ buffer
   const activePlan = await getActiveOrganizationPlan(organization.id);
   const isFreePlan = isOrgOnFreePlan({
     plans: activePlan ? [{ planName: activePlan.planName, isActive: activePlan.isActive }] : [],
-    isSelfHosted,
+    isSelfHosted: hasFullProductEntitlements,
     orgId: organization.id
   });
 

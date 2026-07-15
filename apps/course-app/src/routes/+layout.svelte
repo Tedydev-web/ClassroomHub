@@ -5,12 +5,18 @@
 
   import '../app.css';
   import { onMount } from 'svelte';
+  import { env } from '$env/dynamic/public';
 
   let { children } = $props();
 
   onMount(() => {
-    posthog.init('phc_5eTGKfeGcwOjhS05omKVvnSP1OBS6w2y5JsOVTYhb0J', {
-      api_host: 'https://eu.i.posthog.com',
+    if (env.PUBLIC_IS_SELF_OWNED === 'true') return;
+
+    const apiKey = env.PUBLIC_POSTHOG_KEY?.trim();
+    if (!apiKey) return;
+
+    posthog.init(apiKey, {
+      api_host: env.PUBLIC_POSTHOG_API_HOST?.trim() || 'https://eu.i.posthog.com',
       person_profiles: 'identified_only' // or 'always' to create profiles for anonymous users as well
     });
   });

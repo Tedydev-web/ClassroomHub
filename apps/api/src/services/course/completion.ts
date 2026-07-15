@@ -19,7 +19,7 @@ import { claimMemberCertificateEarned } from '@cio/db/queries/course/people';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 import { ROLE } from '@cio/utils/constants';
 import { PLAN } from '@cio/utils/plans';
-import { env } from '@cio/core/config/env';
+import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
 
 export type CertificationBlocker = {
@@ -279,7 +279,7 @@ export async function evaluateCourseCertification(
  * Self-hosted deployments always have certificates enabled.
  */
 async function orgHasCertificatesEnabled(orgId: string): Promise<boolean> {
-  if (env.PUBLIC_IS_SELFHOSTED === 'true') return true;
+  if (hasFullProductEntitlements) return true;
 
   const activePlan = await getActiveOrganizationPlan(orgId);
 

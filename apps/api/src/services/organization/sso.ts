@@ -17,9 +17,12 @@ import {
 import { ROLE } from '@cio/utils/constants';
 import { db } from '@cio/db/drizzle';
 import { getOrganizationPlanStatus } from '@cio/db/queries/organization/organization';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 
 // Check if organization has Enterprise plan
 async function assertEnterprisePlan(orgId: string): Promise<void> {
+  if (isSelfOwnedDeployment) return;
+
   const plans = await getOrganizationPlanStatus(orgId);
   const hasEnterprise = plans.some(
     (p: { planName: string | null; isActive: boolean | null }) => p.planName === 'ENTERPRISE' && p.isActive

@@ -47,6 +47,7 @@ import { deriveAudienceMemberStatus } from '@api/utils/audience-member-status';
 import { getProfileById, getProfileByEmail } from '@cio/db/queries/auth';
 import { inviteTeamMembers as inviteTeamMembersSecure } from './organization/invite';
 import { trustCustomDomainHostname, untrustCustomDomainHostname } from '@cio/db/utils';
+import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 
 const PUBLIC_ORG_LANDING_PAGE_COURSE_LIMIT = 4;
 const ORG_COURSES_PAGE_SIZE = 6;
@@ -653,7 +654,7 @@ export async function updateOrg(orgId: string, data: Partial<TOrganization>) {
       const landingpage = data.landingpage as Record<string, unknown>;
       const theme = landingpage.theme;
 
-      if (typeof theme === 'string' && theme !== 'minimal') {
+      if (!isSelfOwnedDeployment && typeof theme === 'string' && theme !== 'minimal') {
         const activePlan = await getActiveOrganizationPlan(orgId);
         const planName = activePlan?.planName ?? PLAN.BASIC;
 

@@ -8,6 +8,7 @@
   import { SidebarFooterMenu } from '../footer';
   import UpgradeTrigger from './upgrade-trigger.svelte';
   import SidebarSkeleton from '../sidebar-skeleton.svelte';
+  import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
   const isOrgLoaded = $derived($orgs.length > 0 && $profile.id);
 </script>
@@ -25,7 +26,9 @@
     </Sidebar.Content>
 
     <Sidebar.Footer class="gap-4!">
-      <UpgradeTrigger />
+      {#if !isSelfOwnedDeployment}
+        <UpgradeTrigger />
+      {/if}
       <SidebarFooterMenu />
     </Sidebar.Footer>
 

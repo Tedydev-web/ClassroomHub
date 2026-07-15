@@ -6,6 +6,7 @@ import {
   LICENSE_FEATURE_IDS,
   type LicenseFeatureId
 } from '@cio/utils/license';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 class LicenseApi {
   features = $state<LicenseFeatureId[]>([]);
@@ -17,7 +18,7 @@ class LicenseApi {
   }
 
   syncFromAccount(instanceFeatures: string[] = [], org?: Pick<AccountOrg, 'plans'>) {
-    if (PUBLIC_IS_SELFHOSTED === 'true') {
+    if (PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment) {
       this.setFeatures(instanceFeatures);
       return;
     }

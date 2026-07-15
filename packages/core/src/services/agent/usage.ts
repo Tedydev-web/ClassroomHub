@@ -13,6 +13,7 @@ import type { UsageLeaderboardRow } from '@cio/db/queries/agent';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 
 import { AppError } from '@cio/utils/errors';
+import { isSelfOwnedDeployment } from '../../config/deployment';
 
 function startOfCurrentMonth(): Date {
   const date = new Date();
@@ -50,6 +51,10 @@ function computeCostUnits(promptTokens: number, completionTokens: number, model:
 }
 
 async function getPlanAllowance(orgId: string): Promise<{ planName: string; allowance: number }> {
+  if (isSelfOwnedDeployment) {
+    return { planName: 'ENTERPRISE', allowance: Number.MAX_SAFE_INTEGER };
+  }
+
   const activePlan = await getActiveOrganizationPlan(orgId);
 
   if (!activePlan || !activePlan.planName) {

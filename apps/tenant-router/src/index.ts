@@ -50,6 +50,8 @@ interface Env {
   API_URL: string;
   /** HMAC-SHA256 secret shared with the API to sign cio_hls tokens. */
   HLS_SIGNING_SECRET: string;
+  /** Optional analytics upstream. Unset disables the first-party PostHog proxy. */
+  POSTHOG_UPSTREAM_HOST?: string;
   /** R2 bucket binding for the videos bucket (HLS manifests + segments + audio). */
   VIDEOS_BUCKET: R2Bucket;
   /** R2 bucket binding for static assets (embed scripts under `embeds/`). */
@@ -60,7 +62,6 @@ interface Env {
 // This makes PostHog cookies first-party (set on the org's domain, not eu.i.posthog.com),
 // eliminating the "third-party cookie" Lighthouse Best Practices deduction.
 const POSTHOG_INGEST_PREFIX = '/ingest';
-const POSTHOG_UPSTREAM = 'eu.i.posthog.com';
 
 const PROXY_PREFIX = '/proxy';
 const AUTH_PREFIX = '/api/auth';
@@ -308,9 +309,13 @@ export default {
 
     // PostHog first-party proxy — strip /ingest prefix and forward to PostHog EU.
     if (url.pathname === POSTHOG_INGEST_PREFIX || url.pathname.startsWith(`${POSTHOG_INGEST_PREFIX}/`)) {
+      if (!env.POSTHOG_UPSTREAM_HOST) {
+        return new Response('Not found', { status: 404 });
+      }
+
       const phUrl = new URL(request.url);
       phUrl.protocol = 'https:';
-      phUrl.host = POSTHOG_UPSTREAM;
+      phUrl.host = env.POSTHOG_UPSTREAM_HOST;
       phUrl.pathname = url.pathname.slice(POSTHOG_INGEST_PREFIX.length) || '/';
       return fetch(phUrl.toString(), {
         method: request.method,

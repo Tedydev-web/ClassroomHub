@@ -1,13 +1,17 @@
 import { dev } from '$app/environment';
 import { get } from 'svelte/store';
 import { globalStore } from '$lib/utils/store/app';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
+import { env } from '$env/dynamic/public';
 
-const USERJOT_APP_ID = 'cm4a6vcmp00jpmdb5n66rmkzz';
+const USERJOT_APP_ID = env.PUBLIC_USERJOT_APP_ID?.trim();
 
 let isInitialized = false;
 
 function isWidgetAllowed(): boolean {
   if (dev) return false;
+  if (isSelfOwnedDeployment) return false;
+  if (!USERJOT_APP_ID) return false;
   if (get(globalStore).isOrgSite) return false;
 
   return true;
@@ -41,7 +45,7 @@ export function initUserJot(): void {
 
   ensureSdkLoaded();
 
-  window.uj.init(USERJOT_APP_ID, {
+  window.uj.init(USERJOT_APP_ID!, {
     trigger: 'custom',
     position: 'right',
     theme: 'auto'

@@ -7,6 +7,7 @@
   import { isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
   import { currentOrg } from '$lib/utils/store/org';
   import { authClient } from '$lib/utils/services/auth/client';
+  import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
   interface Props {
     children?: import('svelte').Snippet;
@@ -42,7 +43,9 @@
   });
 </script>
 
-<UpgradeModal />
+{#if !isSelfOwnedDeployment}
+  <UpgradeModal />
+{/if}
 <VerifyEmailModal />
 <CommandPalette />
 <KeyboardShortcutListener />

@@ -9,11 +9,23 @@ import type {
 } from '$lib/utils/types/polar';
 import { Webhooks } from '@polar-sh/sveltekit';
 import { env } from '$env/dynamic/private';
+import type { RequestEvent } from './$types';
+import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
-export const POST = Webhooks({
-  webhookSecret: env.POLAR_WEBHOOK_SECRET!,
-  onPayload
-});
+const polarWebhook = isSelfOwnedDeployment
+  ? null
+  : Webhooks({
+      webhookSecret: env.POLAR_WEBHOOK_SECRET!,
+      onPayload
+    });
+
+export const POST = (event: RequestEvent) => {
+  if (isSelfOwnedDeployment) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  return polarWebhook!(event);
+};
 
 function isSubscriptionPayload(payload: PolarWebhookPayload): payload is PolarSubscriptionWebhookPayload {
   return (
