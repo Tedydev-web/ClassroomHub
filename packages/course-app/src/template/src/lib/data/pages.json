@@ -11,8 +11,8 @@
         "settings": {
           "title": "Hype180 Academy",
           "description": "Learn React.js from industry experts at Hype180",
-          "url": "https://course-app.classroom.tedydev.io.vn",
-          "appUrl": "https://course-app.classroom.tedydev.io.vn",
+          "url": "https://classroom-course-app.tedydev.io.vn",
+          "appUrl": "https://classroom-course-app.tedydev.io.vn",
           "keywords": ["react.js", "javascript", "web development", "coding bootcamp"],
           "logo": "/logo.svg"
         }

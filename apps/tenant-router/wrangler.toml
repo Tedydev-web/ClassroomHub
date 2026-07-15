@@ -11,7 +11,7 @@ routes = [
   { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "learn.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "app.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "classroom-app.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "embed.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
 ]
 
@@ -22,7 +22,7 @@ API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
 APEX_REDIRECT_HOST = "learn.classroom.tedydev.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
 EMBED_HOST = "embed.classroom.tedydev.io.vn"
-API_URL = "https://api.classroom.tedydev.io.vn"
+API_URL = "https://classroom-api.tedydev.io.vn"
 
 # R2 bucket binding so /hls/* can stream segments directly from Cloudflare,
 # bypassing Render. The bucket name matches the storage config in

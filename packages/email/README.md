@@ -26,7 +26,7 @@ await send('forgotPassword', {
   fields: {
     name: 'John Doe',
     email: 'user@example.com',
-    link: 'https://app.classroom.tedydev.io.vn/reset?token=abc123'
+    link: 'https://classroom-app.tedydev.io.vn/reset?token=abc123'
   }
 });
 ```
@@ -39,7 +39,7 @@ await send('forgotPassword', {
   fields: {
     name: 'John Doe',
     email: 'user@example.com',
-    link: 'https://app.classroom.tedydev.io.vn/reset?token=abc123'
+    link: 'https://classroom-app.tedydev.io.vn/reset?token=abc123'
   },
   from: '"Support Team" <support@classroom.tedydev.io.vn>',
   replyTo: 'help@classroom.tedydev.io.vn'

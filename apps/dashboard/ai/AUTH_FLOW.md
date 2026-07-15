@@ -4,7 +4,7 @@ Documenting my thoughts on how authentication works in the app.
 
 ## Simplified breakdown
 
-### dashboard (app.classroom.tedydev.io.vn)
+### dashboard (classroom-app.tedydev.io.vn)
 
 - sign up (email, password or google auth)
 - redirect to onboarding.

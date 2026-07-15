@@ -333,7 +333,7 @@
       </div>
       <a
         class="text-sm font-medium transition-opacity duration-200 after:ml-2 after:content-['→'] hover:opacity-80"
-        href="https://app.classroom.tedydev.io.vn"
+        href="https://classroom-app.tedydev.io.vn"
       >
         Dashboard
       </a>
@@ -433,7 +433,7 @@
           </a>
           <a
             class="w-full rounded-md px-4 py-4 text-left text-sm font-semibold transition-all duration-200 after:ml-2 after:content-['→'] hover:bg-gray-100 md:text-lg"
-            href="https://app.classroom.tedydev.io.vn"
+            href="https://classroom-app.tedydev.io.vn"
           >
             Dashboard
           </a>

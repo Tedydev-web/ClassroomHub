@@ -333,7 +333,7 @@ Customers can install the widget with a script tag:
 ```html
 <script
   async
-  src="https://assets.classroom.tedydev.io.vn/embeds/walkthrough/walkthrough.js"
+  src="https://classroom-assets.tedydev.io.vn/embeds/walkthrough/walkthrough.js"
   data-cio-org="org_123">
 </script>
 ```

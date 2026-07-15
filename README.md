@@ -83,7 +83,7 @@ This repo is a monorepo that consists of these primary apps:
 
 1. `website`: The landing page of Classroom hosted [here](https://classroom.tedydev.io.vn)
 2. `api`: The api service that handles PDF, video processing, Emailing and Notifications.
-3. `dashboard`: The web application that runs the learning management system hosted [here](https://app.classroom.tedydev.io.vn).
+3. `dashboard`: The web application that runs the learning management system hosted [here](https://classroom-app.tedydev.io.vn).
 4. `docs`: Official documentation of Classroom hosted [here](https://classroom.tedydev.io.vn/docs)
 
 The repository also contains shared packages under `packages/` (for example `packages/db`, `packages/utils`, and `packages/ui`).

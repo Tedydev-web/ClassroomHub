@@ -1589,7 +1589,7 @@ await notify({
     to: recipientEmail,
     fields: {
       userName: 'John',
-      link: 'https://app.classroom.tedydev.io.vn/some/deep/link',
+      link: 'https://classroom-app.tedydev.io.vn/some/deep/link',
       orgName: 'Acme School'
     }
   }

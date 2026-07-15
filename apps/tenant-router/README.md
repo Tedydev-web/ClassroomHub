@@ -4,7 +4,7 @@ Cloudflare Worker that fronts every browser-facing ClassroomIO host:
 
 - `*.classroom.tedydev.io.vn/*` — free-tier tenant sites
 - `classroom.tedydev.io.vn/*` — apex (301 → `classroom.tedydev.io.vn`)
-- `app.classroom.tedydev.io.vn/*` — admin dashboard
+- `classroom-app.tedydev.io.vn/*` — admin dashboard
 - `embed.classroom.tedydev.io.vn/*` — public embed widget scripts (R2 `assets` bucket, path-for-path)
 - BYOD customer domains via Approximated (their proxy forwards to `cio-api.onrender.com` directly, not through this Worker)
 
@@ -19,13 +19,13 @@ The Worker forwards each request to one of two Render services based on path:
 The `/proxy` prefix is the same-origin escape hatch the dashboard's
 browser code uses so its auth cookies stay host-only while still reaching
 the API. Example: a browser request to
-`https://app.classroom.tedydev.io.vn/proxy/api/auth/sign-in/email` becomes
+`https://classroom-app.tedydev.io.vn/proxy/api/auth/sign-in/email` becomes
 `/api/auth/sign-in/email` on the API service (where Better Auth lives).
 
 It preserves the original host as `X-Forwarded-Host` so:
 
 - The dashboard's SvelteKit adapter-node reads it via `HOST_HEADER=x-forwarded-host` and `event.url.host` becomes the tenant/admin/BYOD host.
-- Better Auth on the API emits session cookies without a `Domain` attribute (see `packages/db/src/auth.ts` — `crossSubDomainCookies: { enabled: false }`), so the browser scopes each session to the exact host it called. Tenants on `acme.classroom.tedydev.io.vn`, the admin app on `app.classroom.tedydev.io.vn`, and BYOD `learn.acme.com` each get host-only sessions.
+- Better Auth on the API emits session cookies without a `Domain` attribute (see `packages/db/src/auth.ts` — `crossSubDomainCookies: { enabled: false }`), so the browser scopes each session to the exact host it called. Tenants on `acme.classroom.tedydev.io.vn`, the admin app on `classroom-app.tedydev.io.vn`, and BYOD `learn.acme.com` each get host-only sessions.
 
 ## Deploy
 
