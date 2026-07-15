@@ -40,7 +40,8 @@
   "scripts": {
     "build": "rimraf dist tsconfig.tsbuildinfo && tsc && tsc-alias",
     "dev": "tsc --watch",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "tsx --test scripts/notify-course-exercise-payload.test.ts"
   },
   "dependencies": {
     "@cio/tsconfig": "workspace:*",

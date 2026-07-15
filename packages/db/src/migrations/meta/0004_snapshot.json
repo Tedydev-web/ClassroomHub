@@ -1,5 +1,5 @@
 {
-  "id": "cd302d78-900a-46aa-a22c-9dcced8c5baf",
+  "id": "0ff0f860-6f04-45bf-bd8a-a711fcf5d2cb",
   "prevId": "17f4e73c-bf2c-4202-a0ec-0f3191ebdf8c",
   "version": "7",
   "dialect": "postgresql",
@@ -6451,7 +6451,7 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
-          "default": true
+          "default": false
         },
         "completion_policy": {
           "name": "completion_policy",

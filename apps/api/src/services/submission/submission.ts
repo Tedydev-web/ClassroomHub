@@ -50,6 +50,8 @@ import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUr
 import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExercisePassedForMember } from '@cio/db/queries/course/progression';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
+import { lockExerciseAssignmentState } from '@cio/db/queries/exercise';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
@@ -564,23 +566,11 @@ export async function createSubmissionService(
   answers: Array<{ questionId: number; optionId?: number; answer?: string }>
 ): Promise<TSubmission & { answers?: any[] }> {
   try {
-    const exerciseAccess = await resolveGroupMemberExerciseAccess(courseId, exerciseId, submittedBy);
-    if (!exerciseAccess.hasAccess) {
-      throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
-    }
-
     const [exerciseWithRelations, courseRows] = await Promise.all([
       getExerciseWithRelationsOptimized(exerciseId),
       getCourseById(courseId)
     ]);
     const course = courseRows[0];
-
-    if (!exerciseWithRelations.exercise.allowMultipleAttempts) {
-      const alreadySubmitted = await hasSubmission(exerciseId, submittedBy);
-      if (alreadySubmitted) {
-        throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
-      }
-    }
 
     const overallStatus = resolveOverallStatusFromTypenames(
       exerciseWithRelations.questions
@@ -600,7 +590,28 @@ export async function createSubmissionService(
       total: 0
     };
 
-    let submission = await createSubmission(submissionData);
+    let submission = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
+      const lockedExercise = await getExerciseById(exerciseId, txClient);
+      if (!lockedExercise) {
+        throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+      }
+
+      const exerciseAccess = await resolveGroupMemberExerciseAccess(courseId, exerciseId, submittedBy, txClient);
+      if (!exerciseAccess.hasAccess) {
+        throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
+      }
+
+      if (!lockedExercise.allowMultipleAttempts) {
+        const alreadySubmitted = await hasSubmission(exerciseId, submittedBy, txClient);
+        if (alreadySubmitted) {
+          throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
+        }
+      }
+
+      return createSubmission(submissionData, txClient);
+    });
 
     const questionById = new Map(
       exerciseWithRelations.questions.map((q) => {

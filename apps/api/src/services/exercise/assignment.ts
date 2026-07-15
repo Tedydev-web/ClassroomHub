@@ -3,6 +3,7 @@ import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { getCourseTypeById } from '@cio/db/queries/course/course';
 import {
   getExerciseById,
+  lockExerciseAssignmentState,
   listExerciseAssignments,
   replaceExerciseAssignments,
   validateExerciseStudentGroupMembers,
@@ -53,6 +54,7 @@ export async function updateExerciseAssignmentsService(
 
   await db.transaction(async (tx) => {
     const txClient = tx as DbOrTxClient;
+    await lockExerciseAssignmentState(exerciseId, txClient);
     const memberValidation = await validateExerciseStudentGroupMembers(exerciseId, data.groupMemberIds, txClient);
     if (!memberValidation.isValid) {
       throw new AppError('Assignment contains a non-student course member', ErrorCodes.VALIDATION_ERROR, 400);

@@ -1,7 +1,6 @@
-import { getCourseMembers } from '@cio/db/queries/course/people';
 import { EmailPreferenceLookupCache } from '@cio/db/queries/notifications';
 import { ZNotifyCourseExercisePayload, enqueueEmailSend } from '@cio/jobs';
-import { ROLE } from '@cio/utils/constants';
+import { listExerciseNotificationRecipients } from '@cio/db/queries/exercise';
 
 import { log } from '../../utils/logger';
 
@@ -18,14 +17,7 @@ interface NotifyResult {
 export async function processNotifyCourseExercise(rawPayload: unknown, jobId: string): Promise<NotifyResult> {
   const payload = ZNotifyCourseExercisePayload.parse(rawPayload);
 
-  const members = await getCourseMembers(payload.courseId);
-  const recipients = members
-    .filter((member) => member.roleId === ROLE.STUDENT)
-    .map((member) => ({
-      email: member.profile?.email,
-      profileId: member.profile?.id
-    }))
-    .filter((recipient): recipient is { email: string; profileId: string | undefined } => !!recipient.email);
+  const recipients = await listExerciseNotificationRecipients(payload.courseId, payload.exerciseId);
 
   let notified = 0;
   const preferenceCache = new EmailPreferenceLookupCache();

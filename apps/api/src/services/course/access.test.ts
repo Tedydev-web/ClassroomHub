@@ -30,7 +30,7 @@ import { ContentType } from '@cio/utils/constants';
 import { ErrorCodes } from '@api/utils/errors';
 import { assertEnrolledStudentContentAccess } from './access';
 
-const accessParams = {
+const accessParams: Parameters<typeof assertEnrolledStudentContentAccess>[0] = {
   courseId: 'course-a',
   profileId: 'profile-a',
   contentId: 'exercise-b',
