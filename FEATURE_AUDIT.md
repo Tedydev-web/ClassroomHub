@@ -99,9 +99,9 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
 | 27 | Public REST API (v1) | API‑key automation: courses, audience | `apps/api/src/routes/v1/*`, `apps/api/src/services/v1`, `schema.ts:2539` (`organizationApiKey`) | Complete |
 | 28 | Automation / API keys | Issue mcp/api/zapier keys with scopes | `apps/api/src/routes/organization/automation.ts`, `apps/api/src/middlewares/automation-key*.ts` | Complete |
 | 29 | MCP server | `@tedydev/classroom-mcp` AI‑native course authoring | `packages/mcp/src/*` | Complete |
-| 30 | Enterprise SSO | OIDC SSO (Okta/Google Workspace/Auth0) | `apps/api/src/routes/organization/sso.ts`, `apps/api/src/routes/sso/discovery.ts`, `schema.ts:2479` (`organizationSsoConfig`) | Complete (licensed) |
-| 31 | Token auth | Token‑based auth policy | `apps/api/src/routes/organization/token-auth.ts`, `schema.ts:2513` (`organizationTokenAuth`) | Complete (licensed) |
-| 32 | Licensing | Self‑host license‑gated features | `apps/api/src/routes/license.ts`, `apps/api/src/middlewares/license.ts`, `packages/utils/src/license/*` | Complete |
+| 30 | Enterprise SSO | OIDC SSO (Okta/Google Workspace/Auth0) | `apps/api/src/routes/organization/sso.ts`, `apps/api/src/routes/sso/discovery.ts`, `schema.ts:2479` (`organizationSsoConfig`) | Complete |
+| 31 | Token auth | Token‑based auth policy | `apps/api/src/routes/organization/token-auth.ts`, `schema.ts:2513` (`organizationTokenAuth`) | Complete |
+| 32 | Deployment capabilities | Local capability registry and self-owned entitlements | `apps/api/src/routes/license.ts`, `apps/api/src/middlewares/license.ts`, `packages/core/src/config/deployment.ts` | Complete |
 | 33 | Billing (Polar) | Subscriptions + AI token packs | `apps/dashboard/src/routes/api/polar/*` | Complete (cloud only) |
 | 34 | Analytics | Login/page events, org/course/country daily | `apps/api/src/routes/dash`, `apps/api/src/services/analytics`, `schema.ts:167–285` | Complete |
 | 35 | Email / notifications | Transactional emails via jobs | `apps/api/src/routes/mail`, `packages/email`, `apps/api/src/services/jobs` | Complete |
@@ -203,8 +203,10 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
 - **User flow:** Author exercise → add questions (incl. video‑recording type) → student
   submits → tutor/admin marks → status recorded.
 - **Edge cases:** section‑based exercises; video‑recording answers (media pipeline);
-  `prd/selective-exercise-assignment` is **todo** (assign specific exercises to specific
-  students) — verify it is *not* yet available.
+  Selective exercise assignment is complete: instructors can target enrolled students,
+  student access is enforced server-side, and progress/analytics exclude unassigned work.
+  The integration contract is exercised by
+  `packages/db/scripts/selective-exercise-assignment.integration.check.ts` in CI.
 
 ### 3.8 Enrollment, Course Invites & Secure Invites
 - **Purpose:** add students to courses by email or shareable link, with audit trail.
@@ -361,7 +363,7 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
   PRD `mcp-course-authoring [DONE]`.
 - **User flow:** Configure MCP client with API key → AI tools create/update courses.
 
-### 3.24 Enterprise SSO & Token Auth (licensed)
+### 3.24 Enterprise SSO & Token Auth
 - **Purpose:** OIDC SSO and token‑based auth for enterprise self‑host.
 - **How it works:** `apps/api/src/routes/organization/sso.ts`,
   `apps/api/src/routes/sso/discovery.ts` (mounted `/organization/sso`, `/sso`, `app.ts:211,213`);
@@ -413,7 +415,8 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
   or SMTP (`.env.example:62–74`).
 - **User flow:** trigger (signup, invite, completion) → email queued → worker sends.
 - **Edge cases:** idempotency keys (`onboarding.ts:133`); dead‑letter jobs (`schema.ts:3447`).
-- **Note:** an in‑app **notification system** is `prd/notification-system` **todo** — not shipped.
+- **Note:** the in-app notification inbox, unread state, mark-read APIs, and initial
+  newsfeed triggers are shipped. Broader event coverage, preferences, and browser E2E remain.
 
 ---
 
@@ -456,13 +459,18 @@ per‑request DB lookup** (`apps/api/src/middlewares/org-team-member.ts:5–53`)
 
 ---
 
-## 5. Deployment Modes — Self‑Hosted vs Cloud
+## 5. Deployment Topology & Ownership
 
-The single switch is **`PUBLIC_IS_SELFHOSTED`** (`=true` ⇒ self‑hosted). Source of truth:
-`.env.example:26` (Docker stack), `apps/dashboard/.env.example`, and the local‑dev value
-`apps/dashboard/.env` (`PUBLIC_IS_SELFHOSTED=true`, `README.md:155`). The flag is read in
-both the API/db layer (`process.env.PUBLIC_IS_SELFHOSTED`) and the dashboard
-(`$env/static/public`). Every behavioral difference below is traced to a flag check.
+Deployment behavior has two independent switches:
+
+- **`PUBLIC_IS_SELFHOSTED`** controls topology. `true` selects single-organization
+  self-hosting; `false` keeps multi-organization and custom-domain behavior.
+- **`PUBLIC_IS_SELF_OWNED`** controls product ownership. `true` grants all local product
+  entitlements and disables upstream billing and product telemetry.
+
+The repository defaults to self-owned multi-tenant operation:
+`PUBLIC_IS_SELFHOSTED=false` and `PUBLIC_IS_SELF_OWNED=true`. Both values must match across
+API, dashboard, and jobs processes.
 
 ### 5.1 Self‑Hosted mode (`PUBLIC_IS_SELFHOSTED=true`)
 - **Setup:** Docker Compose full stack — `cp .env.example .env` then
@@ -489,26 +497,34 @@ both the API/db layer (`process.env.PUBLIC_IS_SELFHOSTED`) and the dashboard
 ### 5.2 Cloud mode (`PUBLIC_IS_SELFHOSTED` ≠ `true`)
 - **Multi‑org:** users can create/switch multiple orgs (no single‑org block); "add org" UI
   shown (`+layout.svelte:29`).
-- **Billing:** Polar subscriptions + AI token packs are active
-  (`apps/dashboard/src/routes/api/polar/*`); plan set via subscription webhooks
-  (`webhook/+server.ts`). Deployment capability checks remain active independently of billing plans.
-- **Tracking:** PostHog/Umami/UserJot analytics enabled (`appSetup.ts:17–27`).
+- **Billing:** Polar subscriptions + AI token packs are available only when
+  `PUBLIC_IS_SELF_OWNED` is not enabled. Self-owned routes return 404 and billing UI is hidden.
+- **Tracking:** PostHog/Umami/UserJot/Senja can run only when `PUBLIC_IS_SELF_OWNED` is not
+  enabled and their own configuration is present.
 - **Signup:** org context optional unless org settings restrict it (`signup-guard.ts:132–139`).
 - **Infra:** hosted Postgres/Redis/S3; dashboard deployed on Cloudflare Workers
   (`apps/dashboard/wrangler.jsonc`, `svelte.config.js`).
 
-### 5.3 Mode‑exclusive features (summary)
-| Concern | Self‑Hosted | Cloud |
-|---|---|---|
-| Number of orgs | One only (`onboarding.ts:28`) | Many |
-| Enterprise SSO / token‑auth | Enabled by deployment capability | Enabled by deployment capability |
-| Billing (Polar) | Not used (plan = selfhosted ENTERPRISE) | Subscriptions + token packs |
-| Analytics tracking | Off (unless… still off) (`appSetup.ts:24`) | On |
-| API base / links | `DASHBOARD_ORIGIN` (`constants.ts:37`) | `PUBLIC_SERVER_URL` |
-| Add‑org modal | Hidden (`+layout.svelte:29`) | Shown |
+### 5.3 Self-owned multi-tenant mode
 
-> Both modes exist in source and share one codebase; **neither mode is
-> `⚠️ NOT FOUND`.** The product is one app with flag‑driven divergence.
+With `PUBLIC_IS_SELFHOSTED=false` and `PUBLIC_IS_SELF_OWNED=true`, the deployment retains
+multi-org workspaces, tenant routing, and custom domains while owning all product
+capabilities locally. SSO, token auth, public API, automation allowances, certificates,
+themes, widgets, student capacity, and AI allowance do not depend on an upstream plan or
+license service. Polar billing and upstream product telemetry are disabled.
+
+### 5.4 Deployment matrix
+| Concern | Single-org self-hosted | Hosted, upstream-commercial | Self-owned multi-tenant |
+|---|---|---|---|
+| Flags | `PUBLIC_IS_SELFHOSTED=true` | both flags false | `PUBLIC_IS_SELFHOSTED=false`, `PUBLIC_IS_SELF_OWNED=true` |
+| Number of orgs | One | Many | Many |
+| Product capabilities | Locally owned | Plan/capability dependent | Locally owned |
+| Billing (Polar) | Off | Available | Off |
+| Product telemetry | Off | Configurable | Off |
+| Add-org modal | Hidden | Shown | Shown |
+
+> Both deployment axes exist in source and share one codebase. The product is one app with
+> explicit topology and capability-ownership settings.
 
 ---
 
@@ -575,9 +591,9 @@ Upgrade or Buy tokens (api/polar/subscribe | buy-tokens)
 3. **In-app notification system** — persistent tenant-scoped notifications, unread state,
    mark-read APIs, dashboard popovers, and newsfeed post/comment triggers are implemented.
    Remaining work includes broader event coverage, scheduled reminders, preferences, and browser E2E. ⚠️
-4. **Selective exercise assignment** — `prd/selective-exercise-assignment` is **todo**
-   (`PRD-TRACKER.md:15`). Assigning specific exercises to specific students may not exist;
-   confirm against `exercise.ts` behavior. ⚠️
+4. **Selective exercise assignment** is no longer a gap. Schema, API, instructor UI,
+   access enforcement, analytics/progress filtering, submission preservation, and a real
+   Postgres integration check are present. Remaining work is ordinary browser regression coverage.
 5. **Course templates / cohorts / import variants** — `prd/course-templates`,
    `prd/course-cohorts`, `prd/course-import` are **todo** (`PRD-TRACKER.md:10,12,13`),
    yet related schema exists (`exerciseTemplate` `schema.ts:2401`; `courseImportDraft`
@@ -587,8 +603,9 @@ Upgrade or Buy tokens (api/polar/subscribe | buy-tokens)
    picker UI" (`README.md:231`, `.env.example:112`). The picker exposes Gemini + GPT‑4o;
    note the `.env.example:111` "Gemini 3 Flash" vs `README.md:228` "Gemini 2.5 Flash"
    wording inconsistency — verify the actual model id in `packages/utils/src/agent-models`.
-7. **Two operating modes** (single‑org self-host vs. multi-org platform) still interact
-   with `signupGuard`; capability ownership no longer depends on an external license key.
+7. **Deployment axes** are now explicit: topology is controlled by
+   `PUBLIC_IS_SELFHOSTED`, while capability ownership is controlled by
+   `PUBLIC_IS_SELF_OWNED`. Capability ownership no longer depends on an external license key.
 8. **Tenant‑router / domain routing** (`apps/tenant-router`, `/domain`) was inventoried but
    not deeply traced (infra scope). Custom‑domain happy‑path is PRD‑DONE; failure/SSL
    provisioning states are unverified here.
