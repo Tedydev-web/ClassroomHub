@@ -73,3 +73,8 @@ apps/db-agent
 # Keep repository script tests even when a global ignore excludes tests/ directories.
 !scripts/tests/
 !scripts/tests/*.test.mjs
+
+# Keep focused API entitlement coverage even when a global ignore excludes test files.
+!apps/api/src/services/deployment-entitlements.test.ts
+!apps/api/src/services/course/public-course-guard.test.ts
+!apps/api/src/services/exercise/video-recording-access.test.ts

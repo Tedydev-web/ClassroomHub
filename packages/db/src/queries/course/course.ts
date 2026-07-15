@@ -1454,6 +1454,27 @@ export async function getCourseTypeById(courseId: string): Promise<string | unde
   }
 }
 
+export async function hasSelectivelyAssignedExercises(courseId: string): Promise<boolean> {
+  try {
+    const [exercise] = await db
+      .select({ id: schema.exercise.id })
+      .from(schema.exercise)
+      .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
+      .where(
+        and(
+          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
+          eq(schema.exercise.assignmentMode, 'SELECTED_STUDENTS')
+        )
+      )
+      .limit(1);
+
+    return Boolean(exercise);
+  } catch (error) {
+    console.error('hasSelectivelyAssignedExercises error:', error);
+    throw new Error('Failed to check selective exercise assignments');
+  }
+}
+
 /** Updates slug + updatedAt; returns the new slug row or null if the course was missing. */
 export async function updateCourseSlug(courseId: string, slug: string): Promise<{ slug: string | null } | null> {
   try {

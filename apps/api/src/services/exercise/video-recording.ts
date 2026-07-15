@@ -2,7 +2,7 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getStorageConfig } from '@cio/core/config/storage';
 import { generateVideoDownloadPresignedUrls, generateVideoUploadPresignedUrl } from '@cio/core/utils/s3';
 import { createAsset, getAssetById, updateAsset } from '@cio/db/queries/assets';
-import { getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import { getExerciseWithRelationsOptimized, resolveGroupMemberExerciseAccess } from '@cio/db/queries/exercise';
 import { getQuestionAnswersBySubmissionId, getSubmissionById } from '@cio/db/queries/submission';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getCourseOrganizationId as getCourseOrganizationIdFromDb } from '@cio/db/queries/tag';
@@ -194,6 +194,13 @@ export async function getVideoRecordingPlaybackUrl(
 
   if (!isReviewer && (!groupMemberId || submission.submittedBy !== groupMemberId)) {
     throw new AppError('Unauthorized', ErrorCodes.UNAUTHORIZED, 403);
+  }
+
+  if (!isReviewer && groupMemberId) {
+    const exerciseAccess = await resolveGroupMemberExerciseAccess(courseId, exerciseId, groupMemberId);
+    if (!exerciseAccess.hasAccess) {
+      throw new AppError('Exercise is not assigned to this student', ErrorCodes.EXERCISE_NOT_ASSIGNED, 403);
+    }
   }
 
   const answers = await getQuestionAnswersBySubmissionId(submissionId);

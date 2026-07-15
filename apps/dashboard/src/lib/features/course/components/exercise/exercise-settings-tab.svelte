@@ -93,10 +93,12 @@
     if (requestId !== assignmentLoadRequestId || requestedExerciseId !== exerciseId) return;
 
     if (response?.success) {
-      assignmentMode = response.data.mode;
+      assignmentMode = isPublicCourse ? 'ALL_STUDENTS' : response.data.mode;
       selectedStudentIds.clear();
-      for (const assignment of response.data.assignments) {
-        selectedStudentIds.add(assignment.groupMemberId);
+      if (!isPublicCourse) {
+        for (const assignment of response.data.assignments) {
+          selectedStudentIds.add(assignment.groupMemberId);
+        }
       }
       loadedAssignments = response.data;
     } else {
@@ -274,7 +276,7 @@
       <Select.Root
         type="single"
         value={assignmentMode}
-        disabled={assignmentsLoading}
+        disabled={assignmentsLoading || isPublicCourse}
         onValueChange={(value) => {
           if (value === 'ALL_STUDENTS' || value === 'SELECTED_STUDENTS') assignmentMode = value;
         }}
