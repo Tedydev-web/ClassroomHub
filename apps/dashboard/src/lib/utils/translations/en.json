@@ -468,9 +468,11 @@
       "heading": "Notifications",
       "page_title": "Notifications",
       "page_subtitle": "Choose which email notifications you receive and, as an admin, which emails your organization sends.",
+      "personal_page_subtitle": "Choose which email notifications you receive from ClassroomIO.",
       "personal": {
         "heading": "Your email preferences",
-        "description": "These apply to emails sent to you across every organization you belong to. Your organization may still disable certain emails for everyone.",
+        "description": "These apply to emails sent to you in this organization. Your organization may still disable certain emails for everyone.",
+        "description_with_org": "These apply to emails sent to you in {orgName}. Your organization may still disable certain emails for everyone.",
         "save": "Save personal preferences",
         "save_success": "Personal notification preferences saved"
       },
@@ -2031,6 +2033,12 @@
       "content_count": {
         "lessons": "{count} lessons",
         "exercises": "{count} exercises"
+      },
+      "progress": {
+        "title": "Your progress",
+        "completed": "{completed} of {total} completed",
+        "lessons": "{completed} of {total} lessons",
+        "exercises": "{completed} of {total} exercises"
       }
     },
     "search": {
@@ -2264,6 +2272,12 @@
         },
         "add_content_section_title_placeholder": "e.g., Module 1: Introduction",
         "add_content_lesson_title_placeholder": "e.g., Getting Started with Variables",
+        "content_menu": {
+          "label": "Content options",
+          "unlock_all": "Unlock all content",
+          "enable_grouping": "Enable content grouping",
+          "disable_grouping": "Disable content grouping"
+        },
         "join_lesson": "Join lesson",
         "no_link": "No link",
         "no_tutor": "No tutor added",
@@ -2406,7 +2420,10 @@
                 "edit": "Edit transcript",
                 "save": "Save",
                 "cancel": "Cancel",
-                "segment_label": "Segment at {timestamp}"
+                "segment_label": "Segment at {timestamp}",
+                "video_nav_label": "Video {number}",
+                "previous_video": "Previous video transcript",
+                "next_video": "Next video transcript"
               }
             },
             "document": {
@@ -4260,6 +4277,9 @@
     "course_settings": {
       "success": {
         "unlocked_all_content": "All course items unlocked",
+        "all_content_already_unlocked": "All content is already unlocked",
+        "content_grouping_enabled": "Content grouping enabled",
+        "content_grouping_disabled": "Content grouping disabled",
         "download": "Download Complete",
         "saved": "Saved successfully",
         "successful_integration": "Integration successful",
