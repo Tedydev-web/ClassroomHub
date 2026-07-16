@@ -71,6 +71,13 @@
       "when": 1784094504508,
       "tag": "0009_true_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784213223886,
+      "tag": "0010_gifted_skullbuster",
+      "breakpoints": true
     }
   ]
 }
