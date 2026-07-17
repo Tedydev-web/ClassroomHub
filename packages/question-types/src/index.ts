@@ -14,8 +14,12 @@ export * from './render-contract';
 export * from './form-state';
 export * from './answer-data';
 export * from './answer-codecs';
+export * from './question-answer-validation';
 export * from './renderer-registry';
 export * from './textarea-validation';
 export * from './star-rating-settings';
 export * from './video-recording-settings';
+export * from './file-upload-settings';
 export * from './true-false-answer-key';
+
+export * from './assessment';

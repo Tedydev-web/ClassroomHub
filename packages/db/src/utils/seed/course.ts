@@ -7,9 +7,16 @@ interface SeedCourse {
   reactGroupId: string;
   pandasGroupId: string;
   earlyAdopterGroupId: string;
+  extendedDemo?: boolean;
 }
 
-export async function seedCourses({ mvcGroupId, reactGroupId, pandasGroupId, earlyAdopterGroupId }: SeedCourse) {
+export async function seedCourses({
+  mvcGroupId,
+  reactGroupId,
+  pandasGroupId,
+  earlyAdopterGroupId,
+  extendedDemo = false
+}: SeedCourse) {
   const existingCourses = await db.select().from(course);
   const existingCourseIds = existingCourses.map((c) => c.id);
 
@@ -18,7 +25,7 @@ export async function seedCourses({ mvcGroupId, reactGroupId, pandasGroupId, ear
   const pandasCourseId = 'f0a85d18-aff4-412f-b8e6-3b34ef098dce';
   const earlyAdopterCourseId = '9bd496cc-c494-4a7e-e12c-6baeef246f8b';
 
-  const coursesToInsert: TNewCourse[] = [
+  const courses: TNewCourse[] = [
     {
       id: mvcCourseId,
       title: 'Getting started with MVC',
@@ -128,7 +135,10 @@ export async function seedCourses({ mvcGroupId, reactGroupId, pandasGroupId, ear
       },
       status: 'ACTIVE'
     }
-  ].filter((c) => !existingCourseIds.includes(c.id));
+  ];
+  const coursesToInsert = courses
+    .filter((courseRecord) => extendedDemo || courseRecord.id !== earlyAdopterCourseId)
+    .filter((courseRecord) => courseRecord.id !== undefined && !existingCourseIds.includes(courseRecord.id));
 
   if (coursesToInsert.length > 0) {
     await db.insert(course).values(coursesToInsert);

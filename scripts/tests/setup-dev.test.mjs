@@ -9,15 +9,18 @@ import { runSetupEnv } from '../setup-dev.mjs';
 const EXAMPLES = new Map([
   [
     '.env.dev.example',
-    'DEV_PUBLIC_HOST=localhost\nDEV_API_PUBLIC_HOST=localhost\nDEV_PUBLIC_PROTOCOL=http\nDEV_DASHBOARD_PUBLIC_PORT=5173\nDEV_API_PUBLIC_PORT=3002\nDEV_OBJECT_STORAGE_PUBLIC_URL=http://localhost:9000\nDEV_PRIVATE_APP_HOST=localhost\nDEV_REDIRECT_HOST=\nPOSTGRES_PORT=5432\nREDIS_PORT=6379\nMINIO_API_PORT=9000\nMINIO_CONSOLE_PORT=9001\nMAILPIT_SMTP_PORT=1025\nMAILPIT_UI_PORT=8025\n'
+    'DEV_DASHBOARD_LOCAL_PORT=8000\nDEV_API_LOCAL_PORT=8001\nDEV_PUBLIC_HOST=localhost\nDEV_API_PUBLIC_HOST=localhost\nDEV_PUBLIC_PROTOCOL=http\nDEV_DASHBOARD_PUBLIC_PORT=8000\nDEV_API_PUBLIC_PORT=8001\nDEV_OBJECT_STORAGE_PUBLIC_URL=http://localhost:8004\nDEV_PRIVATE_APP_HOST=localhost\nDEV_REDIRECT_HOST=\nPOSTGRES_PORT=8002\nREDIS_PORT=8003\nMINIO_API_PORT=8004\nMINIO_CONSOLE_PORT=8005\nMAILPIT_SMTP_PORT=8006\nMAILPIT_UI_PORT=8007\n'
   ],
-  ['apps/api/.env.example', 'DATABASE_URL=""\nREDIS_URL=""\nBETTER_AUTH_SECRET=""\nUNKNOWN_API_KEY="preserve-me"\n'],
+  [
+    'apps/api/.env.example',
+    'PORT=8001\nDATABASE_URL=""\nREDIS_URL=""\nBETTER_AUTH_SECRET=""\nUNKNOWN_API_KEY="preserve-me"\n'
+  ],
   [
     'apps/dashboard/.env.example',
     'PUBLIC_IS_SELFHOSTED=false\nPUBLIC_SERVER_URL=\nPRIVATE_APP_HOST=classroom.tedydev.io.vn\n'
   ],
-  ['apps/jobs/.env.example', 'REDIS_URL="redis://localhost:6379"\nDATABASE_URL=""\n'],
-  ['packages/db/.env.example', 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/classroomio"\n']
+  ['apps/jobs/.env.example', 'REDIS_URL="redis://localhost:8003"\nDATABASE_URL=""\n'],
+  ['packages/db/.env.example', 'DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"\n']
 ]);
 
 async function createFixture() {
@@ -93,7 +96,7 @@ test('explicit mode updates only mode values while local-default consent resolve
   await writeFile(path.join(rootDirectory, 'packages/db/.env'), 'DATABASE_URL="postgresql://external/db"\n');
   await runSetupEnv({ args: ['--apply-local-defaults'], rootDirectory });
   const database = await readValues(rootDirectory, 'packages/db/.env');
-  assert.equal(database.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:5432/classroomio');
+  assert.equal(database.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:8002/classroomio');
 });
 
 test('development Compose pins images and binds parameterized ports to loopback', async () => {
@@ -110,8 +113,8 @@ test('development Compose pins images and binds parameterized ports to loopback'
     );
   }
 
-  assert.match(compose, /127\.0\.0\.1:\$\{POSTGRES_PORT:-5432\}:5432/);
-  assert.match(compose, /127\.0\.0\.1:\$\{MAILPIT_UI_PORT:-8025\}:8025/);
+  assert.match(compose, /127\.0\.0\.1:\$\{POSTGRES_PORT:-8002\}:5432/);
+  assert.match(compose, /127\.0\.0\.1:\$\{MAILPIT_UI_PORT:-8007\}:8025/);
   assert.match(compose, /mc mb --ignore-existing local\/videos local\/documents local\/media/);
   assert.match(compose, /mc anonymous set download local\/media/);
 });
@@ -145,11 +148,12 @@ test('uses a configured public host while keeping the private dashboard API URL 
   const api = await readValues(rootDirectory, 'apps/api/.env');
   const dashboard = await readValues(rootDirectory, 'apps/dashboard/.env');
 
-  assert.equal(api.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:3002');
-  assert.equal(api.get('DASHBOARD_ORIGIN'), 'http://dev.example.test:5173');
-  assert.equal(api.get('TRUSTED_ORIGINS'), 'http://dev.example.test:5173,http://localhost:5173');
-  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:3002');
-  assert.equal(dashboard.get('PRIVATE_SERVER_URL'), 'http://localhost:3002');
+  assert.equal(api.get('PORT'), '8001');
+  assert.equal(api.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:8001');
+  assert.equal(api.get('DASHBOARD_ORIGIN'), 'http://dev.example.test:8000');
+  assert.equal(api.get('TRUSTED_ORIGINS'), 'http://dev.example.test:8000,http://localhost:8000');
+  assert.equal(dashboard.get('PUBLIC_SERVER_URL'), 'http://dev.example.test:8001');
+  assert.equal(dashboard.get('PRIVATE_SERVER_URL'), 'http://localhost:8001');
 });
 
 test('uses separate Cloudflare Tunnel hosts without adding standard HTTPS ports', async () => {
@@ -179,4 +183,5 @@ test('uses separate Cloudflare Tunnel hosts without adding standard HTTPS ports'
   assert.equal(dashboard.get('VITE_ALLOWED_HOST'), 'app.classroom.example.com');
   assert.equal(dashboard.get('VITE_CANONICAL_ORIGIN'), 'https://app.classroom.example.com');
   assert.equal(dashboard.get('VITE_REDIRECT_HOST'), '');
+  assert.equal(dashboard.get('PRIVATE_SERVER_URL'), 'http://localhost:8001');
 });

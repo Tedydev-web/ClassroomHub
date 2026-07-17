@@ -38,7 +38,7 @@ OPENAI_API_KEY=…
 
 # Optional — Redis enables the BullMQ media job pipeline. Without it the
 # asset row is still created, but no transcription/thumbnail jobs run.
-REDIS_URL=redis://localhost:6379
+REDIS_URL=redis://localhost:8003
 
 # Only required when you want to exercise the production cookie-mint path
 # (`POST /organization/assets/:assetId/hls/cookie`). Locally the Hono /hls/*

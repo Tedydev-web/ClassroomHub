@@ -1,4 +1,4 @@
-import { PREMIUM_QUESTION_TYPE_KEYS, QUESTION_TYPE_REGISTRY } from '@cio/question-types';
+import { ENABLED_QUESTION_TYPE_REGISTRY, PREMIUM_QUESTION_TYPE_KEYS } from '@cio/question-types';
 import type { AgentContext } from '../types';
 import { DEPTH_TIERS, describeDepthTier, type CourseTemplate, type DepthTierId } from '../templates';
 
@@ -13,9 +13,10 @@ export type BuildTeacherSystemPromptOptions = {
 };
 
 function buildQuestionTypeListBlock(isOrgOnPaidPlan: boolean): string {
-  // `disabled` types are built but have no `question_type` DB row, so they must
-  // never be advertised to the model (the tool schema rejects their ids).
-  const offered = QUESTION_TYPE_REGISTRY.filter((t) => !t.disabled);
+  // `disabled` types have no `question_type` DB row and `internal` types are
+  // composer-only; neither may ever be advertised to the model (the tool
+  // schema rejects their ids).
+  const offered = ENABLED_QUESTION_TYPE_REGISTRY;
   const allowed = offered.filter((t) => isOrgOnPaidPlan || !PREMIUM_QUESTION_TYPE_KEYS.has(t.key));
   const listing = allowed.map((t) => `- ${t.id} = ${t.typename} — ${t.label}`).join('\n');
 

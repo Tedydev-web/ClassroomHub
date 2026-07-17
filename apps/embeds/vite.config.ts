@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const devApiUrl = process.env.API_URL ?? 'http://localhost:3002';
+const devApiUrl = process.env.API_URL ?? 'http://localhost:8001';
 
 function embedApiUrlInjectPlugin() {
   const bootstrapFiles = [

@@ -3777,7 +3777,8 @@
     "launch_week": "Lanceringsuge",
     "feedback": "Feedback",
     "documentation": "Dokumentation",
-    "need_help": "Har du brug for hjælp?"
+    "need_help": "Har du brug for hjælp?",
+    "language": "Sprog"
   },
   "login": {
     "welcome": "Velkommen tilbage",

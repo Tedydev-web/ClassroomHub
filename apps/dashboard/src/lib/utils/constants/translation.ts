@@ -13,7 +13,23 @@ export const LANGUAGE: Record<TLocale, string> = {
   vi: 'Vietnamese'
 };
 
+// Native names (endonyms) shown in the language switcher so each option
+// reads in its own language, e.g. "Tiếng Việt" instead of "Vietnamese".
+export const LANGUAGE_NATIVE: Record<TLocale, string> = {
+  da: 'Dansk',
+  de: 'Deutsch',
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+  hi: 'हिन्दी',
+  pl: 'Polski',
+  pt: 'Português',
+  ru: 'Русский',
+  vi: 'Tiếng Việt'
+};
+
 export const LANGUAGES = Object.keys(LANGUAGE).map((lang) => ({
   id: lang,
-  text: LANGUAGE[lang]
+  text: LANGUAGE[lang],
+  native: LANGUAGE_NATIVE[lang]
 }));

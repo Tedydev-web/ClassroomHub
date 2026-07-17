@@ -1,6 +1,8 @@
 import * as z from 'zod';
 
 import {
+  ENABLED_QUESTION_TYPE_REGISTRY,
+  MAX_INTERACTION_MAX_SCORE,
   VIDEO_RECORDING_PLATFORM_MAX_DURATION_SECONDS,
   getStarRatingMaxFromSettings,
   isValidStarRatingValue
@@ -10,26 +12,21 @@ import { QUESTION_TYPE } from '../constants';
 import { ZSlug } from '../shared/slug';
 import { ZExerciseSection } from './exercise-section';
 
-const EXERCISE_QUESTION_TYPE_ID_LITERALS = [
-  z.literal(QUESTION_TYPE.RADIO),
-  z.literal(QUESTION_TYPE.CHECKBOX),
-  z.literal(QUESTION_TYPE.TEXTAREA),
-  z.literal(QUESTION_TYPE.TRUE_FALSE),
-  z.literal(QUESTION_TYPE.SHORT_ANSWER),
-  z.literal(QUESTION_TYPE.NUMERIC),
-  z.literal(QUESTION_TYPE.FILL_BLANK),
-  z.literal(QUESTION_TYPE.FILE_UPLOAD),
-  z.literal(QUESTION_TYPE.MATCHING),
-  z.literal(QUESTION_TYPE.ORDERING),
-  z.literal(QUESTION_TYPE.HOTSPOT),
-  z.literal(QUESTION_TYPE.LINK),
-  z.literal(QUESTION_TYPE.WORD_BANK),
-  z.literal(QUESTION_TYPE.STAR),
-  z.literal(QUESTION_TYPE.VIDEO_RECORDING)
-] as const;
+const ENABLED_EXERCISE_QUESTION_TYPE_IDS = ENABLED_QUESTION_TYPE_REGISTRY.map((type) => type.id);
+const ENABLED_EXERCISE_QUESTION_TYPE_ID_SET = new Set(ENABLED_EXERCISE_QUESTION_TYPE_IDS);
 
-export const ZExerciseQuestionTypeId = z.union(EXERCISE_QUESTION_TYPE_ID_LITERALS);
+export const ZExerciseQuestionTypeId = z
+  .number()
+  .int()
+  .refine((questionTypeId) => ENABLED_EXERCISE_QUESTION_TYPE_ID_SET.has(questionTypeId), {
+    message: `Question type must be one of: ${ENABLED_EXERCISE_QUESTION_TYPE_IDS.join(', ')}`
+  });
 export type TExerciseQuestionTypeId = z.infer<typeof ZExerciseQuestionTypeId>;
+
+// Authored points stay integers (existing route contract) and are capped at the
+// canonical interaction maximum so the first student submission can never fail
+// materialization against the kernel's maxScore bound.
+export const ZExerciseQuestionPoints = z.number().int().min(0).max(MAX_INTERACTION_MAX_SCORE);
 
 type QuestionRuleInput = {
   options?: Array<{ isCorrect: boolean }>;
@@ -148,7 +145,7 @@ const ZExerciseUpdateQuestionBase = z.object({
   exerciseSectionId: z.string().uuid().nullable().optional(),
   question: z.string().min(1),
   questionTypeId: ZExerciseQuestionTypeId.optional(),
-  points: z.number().int().min(0).optional(),
+  points: ZExerciseQuestionPoints.optional(),
   order: z.number().int().min(0).optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
   deletedAt: z.string().optional(), // Marks question as deleted
@@ -187,7 +184,7 @@ const ZExerciseUpdateQuestion = ZExerciseUpdateQuestionBase.superRefine(validate
 const ZExerciseCreateQuestionBase = z.object({
   question: z.string().min(1),
   questionTypeId: ZExerciseQuestionTypeId.optional(),
-  points: z.number().int().min(0).optional(),
+  points: ZExerciseQuestionPoints.optional(),
   order: z.number().int().min(0).optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
   options: z
@@ -246,17 +243,30 @@ export const ZExerciseListQuery = z.object({
 export type TExerciseListQuery = z.infer<typeof ZExerciseListQuery>;
 
 // Exercise Submission Schemas
+export const EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS = 100_000;
+export const EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS = 1_000_000;
+
 export const ZExerciseSubmissionCreate = z.object({
   exerciseId: z.string().min(1),
+  idempotencyKey: z.uuid().optional(),
   answers: z
     .array(
       z.object({
         questionId: z.number().int(),
         optionId: z.number().int().optional(),
-        answer: z.string().optional()
+        answer: z.string().max(EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS).optional()
       })
     )
-    .min(1)
+    .max(500)
+    .superRefine((answers, ctx) => {
+      const totalAnswerCharacters = answers.reduce((total, answer) => total + (answer.answer?.length ?? 0), 0);
+      if (totalAnswerCharacters <= EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS) return;
+
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Submission answers are too large'
+      });
+    })
 });
 export type TExerciseSubmissionCreate = z.infer<typeof ZExerciseSubmissionCreate>;
 

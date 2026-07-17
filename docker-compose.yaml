@@ -5,7 +5,7 @@ services:
     # Bound to localhost only so host tools (pnpm api:dev, db:setup) can reach it
     # without exposing the database to the LAN.
     ports:
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:${HOST_POSTGRES_PORT:-8002}:5432'
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-classroomio}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -30,7 +30,7 @@ services:
     container_name: cio-redis
     # Bound to localhost only (see postgres note above).
     ports:
-      - '127.0.0.1:6379:6379'
+      - '127.0.0.1:${HOST_REDIS_PORT:-8003}:6379'
     command: ['redis-server', '--appendonly', 'yes']
     volumes:
       - redis-data:/data
@@ -46,8 +46,8 @@ services:
     container_name: cio-minio
     command: server /data --console-address ":9001"
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - '127.0.0.1:${HOST_MINIO_API_PORT:-8004}:9000'
+      - '127.0.0.1:${HOST_MINIO_CONSOLE_PORT:-8005}:9001'
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
@@ -85,7 +85,7 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: cio-api
     ports:
-      - '3081:3081'
+      - '127.0.0.1:${HOST_API_PORT:-8001}:3081'
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,7 +107,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3081
-      PUBLIC_SERVER_URL: ${PUBLIC_SERVER_URL:-http://localhost:3081}
+      PUBLIC_SERVER_URL: ${PUBLIC_SERVER_URL:-http://localhost:8001}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
       REDIS_URL: redis://redis:6379
@@ -157,14 +157,14 @@ services:
         PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
     container_name: cio-dashboard
     ports:
-      - '3082:3082'
+      - '127.0.0.1:${HOST_DASHBOARD_PORT:-8000}:3082'
     depends_on:
       api:
         condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3082
-      ORIGIN: ${DASHBOARD_ORIGIN:-http://localhost:3082}
+      ORIGIN: ${DASHBOARD_ORIGIN:-http://localhost:8000}
       PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-false}
       PUBLIC_IS_SELF_OWNED: ${PUBLIC_IS_SELF_OWNED:-true}
       PRIVATE_SERVER_URL: ${PRIVATE_SERVER_URL:-http://api:3081}

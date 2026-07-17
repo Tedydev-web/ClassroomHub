@@ -3,11 +3,11 @@ import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
 
 export * from './rate-limiter';
 
-export const API_PORT = env.PORT ? parseInt(env.PORT) : 3002;
+export const API_PORT = env.PORT ? parseInt(env.PORT) : 8001;
 export const API_SERVER_URL = env.PUBLIC_SERVER_URL || `http://localhost:${API_PORT}`;
 const configuredTrustedOrigins = env.TRUSTED_ORIGINS
   ? env.TRUSTED_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://localhost:5180', `https://*.${PRODUCT_ROOT_DOMAIN}`];
+  : ['http://localhost:8000', 'http://localhost:8011', `https://*.${PRODUCT_ROOT_DOMAIN}`];
 
 export const TRUSTED_ORIGINS = [
   ...configuredTrustedOrigins.map((origin) => origin.trim()).filter(Boolean),

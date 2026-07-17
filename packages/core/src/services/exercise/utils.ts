@@ -15,12 +15,24 @@ import {
 import {
   QUESTION_TYPE_IDS,
   QUESTION_TYPE_KEY,
+  QUESTION_TYPE_REGISTRY,
   resolveTrueFalseCorrectValue,
   syncTrueFalseOptions,
   type TrueFalseAnswerOption
 } from '@cio/question-types';
 import type { DbOrTxClient } from '@cio/db/drizzle';
+import type { QuestionReadScope } from '@cio/db/queries/exercise';
 import type { TExerciseUpdate } from '@cio/utils/validation/exercise';
+
+/**
+ * Database ids of internal question types (currently the composite ASSESSMENT_ITEM).
+ * Internal rows may exist in the question table, but their definition lives in
+ * question revisions, so raw editor reads, public-course payloads, and clone must
+ * exclude or reject them until canonical composer/materialization paths exist.
+ */
+export const INTERNAL_QUESTION_TYPE_IDS: ReadonlySet<number> = new Set(
+  QUESTION_TYPE_REGISTRY.filter((type) => type.internal === true).map((type) => type.id)
+);
 
 type CurrentQuestion = TNewQuestion & { options?: TNewOption[] };
 type CurrentOption = TNewOption;
@@ -409,10 +421,16 @@ export async function createNewQuestionsWithOptions(
 }
 
 /**
- * Fetches questions and their options for an exercise
+ * Fetches questions and their options for an exercise.
+ * Pass `questionScope: 'active'` for editor/delivery reads that must exclude
+ * archived questions; the default 'all' keeps historical rows visible.
  */
-export async function fetchQuestionsAndOptions(exerciseId: string, dbClient?: DbOrTxClient) {
-  const questions = await getQuestionsByExerciseIds([exerciseId], dbClient);
+export async function fetchQuestionsAndOptions(
+  exerciseId: string,
+  dbClient?: DbOrTxClient,
+  readOptions: { questionScope?: QuestionReadScope } = {}
+) {
+  const questions = await getQuestionsByExerciseIds([exerciseId], dbClient, readOptions);
   const questionIds = questions.map((q) => q.id).filter((id): id is number => id !== undefined);
   const options = questionIds.length > 0 ? await getOptionsByQuestionIds(questionIds, dbClient) : [];
   return { questions, options };

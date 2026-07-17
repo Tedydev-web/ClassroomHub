@@ -3777,7 +3777,8 @@
     "launch_week": "Tydzień uruchomienia",
     "feedback": "Informacje zwrotne",
     "documentation": "Dokumentacja",
-    "need_help": "Potrzebujesz pomocy?"
+    "need_help": "Potrzebujesz pomocy?",
+    "language": "Język"
   },
   "login": {
     "welcome": "Witamy z powrotem",

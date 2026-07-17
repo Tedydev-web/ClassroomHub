@@ -39,7 +39,7 @@
           id: answer.id,
           questionId: answer.questionId,
           answerData: answer.answerData,
-          point: answer.point ?? 0,
+          point: answer.score ?? answer.point ?? 0,
           submissionId: answer.submissionId ?? submission.id,
           groupMemberId: answer.groupMemberId ?? ''
         }))

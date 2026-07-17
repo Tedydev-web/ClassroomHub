@@ -2,7 +2,7 @@ import type { TNewTag, TNewTagGroup, TTag, TTagAssignment, TTagGroup } from '@db
 import { and, asc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import * as schema from '@db/schema';
-import { db } from '@db/drizzle';
+import { db, type DbOrTxClient } from '@db/drizzle';
 
 export interface TTagWithCourseCount extends TTag {
   courseCount: number;
@@ -357,9 +357,9 @@ export async function getCourseIdsByTagSlugs(orgId: string, tagSlugs: string[]):
   }
 }
 
-export async function getCourseOrganizationId(courseId: string): Promise<string | null> {
+export async function getCourseOrganizationId(courseId: string, dbClient: DbOrTxClient = db): Promise<string | null> {
   try {
-    const [row] = await db
+    const [row] = await dbClient
       .select({
         organizationId: schema.group.organizationId
       })

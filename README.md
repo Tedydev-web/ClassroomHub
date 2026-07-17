@@ -73,7 +73,7 @@ To get a local copy up and running, please follow these simple steps.
 
 Here is what you need to be able to run Classroom
 
-- **[Node.js](https://nodejs.org/)** (Version: >=20.19.3) — _required_
+- **[Node.js](https://nodejs.org/)** (Version: `22.23.1`, pinned by `.nvmrc`) — _required_
 - **[pnpm](https://pnpm.io/installation)** (v10) — _required_; the package scripts call `pnpm` directly, so npm/yarn are not substitutes
 - **[Docker](https://docs.docker.com/engine/install/)** — _required_; runs Postgres + Redis (no local install of those needed)
 
@@ -87,6 +87,23 @@ This repo is a monorepo that consists of these primary apps:
 4. `docs`: Official documentation of Classroom hosted [here](https://classroom.tedydev.io.vn/docs)
 
 The repository also contains shared packages under `packages/` (for example `packages/db`, `packages/utils`, and `packages/ui`).
+
+### Developer Access
+
+| Resource | Local | LAN | Public |
+|----------|-------|-----|--------|
+| Dashboard | [http://localhost:8000](http://localhost:8000) | [http://192.168.1.234:8000](http://192.168.1.234:8000) | [https://classroom-app.tedydev.io.vn](https://classroom-app.tedydev.io.vn) |
+| API | [http://localhost:8001](http://localhost:8001) | [http://192.168.1.234:8001](http://192.168.1.234:8001) | [https://classroom-api.tedydev.io.vn](https://classroom-api.tedydev.io.vn) |
+| Object storage | [http://localhost:8004](http://localhost:8004) | Loopback only | [https://classroom-assets.tedydev.io.vn](https://classroom-assets.tedydev.io.vn) |
+| MinIO console | [http://localhost:8005](http://localhost:8005) | Loopback only | Not exposed |
+| Mailpit | [http://localhost:8007](http://localhost:8007) | Loopback only | Not exposed |
+
+Default seeded admin: `admin@test.com` / `123456`. This is development data only.
+
+See [`DEV_SETUP_NOTES.md`](DEV_SETUP_NOTES.md) for the complete account matrix, tenant names,
+port map, service credentials, environment-file inventory, Cloudflare routing, startup commands,
+health checks, Git remotes, and known runtime caveats. Real API keys, Cloudflare credentials,
+auth secrets, and private server keys are intentionally never stored in documentation.
 
 ## Development
 
@@ -141,20 +158,21 @@ The repository also contains shared packages under `packages/` (for example `pac
    - `apps/api/.env`:
 
      ```bash
-     DATABASE_URL="postgresql://postgres:postgres@localhost:5432/classroomio"
-     REDIS_URL="redis://localhost:6379"
-     PUBLIC_SERVER_URL="http://localhost:3002"
-     TRUSTED_ORIGINS="http://localhost:5173"        # the dashboard dev origin
+     PORT=8001
+     DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"
+     REDIS_URL="redis://localhost:8003"
+     PUBLIC_SERVER_URL="http://localhost:8001"
+     TRUSTED_ORIGINS="http://localhost:8000"        # the dashboard dev origin
      BETTER_AUTH_SECRET="<generate-with-openssl-rand-hex-32>"
      PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # generate once; use the SAME value in the dashboard
-     DASHBOARD_ORIGIN="http://localhost:5173"        # optional; used for invite/email links back to the dashboard
+     DASHBOARD_ORIGIN="http://localhost:8000"        # optional; used for invite/email links back to the dashboard
      ```
 
    - `apps/dashboard/.env`:
 
      ```bash
-     PUBLIC_SERVER_URL="http://localhost:3002"
-     PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required, or login returns "API target not configured"
+     PUBLIC_SERVER_URL="http://localhost:8001"
+     PRIVATE_SERVER_URL="http://localhost:8001"      # used by the SSR auth proxy — required, or login returns "API target not configured"
      PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must match the API (paste the value generated above)
      PUBLIC_IS_SELFHOSTED=false
      PUBLIC_IS_SELF_OWNED=true
@@ -168,57 +186,60 @@ The repository also contains shared packages under `packages/` (for example `pac
 6. Start local infrastructure for API (Postgres + Redis) and seed the DB:
 
    ```bash
-   docker compose -f docker-compose.yaml up -d postgres redis
-   cp packages/db/.env.example packages/db/.env   # one-time (Windows: Copy-Item)
+   pnpm setup:env -- --apply-local-defaults
+   pnpm infra:up
    pnpm --filter @cio/db db:setup:seed
    ```
 
-   - Connect with `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/classroomio`
-   - Connect with `REDIS_URL=redis://localhost:6379`
+   - Connect with `DATABASE_URL=postgresql://postgres:postgres@localhost:8002/classroomio`
+   - Connect with `REDIS_URL=redis://localhost:8003`
    - `db:setup:seed` creates the schema and seeds demo data once Postgres is up. The db scripts run with their own working directory, so they read `DATABASE_URL` from `packages/db/.env` (not `apps/api/.env`).
+   - `db:setup` runs migrations and the post-migration assessment finalizer. If an operator runs `db:migrate` directly, also run `pnpm --filter @cio/db db:finalize-assessment-schema` before starting the API.
+   - To validate the full migration chain without touching the configured database, run `pnpm --filter @cio/db db:rehearse-assessment-migration`. The command requires permission to create a temporary database and always removes it afterward.
 
 7. (Optional) Start MinIO locally for object storage (media/documents):
 
    ```bash
-   docker compose -f docker-compose.yaml --profile minio up -d minio minio-init
+   pnpm infra:up
    ```
 
-   - Console: http://localhost:9001 (user/pass default `minioadmin` / `minioadmin`)
-   - S3 endpoint: http://localhost:9000
+   - Console: http://localhost:8005 (development credentials are managed by `docker-compose.dev.yaml`)
+   - S3 endpoint: http://localhost:8004
    - Buckets created by `minio-init`: `videos`, `documents`, `media`
    - Add to `apps/api/.env` when using MinIO locally:
-     - `OBJECT_STORAGE_ENDPOINT=http://localhost:9000`
-     - `OBJECT_STORAGE_PUBLIC_ENDPOINT=http://localhost:9000`
-     - `OBJECT_STORAGE_ACCESS_KEY_ID=minioadmin`
-     - `OBJECT_STORAGE_SECRET_ACCESS_KEY=minioadmin`
+     - `OBJECT_STORAGE_ENDPOINT=http://localhost:8004`
+     - `OBJECT_STORAGE_PUBLIC_ENDPOINT=http://localhost:8004`
+     - `OBJECT_STORAGE_ACCESS_KEY_ID=classroomio`
+     - `OBJECT_STORAGE_SECRET_ACCESS_KEY=classroomio-dev-only`
      - `OBJECT_STORAGE_FORCE_PATH_STYLE=true`
-     - `OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=http://localhost:9000/media`
+     - `OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=http://localhost:8004/media`
 
-8. Run the local app services in separate terminals:
-
-   ```bash
-   pnpm api:dev
-   ```
+8. Run the core app services and source watchers:
 
    ```bash
-   pnpm dashboard:dev
+   pnpm dev:core
    ```
 
    - If you see `Failed to resolve entry for package "@cio/..."`, the shared workspace packages haven't been built yet (their `dist/` is missing). Build them once with `pnpm build`, then re-run the dev commands.
 
 9. Default local URLs:
 
-   - `api`: [http://localhost:3002](http://localhost:3002)
-   - `dashboard`: [http://localhost:5173](http://localhost:5173)
+   - `api`: [http://localhost:8001](http://localhost:8001)
+   - `dashboard`: [http://localhost:8000](http://localhost:8000)
+   - `MinIO S3`: [http://localhost:8004](http://localhost:8004)
+   - `MinIO console`: [http://localhost:8005](http://localhost:8005)
+   - `Mailpit`: [http://localhost:8007](http://localhost:8007)
 
 10. Optional: run other apps:
 
-   - **website**: `pnpm website:dev`
-   - **docs**: `pnpm dev --filter=@cio/docs`
+   - **website** (`8008`): `pnpm website:dev`
+   - **docs** (`8009`): `pnpm docs:dev`
+   - **Storybook** (`8010`): `pnpm storybook:dev`
+   - **embeds** (`8011`): `pnpm embeds:dev`
 
 11. Login into `dashboard`:
 
-    - Visit [http://localhost:5173/login](http://localhost:5173/login)
+    - Visit [http://localhost:8000/login](http://localhost:8000/login)
     - Enter email: `admin@test.com`
     - Enter password: `123456`
 

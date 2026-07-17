@@ -8,6 +8,189 @@ fresh machine or to onboard a new contributor.
 > commands in **Git Bash** (Unix commands like `cp` work there). The repo's package
 > scripts are already cross-platform.
 
+## Current workstation access reference
+
+Last verified: **2026-07-17**. This section describes the maintained development
+workstation for this fork. It is not a production credential inventory.
+
+### Start after Windows reboot
+
+The development runtime is registered as one Windows scheduled task. It starts Docker
+Desktop, the local infrastructure, and all core source watchers after user logon:
+
+```powershell
+Get-ScheduledTask -TaskName 'ClassroomIO Development' | Select-Object TaskName, State
+```
+
+Expected state: `Running`. The task runs `scripts/start-development.cmd`, which starts
+Docker Desktop, runs `pnpm infra:up`, then keeps `pnpm dev:core` active. Its log is
+`C:\ProgramData\ClassroomIO\logs\development.log`. The old API, dashboard, and jobs
+production tasks remain disabled so they cannot duplicate processes or occupy ports.
+
+The `Cloudflared` Windows service uses automatic startup and normally needs no manual
+command. Its dashboard ingress points to the Vite development server on `8000`, so HMR
+is available through the public and tenant hostnames.
+
+To start the same workflow manually:
+
+```powershell
+scripts\start-development.cmd
+```
+
+To stop the scheduled process before maintenance:
+
+```powershell
+Stop-ScheduledTask -TaskName 'ClassroomIO Development'
+```
+
+After the watchers are ready, verify the complete stack:
+
+```powershell
+pnpm dev:doctor
+```
+
+Use `pnpm infra:down` to stop the Docker development services after stopping the task.
+
+### Verified endpoints
+
+| Resource | Local | LAN | Public | Access |
+|----------|-------|-----|--------|--------|
+| Dashboard dev | `http://localhost:8000` | `http://192.168.1.234:8000` | `https://classroom-app.tedydev.io.vn` | Seeded account |
+| API | `http://localhost:8001` | `http://192.168.1.234:8001` | `https://classroom-api.tedydev.io.vn` | Public health root; protected routes require auth |
+| MinIO S3 API | `http://localhost:8004` | Loopback only | `https://classroom-assets.tedydev.io.vn` | S3 credentials or public object URL |
+| MinIO console | `http://localhost:8005` | Loopback only | Not exposed | Development MinIO account |
+| Mailpit SMTP | `localhost:8006` | Loopback only | Not exposed | No authentication |
+| Mailpit UI | `http://localhost:8007` | Loopback only | Not exposed | No authentication |
+
+Dashboard dev and API listen on all host interfaces for LAN testing. Postgres, Redis,
+MinIO, and Mailpit are intentionally bound to `127.0.0.1` by
+`docker-compose.dev.yaml`; access them remotely only through an explicitly configured
+proxy or tunnel.
+
+### Seeded tenant and sign-in accounts
+
+The default seed creates one tenant and two accounts. Both accounts use the development-only password **`123456`**.
+
+| Organization | Site name | Role | Email | Password |
+|--------------|-----------|------|-------|----------|
+| Udemy Test | `udemy-test` | Admin | `admin@test.com` | `123456` |
+| Udemy Test | `udemy-test` | Student | `student@test.com` | `123456` |
+
+Sign in at `http://localhost:8000/login` or
+`https://classroom-app.tedydev.io.vn/login`. Local development can select a tenant
+catalog with:
+
+| Organization | Local tenant URL |
+|--------------|------------------------|
+| Udemy Test | `http://localhost:8000/?org=udemy-test` |
+
+Use `pnpm --filter @cio/db seed -- --all --extended-demo` only when the optional Coursera and Skillshare multi-tenant fixtures are explicitly needed.
+
+Do not reuse these accounts or this password in staging or production.
+
+### Local infrastructure credentials
+
+These deterministic values belong only to `docker-compose.dev.yaml` and are safe
+only because the services bind to loopback.
+
+| Service | Connection | Development credentials |
+|---------|------------|-------------------------|
+| PostgreSQL | `postgresql://postgres:postgres@localhost:8002/classroomio` | User `postgres`, password `postgres`, database `classroomio` |
+| Redis | `redis://localhost:8003` | No password |
+| MinIO S3 | `http://localhost:8004` | Access key `classroomio`, secret key `classroomio-dev-only` |
+| MinIO console | `http://localhost:8005` | User `classroomio`, password `classroomio-dev-only` |
+| Mailpit SMTP | `localhost:8006` | No authentication |
+| Mailpit UI | `http://localhost:8007` | No authentication |
+
+The Docker full-stack production-style flow is different: `run-docker-full-stack.sh`
+generates or preserves strong values in the root `.env`. Never copy the development
+credentials above into a public deployment.
+
+### Environment files and secrets
+
+| File or location | Owner | Important settings |
+|------------------|-------|--------------------|
+| `.env.dev` | Host development infrastructure | Port overrides consumed by `docker-compose.dev.yaml` |
+| `apps/api/.env` | API | Database, Redis, auth, AI providers, object storage, public origins |
+| `apps/dashboard/.env` | Dashboard | Public/private API URLs, shared private server key, deployment mode |
+| `apps/jobs/.env` | Background workers | Database, Redis, AI providers, email, object storage |
+| `packages/db/.env` | Database scripts | `DATABASE_URL` used by setup, seed, migration, and rehearsal commands |
+| Root `.env` | Docker full stack | Container topology, production-style secrets, MinIO or R2 configuration |
+| User environment | Cloudflare administration | `CLOUDFLARE_API_TOKEN`; never place it in tracked files |
+| Cloudflare Worker secret store | Tenant router | `HLS_SIGNING_SECRET`; must match the API value |
+
+The current workstation intentionally uses:
+
+```bash
+PUBLIC_IS_SELFHOSTED=false
+PUBLIC_IS_SELF_OWNED=true
+PUBLIC_SERVER_URL=https://classroom-api.tedydev.io.vn
+DASHBOARD_ORIGIN=https://classroom-app.tedydev.io.vn
+```
+
+This combination keeps multi-tenant and custom-domain behavior enabled while all
+product entitlements remain owned locally. The following values are secrets and must
+only be read from their environment locations: `BETTER_AUTH_SECRET`,
+`PRIVATE_SERVER_KEY`, provider API keys, Cloudflare API/R2 keys, SMTP passwords, and
+`HLS_SIGNING_SECRET`. `PRIVATE_SERVER_KEY` must match between API and dashboard.
+
+### Cloudflare routing status
+
+| Hostname | Target | Verified status |
+|----------|--------|-----------------|
+| `classroom-app.tedydev.io.vn` | Dashboard Vite dev server on `localhost:8000` | Working |
+| `classroom-api.tedydev.io.vn` | API on `localhost:8001` | Working |
+| `classroom-assets.tedydev.io.vn` | MinIO on `localhost:8004` | Working |
+| `dashboard-origin.tedydev.io.vn` | Dashboard origin for tenant router | Working |
+| `api-origin.tedydev.io.vn` | API origin for tenant router | Working |
+| `classroom.tedydev.io.vn` | Tenant-router marketing/root route | Working |
+| `classroom-play.tedydev.io.vn` | Tenant-router course-app route | Working |
+| `classroom-embed.tedydev.io.vn` | Tenant-router embed route | Working |
+| `play.classroom.tedydev.io.vn` | Cloudflare for SaaS compatibility alias to `classroom-play.tedydev.io.vn` | Working |
+| `embed.classroom.tedydev.io.vn` | Cloudflare for SaaS compatibility alias to `classroom-embed.tedydev.io.vn` | Working |
+| `classroom-learn.tedydev.io.vn` | Tenant-router legacy redirect | Working |
+| `udemy-test.classroom.tedydev.io.vn` | Cloudflare for SaaS tenant hostname | Working |
+| `*.classroom.tedydev.io.vn` | Tenant-router tenant route | DNS and Worker route ready; each tenant still needs a SaaS custom-hostname certificate |
+
+Cloudflare Universal SSL on the Free plan covers `tedydev.io.vn` and
+`*.tedydev.io.vn`, but not the deeper `*.classroom.tedydev.io.vn` tenant names.
+Cloudflare for SaaS is enabled with `dashboard-origin.tedydev.io.vn` as the active
+fallback origin. The seeded tenant hostname and two deep compatibility aliases
+above have active hostname and SSL status. The tenant router permanently redirects the
+deep service aliases to the one-level canonical play and embed hosts while preserving
+the path and query string. For every new tenant hostname, create an exact proxied CNAME
+to the fallback origin and register that hostname in Cloudflare for SaaS; the wildcard
+DNS record and Worker route alone do not issue the required deep-subdomain certificate.
+The tunnel ingress configuration must preserve unrelated hostnames belonging to other
+projects.
+
+### Git topology
+
+| Remote | URL | Policy |
+|--------|-----|--------|
+| `origin` | `https://github.com/Tedydev-web/classroomio.git` | Fetch and push this fork |
+| `upstream` | `https://github.com/classroomio/classroomio.git` | Fetch only; push is disabled |
+
+The working integration branch is `main`. Follow [`docs/git-workflow.md`](docs/git-workflow.md)
+for feature branches and [`docs/upstream-sync.md`](docs/upstream-sync.md) before importing
+upstream changes.
+
+### Health checks
+
+```powershell
+docker compose --env-file .env.dev -f docker-compose.dev.yaml ps
+curl.exe -I http://localhost:8000/
+curl.exe http://localhost:8001/
+curl.exe -I https://classroom-app.tedydev.io.vn/
+curl.exe https://classroom-api.tedydev.io.vn/
+Get-Service Cloudflared
+Get-ScheduledTask -TaskName 'ClassroomIO Development' | Select-Object TaskName, State
+```
+
+Expected: dashboard responses are `200`, API roots return JSON, all four Docker
+services are healthy, `Cloudflared` is `Running`, and the development task is
+`Running`. Run `pnpm dev:doctor` for the complete local check.
+
 ---
 
 ## 1. Prerequisites
@@ -38,18 +221,19 @@ into both files.
 
 **`apps/api/.env`**
 ```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/classroomio"
-REDIS_URL="redis://localhost:6379"
-PUBLIC_SERVER_URL="http://localhost:3002"
-TRUSTED_ORIGINS="http://localhost:5173"        # the dashboard dev origin
+PORT=8001
+DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"
+REDIS_URL="redis://localhost:8003"
+PUBLIC_SERVER_URL="http://localhost:8001"
+TRUSTED_ORIGINS="http://localhost:8000"        # the dashboard dev origin
 BETTER_AUTH_SECRET="<generate-with-openssl-rand-hex-32>"
 PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # generate once; use the SAME value in the dashboard
 ```
 
 **`apps/dashboard/.env`**
 ```bash
-PUBLIC_SERVER_URL="http://localhost:3002"
-PRIVATE_SERVER_URL="http://localhost:3002"      # used by the SSR auth proxy — required for login
+PUBLIC_SERVER_URL="http://localhost:8001"
+PRIVATE_SERVER_URL="http://localhost:8001"      # used by the SSR auth proxy — required for login
 PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must match the API (paste the value generated above)
 PUBLIC_IS_SELFHOSTED=false
 PUBLIC_IS_SELF_OWNED=true
@@ -57,7 +241,7 @@ PUBLIC_IS_SELF_OWNED=true
 
 `PUBLIC_IS_SELFHOSTED=false` keeps multi-tenant organizations and custom-domain routing available. `PUBLIC_IS_SELF_OWNED=true` enables all local product entitlements and disables upstream billing and product telemetry. Use `PUBLIC_IS_SELFHOSTED=true` only for a single-organization deployment.
 
-**`apps/jobs/.env`** — only if you'll run the background workers (`pnpm api:dev` starts
+**`apps/jobs/.env`** — only if you'll run the background workers (`pnpm dev:core` starts
 them). Simplest: copy the API env, which already has `REDIS_URL` + `DATABASE_URL`.
 ```bash
 cp apps/api/.env apps/jobs/.env
@@ -72,16 +256,19 @@ cp apps/api/.env apps/jobs/.env
 
 ### Step 3 — Start infrastructure (Postgres + Redis)
 ```bash
-docker compose -f docker-compose.yaml up -d postgres redis
+pnpm setup:env -- --apply-local-defaults
+pnpm infra:up
 ```
-(Optional — object storage for uploads:
-`docker compose -f docker-compose.yaml --profile minio up -d minio minio-init`.)
+This starts Postgres, Redis, MinIO, and Mailpit using the canonical development ports.
 
 ### Step 4 — Set up + seed the database
 ```bash
-cp packages/db/.env.example packages/db/.env     # contains DATABASE_URL for the db scripts
 pnpm --filter @cio/db db:setup:seed              # creates schema + demo data
 ```
+
+`db:setup` includes the assessment index/backfill finalizer. After a manual `db:migrate`, run
+`pnpm --filter @cio/db db:finalize-assessment-schema`. Use
+`pnpm --filter @cio/db db:rehearse-assessment-migration` to verify the complete chain against a disposable database.
 
 ### Step 5 — Build the shared packages once
 ```bash
@@ -92,17 +279,16 @@ their `dist/`, which only exists after a build. (If `@cio/jobs-worker` fails her
 `ffmpegProbeLuma`, that's a known branch bug — see Known issues; it doesn't block
 dashboard/api.)
 
-### Step 6 — Run the app (two terminals)
+### Step 6 — Run the core development stack
 ```bash
-pnpm api:dev          # API (port 3002) + background workers
-pnpm dashboard:dev    # dashboard UI (port 5173)
+pnpm dev:core
 ```
 > Don't use `pnpm dev` — it tries to start the whole monorepo (~20 services) and
-> currently trips a turbo concurrency limit. The two scoped commands above are the
-> day-to-day workflow.
+> includes optional apps that are unnecessary for day-to-day development. `dev:core`
+> scopes Turbo to the dashboard, API, workers, and their source-watching dependencies.
 
 ### Step 7 — Log in
-Open http://localhost:5173/login → `admin@test.com` / `123456`.
+Open http://localhost:8000/login → `admin@test.com` / `123456`.
 
 ### Email (optional)
 Email is **off by default** and the app runs fine without it. You only need it to
@@ -127,22 +313,51 @@ enough — developing costs nothing.
 
 | Service     | URL / Port            | Notes                            |
 |-------------|-----------------------|----------------------------------|
-| API         | http://localhost:3002 | backend (`API_PORT` default)     |
-| Dashboard   | http://localhost:5173 | Vite dev server                  |
-| Postgres    | localhost:5432        | Docker container `cio-postgres`  |
-| Redis       | localhost:6379        | Docker container `cio-redis`     |
-| MinIO       | 9000 / console 9001   | only if started (optional)       |
-| jobs-worker | (none)                | background worker, no HTTP port  |
+| Dashboard   | http://localhost:8000 | Vite dev server                   |
+| API         | http://localhost:8001 | backend                           |
+| Postgres    | localhost:8002        | Docker development service        |
+| Redis       | localhost:8003        | Docker development service        |
+| MinIO S3    | http://localhost:8004 | local object storage              |
+| MinIO UI    | http://localhost:8005 | object storage console            |
+| Mailpit SMTP| localhost:8006        | local outbound email sink         |
+| Mailpit UI  | http://localhost:8007 | local email viewer                |
+| Website     | http://localhost:8008 | optional                          |
+| Docs        | http://localhost:8009 | optional                          |
+| Storybook   | http://localhost:8010 | optional                          |
+| Embeds      | http://localhost:8011 | optional                          |
+| Preview/start helpers | localhost:8012–8016 | website, docs, and embeds |
+| Generated course app | localhost:8017–8018 | dev and preview template    |
+| Course app  | localhost:8019–8020 | dev and preview                   |
+| Tenant router | localhost:8021 | local Wrangler worker                  |
+| Storybook preview | localhost:8022 | static preview                     |
+| Dashboard preview | localhost:8023 | optional production preview; not tunneled |
+| jobs-worker | (none)                | background worker, no HTTP port   |
+
+### Cloudflare Tunnel ingress
+
+The remotely managed tunnel keeps the public hostnames stable while forwarding to the local development services:
+
+| Hostname | Local service |
+|----------|---------------|
+| `classroom-app.tedydev.io.vn` | `http://localhost:8000` |
+| `dashboard-origin.tedydev.io.vn` | `http://localhost:8000` |
+| `classroom-api.tedydev.io.vn` | `http://localhost:8001` |
+| `api-origin.tedydev.io.vn` | `http://localhost:8001` |
+| `classroom-assets.tedydev.io.vn` | `http://localhost:8004` |
+
+The `*-origin` hostnames are upstreams for the tenant-router Worker. Other tunnel ingress rules belong to other projects and must remain unchanged.
+The one-level product hostnames, both `*-origin` records, and the seeded SaaS tenant
+hostname resolve and are verified. New nested tenant hostnames require the
+per-hostname Cloudflare for SaaS registration documented in the status table above.
 
 ## 4. Demo accounts
 
 Seeded accounts use password **`123456`** (verified against the seed's bcrypt hashes):
 
 - `admin@test.com` / `123456`  (admin — "Elon Gates")
-- `enterprise@test.com`, `early-adopter@test.com`, and the `*-student@test.com`
-  accounts — also `123456`
+- `student@test.com` / `123456` (student — "John Doe")
 
-> `test@test.com`'s seed hash doesn't match common passwords — use `admin@test.com`.
+The optional accounts in `users.json` are inserted only with `--extended-demo`.
 
 ---
 
@@ -152,14 +367,14 @@ Seeded accounts use password **`123456`** (verified against the seed's bcrypt ha
 |---------|-------|-----|
 | `no such service: db-init` | `db-init` was removed; the `api` container now runs DB setup | Don't reference `db-init`. For host dev use `db:setup:seed` (Step 4). |
 | `DATABASE_URL or PRIVATE_DATABASE_URL ... required` | `packages/db/.env` missing (db scripts read their own dir) | `cp packages/db/.env.example packages/db/.env` |
-| `password authentication failed for user "postgres"` | `localhost:5432` is another project's Postgres, not classroomio's | Stop the other container / free port 5432, then recreate: `docker compose -f docker-compose.yaml up -d postgres` |
+| `password authentication failed for user "postgres"` | `localhost:8002` is not the ClassroomIO development Postgres or the local env is stale | Run `pnpm setup:env -- --apply-local-defaults`, then `pnpm infra:up` |
 | `Failed to resolve entry for package "@cio/*"` | shared packages not built (`dist/` missing) | `pnpm build`, then re-run the dev commands |
 | `'rm'/'cp' is not recognized` or `spawn EINVAL` (Windows) | Unix command / `.cmd` spawn in a script | Already fixed in-repo (rimraf, Node copy, `shell:true`). Run `pnpm i` to get latest. |
-| `invalid task configuration … N persistent tasks … concurrency` | `pnpm dev` starts the whole monorepo past turbo's cap | Use scoped `pnpm api:dev` + `pnpm dashboard:dev` instead |
-| `ZodError … REDIS_URL ... expected string, received undefined` | `apps/jobs/.env` missing `REDIS_URL` | `cp apps/api/.env apps/jobs/.env` and set `REDIS_URL=redis://localhost:6379` |
-| `API target not configured` (502) on login | dashboard SSR proxy has no API target | Set `PRIVATE_SERVER_URL=http://localhost:3002` in `apps/dashboard/.env`, restart dashboard |
+| `invalid task configuration … N persistent tasks … concurrency` | `pnpm dev` starts the whole monorepo past Turbo's default concurrency | Use `pnpm dev:core` instead |
+| `ZodError … REDIS_URL ... expected string, received undefined` | `apps/jobs/.env` missing `REDIS_URL` | Run `pnpm setup:env -- --apply-local-defaults`; it sets `REDIS_URL=redis://localhost:8003` |
+| `API target not configured` (502) on login | dashboard SSR proxy has no API target | Set `PRIVATE_SERVER_URL=http://localhost:8001` in `apps/dashboard/.env`, restart dashboard |
 | Login `Invalid email or password` | wrong demo password | Use `admin@test.com` / **`123456`** |
-| Login still fails after proxy target fix | API auth env empty | Fill `BETTER_AUTH_SECRET`, `TRUSTED_ORIGINS=http://localhost:5173`, `PUBLIC_SERVER_URL` in `apps/api/.env`, restart API |
+| Login still fails after proxy target fix | API auth env empty | Fill `BETTER_AUTH_SECRET`, `TRUSTED_ORIGINS=http://localhost:8000`, `PUBLIC_SERVER_URL` in `apps/api/.env`, restart API |
 | Changed a `.env` but nothing changed | env is read at process start | Restart the affected `*:dev` server |
 
 > After editing any `.env`, **restart** the relevant dev server.

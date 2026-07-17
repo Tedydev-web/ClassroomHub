@@ -175,8 +175,8 @@ async function checkPorts(diagnostics) {
   const devEnvPath = (await pathExists(path.resolve('.env.dev'))) ? '.env.dev' : '.env.dev.example';
   const devEnvironment = parseEnvValues(await readFile(path.resolve(devEnvPath), 'utf8'));
   const requiredPorts = [
-    { port: 3002, service: 'api' },
-    { port: 5173, service: 'dashboard' },
+    { port: Number(devEnvironment.get('DEV_API_LOCAL_PORT') ?? 8001), service: 'api' },
+    { port: Number(devEnvironment.get('DEV_DASHBOARD_LOCAL_PORT') ?? 8000), service: 'dashboard' },
     { port: Number(devEnvironment.get('POSTGRES_PORT')), service: 'postgres' },
     { port: Number(devEnvironment.get('REDIS_PORT')), service: 'redis' },
     { port: Number(devEnvironment.get('MINIO_API_PORT')), service: 'minio (s3 api)' },
@@ -264,16 +264,20 @@ async function checkWorkspaceDependencies(diagnostics) {
 }
 
 async function checkLocalApplications(diagnostics) {
+  const devEnvPath = (await pathExists(path.resolve('.env.dev'))) ? '.env.dev' : '.env.dev.example';
+  const devEnvironment = parseEnvValues(await readFile(path.resolve(devEnvPath), 'utf8'));
   const dashboardEnvPath = path.resolve('apps/dashboard/.env');
   if (!(await pathExists(dashboardEnvPath))) {
     return;
   }
 
   const dashboardEnvironment = parseEnvValues(await readFile(dashboardEnvPath, 'utf8'));
-  const apiUrl = dashboardEnvironment.get('PRIVATE_SERVER_URL') ?? 'http://127.0.0.1:3002';
+  const apiLocalPort = devEnvironment.get('DEV_API_LOCAL_PORT') ?? '8001';
+  const dashboardLocalPort = devEnvironment.get('DEV_DASHBOARD_LOCAL_PORT') ?? '8000';
+  const apiUrl = dashboardEnvironment.get('PRIVATE_SERVER_URL') ?? `http://127.0.0.1:${apiLocalPort}`;
   const applications = [
     { name: 'API', url: apiUrl },
-    { name: 'Dashboard', url: 'http://127.0.0.1:5173' }
+    { name: 'Dashboard', url: `http://127.0.0.1:${dashboardLocalPort}` }
   ];
 
   for (const application of applications) {

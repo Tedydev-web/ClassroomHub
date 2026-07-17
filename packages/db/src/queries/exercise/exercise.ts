@@ -10,7 +10,7 @@ import type {
 } from '@db/types';
 import { and, asc, db, eq, inArray, isNull, or, sql } from '@db/drizzle';
 
-import type { DbOrTxClient } from '@db/drizzle';
+import type { DbOrTxClient, SQL } from '@db/drizzle';
 import { getExerciseVisibilityCondition } from './assignment';
 
 export async function createExercises(values: TNewExercise[], dbClient: DbOrTxClient = db) {
@@ -30,6 +30,23 @@ export async function getExerciseById(exerciseId: string, dbClient: DbOrTxClient
     console.error('getExerciseById error:', error);
     throw new Error(
       `Failed to get exercise by ID "${exerciseId}": ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+export async function hasExerciseSubmissions(exerciseId: string, dbClient: DbOrTxClient = db): Promise<boolean> {
+  try {
+    const [submission] = await dbClient
+      .select({ id: schema.submission.id })
+      .from(schema.submission)
+      .where(eq(schema.submission.exerciseId, exerciseId))
+      .limit(1);
+
+    return !!submission;
+  } catch (error) {
+    console.error('hasExerciseSubmissions error:', error);
+    throw new Error(
+      `Failed to check exercise submissions: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -243,13 +260,29 @@ export async function createQuestions(values: TNewQuestion[], dbClient: DbOrTxCl
   }
 }
 
+/**
+ * Question read scope. 'all' (default) keeps historical/archived questions so grading and
+ * review of past attempts never silently lose rows; 'active' excludes archived questions
+ * and is intended for active delivery reads only.
+ */
+export type QuestionReadScope = 'active' | 'all';
+
 export async function getQuestionsByExerciseIds(
   exerciseIds: string[],
-  dbClient: DbOrTxClient = db
+  dbClient: DbOrTxClient = db,
+  options: { questionScope?: QuestionReadScope } = {}
 ): Promise<TNewQuestion[]> {
   if (exerciseIds.length === 0) return [];
   try {
-    return dbClient.select().from(schema.question).where(inArray(schema.question.exerciseId, exerciseIds));
+    const conditions = [inArray(schema.question.exerciseId, exerciseIds)];
+    if (options.questionScope === 'active') {
+      conditions.push(isNull(schema.question.archivedAt));
+    }
+
+    return dbClient
+      .select()
+      .from(schema.question)
+      .where(and(...conditions));
   } catch (error) {
     console.error('getQuestionsByExerciseIds error:', error);
     throw new Error(
@@ -459,21 +492,35 @@ export async function getQuestionTypesByIds(ids: number[], dbClient: DbOrTxClien
  */
 export async function getExerciseWithRelationsOptimized(
   exerciseId: string,
-  dbClient: DbOrTxClient = db
+  dbClient: DbOrTxClient = db,
+  options: { questionScope?: QuestionReadScope } = {}
 ): Promise<{
   exercise: TExercise;
   questions: (TNewQuestion & { questionType: TQuestionType; options: TNewOption[] })[];
 }> {
   try {
+    // The archived filter lives in the JOIN condition (not WHERE) so an exercise whose
+    // questions are all archived still resolves instead of raising "Exercise not found".
+    const activeQuestionJoin = and(
+      eq(schema.question.exerciseId, schema.exercise.id),
+      isNull(schema.question.archivedAt)
+    );
+    const questionJoinCondition: SQL<unknown> =
+      options.questionScope === 'active' && activeQuestionJoin
+        ? activeQuestionJoin
+        : eq(schema.question.exerciseId, schema.exercise.id);
+
     const result = await dbClient
       .select({
         exercise: schema.exercise,
+        lessonCourseId: schema.lesson.courseId,
         question: schema.question,
         questionType: schema.questionType,
         option: schema.option
       })
       .from(schema.exercise)
-      .leftJoin(schema.question, eq(schema.question.exerciseId, schema.exercise.id))
+      .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
+      .leftJoin(schema.question, questionJoinCondition)
       .leftJoin(schema.questionType, eq(schema.question.questionTypeId, schema.questionType.id))
       .leftJoin(schema.option, eq(schema.option.questionId, schema.question.id))
       .where(eq(schema.exercise.id, exerciseId));
@@ -482,7 +529,10 @@ export async function getExerciseWithRelationsOptimized(
       throw new Error(`Exercise not found: ${exerciseId}`);
     }
 
-    const exercise = result[0].exercise;
+    const exercise = {
+      ...result[0].exercise,
+      courseId: result[0].exercise.courseId ?? result[0].lessonCourseId
+    };
 
     // Group questions with their question types and options (deduplicate by question ID, collect options)
     const questionsMap = new Map<number, TNewQuestion & { questionType: TQuestionType; options: TNewOption[] }>();

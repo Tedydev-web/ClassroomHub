@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  check,
   date,
   doublePrecision,
   foreignKey,
@@ -8,6 +9,7 @@ import {
   integer,
   json,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   pgView,
@@ -617,11 +619,13 @@ export const submission = pgTable(
     overallStatus: varchar('overall_status').default('manual_required').notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     total: bigint({ mode: 'number' }).default(sql`'0'`),
+    score: numeric({ precision: 12, scale: 2, mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     exerciseId: uuid('exercise_id').notNull(),
     submittedBy: uuid('submitted_by'),
     courseId: uuid('course_id'),
+    idempotencyKey: uuid('idempotency_key'),
     feedback: text()
   },
   (table) => [
@@ -644,7 +648,10 @@ export const submission = pgTable(
       columns: [table.submittedBy],
       foreignColumns: [groupmember.id],
       name: 'submission_submitted_by_fkey'
-    })
+    }),
+    uniqueIndex('submission_attempt_idempotency_unique')
+      .on(table.exerciseId, table.submittedBy, table.idempotencyKey)
+      .where(sql`${table.idempotencyKey} IS NOT NULL`)
   ]
 );
 
@@ -2211,7 +2218,11 @@ export const question = pgTable(
     points: doublePrecision(),
     settings: jsonb().default({}),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    order: bigint({ mode: 'number' })
+    order: bigint({ mode: 'number' }),
+    /** Pointer to the single current canonical revision. NULL means the question resolves through the legacy path. */
+    currentRevisionId: uuid('current_revision_id'),
+    /** Attempted questions are archived (hidden from active delivery) instead of deleted, so history stays reviewable. */
+    archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'string' })
   },
   (table) => [
     foreignKey({
@@ -2229,6 +2240,10 @@ export const question = pgTable(
       foreignColumns: [questionType.id],
       name: 'question_question_type_id_fkey'
     })
+    // question_current_revision_fkey — composite FK (current_revision_id, id) ->
+    // question_revision (id, question_id) so the pointer can only reference a revision of this
+    // same question. Declared in migration 0011 SQL instead of here: a drizzle-level declaration
+    // creates a question <-> question_revision type-inference cycle (TS7022).
   ]
 );
 
@@ -2253,7 +2268,10 @@ export const questionAnswer = pgTable(
     groupMemberId: uuid('group_member_id').notNull(),
     submissionId: uuid('submission_id'),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    point: bigint({ mode: 'number' }).default(sql`'0'`)
+    point: bigint({ mode: 'number' }).default(sql`'0'`),
+    score: numeric({ precision: 12, scale: 2, mode: 'number' }),
+    /** Immutable revision that was attempted. NULL only for historical answers created before revision persistence. */
+    questionRevisionId: uuid('question_revision_id')
   },
   (table) => [
     foreignKey({
@@ -2261,24 +2279,42 @@ export const questionAnswer = pgTable(
       foreignColumns: [groupmember.id],
       name: 'question_answer_group_member_id_fkey'
     }),
+    // NO ACTION (default) so a direct question deletion cannot cascade-erase attempted history;
+    // attempted questions must be archived, only unattempted drafts may be hard-deleted.
     foreignKey({
       columns: [table.questionId],
       foreignColumns: [question.id],
       name: 'question_answer_question_id_fkey'
-    }).onDelete('cascade'),
+    }),
     foreignKey({
       columns: [table.submissionId],
       foreignColumns: [submission.id],
       name: 'question_answer_submission_id_fkey'
-    }).onDelete('cascade')
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.questionRevisionId],
+      foreignColumns: [questionRevision.id],
+      name: 'question_answer_question_revision_id_fkey'
+    }),
+    // question_answer_revision_same_question_fkey — composite FK (question_revision_id, question_id)
+    // -> question_revision (id, question_id) so a non-null revision link can only reference a
+    // revision of the same question (MATCH SIMPLE exempts legacy NULL links). Declared in
+    // migration 0012 SQL, additive next to the single-column FK above (same visibility class as
+    // question_current_revision_fkey in 0011).
+    uniqueIndex('question_answer_submission_question_unique')
+      .on(table.submissionId, table.questionId)
+      .where(sql`${table.submissionId} IS NOT NULL`),
+    index('question_answer_question_revision_idx')
+      .on(table.questionRevisionId)
+      .where(sql`${table.questionRevisionId} IS NOT NULL`)
   ]
 );
 
 /**
  * Exercise question kinds (`typename` matches `@cio/question-types` keys). Expected ids:
  * 1 RADIO, 2 CHECKBOX, 3 TEXTAREA, 4 TRUE_FALSE, 5 SHORT_ANSWER, 6 NUMERIC, 7 FILL_BLANK,
- * 8 FILE_UPLOAD, 9 MATCHING, 10 ORDERING, 11 HOTSPOT, 12 LINK, 13 WORD_BANK, 14 STAR,
- * 15 VIDEO_RECORDING.
+ * 8 FILE_UPLOAD, 9 ORDERING, 10 LINK, 11 WORD_BANK, 12 STAR, 13 VIDEO_RECORDING.
+ * MATCHING and HOTSPOT are disabled registry entries without database rows.
  */
 export const questionType = pgTable(
   'question_type',
@@ -2297,6 +2333,45 @@ export const questionType = pgTable(
     typename: varchar()
   },
   () => []
+);
+
+/**
+ * Immutable, append-only canonical question revisions. Rows are never updated (enforced by a
+ * database trigger added in migration 0011) and never directly deleted (BEFORE DELETE trigger
+ * added in migration 0012 rejects top-level deletes via pg_trigger_depth() = 0, while FK
+ * cascades from draft-question hard-deletes still pass); publishing new content inserts the next
+ * monotonic revision and promotes `question.current_revision_id`. `definition` holds the validated
+ * schema-version-1 assessment definition from `@cio/question-types/assessment`; `content_hash`
+ * is the server-side SHA-256 of its canonical JSON serialization, used for no-op publish detection.
+ */
+export const questionRevision = pgTable(
+  'question_revision',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    questionId: bigint('question_id', { mode: 'number' }).notNull(),
+    revision: integer().notNull(),
+    definition: jsonb().notNull(),
+    contentHash: text('content_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    // Cascade is safe: attempted questions are archived (never deleted), so cascade only ever
+    // removes draft revisions that no answer references.
+    foreignKey({
+      columns: [table.questionId],
+      foreignColumns: [question.id],
+      name: 'question_revision_question_id_fkey'
+    }).onDelete('cascade'),
+    // Monotonic revision identity per question; also the race backstop for concurrent publishers.
+    unique('question_revision_question_id_revision_unique').on(table.questionId, table.revision),
+    // Composite target for question_current_revision_fkey (same-question pointer guarantee).
+    unique('question_revision_id_question_id_unique').on(table.id, table.questionId),
+    check('question_revision_revision_min_check', sql`${table.revision} >= 1`)
+  ]
 );
 
 export const role = pgTable(

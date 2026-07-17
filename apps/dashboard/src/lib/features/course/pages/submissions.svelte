@@ -36,7 +36,7 @@
 
   const ALLOWED_BOARD_TRANSITIONS: Record<number, number[]> = {
     1: [2],
-    2: [1, 3],
+    2: [],
     3: []
   };
 
@@ -45,9 +45,11 @@
     return !!submissionId && !!submissionIdData[submissionId];
   });
 
-  function canTransitionBoardStatus(previousStatusId: number, nextStatusId: number): boolean {
-    if (previousStatusId === nextStatusId) return true;
-    return ALLOWED_BOARD_TRANSITIONS[previousStatusId]?.includes(nextStatusId) ?? false;
+  function canTransitionBoardStatus(item: SubmissionItem, nextStatusId: number): boolean {
+    if (item.statusId === nextStatusId) return true;
+    if (item.gradingState === 'failed' && nextStatusId === STATUS.SUBMITTED) return true;
+
+    return ALLOWED_BOARD_TRANSITIONS[item.statusId]?.includes(nextStatusId) ?? false;
   }
 
   function getWorkflowHintKey(item: SubmissionItem): string {
@@ -68,7 +70,7 @@
     // Set column in the UI (immutable update for reactivity)
     const mappedItems = newItems.map((item) => {
       if (item.statusId !== id) {
-        if (!canTransitionBoardStatus(item.statusId, id)) {
+        if (!canTransitionBoardStatus(item, id)) {
           snackbar.error('course.navItem.submissions.workflow.invalid_transition');
           return item;
         }
@@ -148,7 +150,8 @@
       questionId: Number(questionId),
       points: Number(point)
     }));
-    const total = answers.reduce((sum, { points }) => sum + points, 0);
+    const unroundedTotal = answers.reduce((sum, { points }) => sum + points, 0);
+    const total = Math.round((unroundedTotal + Number.EPSILON) * 100) / 100;
 
     await submissionApi.updateGrades(courseId, subId, {
       answers,

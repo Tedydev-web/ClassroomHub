@@ -556,8 +556,8 @@ The per-app `.env` files (`apps/api/.env`, `apps/dashboard/.env`, `apps/jobs/.en
 The Postgres docker volume persists in the snapshot already seeded with demo data (login `admin@test.com` / `123456`). Re-seed only if needed: `pnpm --filter @cio/db db:setup:seed`.
 
 Run the app (two long-lived processes; use tmux):
-- `pnpm api:dev` → API on `http://localhost:3002` + 5 BullMQ workers.
-- `pnpm dashboard:dev` → dashboard on `http://localhost:5173` + the `@cio/ui` Tailwind CSS watcher.
+- `pnpm api:dev` → API on `http://localhost:8001` + BullMQ workers.
+- `pnpm dashboard:dev` → dashboard on `http://localhost:8000` + the `@cio/ui` Tailwind CSS watcher.
 
 Do not use `pnpm dev` (it trips turbo's concurrency cap). Build shared package `dist/` once with `pnpm build` if you see `Failed to resolve entry for package "@cio/*"`.
 
@@ -583,13 +583,11 @@ A single flag, `PUBLIC_IS_SELFHOSTED`, switches the whole product between **self
 
 Non-obvious gotcha: the README local-dev setup only sets `PUBLIC_IS_SELFHOSTED=true` in `apps/dashboard/.env`; `apps/api/.env` leaves it unset, so the **API behaves as cloud** (license no-op, 2nd org allowed) while the **dashboard UI is self-hosted**. To exercise a coherent mode, set the flag the same way in both files. The flag is read at process start, so restart the dev servers after editing it.
 
-### Seeded tenants (good for multi-tenant testing)
-The seed (`packages/db/src/utils/seed/organizationmember.ts`) creates **three independent organizations**, each with its own admin + student. All accounts use password `123456`:
+### Seeded tenant
+The default seed (`packages/db/src/scripts/seed.ts`) creates one organization with an admin and student. Both accounts use password `123456`:
 
 | Org (siteName) | Admin | Student | Example courses |
 |---|---|---|---|
 | Udemy Test (`udemy-test`) | `admin@test.com` | `student@test.com` | Modern Web Development with React; Getting started with MVC; Data Science with Python and Pandas |
-| Coursera Test (`coursera-test`) | `enterprise@test.com` | `enterprise-student@test.com` | SOC 2 Security Basics; HIPAA Awareness 2026 |
-| Skillshare Test (`skillshare-test`) | `early-adopter@test.com` | `early-adopter-student@test.com` | Product Management Fundamentals |
 
-In cloud mode you can demonstrate tenant isolation on the single local instance by visiting each org's public catalog via the `?org=<siteName>` param, e.g. `http://localhost:5173/?org=coursera-test` vs `?org=udemy-test` vs `?org=skillshare-test` — each renders its own branded catalog and courses. (Note: a user enrolled in courses across orgs becomes a member of multiple tenants, so after login the dashboard may open whichever org that user most recently used.)
+Use `pnpm --filter @cio/db seed -- --all --extended-demo` only when multi-tenant isolation fixtures are explicitly needed. The default public catalog is `http://localhost:8000/?org=udemy-test`.

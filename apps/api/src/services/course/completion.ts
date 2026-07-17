@@ -7,6 +7,7 @@ import {
 import {
   exerciseBelongsToCourse,
   getExerciseTitleAndMaxPoints,
+  getHistoricalMaxPointsBySubmissionIds,
   getStudentSubmissionsForExercise
 } from '@cio/db/queries/course/certification-exercise';
 import {
@@ -17,7 +18,6 @@ import {
 } from '@cio/db/queries/course/course';
 import { claimMemberCertificateEarned } from '@cio/db/queries/course/people';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
-import { ROLE } from '@cio/utils/constants';
 import { PLAN } from '@cio/utils/plans';
 import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
@@ -46,7 +46,12 @@ export type CourseCompletionEvaluation = {
 
 function percentFromTotal(total: number, maxPoints: number): number {
   if (maxPoints <= 0) return 0;
-  return Math.round((total / maxPoints) * 100);
+
+  return (total / maxPoints) * 100;
+}
+
+function roundScorePercent(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 async function evaluateFinalExerciseRule(params: {
@@ -78,36 +83,37 @@ async function evaluateFinalExerciseRule(params: {
     };
   }
 
-  const { title: exerciseTitle, maxPoints } = await getExerciseTitleAndMaxPoints(requiredExerciseId);
-
-  if (maxPoints <= 0) {
-    return {
-      meetsFinalExerciseRule: false,
-      blockers: [
-        {
-          code: 'CERT_FINAL_EXERCISE_MISCONFIGURED',
-          params: { exerciseTitle }
-        }
-      ]
-    };
-  }
-
+  const { title: exerciseTitle, maxPoints: activeMaxPoints } = await getExerciseTitleAndMaxPoints(requiredExerciseId);
   const submissions = await getStudentSubmissionsForExercise(groupMemberId, requiredExerciseId);
-
-  if (submissions.length === 0) {
-    return {
-      meetsFinalExerciseRule: false,
-      blockers: [
-        {
-          code: 'CERT_FINAL_EXERCISE_NOT_SUBMITTED',
-          params: { exerciseTitle }
-        }
-      ]
-    };
-  }
-
   const completed = submissions.filter((s) => s.gradingState === 'completed');
+
   if (completed.length === 0) {
+    // No completed attempt to pin a denominator to, so the live active question
+    // set is the only meaningful misconfiguration signal for this learner.
+    if (activeMaxPoints <= 0) {
+      return {
+        meetsFinalExerciseRule: false,
+        blockers: [
+          {
+            code: 'CERT_FINAL_EXERCISE_MISCONFIGURED',
+            params: { exerciseTitle }
+          }
+        ]
+      };
+    }
+
+    if (submissions.length === 0) {
+      return {
+        meetsFinalExerciseRule: false,
+        blockers: [
+          {
+            code: 'CERT_FINAL_EXERCISE_NOT_SUBMITTED',
+            params: { exerciseTitle }
+          }
+        ]
+      };
+    }
+
     return {
       meetsFinalExerciseRule: false,
       blockers: [
@@ -119,10 +125,21 @@ async function evaluateFinalExerciseRule(params: {
     };
   }
 
+  // Each completed submission keeps the denominator it was attempted against
+  // (answer-linked revision maxima, legacy question points fallback) — never the
+  // live active exercise total, so archiving questions or editing points cannot
+  // retroactively grant or revoke certification.
+  const maxPointsBySubmission = await getHistoricalMaxPointsBySubmissionIds(
+    completed.map((submission) => submission.id)
+  );
+
   let bestPercent = 0;
   for (const s of completed) {
-    const total = Number(s.total ?? 0);
-    const p = percentFromTotal(total, maxPoints);
+    const total = Number(s.score ?? 0);
+    const attemptedMaxPoints = maxPointsBySubmission.get(s.id) ?? 0;
+    // percentFromTotal maps an attempted max <= 0 to 0% — a submission with no
+    // attempted points can never satisfy a score rule.
+    const p = percentFromTotal(total, attemptedMaxPoints);
     if (p > bestPercent) bestPercent = p;
   }
 
@@ -134,7 +151,7 @@ async function evaluateFinalExerciseRule(params: {
           code: 'CERT_FINAL_EXERCISE_SCORE',
           params: {
             exerciseTitle,
-            bestPercent,
+            bestPercent: roundScorePercent(bestPercent),
             requiredPercent
           }
         }
@@ -193,12 +210,7 @@ async function buildCertificationEvaluation(
   blockers.push(...finalEval.blockers);
 
   const eligibleForCertificate =
-    progress.roleId === ROLE.STUDENT &&
-    !!progress.groupMemberId &&
-    meetsThreshold &&
-    hasContent &&
-    withinDeadline &&
-    finalEval.meetsFinalExerciseRule;
+    !!progress.groupMemberId && meetsThreshold && hasContent && withinDeadline && finalEval.meetsFinalExerciseRule;
 
   return {
     progressPercent,

@@ -61,15 +61,19 @@
     answer = null;
   }
 
-  async function demoFileUpload(file: File) {
+  async function demoFileUpload(input: { file: File }) {
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 350);
     });
 
     return {
-      fileKey: `demo/${file.name}`,
-      fileName: file.name,
-      fileUrl: URL.createObjectURL(file)
+      type: 'FILE_UPLOAD' as const,
+      assetId: '00000000-0000-4000-8000-000000000002',
+      fileKey: `demo/${input.file.name}`,
+      fileName: input.file.name,
+      mimeType: input.file.type,
+      size: input.file.size,
+      fileUrl: URL.createObjectURL(input.file)
     };
   }
 

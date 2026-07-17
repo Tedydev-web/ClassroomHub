@@ -10,6 +10,7 @@ interface SeedOrganizationMember {
   earlyAdopterOrgId: string;
   earlyAdopterAdminUserId: string;
   earlyAdopterStudentUserId: string;
+  extendedDemo?: boolean;
 }
 
 export async function seedOrganizationMember({
@@ -21,12 +22,13 @@ export async function seedOrganizationMember({
   enterpriseStudentUserId,
   earlyAdopterOrgId,
   earlyAdopterAdminUserId,
-  earlyAdopterStudentUserId
+  earlyAdopterStudentUserId,
+  extendedDemo = false
 }: SeedOrganizationMember) {
   const existingOrgMembers = await db.select().from(organizationmember);
   const existingOrgMemberKeys = existingOrgMembers.map((om) => `${om.organizationId}-${om.profileId}`);
 
-  const orgMembersToInsert = [
+  const organizationMembers = [
     {
       organizationId: testOrgId,
       roleId: 1, // ADMIN
@@ -63,7 +65,13 @@ export async function seedOrganizationMember({
       profileId: earlyAdopterStudentUserId,
       verified: false
     }
-  ].filter((om) => !existingOrgMemberKeys.includes(`${om.organizationId}-${om.profileId}`));
+  ];
+  const orgMembersToInsert = organizationMembers
+    .filter((organizationMember) => extendedDemo || organizationMember.organizationId === testOrgId)
+    .filter(
+      (organizationMember) =>
+        !existingOrgMemberKeys.includes(`${organizationMember.organizationId}-${organizationMember.profileId}`)
+    );
 
   if (orgMembersToInsert.length > 0) {
     await db.insert(organizationmember).values(orgMembersToInsert);

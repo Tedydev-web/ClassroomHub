@@ -10,7 +10,13 @@ import {
   lockExerciseAssignmentState,
   resolveGroupMemberExerciseAccess
 } from '../src/queries/exercise/assignment';
-import { createSubmission } from '../src/queries/submission/submission';
+import { getExerciseWithRelationsOptimized } from '../src/queries/exercise/exercise';
+import {
+  createSubmission,
+  getSubmissionByIdempotencyKey,
+  insertQuestionAnswersBatch,
+  updateSubmissionGrades
+} from '../src/queries/submission/submission';
 import { getCourseContentItems } from '../src/queries/course/content';
 import { getCourseProgress, hasSelectivelyAssignedExercises } from '../src/queries/course/course';
 import { getProfileCourseProgress, getUserExercisesStats } from '../src/queries/analytics/analytics';
@@ -26,6 +32,18 @@ const ids = {
   selectedMember: randomUUID(),
   unassignedMember: randomUUID()
 };
+
+function isUniqueViolation(error: unknown): boolean {
+  let currentError: unknown = error;
+  for (let depth = 0; depth < 3; depth += 1) {
+    if (typeof currentError !== 'object' || currentError === null) return false;
+    if ('code' in currentError && currentError.code === '23505') return true;
+
+    currentError = 'cause' in currentError ? currentError.cause : undefined;
+  }
+
+  return false;
+}
 
 test('selective assignment recipients and submission locking are consistent', async (testContext) => {
   testContext.after(async () => {
@@ -100,6 +118,16 @@ test('selective assignment recipients and submission locking are consistent', as
     title: 'Exercise',
     assignmentMode: 'SELECTED_STUDENTS'
   });
+  const [question] = await db
+    .insert(schema.question)
+    .values({
+      exerciseId: ids.exercise,
+      title: 'Original question',
+      questionTypeId: 3,
+      points: 2.5
+    })
+    .returning();
+  assert.ok(question);
   await db.insert(schema.exerciseAssignment).values({
     exerciseId: ids.exercise,
     groupMemberId: ids.selectedMember,
@@ -218,6 +246,88 @@ test('selective assignment recipients and submission locking are consistent', as
   });
   assert.equal(submission.exerciseId, ids.exercise);
 
+  const [answer] = await insertQuestionAnswersBatch([
+    {
+      submissionId: submission.id,
+      questionId: question.id,
+      groupMemberId: ids.selectedMember,
+      answerData: { type: 'TEXTAREA', text: 'Answer' }
+    }
+  ]);
+  assert.ok(answer);
+  await assert.rejects(
+    insertQuestionAnswersBatch([
+      {
+        submissionId: submission.id,
+        questionId: question.id,
+        groupMemberId: ids.selectedMember,
+        answerData: { type: 'TEXTAREA', text: 'Duplicate' }
+      }
+    ]),
+    isUniqueViolation
+  );
+
+  const gradedSubmission = await updateSubmissionGrades(ids.course, submission.id, {
+    answers: [{ questionId: question.id, points: 1.25 }],
+    total: 1.25
+  });
+  assert.equal(gradedSubmission?.score, 1.25);
+  assert.equal(gradedSubmission?.total, 1);
+  const [gradedAnswer] = await db.select().from(schema.questionAnswer).where(eq(schema.questionAnswer.id, answer.id));
+  assert.equal(gradedAnswer?.score, 1.25);
+  assert.equal(gradedAnswer?.point, 1);
+
+  const idempotencyKey = randomUUID();
+  const keyedSubmission = await createSubmission({
+    courseId: ids.course,
+    exerciseId: ids.exercise,
+    submittedBy: ids.selectedMember,
+    idempotencyKey,
+    statusId: 1,
+    total: 0
+  });
+  assert.equal(
+    (await getSubmissionByIdempotencyKey(ids.exercise, ids.selectedMember, idempotencyKey))?.id,
+    keyedSubmission.id
+  );
+  await assert.rejects(
+    db.insert(schema.submission).values({
+      courseId: ids.course,
+      exerciseId: ids.exercise,
+      submittedBy: ids.selectedMember,
+      idempotencyKey,
+      statusId: 1,
+      total: 0
+    }),
+    isUniqueViolation
+  );
+
+  let releaseQuestionUpdate: (() => void) | undefined;
+  const questionUpdateCanCommit = new Promise<void>((resolve) => {
+    releaseQuestionUpdate = resolve;
+  });
+  let questionUpdateLocked: (() => void) | undefined;
+  const questionUpdateHasLock = new Promise<void>((resolve) => {
+    questionUpdateLocked = resolve;
+  });
+  const questionUpdate = db.transaction(async (tx) => {
+    await lockExerciseAssignmentState(ids.exercise, tx);
+    await tx.update(schema.question).set({ title: 'Updated question' }).where(eq(schema.question.id, question.id));
+    questionUpdateLocked?.();
+    await questionUpdateCanCommit;
+  });
+
+  await questionUpdateHasLock;
+  const submissionQuestionRead = db.transaction(async (tx) => {
+    await lockExerciseAssignmentState(ids.exercise, tx);
+    const exerciseWithRelations = await getExerciseWithRelationsOptimized(ids.exercise, tx);
+
+    return exerciseWithRelations.questions[0]?.title;
+  });
+  releaseQuestionUpdate?.();
+  await questionUpdate;
+  assert.equal(await submissionQuestionRead, 'Updated question');
+
   await db.transaction(async (tx) => {
     await lockExerciseAssignmentState(ids.exercise, tx);
     await tx.delete(schema.exerciseAssignment).where(eq(schema.exerciseAssignment.exerciseId, ids.exercise));
@@ -226,5 +336,5 @@ test('selective assignment recipients and submission locking are consistent', as
     .select()
     .from(schema.submission)
     .where(eq(schema.submission.exerciseId, ids.exercise));
-  assert.equal(storedSubmissions.length, 1);
+  assert.equal(storedSubmissions.length, 2);
 });

@@ -1,89 +1,47 @@
-import { db, questionType } from '@db/drizzle';
+import { DB_BACKED_QUESTION_TYPE_REGISTRY } from '@cio/question-types';
 
+import { db, questionType, sql } from '@db/drizzle';
+
+/**
+ * Seeds `question_type` rows with EXPLICIT registry ids. Seed insertion order is not an ID
+ * contract: migration 0011 reserves ASSESSMENT_ITEM at id 16 before any seed runs, so relying
+ * on identity order would shift fresh-install rows to ids 17+ and break the code registry.
+ * Existing rows are verified against the registry and any occupied identity fails loudly.
+ */
 export async function seedQuestionTypes() {
   const existingQuestionTypes = await db.select().from(questionType);
-  const questionTypeNames = existingQuestionTypes.map((q) => q.typename);
+  const existingIdByTypename = new Map(
+    existingQuestionTypes
+      .filter((row): row is typeof row & { typename: string } => typeof row.typename === 'string')
+      .map((row) => [row.typename, row.id])
+  );
 
-  const questionTypesToInsert = [
-    {
-      label: 'Single answer',
-      typename: 'RADIO',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:08.12069+00'
-    },
-    {
-      label: 'Multiple answers',
-      typename: 'CHECKBOX',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:27.935478+00'
-    },
-    {
-      label: 'Paragraph',
-      typename: 'TEXTAREA',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'True/False',
-      typename: 'TRUE_FALSE',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Short answer',
-      typename: 'SHORT_ANSWER',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Numeric answer',
-      typename: 'NUMERIC',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Fill in the blank',
-      typename: 'FILL_BLANK',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'File upload',
-      typename: 'FILE_UPLOAD',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Ordering',
-      typename: 'ORDERING',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Links',
-      typename: 'LINK',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Word bank',
-      typename: 'WORD_BANK',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Star rating',
-      typename: 'STAR',
-      createdAt: '2021-08-07 18:49:46.246529+00',
-      updatedAt: '2021-08-15 00:57:38.634665+00'
-    },
-    {
-      label: 'Video recording',
-      typename: 'VIDEO_RECORDING',
-      createdAt: '2026-04-30 00:00:00+00',
-      updatedAt: '2026-04-30 00:00:00+00'
+  const questionTypesToInsert: { id: number; label: string; typename: string }[] = [];
+  for (const registryEntry of DB_BACKED_QUESTION_TYPE_REGISTRY) {
+    const existingId = existingIdByTypename.get(registryEntry.typename);
+    if (existingId !== undefined) {
+      if (existingId !== registryEntry.id) {
+        throw new Error(
+          `question_type "${registryEntry.typename}" occupies id ${existingId} but the registry requires id ${registryEntry.id}`
+        );
+      }
+
+      continue;
     }
-  ].filter((q) => !questionTypeNames.includes(q.typename));
+
+    const occupyingRow = existingQuestionTypes.find((row) => row.id === registryEntry.id);
+    if (occupyingRow) {
+      throw new Error(
+        `question_type id ${registryEntry.id} is reserved for "${registryEntry.typename}" but is occupied by "${occupyingRow.typename ?? 'unknown'}"`
+      );
+    }
+
+    questionTypesToInsert.push({
+      id: registryEntry.id,
+      label: registryEntry.label,
+      typename: registryEntry.typename
+    });
+  }
 
   if (questionTypesToInsert.length > 0) {
     await db.insert(questionType).values(questionTypesToInsert);
@@ -91,4 +49,13 @@ export async function seedQuestionTypes() {
   } else {
     console.log('   ✓ Question types already exist, skipping');
   }
+
+  // Explicit-id inserts bypass the identity sequence; realign it so future
+  // BY DEFAULT inserts can never collide with reserved registry identities.
+  await db.execute(sql`
+    SELECT setval(
+      pg_get_serial_sequence('question_type', 'id'),
+      GREATEST((SELECT COALESCE(MAX(id), 1) FROM question_type), 16)
+    )
+  `);
 }

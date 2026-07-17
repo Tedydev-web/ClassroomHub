@@ -2,7 +2,11 @@ import { createHash } from 'node:crypto';
 
 import { tool } from 'ai';
 import { CoursePlanSchema, getCourseTemplate } from '@cio/ai-assistant';
-import { PREMIUM_QUESTION_TYPE_KEYS, QUESTION_TYPE_ID_TO_KEY, QUESTION_TYPE_REGISTRY } from '@cio/question-types';
+import {
+  ENABLED_QUESTION_TYPE_REGISTRY,
+  PREMIUM_QUESTION_TYPE_KEYS,
+  QUESTION_TYPE_ID_TO_KEY
+} from '@cio/question-types';
 import { AppError } from '@cio/utils/errors';
 import { trackAgentEvent, AgentEvent } from '../../utils/tinybird';
 import {
@@ -430,14 +434,16 @@ function assertNoPremiumQuestionTypes(
 
     const key = QUESTION_TYPE_ID_TO_KEY[typeId];
     if (key && PREMIUM_QUESTION_TYPE_KEYS.has(key)) {
-      const registry = QUESTION_TYPE_REGISTRY.find((t) => t.id === typeId);
+      const registry = ENABLED_QUESTION_TYPE_REGISTRY.find((t) => t.id === typeId);
       blockedTypenames.add(registry?.typename ?? key);
     }
   }
 
   if (blockedTypenames.size === 0) return;
 
-  const allowed = QUESTION_TYPE_REGISTRY.filter((t) => !PREMIUM_QUESTION_TYPE_KEYS.has(t.key))
+  // Suggest only author-selectable types: `disabled` and `internal` entries
+  // must never appear in the upgrade-error guidance.
+  const allowed = ENABLED_QUESTION_TYPE_REGISTRY.filter((t) => !PREMIUM_QUESTION_TYPE_KEYS.has(t.key))
     .map((t) => t.typename)
     .join(', ');
 

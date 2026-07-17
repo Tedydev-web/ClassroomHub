@@ -30,9 +30,11 @@ import {
   listAssetsByOrg,
   listAssetsForExport,
   listAssetUsagesByAsset,
+  lockAssetById,
   updateAsset
 } from '@cio/db/queries/assets';
 import { getLessonNavInfoByIds, getMediaTranscriptByAsset, updateMediaTranscriptContent } from '@cio/db/queries';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
 
 import {
   deleteFromS3,
@@ -416,10 +418,10 @@ export async function purgeAssetStorage(payload: TAssetStorageCleanupPayload): P
  * exists are dropped. Surviving lesson usages are enriched with course context
  * for the "go to lesson" link; non-lesson targets carry null enrichment fields.
  */
-async function resolveLiveAssetUsages(orgId: string, assetId: string) {
-  const usages = await listAssetUsagesByAsset(assetId, orgId);
+async function resolveLiveAssetUsages(orgId: string, assetId: string, dbClient: DbOrTxClient = db) {
+  const usages = await listAssetUsagesByAsset(assetId, orgId, dbClient);
   const lessonIds = usages.filter((usage) => usage.targetType === 'lesson').map((usage) => usage.targetId);
-  const navById = new Map((await getLessonNavInfoByIds(lessonIds)).map((nav) => [nav.id, nav]));
+  const navById = new Map((await getLessonNavInfoByIds(lessonIds, dbClient)).map((nav) => [nav.id, nav]));
 
   return usages
     .filter((usage) => usage.targetType !== 'lesson' || navById.has(usage.targetId))
@@ -437,17 +439,22 @@ async function resolveLiveAssetUsages(orgId: string, assetId: string) {
 
 export async function deleteAssetService(orgId: string, assetId: string) {
   try {
-    const asset = await getAssetService(orgId, assetId);
+    const { cleanupPayload, deleted } = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      const lockedAsset = await lockAssetById(assetId, orgId, txClient);
+      const asset = assertAssetExists(lockedAsset);
 
-    const liveUsages = await resolveLiveAssetUsages(orgId, assetId);
-    if (liveUsages.length > 0) {
-      throw new AppError('Asset is still in use', ErrorCodes.ASSET_IN_USE, 409);
-    }
+      const liveUsages = await resolveLiveAssetUsages(orgId, assetId, txClient);
+      if (liveUsages.length > 0) {
+        throw new AppError('Asset is still in use', ErrorCodes.ASSET_IN_USE, 409);
+      }
 
-    const cleanupPayload = buildAssetStorageCleanupPayload(asset);
+      const cleanupPayload = buildAssetStorageCleanupPayload(asset);
+      const deletedAsset = await deleteAsset(assetId, orgId, txClient);
+      const deleted = assertAssetExists(deletedAsset);
 
-    const deleted = await deleteAsset(assetId, orgId);
-    assertAssetExists(deleted);
+      return { cleanupPayload, deleted };
+    });
 
     // Storage cleanup is a best-effort background sweep: a failed enqueue must
     // not fail the delete the user just confirmed. Orphaned objects can be

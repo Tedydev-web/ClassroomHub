@@ -69,7 +69,7 @@ email send?", and `dead_letter_job` captures final failures.
 
 ### Prerequisites
 
-1. Redis on `localhost:6379` (e.g. `docker run --rm -d -p 6379:6379 redis:7-alpine`)
+1. Redis on `localhost:8003` (e.g. `docker run --rm -d -p 127.0.0.1:8003:6379 redis:7-alpine`)
 2. Postgres reachable via `DATABASE_URL`
 3. `ffmpeg` + `ffprobe` on `$PATH` (only required for the media worker —
    emails and maintenance workers boot fine without them; the worker logs a

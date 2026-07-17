@@ -13,9 +13,13 @@
   import { getExerciseQuestionLabels } from '../question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
   import {
+    formatExercisePoints,
+    getActiveExerciseQuestions,
+    roundExercisePointsForDisplay,
     shouldCompleteExerciseFromSubmission,
     type ExerciseSubmissionStudentGroup
   } from '$features/course/utils/exercise-progression-utils';
+  import { sumAnswerScoresForRenderedQuestions } from '$features/course/utils/submission-review-score-utils';
   import type { SubmissionListItem } from '$features/course/utils/types';
 
   interface Props {
@@ -57,30 +61,25 @@
   }
 
   function getSectionScore(submission: SubmissionListItem, questions: Question[]) {
-    return questions.reduce((total, question) => {
-      const questionId = toNumericQuestionId(question);
-      if (questionId === null) return total;
-
-      const answer = submission.answers.find((item) => item.questionId === questionId);
-      return total + (answer?.point ?? 0);
-    }, 0);
+    return sumAnswerScoresForRenderedQuestions(questions, submission.answers);
   }
 
   function getSectionMaxPoints(questions: Question[]) {
     return questions.reduce((total, question) => total + Number(question.points ?? 0), 0);
   }
 
+  // Numerator and denominator share the same rendered active question set:
+  // answers to questions archived after the attempt are excluded so the
+  // displayed score never exceeds the displayed maximum.
   function getTotalScore(submission: SubmissionListItem) {
-    const submissionTotal = Number(
-      (submission as SubmissionListItem & { total?: number | string | null }).total ?? NaN
+    return sumAnswerScoresForRenderedQuestions(
+      getActiveExerciseQuestions($questionnaire.questions),
+      submission.answers
     );
-    if (Number.isFinite(submissionTotal)) return submissionTotal;
-
-    return submission.answers.reduce((total, answer) => total + Number(answer.point ?? 0), 0);
   }
 
   function getTotalPossiblePoints() {
-    return getSectionMaxPoints($questionnaire.questions.filter((question) => !question.deletedAt));
+    return getSectionMaxPoints(getActiveExerciseQuestions($questionnaire.questions));
   }
 
   function formatSubmittedAt(submission: SubmissionListItem) {
@@ -209,7 +208,7 @@
                 -
                 {getStatusLabel(attempt.submission)}
                 -
-                {attemptScore}/{getTotalPossiblePoints()}
+                {formatExercisePoints(attemptScore)}/{formatExercisePoints(getTotalPossiblePoints())}
                 -
                 {getAttemptPassLabel(attempt.submission)}
               </Select.Item>
@@ -222,7 +221,7 @@
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <Badge variant="outline">{getStatusLabel(selectedSubmission)}</Badge>
       <Badge variant="secondary">
-        {getTotalScore(selectedSubmission)}/{getTotalPossiblePoints()}
+        {formatExercisePoints(getTotalScore(selectedSubmission))}/{formatExercisePoints(getTotalPossiblePoints())}
         {$t('course.navItem.lessons.exercises.all_exercises.view_mode.points')}
       </Badge>
       <Badge variant={didAttemptCompleteExercise(selectedSubmission) ? 'success' : 'warning'}>
@@ -246,7 +245,7 @@
               totalSections={activeSections.length}
               colorTheme={section.colorTheme}
               questionCount={sectionQuestions.length}
-              totalPoints={getSectionMaxPoints(sectionQuestions)}
+              totalPoints={roundExercisePointsForDisplay(getSectionMaxPoints(sectionQuestions))}
               labels={{
                 section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'),
                 questions: $t('course.navItem.lessons.exercises.all_exercises.view_mode.questions'),
@@ -271,7 +270,9 @@
             {/each}
 
             <p class="border-t pt-2 text-sm font-medium">
-              {getSectionScore(selectedSubmission, sectionQuestions)}/{getSectionMaxPoints(sectionQuestions)}
+              {formatExercisePoints(getSectionScore(selectedSubmission, sectionQuestions))}/{formatExercisePoints(
+                getSectionMaxPoints(sectionQuestions)
+              )}
               {$t('course.navItem.lessons.exercises.all_exercises.view_mode.points')}
             </p>
           </section>

@@ -66,11 +66,14 @@ export interface LessonNavInfo {
  * "go to lesson" links. Lessons in soft-deleted courses (`status = 'DELETED'`)
  * are excluded so callers don't link into a course that no longer exists.
  */
-export async function getLessonNavInfoByIds(lessonIds: string[]): Promise<LessonNavInfo[]> {
+export async function getLessonNavInfoByIds(
+  lessonIds: string[],
+  dbClient: DbOrTxClient = db
+): Promise<LessonNavInfo[]> {
   if (lessonIds.length === 0) return [];
 
   try {
-    return await db
+    return await dbClient
       .select({
         id: schema.lesson.id,
         courseId: schema.lesson.courseId,
@@ -86,9 +89,9 @@ export async function getLessonNavInfoByIds(lessonIds: string[]): Promise<Lesson
   }
 }
 
-export async function createLessons(values: TNewLesson[]) {
+export async function createLessons(values: TNewLesson[], dbClient: DbOrTxClient = db) {
   try {
-    return db.insert(schema.lesson).values(values).returning();
+    return dbClient.insert(schema.lesson).values(values).returning();
   } catch (error) {
     console.error('createLessons error:', error);
     throw new Error(`Failed to create lessons: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -337,10 +340,10 @@ export async function getLessonLanguagesByLessonIds(lessonIds: string[]) {
   }
 }
 
-export async function createLessonLanguages(values: TNewLessonLanguage[]) {
+export async function createLessonLanguages(values: TNewLessonLanguage[], dbClient: DbOrTxClient = db) {
   if (values.length === 0) return [];
   try {
-    return db.insert(schema.lessonLanguage).values(values).returning();
+    return dbClient.insert(schema.lessonLanguage).values(values).returning();
   } catch (error) {
     console.error('createLessonLanguages error:', error);
     throw new Error(`Failed to create lesson languages: ${error instanceof Error ? error.message : 'Unknown error'}`);

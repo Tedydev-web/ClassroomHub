@@ -37,6 +37,7 @@ const EARLY_ADOPTER_ORG_ID = '5c7d4b2e-8f5a-4c3b-ae8f-2d6e9c1b0f5a';
 const EARLY_ADOPTER_ADMIN_USER_ID = '6e0163ff-9161-4d4b-be9f-3e7fbd913c5e';
 const EARLY_ADOPTER_STUDENT_USER_ID = '7fb274aa-a272-4e5c-cf0a-4f8cce024d6f';
 const EARLY_ADOPTER_GROUP_ID = '8ac385bb-b383-4f6d-d01b-5a9ddf135e7a';
+const DEFAULT_USER_IDS = [ADMIN_USER_ID, STUDENT_USER_ID];
 
 // Parse command line arguments
 function parseFlags(): Set<string> {
@@ -63,6 +64,7 @@ Usage: pnpm seed [flags]
 
 Flags:
   --all, -a                    Run all seed functions (default if no flags provided)
+  --extended-demo             Include Coursera and Skillshare demo tenants
   --roles                      Seed roles
   --submissions                Seed submission statuses
   --question-types             Seed question types
@@ -86,9 +88,14 @@ Flags:
 Examples:
   pnpm seed --users --profiles
   pnpm seed --all
+  pnpm seed --all --extended-demo
   pnpm seed --roles --submissions --question-types
 `);
 }
+
+const flags = parseFlags();
+const extendedDemo = flags.has('extended-demo');
+const selectedUsersData = extendedDemo ? usersData : usersData.filter((user) => DEFAULT_USER_IDS.includes(user.id));
 
 // Seed function map
 const seedFunctions = {
@@ -106,23 +113,24 @@ const seedFunctions = {
   },
   users: async () => {
     console.log('📝 Seeding users...');
-    await seedUsers({ usersData });
+    await seedUsers({ usersData: selectedUsersData });
   },
   profiles: async () => {
     console.log('📝 Seeding profiles...');
-    await seedProfile({ usersData });
+    await seedProfile({ usersData: selectedUsersData });
   },
   accounts: async () => {
     console.log('📝 Seeding accounts...');
     // @ts-expect-error missing properties
-    await seedAccount({ usersData });
+    await seedAccount({ usersData: selectedUsersData });
   },
   organizations: async () => {
     console.log('📝 Seeding organizations...');
     await seedOrganization({
       testOrgId: TEST_ORG_ID,
       enterpriseOrgId: ENTERPRISE_ORG_ID,
-      earlyAdopterOrgId: EARLY_ADOPTER_ORG_ID
+      earlyAdopterOrgId: EARLY_ADOPTER_ORG_ID,
+      extendedDemo
     });
   },
   'organization-members': async () => {
@@ -136,7 +144,8 @@ const seedFunctions = {
       enterpriseStudentUserId: ENTERPRISE_STUDENT_USER_ID,
       earlyAdopterOrgId: EARLY_ADOPTER_ORG_ID,
       earlyAdopterAdminUserId: EARLY_ADOPTER_ADMIN_USER_ID,
-      earlyAdopterStudentUserId: EARLY_ADOPTER_STUDENT_USER_ID
+      earlyAdopterStudentUserId: EARLY_ADOPTER_STUDENT_USER_ID,
+      extendedDemo
     });
   },
   'organization-plan': async () => {
@@ -153,7 +162,8 @@ const seedFunctions = {
       pandasGroupId: PANDAS_GROUP_ID,
       testOrgId: TEST_ORG_ID,
       earlyAdopterGroupId: EARLY_ADOPTER_GROUP_ID,
-      earlyAdopterOrgId: EARLY_ADOPTER_ORG_ID
+      earlyAdopterOrgId: EARLY_ADOPTER_ORG_ID,
+      extendedDemo
     });
   },
   'group-members': async () => {
@@ -166,7 +176,8 @@ const seedFunctions = {
       studentUserId: STUDENT_USER_ID,
       earlyAdopterGroupId: EARLY_ADOPTER_GROUP_ID,
       earlyAdopterAdminUserId: EARLY_ADOPTER_ADMIN_USER_ID,
-      earlyAdopterStudentUserId: EARLY_ADOPTER_STUDENT_USER_ID
+      earlyAdopterStudentUserId: EARLY_ADOPTER_STUDENT_USER_ID,
+      extendedDemo
     });
   },
   courses: async () => {
@@ -175,7 +186,8 @@ const seedFunctions = {
       mvcGroupId: MVC_GROUP_ID,
       reactGroupId: REACT_GROUP_ID,
       pandasGroupId: PANDAS_GROUP_ID,
-      earlyAdopterGroupId: EARLY_ADOPTER_GROUP_ID
+      earlyAdopterGroupId: EARLY_ADOPTER_GROUP_ID,
+      extendedDemo
     });
   },
   sections: async () => {
@@ -227,8 +239,6 @@ const seedFunctions = {
 
 async function seed() {
   try {
-    const flags = parseFlags();
-
     // Show help if requested
     if (flags.has('help') || flags.has('h')) {
       showHelp();
@@ -238,7 +248,8 @@ async function seed() {
     console.log('🌱 Starting seed...');
 
     // If --all flag or no flags provided, run all seeds
-    const runAll = flags.size === 0 || flags.has('all') || flags.has('a');
+    const selectedSeedFlags = [...flags].filter((flag) => flag !== 'extended-demo');
+    const runAll = selectedSeedFlags.length === 0 || flags.has('all') || flags.has('a');
 
     if (runAll) {
       // Run all seeds in order
@@ -250,7 +261,9 @@ async function seed() {
       await seedFunctions.accounts();
       await seedFunctions.organizations();
       await seedFunctions['organization-members']();
-      await seedFunctions['organization-plan']();
+      if (extendedDemo) {
+        await seedFunctions['organization-plan']();
+      }
       await seedFunctions.groups();
       await seedFunctions['group-members']();
       await seedFunctions.courses();
@@ -259,8 +272,14 @@ async function seed() {
       await seedFunctions.exercises();
       await seedFunctions.questions();
       await seedFunctions.templates();
-      await seedFunctions.compliance();
+      if (extendedDemo) {
+        await seedFunctions.compliance();
+      }
     } else {
+      if (!extendedDemo && (flags.has('organization-plan') || flags.has('compliance'))) {
+        throw new Error('The organization-plan and compliance seeds require --extended-demo');
+      }
+
       // Run only specified seed functions
       // Order matters for dependencies, so we maintain the original order
       const orderedSeeds = [

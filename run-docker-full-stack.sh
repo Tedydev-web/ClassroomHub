@@ -230,10 +230,10 @@ derive_public_storage_urls() {
   else
     # Local demo: ensure localhost defaults are present.
     if [[ -z "${public_endpoint}" ]]; then
-      upsert_env_value OBJECT_STORAGE_PUBLIC_ENDPOINT "http://localhost:9000"
+      upsert_env_value OBJECT_STORAGE_PUBLIC_ENDPOINT "http://localhost:8004"
     fi
     if [[ -z "${media_base}" ]]; then
-      upsert_env_value OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL "http://localhost:9000/media"
+      upsert_env_value OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL "http://localhost:8004/media"
     fi
   fi
 }
@@ -348,8 +348,10 @@ check_endpoint() {
 if command -v curl >/dev/null 2>&1; then
   echo
   echo "Waiting for services to come up (first run can take a minute while the API migrates)..."
-  check_endpoint "API" "http://localhost:3081/" "-fsS" 24
-  check_endpoint "Dashboard" "http://localhost:3082/" "-fsSI" 12
+  api_host_port="$(get_env_value HOST_API_PORT)"
+  dashboard_host_port="$(get_env_value HOST_DASHBOARD_PORT)"
+  check_endpoint "API" "http://localhost:${api_host_port:-8001}/" "-fsS" 24
+  check_endpoint "Dashboard" "http://localhost:${dashboard_host_port:-8000}/" "-fsSI" 12
 else
   echo
   echo "curl not found, skipped endpoint checks."

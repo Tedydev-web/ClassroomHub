@@ -8,10 +8,17 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 export type GradebookExercise = {
   id: string;
   title: string;
+  /** Live active maximum of the exercise (archived questions excluded). */
   points: number;
 };
 
-export type GradebookStudentMarks = Record<string, Record<string, string>>;
+export type GradebookMark = {
+  score: string;
+  /** Immutable maximum from the selected completed attempt. */
+  maxPoints: number;
+};
+
+export type GradebookStudentMarks = Record<string, Record<string, GradebookMark>>;
 
 export type GradebookResponse = {
   students: Awaited<ReturnType<typeof getCourseMembers>>;
@@ -19,28 +26,79 @@ export type GradebookResponse = {
   studentMarksByExerciseId: GradebookStudentMarks;
 };
 
-function buildStudentMarksByExerciseId(marks: Mark[]): GradebookStudentMarks {
-  const result: GradebookStudentMarks = {};
-  for (const mark of marks) {
-    const { groupmemberId, exerciseId, totalPointsGotten } = mark;
-    if (!groupmemberId || !exerciseId) continue;
-    if (!result[groupmemberId]) result[groupmemberId] = {};
-    result[groupmemberId][exerciseId] = totalPointsGotten?.toString() ?? '0';
+function markPercentage(mark: Mark): number {
+  const score = Number(mark.totalPointsGotten);
+  const maxPoints = Number(mark.exercisePoints);
+  if (!Number.isFinite(score) || !Number.isFinite(maxPoints) || maxPoints <= 0) {
+    return Number.NEGATIVE_INFINITY;
   }
+
+  return score / maxPoints;
+}
+
+function isPreferredGradebookAttempt(candidate: Mark, current: Mark): boolean {
+  const candidatePercentage = markPercentage(candidate);
+  const currentPercentage = markPercentage(current);
+  if (candidatePercentage !== currentPercentage) {
+    return candidatePercentage > currentPercentage;
+  }
+
+  const candidateCreatedAt = candidate.submissionCreatedAt ?? '';
+  const currentCreatedAt = current.submissionCreatedAt ?? '';
+  if (candidateCreatedAt !== currentCreatedAt) {
+    return candidateCreatedAt > currentCreatedAt;
+  }
+
+  return (candidate.submissionId ?? '') > (current.submissionId ?? '');
+}
+
+export function buildStudentMarksByExerciseId(marks: Mark[]): GradebookStudentMarks {
+  const selectedMarks = new Map<string, Map<string, Mark>>();
+  for (const mark of marks) {
+    const { groupmemberId, exerciseId, gradingState, submissionId } = mark;
+    if (!groupmemberId || !exerciseId || !submissionId || gradingState !== 'completed') continue;
+
+    let marksByExercise = selectedMarks.get(groupmemberId);
+    if (!marksByExercise) {
+      marksByExercise = new Map<string, Mark>();
+      selectedMarks.set(groupmemberId, marksByExercise);
+    }
+
+    const current = marksByExercise.get(exerciseId);
+    if (!current || isPreferredGradebookAttempt(mark, current)) {
+      marksByExercise.set(exerciseId, mark);
+    }
+  }
+
+  const result: GradebookStudentMarks = {};
+  for (const [groupmemberId, marksByExercise] of selectedMarks) {
+    result[groupmemberId] = {};
+    for (const [exerciseId, mark] of marksByExercise) {
+      result[groupmemberId][exerciseId] = {
+        score: mark.totalPointsGotten?.toString() ?? '0',
+        maxPoints: mark.exercisePoints
+      };
+    }
+  }
+
   return result;
 }
 
-function buildExercises(marks: Mark[], contentItems: CourseContentItem[]): GradebookExercise[] {
+// Header points come from `activeExercisePoints` (identical on every row of an
+// exercise), never from a row's historical `exercisePoints`: after a question is
+// archived, submission rows carry diverging historical maxima and first-row-wins
+// would show an arbitrary student's denominator in the column header.
+export function buildExercises(marks: Mark[], contentItems: CourseContentItem[]): GradebookExercise[] {
   const marksByExerciseId = new Map<string, { title: string; points: number }>();
   const exerciseOrder: string[] = [];
   for (const mark of marks) {
-    const { exerciseId, exerciseTitle, exercisePoints } = mark;
+    const { exerciseId, exerciseTitle, activeExercisePoints } = mark;
     if (!exerciseId) continue;
     if (!marksByExerciseId.has(exerciseId)) {
       exerciseOrder.push(exerciseId);
       marksByExerciseId.set(exerciseId, {
         title: exerciseTitle ?? '',
-        points: exercisePoints ?? 0
+        points: activeExercisePoints ?? 0
       });
     }
   }

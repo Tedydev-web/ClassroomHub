@@ -29,6 +29,7 @@
     bind:value={grade}
     max={gradeMax}
     min={0}
+    step={0.01}
     type="number"
     inputClassName="!w-16"
     isDisabled={disableGrading}

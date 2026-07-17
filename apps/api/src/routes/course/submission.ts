@@ -35,10 +35,11 @@ export const submissionRouter = new Hono()
     zValidator('json', ZSubmissionUpdate),
     async (c) => {
       try {
+        const courseId = c.req.param('courseId')!;
         const { submissionId } = c.req.valid('param');
         const data = c.req.valid('json');
 
-        const submission = await updateSubmissionService(submissionId, data);
+        const submission = await updateSubmissionService(courseId, submissionId, data);
 
         return c.json({ success: true, data: submission }, 200);
       } catch (error) {
@@ -48,8 +49,9 @@ export const submissionRouter = new Hono()
   )
   .delete('/:submissionId', courseTeamMemberMiddleware, zValidator('param', ZSubmissionGetParam), async (c) => {
     try {
+      const courseId = c.req.param('courseId')!;
       const { submissionId } = c.req.valid('param');
-      const submission = await deleteSubmissionService(submissionId);
+      const submission = await deleteSubmissionService(courseId, submissionId);
 
       return c.json({ success: true, data: submission }, 200);
     } catch (error) {
@@ -63,10 +65,11 @@ export const submissionRouter = new Hono()
     zValidator('json', ZSubmissionAnswerUpdate),
     async (c) => {
       try {
+        const courseId = c.req.param('courseId')!;
         const { submissionId } = c.req.valid('param');
         const { questionId, ...data } = c.req.valid('json');
 
-        const answer = await updateSubmissionAnswer(submissionId, questionId, { questionId, ...data });
+        const answer = await updateSubmissionAnswer(courseId, submissionId, questionId, { questionId, ...data });
 
         return c.json({ success: true, data: answer }, 200);
       } catch (error) {
@@ -81,10 +84,11 @@ export const submissionRouter = new Hono()
     zValidator('json', ZSubmissionGradesUpdate),
     async (c) => {
       try {
+        const courseId = c.req.param('courseId')!;
         const { submissionId } = c.req.valid('param');
         const data = c.req.valid('json');
 
-        const submission = await updateSubmissionGradesBatch(submissionId, data);
+        const submission = await updateSubmissionGradesBatch(courseId, submissionId, data);
 
         return c.json({ success: true, data: submission }, 200);
       } catch (error) {

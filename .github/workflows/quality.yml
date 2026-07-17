@@ -51,6 +51,7 @@ jobs:
 
       - name: Run focused unit suites
         run: |
+          pnpm --filter @cio/question-types test
           pnpm --filter @cio/utils test
           pnpm --filter @cio/jobs test
           pnpm --filter @cio/api test
@@ -63,7 +64,7 @@ jobs:
 
   selective-assignment-integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16-alpine
@@ -98,11 +99,34 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build database dependency graph
-        run: pnpm turbo run build --filter=@cio/db...
+      - name: Generate secret-free build environment
+        run: pnpm setup:env
+
+      - name: Build API dependency graph
+        run: pnpm turbo run build --filter=@cio/api...
 
       - name: Apply database migrations
         run: pnpm --filter @cio/db db:migrate
 
+      - name: Finalize assessment schema
+        run: pnpm --filter @cio/db db:finalize-assessment-schema
+
       - name: Verify selective assignment contracts
         run: pnpm --filter @cio/db exec tsx scripts/selective-exercise-assignment.integration.check.ts
+
+      - name: Verify archive aggregate contracts
+        run: pnpm --filter @cio/db exec tsx scripts/archive-aggregates.integration.check.ts
+
+      - name: Verify question revision gateway contract
+        run: pnpm --filter @cio/core exec tsx src/services/assessment/question-revision.integration.check.ts
+
+      - name: Run guarded database integration suites
+        env:
+          RUN_DB_INTEGRATION: '1'
+        run: >-
+          pnpm --filter @cio/api exec vitest run --testTimeout 120000
+          src/services/exercise/question-revision-db.integration.test.ts
+          src/services/submission/submission-db.integration.test.ts
+
+      - name: Rehearse assessment migration chain
+        run: pnpm --filter @cio/db db:rehearse-assessment-migration

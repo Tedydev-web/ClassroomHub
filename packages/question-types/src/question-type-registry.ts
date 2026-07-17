@@ -142,11 +142,33 @@ export const QUESTION_TYPE_REGISTRY: readonly QuestionTypeMetadata[] = [
     supportsPartialCredit: true,
     manualGradingRequired: false,
     disabled: true
+  },
+  // Internal composite item type. Reserved at deterministic DB id 16 (a
+  // migration verifies/inserts the row explicitly; seed order is not an ID
+  // contract). `internal` keeps it out of pickers, AI/MCP enums, and generic
+  // exercise validation; only the advanced composer action creates it.
+  // Static capability metadata is conservative — runtime capability is always
+  // derived from the contained interactions of the resolved definition.
+  {
+    key: QUESTION_TYPE_KEY.ASSESSMENT_ITEM,
+    typename: 'ASSESSMENT_ITEM',
+    label: 'Composite item',
+    id: 16,
+    autoGradable: false,
+    supportsPartialCredit: true,
+    manualGradingRequired: true,
+    internal: true
   }
 ] as const;
 
-/** Types actually offered in the product (excludes `disabled` ones with no DB row). */
-export const ENABLED_QUESTION_TYPE_REGISTRY = QUESTION_TYPE_REGISTRY.filter((type) => !type.disabled);
+/** Types authors can select directly (excludes `disabled` and `internal` ones). */
+export const ENABLED_QUESTION_TYPE_REGISTRY = QUESTION_TYPE_REGISTRY.filter((type) => !type.disabled && !type.internal);
+
+/**
+ * Types with a `question_type` database row (enabled + internal). Source of
+ * truth for seed and migration identity checks; `disabled` types have no row.
+ */
+export const DB_BACKED_QUESTION_TYPE_REGISTRY = QUESTION_TYPE_REGISTRY.filter((type) => !type.disabled);
 
 export const QUESTION_TYPE_BY_KEY = Object.freeze(
   QUESTION_TYPE_REGISTRY.reduce(
