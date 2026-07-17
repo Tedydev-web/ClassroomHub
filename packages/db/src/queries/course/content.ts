@@ -4,6 +4,7 @@ import { ContentType } from '@cio/utils/constants';
 import { and, db, eq, sql as drizzleSql } from '@db/drizzle';
 import * as schema from '@db/schema';
 import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
+import { isExerciseCompletedSql } from './progression';
 
 export type CourseContentItemRow = {
   id: string;
@@ -50,38 +51,7 @@ export async function getCourseContentItems(courseId: string, profileId?: string
         )`
       : drizzleSql`false`;
 
-    const exerciseCompletionSql = profileId
-      ? drizzleSql`COALESCE(
-          CASE
-            WHEN exercise.completion_policy = 'passed' THEN (
-              SELECT true
-              FROM submission
-              INNER JOIN groupmember ON groupmember.id = submission.submitted_by
-              WHERE submission.exercise_id = exercise.id
-                AND groupmember.profile_id = ${profileId}
-                AND submission.grading_state = 'completed'
-                AND (
-                  SELECT CASE
-                    WHEN COALESCE(SUM(question.points), 0) <= 0 THEN false
-                    ELSE ROUND((submission.total::numeric / SUM(question.points)::numeric) * 100)
-                      >= COALESCE(exercise.pass_threshold, 100)
-                  END
-                  FROM question
-                  WHERE question.exercise_id = exercise.id
-                )
-              LIMIT 1
-            )
-            ELSE (
-              SELECT true
-              FROM submission
-              INNER JOIN groupmember ON groupmember.id = submission.submitted_by
-              WHERE submission.exercise_id = exercise.id AND groupmember.profile_id = ${profileId}
-              LIMIT 1
-            )
-          END,
-          false
-        )`
-      : drizzleSql`false`;
+    const exerciseCompletionSql = profileId ? isExerciseCompletedSql('exercise', { profileId }) : drizzleSql`false`;
     const exerciseVisibilitySql = profileId
       ? drizzleSql`AND ${viewerMember ? getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId) : drizzleSql`false`}`
       : drizzleSql``;

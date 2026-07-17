@@ -17,7 +17,6 @@ import {
   createExercise,
   createExerciseFromTemplate,
   deleteExerciseForCourseService,
-  deleteExerciseService,
   getExercise,
   listExercises,
   updateExerciseService
