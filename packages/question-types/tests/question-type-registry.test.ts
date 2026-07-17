@@ -159,7 +159,10 @@ const CANONICAL_DB_QUESTION_TYPES: ReadonlyArray<{ id: number; typename: string 
   { id: 10, typename: 'LINK' },
   { id: 11, typename: 'WORD_BANK' },
   { id: 12, typename: 'STAR' },
-  { id: 13, typename: 'VIDEO_RECORDING' }
+  { id: 13, typename: 'VIDEO_RECORDING' },
+  // Internal composite type: has a DB row reserved by migration at fixed id 16
+  // (MATCHING/HOTSPOT hold 14/15 in the registry without DB rows).
+  { id: 16, typename: 'ASSESSMENT_ITEM' }
 ];
 
 describe('question type registry', () => {
@@ -206,17 +209,15 @@ describe('question type registry', () => {
     }
   });
 
-  it('keeps disabled types appended after every DB-backed type', () => {
+  it('keeps disabled types off DB ids and DB-backed types on their reserved rows', () => {
     const dbIds = new Set(CANONICAL_DB_QUESTION_TYPES.map((row) => row.id));
-    const maxDbId = Math.max(...CANONICAL_DB_QUESTION_TYPES.map((row) => row.id));
 
     for (const entry of QUESTION_TYPE_REGISTRY) {
       if (entry.disabled) {
-        // Disabled types have no DB row and must sit past the live id range.
+        // Disabled types have no DB row; their ids must never collide with one.
         expect(dbIds.has(entry.id), `disabled ${entry.typename} must not reuse a DB id`).toBe(false);
-        expect(entry.id).toBeGreaterThan(maxDbId);
       } else {
-        expect(dbIds.has(entry.id), `enabled ${entry.typename} must map to a DB row`).toBe(true);
+        expect(dbIds.has(entry.id), `db-backed ${entry.typename} must map to a DB row`).toBe(true);
       }
     }
   });

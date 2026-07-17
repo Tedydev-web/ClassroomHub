@@ -1,5 +1,5 @@
 {
-  "id": "ffa9fb6c-8e6d-419d-93eb-26e76659685f",
+  "id": "c226453f-6af3-4e40-ac43-e83de94d0f0a",
   "prevId": "912ccf28-5c0f-40dd-8907-5ab30eefc75b",
   "version": "7",
   "dialect": "postgresql",
@@ -9344,105 +9344,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.organizationmember_email_notifications": {
-      "name": "organizationmember_email_notifications",
-      "schema": "",
-      "columns": {
-        "organization_member_id": {
-          "name": "organization_member_id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "new_student": {
-          "name": "new_student",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "new_submission": {
-          "name": "new_submission",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "grading_result": {
-          "name": "grading_result",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "newsfeed": {
-          "name": "newsfeed",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "quiz_assigned": {
-          "name": "quiz_assigned",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "cohort_reminder": {
-          "name": "cohort_reminder",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "session": {
-          "name": "session",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "course_completion": {
-          "name": "course_completion",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "organizationmember_email_notifications_organization_member_id_fkey": {
-          "name": "organizationmember_email_notifications_organization_member_id_fkey",
-          "tableFrom": "organizationmember_email_notifications",
-          "tableTo": "organizationmember",
-          "columnsFrom": ["organization_member_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.profile": {
       "name": "profile",
       "schema": "",
@@ -10618,9 +10519,38 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'0'"
+        },
+        "score": {
+          "name": "score",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "question_answer_submission_question_unique": {
+          "name": "question_answer_submission_question_unique",
+          "columns": [
+            {
+              "expression": "submission_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "question_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"question_answer\".\"submission_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "question_answer_group_member_id_fkey": {
           "name": "question_answer_group_member_id_fkey",
@@ -12125,6 +12055,12 @@
           "notNull": false,
           "default": "'0'"
         },
+        "score": {
+          "name": "score",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -12157,6 +12093,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "feedback": {
           "name": "feedback",
           "type": "text",
@@ -12164,7 +12106,36 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "submission_attempt_idempotency_unique": {
+          "name": "submission_attempt_idempotency_unique",
+          "columns": [
+            {
+              "expression": "exercise_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "submitted_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"submission\".\"idempotency_key\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "submission_course_id_fkey": {
           "name": "submission_course_id_fkey",

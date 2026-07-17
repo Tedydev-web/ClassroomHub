@@ -1,5 +1,5 @@
 import * as schema from '@db/schema';
-import { and, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { db } from '@db/drizzle';
 import { getExerciseVisibilityCondition } from './assignment';
 
@@ -99,14 +99,14 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
 
     const exerciseIds = exercises.map((e) => e.id);
 
-    // Get questions for these exercises
+    // Get active questions for these exercises (archived ones leave the LMS maximum)
     const questions = await db
       .select({
         exerciseId: schema.question.exerciseId,
         points: schema.question.points
       })
       .from(schema.question)
-      .where(inArray(schema.question.exerciseId, exerciseIds));
+      .where(and(inArray(schema.question.exerciseId, exerciseIds), isNull(schema.question.archivedAt)));
 
     // Get groupmember IDs for the user in these courses
     const groupMemberIds = [...new Set(coursesWithMembership.map((c) => c.groupMemberId))];
@@ -117,7 +117,7 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
         id: schema.submission.id,
         exerciseId: schema.submission.exerciseId,
         statusId: schema.submission.statusId,
-        total: schema.submission.total,
+        score: sql<number>`COALESCE(${schema.submission.score}, ${schema.submission.total}::numeric, 0)::float`,
         updatedAt: schema.submission.updatedAt,
         submittedBy: schema.submission.submittedBy
       })
@@ -144,7 +144,7 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
             ? exerciseSubmissions.map((sub) => ({
                 status_id: Number(sub.statusId) || 0,
                 updated_at: sub.updatedAt || '',
-                total: Number(sub.total) || 0,
+                total: Number(sub.score) || 0,
                 groupmember: groupMemberId
                   ? [
                       {

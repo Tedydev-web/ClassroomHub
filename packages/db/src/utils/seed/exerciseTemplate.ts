@@ -1,25 +1,54 @@
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+
 import { db, exerciseTemplate } from '@db/drizzle';
 
-import { TExerciseTemplate } from '@db/types';
-import { PRODUCT_HOSTS } from '@cio/utils/constants';
+import type { TExerciseTemplate } from '@db/types';
 
-const EXERCISE_TEMPLATES_CDN_URL = `https://${PRODUCT_HOSTS.dashboard}/assets/exercise-templates.json`;
+type ExerciseTemplateSeed = Pick<TExerciseTemplate, 'title' | 'description' | 'questionnaire' | 'tag'>;
 
-async function fetchExerciseTemplatesFromCDN(): Promise<TExerciseTemplate[]> {
-  const response = await fetch(EXERCISE_TEMPLATES_CDN_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch exercise templates from CDN: ${response.status} ${response.statusText}`);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return typeof value === 'string' || value === null;
+}
+
+function isExerciseTemplateSeed(value: unknown): value is ExerciseTemplateSeed {
+  if (!isRecord(value) || typeof value.title !== 'string') {
+    return false;
   }
-  return response.json();
+
+  if (!isNullableString(value.description) || !isNullableString(value.tag)) {
+    return false;
+  }
+
+  if (!isRecord(value.questionnaire)) {
+    return false;
+  }
+
+  return Array.isArray(value.questionnaire.questions);
+}
+
+async function loadExerciseTemplates(): Promise<ExerciseTemplateSeed[]> {
+  const templatesUrl = new URL('../../../../../apps/dashboard/static/assets/exercise-templates.json', import.meta.url);
+  const templatesPath = fileURLToPath(templatesUrl);
+  const fileContents = await readFile(templatesPath, 'utf8');
+  const parsedTemplates: unknown = JSON.parse(fileContents);
+
+  if (!Array.isArray(parsedTemplates) || !parsedTemplates.every(isExerciseTemplateSeed)) {
+    throw new Error(`Invalid exercise template fixture: ${templatesPath}`);
+  }
+
+  return parsedTemplates;
 }
 
 export async function seedExerciseTemplates() {
   const existingExerciseTemplates = await db.select().from(exerciseTemplate);
   const existingExerciseTemplateTitles = existingExerciseTemplates.map((t) => t.title);
 
-  console.time('fetchExerciseTemplatesFromCDN');
-  const templatesData = await fetchExerciseTemplatesFromCDN();
-  console.timeEnd('fetchExerciseTemplatesFromCDN');
+  const templatesData = await loadExerciseTemplates();
 
   const templatesToInsert = templatesData
     .filter((t) => !existingExerciseTemplateTitles.includes(t.title))

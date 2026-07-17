@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QUESTION_TYPE_REGISTRY } from '@cio/question-types';
+import { ENABLED_QUESTION_TYPE_REGISTRY, MAX_INTERACTION_MAX_SCORE } from '@cio/question-types';
 import { CoursePlanSchema } from '../types';
 import { CourseTemplateIdSchema, TemplateFormFieldSchema } from '../templates';
 import {
@@ -8,7 +8,23 @@ import {
   LANDING_PAGE_SECTION_HTML_AGENT_HINT
 } from './landing-page-html-hint';
 
-const QUESTION_TYPE_ID_DESCRIPTION = QUESTION_TYPE_REGISTRY.map((t) => `${t.id}=${t.typename} (${t.label})`).join(', ');
+const ENABLED_QUESTION_TYPE_IDS = ENABLED_QUESTION_TYPE_REGISTRY.map((type) => type.id);
+const QUESTION_TYPE_ID_DESCRIPTION = ENABLED_QUESTION_TYPE_REGISTRY.map(
+  (type) => `${type.id}=${type.typename} (${type.label})`
+).join(', ');
+const zEnabledQuestionTypeId = z
+  .number()
+  .int()
+  .refine((id) => ENABLED_QUESTION_TYPE_IDS.includes(id), {
+    message: `questionTypeId must be one of: ${ENABLED_QUESTION_TYPE_IDS.join(', ')}`
+  });
+
+// Authored legacy question points share the route/course-import contract:
+// integers capped at the canonical interaction maximum, so a generated
+// question can never make the first student submission fail materialization.
+// (Internal canonical item maxScore stays fractional — that is a different,
+// kernel-validated field.)
+const zQuestionPoints = z.number().int().min(0).max(MAX_INTERACTION_MAX_SCORE);
 
 /**
  * Mutation tool schemas available only to teachers.
@@ -128,15 +144,12 @@ export const createExerciseSchema = {
       .array(
         z.object({
           question: z.string().min(1).describe('The question text'),
-          questionTypeId: z
-            .number()
-            .int()
-            .min(1)
-            .max(QUESTION_TYPE_REGISTRY.length)
-            .describe(
-              `Required on every question — never omit. Supported types: ${QUESTION_TYPE_ID_DESCRIPTION}. Vary types across questions (do not default everything to RADIO/1).`
-            ),
-          points: z.number().min(0).default(1).describe('Points for this question'),
+          questionTypeId: zEnabledQuestionTypeId.describe(
+            `Required on every question — never omit. Supported types: ${QUESTION_TYPE_ID_DESCRIPTION}. Vary types across questions (do not default everything to RADIO/1).`
+          ),
+          points: zQuestionPoints
+            .default(1)
+            .describe(`Points for this question (integer, 0 to ${MAX_INTERACTION_MAX_SCORE})`),
           order: z.number().int().min(0).describe('Display order'),
           settings: z
             .record(z.string(), z.unknown())
@@ -264,15 +277,12 @@ export const addQuestionsSchema = {
     questions: z.array(
       z.object({
         question: z.string().min(1).describe('The question text'),
-        questionTypeId: z
-          .number()
-          .int()
-          .min(1)
-          .max(QUESTION_TYPE_REGISTRY.length)
-          .describe(
-            `Required on every question — never omit. Supported types: ${QUESTION_TYPE_ID_DESCRIPTION}. Vary types across questions (do not default everything to RADIO/1).`
-          ),
-        points: z.number().min(0).default(1).describe('Points for this question'),
+        questionTypeId: zEnabledQuestionTypeId.describe(
+          `Required on every question — never omit. Supported types: ${QUESTION_TYPE_ID_DESCRIPTION}. Vary types across questions (do not default everything to RADIO/1).`
+        ),
+        points: zQuestionPoints
+          .default(1)
+          .describe(`Points for this question (integer, 0 to ${MAX_INTERACTION_MAX_SCORE})`),
         order: z.number().int().min(0).describe('Display order'),
         settings: z
           .record(z.string(), z.unknown())
@@ -301,14 +311,12 @@ export const updateQuestionsSchema = {
       z.object({
         id: z.number().int().describe('Existing question id. Required.'),
         question: z.string().min(1).optional().describe('New question text. Omit to keep unchanged.'),
-        questionTypeId: z
-          .number()
-          .int()
-          .min(1)
-          .max(QUESTION_TYPE_REGISTRY.length)
+        questionTypeId: zEnabledQuestionTypeId
           .optional()
           .describe(`Question type ID. Supported types: ${QUESTION_TYPE_ID_DESCRIPTION}`),
-        points: z.number().min(0).optional(),
+        points: zQuestionPoints
+          .optional()
+          .describe(`Points for this question (integer, 0 to ${MAX_INTERACTION_MAX_SCORE})`),
         order: z.number().int().min(0).optional(),
         exerciseSectionId: z
           .string()

@@ -5,6 +5,8 @@ import type {
   DeleteExerciseRequest,
   Exercise,
   ExerciseAssignments,
+  ExerciseFileUploadCompleteRequest,
+  ExerciseFileUploadInitRequest,
   GetExerciseAssignmentsRequest,
   GetExerciseRequest,
   SubmitExerciseRequest,
@@ -17,6 +19,8 @@ import type {
 import type {
   TExerciseCreate,
   TExerciseAssignmentUpdate,
+  TExerciseFileUploadComplete,
+  TExerciseFileUploadInit,
   TExerciseSubmissionCreate,
   TExerciseUpdate,
   TExerciseVideoRecordingUploadComplete,
@@ -24,6 +28,8 @@ import type {
 } from '@cio/utils/validation/exercise';
 import {
   ZExerciseCreate,
+  ZExerciseFileUploadComplete,
+  ZExerciseFileUploadInit,
   ZExerciseSubmissionCreate,
   ZExerciseUpdate,
   ZExerciseVideoRecordingUploadComplete,
@@ -285,8 +291,13 @@ export class ExerciseApi extends BaseApiWithErrors {
   /**
    * Submits an exercise
    */
-  async submit(courseId: string, exerciseId: string, answers: TExerciseSubmissionCreate['answers']) {
-    const result = ZExerciseSubmissionCreate.safeParse({ exerciseId, answers });
+  async submit(
+    courseId: string,
+    exerciseId: string,
+    answers: TExerciseSubmissionCreate['answers'],
+    idempotencyKey: string
+  ) {
+    const result = ZExerciseSubmissionCreate.safeParse({ exerciseId, answers, idempotencyKey });
     if (!result.success) {
       this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
       return;
@@ -343,6 +354,50 @@ export class ExerciseApi extends BaseApiWithErrors {
           json: result.data
         }),
       logContext: 'initializing video recording upload'
+    });
+  }
+
+  async initExerciseFileUpload(
+    courseId: string,
+    exerciseId: string,
+    questionId: number | string,
+    fields: TExerciseFileUploadInit
+  ) {
+    const result = ZExerciseFileUploadInit.safeParse(fields);
+    if (!result.success) {
+      this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
+      return null;
+    }
+
+    return await this.execute<ExerciseFileUploadInitRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].init.$post({
+          param: { courseId, exerciseId, questionId: String(questionId) },
+          json: result.data
+        }),
+      logContext: 'initializing exercise file upload'
+    });
+  }
+
+  async completeExerciseFileUpload(
+    courseId: string,
+    exerciseId: string,
+    questionId: number | string,
+    fields: TExerciseFileUploadComplete
+  ) {
+    const result = ZExerciseFileUploadComplete.safeParse(fields);
+    if (!result.success) {
+      this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
+      return null;
+    }
+
+    return await this.execute<ExerciseFileUploadCompleteRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].complete.$post({
+          param: { courseId, exerciseId, questionId: String(questionId) },
+          json: result.data
+        }),
+      logContext: 'completing exercise file upload'
     });
   }
 

@@ -5,7 +5,7 @@
   import * as Table from '@cio/ui/base/table';
   import * as Tooltip from '@cio/ui/base/tooltip';
   import { t } from '$lib/utils/functions/translations';
-  import { calculateStudentAverage, type MarksPageData, type ExerciseInfo } from '$features/course/utils/marks-utils';
+  import { calculateStudentAverage, gradePercent, type MarksPageData } from '$features/course/utils/marks-utils';
   import TruncatedWithTooltip from '$features/course/components/truncated-with-tooltip.svelte';
 
   interface Props {
@@ -17,13 +17,6 @@
   const students = $derived(marksData?.students ?? []);
   const exercises = $derived(marksData?.exercises ?? []);
   const studentMarksByExerciseId = $derived(marksData?.studentMarksByExerciseId ?? {});
-
-  function gradePercent(pointsStr: string | undefined, exercise: ExerciseInfo): number | null {
-    if (pointsStr == null || exercise.points === 0) return null;
-    const n = parseInt(pointsStr, 10);
-    if (Number.isNaN(n)) return null;
-    return Math.round((n / exercise.points) * 100);
-  }
 
   /** Text and background classes for grade cells (faint tint + matching text) */
   function gradeCellClass(percent: number | null): string {
@@ -82,15 +75,15 @@
                 </div>
               </Table.Cell>
               {#each exercises as exercise (exercise.id)}
-                {@const pointsStr = marks?.[exercise.id]}
-                {@const pct = gradePercent(pointsStr, exercise)}
+                {@const mark = marks?.[exercise.id]}
+                {@const pct = gradePercent(mark)}
                 <Table.Cell
                   class="min-w-[100px] border-r border-gray-100 px-2 py-2 text-center text-sm dark:border-neutral-800 {gradeCellClass(
                     pct
                   )}"
                 >
                   <span class="font-medium">
-                    {pct != null ? pct : pointsStr != null ? pointsStr : '-'}
+                    {pct != null ? pct : (mark?.score ?? '-')}
                   </span>
                 </Table.Cell>
               {/each}

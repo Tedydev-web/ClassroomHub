@@ -3,6 +3,7 @@ import {
   DeleteObjectCommandInput,
   GetObjectCommand,
   GetObjectCommandInput,
+  HeadObjectCommand,
   PutObjectCommand,
   PutObjectCommandInput
 } from '@aws-sdk/client-s3';
@@ -212,4 +213,37 @@ export async function generateVideoUploadPresignedUrl(fileKey: string, contentTy
 export async function generateDocumentUploadPresignedUrl(fileKey: string, contentType: string): Promise<string> {
   const config = getStorageConfig();
   return generateUploadPresignedUrl(fileKey, config.bucketDocuments, contentType);
+}
+
+async function getObjectMetadata(
+  bucket: string,
+  fileKey: string
+): Promise<{ contentLength: number; contentType: string | null }> {
+  const response = await getS3Client().send(
+    new HeadObjectCommand({
+      Bucket: bucket,
+      Key: fileKey
+    })
+  );
+  const contentLength = response.ContentLength;
+  if (typeof contentLength !== 'number' || !Number.isSafeInteger(contentLength) || contentLength <= 0) {
+    throw new Error('Uploaded document has an invalid content length');
+  }
+
+  return {
+    contentLength,
+    contentType: response.ContentType ?? null
+  };
+}
+
+export async function getDocumentObjectMetadata(
+  fileKey: string
+): Promise<{ contentLength: number; contentType: string | null }> {
+  return getObjectMetadata(getStorageConfig().bucketDocuments, fileKey);
+}
+
+export async function getVideoObjectMetadata(
+  fileKey: string
+): Promise<{ contentLength: number; contentType: string | null }> {
+  return getObjectMetadata(getStorageConfig().bucketVideos, fileKey);
 }

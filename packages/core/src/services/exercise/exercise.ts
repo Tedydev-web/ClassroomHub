@@ -7,18 +7,23 @@ import {
   createExercises,
   syncOptionIdSequence,
   syncQuestionIdSequence,
+  archiveQuestionsByIds,
   createOptions,
   createQuestions,
   deleteExercise,
   deleteOptionsByIds,
   deleteQuestionsByIds,
+  getAttemptedQuestionIds,
   getExerciseById,
+  hasExerciseSubmissions,
   getExerciseCompletionByProfile,
   getExerciseCompletionsByProfile,
   getExerciseSectionsByExerciseId,
   getExerciseWithRelationsOptimized,
   getExercisesByCourseId,
+  getQuestionsByExerciseIds,
   getLMSExercises,
+  lockExerciseAssignmentState,
   createExerciseSections,
   deleteExerciseSectionsByIds,
   updateExerciseSection,
@@ -27,13 +32,14 @@ import {
   updateQuestions
 } from '@cio/db/queries/exercise';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
-import { touchCourseUpdatedAt } from '@cio/db/queries/course';
+import { getCourseSectionById, touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
 
 import { db } from '@cio/db/drizzle';
 import type { DbOrTxClient } from '@cio/db/drizzle';
 import {
+  INTERNAL_QUESTION_TYPE_IDS,
   buildExerciseUpdateFields,
   computeExerciseDiff,
   createNewQuestionsWithOptions,
@@ -61,6 +67,74 @@ type ExerciseSectionWithQuestions = {
 type ExerciseWithCompletion = TExercise & {
   isComplete: boolean;
 };
+
+async function assertExerciseQuestionGraphMutable(exerciseId: string, txClient: DbOrTxClient): Promise<void> {
+  const hasSubmissions = await hasExerciseSubmissions(exerciseId, txClient);
+  if (hasSubmissions) {
+    throw new AppError(
+      'Exercise questions cannot be changed after a submission has been created',
+      ErrorCodes.CONFLICT,
+      409
+    );
+  }
+
+  // Legacy answer rows can reference questions without any surviving submission
+  // (pre-submission-model data, or a deleted submission whose linked answers were
+  // created directly). Those attempts freeze replace/delete exactly like a
+  // submission does — the question_answer FK would reject the question delete
+  // mid-transaction anyway, so surface a deliberate conflict instead of a 500.
+  const questions = await getQuestionsByExerciseIds([exerciseId], txClient);
+  const questionIds = questions.map((question) => question.id).filter((id): id is number => id !== undefined);
+  const attemptedQuestionIds = await getAttemptedQuestionIds(questionIds, txClient);
+  if (attemptedQuestionIds.length === 0) return;
+
+  throw new AppError('Exercise questions cannot be changed after they have been attempted', ErrorCodes.CONFLICT, 409);
+}
+
+/**
+ * After a submission exists, the only allowed question-graph mutation in the ordinary
+ * update path is question removal: attempted questions are archived, not destroyed.
+ * Creates, edits, and option changes stay frozen until the editor publishes revisions.
+ */
+function assertQuestionGraphChangesAreRemovalOnly(diff: ReturnType<typeof computeExerciseDiff>): void {
+  const hasNonRemovalChanges =
+    diff.questions.newQuestions.length > 0 ||
+    diff.questions.updates.length > 0 ||
+    diff.options.deletedIds.length > 0 ||
+    diff.options.updates.length > 0 ||
+    diff.options.creates.length > 0;
+
+  if (!hasNonRemovalChanges) return;
+
+  throw new AppError(
+    'Exercise questions cannot be changed after a submission has been created; only question removal is allowed',
+    ErrorCodes.CONFLICT,
+    409
+  );
+}
+
+/**
+ * Archived questions are frozen history: a stale editor payload may still reference
+ * them, but applying such a row as an update would mutate the legacy fields that
+ * pre-revision answers render from, and treating it as new would resurrect it as a
+ * duplicate. Only re-deletion is accepted (idempotent re-archive).
+ */
+function assertPayloadDoesNotEditArchivedQuestions(
+  incomingQuestions: NonNullable<TExerciseUpdate['questions']>,
+  archivedQuestionIds: ReadonlySet<number>
+): void {
+  const editedArchivedQuestion = incomingQuestions.find(
+    (question) => question.id !== undefined && !question.deletedAt && archivedQuestionIds.has(question.id)
+  );
+
+  if (!editedArchivedQuestion) return;
+
+  throw new AppError(
+    'Archived questions cannot be edited or restored; remove them from the payload',
+    ErrorCodes.CONFLICT,
+    409
+  );
+}
 
 function sanitizeExerciseQuestions(questions: TExerciseCreate['questions'] | TExerciseUpdate['questions']) {
   return questions?.map((question) => ({
@@ -215,6 +289,22 @@ async function resolveExerciseCourseId(exercise: TExercise): Promise<string | nu
   return lesson?.courseId ?? null;
 }
 
+async function assertExercisePlacementBelongsToCourse(
+  courseId: string,
+  placement: { lessonId?: string; sectionId?: string }
+): Promise<void> {
+  const lessonPromise = placement.lessonId ? getLessonById(placement.lessonId) : Promise.resolve(null);
+  const sectionPromise = placement.sectionId ? getCourseSectionById(placement.sectionId) : Promise.resolve(null);
+  const [lesson, section] = await Promise.all([lessonPromise, sectionPromise]);
+
+  if (placement.lessonId && (!lesson || lesson.courseId !== courseId)) {
+    throw new AppError('Lesson does not belong to this course', ErrorCodes.NOT_FOUND, 404);
+  }
+  if (placement.sectionId && (!section || section.courseId !== courseId)) {
+    throw new AppError('Section does not belong to this course', ErrorCodes.NOT_FOUND, 404);
+  }
+}
+
 /**
  * Creates a new exercise with optional questions and options
  * @param data Exercise creation data
@@ -310,6 +400,16 @@ export async function createExercise(data: TExerciseCreate): Promise<TExercise> 
   }
 }
 
+export async function createExerciseForCourseService(courseId: string, data: TExerciseCreate): Promise<TExercise> {
+  if (data.courseId !== courseId) {
+    throw new AppError('Course ID does not match the route', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  await assertExercisePlacementBelongsToCourse(courseId, data);
+
+  return createExercise({ ...data, courseId });
+}
+
 /**
  * Gets an exercise by ID with questions and options
  * @param exerciseId Exercise ID
@@ -321,8 +421,14 @@ export async function getExercise(
   profileId?: string
 ): Promise<ExerciseWithQuestions> {
   try {
-    // Optimized: Fetch exercise + questions + questionTypes + options in one JOIN query
-    const { exercise, questions } = await getExerciseWithRelationsOptimized(exerciseId, dbClient);
+    // Optimized: Fetch exercise + questions + questionTypes + options in one JOIN query.
+    // This is the editor/current-exercise read: archived questions are excluded at the
+    // query level, and internal composite rows (definition lives in revisions) must
+    // never reach raw editor/delivery payloads until a canonical renderer exists.
+    const { exercise, questions: activeQuestions } = await getExerciseWithRelationsOptimized(exerciseId, dbClient, {
+      questionScope: 'active'
+    });
+    const questions = activeQuestions.filter((question) => !INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId));
 
     const isComplete = profileId ? await getExerciseCompletionByProfile(exerciseId, profileId, dbClient) : false;
 
@@ -391,6 +497,7 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
 
     const result = await db.transaction(async (tx) => {
       const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
 
       // Update exercise basic fields only if they changed
       const exerciseUpdate = buildExerciseUpdateFields(sanitizedData);
@@ -407,11 +514,33 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
 
       // Process questions - only update what changed
       if (sanitizedData.questions && sanitizedData.questions.length > 0) {
-        // Query current state from DB
-        const { questions: currentQuestions, options: currentOptions } = await fetchQuestionsAndOptions(
+        // Query current state from DB ('all' scope: archived rows are needed to
+        // reject stale payloads that still reference them)
+        const { questions: currentQuestionRows, options: currentOptions } = await fetchQuestionsAndOptions(
           exerciseId,
           txClient
         );
+
+        const archivedQuestionIds: ReadonlySet<number> = new Set(
+          currentQuestionRows
+            .filter((question) => question.archivedAt != null)
+            .map((question) => question.id)
+            .filter((id): id is number => id !== undefined)
+        );
+        assertPayloadDoesNotEditArchivedQuestions(sanitizedData.questions, archivedQuestionIds);
+
+        // Attempted = any answer row exists, including legacy rows with no
+        // surviving submission. Those freeze the graph to removal-only exactly
+        // like a submission does; removals archive them instead of hard-deleting
+        // (the question_answer FK would reject the delete with a 500 otherwise).
+        const allCurrentQuestionIds = currentQuestionRows
+          .map((question) => question.id)
+          .filter((id): id is number => id !== undefined);
+        const attemptedQuestionIds = new Set(await getAttemptedQuestionIds(allCurrentQuestionIds, txClient));
+
+        // The diff base is the active graph only, so archived rows and their
+        // options can never be edited, re-created, or re-diffed.
+        const currentQuestions = currentQuestionRows.filter((question) => question.archivedAt == null);
 
         // Build current state with options mapped to their questions
         const currentQuestionsWithOptions = currentQuestions.map((q) => ({
@@ -421,6 +550,11 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
 
         // Compute diff between current DB state and incoming data
         const diff = computeExerciseDiff(currentQuestionsWithOptions, sanitizedData.questions);
+
+        const exerciseHasSubmissions = await hasExerciseSubmissions(exerciseId, txClient);
+        if (exerciseHasSubmissions || attemptedQuestionIds.size > 0) {
+          assertQuestionGraphChangesAreRemovalOnly(diff);
+        }
 
         const hasNewQuestions = diff.questions.newQuestions.length > 0;
         const hasNewOptions = diff.options.creates.length > 0 || hasNewQuestions;
@@ -436,7 +570,18 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
         // Apply question/option graph changes in dependency order. Question deletes cascade
         // options, while new question creation can also create options.
         if (diff.questions.deletedIds.length > 0) {
-          await deleteQuestionsByIds(diff.questions.deletedIds, txClient);
+          // Attempted questions are archived so their answers and revisions stay reviewable;
+          // unattempted drafts hard-delete as before (cascade removes their options).
+          const questionIdsToArchive = diff.questions.deletedIds.filter((id) => attemptedQuestionIds.has(id));
+          const questionIdsToDelete = diff.questions.deletedIds.filter((id) => !attemptedQuestionIds.has(id));
+
+          if (questionIdsToArchive.length > 0) {
+            await archiveQuestionsByIds(questionIdsToArchive, txClient);
+          }
+
+          if (questionIdsToDelete.length > 0) {
+            await deleteQuestionsByIds(questionIdsToDelete, txClient);
+          }
         }
 
         if (diff.options.deletedIds.length > 0) {
@@ -478,6 +623,26 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
 
     throw new AppError('Failed to update exercise', ErrorCodes.INTERNAL_ERROR, 500);
   }
+}
+
+export async function updateExerciseForCourseService(
+  courseId: string,
+  exerciseId: string,
+  data: TExerciseUpdate
+): Promise<TExercise> {
+  const exercise = await getExerciseById(exerciseId);
+  if (!exercise) {
+    throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  const exerciseCourseId = await resolveExerciseCourseId(exercise);
+  if (exerciseCourseId !== courseId) {
+    throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  await assertExercisePlacementBelongsToCourse(courseId, data);
+
+  return updateExerciseService(exerciseId, data);
 }
 
 export async function updateExerciseSectionMetadataService(
@@ -628,6 +793,8 @@ export async function replaceExerciseService(exerciseId: string, data: TExercise
 
     const result = await db.transaction(async (tx) => {
       const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
+      await assertExerciseQuestionGraphMutable(exerciseId, txClient);
 
       const exerciseUpdate = buildExerciseUpdateFields(sanitizedData);
       if (Object.keys(exerciseUpdate).length > 0) {
@@ -637,7 +804,12 @@ export async function replaceExerciseService(exerciseId: string, data: TExercise
         }
       }
 
-      const { questions: currentQuestions } = await fetchQuestionsAndOptions(exerciseId, txClient);
+      // Replace only the active graph: archived questions are frozen history and
+      // must survive a replace (hard-deleting them is also blocked by the
+      // question_answer FK once a question has attempts).
+      const { questions: currentQuestions } = await fetchQuestionsAndOptions(exerciseId, txClient, {
+        questionScope: 'active'
+      });
       const currentQuestionIds = currentQuestions
         .map((question) => question.id)
         .filter((id): id is number => id !== undefined);
@@ -690,7 +862,13 @@ export async function deleteExerciseService(exerciseId: string): Promise<TExerci
       throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
     }
 
-    const deleted = await deleteExercise(exerciseId);
+    const deleted = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
+      await assertExerciseQuestionGraphMutable(exerciseId, txClient);
+
+      return deleteExercise(exerciseId, txClient);
+    });
     if (!deleted) {
       throw new AppError('Failed to delete exercise', ErrorCodes.INTERNAL_ERROR, 500);
     }
@@ -725,7 +903,13 @@ export async function deleteExerciseForCourseService(courseId: string, exerciseI
       throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
     }
 
-    const deleted = await deleteExercise(exerciseId);
+    const deleted = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      await lockExerciseAssignmentState(exerciseId, txClient);
+      await assertExerciseQuestionGraphMutable(exerciseId, txClient);
+
+      return deleteExercise(exerciseId, txClient);
+    });
     if (!deleted) {
       throw new AppError('Failed to delete exercise', ErrorCodes.INTERNAL_ERROR, 500);
     }
@@ -803,6 +987,8 @@ export async function createExerciseFromTemplate(
   template: TExerciseTemplate
 ): Promise<TExercise> {
   try {
+    await assertExercisePlacementBelongsToCourse(courseId, { lessonId, sectionId });
+
     // Create the exercise
     const exerciseData: TExerciseCreate = {
       title: template.title!,

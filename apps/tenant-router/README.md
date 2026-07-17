@@ -5,7 +5,7 @@ Cloudflare Worker that fronts every browser-facing ClassroomIO host:
 - `*.classroom.tedydev.io.vn/*` — free-tier tenant sites
 - `classroom.tedydev.io.vn/*` — apex (301 → `classroom.tedydev.io.vn`)
 - `classroom-app.tedydev.io.vn/*` — admin dashboard
-- `embed.classroom.tedydev.io.vn/*` — public embed widget scripts (R2 `assets` bucket, path-for-path)
+- `classroom-embed.tedydev.io.vn/*` — public embed widget scripts (R2 `assets` bucket, path-for-path)
 - BYOD customer domains via Approximated (their proxy forwards to `cio-api.onrender.com` directly, not through this Worker)
 
 The Worker forwards each request to one of two Render services based on path:

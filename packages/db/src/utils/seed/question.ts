@@ -61,6 +61,10 @@ export async function seedQuestions() {
     insertedQuestions = existingQuestions;
   }
 
+  await db.execute(
+    sql`SELECT setval(pg_get_serial_sequence('question', 'id'), COALESCE(MAX(${question.id}), 1), MAX(${question.id}) IS NOT NULL) FROM ${question}`
+  );
+
   // Seed options for questions
   console.log('📝 Seeding question options...');
   await seedOptions(insertedQuestions);

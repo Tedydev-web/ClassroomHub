@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 
 import * as schema from '@db/schema';
 import { db } from '@db/drizzle';
@@ -542,7 +542,8 @@ export async function findNonAutoGradableQuestionsInCourse(
       })
       .from(schema.question)
       .innerJoin(schema.exercise, eq(schema.exercise.id, schema.question.exerciseId))
-      .where(eq(schema.exercise.courseId, courseId));
+      // Archived questions no longer deliver, so they cannot block PUBLIC conversion.
+      .where(and(eq(schema.exercise.courseId, courseId), isNull(schema.question.archivedAt)));
 
     return rows
       .filter((row) => row.typeId !== null && !autoGradableTypeIds.includes(row.typeId))

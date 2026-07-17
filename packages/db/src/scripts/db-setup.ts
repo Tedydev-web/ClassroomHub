@@ -50,6 +50,11 @@ async function runMigrations() {
   await runPnpmCommand('Migrate', ['db:migrate']);
 }
 
+async function finalizeAssessmentSchema() {
+  console.log('Finalizing assessment indexes and score backfill...');
+  await runPnpmCommand('Finalize assessment schema', ['db:finalize-assessment-schema']);
+}
+
 async function runSeedEssential() {
   console.log('Seeding essential reference data (roles, submissions, question-types)...');
   await runPnpmCommand('Essential seed', ['seed', '--roles', '--submissions', '--question-types']);
@@ -98,6 +103,7 @@ async function dbSetup() {
       try {
         await baselineMigrationsIfNeeded(sql);
         await runMigrations();
+        await finalizeAssessmentSchema();
       } finally {
         await lock`SELECT pg_advisory_unlock(${DB_SETUP_LOCK_KEY}::bigint)`;
         await lock.end();

@@ -94,14 +94,8 @@
     isUploading = true;
     uploadError = null;
     try {
-      const result = await onFileUpload(selectedFile);
-      onAnswerChange({
-        type: 'FILE_UPLOAD',
-        fileKey: result.fileKey,
-        fileName: result.fileName,
-        mimeType: selectedFile.type,
-        size: selectedFile.size
-      });
+      const result = await onFileUpload({ questionId: question.id, file: selectedFile });
+      onAnswerChange(result);
     } catch (err) {
       uploadError = err instanceof Error ? err.message : label('file_upload.take.upload_error', 'Upload failed');
     } finally {

@@ -21,6 +21,19 @@ export function getActiveExerciseQuestions(questions: Question[]): Question[] {
   return questions.filter((question) => !question.deletedAt);
 }
 
+// Display-only rounding: summed fractional points (e.g. 0.1 + 0.2) carry floating-point
+// artifacts; pass-percentage math keeps using the raw numeric values.
+export function roundExercisePointsForDisplay(value: number | string | null | undefined): number {
+  const numericValue = Number(value ?? 0);
+  if (!Number.isFinite(numericValue)) return 0;
+
+  return Math.round(numericValue * 100) / 100;
+}
+
+export function formatExercisePoints(value: number | string | null | undefined): string {
+  return String(roundExercisePointsForDisplay(value));
+}
+
 export function getTotalPossibleExercisePoints(questions: Question[]): number {
   return getActiveExerciseQuestions(questions).reduce((total, question) => total + Number(question.points ?? 0), 0);
 }
@@ -35,10 +48,13 @@ export function getManualGradedExerciseQuestions(questions: Question[]): Questio
 }
 
 function getSubmissionScore(submission: SubmissionListItem): number {
+  const exactScore = Number((submission as SubmissionListItem & { score?: number | string | null }).score ?? NaN);
+  if (Number.isFinite(exactScore)) return exactScore;
+
   const submissionTotal = Number((submission as SubmissionListItem & { total?: number | string | null }).total ?? NaN);
   if (Number.isFinite(submissionTotal)) return submissionTotal;
 
-  return (submission.answers ?? []).reduce((total, answer) => total + Number(answer.point ?? 0), 0);
+  return (submission.answers ?? []).reduce((total, answer) => total + Number(answer.score ?? answer.point ?? 0), 0);
 }
 
 export function shouldCompleteExerciseFromSubmission(params: {

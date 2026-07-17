@@ -144,7 +144,7 @@ class OpenAPISpecGenerator {
               description: 'Production environment'
             },
             {
-              url: 'http://localhost:3002',
+              url: 'http://localhost:8001',
               description: 'Development environment'
             }
           ]

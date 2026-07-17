@@ -16,5 +16,5 @@
 </section>
 
 <svelte:head>
-  <script type="module" src="https://embed.classroom.tedydev.io.vn/question-type-picker"></script>
+  <script type="module" src="https://classroom-embed.tedydev.io.vn/question-type-picker"></script>
 </svelte:head>

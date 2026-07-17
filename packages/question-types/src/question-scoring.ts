@@ -6,6 +6,7 @@ import { QUESTION_TYPE_ID_TO_KEY } from './question-type-registry';
 import { supportsPartialCredit } from './question-type-capabilities';
 import { getStarRatingMaxFromSettings, isValidStarRatingValue } from './star-rating-settings';
 import { resolveTrueFalseCorrectValue } from './true-false-answer-key';
+import { isExactStringPermutation, matchingPairKey } from './question-answer-validation';
 
 export type DbQuestionForScoring = {
   id: number;
@@ -28,7 +29,10 @@ function normalizeText(value: unknown): string {
 }
 
 export function dbQuestionToExerciseQuestionModel(q: DbQuestionForScoring): ExerciseQuestionModel {
-  const key = QUESTION_TYPE_ID_TO_KEY[q.questionTypeId] ?? QUESTION_TYPE_KEY.RADIO;
+  const key = QUESTION_TYPE_ID_TO_KEY[q.questionTypeId];
+  if (!key) {
+    throw new Error(`Unknown question type id ${q.questionTypeId} for question ${q.id}`);
+  }
   const options: ExerciseQuestionOption[] = (q.options ?? [])
     .filter((o) => o.id != null)
     .map((o) => ({
@@ -61,9 +65,13 @@ export function isExerciseAutoGradable(questionTypeIds: number[]): boolean {
   });
 }
 
+function roundScore(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 function clampPoints(raw: number, max: number): number {
   if (!Number.isFinite(raw) || raw < 0) return 0;
-  return Math.min(Math.round(raw * 100) / 100, max);
+  return Math.min(roundScore(raw), max);
 }
 
 function scoreRadio(
@@ -139,10 +147,12 @@ function scoreNumeric(
 ): number {
   const rawCorrect = question.settings?.correctValue;
   const correct = typeof rawCorrect === 'number' ? rawCorrect : rawCorrect != null ? Number(rawCorrect) : NaN;
-  if (Number.isNaN(correct)) return 0;
+  if (!Number.isFinite(correct) || !Number.isFinite(answer.value)) return 0;
 
   const rawTol = question.settings?.tolerance;
   const tol = typeof rawTol === 'number' && Number.isFinite(rawTol) ? rawTol : rawTol != null ? Number(rawTol) : 0;
+  if (!Number.isFinite(tol) || tol < 0) return 0;
+
   const diff = Math.abs(answer.value - correct);
   return diff <= tol ? maxPoints : 0;
 }
@@ -197,10 +207,6 @@ function scoreWordBank(
   return (correct / expected.length) * maxPoints;
 }
 
-function pairKey(left: string, right: string): string {
-  return `${normalizeText(left)}::${normalizeText(right)}`;
-}
-
 function scoreMatching(
   question: ExerciseQuestionModel,
   answer: Extract<AnswerData, { type: 'MATCHING' }>,
@@ -211,22 +217,24 @@ function scoreMatching(
   const correctPairs = Array.isArray(rawPairs) ? (rawPairs as Array<{ left: string; right: string }>) : [];
   if (correctPairs.length === 0) return 0;
 
-  const correctSet = new Set(correctPairs.map((p) => pairKey(p.left, p.right)));
+  const correctSet = new Set(correctPairs.map(matchingPairKey));
   const studentPairs = answer.pairs ?? [];
-  let matches = 0;
-  for (const p of studentPairs) {
-    if (correctSet.has(pairKey(p.left, p.right))) matches++;
-  }
+  const studentSet = new Set(studentPairs.map(matchingPairKey));
+  const matches = [...studentSet].filter((pair) => correctSet.has(pair)).length;
 
   if (!partial) {
-    return matches === correctSet.size && studentPairs.length === correctSet.size ? maxPoints : 0;
+    const hasDuplicates = studentSet.size !== studentPairs.length;
+    return !hasDuplicates && matches === correctSet.size && studentSet.size === correctSet.size ? maxPoints : 0;
   }
-  return (matches / correctSet.size) * maxPoints;
+
+  const responseCount = Math.max(correctSet.size, studentSet.size);
+  return responseCount > 0 ? (matches / responseCount) * maxPoints : 0;
 }
 
-type OrderingItem = { label: string; answerValue: string };
+export type OrderingItem = { label: string; answerValue: string };
 
-function getOrderingItems(question: ExerciseQuestionModel): OrderingItem[] {
+/** Ordering items from options (preferred) or `settings.items`; the legacy adapter reuses this. */
+export function getOrderingItems(question: ExerciseQuestionModel): OrderingItem[] {
   const opts = question.options ?? [];
   if (opts.length > 0) {
     return opts.map((o, index) => {
@@ -243,7 +251,8 @@ function getOrderingItems(question: ExerciseQuestionModel): OrderingItem[] {
   }));
 }
 
-function getExpectedOrderingValues(question: ExerciseQuestionModel): string[] {
+/** Expected ordering answer values; reorders by `settings.items` labels when present. */
+export function getExpectedOrderingValues(question: ExerciseQuestionModel): string[] {
   const items = getOrderingItems(question);
   const settingsItems = Array.isArray(question.settings?.items) ? (question.settings!.items as string[]) : [];
   if (settingsItems.length > 0) {
@@ -262,9 +271,7 @@ function scoreOrdering(
   const expected = getExpectedOrderingValues(question);
   const student = (answer.orderedValues ?? []).map((v) => String(v).trim());
   if (expected.length === 0) return 0;
-  if (student.length !== expected.length) {
-    return partial ? 0 : 0;
-  }
+  if (!isExactStringPermutation(student, expected)) return 0;
 
   let correct = 0;
   for (let i = 0; i < expected.length; i++) {
@@ -293,21 +300,34 @@ function scoreHotspot(
   const hotspots = Array.isArray(raw) ? (raw as Array<{ x: number; y: number }>) : [];
   if (hotspots.length === 0) return 0;
 
-  const coords = answer.coordinates ?? [];
+  const coords = (answer.coordinates ?? []).filter(
+    (coordinate) => Number.isFinite(coordinate.x) && Number.isFinite(coordinate.y)
+  );
+  if (coords.length !== (answer.coordinates ?? []).length) return 0;
+
+  const usedCoordinateIndexes = new Set<number>();
   let hits = 0;
   for (const h of hotspots) {
-    if (coords.some((c) => distance(c, h) <= HOTSPOT_TOLERANCE)) hits++;
+    const matchedIndex = coords.findIndex(
+      (coordinate, index) => !usedCoordinateIndexes.has(index) && distance(coordinate, h) <= HOTSPOT_TOLERANCE
+    );
+    if (matchedIndex < 0) continue;
+
+    usedCoordinateIndexes.add(matchedIndex);
+    hits++;
   }
 
   if (!partial) {
-    return hits === hotspots.length && coords.length >= hotspots.length ? maxPoints : 0;
+    return hits === hotspots.length && coords.length === hotspots.length ? maxPoints : 0;
   }
-  return (hits / hotspots.length) * maxPoints;
+
+  const responseCount = Math.max(hotspots.length, coords.length);
+  return responseCount > 0 ? (hits / responseCount) * maxPoints : 0;
 }
 
 export function scoreAnswerForQuestion(question: ExerciseQuestionModel, answer: AnswerData | null | undefined): number {
   const maxPoints = Number(question.points ?? 0);
-  if (maxPoints <= 0) return 0;
+  if (!Number.isFinite(maxPoints) || maxPoints <= 0) return 0;
   if (!answer || typeof answer !== 'object' || !('type' in answer)) return 0;
 
   const key = question.questionType;
@@ -366,18 +386,21 @@ export function scoreSubmissionAnswers(
   let total = 0;
 
   for (const q of questions) {
-    const model = dbQuestionToExerciseQuestionModel(q);
     const meta = getQuestionTypeById(q.questionTypeId);
-    if (!meta?.autoGradable) {
+    if (!meta) {
+      throw new Error(`Unknown question type id ${q.questionTypeId} for question ${q.id}`);
+    }
+    if (!meta.autoGradable) {
       scores.push({ questionId: q.id, points: 0 });
       continue;
     }
 
+    const model = dbQuestionToExerciseQuestionModel(q);
     const answer = answersByQuestionId.get(q.id);
-    const pts = Math.round(scoreAnswerForQuestion(model, answer ?? null));
+    const pts = clampPoints(scoreAnswerForQuestion(model, answer ?? null), Number(model.points ?? 0));
     scores.push({ questionId: q.id, points: pts });
     total += pts;
   }
 
-  return { scores, total };
+  return { scores, total: roundScore(total) };
 }

@@ -4,7 +4,8 @@ import {
   generateVideoDownloadPresignedUrls,
   TRANSCRIPT_VTT_PRESIGN_SECONDS
 } from '@cio/core/utils/s3';
-import { fetchQuestionsAndOptions, transformQuestions } from '@api/services/exercise/utils';
+import { transformQuestions } from '@api/services/exercise/utils';
+import { INTERNAL_QUESTION_TYPE_IDS } from '@cio/core/services/exercise/utils';
 import { getMediaTranscriptByAsset } from '@cio/db/queries';
 import { getAssetsByIds } from '@cio/db/queries/assets';
 import { mintHlsToken } from '@cio/core/services/assets/assets';
@@ -197,7 +198,13 @@ export async function getPublicCourseItemService(
       };
     }
 
-    const { exercise, questions } = await getExerciseWithRelationsOptimized(baseItem.id);
+    // Public delivery read: archived questions are excluded at the query level, and
+    // internal composite items must never ship to the browser (a PUBLIC payload
+    // includes answer keys, and composites have no public rendering path yet).
+    const { exercise, questions: activeQuestions } = await getExerciseWithRelationsOptimized(baseItem.id, undefined, {
+      questionScope: 'active'
+    });
+    const questions = activeQuestions.filter((question) => !INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId));
     const questionTypeMap = new Map(questions.map((question) => [question.questionType.id, question.questionType]));
     const allOptions = questions.flatMap((question) => question.options ?? []);
     const strippedQuestions = questions.map(({ questionType: _type, options: _options, ...rest }) => rest);

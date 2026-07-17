@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { ZComplianceSettings, ZCourseMetadata } from '../course/course';
 import { ZCourseType } from '../course/course-type';
-import { ZExerciseQuestionTypeId } from '../exercise/exercise';
+import { ZExerciseQuestionPoints, ZExerciseQuestionTypeId } from '../exercise/exercise';
 
 const ZSupportedLocale = z.enum(['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru', 'es', 'pl', 'da']);
 const LESSON_BODY_HTML_DESCRIPTION =
@@ -72,7 +72,9 @@ export type TCourseImportDraftExerciseOption = z.infer<typeof ZCourseImportDraft
 export const ZCourseImportDraftExerciseQuestion = z.object({
   question: z.string().min(1),
   questionTypeId: ZExerciseQuestionTypeId.optional(),
-  points: z.number().int().min(0).optional(),
+  // Same integer cap as authored exercise questions: an imported draft must not
+  // be able to publish a question whose points would fail canonical materialization.
+  points: ZExerciseQuestionPoints.optional(),
   order: z.number().int().min(0).optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
   options: z.array(ZCourseImportDraftExerciseOption).optional()

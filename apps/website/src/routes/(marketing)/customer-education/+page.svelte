@@ -311,7 +311,7 @@
     fileName="help-center.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your help center --&gt;</span>',
-      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://embed.classroom.tedydev.io.vn/course-widget"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
+      '<span class="text-pink-400">&lt;script</span> <span class="text-sky-300">src</span><span class="text-slate-500">=</span><span class="text-emerald-300">"https://classroom-embed.tedydev.io.vn/course-widget"</span><span class="text-pink-400">&gt;&lt;/script&gt;</span>',
       '',
       '<span class="text-pink-400">&lt;div</span> <span class="text-sky-300">data-cio-widget</span><span class="text-slate-500">=</span><span class="text-emerald-300">"getting-started"</span>',
       '  <span class="text-sky-300">data-org</span><span class="text-slate-500">=</span><span class="text-emerald-300">"yourcompany"</span>',

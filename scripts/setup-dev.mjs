@@ -13,7 +13,6 @@ import {
 } from './dev-environment-utils.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/classroomio';
 const SECRET_KEYS = new Set([
   'BETTER_AUTH_SECRET',
   'PRIVATE_SERVER_KEY',
@@ -70,15 +69,17 @@ export function buildManagedEnvMaps({
   webhookEncryptionKey
 }) {
   const isSelfHosted = String(mode === 'self-hosted');
-  const postgresPort = environment.POSTGRES_PORT ?? '5432';
-  const redisPort = environment.REDIS_PORT ?? '6379';
-  const minioApiPort = environment.MINIO_API_PORT ?? '9000';
-  const mailpitSmtpPort = environment.MAILPIT_SMTP_PORT ?? '1025';
+  const dashboardLocalPort = environment.DEV_DASHBOARD_LOCAL_PORT ?? '8000';
+  const apiLocalPort = environment.DEV_API_LOCAL_PORT ?? '8001';
+  const postgresPort = environment.POSTGRES_PORT ?? '8002';
+  const redisPort = environment.REDIS_PORT ?? '8003';
+  const minioApiPort = environment.MINIO_API_PORT ?? '8004';
+  const mailpitSmtpPort = environment.MAILPIT_SMTP_PORT ?? '8006';
   const publicHost = environment.DEV_PUBLIC_HOST ?? 'localhost';
   const apiPublicHost = environment.DEV_API_PUBLIC_HOST ?? publicHost;
   const publicProtocol = environment.DEV_PUBLIC_PROTOCOL ?? 'http';
-  const apiPublicPort = environment.DEV_API_PUBLIC_PORT ?? '3002';
-  const dashboardPublicPort = environment.DEV_DASHBOARD_PUBLIC_PORT ?? '5173';
+  const apiPublicPort = environment.DEV_API_PUBLIC_PORT ?? apiLocalPort;
+  const dashboardPublicPort = environment.DEV_DASHBOARD_PUBLIC_PORT ?? dashboardLocalPort;
   const apiPortSuffix =
     (publicProtocol === 'https' && apiPublicPort === '443') || (publicProtocol === 'http' && apiPublicPort === '80')
       ? ''
@@ -91,8 +92,7 @@ export function buildManagedEnvMaps({
       : `:${dashboardPublicPort}`;
   const dashboardPublicUrl = `${publicProtocol}://${publicHost}${dashboardPortSuffix}`;
   const redirectHost = environment.DEV_REDIRECT_HOST ?? '';
-  const databaseUrl =
-    postgresPort === '5432' ? DATABASE_URL : `postgresql://postgres:postgres@localhost:${postgresPort}/classroomio`;
+  const databaseUrl = `postgresql://postgres:postgres@localhost:${postgresPort}/classroomio`;
   const redisUrl = `redis://localhost:${redisPort}`;
   const minioEndpoint = `http://localhost:${minioApiPort}`;
   const objectStoragePublicUrl = environment.DEV_OBJECT_STORAGE_PUBLIC_URL ?? minioEndpoint;
@@ -121,10 +121,11 @@ export function buildManagedEnvMaps({
     [
       'apps/api/.env',
       new Map([
+        ['PORT', managedValue(apiLocalPort)],
         ['DATABASE_URL', managedValue(databaseUrl)],
         ['REDIS_URL', managedValue(redisUrl)],
         ['PUBLIC_SERVER_URL', managedValue(apiPublicUrl)],
-        ['TRUSTED_ORIGINS', managedValue(`${dashboardPublicUrl},http://localhost:5173`)],
+        ['TRUSTED_ORIGINS', managedValue(`${dashboardPublicUrl},http://localhost:${dashboardLocalPort}`)],
         ['DASHBOARD_ORIGIN', managedValue(dashboardPublicUrl)],
         ['PRIVATE_SERVER_KEY', managedValue(privateServerKey, true)],
         ['BETTER_AUTH_SECRET', managedValue(betterAuthSecret, true)],
@@ -140,7 +141,7 @@ export function buildManagedEnvMaps({
       'apps/dashboard/.env',
       new Map([
         ['PUBLIC_SERVER_URL', managedValue(apiPublicUrl)],
-        ['PRIVATE_SERVER_URL', managedValue('http://localhost:3002')],
+        ['PRIVATE_SERVER_URL', managedValue(`http://localhost:${apiLocalPort}`)],
         ['PRIVATE_SERVER_KEY', managedValue(privateServerKey, true)],
         ['PUBLIC_IS_SELFHOSTED', managedValue(isSelfHosted)],
         ['PUBLIC_IS_SELF_OWNED', managedValue('true')],

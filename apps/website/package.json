@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "vite dev --port 5174",
+    "dev": "vite dev --port 8008",
     "build": "vite build",
-    "preview": "wrangler dev --port 4173",
-    "start": "wrangler dev --port 3000",
+    "preview": "wrangler dev --port 8012",
+    "start": "wrangler dev --port 8013",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
     "format": "prettier --write .",

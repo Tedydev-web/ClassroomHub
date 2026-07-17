@@ -15,7 +15,7 @@ cp .env.example .env
 ./run-docker-full-stack.sh
 ```
 
-The script builds and starts: **postgres**, **redis**, **minio** (object storage), **api** (`localhost:3081`), **dashboard** (`localhost:3082`), and the **jobs** worker (background processing). Database schema setup runs automatically inside the `api` container on startup (see [`docker/entrypoint-api.sh`](../entrypoint-api.sh); skip with `SKIP_DB_SETUP=true`).
+The script builds and starts: **postgres**, **redis**, **minio** (object storage), **api** (`localhost:8001`), **dashboard** (`localhost:8000`), and the **jobs** worker (background processing). Database schema setup runs automatically inside the `api` container on startup (see [`docker/entrypoint-api.sh`](../entrypoint-api.sh); skip with `SKIP_DB_SETUP=true`).
 
 It auto-generates secure values for `PRIVATE_SERVER_KEY` and `BETTER_AUTH_SECRET` when they are missing or left at placeholders, and randomizes MinIO credentials on first provision.
 
@@ -94,8 +94,8 @@ Key points:
 
 ```bash
 docker compose --env-file .env -p classroomio -f docker-compose.yaml ps
-curl -sS http://localhost:3081/    # API — returns JSON
-curl -I  http://localhost:3082/    # Dashboard — returns 200
+curl -sS http://localhost:8001/    # API — returns JSON
+curl -I  http://localhost:8000/    # Dashboard — returns 200
 ```
 
 ## Seed Demo Data
@@ -148,8 +148,8 @@ Container names: `cio-postgres`, `cio-redis`, `cio-api`, `cio-dashboard`, `cio-j
 
 MinIO is included by default. The startup script auto-configures env vars, starts MinIO, and creates `videos`, `documents`, and `media` buckets.
 
-- **API endpoint:** `http://localhost:9000`
-- **Web UI:** `http://localhost:9001` (default: `minioadmin` / `minioadmin`)
+- **API endpoint:** `http://localhost:8004`
+- **Web UI:** `http://localhost:8005` (default: `minioadmin` / `minioadmin`)
 
 To start MinIO manually (e.g. after `--no-minio`):
 
@@ -157,13 +157,13 @@ To start MinIO manually (e.g. after `--no-minio`):
 docker compose -f docker-compose.yaml --profile minio up -d
 ```
 
-- **Web UI:** `http://localhost:9001` (credentials are the randomized `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` written to your `.env`).
+- **Web UI:** `http://localhost:8005` (credentials are the randomized `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` written to your `.env`).
 
 **Security:** The startup script randomizes `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` on first provision and mirrors them into `OBJECT_STORAGE_ACCESS_KEY_ID` / `OBJECT_STORAGE_SECRET_ACCESS_KEY`. If you change them, keep both pairs in sync.
 
 ### MinIO Web UI Not Loading
 
-If port 9001 does not respond, recreate the container:
+If host port 8005 does not respond, recreate the container:
 
 ```bash
 docker rm -f cio-minio
@@ -209,7 +209,7 @@ succeed in the UI but no email is delivered (`ECONNREFUSED` in logs).
 The bundled MinIO is fine for a single host. Two things matter for a real deployment:
 
 1. **Public media URLs must point at your domain, not `localhost`.** Media URLs are embedded in
-   pages served to browsers, so `http://localhost:9000/...` breaks for every remote visitor. The
+   pages served to browsers, so `http://localhost:8004/...` breaks for every remote visitor. The
    startup script derives `OBJECT_STORAGE_PUBLIC_ENDPOINT` and
    `OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL` from `DASHBOARD_ORIGIN` when it is a real domain — make
    sure your reverse proxy routes `<your-domain>/media` to MinIO on port 9000 (or set those two

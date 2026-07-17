@@ -9,6 +9,7 @@ interface SeedGroupmember {
   earlyAdopterGroupId: string;
   earlyAdopterAdminUserId: string;
   earlyAdopterStudentUserId: string;
+  extendedDemo?: boolean;
 }
 
 export async function seedGroupmembers({
@@ -19,12 +20,13 @@ export async function seedGroupmembers({
   studentUserId,
   earlyAdopterGroupId,
   earlyAdopterAdminUserId,
-  earlyAdopterStudentUserId
+  earlyAdopterStudentUserId,
+  extendedDemo = false
 }: SeedGroupmember) {
   const existingGroupMembers = await db.select().from(groupmember);
   const existingGroupMemberKeys = existingGroupMembers.map((gm) => `${gm.groupId}-${gm.profileId || gm.email}`);
 
-  const groupMembersToInsert = [
+  const groupMembers = [
     {
       groupId: mvcGroupId,
       roleId: 2, // TUTOR
@@ -59,7 +61,13 @@ export async function seedGroupmembers({
       roleId: 3, // STUDENT
       profileId: earlyAdopterStudentUserId
     }
-  ].filter((gm) => !existingGroupMemberKeys.includes(`${gm.groupId}-${gm.profileId || gm.email}`));
+  ];
+  const groupMembersToInsert = groupMembers
+    .filter((groupMember) => extendedDemo || groupMember.groupId !== earlyAdopterGroupId)
+    .filter(
+      (groupMember) =>
+        !existingGroupMemberKeys.includes(`${groupMember.groupId}-${groupMember.profileId || groupMember.email}`)
+    );
 
   if (groupMembersToInsert.length > 0) {
     await db.insert(groupmember).values(groupMembersToInsert);
