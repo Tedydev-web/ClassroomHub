@@ -26,8 +26,7 @@
   const videos = $derived(lessonApi.lesson?.videos || []);
 
   const hasTranscript = $derived.by(() => {
-    lessonVideoBus.transcriptSources;
-    return lessonVideoBus.hasTranscriptAvailable();
+    return lessonVideoBus.transcriptSources.size > 0 && lessonVideoBus.hasTranscriptAvailable();
   });
 
   let openDeleteVideoModal = $state(false);
