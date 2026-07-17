@@ -21,6 +21,7 @@ import { getCourseContentItems } from '../src/queries/course/content';
 import { getCourseProgress, hasSelectivelyAssignedExercises } from '../src/queries/course/course';
 import { getProfileCourseProgress, getUserExercisesStats } from '../src/queries/analytics/analytics';
 import { getLMSExercises } from '../src/queries/exercise/lms';
+import { seedQuestionTypes } from '../src/utils/seed/questionType';
 
 const ids = {
   organization: randomUUID(),
@@ -60,6 +61,7 @@ test('selective assignment recipients and submission locking are consistent', as
     await db.delete(schema.user).where(eq(schema.user.id, ids.unassignedUser));
   });
 
+  await seedQuestionTypes();
   await db.insert(schema.role).values({ id: 3, type: 'student' }).onConflictDoNothing();
   await db.insert(schema.submissionstatus).values({ id: 1, label: 'Submitted' }).onConflictDoNothing();
   await db.insert(schema.user).values([
