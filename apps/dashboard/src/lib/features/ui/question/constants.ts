@@ -1,4 +1,4 @@
-import { QUESTION_TYPE_KEY, QUESTION_TYPE_REGISTRY, type QuestionTypeKey } from '@cio/question-types';
+import { ENABLED_QUESTION_TYPE_REGISTRY, QUESTION_TYPE_KEY, type QuestionTypeKey } from '@cio/question-types';
 
 export { PREMIUM_QUESTION_TYPE_KEYS } from '@cio/question-types';
 
@@ -23,7 +23,7 @@ const QUESTION_TYPE_LABEL_KEYS: Partial<Record<QuestionTypeKey, string>> = {
     'course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.video_recording'
 };
 
-export const QUESTION_TYPES = QUESTION_TYPE_REGISTRY.filter((qt) => !qt.disabled).map((questionType) => ({
+export const QUESTION_TYPES = ENABLED_QUESTION_TYPE_REGISTRY.map((questionType) => ({
   id: questionType.id,
   key: questionType.key,
   label: questionType.label,

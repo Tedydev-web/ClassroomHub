@@ -1,7 +1,13 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getStorageConfig } from '@cio/core/config/storage';
-import { generateVideoDownloadPresignedUrls, generateVideoUploadPresignedUrl } from '@cio/core/utils/s3';
-import { createAsset, getAssetById, updateAsset } from '@cio/db/queries/assets';
+import { getUploadLimits } from '@cio/core/config/upload-limits';
+import {
+  generateVideoDownloadPresignedUrls,
+  generateVideoUploadPresignedUrl,
+  getVideoObjectMetadata
+} from '@cio/core/utils/s3';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
+import { createAsset, getAssetById, lockAssetById, updateAsset } from '@cio/db/queries/assets';
 import { getExerciseWithRelationsOptimized, resolveGroupMemberExerciseAccess } from '@cio/db/queries/exercise';
 import { getQuestionAnswersBySubmissionId, getSubmissionById } from '@cio/db/queries/submission';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
@@ -11,18 +17,103 @@ import type { VideoRecordingAnswerData } from '@cio/question-types';
 import {
   QUESTION_TYPE_IDS,
   VIDEO_RECORDING_MIN_DURATION_SECONDS,
-  getVideoRecordingMaxDurationSeconds
+  getVideoRecordingMaxDurationSeconds,
+  isRecord
 } from '@cio/question-types';
 import type {
   TExerciseVideoRecordingUploadComplete,
   TExerciseVideoRecordingUploadInit
 } from '@cio/utils/validation/exercise';
+import { hasExerciseAnswerAssetOwnership } from './exercise-answer-asset-ownership';
 
 type RecordingContext = {
   organizationId: string;
   groupMemberId: string;
   maxDurationSeconds: number;
 };
+
+type VideoRecordingAsset = NonNullable<Awaited<ReturnType<typeof getAssetById>>>;
+
+function assertVideoRecordingAsset(
+  asset: VideoRecordingAsset | null,
+  input: {
+    organizationId: string;
+    courseId: string;
+    exerciseId: string;
+    questionId: number;
+    groupMemberId: string;
+    profileId: string;
+    storageKey: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+  }
+): asserts asset is VideoRecordingAsset {
+  if (
+    !asset ||
+    (asset.status !== 'pending' && asset.status !== 'active') ||
+    asset.kind !== 'video' ||
+    asset.provider !== 'upload' ||
+    asset.storageProvider !== 's3' ||
+    asset.organizationId !== input.organizationId ||
+    asset.createdByProfileId !== input.profileId ||
+    asset.storageKey !== input.storageKey ||
+    asset.title !== input.fileName ||
+    asset.mimeType !== input.mimeType ||
+    asset.byteSize !== input.size ||
+    !hasExerciseAnswerAssetOwnership(asset.metadata, {
+      source: 'exercise_video_recording',
+      courseId: input.courseId,
+      exerciseId: input.exerciseId,
+      questionId: input.questionId,
+      groupMemberId: input.groupMemberId
+    })
+  ) {
+    throw new AppError('Recording asset is invalid', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+}
+
+function getCompletedRecordingUploadedAt(
+  asset: VideoRecordingAsset,
+  input: TExerciseVideoRecordingUploadComplete
+): string {
+  const metadata = isRecord(asset.metadata) ? asset.metadata : {};
+  const uploadedAt = metadata.uploadedAt;
+  const recordedAt = metadata.recordedAt;
+  const retakeCount = metadata.retakeCount;
+  if (
+    asset.status !== 'active' ||
+    asset.durationSeconds !== Math.ceil(input.durationSeconds) ||
+    recordedAt !== input.recordedAt ||
+    retakeCount !== (input.retakeCount ?? 0) ||
+    typeof uploadedAt !== 'string' ||
+    !Number.isFinite(Date.parse(uploadedAt))
+  ) {
+    throw new AppError('Completed recording metadata does not match', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  return uploadedAt;
+}
+
+function toVideoRecordingAnswer(
+  assetId: string,
+  input: TExerciseVideoRecordingUploadComplete,
+  uploadedAt: string
+): VideoRecordingAnswerData {
+  return {
+    type: 'VIDEO_RECORDING',
+    assetId,
+    storageKey: input.storageKey,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    size: input.size,
+    durationSeconds: Math.ceil(input.durationSeconds),
+    recordedAt: input.recordedAt,
+    uploadedAt,
+    provider: 'cloudflare',
+    retakeCount: input.retakeCount ?? 0
+  };
+}
 
 function getExtensionFromMimeType(mimeType: string): string {
   if (mimeType.includes('mp4')) return 'mp4';
@@ -49,11 +140,15 @@ async function getRecordingContext(
   const [organizationId, groupMemberId, exerciseWithRelations] = await Promise.all([
     getCourseOrganizationIdResolved(courseId),
     getGroupMemberIdByCourseAndProfile(courseId, profileId),
-    getExerciseWithRelationsOptimized(exerciseId)
+    // Active-take read: archived questions must not accept new recordings.
+    getExerciseWithRelationsOptimized(exerciseId, undefined, { questionScope: 'active' })
   ]);
 
   if (!groupMemberId) {
     throw new AppError('User is not a member of this course', ErrorCodes.UNAUTHORIZED, 403);
+  }
+  if (exerciseWithRelations.exercise.courseId !== courseId) {
+    throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
   }
 
   const question = exerciseWithRelations.questions.find((item) => item.id === questionId);
@@ -65,10 +160,12 @@ async function getRecordingContext(
     throw new AppError('Question is not a video recording question', ErrorCodes.VALIDATION_ERROR, 400);
   }
 
+  const settings = isRecord(question.settings) ? question.settings : null;
+
   return {
     organizationId,
     groupMemberId,
-    maxDurationSeconds: getVideoRecordingMaxDurationSeconds(question.settings as Record<string, unknown> | null)
+    maxDurationSeconds: getVideoRecordingMaxDurationSeconds(settings)
   };
 }
 
@@ -80,6 +177,10 @@ export async function initVideoRecordingUpload(
   input: TExerciseVideoRecordingUploadInit
 ) {
   const context = await getRecordingContext(courseId, exerciseId, questionId, profileId);
+  if (input.size > getUploadLimits().videoBytes) {
+    throw new AppError('Recording exceeds the upload size limit', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
   const extension = getExtensionFromMimeType(input.mimeType);
   const storageKey = [
     'exercise-recordings',
@@ -138,41 +239,70 @@ export async function completeVideoRecordingUpload(
     throw new AppError('Recording exceeds the configured duration', ErrorCodes.VALIDATION_ERROR, 400);
   }
 
-  const asset = await getAssetById(input.assetId, context.organizationId);
-  if (!asset || asset.storageKey !== input.storageKey) {
-    throw new AppError('Recording asset not found', ErrorCodes.NOT_FOUND, 404);
-  }
-
-  const uploadedAt = new Date().toISOString();
-
-  await updateAsset(input.assetId, context.organizationId, {
-    status: 'active',
-    storageKey: input.storageKey,
-    mimeType: input.mimeType,
-    byteSize: input.size,
-    title: input.fileName,
-    durationSeconds: Math.ceil(input.durationSeconds),
-    metadata: {
-      ...(asset.metadata && typeof asset.metadata === 'object' && !Array.isArray(asset.metadata) ? asset.metadata : {}),
-      recordedAt: input.recordedAt,
-      uploadedAt,
-      retakeCount: input.retakeCount ?? 0
-    }
-  });
-
-  return {
-    type: 'VIDEO_RECORDING',
-    assetId: input.assetId,
+  const candidateAsset = await getAssetById(input.assetId, context.organizationId);
+  const assetValidationInput = {
+    organizationId: context.organizationId,
+    courseId,
+    exerciseId,
+    questionId,
+    groupMemberId: context.groupMemberId,
+    profileId,
     storageKey: input.storageKey,
     fileName: input.fileName,
     mimeType: input.mimeType,
-    size: input.size,
-    durationSeconds: Math.ceil(input.durationSeconds),
-    recordedAt: input.recordedAt,
-    uploadedAt,
-    provider: 'cloudflare',
-    retakeCount: input.retakeCount ?? 0
+    size: input.size
   };
+  assertVideoRecordingAsset(candidateAsset, assetValidationInput);
+
+  if (candidateAsset.status === 'active') {
+    const uploadedAt = getCompletedRecordingUploadedAt(candidateAsset, input);
+    return toVideoRecordingAnswer(candidateAsset.id, input, uploadedAt);
+  }
+
+  const objectMetadata = await getVideoObjectMetadata(input.storageKey);
+  const objectContentType = objectMetadata.contentType?.split(';', 1)[0]?.trim().toLowerCase() ?? null;
+  if (objectMetadata.contentLength !== input.size || objectContentType !== input.mimeType) {
+    throw new AppError('Uploaded recording metadata is invalid', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  const uploadedAt = new Date().toISOString();
+  const completion = await db.transaction(async (tx) => {
+    const txClient = tx as DbOrTxClient;
+    const asset = await lockAssetById(input.assetId, context.organizationId, txClient);
+    assertVideoRecordingAsset(asset, assetValidationInput);
+
+    if (asset.status === 'active') {
+      return {
+        asset,
+        uploadedAt: getCompletedRecordingUploadedAt(asset, input)
+      };
+    }
+
+    const updatedAsset = await updateAsset(
+      input.assetId,
+      context.organizationId,
+      {
+        status: 'active',
+        durationSeconds: Math.ceil(input.durationSeconds),
+        metadata: {
+          ...(asset.metadata && typeof asset.metadata === 'object' && !Array.isArray(asset.metadata)
+            ? asset.metadata
+            : {}),
+          recordedAt: input.recordedAt,
+          uploadedAt,
+          retakeCount: input.retakeCount ?? 0
+        }
+      },
+      txClient
+    );
+    if (!updatedAsset) {
+      throw new AppError('Failed to activate recording asset', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    return { asset: updatedAsset, uploadedAt };
+  });
+
+  return toVideoRecordingAnswer(completion.asset.id, input, completion.uploadedAt);
 }
 
 export async function getVideoRecordingPlaybackUrl(

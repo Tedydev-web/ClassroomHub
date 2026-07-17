@@ -126,16 +126,13 @@ pnpm seed --organizations --organization-members --organization-plan
 | `--exercises`            | Exercises                                              |
 | `--questions`            | Questions                                              |
 | `--templates`            | Exercise templates                                     |
+| `--extended-demo`        | Include Coursera and Skillshare tenant fixtures        |
 
 ### Demo accounts
 
-| Email                            | Password | Role    | Plan          |
-| -------------------------------- | -------- | ------- | ------------- |
-| `admin@test.com`                 | `123456` | Admin   | Basic (free)  |
-| `student@test.com`               | `123456` | Student | Basic (free)  |
-| `enterprise@test.com`            | `123456` | Admin   | Enterprise    |
-| `enterprise-student@test.com`    | `123456` | Student | Enterprise    |
-| `early-adopter@test.com`         | `123456` | Admin   | Early Adopter |
-| `early-adopter-student@test.com` | `123456` | Student | Early Adopter |
+| Email              | Password | Role    | Tenant       |
+| ------------------ | -------- | ------- | ------------ |
+| `admin@test.com`   | `123456` | Admin   | `udemy-test` |
+| `student@test.com` | `123456` | Student | `udemy-test` |
 
-Mock user credentials are defined in `users.json`. The demo accounts above use the password `123456`.
+Mock user credentials are defined in `users.json`. The default seed inserts only the two accounts above. Run `pnpm seed --all --extended-demo` to include the optional Coursera and Skillshare fixtures.

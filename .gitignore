@@ -76,5 +76,15 @@ apps/db-agent
 
 # Keep focused API entitlement coverage even when a global ignore excludes test files.
 !apps/api/src/services/deployment-entitlements.test.ts
+!apps/api/src/services/course/completion.test.ts
 !apps/api/src/services/course/public-course-guard.test.ts
+!apps/api/src/services/exercise/file-upload.test.ts
 !apps/api/src/services/exercise/video-recording-access.test.ts
+
+# Keep assessment foundation coverage even when a global ignore excludes test files.
+!apps/api/src/services/exercise/question-revision-db.integration.test.ts
+!apps/api/src/services/submission/*.test.ts
+!apps/dashboard/src/lib/features/course/utils/exercise-autosave-utils.test.ts
+!packages/question-types/tests/
+!packages/question-types/tests/*.test.ts
+!packages/utils/scripts/exercise-question-type-validation.test.ts

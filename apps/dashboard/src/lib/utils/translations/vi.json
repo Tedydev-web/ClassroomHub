@@ -428,10 +428,10 @@
       "url_copied": "Đã sao chép URL khóa học",
       "url_copy_failed": "Không thể sao chép URL"
     },
-    "transcription_started": "Transcription started",
-    "transcription_start_failed": "Could not start transcription",
-    "transcription_completed": "Transcription finished",
-    "transcript_fetch_failed": "Could not load transcript",
+    "transcription_started": "Đã bắt đầu chép lời",
+    "transcription_start_failed": "Không thể bắt đầu chép lời",
+    "transcription_completed": "Đã hoàn tất chép lời",
+    "transcript_fetch_failed": "Không thể tải bản chép lời",
     "account": {
       "workspaceCreated": "Đã tạo không gian làm việc",
       "workspaceDeleted": "Đã xóa không gian làm việc",
@@ -481,10 +481,10 @@
       }
     },
     "webhooks": {
-      "saved": "Webhook saved.",
-      "deleted": "Webhook deleted.",
-      "test_queued": "Test delivery queued.",
-      "redelivery_queued": "Webhook redelivery queued."
+      "saved": "Đã lưu webhook.",
+      "deleted": "Đã xóa webhook.",
+      "test_queued": "Đã xếp hàng gửi thử.",
+      "redelivery_queued": "Đã xếp hàng gửi lại webhook."
     }
   },
   "explore": {
@@ -611,7 +611,7 @@
       "description": "Tuyển sinh được nhóm theo loại khóa học",
       "subtitle": "{total} lượt đăng ký trên tất cả các loại",
       "empty": "Chưa có dữ liệu tuyển sinh",
-      "course_count": "{count, plural, one {# course} other {# courses}}",
+      "course_count": "{count, plural, one {# khóa học} other {# khóa học}}",
       "views_short": "lượt xem",
       "types": {
         "SELF_PACED": "Tự nhịp độ",
@@ -669,7 +669,7 @@
       "progress_distribution_card_description": "Có bao nhiêu học sinh rơi vào mỗi mức độ hoàn thành.",
       "grade_distribution_card_description": "Có bao nhiêu học sinh rơi vào từng nhóm lớp.",
       "students_table_description": "Tổng quan có thể sắp xếp với các liên kết đến hồ sơ sinh viên.",
-      "kpi_team_tutors": "{count, plural, one {# tutor on the course team} other {# tutors on the course team}}",
+      "kpi_team_tutors": "{count, plural, one {# giảng viên trong nhóm phụ trách khóa học} other {# giảng viên trong nhóm phụ trách khóa học}}",
       "kpi_lessons_exercises": "{count, plural, one {# exercise} other {# exercises}} được ánh xạ tới bài học",
       "kpi_progress_grade": "{grade}% điểm bài tập trung bình của các học sinh đã đăng ký"
     }
@@ -736,10 +736,10 @@
       "select_cohorts": "Chọn nhóm học tập cụ thể",
       "select_cohorts_placeholder": "Chọn nhóm học tập..."
     },
-    "page_subtitle": "See who belongs to your org, who is learning, who is invited, and how to reach them.",
+    "page_subtitle": "Xem ai thuộc tổ chức của bạn, ai đang học, ai được mời và cách liên hệ với họ.",
     "user_analytics": {
       "title": "Hồ sơ sinh viên",
-      "page_subtitle": "Progress, grades, and activity across their courses."
+      "page_subtitle": "Tiến độ, điểm số và hoạt động trên các khóa học của họ."
     },
     "delete": {
       "action": "Xóa",
@@ -782,11 +782,11 @@
       "cancel": "Hủy bỏ",
       "give": "Đưa ra câu trả lời",
       "comment": "Bình luận",
-      "page_subtitle": "Start a thread the whole community can see, and tie it to a course if you want."
+      "page_subtitle": "Bắt đầu một chủ đề mà cả cộng đồng có thể thấy, và gắn nó với một khóa học nếu bạn muốn."
     },
-    "page_subtitle": "Questions and answers shared across your organization's courses.",
+    "page_subtitle": "Câu hỏi và câu trả lời được chia sẻ trên khắp các khóa học của tổ chức bạn.",
     "question": {
-      "page_subtitle": "Follow answers, vote, and join the discussion."
+      "page_subtitle": "Theo dõi câu trả lời, bình chọn và tham gia thảo luận."
     }
   },
   "course": {
@@ -1107,7 +1107,7 @@
           "print": "In",
           "export_hint": "Quá trình xuất sử dụng tên của bạn làm người nhận để bạn có thể xem trước bố cục cuối cùng.",
           "preview_failed": "Không thể tạo bản xem trước chứng chỉ",
-          "sample_recipient": "Eleanor Vance",
+          "sample_recipient": "Nguyễn Văn An",
           "sample_course": "Giấy chứng nhận xuất sắc",
           "sample_description": "Để ghi nhận thành tích xuất sắc và sự cống hiến gương mẫu cho nghề.",
           "sample_org": "Học viện nghệ thuật hoàng gia",
@@ -1224,17 +1224,17 @@
           "recipient_emails_placeholder": "sinh viên1@example.com, sinh viên2@example.com",
           "send_invite_emails": "Gửi email mời ngay lập tức",
           "create_email_invites": "Tạo lời mời qua email",
-          "existing_students_title": "Add existing org students",
+          "existing_students_title": "Thêm học viên có sẵn của tổ chức",
           "existing_students_description": "Chọn những sinh viên đã tham gia tổ chức này và cấp cho họ quyền truy cập trực tiếp vào khóa học này.",
-          "existing_students_search": "Search organization students",
-          "loading_existing_students": "Loading organization students...",
-          "no_existing_students": "No organization students are available to add.",
-          "no_matching_existing_students": "No organization students match your search.",
-          "notify_existing_students": "Send course access email",
-          "grant_access": "Grant Access",
-          "invite_new_students_title": "Invite new students",
-          "invite_new_students_description": "Invite new people into your organization and pre-assign them to this course. They will create an account, accept the invite, and get access.",
-          "invite_new_students": "Invite Students",
+          "existing_students_search": "Tìm học viên trong tổ chức",
+          "loading_existing_students": "Đang tải học viên của tổ chức...",
+          "no_existing_students": "Không có học viên nào của tổ chức để thêm.",
+          "no_matching_existing_students": "Không có học viên nào của tổ chức khớp với tìm kiếm của bạn.",
+          "notify_existing_students": "Gửi email cấp quyền truy cập khóa học",
+          "grant_access": "Cấp quyền truy cập",
+          "invite_new_students_title": "Mời học viên mới",
+          "invite_new_students_description": "Mời người mới vào tổ chức của bạn và gán sẵn họ vào khóa học này. Họ sẽ tạo tài khoản, chấp nhận lời mời và được cấp quyền truy cập.",
+          "invite_new_students": "Mời học viên",
           "existing_invites": "Lời mời hiện có",
           "refresh": "Làm mới",
           "loading_invites": "Đang tải lời mời...",
@@ -1268,7 +1268,7 @@
           "snackbar_failed_load_audit": "Không tải được lời mời kiểm tra",
           "snackbar_metadata_copied": "Đã sao chép siêu dữ liệu lời mời",
           "snackbar_email_invites_success": "Đã tạo {count} lời mời. Đã gửi {sent}, không thành công {failed}. Đã bỏ qua {duplicates} bản sao.",
-          "select_at_least_one_student": "Select at least one existing student",
+          "select_at_least_one_student": "Chọn ít nhất một học viên có sẵn",
           "presets": {
             "one_time_24h": "Một lần (24h)",
             "multi_use_7d": "Sử dụng nhiều lần (7 ngày)",
@@ -1463,7 +1463,7 @@
             "check": "Kiểm tra",
             "auto_graded_badge": "Chấm tự động",
             "manual_grading_required_badge": "Cần chấm thủ công",
-            "points_required_auto_grade": "Points must be greater than 0 for auto-graded exercises.",
+            "points_required_auto_grade": "Điểm phải lớn hơn 0 đối với bài tập chấm tự động.",
             "analytics": {
               "submissions": "bài nộp",
               "individual": {
@@ -1558,10 +1558,10 @@
                 "video_recording": "Quay video"
               },
               "select_type": "Chọn loại",
-              "question_type_auto_gradable": "Auto",
-              "question_type_auto_gradable_description": "Scored automatically by the system",
-              "question_type_manual_grading": "Manual",
-              "question_type_manual_grading_description": "Requires human review to score",
+              "question_type_auto_gradable": "Tự động",
+              "question_type_auto_gradable_description": "Được hệ thống chấm điểm tự động",
+              "question_type_manual_grading": "Thủ công",
+              "question_type_manual_grading_description": "Cần người xem xét để chấm điểm",
               "premium_question_type": "Nâng cấp để sử dụng loại câu hỏi này"
             },
             "delete_confirmation": {
@@ -1582,16 +1582,16 @@
               "textarea": {
                 "take": {
                   "placeholder": "Viết câu trả lời của bạn",
-                  "min_error": "Answer must be at least {min} characters.",
-                  "max_error": "Answer must be at most {max} characters.",
-                  "range_error": "Answer must be between {min} and {max} characters."
+                  "min_error": "Câu trả lời phải có ít nhất {min} ký tự.",
+                  "max_error": "Câu trả lời không được vượt quá {max} ký tự.",
+                  "range_error": "Câu trả lời phải có từ {min} đến {max} ký tự."
                 },
                 "edit": {
                   "placeholder": "Học sinh sẽ trả lời bằng văn bản dài",
-                  "min_characters_label": "Minimum characters",
-                  "min_characters_placeholder": "Minimum characters",
-                  "max_characters_label": "Maximum characters",
-                  "max_characters_placeholder": "Maximum characters"
+                  "min_characters_label": "Số ký tự tối thiểu",
+                  "min_characters_placeholder": "Số ký tự tối thiểu",
+                  "max_characters_label": "Số ký tự tối đa",
+                  "max_characters_placeholder": "Số ký tự tối đa"
                 }
               },
               "hotspot": {
@@ -2079,7 +2079,7 @@
                 "add_from_library": "Thêm từ thư viện",
                 "cancel_upload": "Hủy tải lên",
                 "upload_cancelled": "Tải lên bị người dùng hủy",
-                "max_files": "{count, plural, one {You can upload # file} other {You can upload # files}}",
+                "max_files": "{count, plural, one {Bạn có thể tải lên # tệp} other {Bạn có thể tải lên # tệp}}",
                 "max_files_and_size": "(tối đa {size} mỗi cái)",
                 "google_drive_choose": "Chọn từ Google Drive",
                 "google_drive_opening": "Đang mở bộ chọn…",
@@ -2101,14 +2101,14 @@
               "empty_title": "Chưa có video nào",
               "empty_description": "Thêm video từ YouTube, tải lên hoặc thư viện phương tiện của bạn",
               "google_drive": "Google Drive",
-              "generate_transcript": "Generate transcription",
-              "generate_transcript_in_progress": "Transcribing…",
+              "generate_transcript": "Tạo bản chép lời",
+              "generate_transcript_in_progress": "Đang chép lời…",
               "transcript": {
-                "title": "Transcript",
-                "captions_label": "Captions",
-                "language": "Language: {language}",
-                "empty": "No transcript yet. You can generate one from this card’s menu after the video is uploaded.",
-                "loading": "Loading transcript…",
+                "title": "Bản chép lời",
+                "captions_label": "Phụ đề",
+                "language": "Ngôn ngữ: {language}",
+                "empty": "Chưa có bản chép lời. Bạn có thể tạo từ menu của thẻ này sau khi video được tải lên.",
+                "loading": "Đang tải bản chép lời…",
                 "open_side_panel": "Mở bảng chép lời",
                 "edit": "Chỉnh sửa bản ghi",
                 "save": "Lưu",
@@ -2398,8 +2398,8 @@
       "empty": "Không tìm thấy kết quả nào"
     },
     "header": {
-      "preview": "Preview course",
-      "preview_missing_slug": "Generate and save a course slug before previewing.",
+      "preview": "Xem trước khóa học",
+      "preview_missing_slug": "Tạo và lưu slug khóa học trước khi xem trước.",
       "view_as_student": "Xem với tư cách sinh viên",
       "view_course_site": "Xem trang khóa học"
     },
@@ -2608,12 +2608,12 @@
       "valid_until": "Có hiệu lực cho đến khi"
     },
     "course_filter": {
-      "date_created_newest": "Date Created: Newest first",
-      "date_created_oldest": "Date Created: Oldest first",
-      "published_first": "Published: Published first",
-      "unpublished_first": "Published: Unpublished first",
-      "most_lessons": "Lessons: Most first",
-      "fewest_lessons": "Lessons: Fewest first",
+      "date_created_newest": "Ngày tạo: Mới nhất trước",
+      "date_created_oldest": "Ngày tạo: Cũ nhất trước",
+      "published_first": "Xuất bản: Đã xuất bản trước",
+      "unpublished_first": "Xuất bản: Chưa xuất bản trước",
+      "most_lessons": "Bài học: Nhiều nhất trước",
+      "fewest_lessons": "Bài học: Ít nhất trước",
       "date_created": "Ngày tạo",
       "published": "Đã xuất bản",
       "lessons": "Bài học"
@@ -2625,12 +2625,12 @@
       "popover_title": "Bộ lọc",
       "sort": "Sắp xếp",
       "order": "Thứ tự",
-      "ascending": "Asc",
-      "descending": "Desc",
+      "ascending": "Tăng dần",
+      "descending": "Giảm dần",
       "tags": "Thẻ",
       "empty_tags": "Không có thẻ nào"
     },
-    "page_subtitle": "Where lessons turn into courses and courses turn into enrollments."
+    "page_subtitle": "Nơi bài học trở thành khóa học và khóa học trở thành lượt ghi danh."
   },
   "ai": {
     "help_me": "Giúp tôi viết",
@@ -2657,13 +2657,13 @@
     "lms_dashboard_hero": "Hôm nay là một ngày khác để đưa bạn đến gần hơn với mục tiêu học tập của mình. Đừng bỏ cuộc, bạn càng học nhiều thì bạn càng tiến bộ hơn.",
     "lessons_completed": "Bài học đã hoàn thành",
     "no_courses_started": "Không có khóa học nào bắt đầu",
-    "certificates_earned": "Certificates issued",
-    "certificates_earned_description": "Total certificates issued to students in your organization",
+    "certificates_earned": "Chứng chỉ đã cấp",
+    "certificates_earned_description": "Tổng số chứng chỉ đã cấp cho học viên trong tổ chức của bạn",
     "certification_rate": "Đã chứng nhận",
-    "recent_certifications": "Recent certifications",
-    "no_certifications_yet": "No certificates earned yet",
-    "no_certifications_yet_description": "When students complete a course and earn a certificate, they will appear here",
-    "view_courses": "View courses",
+    "recent_certifications": "Chứng chỉ gần đây",
+    "no_certifications_yet": "Chưa có chứng chỉ nào",
+    "no_certifications_yet_description": "Khi học viên hoàn thành khóa học và nhận chứng chỉ, chúng sẽ xuất hiện ở đây",
+    "view_courses": "Xem khóa học",
     "no_of_courses": "Số lượng khóa học",
     "no_courses_description": "Các khóa học được tạo trong tổ chức này",
     "total_students": "Tổng số học sinh",
@@ -3059,7 +3059,7 @@
       "not_available": "không áp dụng"
     },
     "empty_description": "Tài sản không tồn tại hoặc không có sẵn trong tổ chức này.",
-    "page_subtitle": "Keep files, videos, and links for your courses in one library.",
+    "page_subtitle": "Lưu giữ tệp, video và liên kết cho các khóa học của bạn trong một thư viện.",
     "thumbnails": {
       "manage_title": "Quản lý hình thu nhỏ",
       "manage_description": "Xem trước video, chọn một trong các khung được tạo tự động hoặc tải lên khung của riêng bạn.",
@@ -3095,7 +3095,7 @@
       "provider": "Chúng tôi sử dụng Polar để giúp quản lý việc thanh toán của bạn",
       "open_billing": "Thanh toán mở",
       "error": "Đã xảy ra lỗi khi mở thanh toán",
-      "page_subtitle": "Your plan, billing portal, and how you pay for Classroom.",
+      "page_subtitle": "Gói dịch vụ, cổng thanh toán và cách bạn thanh toán cho Classroom.",
       "ai_credits": "AI credits",
       "ai_tokens_used": "AI credits đã dùng trong tháng này",
       "ai_bonus_credits": "AI credits thưởng có sẵn"
@@ -3109,7 +3109,7 @@
       "connect_button": "Kết nối",
       "success_message": "Tích hợp thành công",
       "disconnect": "Ngắt kết nối",
-      "page_subtitle": "Connect Telegram to get notified when important things happen."
+      "page_subtitle": "Kết nối Telegram để nhận thông báo khi có việc quan trọng xảy ra."
     },
     "landing_page": {
       "heading": "Trang đích",
@@ -3205,7 +3205,7 @@
         "show_background": "Hiển thị nền",
         "hide_background": "Ẩn nền"
       },
-      "page_subtitle": "Shape the marketing page people see before they sign up or enroll.",
+      "page_subtitle": "Định hình trang giới thiệu mà mọi người thấy trước khi đăng ký hoặc ghi danh.",
       "editor": {
         "save": "Lưu",
         "close": "Đóng",
@@ -3218,18 +3218,18 @@
           "link_href": "URL liên kết",
           "remove": "Xóa liên kết chân trang",
           "brand": {
-            "legend": "Brand",
-            "description": "Your organization logo and name always appear here (from organization settings). Add optional details below.",
-            "preview_label": "Footer brand preview",
-            "tagline": "Tagline",
-            "tagline_placeholder": "Small line under your brand",
-            "copyright": "Copyright",
-            "copyright_placeholder": "© 2026 Your Organization",
-            "social_label": "Social links",
-            "platform_field": "Platform",
-            "url_label": "Profile URL",
-            "add_social": "Add social link",
-            "remove_social": "Remove social link",
+            "legend": "Thương hiệu",
+            "description": "Logo và tên tổ chức của bạn luôn hiển thị ở đây (lấy từ cài đặt tổ chức). Thêm các chi tiết tùy chọn bên dưới.",
+            "preview_label": "Xem trước thương hiệu ở chân trang",
+            "tagline": "Khẩu hiệu",
+            "tagline_placeholder": "Dòng chữ nhỏ dưới thương hiệu của bạn",
+            "copyright": "Bản quyền",
+            "copyright_placeholder": "© 2026 Tổ chức của bạn",
+            "social_label": "Liên kết mạng xã hội",
+            "platform_field": "Nền tảng",
+            "url_label": "URL hồ sơ",
+            "add_social": "Thêm liên kết mạng xã hội",
+            "remove_social": "Xóa liên kết mạng xã hội",
             "platforms": {
               "instagram": "Instagram",
               "x": "X",
@@ -3242,25 +3242,25 @@
             }
           },
           "columns": {
-            "legend": "Link columns",
-            "description": "Add grouped links (like Company or Resources). Enables a multi-column footer layout.",
-            "empty_hint": "No columns yet — add one to show a multi-column footer beside your brand.",
-            "add": "Add column",
-            "remove": "Remove column",
-            "heading_label": "Column heading",
-            "heading_placeholder": "e.g. Company",
-            "add_link": "Add link",
-            "remove_link": "Remove link",
-            "links_max_reached": "Up to 10 links per column",
-            "cta_toggle": "Add CTA link",
-            "cta_label": "CTA label",
-            "cta_href": "CTA URL",
-            "cta_default_label": "Explore more",
-            "max_reached": "Up to 6 columns"
+            "legend": "Cột liên kết",
+            "description": "Thêm các nhóm liên kết (như Công ty hoặc Tài nguyên). Bật bố cục chân trang nhiều cột.",
+            "empty_hint": "Chưa có cột nào — thêm một cột để hiển thị chân trang nhiều cột bên cạnh thương hiệu của bạn.",
+            "add": "Thêm cột",
+            "remove": "Xóa cột",
+            "heading_label": "Tiêu đề cột",
+            "heading_placeholder": "ví dụ: Công ty",
+            "add_link": "Thêm liên kết",
+            "remove_link": "Xóa liên kết",
+            "links_max_reached": "Tối đa 10 liên kết mỗi cột",
+            "cta_toggle": "Thêm liên kết CTA",
+            "cta_label": "Nhãn CTA",
+            "cta_href": "URL của CTA",
+            "cta_default_label": "Khám phá thêm",
+            "max_reached": "Tối đa 6 cột"
           },
           "bottom": {
-            "legend": "Bottom row",
-            "add_link": "Add bottom link"
+            "legend": "Hàng dưới cùng",
+            "add_link": "Thêm liên kết hàng dưới"
           }
         },
         "embed": {
@@ -3327,7 +3327,7 @@
           "embed": "Nhúng",
           "embed_desc": "Phần iframe tùy chọn hiển thị sau các khóa học.",
           "footer": "Chân trang",
-          "footer_desc": "Brand line, socials, multi-column links, and bottom legal row.",
+          "footer_desc": "Dòng thương hiệu, mạng xã hội, liên kết nhiều cột và hàng pháp lý ở dưới cùng.",
           "links": "Liên kết",
           "links_desc": "Khối liên kết bên ngoài tùy chọn (trung tâm trợ giúp, cộng đồng, hội thảo trên web) được hiển thị sau các khóa học."
         },
@@ -3501,7 +3501,7 @@
         "accepted": "Đã chấp nhận:",
         "validation_error": "Kích thước tệp vượt quá giới hạn tối đa:"
       },
-      "page_subtitle": "Your name, email, and how you appear wherever you work in Classroom."
+      "page_subtitle": "Tên, email và cách bạn hiển thị ở mọi nơi bạn làm việc trong Classroom."
     },
     "tabs": {
       "profile_tab": "Hồ sơ",
@@ -3629,7 +3629,7 @@
         "sso": "SSO",
         "token_auth": "Xác thực mã thông báo"
       },
-      "page_subtitle": "Control sign-up, login, SSO, and token-based access for this org."
+      "page_subtitle": "Kiểm soát đăng ký, đăng nhập, SSO và quyền truy cập bằng token cho tổ chức này."
     },
     "token_auth": {
       "heading": "Xác thực mã thông báo",
@@ -3652,12 +3652,12 @@
       "actions_menu": "Hành động xác thực mã thông báo"
     },
     "teams": {
-      "page_subtitle": "Invite teammates and control who helps run this organization."
+      "page_subtitle": "Mời đồng nghiệp và kiểm soát ai được hỗ trợ vận hành tổ chức này."
     },
     "ai_credits": {
       "sub_title": "AI credits",
       "page_subtitle": "Theo dõi việc sử dụng trợ lý AI, mức tiêu thụ của nhóm và mua các gói AI credits.",
-      "cost_note": "Credit usage is weighted by model cost. Gemini 3.1 Flash Lite counts as 1 credit unit per token. GPT-5.4 Mini and Kimi K2.6 count as 4× per token. Claude Sonnet 4.6 counts as 11× per token, reflecting its higher API cost.",
+      "cost_note": "Mức sử dụng credit được tính theo chi phí của mô hình. Gemini 3.1 Flash Lite tính 1 đơn vị credit mỗi token. GPT-5.4 Mini và Kimi K2.6 tính 4× mỗi token. Claude Sonnet 4.6 tính 11× mỗi token, phản ánh chi phí API cao hơn.",
       "included": {
         "title": "Mức sử dụng được bao gồm",
         "subtitle": "AI credits hàng tháng có trong gói của bạn.",
@@ -3673,7 +3673,7 @@
         "heading": "Sử dụng",
         "subheading": "Mức tiêu thụ AI credits hàng ngày trong tháng này.",
         "tokens": "Credits",
-        "total_tokens": "Total credits",
+        "total_tokens": "Tổng credits",
         "total_requests": "Tổng số yêu cầu",
         "empty": "Chưa ghi nhận mức sử dụng nào trong tháng này."
       },
@@ -3689,14 +3689,14 @@
         "title": "Mua thêm credits",
         "description": "Mỗi gói bổ sung thêm 5,000,000 credits với giá $5 USD. Chọn số lượng gói bạn cần.",
         "quantity_hint": "gói",
-        "preview": "{quantity} pack(s) · {tokens} credits · ${dollars}",
+        "preview": "{quantity} gói · {tokens} credits · ${dollars}",
         "buy_button": "Mua với ${dollars}"
       }
     },
     "notifications": {
       "heading": "Thông báo",
       "page_title": "Thông báo",
-      "page_subtitle": "Chọn thông báo email bạn nhận và, với tư cách quản trị viên, email mà tổ chức của bạn gửi.",
+      "page_subtitle": "Chọn những thông báo email bạn nhận và, với vai trò quản trị viên, những email mà tổ chức của bạn gửi đi.",
       "toggles": {
         "courseCompletion": {
           "label": "Hoàn thành khóa học và chứng chỉ",
@@ -3708,15 +3708,15 @@
         },
         "session": {
           "label": "Nhắc nhở và cập nhật buổi học trực tiếp",
-          "description": "Gửi email cho học viên trước buổi học trực tiếp và khi chi tiết buổi học thay đổi."
+          "description": "Gửi email cho học viên trước buổi học trực tiếp và khi thông tin buổi học thay đổi."
         },
         "cohortReminder": {
           "label": "Nhắc nhở mục tiêu nhóm học",
-          "description": "Gửi email cho học viên về mục tiêu học tập sắp tới hoặc quá hạn."
+          "description": "Gửi email cho học viên về các mục tiêu học tập của nhóm sắp đến hạn hoặc quá hạn."
         },
         "quizAssigned": {
           "label": "Bài tập được giao",
-          "description": "Gửi email cho học viên khi bài tập được giao hoặc nhắc nhở."
+          "description": "Gửi email cho học viên khi có bài tập được giao hoặc nhắc nhở."
         },
         "newsfeed": {
           "label": "Thông báo và bình luận khóa học",
@@ -3728,16 +3728,16 @@
         },
         "newSubmission": {
           "label": "Bài nộp mới cần chấm",
-          "description": "Gửi email cho gia sư khi học viên nộp bài cần chấm điểm."
+          "description": "Gửi email cho giảng viên khi học viên nộp bài cần chấm điểm."
         },
         "newStudent": {
           "label": "Học viên mới tham gia",
-          "description": "Gửi email cho gia sư khi học viên ghi danh vào khóa học."
+          "description": "Gửi email cho giảng viên khi có học viên ghi danh vào khóa học."
         }
       },
       "org": {
         "heading": "Mặc định của tổ chức",
-        "description": "Khi tắt ở đây, không ai trong tổ chức của bạn nhận email đó. Thành viên vẫn có thể từ chối các email bạn để bật.",
+        "description": "Khi tắt ở đây, không ai trong tổ chức của bạn nhận được email đó. Thành viên vẫn có thể từ chối những email bạn để bật.",
         "save": "Lưu mặc định của tổ chức",
         "save_success": "Đã lưu mặc định thông báo của tổ chức"
       },
@@ -3777,7 +3777,8 @@
     "launch_week": "Tuần ra mắt",
     "feedback": "Phản hồi",
     "documentation": "Tài liệu",
-    "need_help": "Cần giúp đỡ?"
+    "need_help": "Cần giúp đỡ?",
+    "language": "Ngôn ngữ"
   },
   "login": {
     "welcome": "Chào mừng trở lại",
@@ -4011,7 +4012,7 @@
     "common": {
       "not_available": "không áp dụng"
     },
-    "page_subtitle": "Organize courses with labels so filters and lists stay easy to scan."
+    "page_subtitle": "Sắp xếp khóa học bằng nhãn để bộ lọc và danh sách luôn dễ theo dõi."
   },
   "invite": {
     "organization": {
@@ -4065,12 +4066,12 @@
         "generate": "Tạo khóa MCP",
         "secret_once": "Bí mật này được hiển thị một lần. Sao chép nó vào ứng dụng khách MCP của bạn ngay bây giờ.",
         "modal": {
-          "title": "Create MCP key",
-          "description": "Choose a name for this MCP key before it is generated.",
-          "name_label": "Key name",
+          "title": "Tạo khóa MCP",
+          "description": "Chọn tên cho khóa MCP này trước khi nó được tạo.",
+          "name_label": "Tên khóa",
           "name_placeholder": "Classroom OpenCode",
-          "cancel": "Cancel",
-          "save": "Create key"
+          "cancel": "Hủy",
+          "save": "Tạo khóa"
         }
       },
       "usage": {
@@ -4084,31 +4085,31 @@
         "rate_limits_description": "Yêu cầu đọc/ghi/xuất bản được phép mỗi phút.",
         "used_label": "Đã sử dụng:"
       },
-      "page_subtitle": "Connect AI tools to Classroom with org-scoped keys you can rotate anytime."
+      "page_subtitle": "Kết nối các công cụ AI với Classroom bằng khóa theo phạm vi tổ chức mà bạn có thể xoay vòng bất cứ lúc nào."
     },
     "api": {
-      "subtitle": "Manage API keys to integrate with the Classroom public API.",
+      "subtitle": "Quản lý khóa API để tích hợp với API công khai của Classroom.",
       "keys": {
-        "title": "API keys",
-        "description": "These keys authenticate the current organization when calling the Classroom public API.",
-        "generate": "Generate API key",
-        "secret_once": "This secret is shown once. Copy it and store it securely.",
-        "empty_title": "No API keys yet",
-        "empty_description": "Create the first org-scoped API key to use the Classroom public API.",
+        "title": "Khóa API",
+        "description": "Các khóa này xác thực tổ chức hiện tại khi gọi API công khai của Classroom.",
+        "generate": "Tạo khóa API",
+        "secret_once": "Khóa bí mật này chỉ hiển thị một lần. Hãy sao chép và lưu trữ an toàn.",
+        "empty_title": "Chưa có khóa API nào",
+        "empty_description": "Tạo khóa API đầu tiên theo phạm vi tổ chức để sử dụng API công khai của Classroom.",
         "modal": {
-          "title": "Create API key",
-          "description": "Choose a name for this API key before it is generated.",
-          "name_label": "Key name",
-          "name_placeholder": "My API integration",
-          "cancel": "Cancel",
-          "save": "Create key"
+          "title": "Tạo khóa API",
+          "description": "Chọn tên cho khóa API này trước khi nó được tạo.",
+          "name_label": "Tên khóa",
+          "name_placeholder": "Tích hợp API của tôi",
+          "cancel": "Hủy",
+          "save": "Tạo khóa"
         }
       },
       "setup": {
         "title": "Bắt đầu nhanh",
         "description": "Dùng khóa API làm Bearer token cho mọi yêu cầu. Thay chỗ giữ chỗ bằng khóa ở trên, hoặc dán secret ngay sau khi tạo khóa."
       },
-      "view_docs": "View Docs"
+      "view_docs": "Xem tài liệu"
     },
     "keys": {
       "active": "Đang hoạt động",
@@ -4149,50 +4150,50 @@
       "disabled_description": "Chỉ quản trị viên tổ chức mới có thể tạo, xoay hoặc thu hồi khóa tự động hóa. Thầy cô có thể xem lại hướng dẫn thiết lập tại đây."
     },
     "zapier": {
-      "page_subtitle": "Automate Classroom with thousands of apps through Zapier. Coming soon."
+      "page_subtitle": "Tự động hóa Classroom với hàng nghìn ứng dụng thông qua Zapier. Sắp ra mắt."
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
-      "endpoints_title": "Webhook endpoints",
-      "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
-      "add": "Add webhook",
-      "edit": "Edit webhook",
-      "delete": "Delete",
-      "delete_confirm": "Delete this webhook endpoint and its delivery history?",
-      "send_test": "Send test",
-      "deliveries": "Deliveries",
-      "actions": "Webhook actions",
-      "name": "Name",
-      "payload_url": "Payload URL",
-      "events": "Events",
-      "active": "Active",
-      "all_events": "All",
-      "secret": "Signing secret",
-      "secret_help": "Leave blank to generate a secure secret automatically.",
-      "secret_unchanged": "Leave blank to keep the current secret.",
-      "secret_once": "This signing secret is shown once. Store it securely.",
-      "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
-      "save": "Save webhook",
-      "cancel": "Cancel",
-      "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
-      "event": "Event",
-      "status": "Status",
-      "attempt": "Attempt",
-      "http_status": "HTTP status",
-      "no_deliveries": "No deliveries yet.",
-      "details": "Details",
-      "redeliver": "Redeliver",
-      "request_payload": "Request payload",
-      "response": "Response",
-      "no_response": "No response was recorded."
+      "subtitle": "Gửi các sự kiện Classroom đã ký đến hệ thống bên ngoài của bạn.",
+      "endpoints_title": "Điểm cuối webhook",
+      "endpoints_description": "Quản lý đích đến, đăng ký sự kiện, gửi thử và lịch sử gửi.",
+      "add": "Thêm webhook",
+      "edit": "Chỉnh sửa webhook",
+      "delete": "Xóa",
+      "delete_confirm": "Xóa điểm cuối webhook này và lịch sử gửi của nó?",
+      "send_test": "Gửi thử",
+      "deliveries": "Lượt gửi",
+      "actions": "Thao tác webhook",
+      "name": "Tên",
+      "payload_url": "URL payload",
+      "events": "Sự kiện",
+      "active": "Hoạt động",
+      "all_events": "Tất cả",
+      "secret": "Khóa bí mật để ký",
+      "secret_help": "Để trống để tự động tạo khóa bí mật an toàn.",
+      "secret_unchanged": "Để trống để giữ khóa bí mật hiện tại.",
+      "secret_once": "Khóa bí mật để ký này chỉ hiển thị một lần. Hãy lưu trữ an toàn.",
+      "events_help": "Không chọn sự kiện nào để nhận mọi sự kiện được hỗ trợ.",
+      "form_description": "Classroom gửi các yêu cầu JSON được ký bằng HMAC-SHA256.",
+      "save": "Lưu webhook",
+      "cancel": "Hủy",
+      "empty_title": "Chưa có điểm cuối webhook nào",
+      "empty_description": "Thêm một điểm cuối để kết nối các sự kiện Classroom với hệ thống khác.",
+      "event": "Sự kiện",
+      "status": "Trạng thái",
+      "attempt": "Lần thử",
+      "http_status": "Mã trạng thái HTTP",
+      "no_deliveries": "Chưa có lượt gửi nào.",
+      "details": "Chi tiết",
+      "redeliver": "Gửi lại",
+      "request_payload": "Nội dung yêu cầu",
+      "response": "Phản hồi",
+      "no_response": "Không có phản hồi nào được ghi lại."
     }
   },
   "ai_assistant": {
     "empty_state": "Hãy yêu cầu tôi trợ giúp về nội dung khóa học của bạn — soạn thảo bài học, tạo câu hỏi hoặc lên kế hoạch cho khóa học từ một tài liệu.",
     "input_placeholder": "Hãy hỏi trợ lý AI...",
-    "quote_lesson_note": "Quote in assistant",
+    "quote_lesson_note": "Trích dẫn trong trợ lý",
     "attach_document": "Đính kèm tài liệu (PDF, DOCX, PPTX)",
     "upgrade_to_upload": "Nâng cấp để tải lên tài liệu",
     "tokens_exhausted": "Đã đạt đến giới hạn mã thông báo AI hàng tháng.",
@@ -4213,76 +4214,76 @@
     "agent_running_warning": "Những thay đổi sẽ xuất hiện trong khóa học sau khi tác nhân hoàn tất. Đừng tải lại trang.",
     "agent_running_warning_dismiss": "Đóng",
     "quick_action": {
-      "upload_document_course": "Upload a document to create a course",
-      "draft_lesson": "Draft a lesson",
-      "generate_questions_from_lesson": "Generate questions from this lesson",
-      "summarize_lesson": "Summarize this lesson",
-      "publish_course": "Help me publish this course"
+      "upload_document_course": "Tải tài liệu lên để tạo khóa học",
+      "draft_lesson": "Soạn thảo một bài học",
+      "generate_questions_from_lesson": "Tạo câu hỏi từ bài học này",
+      "summarize_lesson": "Tóm tắt bài học này",
+      "publish_course": "Giúp tôi xuất bản khóa học này"
     },
-    "plan_applying_changes": "Applying changes",
-    "plan_working": "Working",
-    "plan_progress": "{completed} / {total} steps completed",
-    "stop": "Stop",
-    "copy_full_error": "Copy full error",
-    "resize_panel_aria_label": "Resize AI assistant panel",
-    "generic_working": "Working",
-    "run_failed_after": "{action} did not finish successfully.",
+    "plan_applying_changes": "Đang áp dụng thay đổi",
+    "plan_working": "Đang xử lý",
+    "plan_progress": "Đã hoàn thành {completed} / {total} bước",
+    "stop": "Dừng",
+    "copy_full_error": "Sao chép toàn bộ lỗi",
+    "resize_panel_aria_label": "Thay đổi kích thước bảng trợ lý AI",
+    "generic_working": "Đang xử lý",
+    "run_failed_after": "{action} không hoàn tất thành công.",
     "tool": {
       "pending": {
-        "working": "Working",
-        "unknown_tool": "Running {toolName}",
-        "get_course_structure": "Reading course structure",
-        "get_lesson_content": "Reading lesson content",
-        "get_exercise_details": "Reading exercise",
-        "create_section": "Creating section",
-        "update_section": "Updating section",
-        "create_lesson": "Creating lesson",
-        "update_lesson": "Updating lesson",
-        "update_lesson_content": "Writing lesson content",
-        "create_exercise": "Creating exercise",
-        "create_exercise_section": "Creating exercise section",
-        "update_exercise": "Updating exercise",
-        "update_exercise_section": "Updating exercise section",
-        "add_questions": "Adding questions",
-        "update_questions": "Updating questions",
-        "reorder_content": "Reordering content",
-        "update_course_landing_page": "Updating landing page",
-        "check_course_go_live_readiness": "Checking go-live readiness",
-        "go_live_course": "Publishing course",
-        "generate_course_plan": "Generating course plan",
+        "working": "Đang xử lý",
+        "unknown_tool": "Đang chạy {toolName}",
+        "get_course_structure": "Đang đọc cấu trúc khóa học",
+        "get_lesson_content": "Đang đọc nội dung bài học",
+        "get_exercise_details": "Đang đọc bài tập",
+        "create_section": "Đang tạo phần",
+        "update_section": "Đang cập nhật phần",
+        "create_lesson": "Đang tạo bài học",
+        "update_lesson": "Đang cập nhật bài học",
+        "update_lesson_content": "Đang viết nội dung bài học",
+        "create_exercise": "Đang tạo bài tập",
+        "create_exercise_section": "Đang tạo phần bài tập",
+        "update_exercise": "Đang cập nhật bài tập",
+        "update_exercise_section": "Đang cập nhật phần bài tập",
+        "add_questions": "Đang thêm câu hỏi",
+        "update_questions": "Đang cập nhật câu hỏi",
+        "reorder_content": "Đang sắp xếp lại nội dung",
+        "update_course_landing_page": "Đang cập nhật trang giới thiệu",
+        "check_course_go_live_readiness": "Đang kiểm tra mức độ sẵn sàng phát hành",
+        "go_live_course": "Đang xuất bản khóa học",
+        "generate_course_plan": "Đang tạo kế hoạch khóa học",
         "ask_template_questions": "Chuẩn bị mẫu biểu mẫu",
         "fetch_documentation_url": "Trang đọc tài liệu",
         "fetch_documentation_url_with_url": "Đang đọc {url}"
       },
       "meta": {
-        "lesson_char_count": "({count, plural, one {# character} other {# characters}})",
-        "landing_page_preview": "· Preview changes",
-        "exercise_questions_added": "· {count, plural, one {# question added} other {# questions added}}",
-        "exercise_questions_updated": "· {count, plural, one {# question updated} other {# questions updated}}"
+        "lesson_char_count": "({count, plural, one {# ký tự} other {# ký tự}})",
+        "landing_page_preview": "· Xem trước thay đổi",
+        "exercise_questions_added": "· {count, plural, one {đã thêm # câu hỏi} other {đã thêm # câu hỏi}}",
+        "exercise_questions_updated": "· {count, plural, one {đã cập nhật # câu hỏi} other {đã cập nhật # câu hỏi}}"
       },
       "done": {
-        "generic": "Done",
-        "create_section": "Created section: {title}",
-        "update_section": "Updated section: {title}",
-        "create_lesson": "Created lesson: {title}",
-        "update_lesson": "Updated lesson: {title}",
-        "update_lesson_content_fallback": "Wrote {count, plural, one {# character} other {# characters}}",
-        "create_exercise": "Created exercise «{title}» · {count, plural, one {# question} other {# questions}}",
-        "update_exercise": "Updated exercise: {title}",
-        "update_exercise_section": "Updated exercise section: {title}",
-        "add_questions_fallback": "{count, plural, one {Added # question} other {Added # questions}}",
-        "update_questions_fallback": "{count, plural, one {Updated # question} other {Updated # questions}}",
-        "create_exercise_section": "Created exercise section: {title}",
-        "get_course_structure": "Course structure loaded",
-        "get_lesson_content": "Lesson content loaded",
-        "get_exercise_details": "Exercise loaded",
-        "reorder_content": "Content reordered",
-        "update_course_landing_page": "Updated landing page: {title}",
-        "check_go_live_ready": "{warningCount, plural, =0{Ready to go live} other{Ready to go live — # warnings}}",
-        "check_go_live_blocked": "{blockerCount, plural, one{# blocker before go-live} other{# blockers before go-live}}",
-        "go_live_published": "Published course: {title}",
-        "go_live_not_published": "Course was not published",
-        "generate_course_plan": "Course plan generated",
+        "generic": "Hoàn tất",
+        "create_section": "Đã tạo phần: {title}",
+        "update_section": "Đã cập nhật phần: {title}",
+        "create_lesson": "Đã tạo bài học: {title}",
+        "update_lesson": "Đã cập nhật bài học: {title}",
+        "update_lesson_content_fallback": "Đã viết {count, plural, one {# ký tự} other {# ký tự}}",
+        "create_exercise": "Đã tạo bài tập «{title}» · {count, plural, one {# câu hỏi} other {# câu hỏi}}",
+        "update_exercise": "Đã cập nhật bài tập: {title}",
+        "update_exercise_section": "Đã cập nhật phần bài tập: {title}",
+        "add_questions_fallback": "{count, plural, one {Đã thêm # câu hỏi} other {Đã thêm # câu hỏi}}",
+        "update_questions_fallback": "{count, plural, one {Đã cập nhật # câu hỏi} other {Đã cập nhật # câu hỏi}}",
+        "create_exercise_section": "Đã tạo phần bài tập: {title}",
+        "get_course_structure": "Đã tải cấu trúc khóa học",
+        "get_lesson_content": "Đã tải nội dung bài học",
+        "get_exercise_details": "Đã tải bài tập",
+        "reorder_content": "Đã sắp xếp lại nội dung",
+        "update_course_landing_page": "Đã cập nhật trang giới thiệu: {title}",
+        "check_go_live_ready": "{warningCount, plural, =0{Sẵn sàng phát hành} other{Sẵn sàng phát hành — # cảnh báo}}",
+        "check_go_live_blocked": "{blockerCount, plural, one{# vấn đề cần xử lý trước khi phát hành} other{# vấn đề cần xử lý trước khi phát hành}}",
+        "go_live_published": "Đã xuất bản khóa học: {title}",
+        "go_live_not_published": "Khóa học chưa được xuất bản",
+        "generate_course_plan": "Đã tạo kế hoạch khóa học",
         "ask_template_questions": "Mẫu biểu đã sẵn sàng",
         "fetch_documentation_url": "Đọc {url}"
       }
@@ -4304,7 +4305,7 @@
     "error_network": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn và thử lại.",
     "context_usage_tooltip": "Đã sử dụng mã thông báo {used} / {max}",
     "context_full_title": "Cửa sổ ngữ cảnh đã đầy",
-    "context_full_description": "The assistant will summarize older messages automatically so you can keep working in this chat.",
+    "context_full_description": "Trợ lý sẽ tự động tóm tắt các tin nhắn cũ để bạn có thể tiếp tục làm việc trong cuộc trò chuyện này.",
     "context_full_compact": "Cuộc trò chuyện nhỏ gọn",
     "context_full_compacting": "Đang nén...",
     "context_full_new_chat": "Bắt đầu cuộc trò chuyện mới với bản tóm tắt",
@@ -4594,11 +4595,11 @@
     }
   },
   "side_panel": {
-    "close_aria": "Close panel",
-    "resize_panel_aria_label": "Resize panel",
+    "close_aria": "Đóng bảng",
+    "resize_panel_aria_label": "Thay đổi kích thước bảng",
     "titles": {
-      "ai_assistant": "AI Assistant",
-      "transcript": "Transcript"
+      "ai_assistant": "Trợ lý AI",
+      "transcript": "Bản chép lời"
     }
   },
   "compliance": {

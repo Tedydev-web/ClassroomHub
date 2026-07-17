@@ -118,14 +118,18 @@ export async function createOrGetAssetByStorageKey(values: TNewAsset, dbClient: 
   }
 }
 
-export async function getAssetById(assetId: string, orgId?: string): Promise<TAsset | null> {
+export async function getAssetById(
+  assetId: string,
+  orgId?: string,
+  dbClient: DbOrTxClient = db
+): Promise<TAsset | null> {
   try {
     const conditions = [eq(schema.asset.id, assetId)];
     if (orgId) {
       conditions.push(eq(schema.asset.organizationId, orgId));
     }
 
-    const [item] = await db
+    const [item] = await dbClient
       .select()
       .from(schema.asset)
       .where(and(...conditions))
@@ -135,6 +139,23 @@ export async function getAssetById(assetId: string, orgId?: string): Promise<TAs
   } catch (error) {
     console.error('getAssetById error:', error);
     throw new Error(`Failed to get asset by id: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function lockAssetById(assetId: string, orgId: string, dbClient: DbOrTxClient): Promise<TAsset | null> {
+  try {
+    await dbClient.execute(
+      sql`SELECT ${schema.asset.id}
+          FROM ${schema.asset}
+          WHERE ${schema.asset.id} = ${assetId}
+            AND ${schema.asset.organizationId} = ${orgId}
+          FOR UPDATE`
+    );
+
+    return getAssetById(assetId, orgId, dbClient);
+  } catch (error) {
+    console.error('lockAssetById error:', error);
+    throw new Error(`Failed to lock asset by id: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -495,9 +516,13 @@ export async function deleteAssetUsagesByTarget(
   }
 }
 
-export async function listAssetUsagesByAsset(assetId: string, orgId: string): Promise<TAssetUsage[]> {
+export async function listAssetUsagesByAsset(
+  assetId: string,
+  orgId: string,
+  dbClient: DbOrTxClient = db
+): Promise<TAssetUsage[]> {
   try {
-    return await db
+    return await dbClient
       .select()
       .from(schema.assetUsage)
       .where(and(eq(schema.assetUsage.assetId, assetId), eq(schema.assetUsage.organizationId, orgId)))

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { get } from 'svelte/store';
-  import { untrack } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { fly } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
   import { courseApi } from '$features/course/api';
@@ -25,14 +25,17 @@
   import { filterOutDeleted } from './functions';
   import { formatAnswers } from '$features/course/utils/functions';
   import {
-    getTextareaAnswerCharacterCount,
+    hasMeaningfulAnswerData,
+    resolveCanonicalFileUploadMimeType,
     toApiPayload,
     type AnswerData,
+    type ApiPayload,
+    type ExerciseQuestionFileUploader,
     type ExerciseQuestionVideoRecordingUploader,
     validateTextareaAnswer
   } from '@cio/question-types';
-  import { exerciseApi, presignApi } from '$features/course/api';
-  import type { SubmissionListItem } from '$features/course/utils/types';
+  import { exerciseApi } from '$features/course/api';
+  import type { ExerciseAttempt, SubmissionListItem, SubmittedExerciseAttempt } from '$features/course/utils/types';
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -48,13 +51,23 @@
   import { toExerciseQuestionModel } from './question-type-utils';
   import { getExerciseQuestionLabels } from './question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
-  import { shouldCompleteExerciseFromSubmission } from '$features/course/utils/exercise-progression-utils';
+  import {
+    formatExercisePoints,
+    roundExercisePointsForDisplay,
+    shouldCompleteExerciseFromSubmission
+  } from '$features/course/utils/exercise-progression-utils';
   import axios from 'axios';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import type { Question } from '$features/course/types';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import {
+    parseExerciseAutosave,
+    shouldHydrateHistoricalSubmission
+  } from '$features/course/utils/exercise-autosave-utils';
+  import { sumAnswerScoresForRenderedQuestions } from '$features/course/utils/submission-review-score-utils';
+  import { VIDEO_RECORDING_MIME_TYPES, type TExerciseVideoRecordingUploadInit } from '@cio/utils/validation/exercise';
 
   interface Props {
     preview?: boolean;
@@ -69,19 +82,25 @@
   const uploadLimits = getResolvedUploadLimits();
   const platformMaxFileSizeMb = uploadLimits.exerciseFileMb;
 
+  function isSupportedVideoRecordingMimeType(value: string): value is TExerciseVideoRecordingUploadInit['mimeType'] {
+    return VIDEO_RECORDING_MIME_TYPES.some((mimeType) => mimeType === value);
+  }
+
   let isSubmitting = $state(false);
   /** When true, do not re-apply a past submission over a fresh take (Try again). */
   let skipHydrateFromSubmissions = $state(false);
+  let hasRestoredUnfinishedDraft = $state(false);
   let isLoadingAutoSavedData = $state(false);
   let alreadyCheckedAutoSavedData = $state(false);
   let prevExerciseId = $state('');
   let slideDirection = $state<'next' | 'prev'>('next');
   let selectedTryIndex = $state(-1);
+  let draftSaveTimer: ReturnType<typeof setTimeout> | undefined;
   const questionLabels = $derived(getExerciseQuestionLabels());
   const sectionFallbackTitle = $derived($t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'));
 
   /** Submissions created in this session — the `mySubmissions` prop only refreshes on page load. */
-  let localSubmissions = $state<SubmissionListItem[]>([]);
+  let localSubmissions = $state<SubmittedExerciseAttempt[]>([]);
 
   const submissionList = $derived.by(() => {
     const loadedSubmissions = Array.isArray(mySubmissions) ? mySubmissions : [];
@@ -94,6 +113,35 @@
   /** Attempt currently shown: -1 means "latest" (e.g. right after submitting). */
   const viewedAttemptIndex = $derived(selectedTryIndex >= 0 ? selectedTryIndex : submissionList.length - 1);
 
+  function saveCurrentExerciseDraft() {
+    if (!exerciseId) return;
+
+    if (draftSaveTimer) {
+      clearTimeout(draftSaveTimer);
+      draftSaveTimer = undefined;
+    }
+
+    try {
+      const currentMetadata = get(questionnaireMetaData);
+      localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(currentMetadata));
+    } catch (error) {
+      console.error('Failed to autosave exercise data', { exerciseId, error });
+    }
+  }
+
+  function scheduleExerciseDraftSave() {
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+
+    draftSaveTimer = setTimeout(() => {
+      draftSaveTimer = undefined;
+      saveCurrentExerciseDraft();
+    }, 300);
+  }
+
+  onDestroy(() => {
+    if (draftSaveTimer) saveCurrentExerciseDraft();
+  });
+
   function handleStart() {
     questionnaireMetaData.update((m) => ({
       ...m,
@@ -101,6 +149,7 @@
       currentSectionIndex: 0,
       sectionPhase: hasSectionedExercise ? 'overview' : 'questions'
     }));
+    saveCurrentExerciseDraft();
   }
 
   function normalizeAnswerValue(
@@ -113,95 +162,109 @@
     return previousValue;
   }
 
-  function mapAnswerToApiPayload(question, answerData: AnswerData | null | undefined) {
+  function mapAnswerToApiPayload(question: Question, answerData: AnswerData | null | undefined): ApiPayload | null {
     const questionId = Number(question.id);
     if (Number.isNaN(questionId) || !answerData) return null;
     return toApiPayload(answerData, questionId);
   }
 
+  function isRequiredQuestion(question: Question | null | undefined): boolean {
+    return !question || toExerciseQuestionModel(question).required !== false;
+  }
+
   async function submitExercise() {
     if (!courseApi.course?.id || isSubmitting) return;
 
+    saveCurrentExerciseDraft();
     isSubmitting = true;
 
-    const updated = get(questionnaireMetaData);
-    localStorage.removeItem(`autosave-exercise-${exerciseId}`);
-    const totalPossibleGrade = getTotalPossibleGrade($questionnaire.questions);
+    try {
+      const updated = get(questionnaireMetaData);
+      const totalPossibleGrade = getTotalPossibleGrade($questionnaire.questions);
+      const idempotencyStorageKey = `exercise-submission-idempotency-${exerciseId}`;
+      const idempotencyKey = localStorage.getItem(idempotencyStorageKey) ?? crypto.randomUUID();
+      localStorage.setItem(idempotencyStorageKey, idempotencyKey);
 
-    const answersForApi = Object.entries(updated.answers)
-      .map(([questionKey, val]) => {
-        const question = $questionnaire.questions.find(
-          (item) => getExerciseQuestionContractKey(toExerciseQuestionModel(item)) === questionKey
-        );
-        if (!question) return null;
-        return mapAnswerToApiPayload(question, val);
-      })
-      .filter((answer) => answer !== null) as Array<{ questionId: number; optionId?: number; answer?: string }>;
-
-    if (answersForApi.length === 0) {
-      isSubmitting = false;
-      snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answers_required'));
-      return;
-    }
-
-    const submitResult = await exerciseApi.submit(courseApi.course.id, exerciseId, answersForApi);
-
-    if (exerciseApi.success && submitResult?.data) {
-      skipHydrateFromSubmissions = false;
-      const sub = submitResult.data as unknown as SubmissionListItem & { gradingState?: string };
-      localSubmissions = [...localSubmissions, sub];
-      selectedTryIndex = submissionList.length - 1;
-      if (sub.gradingState === 'completed' && sub.statusId === STATUS.GRADED && Array.isArray(sub.answers)) {
-        applyMySubmission(sub);
-      } else {
-        questionnaireMetaData.update((m) => ({
-          ...m,
-          status: 1,
-          totalPossibleGrade,
-          grades: {},
-          comment: '',
-          isFinished: true,
-          exerciseId
-        }));
-      }
-      const shouldMarkComplete = shouldCompleteExerciseFromSubmission({
-        completionPolicy: $questionnaire.completionPolicy,
-        passThreshold: $questionnaire.passThreshold,
-        totalPossiblePoints: totalPossibleGrade,
-        submission: sub
-      });
-
-      courseApi.updateContentItem(exerciseId, ContentType.Exercise, { isComplete: shouldMarkComplete });
-
-      if (shouldMarkComplete) {
-        toggleConfetti();
-        setTimeout(toggleConfetti, 3000);
-      }
-
-      const allContentItems = getOrderedNavigableContent(courseApi.course);
-      const allComplete =
-        shouldMarkComplete && allContentItems.length > 0 && allContentItems.every((item) => item.isComplete);
-
-      if (allComplete && courseApi.course?.id) {
-        const requiredExerciseId = courseApi.course?.certificate?.requiredExerciseId ?? undefined;
-        openCourseCompletionModal(courseApi.course.id);
-
-        const certRes = await courseApi.getCertificationEvaluation(courseApi.course.id);
-        if (certRes?.data) {
-          const hasCompletedCourse = Boolean(certRes.data.eligibleForCertificate || certRes.data.certificateEarnedAt);
-          updateCourseCompletionModal(
-            courseApi.course.id,
-            hasCompletedCourse ? 'eligible' : 'not-eligible',
-            certRes.data,
-            requiredExerciseId
+      const answersForApi = Object.entries(updated.answers)
+        .map(([questionKey, val]) => {
+          const question = $questionnaire.questions.find(
+            (item) => getExerciseQuestionContractKey(toExerciseQuestionModel(item)) === questionKey
           );
+          if (!question) return null;
+          return mapAnswerToApiPayload(question, val);
+        })
+        .filter((answer): answer is ApiPayload => answer !== null);
+
+      if (answersForApi.length === 0 && $questionnaire.questions.some(isRequiredQuestion)) {
+        snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answers_required'));
+        return;
+      }
+
+      const submitResult = await exerciseApi.submit(courseApi.course.id, exerciseId, answersForApi, idempotencyKey);
+
+      if (exerciseApi.success && submitResult?.data) {
+        localStorage.removeItem(`autosave-exercise-${exerciseId}`);
+        localStorage.removeItem(idempotencyStorageKey);
+        skipHydrateFromSubmissions = false;
+        hasRestoredUnfinishedDraft = false;
+        const sub = submitResult.data;
+        localSubmissions = [...localSubmissions, sub];
+        selectedTryIndex = submissionList.length - 1;
+        if (sub.gradingState === 'completed' && sub.statusId === STATUS.GRADED && Array.isArray(sub.answers)) {
+          applyMySubmission(sub);
         } else {
-          closeCourseCompletionModal();
+          questionnaireMetaData.update((m) => ({
+            ...m,
+            status: 1,
+            totalPossibleGrade,
+            grades: {},
+            comment: '',
+            isFinished: true,
+            exerciseId
+          }));
+        }
+        const shouldMarkComplete = shouldCompleteExerciseFromSubmission({
+          completionPolicy: $questionnaire.completionPolicy,
+          passThreshold: $questionnaire.passThreshold,
+          totalPossiblePoints: totalPossibleGrade,
+          submission: sub
+        });
+
+        courseApi.updateContentItem(exerciseId, ContentType.Exercise, { isComplete: shouldMarkComplete });
+
+        if (shouldMarkComplete) {
+          toggleConfetti();
+          setTimeout(toggleConfetti, 3000);
+        }
+
+        const allContentItems = getOrderedNavigableContent(courseApi.course);
+        const allComplete =
+          shouldMarkComplete &&
+          $isOrgStudent &&
+          allContentItems.length > 0 &&
+          allContentItems.every((item) => item.isComplete);
+
+        if (allComplete && courseApi.course?.id) {
+          const requiredExerciseId = courseApi.course?.certificate?.requiredExerciseId ?? undefined;
+          openCourseCompletionModal(courseApi.course.id);
+
+          const certRes = await courseApi.getCertificationEvaluation(courseApi.course.id);
+          if (certRes?.data) {
+            const hasCompletedCourse = Boolean(certRes.data.eligibleForCertificate || certRes.data.certificateEarnedAt);
+            updateCourseCompletionModal(
+              courseApi.course.id,
+              hasCompletedCourse ? 'eligible' : 'not-eligible',
+              certRes.data,
+              requiredExerciseId
+            );
+          } else {
+            closeCourseCompletionModal();
+          }
         }
       }
+    } finally {
+      isSubmitting = false;
     }
-
-    isSubmitting = false;
   }
 
   function evaluateSectionAfterBehavior() {
@@ -222,6 +285,7 @@
           currentQuestionIndex: 1,
           sectionPhase: 'overview'
         }));
+        saveCurrentExerciseDraft();
         return;
       }
     }
@@ -234,33 +298,42 @@
         currentQuestionIndex: 1,
         sectionPhase: 'overview'
       }));
+      saveCurrentExerciseDraft();
       return;
     }
 
     submitExercise();
   }
 
-  async function onSubmit(id, value) {
+  async function onSubmit(id: string, value: AnswerData | undefined) {
     if (!courseApi.course?.id) return;
 
     const { answers } = $questionnaireMetaData;
     const questions = hasSectionedExercise ? currentSectionQuestions : $questionnaire.questions;
     const prevAnswer = answers[id];
     const formattedAnswer = normalizeAnswerValue(prevAnswer, value);
+    const question = questions.find((item) => getExerciseQuestionContractKey(toExerciseQuestionModel(item)) === id);
+    if (!question) return;
 
-    if (!hasAnswerValue(formattedAnswer)) {
+    const hasAnswer = hasMeaningfulAnswerData(formattedAnswer);
+    if (!hasAnswer && isRequiredQuestion(question)) {
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
       return;
     }
 
-    const question = questions.find((q) => getExerciseQuestionContractKey(toExerciseQuestionModel(q)) === id);
-    if (question && !mapAnswerToApiPayload(question, formattedAnswer as AnswerData)) {
+    if (hasAnswer && !mapAnswerToApiPayload(question, formattedAnswer)) {
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
       return;
     }
 
-    const newAnswers = { ...answers, [id]: formattedAnswer };
+    const newAnswers = { ...answers };
+    if (formattedAnswer) {
+      newAnswers[id] = formattedAnswer;
+    } else {
+      delete newAnswers[id];
+    }
     questionnaireMetaData.update((m) => ({ ...m, answers: newAnswers }));
+    saveCurrentExerciseDraft();
 
     const currentIndex = $questionnaireMetaData.currentQuestionIndex;
     const isLastQuestion = currentIndex === questions.length;
@@ -275,8 +348,7 @@
       // Advance to next question
       slideDirection = 'next';
       questionnaireMetaData.update((m) => ({ ...m, currentQuestionIndex: m.currentQuestionIndex + 1 }));
-      const updated = get(questionnaireMetaData);
-      localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(updated));
+      saveCurrentExerciseDraft();
     }
   }
 
@@ -288,6 +360,7 @@
 
     slideDirection = 'prev';
     questionnaireMetaData.update((m) => ({ ...m, currentQuestionIndex: m.currentQuestionIndex - 1 }));
+    saveCurrentExerciseDraft();
   }
 
   function getProgressValue(currentQuestionIndex) {
@@ -298,7 +371,7 @@
     if (hasSectionedExercise) {
       const activeQuestionCount = $questionnaire.questions.filter((question) => !question.deletedAt).length;
       const answeredCount = Object.values($questionnaireMetaData.answers).filter((answer) =>
-        hasAnswerValue(answer)
+        hasMeaningfulAnswerData(answer)
       ).length;
       return Math.round((answeredCount / activeQuestionCount) * 100) || 0;
     }
@@ -321,50 +394,84 @@
 
   function getAutoSavedData() {
     isLoadingAutoSavedData = true;
+    hasRestoredUnfinishedDraft = false;
 
-    const stringifiedQuestionnaireMetaData = localStorage.getItem(`autosave-exercise-${exerciseId}`);
+    try {
+      const storageKey = `autosave-exercise-${exerciseId}`;
+      const stringifiedQuestionnaireMetaData = localStorage.getItem(storageKey);
 
-    if (stringifiedQuestionnaireMetaData) {
-      const autoSavedData = JSON.parse(stringifiedQuestionnaireMetaData);
-      if (autoSavedData) {
-        questionnaireMetaData.set(autoSavedData);
+      if (stringifiedQuestionnaireMetaData) {
+        const questions = $questionnaire.questions.map(toExerciseQuestionModel);
+        const autoSavedData = parseExerciseAutosave({
+          serializedValue: stringifiedQuestionnaireMetaData,
+          exerciseId,
+          questions,
+          sectionCount: $questionnaire.sections.filter((section) => !section.deletedAt).length
+        });
+        if (autoSavedData) {
+          questionnaireMetaData.set(autoSavedData);
+          hasRestoredUnfinishedDraft = !autoSavedData.isFinished;
+        } else {
+          localStorage.removeItem(storageKey);
+          console.warn('Removed invalid autosaved exercise data', { exerciseId });
+        }
       }
+    } catch (error) {
+      console.error('Failed to restore autosaved exercise data', { exerciseId, error });
+    } finally {
+      isLoadingAutoSavedData = false;
+      alreadyCheckedAutoSavedData = true;
     }
-    isLoadingAutoSavedData = false;
-    alreadyCheckedAutoSavedData = true;
   }
 
-  async function handleFileUpload(file: File): Promise<{ fileKey: string; fileName: string; fileUrl?: string }> {
-    const uploadResult = await presignApi.getDocumentUploadUrl(
-      file.name,
-      file.type as
-        | 'application/pdf'
-        | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        | 'application/msword',
-      file.size > 0 ? file.size : undefined
-    );
-    if (!uploadResult) {
+  const handleFileUpload: ExerciseQuestionFileUploader = async ({ questionId, file }) => {
+    if (!courseApi.course?.id || !exerciseId) {
+      throw new Error('Exercise is not ready for upload');
+    }
+
+    const mimeType = resolveCanonicalFileUploadMimeType({ fileName: file.name, mimeType: file.type });
+    if (!mimeType) {
+      throw new Error('Unsupported file type');
+    }
+
+    const initResult = await exerciseApi.initExerciseFileUpload(courseApi.course.id, exerciseId, questionId, {
+      fileName: file.name,
+      mimeType,
+      size: file.size
+    });
+    if (!initResult?.data) {
       throw new Error('Failed to get upload URL');
     }
-    await axios.put(uploadResult.url, file, {
-      headers: { 'Content-Type': file.type },
+
+    await axios.put(initResult.data.uploadUrl, file, {
+      headers: { 'Content-Type': mimeType },
       maxContentLength: Infinity,
       maxBodyLength: Infinity
     });
-    const urls = await presignApi.getDocumentDownloadUrls([uploadResult.fileKey]);
-    const fileUrl = urls[uploadResult.fileKey];
 
-    return { fileKey: uploadResult.fileKey, fileName: file.name, fileUrl };
-  }
+    const completeResult = await exerciseApi.completeExerciseFileUpload(courseApi.course.id, exerciseId, questionId, {
+      assetId: initResult.data.assetId,
+      storageKey: initResult.data.storageKey
+    });
+    if (!completeResult?.data) {
+      throw new Error('Failed to complete upload');
+    }
+
+    return completeResult.data;
+  };
 
   const handleVideoRecordingUpload: ExerciseQuestionVideoRecordingUploader = async (input) => {
     if (!courseApi.course?.id || !exerciseId) {
       throw new Error('Exercise is not ready for upload');
     }
+    if (!isSupportedVideoRecordingMimeType(input.mimeType)) {
+      throw new Error('Unsupported recording format');
+    }
+    const mimeType: TExerciseVideoRecordingUploadInit['mimeType'] = input.mimeType;
 
     const initResult = await exerciseApi.initVideoRecordingUpload(courseApi.course.id, exerciseId, input.questionId, {
       fileName: input.fileName,
-      mimeType: input.mimeType as 'video/webm' | 'video/mp4' | 'video/quicktime',
+      mimeType,
       size: input.size
     });
     if (!initResult?.data) {
@@ -385,7 +492,7 @@
         assetId: initResult.data.assetId,
         storageKey: initResult.data.storageKey,
         fileName: input.fileName,
-        mimeType: input.mimeType as 'video/webm' | 'video/mp4' | 'video/quicktime',
+        mimeType,
         size: input.size,
         durationSeconds: input.durationSeconds,
         recordedAt: input.recordedAt,
@@ -398,46 +505,6 @@
 
     return completeResult.data;
   };
-
-  function hasAnswerValue(answerValue: AnswerData | null | undefined): boolean {
-    if (answerValue === null || answerValue === undefined) return false;
-    if (typeof answerValue === 'object' && 'type' in answerValue) {
-      switch (answerValue.type) {
-        case 'RADIO':
-        case 'TRUE_FALSE':
-        case 'NUMERIC':
-        case 'STAR':
-          return true;
-        case 'CHECKBOX':
-          return answerValue.optionIds.length > 0;
-        case 'TEXTAREA':
-          return getTextareaAnswerCharacterCount(answerValue.text) > 0;
-        case 'SHORT_ANSWER':
-          return answerValue.text.trim().length > 0;
-        case 'FILL_BLANK':
-          return answerValue.values.length > 0;
-        case 'WORD_BANK': {
-          const filled = answerValue.filledBlanks ?? [];
-          return filled.length > 0 && filled.every((v) => String(v).trim().length > 0);
-        }
-        case 'FILE_UPLOAD':
-          return !!answerValue.fileKey;
-        case 'VIDEO_RECORDING':
-          return !!answerValue.assetId && !!answerValue.storageKey;
-        case 'MATCHING':
-          return answerValue.pairs.length > 0;
-        case 'ORDERING':
-          return answerValue.orderedValues.length > 0;
-        case 'LINK':
-          return answerValue.urls.length > 0;
-        case 'HOTSPOT':
-          return answerValue.coordinates.length > 0;
-        default:
-          return false;
-      }
-    }
-    return false;
-  }
 
   function onSharedAnswerChange(answerValue: AnswerData | null) {
     if (!sharedCurrentQuestionKey) return;
@@ -455,12 +522,13 @@
         answers
       };
     });
+    scheduleExerciseDraftSave();
   }
 
   function onSharedNext(valueOverride?: AnswerData) {
     if (!sharedCurrentQuestionKey) return;
     const valueToUse = valueOverride !== undefined ? valueOverride : sharedCurrentAnswer;
-    if (!hasAnswerValue(valueToUse)) {
+    if (!hasMeaningfulAnswerData(valueToUse) && isRequiredQuestion(currentQuestion)) {
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
       return;
     }
@@ -480,6 +548,7 @@
       currentQuestionIndex: 1,
       sectionPhase: 'questions'
     }));
+    saveCurrentExerciseDraft();
   }
 
   function goBackFromSectionOverview() {
@@ -489,6 +558,7 @@
         currentQuestionIndex: 0,
         sectionPhase: 'overview'
       }));
+      saveCurrentExerciseDraft();
       return;
     }
 
@@ -498,6 +568,7 @@
       currentQuestionIndex: 1,
       sectionPhase: 'overview'
     }));
+    saveCurrentExerciseDraft();
   }
 
   function onSectionQuestionAnswerChange(question: Question, answerValue: AnswerData) {
@@ -509,12 +580,15 @@
         [questionKey]: answerValue
       }
     }));
+    scheduleExerciseDraftSave();
   }
 
   function completeAllQuestionsSection() {
     const missingAnswer = currentSectionQuestions.find((question) => {
+      if (!isRequiredQuestion(question)) return false;
+
       const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(question));
-      return !hasAnswerValue($questionnaireMetaData.answers[questionKey]);
+      return !hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey]);
     });
 
     if (missingAnswer) {
@@ -550,7 +624,7 @@
         if (valueToUse) onSharedAnswerChange(valueToUse);
       }
     }
-    if (!hasAnswerValue(valueToUse)) {
+    if (!hasMeaningfulAnswerData(valueToUse) && isRequiredQuestion(currentQuestion)) {
       snackbar.error($t('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
       return;
     }
@@ -594,9 +668,10 @@
   }
 
   $effect(() => {
-    if (!alreadyCheckedAutoSavedData) {
-      getAutoSavedData();
-    }
+    if (!exerciseId || isFetchingExercise || $questionnaire.questions.length === 0) return;
+    if (alreadyCheckedAutoSavedData) return;
+
+    getAutoSavedData();
   });
 
   const progressValue = $derived(getProgressValue($questionnaireMetaData.currentQuestionIndex));
@@ -635,8 +710,12 @@
   const sharedCurrentAnswer = $derived(
     sharedCurrentQuestionKey ? $questionnaireMetaData.answers[sharedCurrentQuestionKey] : undefined
   );
-  const canGoNextForSharedQuestion = $derived(hasAnswerValue(sharedCurrentAnswer));
-  const sectionQuestionTotalPoints = $derived(getTotalPossibleGrade(currentSectionQuestions));
+  const canGoNextForSharedQuestion = $derived(
+    !isRequiredQuestion(currentQuestion) || hasMeaningfulAnswerData(sharedCurrentAnswer)
+  );
+  const sectionQuestionTotalPoints = $derived(
+    roundExercisePointsForDisplay(getTotalPossibleGrade(currentSectionQuestions))
+  );
   const passThresholdPercent = $derived(Number($questionnaire.passThreshold ?? 100));
   const gradedScorePercent = $derived.by(() => {
     const finalGrade = Number($questionnaireMetaData.finalTotalGrade);
@@ -671,7 +750,7 @@
           return {
             key: questionKey,
             label: `Q${questionIndex + 1}`,
-            isAnswered: hasAnswerValue($questionnaireMetaData.answers[questionKey]),
+            isAnswered: hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey]),
             isCurrent:
               sectionIndex === $questionnaireMetaData.currentSectionIndex &&
               questionIndex === $questionnaireMetaData.currentQuestionIndex - 1 &&
@@ -702,9 +781,19 @@
   });
 
   $effect(() => {
-    if (!exerciseId || isFetchingExercise || skipHydrateFromSubmissions) return;
-    if (!isExerciseLoaded) return;
-    if (!submissionList.length || $questionnaireMetaData.isFinished) return;
+    if (!exerciseId || isFetchingExercise) return;
+    if (
+      !shouldHydrateHistoricalSubmission({
+        hasRestoredUnfinishedDraft,
+        skipHydration: skipHydrateFromSubmissions,
+        isExerciseLoaded,
+        hasSubmissions: submissionList.length > 0,
+        isFinished: $questionnaireMetaData.isFinished
+      })
+    ) {
+      return;
+    }
+
     let idx = selectedTryIndex;
     if (idx < 0 || idx >= submissionList.length) {
       idx = submissionList.length - 1;
@@ -731,18 +820,20 @@
   function tryAgain() {
     if (!$questionnaire.allowMultipleAttempts) return;
     localStorage.removeItem(`autosave-exercise-${exerciseId}`);
+    localStorage.removeItem(`exercise-submission-idempotency-${exerciseId}`);
     selectedTryIndex = -1;
     skipHydrateFromSubmissions = true;
+    hasRestoredUnfinishedDraft = false;
     resetStudentExerciseTake();
   }
 
-  function applyMySubmission(submission: SubmissionListItem) {
+  function applyMySubmission(submission: ExerciseAttempt) {
     const totalPossibleGrade = getTotalPossibleGrade($questionnaire.questions);
-    let finalTotalGrade = 0;
+    // Numerator and denominator share the same rendered question set: answers to
+    // questions archived after the attempt are excluded so score never exceeds max.
+    const finalTotalGrade = sumAnswerScoresForRenderedQuestions($questionnaire.questions, submission.answers);
     const grades = (submission.answers ?? []).reduce<Record<string, number>>((acc, answer) => {
-      const point = answer.point ?? 0;
-      acc[String(answer.questionId)] = point;
-      finalTotalGrade += point;
+      acc[String(answer.questionId)] = answer.score ?? answer.point ?? 0;
       return acc;
     }, {});
 
@@ -773,6 +864,7 @@
       isSubmitting = false;
       alreadyCheckedAutoSavedData = false;
       skipHydrateFromSubmissions = false;
+      hasRestoredUnfinishedDraft = false;
       selectedTryIndex = -1;
       localSubmissions = [];
     }
@@ -784,7 +876,7 @@
   <div class="mb-6 flex min-w-0 items-center gap-3">
     <span class="ui:text-muted-foreground shrink-0 text-sm tabular-nums">
       {#if hasSectionedExercise}
-        {Object.values($questionnaireMetaData.answers).filter((answer) => hasAnswerValue(answer))
+        {Object.values($questionnaireMetaData.answers).filter((answer) => hasMeaningfulAnswerData(answer))
           .length}/{$questionnaire.questions.length}
       {:else}
         {$questionnaireMetaData.currentQuestionIndex}/{$questionnaire.questions.length}
@@ -887,9 +979,9 @@
             {/if}
             <div class="flex flex-col justify-between gap-2 rounded-md border p-4">
               <p>
-                <span class="text-2xl font-bold">{$questionnaireMetaData.finalTotalGrade}/</span>
+                <span class="text-2xl font-bold">{formatExercisePoints($questionnaireMetaData.finalTotalGrade)}/</span>
 
-                <span class="text-xl">{$questionnaireMetaData.totalPossibleGrade}</span>
+                <span class="text-xl">{formatExercisePoints($questionnaireMetaData.totalPossibleGrade)}</span>
               </p>
             </div>
             {#if shouldShowPassedCompletionResult}

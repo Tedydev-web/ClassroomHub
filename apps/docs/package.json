@@ -4,8 +4,8 @@
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
-    "preview": "wrangler dev --port 4173",
-    "start": "wrangler dev --port 3000",
+    "preview": "wrangler dev --port 8014",
+    "start": "wrangler dev --port 8015",
     "deploy": "pnpm run build && wrangler deploy",
     "cf-typegen": "wrangler types && react-router typegen",
     "types:check": "fumadocs-mdx && wrangler types && react-router typegen && tsc --noEmit",

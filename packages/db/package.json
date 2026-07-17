@@ -50,13 +50,15 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "pnpm --filter @cio/question-types run build && pnpm --filter @cio/utils run build && pnpm --filter @cio/email run build",
+    "build:dependencies": "pnpm --filter @cio/question-types run build && pnpm --filter @cio/utils run build && pnpm --filter @cio/email run build",
     "build": "rimraf dist tsconfig.tsbuildinfo && tsc && tsc-alias",
     "dev": "tsc --watch",
     "db": "drizzle-kit",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:finalize-assessment-schema": "tsx src/scripts/finalize-assessment-schema.ts",
+    "db:rehearse-assessment-migration": "tsx src/scripts/rehearse-assessment-migration.ts",
     "db:baseline": "tsx src/scripts/baseline.ts",
     "db:reset": "tsx src/scripts/db-reset.ts --skip-seed",
     "db:setup": "tsx src/scripts/db-setup.ts",

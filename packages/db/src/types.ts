@@ -165,6 +165,9 @@ export type TNewQuestion = typeof schema.question.$inferInsert;
 export type TQuestionAnswer = typeof schema.questionAnswer.$inferSelect;
 export type TNewQuestionAnswer = typeof schema.questionAnswer.$inferInsert;
 
+export type TQuestionRevision = typeof schema.questionRevision.$inferSelect;
+export type TNewQuestionRevision = typeof schema.questionRevision.$inferInsert;
+
 export type TQuestionType = typeof schema.questionType.$inferSelect;
 export type TNewQuestionType = typeof schema.questionType.$inferInsert;
 

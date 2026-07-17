@@ -4,9 +4,10 @@
  * Routes (see wrangler.toml):
  *   - classroom.tedydev.io.vn/*     — product apex
  *   - *.classroom.tedydev.io.vn/*   — tenant sites
- *   - learn.classroom.tedydev.io.vn/* — legacy learning apex redirect
+ *   - classroom-learn.tedydev.io.vn/* — legacy learning apex redirect
  *   - classroom-app.tedydev.io.vn/* — admin dashboard
- *   - embed.classroom.tedydev.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
+ *   - classroom-play.tedydev.io.vn/* — assessment play host
+ *   - classroom-embed.tedydev.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
  *   - <BYOD>/*                      — customer-owned domains via Cloudflare for SaaS
  *
  * Per request, the Worker decides upstream by path:
@@ -68,6 +69,11 @@ const AUTH_PREFIX = '/api/auth';
 const HLS_PREFIX = '/hls/';
 const PROXY_HLS_PREFIX = '/proxy/hls/';
 const HLS_COOKIE_NAME = 'cio_hls';
+
+const LEGACY_SERVICE_HOST_REDIRECTS: Readonly<Record<string, string>> = {
+  'play.classroom.tedydev.io.vn': 'https://classroom-play.tedydev.io.vn',
+  'embed.classroom.tedydev.io.vn': 'https://classroom-embed.tedydev.io.vn'
+};
 
 const HLS_CONTENT_TYPES: Record<string, string> = {
   m3u8: 'application/vnd.apple.mpegurl',
@@ -281,6 +287,13 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const originalHost = request.headers.get('host') ?? url.host;
+
+    const canonicalServiceOrigin = LEGACY_SERVICE_HOST_REDIRECTS[originalHost];
+    if (canonicalServiceOrigin) {
+      const target = new URL(url.pathname, canonicalServiceOrigin);
+      target.search = url.search;
+      return Response.redirect(target.toString(), 301);
+    }
 
     // Legacy learning apex → permanent redirect to marketing apex.
     if (originalHost === env.APEX_REDIRECT_HOST) {

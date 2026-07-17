@@ -10,18 +10,19 @@ compatibility_date = "2026-05-01"
 routes = [
   { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "learn.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "classroom-learn.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "classroom-app.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "embed.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
+  { pattern = "classroom-play.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
+  { pattern = "classroom-embed.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
 ]
 
 # Override per environment. Origins must bypass this Worker to prevent loops.
 [vars]
 DASHBOARD_UPSTREAM_HOST = "dashboard-origin.tedydev.io.vn"
 API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
-APEX_REDIRECT_HOST = "learn.classroom.tedydev.io.vn"
+APEX_REDIRECT_HOST = "classroom-learn.tedydev.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
-EMBED_HOST = "embed.classroom.tedydev.io.vn"
+EMBED_HOST = "classroom-embed.tedydev.io.vn"
 API_URL = "https://classroom-api.tedydev.io.vn"
 
 # R2 bucket binding so /hls/* can stream segments directly from Cloudflare,

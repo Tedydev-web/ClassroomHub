@@ -25,7 +25,7 @@ import type {
 } from '@cio/utils/validation/course/compliance';
 import type { TCourseCompletionRecord } from '@cio/db/types';
 import {
-  getExerciseTitleAndMaxPoints,
+  getHistoricalMaxPointsBySubmissionIds,
   getStudentSubmissionsForExercise
 } from '@cio/db/queries/course/certification-exercise';
 import { getProfileByGroupMemberId } from '@cio/db/queries/course/people';
@@ -172,10 +172,11 @@ function getCurrentIncompleteRecord(record: TCourseCompletionRecord | undefined 
   return record;
 }
 
-async function getComplianceCompletionSnapshot(params: {
+/** Exported for unit tests only; production callers stay inside this module. */
+export async function getComplianceCompletionSnapshot(params: {
   groupMemberId: string;
   requiredExerciseId: string | null | undefined;
-}) {
+}): Promise<{ score: number | null; attempts: number | null }> {
   const { groupMemberId, requiredExerciseId } = params;
 
   if (!requiredExerciseId) {
@@ -185,23 +186,35 @@ async function getComplianceCompletionSnapshot(params: {
     };
   }
 
-  const { maxPoints } = await getExerciseTitleAndMaxPoints(requiredExerciseId);
   const submissions = await getStudentSubmissionsForExercise(groupMemberId, requiredExerciseId);
   const completedSubmissions = submissions.filter((submission) => submission.gradingState === 'completed');
 
-  if (completedSubmissions.length === 0 || maxPoints <= 0) {
+  if (completedSubmissions.length === 0) {
     return {
       score: null,
       attempts: submissions.length
     };
   }
 
-  const bestScorePercent = completedSubmissions.reduce((highestPercent, submission) => {
-    const totalPoints = Number(submission.total ?? 0);
-    const nextPercent = Math.round((totalPoints / maxPoints) * 100);
+  // Each completed submission keeps the denominator it was attempted against
+  // (answer-linked revision maxima, legacy question points fallback) — never the
+  // live active exercise total, so archiving questions or editing points cannot
+  // retroactively change a stored compliance score.
+  const maxPointsBySubmission = await getHistoricalMaxPointsBySubmissionIds(
+    completedSubmissions.map((submission) => submission.id)
+  );
 
-    return Math.max(highestPercent, nextPercent);
-  }, 0);
+  let bestScorePercent: number | null = null;
+  for (const submission of completedSubmissions) {
+    const attemptedMaxPoints = maxPointsBySubmission.get(submission.id) ?? 0;
+    // An attempted max <= 0 has no meaningful percent; skip it rather than
+    // divide by zero or store a misleading 0 (preserves the previous null-score
+    // behavior for denominator-less history).
+    if (attemptedMaxPoints <= 0) continue;
+
+    const nextPercent = (Number(submission.score) / attemptedMaxPoints) * 100;
+    bestScorePercent = Math.max(bestScorePercent ?? 0, nextPercent);
+  }
 
   return {
     score: bestScorePercent,

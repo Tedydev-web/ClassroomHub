@@ -81,7 +81,13 @@
   let total = $derived(calculateTotal(data.questionAnswerByPoint));
   function calculateTotal(grades: Record<string, string>): number {
     if (!grades) return 0;
-    return Object.values(grades).reduce((acc, grade) => acc + parseInt(grade || '0'), 0);
+    const sum = Object.values(grades).reduce((acc, grade) => {
+      const numericGrade = Number(grade);
+
+      return acc + (Number.isFinite(numericGrade) ? numericGrade : 0);
+    }, 0);
+
+    return Math.round((sum + Number.EPSILON) * 100) / 100;
   }
 
   function handleStatusChange(value: string) {

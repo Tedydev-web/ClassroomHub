@@ -208,6 +208,8 @@ export type ExerciseAssignments = GetExerciseAssignmentsSuccess['data'];
 export type DeleteExerciseRequest = (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['$delete'];
 export type SubmitExerciseRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['submission']['$post'];
+export type SubmitExerciseSuccess = Extract<InferResponseType<SubmitExerciseRequest>, { success: true }>;
+export type SubmittedExerciseAttempt = SubmitExerciseSuccess['data'];
 
 // Newsfeed types
 export type ListNewsfeedRequest = (typeof classroomio.course)[':courseId']['newsfeed']['$get'];
@@ -271,6 +273,7 @@ export type ExerciseSubmissionsData = ListExerciseSubmissionsSuccess['data'];
 
 /** Submission item with answers, groupmember. Used in exercise submissions UI and ViewMode. */
 export type SubmissionListItem = ExerciseSubmissionsData['allSubmissions'][number];
+export type ExerciseAttempt = SubmissionListItem | SubmittedExerciseAttempt;
 
 // List submissions for grading types
 export type ListSubmissionsForGradingRequest =
@@ -506,6 +509,10 @@ export type VideoUploadPresignSuccess = Extract<InferResponseType<VideoUploadPre
 export type VideoDownloadPresignRequest = (typeof classroomio.course)['presign']['video']['download']['$post'];
 export type VideoDownloadPresignSuccess = Extract<InferResponseType<VideoDownloadPresignRequest>, { success: true }>;
 
+export type ExerciseFileUploadInitRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['file-upload']['init']['$post'];
+export type ExerciseFileUploadCompleteRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['file-upload']['complete']['$post'];
 export type VideoRecordingUploadInitRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['video-recording']['upload']['init']['$post'];
 export type VideoRecordingUploadCompleteRequest =

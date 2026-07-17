@@ -8,10 +8,12 @@ export type FillBlankAnswerData = { type: 'FILL_BLANK'; values: string[] };
 export type WordBankAnswerData = { type: 'WORD_BANK'; filledBlanks: string[] };
 export type FileUploadAnswerData = {
   type: 'FILE_UPLOAD';
+  assetId: string;
   fileKey: string;
   fileName: string;
-  mimeType?: string;
-  size?: number;
+  mimeType: string;
+  size: number;
+  fileUrl?: string;
 };
 export type MatchingAnswerData = { type: 'MATCHING'; pairs: Array<{ left: string; right: string }> };
 export type OrderingAnswerData = { type: 'ORDERING'; orderedValues: string[] };

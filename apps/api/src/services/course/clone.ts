@@ -1,4 +1,8 @@
-import { TCourse, TCourseSection, TLesson } from '@db/types';
+import { AppError, ErrorCodes } from '@api/utils/errors';
+import { INTERNAL_QUESTION_TYPE_IDS } from '@cio/core/services/exercise/utils';
+import { db } from '@cio/db/drizzle';
+import type { DbOrTxClient } from '@cio/db/drizzle';
+import { TCourse, TCourseSection, TLesson, TNewQuestion } from '@db/types';
 import {
   addGroupMember,
   createCourse,
@@ -25,7 +29,47 @@ import {
 import { ROLE } from '@cio/utils/constants';
 import { QUESTION_TYPE_IDS } from '@cio/question-types';
 
-async function cloneLessonLanguages(newLessons: TLesson[], oldLessons: TLesson[]): Promise<void> {
+/**
+ * Internal composite items (ASSESSMENT_ITEM) keep their definition in question
+ * revisions, which clone does not copy. Copying the bare question row would
+ * silently drop the definition, so cloning fails explicitly until a composite
+ * clone/materialization path exists.
+ */
+function assertNoInternalQuestions(questions: TNewQuestion[]): void {
+  const internalQuestion = questions.find((question) => INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId));
+  if (!internalQuestion) return;
+
+  throw new AppError(
+    'This course contains composite assessment items that cannot be cloned yet',
+    ErrorCodes.CONFLICT,
+    409
+  );
+}
+
+/**
+ * Pre-flight for cloneCourse: runs before any row is written so an unclonable
+ * course fails atomically instead of leaving a partial clone behind.
+ */
+async function assertLessonExercisesCloneable(oldLessons: TLesson[]): Promise<void> {
+  const lessonIds = oldLessons.map((lesson) => lesson.id);
+  if (lessonIds.length === 0) return;
+
+  const exercises = await getExercisesByLessonIds(lessonIds);
+  if (exercises.length === 0) return;
+
+  const activeQuestions = await getQuestionsByExerciseIds(
+    exercises.map((exercise) => exercise.id),
+    undefined,
+    { questionScope: 'active' }
+  );
+  assertNoInternalQuestions(activeQuestions);
+}
+
+async function cloneLessonLanguages(
+  newLessons: TLesson[],
+  oldLessons: TLesson[],
+  txClient: DbOrTxClient
+): Promise<void> {
   // Extract old lesson IDs
   const oldLessonIds = oldLessons.map((lesson) => lesson.id);
 
@@ -50,15 +94,15 @@ async function cloneLessonLanguages(newLessons: TLesson[], oldLessons: TLesson[]
   }));
 
   // Bulk insert lesson languages
-  await createLessonLanguages(newLessonLanguages);
+  await createLessonLanguages(newLessonLanguages, txClient);
 }
 
-async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Promise<void> {
+async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[], txClient: DbOrTxClient): Promise<void> {
   // 1. Extract old lesson IDs
   const oldLessonIds = oldLessons.map((lesson) => lesson.id);
 
   // 2. Fetch all exercises for old lessons
-  const oldExercises = await getExercisesByLessonIds(oldLessonIds);
+  const oldExercises = await getExercisesByLessonIds(oldLessonIds, txClient);
 
   if (!oldExercises || oldExercises.length === 0) {
     return;
@@ -78,7 +122,8 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
       dueBy: new Date().toISOString(),
       lessonId: lessonIdMap.get(exercise.lessonId!)!,
       sectionDisplayMode: exercise.sectionDisplayMode
-    }))
+    })),
+    txClient
   );
 
   // 5. Create exercise ID map
@@ -89,7 +134,7 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
 
   // 6. Fetch all questions for old exercises
   const oldExerciseIds = oldExercises.map((ex) => ex.id);
-  const oldSections = await getExerciseSectionsByExerciseIds(oldExerciseIds);
+  const oldSections = await getExerciseSectionsByExerciseIds(oldExerciseIds, txClient);
   const exerciseSectionIdMap = new Map<string, string>();
 
   if (oldSections.length > 0) {
@@ -101,7 +146,8 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
         colorTheme: section.colorTheme,
         afterBehavior: section.afterBehavior,
         exerciseId: exerciseIdMap.get(section.exerciseId)!
-      }))
+      })),
+      txClient
     );
 
     oldSections.forEach((oldSection, index) => {
@@ -123,18 +169,30 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
           return null;
         }
 
-        return updateExerciseSection(newSection.id, {
-          afterBehavior: { action: 'go_to_section', exerciseSectionId: remappedId }
-        });
+        return updateExerciseSection(
+          newSection.id,
+          {
+            afterBehavior: { action: 'go_to_section', exerciseSectionId: remappedId }
+          },
+          txClient
+        );
       })
     );
   }
 
-  const oldQuestions = await getQuestionsByExerciseIds(oldExerciseIds);
+  // Clone only the active graph: archived questions are frozen history of the
+  // source course and must not resurrect in the clone.
+  const oldQuestions = await getQuestionsByExerciseIds(oldExerciseIds, txClient, { questionScope: 'active' });
 
   if (!oldQuestions || oldQuestions.length === 0) {
     return;
   }
+
+  // Backstop for the pre-flight check in cloneCourse: this is the exact set about
+  // to be copied, so an internal item that appeared in between still fails loudly
+  // instead of being cloned without its revision definition. Throwing here aborts
+  // the surrounding transaction, so no partial clone rows survive.
+  assertNoInternalQuestions(oldQuestions);
 
   // 7. Insert questions with new exercise IDs
   const newQuestions = await createQuestions(
@@ -149,7 +207,8 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
         ? (exerciseSectionIdMap.get(question.exerciseSectionId) ?? null)
         : null,
       exerciseId: exerciseIdMap.get(question.exerciseId)!
-    }))
+    })),
+    txClient
   );
 
   // 8. Create question ID map
@@ -172,14 +231,14 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
     return;
   }
 
-  const oldOptions = await getOptionsByQuestionIds(oldQuestionIds);
+  const oldOptions = await getOptionsByQuestionIds(oldQuestionIds, txClient);
 
   if (!oldOptions || oldOptions.length === 0) {
     return;
   }
 
   // 10. Insert options with new question IDs
-  await syncOptionIdSequence();
+  await syncOptionIdSequence(txClient);
   await createOptions(
     oldOptions
       .map((option) => {
@@ -195,7 +254,8 @@ async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[]): Pro
           questionId: newQuestionId
         };
       })
-      .filter((opt) => opt !== null)
+      .filter((opt) => opt !== null),
+    txClient
   );
 }
 
@@ -210,87 +270,109 @@ export async function cloneCourse(
   // 1. fetch old course
   const [course] = await getCourseById(courseId);
 
-  // 2. create group
-  const [newGroup] = await createGroup({
-    name: newTitle,
-    description: newDescription ?? course.description,
-    organizationId: organizationId
-  });
+  // Fail before any write when the course cannot be cloned (internal composite items).
+  const oldLessons = await getLessonsByCourseId(courseId);
+  await assertLessonExercisesCloneable(oldLessons);
 
-  // 3. create course for that group
-  // Explicitly select only the fields we want to copy (exclude id, createdAt, updatedAt)
-  const [newCourse] = await createCourse({
-    title: newTitle,
-    description: course.description,
-    overview: course.overview,
-    groupId: newGroup.id,
-    isTemplate: course.isTemplate,
-    logo: course.logo,
-    slug: newSlug ?? null,
-    metadata: course.metadata,
-    cost: course.cost,
-    currency: course.currency,
-    bannerImage: course.bannerImage,
-    isPublished: course.isPublished,
-    certificate: course.certificate,
-    status: course.status,
-    type: course.type
-  });
-
-  // 4. add group member
-  await addGroupMember({
-    profileId: userId,
-    email: '',
-    groupId: newGroup.id,
-    roleId: ROLE.TUTOR
-  });
-
-  // 5. clone sections
+  // Source-course reads: hoisted before the transaction so the write section
+  // below is pure writes and any failure inside it rolls the whole clone back.
   const oldSections = await getCourseSectionsByCourseId(courseId);
 
-  // Only create sections if there are any
-  let newSections: TCourseSection[] = [];
-  let sectionMap = new Map<string, string>();
+  // All clone writes run in one transaction: the in-flight internal-question
+  // backstop (or any other mid-clone failure) can never leave partial
+  // group/course/section/lesson rows behind.
+  return db.transaction(async (tx) => {
+    const txClient = tx as DbOrTxClient;
 
-  if (oldSections.length > 0) {
-    newSections = await createCourseSections(
-      oldSections.map((section) => ({
-        title: section.title,
-        order: section.order,
-        courseId: newCourse.id
-      }))
+    // 2. create group
+    const [newGroup] = await createGroup(
+      {
+        name: newTitle,
+        description: newDescription ?? course.description,
+        organizationId: organizationId
+      },
+      txClient
     );
 
-    // create map
-    sectionMap = new Map(oldSections.map((section, index) => [section.id, newSections[index].id]));
-  }
+    // 3. create course for that group
+    // Explicitly select only the fields we want to copy (exclude id, createdAt, updatedAt)
+    const [newCourse] = await createCourse(
+      {
+        title: newTitle,
+        description: course.description,
+        overview: course.overview,
+        groupId: newGroup.id,
+        isTemplate: course.isTemplate,
+        logo: course.logo,
+        slug: newSlug ?? null,
+        metadata: course.metadata,
+        cost: course.cost,
+        currency: course.currency,
+        bannerImage: course.bannerImage,
+        isPublished: course.isPublished,
+        certificate: course.certificate,
+        status: course.status,
+        type: course.type
+      },
+      txClient
+    );
 
-  // 6. clone lessons
-  const oldLessons = await getLessonsByCourseId(courseId);
+    // 4. add group member
+    await addGroupMember(
+      {
+        profileId: userId,
+        email: '',
+        groupId: newGroup.id,
+        roleId: ROLE.TUTOR
+      },
+      txClient
+    );
 
-  const newLessons = await createLessons(
-    oldLessons.map((lesson) => ({
-      note: lesson.note,
-      videoUrl: lesson.videoUrl,
-      slideUrl: lesson.slideUrl,
-      courseId: newCourse.id,
-      title: lesson.title,
-      public: lesson.public,
-      lessonAt: lesson.lessonAt,
-      teacherId: lesson.teacherId,
-      isComplete: lesson.isComplete,
-      callUrl: lesson.callUrl,
-      order: lesson.order,
-      isUnlocked: lesson.isUnlocked,
-      videos: lesson.videos,
-      sectionId: lesson.sectionId ? sectionMap.get(lesson.sectionId) : null,
-      documents: lesson.documents
-    }))
-  );
+    // 5. clone sections
+    // Only create sections if there are any
+    let newSections: TCourseSection[] = [];
+    let sectionMap = new Map<string, string>();
 
-  // 7. clone languages, exercises, questions, options using bulk queries
-  await cloneLessonLanguages(newLessons, oldLessons);
-  await cloneExercises(newLessons, oldLessons);
+    if (oldSections.length > 0) {
+      newSections = await createCourseSections(
+        oldSections.map((section) => ({
+          title: section.title,
+          order: section.order,
+          courseId: newCourse.id
+        })),
+        txClient
+      );
 
-  return newCourse;
+      // create map
+      sectionMap = new Map(oldSections.map((section, index) => [section.id, newSections[index].id]));
+    }
+
+    // 6. clone lessons (fetched above, before the first write)
+    const newLessons = await createLessons(
+      oldLessons.map((lesson) => ({
+        note: lesson.note,
+        videoUrl: lesson.videoUrl,
+        slideUrl: lesson.slideUrl,
+        courseId: newCourse.id,
+        title: lesson.title,
+        public: lesson.public,
+        lessonAt: lesson.lessonAt,
+        teacherId: lesson.teacherId,
+        isComplete: lesson.isComplete,
+        callUrl: lesson.callUrl,
+        order: lesson.order,
+        isUnlocked: lesson.isUnlocked,
+        videos: lesson.videos,
+        sectionId: lesson.sectionId ? sectionMap.get(lesson.sectionId) : null,
+        documents: lesson.documents
+      })),
+      txClient
+    );
+
+    // 7. clone languages, exercises, questions, options using bulk queries
+    await cloneLessonLanguages(newLessons, oldLessons, txClient);
+    await cloneExercises(newLessons, oldLessons, txClient);
+
+    return newCourse;
+  });
 }

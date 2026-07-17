@@ -25,6 +25,35 @@ export async function getSubmissionById(submissionId: string): Promise<TSubmissi
   }
 }
 
+export async function lockCourseSubmission(
+  courseId: string,
+  submissionId: string,
+  dbClient: DbOrTxClient
+): Promise<TSubmission | null> {
+  try {
+    await dbClient.execute(
+      sql`SELECT ${schema.submission.id}
+          FROM ${schema.submission}
+          WHERE ${schema.submission.id} = ${submissionId}
+            AND ${schema.submission.courseId} = ${courseId}
+          FOR UPDATE`
+    );
+
+    const [submission] = await dbClient
+      .select()
+      .from(schema.submission)
+      .where(and(eq(schema.submission.id, submissionId), eq(schema.submission.courseId, courseId)))
+      .limit(1);
+
+    return submission ?? null;
+  } catch (error) {
+    console.error('lockCourseSubmission error:', error);
+    throw new Error(
+      `Failed to lock submission "${submissionId}": ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
 export async function hasSubmission(
   exerciseId: string,
   submittedBy: string,
@@ -42,6 +71,34 @@ export async function hasSubmission(
     console.error('hasSubmission error:', error);
     throw new Error(
       `Failed to check submission existence: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+export async function getSubmissionByIdempotencyKey(
+  exerciseId: string,
+  submittedBy: string,
+  idempotencyKey: string,
+  dbClient: DbOrTxClient = db
+): Promise<TSubmission | null> {
+  try {
+    const [submission] = await dbClient
+      .select()
+      .from(schema.submission)
+      .where(
+        and(
+          eq(schema.submission.exerciseId, exerciseId),
+          eq(schema.submission.submittedBy, submittedBy),
+          eq(schema.submission.idempotencyKey, idempotencyKey)
+        )
+      )
+      .limit(1);
+
+    return submission ?? null;
+  } catch (error) {
+    console.error('getSubmissionByIdempotencyKey error:', error);
+    throw new Error(
+      `Failed to get submission by idempotency key: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -219,12 +276,17 @@ export async function createSubmission(data: TNewSubmission, dbClient: DbOrTxCli
  * @param data Partial submission data
  * @returns Updated submission or null
  */
-export async function updateSubmission(submissionId: string, data: Partial<TSubmission>): Promise<TSubmission | null> {
+export async function updateSubmission(
+  courseId: string,
+  submissionId: string,
+  data: Partial<TSubmission>,
+  dbClient: DbOrTxClient = db
+): Promise<TSubmission | null> {
   try {
-    const [updated] = await db
+    const [updated] = await dbClient
       .update(schema.submission)
       .set({ ...data, updatedAt: new Date().toISOString() })
-      .where(eq(schema.submission.id, submissionId))
+      .where(and(eq(schema.submission.id, submissionId), eq(schema.submission.courseId, courseId)))
       .returning();
     return updated || null;
   } catch (error) {
@@ -240,9 +302,16 @@ export async function updateSubmission(submissionId: string, data: Partial<TSubm
  * @param submissionId Submission ID
  * @returns Deleted submission or null
  */
-export async function deleteSubmission(submissionId: string): Promise<TSubmission | null> {
+export async function deleteSubmission(
+  courseId: string,
+  submissionId: string,
+  dbClient: DbOrTxClient = db
+): Promise<TSubmission | null> {
   try {
-    const [deleted] = await db.delete(schema.submission).where(eq(schema.submission.id, submissionId)).returning();
+    const [deleted] = await dbClient
+      .delete(schema.submission)
+      .where(and(eq(schema.submission.id, submissionId), eq(schema.submission.courseId, courseId)))
+      .returning();
     return deleted || null;
   } catch (error) {
     console.error('deleteSubmission error:', error);
@@ -257,9 +326,12 @@ export async function deleteSubmission(submissionId: string): Promise<TSubmissio
  * @param submissionId Submission ID
  * @returns Array of question answers
  */
-export async function getQuestionAnswersBySubmissionId(submissionId: string): Promise<TQuestionAnswer[]> {
+export async function getQuestionAnswersBySubmissionId(
+  submissionId: string,
+  dbClient: DbOrTxClient = db
+): Promise<TQuestionAnswer[]> {
   try {
-    return db.select().from(schema.questionAnswer).where(eq(schema.questionAnswer.submissionId, submissionId));
+    return dbClient.select().from(schema.questionAnswer).where(eq(schema.questionAnswer.submissionId, submissionId));
   } catch (error) {
     console.error('getQuestionAnswersBySubmissionId error:', error);
     throw new Error(
@@ -288,13 +360,16 @@ export async function upsertQuestionAnswer(data: TNewQuestionAnswer): Promise<TQ
   }
 }
 
-export async function insertQuestionAnswersBatch(rows: TNewQuestionAnswer[]): Promise<TQuestionAnswer[]> {
+export async function insertQuestionAnswersBatch(
+  rows: TNewQuestionAnswer[],
+  dbClient: DbOrTxClient = db
+): Promise<TQuestionAnswer[]> {
   if (rows.length === 0) {
     return [];
   }
 
   try {
-    return db.insert(schema.questionAnswer).values(rows).returning();
+    return dbClient.insert(schema.questionAnswer).values(rows).returning();
   } catch (error) {
     console.error('insertQuestionAnswersBatch error:', error);
     throw new Error(
@@ -311,16 +386,27 @@ export async function insertQuestionAnswersBatch(rows: TNewQuestionAnswer[]): Pr
  * @returns Updated question answer or null
  */
 export async function updateQuestionAnswer(
+  courseId: string,
   submissionId: string,
   questionId: number,
-  data: Partial<TQuestionAnswer>
+  data: Partial<TQuestionAnswer>,
+  dbClient: DbOrTxClient = db
 ): Promise<TQuestionAnswer | null> {
   try {
-    const [updated] = await db
+    const [updated] = await dbClient
       .update(schema.questionAnswer)
       .set(data)
       .where(
-        and(eq(schema.questionAnswer.submissionId, submissionId), eq(schema.questionAnswer.questionId, questionId))
+        and(
+          eq(schema.questionAnswer.submissionId, submissionId),
+          eq(schema.questionAnswer.questionId, questionId),
+          sql`EXISTS (
+            SELECT 1
+            FROM ${schema.submission}
+            WHERE ${schema.submission.id} = ${submissionId}
+              AND ${schema.submission.courseId} = ${courseId}
+          )`
+        )
       )
       .returning();
     return updated || null;
@@ -337,6 +423,7 @@ export type TGradesUpdateItem = { questionId: number; points: number };
  * Optionally updates statusId and gradingState when provided.
  */
 export async function updateSubmissionGrades(
+  courseId: string,
   submissionId: string,
   data: {
     answers: TGradesUpdateItem[];
@@ -344,23 +431,32 @@ export async function updateSubmissionGrades(
     feedback?: string;
     statusId?: number;
     gradingState?: string;
-  }
+  },
+  dbClient?: DbOrTxClient
 ): Promise<TSubmission | null> {
   try {
-    return await db.transaction(async (tx) => {
+    const runUpdate = async (client: DbOrTxClient): Promise<TSubmission | null> => {
       if (data.answers.length > 0) {
-        const valueRows = data.answers.map((a) => sql`(${a.questionId}::bigint, ${a.points}::bigint)`);
-        await tx.execute(sql`
+        const valueRows = data.answers.map((answer) => sql`(${answer.questionId}::bigint, ${answer.points}::numeric)`);
+        await client.execute(sql`
           UPDATE question_answer AS qa
-          SET point = v.point
-          FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(question_id, point)
+          SET score = v.score,
+              point = round(v.score)::bigint
+          FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(question_id, score)
           WHERE qa.submission_id = ${submissionId}
             AND qa.question_id = v.question_id
+            AND EXISTS (
+              SELECT 1
+              FROM submission AS scoped_submission
+              WHERE scoped_submission.id = qa.submission_id
+                AND scoped_submission.course_id = ${courseId}
+            )
         `);
       }
 
       const submissionData: Partial<TSubmission> = {
-        total: data.total,
+        score: data.total,
+        total: Math.round(data.total),
         updatedAt: new Date().toISOString()
       };
       if (data.feedback !== undefined) {
@@ -373,13 +469,15 @@ export async function updateSubmissionGrades(
         submissionData.gradingState = data.gradingState;
       }
 
-      const [updated] = await tx
+      const [updated] = await client
         .update(schema.submission)
         .set(submissionData)
-        .where(eq(schema.submission.id, submissionId))
+        .where(and(eq(schema.submission.id, submissionId), eq(schema.submission.courseId, courseId)))
         .returning();
       return updated || null;
-    });
+    };
+
+    return dbClient ? await runUpdate(dbClient) : await db.transaction(runUpdate);
   } catch (error) {
     console.error('updateSubmissionGrades error:', error);
     throw new Error(

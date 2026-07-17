@@ -86,7 +86,7 @@ From the repo root:
 
 ```bash
 pnpm build --filter=@classroomio/mcp
-CLASSROOMIO_API_URL=http://localhost:3081 \
+CLASSROOMIO_API_URL=http://localhost:8001 \
 CLASSROOMIO_API_KEY=<cio_mcp_key> \
 node packages/mcp/dist/index.js
 ```

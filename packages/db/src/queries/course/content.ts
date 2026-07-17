@@ -141,6 +141,7 @@ export async function getCourseContentItems(courseId: string, profileId?: string
           SELECT COUNT(*)
           FROM question
           WHERE question.exercise_id = exercise.id
+            AND question.archived_at IS NULL
         )::int AS "questionCount",
         exercise.due_by AS "dueBy"
       FROM exercise

@@ -4,9 +4,9 @@ export const PRODUCT_ROOT_DOMAIN = 'classroom.tedydev.io.vn';
 
 export const PRODUCT_HOSTS = {
   marketing: PRODUCT_ROOT_DOMAIN,
-  dashboard: `app.${PRODUCT_ROOT_DOMAIN}`,
-  api: `api.${PRODUCT_ROOT_DOMAIN}`,
-  play: `play.${PRODUCT_ROOT_DOMAIN}`,
-  embed: `embed.${PRODUCT_ROOT_DOMAIN}`,
-  assets: `assets.${PRODUCT_ROOT_DOMAIN}`
+  dashboard: 'classroom-app.tedydev.io.vn',
+  api: 'classroom-api.tedydev.io.vn',
+  play: 'classroom-play.tedydev.io.vn',
+  embed: 'classroom-embed.tedydev.io.vn',
+  assets: 'classroom-assets.tedydev.io.vn'
 } as const;

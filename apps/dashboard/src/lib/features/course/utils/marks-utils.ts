@@ -10,17 +10,22 @@ export interface ExerciseInfo {
   points: number;
 }
 
-/** Maps groupMemberId -> exerciseId -> points obtained (as string) */
+export interface GradebookMark {
+  score: string;
+  maxPoints: number;
+}
+
+/** Maps groupMemberId -> exerciseId -> selected completed attempt. */
 export type StudentMarksByExercise = {
   [groupMemberId: string]: {
-    [exerciseId: string]: string;
+    [exerciseId: string]: GradebookMark;
   };
 };
 
 /** Student's exercise data for calculating totals */
 export type StudentExerciseData =
   | {
-      [exerciseId: string]: string;
+      [exerciseId: string]: GradebookMark;
     }
   | undefined;
 
@@ -39,8 +44,10 @@ export interface MarksPageData {
 export function calculateStudentTotal(studentExerciseData: StudentExerciseData): number {
   if (!studentExerciseData) return 0;
 
-  return Object.values(studentExerciseData).reduce((total: number, point) => {
-    return (total += parseInt(point as string, 10));
+  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
+  return Object.values(studentExerciseData).reduce((total: number, mark) => {
+    const points = Number(mark.score);
+    return total + (Number.isFinite(points) ? points : 0);
   }, 0);
 }
 
@@ -55,13 +62,33 @@ export function calculateStudentAverage(
   exercises: ExerciseInfo[]
 ): number | null {
   if (!studentExerciseData || exercises.length === 0) return null;
-  const totalPossible = exercises.reduce((sum, ex) => sum + ex.points, 0);
+  const totalPossible = exercises.reduce((sum, exercise) => {
+    const mark = studentExerciseData[exercise.id];
+    const maxPoints = mark?.maxPoints ?? exercise.points;
+    return sum + (Number.isFinite(maxPoints) && maxPoints > 0 ? maxPoints : 0);
+  }, 0);
   if (totalPossible === 0) return null;
-  const totalEarned = exercises.reduce((sum, ex) => {
-    const pts = studentExerciseData[ex.id];
-    return sum + (pts != null ? parseInt(pts, 10) : 0);
+  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
+  const totalEarned = exercises.reduce((sum, exercise) => {
+    const points = Number(studentExerciseData[exercise.id]?.score);
+    return sum + (Number.isFinite(points) ? points : 0);
   }, 0);
   return Math.round((totalEarned / totalPossible) * 100);
+}
+
+/**
+ * Percentage for a single gradebook cell using its immutable attempted maximum.
+ * @param mark Selected completed attempt returned by the gradebook API
+ * @returns Rounded percentage, or null when the score or maximum is unusable
+ */
+export function gradePercent(mark: GradebookMark | undefined): number | null {
+  if (!mark || !Number.isFinite(mark.maxPoints) || mark.maxPoints <= 0) return null;
+
+  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
+  const points = Number(mark.score);
+  if (!Number.isFinite(points)) return null;
+
+  return Math.round((points / mark.maxPoints) * 100);
 }
 
 /**
@@ -75,18 +102,23 @@ export function processMarksIntoStudentMarksByExerciseId(marks: Marks): StudentM
   if (!Array.isArray(marks)) return result;
 
   marks.forEach((mark) => {
-    const { groupmemberId, exerciseId, totalPointsGotten } = mark;
+    const { exerciseId, exercisePoints, groupmemberId, totalPointsGotten } = mark;
 
     if (!groupmemberId || !exerciseId) return;
+
+    const gradebookMark = {
+      score: totalPointsGotten?.toString() || '0',
+      maxPoints: exercisePoints
+    };
 
     if (result[groupmemberId]) {
       result[groupmemberId] = {
         ...result[groupmemberId],
-        [exerciseId]: totalPointsGotten?.toString() || '0'
+        [exerciseId]: gradebookMark
       };
     } else {
       result[groupmemberId] = {
-        [exerciseId]: totalPointsGotten?.toString() || '0'
+        [exerciseId]: gradebookMark
       };
     }
   });
@@ -102,17 +134,21 @@ export function processMarksIntoStudentMarksByExerciseId(marks: Marks): StudentM
  * @returns Ordered ExerciseInfo[] (exercise id, title, points)
  */
 export function processMarksIntoExercises(marks: Marks, contentItems: CourseContentItem[]): ExerciseInfo[] {
+  // Header points come from `activeExercisePoints` (identical on every row of an
+  // exercise), never from a row's historical `exercisePoints`: after a question is
+  // archived, submission rows carry diverging historical maxima and first-row-wins
+  // would show an arbitrary student's denominator in the column header.
   const marksByExerciseId = new Map<string, { title: string; points: number }>();
   const exerciseOrder: string[] = [];
   if (Array.isArray(marks)) {
     marks.forEach((mark) => {
-      const { exerciseId, exerciseTitle, exercisePoints } = mark;
+      const { exerciseId, exerciseTitle, activeExercisePoints } = mark;
       if (!exerciseId) return;
       if (!marksByExerciseId.has(exerciseId)) {
         exerciseOrder.push(exerciseId);
         marksByExerciseId.set(exerciseId, {
           title: exerciseTitle || '',
-          points: exercisePoints ?? 0
+          points: activeExercisePoints ?? 0
         });
       }
     });
@@ -161,7 +197,7 @@ export function generateMarksCSV(
       email: student.profile?.email || ''
     };
     exercises.forEach((ex) => {
-      rowData[ex.title] = marks[ex.id] ?? '-';
+      rowData[ex.title] = marks[ex.id]?.score ?? '-';
     });
     const avg = calculateStudentAverage(marks, exercises);
     rowData['Avg grade'] = avg != null ? avg : '-';
@@ -205,7 +241,7 @@ export async function generateMarksPDF(
       const marks = studentMarksByExerciseId[student.id] || {};
       const row: string[] = [student?.profile?.fullname ?? ''];
       exercises.forEach((ex) => {
-        row.push(marks[ex.id] ?? '-');
+        row.push(marks[ex.id]?.score ?? '-');
       });
       const avg = calculateStudentAverage(marks, exercises);
       row.push(avg != null ? String(avg) : '-');

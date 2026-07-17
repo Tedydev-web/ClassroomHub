@@ -13,6 +13,7 @@
   import { useSidebar } from '@cio/ui/base/sidebar';
   import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
   import ThemeToggle from './theme-toggle.svelte';
+  import LanguageMenu from './language-menu.svelte';
 
   import { t } from '$lib/utils/functions/translations';
   import { profile } from '$lib/utils/store/user';
@@ -105,6 +106,9 @@
 
         <DropdownMenu.Separator />
         {@render themetoggle()}
+
+        <DropdownMenu.Separator />
+        <LanguageMenu />
 
         <DropdownMenu.Separator />
 

@@ -3777,7 +3777,8 @@
     "launch_week": "Неделя запуска",
     "feedback": "Обратная связь",
     "documentation": "Документация",
-    "need_help": "Нужна помощь?"
+    "need_help": "Нужна помощь?",
+    "language": "Язык"
   },
   "login": {
     "welcome": "С возвращением",

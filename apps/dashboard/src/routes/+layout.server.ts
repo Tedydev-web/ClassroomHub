@@ -8,6 +8,7 @@ import { getBaseMetaTags } from '$lib/utils/functions/metaTags.server';
 import { getOrgSiteInfo } from '$features/app/layout-setup';
 import { getUploadLimits } from '$lib/utils/config/upload-limits';
 import { resolveOrgSiteOgWarmUrl } from '$lib/utils/functions/org-site-og-url';
+import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
 export const ssr = true;
 
@@ -49,7 +50,7 @@ export const load = async ({ url, cookies, request, locals }): Promise<LoadOutpu
   const response: LoadOutput = {
     orgSiteName: orgSiteInfo.orgSiteName,
     isOrgSite: orgSiteInfo.isOrgSite,
-    skipAuth: orgSiteInfo.subdomain === 'play' || debugPlay === 'true',
+    skipAuth: url.hostname === PRODUCT_HOSTS.play || debugPlay === 'true',
     org: orgSiteInfo.org,
     baseMetaTags: await getBaseMetaTags(url, orgSiteInfo),
     serverLang: request.headers?.get('accept-language') || '',

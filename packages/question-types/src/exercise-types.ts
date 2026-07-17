@@ -1,5 +1,5 @@
 import type { QuestionTypeKey } from './question-type-keys';
-import type { AnswerData, VideoRecordingAnswerData } from './answer-data';
+import type { AnswerData, FileUploadAnswerData, VideoRecordingAnswerData } from './answer-data';
 
 export type ExerciseQuestionTypeKey = QuestionTypeKey;
 
@@ -226,9 +226,10 @@ export type ExerciseAnswerValue =
 
 export type ExerciseQuestionImageUploader = (file: File) => Promise<string>;
 
-export type ExerciseQuestionFileUploader = (
-  file: File
-) => Promise<{ fileKey: string; fileName: string; fileUrl?: string }>;
+export type ExerciseQuestionFileUploader = (input: {
+  questionId: number | string;
+  file: File;
+}) => Promise<FileUploadAnswerData>;
 
 export type ExerciseQuestionVideoRecordingUploader = (input: {
   questionId: number | string;

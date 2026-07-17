@@ -133,4 +133,8 @@ export async function seedOptions(insertedQuestions: TQuestion[]) {
   } else {
     console.log('   ✓ Options already exist, skipping');
   }
+
+  await db.execute(
+    sql`SELECT setval(pg_get_serial_sequence('option', 'id'), COALESCE(MAX(${option.id}), 1), MAX(${option.id}) IS NOT NULL) FROM ${option}`
+  );
 }

@@ -9,7 +9,7 @@ import { mintLoginLinkToken } from '../auth/login-link';
 const LOGIN_LINK_TTL_MINUTES = 10;
 
 function getBaseUrl(): string {
-  return process.env.PUBLIC_SERVER_URL?.trim() || 'http://localhost:3002';
+  return process.env.PUBLIC_SERVER_URL?.trim() || 'http://localhost:8001';
 }
 
 function getArgs() {

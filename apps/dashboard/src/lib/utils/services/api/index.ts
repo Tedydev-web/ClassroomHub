@@ -319,8 +319,8 @@ export function getApiHeaders(
     cookie: cioCookies || ''
   };
 
-  console.log('headers', headers);
-  console.log('orgId', orgId);
+  console.log('has API session cookies', Boolean(cioCookies));
+  console.log('has API organization context', Boolean(orgId));
 
   if (orgId) {
     headers['cio-org-id'] = orgId;

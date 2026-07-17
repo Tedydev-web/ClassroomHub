@@ -20,7 +20,7 @@ export type DashboardOrg = {
  * Resolution order (highest precedence first):
  *  1. Org's verified `customDomain`  → `https://<customDomain>`
  *  2. `DASHBOARD_ORIGIN` env var      → that value (self-hosted override)
- *  3. `NODE_ENV === 'development'`    → `http://localhost:5173`
+ *  3. `NODE_ENV === 'development'`    → `http://localhost:8000`
  *  4. Org's `siteName`                → `https://<siteName>.<tenant root>`
  *  5. Final fallback                  → configured product dashboard host
  *
@@ -37,7 +37,7 @@ export function getDashboardBaseUrl(org?: DashboardOrg): string {
   }
 
   if (env.NODE_ENV === 'development') {
-    return 'http://localhost:5173';
+    return 'http://localhost:8000';
   }
 
   if (org?.siteName) {

@@ -21,7 +21,7 @@ import { dev } from '$app/environment';
 // URL as an absolute-URL placeholder.
 function resolveBaseURL() {
   if (typeof window === 'undefined') {
-    return env.PUBLIC_SERVER_URL || 'http://localhost:3002';
+    return env.PUBLIC_SERVER_URL || 'http://localhost:8001';
   }
   if (dev) {
     return env.PUBLIC_SERVER_URL || `${window.location.origin}/api/auth`;

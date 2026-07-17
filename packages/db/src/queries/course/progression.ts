@@ -3,6 +3,11 @@ import * as schema from '@db/schema';
 import { and, eq, or, sql, type SQL } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
+import {
+  getHistoricalMaxPointsBySubmissionIds,
+  getStudentSubmissionsForExercise,
+  submissionHistoricalMaxPointsSql
+} from './certification-exercise';
 
 export type ExerciseCompletionMember = { profileId: string } | { groupMemberId: string };
 
@@ -23,6 +28,7 @@ export type ExerciseAlias = 'exercise' | 'ex';
  */
 export function isExerciseCompletedSql(exerciseAlias: ExerciseAlias, member: ExerciseCompletionMember): SQL<boolean> {
   const exercise = sql.raw(exerciseAlias);
+  const historicalMaxPoints = submissionHistoricalMaxPointsSql(sql.raw('cs.id'));
   const memberFilter =
     'groupMemberId' in member
       ? sql`cs.submitted_by = ${member.groupMemberId}`
@@ -43,12 +49,11 @@ export function isExerciseCompletedSql(exerciseAlias: ExerciseAlias, member: Exe
           cs.grading_state = 'completed'
           AND (
             SELECT CASE
-              WHEN COALESCE(SUM(question.points), 0) <= 0 THEN false
-              ELSE ROUND((cs.total::numeric / SUM(question.points)::numeric) * 100)
+              WHEN COALESCE(historical.max_points, 0) <= 0 THEN false
+              ELSE (COALESCE(cs.score, cs.total::numeric, 0) / historical.max_points) * 100
                 >= COALESCE(${exercise}.pass_threshold, 100)
             END
-            FROM ${schema.question}
-            WHERE question.exercise_id = ${exercise}.id
+            FROM (SELECT ${historicalMaxPoints} AS max_points) AS historical
           )
         )
       )
@@ -121,6 +126,45 @@ export async function isExerciseCompletedForMember(exerciseId: string, groupMemb
     console.error('isExerciseCompletedForMember error:', error);
     throw new Error(
       `Failed to check exercise completion status: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+function percentFromScore(score: number, maxPoints: number): number {
+  if (maxPoints <= 0) return 0;
+
+  return (score / maxPoints) * 100;
+}
+
+export async function isExercisePassedForMember(
+  exerciseId: string,
+  groupMemberId: string,
+  passThreshold: number
+): Promise<boolean> {
+  try {
+    const submissions = await getStudentSubmissionsForExercise(groupMemberId, exerciseId);
+    const completed = submissions.filter((submission) => submission.gradingState === 'completed');
+    if (completed.length === 0) return false;
+
+    // Each completed submission keeps the denominator it was attempted against
+    // (answer-linked revision maxima, legacy question points fallback) — never the
+    // live active exercise total, which shrinks when questions are archived.
+    const maxPointsBySubmission = await getHistoricalMaxPointsBySubmissionIds(
+      completed.map((submission) => submission.id)
+    );
+
+    let bestPercent = 0;
+    for (const submission of completed) {
+      const maxPoints = maxPointsBySubmission.get(submission.id) ?? 0;
+      const percent = percentFromScore(Number(submission.score), maxPoints);
+      if (percent > bestPercent) bestPercent = percent;
+    }
+
+    return bestPercent >= passThreshold;
+  } catch (error) {
+    console.error('isExercisePassedForMember error:', error);
+    throw new Error(
+      `Failed to check exercise pass status: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }

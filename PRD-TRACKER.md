@@ -6,6 +6,7 @@ Use this file to keep a single prioritized view of all PRDs.
 
 | Rank | List # | PRD | Status |
 | --- | --- | --- | --- |
+| 1 | - | `prd/assessment-interactions` | in-progress (architecture approved; phased TDD implementation started) |
 | - | - | `prd/super-admin` | draft |
 | - | - | `prd/embed-link-platforms` | draft |
 | 1 | - | `prd/notification-system` | partial (inbox/read state and initial triggers shipped; broader event coverage remains) |

@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "storybook dev -p 6006",
+    "dev": "storybook dev -p 8010",
     "build": "storybook build",
-    "preview": "storybook preview",
+    "preview": "storybook preview -p 8022",
     "format": "prettier --write .",
     "build-storybook": "storybook build",
     "storybook:upload": "tsx scripts/upload-storybook.ts",

@@ -31,7 +31,7 @@
     "dashboard:dev": "pnpm concurrently -n dashboard,ui -c blue,yellow \"pnpm --filter=@cio/dashboard run dev\" \"pnpm --filter=@cio/ui run dev\"",
     "api:dev:full": "pnpm turbo run build --filter=@cio/api^... --filter=@cio/jobs-worker^... && pnpm concurrently -n api,jobs -c blue,yellow \"pnpm --filter=@cio/api run dev\" \"pnpm --filter=@cio/jobs-worker run dev\"",
     "api:dev": "pnpm concurrently -n api,jobs -c blue,yellow \"pnpm --filter=@cio/api run dev\" \"pnpm --filter=@cio/jobs-worker run dev\"",
-    "dev:core": "pnpm concurrently -n api,dashboard -c blue,green \"pnpm api:dev\" \"pnpm dashboard:dev\"",
+    "dev:core": "turbo run dev --filter=@cio/dashboard... --filter=@cio/api... --filter=@cio/jobs-worker... --concurrency=20",
     "jobs:dev": "pnpm --filter=@cio/jobs-worker run dev",
     "docs:dev": "pnpm --filter @cio/docs dev",
     "docs:build": "pnpm --filter @cio/docs build",

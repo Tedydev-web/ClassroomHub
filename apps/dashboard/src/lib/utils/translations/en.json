@@ -417,7 +417,8 @@
     "whats_new": "What's new",
     "feedback": "Feedback",
     "documentation": "Documentation",
-    "need_help": "Need help?"
+    "need_help": "Need help?",
+    "language": "Language"
   },
   "settings": {
     "heading": "Settings",

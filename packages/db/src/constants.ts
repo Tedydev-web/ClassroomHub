@@ -10,7 +10,7 @@ const {
 const dashboardOrigin = DASHBOARD_ORIGIN?.trim().replace(/\/$/, '');
 
 const DEFAULT_TRUSTED_ORIGINS = [
-  'http://localhost:5173',
+  'http://localhost:8000',
   `https://*.${PRODUCT_ROOT_DOMAIN}`,
   // Common OIDC IdP discovery origins (SSO registration fetches .well-known/openid-configuration)
   'https://accounts.google.com',
@@ -35,4 +35,4 @@ export const TRUSTED_ORIGINS = [
 ];
 
 export const BASE_URL =
-  PUBLIC_IS_SELFHOSTED === 'true' && dashboardOrigin ? dashboardOrigin : PUBLIC_SERVER_URL || 'http://localhost:3002';
+  PUBLIC_IS_SELFHOSTED === 'true' && dashboardOrigin ? dashboardOrigin : PUBLIC_SERVER_URL || 'http://localhost:8001';

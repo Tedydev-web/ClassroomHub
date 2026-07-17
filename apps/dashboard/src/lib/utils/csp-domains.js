@@ -5,7 +5,7 @@
 const saasDefaults = {
   scriptSrc: [
     'https://classroom-assets.tedydev.io.vn',
-    'https://embed.classroom.tedydev.io.vn',
+    'https://classroom-embed.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
     'https://*.posthog.com',
     'https://*.senja.io',

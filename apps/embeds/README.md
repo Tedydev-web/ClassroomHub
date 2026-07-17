@@ -144,7 +144,7 @@ The course widget uses three different URL concerns:
 
 - this is where the widget fetches `GET /widgets/:publicKey/payload`
 - production: tenant-router injects `window.CIO.apiBaseUrl` from its `API_URL` env when serving embed assets
-- local dev: `@cio/embeds` Vite injects the same global from `API_URL` (defaults to `http://localhost:3002`)
+- local dev: `@cio/embeds` Vite injects the same global from `API_URL` (defaults to `http://localhost:8001`)
 
 3. **Course destination host**
 

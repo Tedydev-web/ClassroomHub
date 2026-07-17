@@ -1,6 +1,6 @@
 import * as schema from '@db/schema';
 
-import { and, desc, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
 import { ROLE } from '@cio/utils/constants';
@@ -163,21 +163,21 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
 
     const exerciseIds = exercises.map((e) => e.id);
 
-    // Get questions for these exercises with points
+    // Get active questions for these exercises with points (archived ones leave totalPoints)
     const questions = await db
       .select({
         exerciseId: schema.question.exerciseId,
         points: schema.question.points
       })
       .from(schema.question)
-      .where(inArray(schema.question.exerciseId, exerciseIds));
+      .where(and(inArray(schema.question.exerciseId, exerciseIds), isNull(schema.question.archivedAt)));
 
     // Get submissions for these exercises by this user
     const submissions = await db
       .select({
         id: schema.submission.id,
         exerciseId: schema.submission.exerciseId,
-        total: schema.submission.total,
+        score: sql<number>`COALESCE(${schema.submission.score}, ${schema.submission.total}::numeric, 0)::float`,
         statusId: schema.submission.statusId
       })
       .from(schema.submission)
@@ -197,7 +197,7 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
         lessonTitle: exercise.lessonTitle || '',
         title: exercise.title,
         status: userSubmission?.statusId,
-        score: userSubmission?.total || 0,
+        score: userSubmission?.score ?? 0,
         totalPoints,
         isCompleted: !!userSubmission
       };
