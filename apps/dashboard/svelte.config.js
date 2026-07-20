@@ -11,6 +11,14 @@ const adapterCloudflare = IS_CLOUDFLARE ? (await import('@sveltejs/adapter-cloud
 const isSelfHosted = process.env.PUBLIC_IS_SELFHOSTED === 'true';
 const csp = getCspDomains(isSelfHosted, process.env.PUBLIC_SERVER_URL);
 
+// `upgrade-insecure-requests` forces the browser to fetch every subresource over
+// HTTPS. Production is always served over HTTPS (Cloudflare), so it belongs there.
+// In local dev the server speaks plain HTTP, and the directive is silently ignored
+// on `localhost` (a secure context) but breaks any non-localhost host — e.g.
+// opening the dev server over a LAN/Tailscale IP upgrades assets to https:// and
+// fails with ERR_SSL_PROTOCOL_ERROR. Gate it to production builds only.
+const upgradeInsecureRequests = process.env.NODE_ENV === 'production';
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: [vitePreprocess({})],
@@ -63,7 +71,9 @@ const config = {
         'form-action': ['self'],
         // 'self' allows same-origin iframes (e.g. widget preview at /widget-preview). 'none' blocks all embedding.
         'frame-ancestors': ['self'],
-        'upgrade-insecure-requests': true
+        // Only present in production — SvelteKit emits this boolean directive
+        // whenever the key exists, so it must be omitted entirely in dev.
+        ...(upgradeInsecureRequests ? { 'upgrade-insecure-requests': true } : {})
       },
       reportOnly: {
         'default-src': ['self'],
