@@ -62,9 +62,9 @@
 >
   <Dialog.Content class="max-w-md">
     <Dialog.Header>
-      <Dialog.Title>{$t('course.navItem.people.grant_access_modal.title')}</Dialog.Title>
+      <Dialog.Title>{$t('course.navItem.people.invite_modal.grant_access_modal.title')}</Dialog.Title>
       <Dialog.Description>
-        {$t('course.navItem.people.grant_access_modal.description', { email: studentEmail })}
+        {$t('course.navItem.people.invite_modal.grant_access_modal.description', { email: studentEmail })}
       </Dialog.Description>
     </Dialog.Header>
 
@@ -76,7 +76,7 @@
 
     <div class="flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={closeModal} disabled={isSubmitting}>
-        {$t('course.navItem.people.grant_access_modal.cancel')}
+        {$t('course.navItem.people.invite_modal.grant_access_modal.cancel')}
       </Button>
       <Button
         type="button"
@@ -85,7 +85,7 @@
         loading={isSubmitting}
         disabled={$isStudentLimitReached || !studentEmail}
       >
-        {$t('course.navItem.people.grant_access_modal.send_invite')}
+        {$t('course.navItem.people.invite_modal.grant_access_modal.send_invite')}
       </Button>
     </div>
   </Dialog.Content>

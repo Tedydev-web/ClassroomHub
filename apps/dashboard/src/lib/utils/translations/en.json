@@ -469,7 +469,7 @@
       "heading": "Notifications",
       "page_title": "Notifications",
       "page_subtitle": "Choose which email notifications you receive and, as an admin, which emails your organization sends.",
-      "personal_page_subtitle": "Choose which email notifications you receive from ClassroomIO.",
+      "personal_page_subtitle": "Choose which email notifications you receive from Classroom.",
       "personal": {
         "heading": "Your email preferences",
         "description": "These apply to emails sent to you in this organization. Your organization may still disable certain emails for everyone.",
@@ -1576,7 +1576,7 @@
       "border_radius": "Border radius",
       "font_family": "Font family",
       "font_scale": "Font size scale",
-      "show_powered_by": "Show Classroomio branding",
+      "show_powered_by": "Show Classroom branding",
       "custom_css": "Custom CSS",
       "custom_css_locked": "Upgrade to enable custom CSS.",
       "custom_css_hint": "Max 5,000 characters.",

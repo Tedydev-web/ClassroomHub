@@ -1,4 +1,4 @@
-import { TENANT_ROOT_DOMAIN, BRAND_ROOT_DOMAIN } from '@cio/utils/constants/domains';
+import { DASHBOARD_HOST, TENANT_ROOT_DOMAIN } from '@cio/utils/constants/domains';
 
 import { env } from './env';
 
@@ -63,7 +63,7 @@ export function getDashboardBaseUrl(org?: DashboardOrg): string {
     return `https://${org.siteName}.${TENANT_ROOT_DOMAIN}`;
   }
 
-  return `https://app.${BRAND_ROOT_DOMAIN}`;
+  return `https://${DASHBOARD_HOST}`;
 }
 
 /**
