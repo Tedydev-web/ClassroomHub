@@ -579,14 +579,14 @@
     "lessons_completed": "Bài học đã hoàn thành",
     "exercises_submitted": "Bài tập đã gửi",
     "average_grade": "Điểm trung bình",
-    "actions": "hành động",
+    "actions": "Hành động",
     "view_details": "Xem chi tiết",
     "no_students_found": "Không tìm thấy sinh viên nào",
     "no_students_description": "Hiện chưa có học viên nào đăng ký khóa học này. Học sinh sẽ xuất hiện ở đây khi họ tham gia khóa học.",
     "showing_students": "Đang hiển thị {start} cho {end} trong tổng số {total} sinh viên",
     "no_analytics_data": "Không có dữ liệu phân tích",
     "no_analytics_description": "Không thể tải dữ liệu phân tích cho khóa học này. Vui lòng thử lại sau hoặc liên hệ với bộ phận hỗ trợ nếu sự cố vẫn tiếp diễn.",
-    "student": "sinh viên",
+    "student": "Học viên",
     "student_progress_distribution": "Phân phối tiến bộ của học sinh",
     "grade_distribution": "Phân phối lớp",
     "progress_80_plus": "Tiến độ trên 80%",
@@ -598,7 +598,7 @@
     "grade_below_70": "Dưới 70% lớp",
     "number_of_students": "Số lượng sinh viên",
     "progress_range": "Phạm vi tiến độ",
-    "grade_range": "Phạm vi lớp",
+    "grade_range": "Khoảng điểm",
     "no_progress_data": "Không có dữ liệu tiến độ",
     "no_grade_data": "Không có dữ liệu điểm",
     "loading_chart": "Đang tải biểu đồ...",
@@ -670,7 +670,7 @@
       "grade_distribution_card_description": "Có bao nhiêu học sinh rơi vào từng nhóm lớp.",
       "students_table_description": "Tổng quan có thể sắp xếp với các liên kết đến hồ sơ sinh viên.",
       "kpi_team_tutors": "{count, plural, one {# giảng viên trong nhóm phụ trách khóa học} other {# giảng viên trong nhóm phụ trách khóa học}}",
-      "kpi_lessons_exercises": "{count, plural, one {# exercise} other {# exercises}} được ánh xạ tới bài học",
+      "kpi_lessons_exercises": "{count, plural, one {# bài tập} other {# bài tập}} được ánh xạ tới bài học",
       "kpi_progress_grade": "{grade}% điểm bài tập trung bình của các học sinh đã đăng ký"
     }
   },
@@ -929,7 +929,7 @@
         "explore": "Khám phá các khóa học",
         "find": "Tìm các khóa học bạn sẽ yêu thích từ những giáo viên giỏi nhất trên toàn thế giới",
         "find_course": "Tìm một khóa học...",
-        "instructor": "Người hướng dẫn",
+        "instructor": "Giảng viên",
         "courses": "các khóa học",
         "reviews_modal": {
           "title": "Đánh giá",
@@ -1024,7 +1024,7 @@
             "description": "Mô tả",
             "goals": "Bàn thắng",
             "reviews": "Đánh giá",
-            "instructor": "Người hướng dẫn",
+            "instructor": "Giảng viên",
             "pricing": "Định giá",
             "certificate": "Giấy chứng nhận",
             "curriculum": "chương trình giảng dạy",
@@ -1088,7 +1088,7 @@
           "panel_export_subtitle": "Xem trước thiết kế hiện tại vì nó sẽ được chuyển giao.",
           "section_header": "Bản sao tiêu đề",
           "section_signatories": "Người ký",
-          "section_reference": "Tài liệu tham khảo",
+          "section_reference": "Tham chiếu",
           "subtitle": "phụ đề",
           "subtitle_placeholder": "Được trao giải cao nhất",
           "description_override": "Ghi đè mô tả",
@@ -1102,8 +1102,8 @@
           "id_format_hint": "Sử dụng '{'seq'}' cho bốn chữ số cuối, '{'year'}' cho năm phát hành, '{'month'}' cho tháng.",
           "accent_hint": "Màu nhấn xuất hiện trên quy tắc người nhận, tem và phần đánh dấu tiêu đề của mẫu.",
           "templates_hint": "Các mẫu hiển thị với cùng một trình kết xuất được sử dụng cho tệp PDF và PNG đã tải xuống.",
-          "download_pdf": "Tải xuống bản PDF",
-          "download_png": "Tải xuống PNG",
+          "download_pdf": "Tải PDF",
+          "download_png": "Tải PNG",
           "print": "In",
           "export_hint": "Quá trình xuất sử dụng tên của bạn làm người nhận để bạn có thể xem trước bố cục cuối cùng.",
           "preview_failed": "Không thể tạo bản xem trước chứng chỉ",
@@ -1114,7 +1114,7 @@
           "summary_title": "Thiết kế năng động",
           "summary_subtitle": "Ảnh chụp nhanh về hình thức của chứng chỉ khi được cấp.",
           "field_template": "mẫu",
-          "field_accent": "Giọng",
+          "field_accent": "Màu nhấn",
           "field_signatories": "Người ký",
           "customize_design": "Tùy chỉnh thiết kế",
           "signatory_one_toggle": "Hiển thị người ký 1",
@@ -1134,7 +1134,7 @@
         "pending": "Đang chờ xử lý",
         "name": "Tên",
         "role": "Vai trò",
-        "action": "hành động",
+        "action": "Hành động",
         "feedback": "Đã sao chép email vào clipboard",
         "view": "Xem",
         "delete_profile": "Xóa hồ sơ",
@@ -1163,8 +1163,8 @@
         },
         "roles": {
           "admin": "Quản trị viên",
-          "tutor": "gia sư",
-          "student": "sinh viên",
+          "tutor": "Gia sư",
+          "student": "Học viên",
           "filter": "Lọc"
         },
         "delete_confirmation": {
@@ -1221,7 +1221,7 @@
           "direct_email_bulk": "Email trực tiếp / Lời mời hàng loạt",
           "direct_email_description": "Dán các địa chỉ email được phân tách bằng dấu phẩy, dấu cách hoặc dòng mới. Một lời mời an toàn duy nhất được tạo cho mỗi email.",
           "recipient_emails": "Email người nhận",
-          "recipient_emails_placeholder": "sinh viên1@example.com, sinh viên2@example.com",
+          "recipient_emails_placeholder": "student1@example.com, student2@example.com",
           "send_invite_emails": "Gửi email mời ngay lập tức",
           "create_email_invites": "Tạo lời mời qua email",
           "existing_students_title": "Thêm học viên có sẵn của tổ chức",
@@ -1254,10 +1254,10 @@
           "no_audit_events": "Không có sự kiện kiểm toán.",
           "audit_at": "Tại",
           "audit_email": "Email",
-          "audit_actor": "diễn viên",
+          "audit_actor": "Người thực hiện",
           "audit_ip": "IP",
-          "scan_qr": "Quét QR",
-          "classroomio_brand": "Lớp họcIO.com",
+          "scan_qr": "Quét mã QR",
+          "classroomio_brand": "Classroom.com",
           "snackbar_invite_link_copied": "Đã sao chép liên kết mời",
           "snackbar_invite_link_regenerated": "Một liên kết mời mới đã được tạo",
           "snackbar_failed_generate_link": "Không tạo được liên kết mời",
@@ -1275,13 +1275,19 @@
             "multi_use_30d": "Sử dụng nhiều lần (30 ngày)",
             "custom": "tùy chỉnh"
           },
-          "student_limit_reached": "Bạn đã đạt đến giới hạn sinh viên trong kế hoạch của mình. Nâng cấp để mời thêm sinh viên."
+          "student_limit_reached": "Bạn đã đạt đến giới hạn sinh viên trong kế hoạch của mình. Nâng cấp để mời thêm sinh viên.",
+          "grant_access_modal": {
+            "title": "Cấp quyền truy cập cho học viên",
+            "description": "Cấp cho {email} quyền truy cập khóa học này. Chúng tôi sẽ gửi email mời để tham gia tổ chức của bạn và đăng ký khóa học.",
+            "cancel": "Hủy",
+            "send_invite": "Gửi lời mời"
+          }
         }
       },
       "marks": {
         "title": "Điểm",
-        "student": "sinh viên",
-        "total": "Tổng cộng",
+        "student": "Học viên",
+        "total": "Tổng",
         "no_student": "Không có sinh viên nào được thêm vào",
         "export": {
           "csv": "Xuất dưới dạng CSV",
@@ -1296,7 +1302,7 @@
           "early": "Sớm",
           "late": "Muộn",
           "total_grade": "Tổng điểm",
-          "student": "sinh viên",
+          "student": "Học viên",
           "status": "Trạng thái",
           "add_comment": "Thêm nhận xét",
           "add_comment_placeholder": "Để lại một bình luận",
@@ -1313,7 +1319,7 @@
           "delete_prompt": "Xóa",
           "delete_error": "Không thể xóa bài nộp",
           "delete_success": "Đã xóa bài nộp thành công",
-          "student_avatar": "Hình đại diện sinh viên",
+          "student_avatar": "Ảnh đại diện học viên",
           "ai_icon": "trí tuệ nhân tạo"
         },
         "submission_status": {
@@ -1332,7 +1338,7 @@
         "present": "hiện tại",
         "absent": "Vắng mặt",
         "search_students": "Tìm kiếm sinh viên",
-        "student": "sinh viên",
+        "student": "Học viên",
         "lesson": "Bài học",
         "no_student": "Không có sinh viên nào được thêm vào"
       },
@@ -1368,7 +1374,7 @@
         "no_tutor": "Không có gia sư nào được thêm vào",
         "body_header": "Chưa có bài học nào",
         "body_content": "Chia sẻ kiến thức của bạn với thế giới bằng cách tạo ra những bài học hấp dẫn. Bắt đầu bằng cách nhấp vào nút Thêm.",
-        "download_pdf": "Tải xuống bản PDF",
+        "download_pdf": "Tải PDF",
         "autosaving": "Tự động lưu...",
         "done": "Xong",
         "edit": "Chỉnh sửa",
@@ -1376,7 +1382,7 @@
         "incomplete": "Chưa hoàn thành",
         "complete": "Hoàn thành",
         "next": "Tiếp theo",
-        "prev": "Trước đó",
+        "prev": "Trước",
         "prev_shortcut": "Trước (←)",
         "next_shortcut": "Tiếp (→)",
         "disabled": "Tính năng bị vô hiệu hóa",
@@ -1403,7 +1409,7 @@
           "create_poll": "Tạo cuộc thăm dò",
           "question": "Câu hỏi",
           "options": "Tùy chọn",
-          "option_label": "Nhãn tùy chọn",
+          "option_label": "Nhãn lựa chọn",
           "cancel": "Hủy bỏ",
           "poll_question": "Câu hỏi thăm dò ý kiến"
         },
@@ -1470,7 +1476,7 @@
                 "heading": "Cá nhân",
                 "answers": "Câu trả lời cá nhân",
                 "no": "Không có câu trả lời nào được đưa ra",
-                "student_avatar": "sinh viên",
+                "student_avatar": "Học viên",
                 "answers_for": "Câu trả lời của {name}",
                 "attempts_count": "{count} lần làm",
                 "attempt_label": "Lần làm {number}",
@@ -1551,7 +1557,7 @@
                 "file_upload": "Tải tập tin lên",
                 "matching": "Kết hợp",
                 "ordering": "Đặt hàng",
-                "hotspot": "Điểm phát sóng",
+                "hotspot": "Điểm nóng",
                 "link": "Liên kết",
                 "word_bank": "Ngân hàng từ",
                 "star": "Xếp hạng sao",
@@ -1781,12 +1787,12 @@
                 "finish": "Kết thúc"
               },
               "common": {
-                "option_prefix": "Tùy chọn",
+                "option_prefix": "Lựa chọn",
                 "remove": "Xóa",
                 "add_option": "Thêm tùy chọn",
                 "correct_badge": "Đúng",
                 "not_set": "Chưa đặt",
-                "incorrect_badge": "sai"
+                "incorrect_badge": "Sai"
               },
               "word_bank": {
                 "review": {
@@ -1807,7 +1813,7 @@
                   "template_helper": "Sử dụng ba dấu gạch dưới (___) cho mỗi chỗ trống. Học sinh sẽ thấy một ngân hàng từ có câu trả lời đúng và các từ gây phân tâm.",
                   "no_blanks_warning": "Thêm ít nhất một điểm đánh dấu trống ___ vào mẫu của bạn.",
                   "correct_answers_heading": "Câu trả lời đúng cho mỗi chỗ trống",
-                  "blank_label": "trống",
+                  "blank_label": "Chỗ trống",
                   "correct_placeholder": "Thuật ngữ hoặc cụm từ đúng",
                   "distractors_heading": "Những từ bổ sung (làm mất tập trung)",
                   "distractor_placeholder": "Lựa chọn sai",
@@ -1902,7 +1908,7 @@
               "collapse_section": "Thu gọn phần",
               "expand_section": "Mở rộng phần"
             },
-            "more": "hành động",
+            "more": "Hành động",
             "settings_completion_policy": "Quy tắc hoàn thành",
             "settings_completion_submitted": "Đã gửi - mọi lần gửi đều được tính",
             "settings_completion_passed": "Đạt - yêu cầu điểm tối thiểu",
@@ -2024,7 +2030,7 @@
               "upload_error": "Không thể tải tài liệu lên",
               "file_type_error": "Loại tệp không được hỗ trợ. Vui lòng tải lên tệp PDF, DOCX hoặc DOC.",
               "file_size_error": "Kích thước tệp quá lớn. Kích thước tối đa là {size}.",
-              "type": "loại",
+              "type": "Loại",
               "size": "Kích thước",
               "upload_error_title": "Lỗi tải lên",
               "upload_error_message": "Định dạng tệp không được hỗ trợ hoặc tải lên không thành công",
@@ -2139,8 +2145,8 @@
               "playback_auth_action": "Đăng nhập"
             },
             "slide": {
-              "title": "Trượt",
-              "slide_link": "Liên kết trượt",
+              "title": "Slide",
+              "slide_link": "Liên kết slide",
               "helper_message": "Bạn có thể nhúng Google Trang trình bày hoặc Bản trình bày Canva"
             },
             "note": {
@@ -2263,7 +2269,7 @@
           "add_to_calendar": "Thêm vào lịch",
           "add_google": "Lịch Google",
           "add_outlook": "Outlook.com",
-          "add_office365": "Văn phòng 365",
+          "add_office365": "Office 365",
           "add_yahoo": "Lịch Yahoo",
           "add_apple": "Lịch Apple (.ics)",
           "starts_in": "Bắt đầu vào",
@@ -2349,10 +2355,10 @@
           "waived": "Miễn trừ"
         },
         "fields": {
-          "learner": "sinh viên",
+          "learner": "Học viên",
           "email": "Email",
           "status": "Trạng thái",
-          "cycle": "chu kỳ",
+          "cycle": "Chu kỳ",
           "due_date": "Ngày đến hạn",
           "completed_at": "Hoàn thành lúc",
           "valid_until": "Có hiệu lực cho đến khi",
@@ -2417,7 +2423,7 @@
       },
       "compliance": {
         "title": "Tuân thủ",
-        "due_date": "Đến hạn",
+        "due_date": "Hạn",
         "valid_until": "Có hiệu lực cho đến khi"
       },
       "progress": {
@@ -2590,7 +2596,7 @@
         "lessons": "Bài học",
         "students": "Sinh viên",
         "published": "Đã xuất bản",
-        "type": "loại",
+        "type": "Loại",
         "tags": "Thẻ"
       },
       "context_menu": {
@@ -2604,7 +2610,7 @@
         "publish_course": "Xuất bản khóa học",
         "copy_course_url": "Sao chép URL khóa học"
       },
-      "due_date": "Đến hạn",
+      "due_date": "Hạn",
       "valid_until": "Có hiệu lực cho đến khi"
     },
     "course_filter": {
@@ -2670,7 +2676,7 @@
     "total_students_description": "Căn cứ vào số lượng tuyển sinh",
     "top_courses": "Các khóa học hàng đầu",
     "students": "sinh viên",
-    "student": "sinh viên",
+    "student": "học viên",
     "completion": "hoàn thành",
     "create_first_course": "Tạo khóa học đầu tiên của bạn",
     "create_first_course_description": "Bắt đầu tạo các khóa học để theo dõi tiến độ khóa học",
@@ -2680,7 +2686,7 @@
     "publish_course": "Xuất bản khóa học",
     "items_completed": "Các hạng mục đã hoàn thành",
     "currently_learning": "Hiện đang học",
-    "learner": "sinh viên",
+    "learner": "Học viên",
     "progress": "Tiến độ",
     "pick_up_where_you_left_off": "Tiếp tục nơi bạn đã dừng lại",
     "get_your_certificate": "Nhận chứng chỉ của bạn",
@@ -2695,13 +2701,13 @@
     "compliance_score_empty": "Chưa có khóa học tuân thủ nào được chỉ định",
     "compliance_met": "{completed} trong tổng số {total} đã đáp ứng",
     "required_courses_completed": "Đã hoàn thành {completed} trong số {total} khóa học bắt buộc",
-    "streak": "Vệt",
+    "streak": "Chuỗi ngày",
     "days_active": "ngày hoạt động",
     "items_done": "{completed} trong tổng số {total} đã hoàn thành",
     "login_activity_title": "Hoạt động đăng nhập của sinh viên",
     "login_activity_description": "Những ngày hoạt động tích cực nhất trong tuần (90 ngày qua)",
     "login_activity_no_data": "Chưa có hoạt động đăng nhập",
-    "login_activity_logins": "thông tin đăng nhập",
+    "login_activity_logins": "lần đăng nhập",
     "open_academy": "Học viện mở",
     "explore_more_courses": "Khám phá thêm các khóa học",
     "view_more": "Xem thêm",
@@ -2728,11 +2734,11 @@
         },
         "course": {
           "title": "Khóa học",
-          "newsfeed": "Nguồn cấp tin tức",
+          "newsfeed": "Bảng tin",
           "grading": "Chấm điểm"
         },
         "dashboard": {
-          "title": "Trang tổng quan",
+          "title": "Bảng điều khiển",
           "community": "cộng đồng",
           "exercises": "Bài tập",
           "banner_image": "Hình ảnh biểu ngữ",
@@ -2762,7 +2768,7 @@
         "custom_domain_not_classroomio": "Tên miền không thể chứa 'classroomio'",
         "custom_domain_success": "Đã thêm miền tùy chỉnh thành công",
         "dns_description": "Đặt bản ghi sau trên nhà cung cấp DNS của bạn để tiếp tục:",
-        "dns_type": "loại",
+        "dns_type": "Loại",
         "dns_value": "Giá trị",
         "dns_name": "Tên",
         "refresh": "Làm mới",
@@ -2834,8 +2840,8 @@
     "goto": "đi đến",
     "courses": "Khóa học",
     "home": "Trang chủ",
-    "classroomio_home": "Lớp họcIO Trang chủ",
-    "dashboard": "Trang tổng quan",
+    "classroomio_home": "Trang chủ Classroom",
+    "dashboard": "Bảng điều khiển",
     "discussion": "Thảo luận",
     "people": "mọi người",
     "goto_lms": "Đi tới LMS",
@@ -2846,7 +2852,7 @@
     "loading_state": "Đang đưa bạn đến trang tiếp theo, vui lòng đợi.",
     "org_loading_state": "Đưa bạn đến tổ chức của bạn...",
     "add_organization": "+ Thêm tổ chức",
-    "goto_dashboard": "Trang tổng quan"
+    "goto_dashboard": "Bảng điều khiển"
   },
   "add_org": {
     "create_org": "Tạo tổ chức",
@@ -2863,7 +2869,7 @@
     "progress": "Tiến độ",
     "completed": "hoàn thành",
     "done": "Xong",
-    "todo": "việc cần làm",
+    "todo": "Việc cần làm",
     "publish_course": {
       "title": "Xuất bản một khóa học",
       "desc": "Làm cho khóa học của bạn trở nên công khai và có thể mua được",
@@ -2912,7 +2918,7 @@
     "plan_names": {
       "free": "miễn phí",
       "early": "Áp dụng sớm",
-      "enterprise": "Doanh nghiệp"
+      "enterprise": "Enterprise"
     }
   },
   "org_navigation": {
@@ -2920,11 +2926,11 @@
     "home": "Trang chủ",
     "content": "Nội dung",
     "people": "Mọi người",
-    "dashboard": "Trang tổng quan",
+    "dashboard": "Bảng điều khiển",
     "courses": "Khóa học",
     "community": "cộng đồng",
     "audience": "khán giả",
-    "media": "Phương tiện truyền thông",
+    "media": "Phương tiện",
     "setup": "thiết lập",
     "help": "Trợ giúp",
     "settings": "Cài đặt",
@@ -2943,7 +2949,7 @@
     "upgrade_left": "còn {count}"
   },
   "media_manager": {
-    "page_title": "Quản lý truyền thông - Classroom",
+    "page_title": "Trình quản lý phương tiện - Classroom",
     "heading": "Trình quản lý phương tiện",
     "empty": "Không tìm thấy nội dung nào",
     "usage": {
@@ -2955,7 +2961,7 @@
       "table": {
         "target_type": "Loại mục tiêu",
         "target_id": "ID mục tiêu",
-        "slot": "Khe cắm",
+        "slot": "Vị trí",
         "position": "Vị trí",
         "added": "Đã thêm"
       },
@@ -3006,12 +3012,12 @@
     },
     "table": {
       "title": "Tiêu đề",
-      "kind": "loại",
+      "kind": "Loại",
       "provider": "nhà cung cấp",
       "status": "Trạng thái",
       "size": "Kích thước",
       "updated_at": "Đã cập nhật",
-      "actions": "hành động"
+      "actions": "Hành động"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -3056,7 +3062,7 @@
       "bytes_by_kind": "Lưu trữ theo loại nội dung"
     },
     "common": {
-      "not_available": "không áp dụng"
+      "not_available": "N/A"
     },
     "empty_description": "Tài sản không tồn tại hoặc không có sẵn trong tổ chức này.",
     "page_subtitle": "Lưu giữ tệp, video và liên kết cho các khóa học của bạn trong một thư viện.",
@@ -3101,7 +3107,7 @@
       "ai_bonus_credits": "AI credits thưởng có sẵn"
     },
     "integrations": {
-      "heading": "điện tín",
+      "heading": "Telegram",
       "sub_heading": "Kết nối tài khoản của bạn với điện tín để nhận thông báo về bất kỳ thay đổi nào trong ứng dụng.",
       "step_authenticate": "Bước 1: Xác thực tài khoản của bạn thông qua bot Classroom.",
       "open_bot_button": "Mở Bot",
@@ -3187,9 +3193,9 @@
         "select_image": "Chọn hình ảnh"
       },
       "actions": {
-        "heading": "hành động",
+        "heading": "Hành động",
         "label": "Nhãn",
-        "link": "liên kết",
+        "link": "Liên kết",
         "no_redirect": "Không chuyển hướng",
         "redirect": "Chuyển hướng",
         "show_banner": "Hiển thị biểu ngữ",
@@ -3238,7 +3244,7 @@
               "youtube": "YouTube",
               "github": "GitHub",
               "tiktok": "TikTok",
-              "website": "Website"
+              "website": "Trang web"
             }
           },
           "columns": {
@@ -3314,7 +3320,7 @@
             "label_field": "Nhãn",
             "value_field": "Giá trị",
             "label_placeholder": "Sinh viên năng động",
-            "value_placeholder": "1.200"
+            "value_placeholder": "1,200"
           }
         },
         "sections": {
@@ -3387,15 +3393,15 @@
             "description": "Độ tương phản cao, biên tập và nổi bật"
           },
           "minimal": {
-            "title": "Tối thiểu",
+            "title": "Tối giản",
             "description": "Sạch sẽ, sáng sủa và tập trung vào khóa học"
           },
           "terminal": {
-            "title": "thiết bị đầu cuối",
+            "title": "Terminal",
             "description": "Bề mặt tối, nhãn từ bóng mờ, danh mục lấy cảm hứng từ CLI"
           },
           "corporate": {
-            "title": "Công ty",
+            "title": "Doanh nghiệp",
             "description": "Kiểu chữ trang nhã, lưới có viền, giao diện sẵn sàng kiểm tra"
           },
           "studio": {
@@ -3403,7 +3409,7 @@
             "description": "Đường viền chân tóc, độ dốc tỏa sáng anh hùng, đánh bóng sản phẩm thủ công"
           },
           "tech": {
-            "title": "công nghệ",
+            "title": "Công nghệ",
             "description": "Dải thương hiệu táo bạo, điều hướng đơn không gian, cảm giác học viện kỹ thuật"
           },
           "saas": {
@@ -3436,7 +3442,7 @@
         "field_theme": "chủ đề",
         "field_hero": "Tiêu đề anh hùng",
         "field_nav": "Điều hướng",
-        "field_nav_count_one": "liên kết {count}",
+        "field_nav_count_one": "{count} liên kết",
         "field_nav_count_other": "{count} liên kết",
         "hero_empty": "—",
         "customize": "Tùy chỉnh trang đích"
@@ -3454,7 +3460,7 @@
         "upload_image": "Tải hình ảnh lên",
         "update_organization": "Cập nhật tổ chức",
         "team": {
-          "heading": "đội",
+          "heading": "Nhóm",
           "sub_heading": "Thiết lập nhóm của bạn",
           "body": "Thêm đồng đội vào tổ chức của bạn để cả hai có thể cộng tác trong các dự án.",
           "button": "Quản lý nhóm"
@@ -3512,11 +3518,11 @@
       "language_tab": "Ngôn ngữ",
       "auth_tab": "Xác thực",
       "sso_tab": "SSO",
-      "token_auth_tab": "Xác thực mã thông báo",
+      "token_auth_tab": "Token Auth",
       "customize_lms_tab": "Tùy chỉnh LMS",
       "domains_tab": "Tên miền",
       "teams_tab": "Đội",
-      "ai_credits_tab": "AI Credits",
+      "ai_credits_tab": "Tín dụng AI",
       "ai_tutor_tab": "Gia sư AI",
       "notifications_tab": "Thông báo"
     },
@@ -3627,12 +3633,12 @@
       "tabs": {
         "general": "chung",
         "sso": "SSO",
-        "token_auth": "Xác thực mã thông báo"
+        "token_auth": "Token Auth"
       },
       "page_subtitle": "Kiểm soát đăng ký, đăng nhập, SSO và quyền truy cập bằng token cho tổ chức này."
     },
     "token_auth": {
-      "heading": "Xác thực mã thông báo",
+      "heading": "Token Auth",
       "description": "Cho phép người dùng đăng nhập từ ứng dụng của bạn bằng JWT—không cần mật khẩu. Tạo bí mật ký và sử dụng nó trong phần phụ trợ của bạn để phát hành JWT tồn tại trong thời gian ngắn.",
       "status": "Trạng thái",
       "active": "Đang hoạt động",
@@ -3655,7 +3661,7 @@
       "page_subtitle": "Mời đồng nghiệp và kiểm soát ai được hỗ trợ vận hành tổ chức này."
     },
     "ai_credits": {
-      "sub_title": "AI credits",
+      "sub_title": "Tín dụng AI",
       "page_subtitle": "Theo dõi việc sử dụng trợ lý AI, mức tiêu thụ của nhóm và mua các gói AI credits.",
       "cost_note": "Mức sử dụng credit được tính theo chi phí của mô hình. Gemini 3.1 Flash Lite tính 1 đơn vị credit mỗi token. GPT-5.4 Mini và Kimi K2.6 tính 4× mỗi token. Claude Sonnet 4.6 tính 11× mỗi token, phản ánh chi phí API cao hơn.",
       "included": {
@@ -3672,7 +3678,7 @@
       "chart": {
         "heading": "Sử dụng",
         "subheading": "Mức tiêu thụ AI credits hàng ngày trong tháng này.",
-        "tokens": "Credits",
+        "tokens": "Tín dụng",
         "total_tokens": "Tổng credits",
         "total_requests": "Tổng số yêu cầu",
         "empty": "Chưa ghi nhận mức sử dụng nào trong tháng này."
@@ -3682,7 +3688,7 @@
         "this_month": "Tháng hiện tại",
         "user": "Người dùng",
         "favorite_model": "Model yêu thích",
-        "tokens": "Credits",
+        "tokens": "Tín dụng",
         "empty": "Không ai trong nhóm của bạn đã sử dụng trợ lý AI trong tháng này."
       },
       "buy_tokens": {
@@ -3762,7 +3768,7 @@
           "description": "Ghi danh, bài nộp, bài học, thông báo và hoàn thành trong các khóa học của bạn."
         }
       },
-      "personal_page_subtitle": "Chọn thông báo email bạn nhận từ ClassroomIO."
+      "personal_page_subtitle": "Chọn thông báo email bạn nhận từ Classroom."
     }
   },
   "profileMenu": {
@@ -3858,7 +3864,7 @@
     "employees": "Đào tạo nhân viên của tôi",
     "customers": "Tạo khóa học cho khách hàng của tôi",
     "explore": "Chỉ ở đây để khám phá",
-    "articles": "bài viết",
+    "articles": "Bài viết",
     "search": "Công cụ tìm kiếm",
     "social": "Phương tiện truyền thông xã hội",
     "friends": "Bạn bè và gia đình",
@@ -3964,7 +3970,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Thẻ - Lớp họcIO",
+    "page_title": "Thẻ - Classroom",
     "heading": "Thẻ",
     "create": "Tạo",
     "tag_modal": {
@@ -3974,7 +3980,7 @@
       "description": "Mô tả",
       "description_placeholder": "Mô tả tùy chọn",
       "category": "Danh mục",
-      "color": "Màu sắc",
+      "color": "Màu",
       "color_help": "Chọn một trong 10 màu",
       "select_category": "Chọn một danh mục",
       "no_groups": "Tạo nhóm thẻ trước khi tạo thẻ"
@@ -3991,13 +3997,13 @@
       "description": "Trước tiên hãy tạo nhóm thẻ, sau đó bắt đầu thêm thẻ."
     },
     "table": {
-      "tag": "Gắn thẻ",
+      "tag": "Thẻ",
       "total_courses": "Tổng số khóa học",
       "course": "khóa học",
       "courses": "các khóa học",
       "description": "Mô tả",
       "category": "Danh mục",
-      "action": "hành động",
+      "action": "Hành động",
       "empty_group": "Chưa có thẻ nào trong nhóm này"
     },
     "actions": {
@@ -4010,7 +4016,7 @@
       "actions_menu": "Hành động gắn thẻ"
     },
     "common": {
-      "not_available": "không áp dụng"
+      "not_available": "N/A"
     },
     "page_subtitle": "Sắp xếp khóa học bằng nhãn để bộ lọc và danh sách luôn dễ theo dõi."
   },
@@ -4130,9 +4136,9 @@
       "table_last_used": "Lần sử dụng cuối cùng"
     },
     "clients": {
-      "claude_code": "Mã Claude",
+      "claude_code": "Claude Code",
       "codex": "Codex",
-      "cursor": "Con trỏ",
+      "cursor": "Cursor",
       "opencode": "OpenCode",
       "curl": "cURL",
       "javascript": "JavaScript",
@@ -4402,7 +4408,7 @@
       "name": "Tên tiện ích",
       "selection_mode": "Chế độ lựa chọn",
       "course_search": "Tìm kiếm khóa học",
-      "layout_type": "Kiểu bố cục",
+      "layout_type": "Loại bố cục",
       "sort_by": "Sắp xếp theo",
       "cta_label": "Nhãn CTA",
       "load_more_label": "Tải thêm nhãn",
@@ -4428,7 +4434,7 @@
       "custom_css_locked": "Nâng cấp để kích hoạt CSS tùy chỉnh.",
       "embed_code": "Nhúng mã",
       "custom_css_hint": "Tối đa 5.000 ký tự.",
-      "border_radius_hint": "0 – 32px.",
+      "border_radius_hint": "0 – 32 px.",
       "font_scale_hint": "0,8 – 1,4 (1 = mặc định)."
     },
     "create": {
@@ -4485,7 +4491,7 @@
       "live": "Trực tiếp"
     },
     "sort": {
-      "manual": "Hướng dẫn sử dụng",
+      "manual": "Thủ công",
       "newest": "Mới nhất",
       "title": "Tiêu đề"
     },
@@ -4519,7 +4525,7 @@
       "show_tags": "Hiển thị thẻ",
       "title_style": "Kiểu tiêu đề",
       "title_style_serif": "Serif",
-      "title_style_sans": "không có",
+      "title_style_sans": "Sans",
       "category_tags": "Thẻ danh mục",
       "category_tags_required": "Chọn ít nhất một thẻ cho giá danh mục.",
       "default_category": "Danh mục mặc định",
@@ -4575,9 +4581,9 @@
         "embed": "Nhúng"
       },
       "viewport": {
-        "mobile": "Điện thoại di động",
+        "mobile": "Di động",
         "tablet": "Máy tính bảng",
-        "desktop": "Máy tính để bàn"
+        "desktop": "Máy tính"
       }
     },
     "tabs": {
@@ -4609,10 +4615,10 @@
       "heading": "Sinh viên",
       "subtitle": "{count, number} khớp",
       "empty": "Không có học sinh nào phù hợp với bộ lọc này",
-      "learner": "sinh viên",
+      "learner": "Học viên",
       "course": "Khóa học",
       "status": "Trạng thái",
-      "due_date": "Đến hạn",
+      "due_date": "Hạn",
       "expires": "Hết hạn"
     },
     "courses": {
@@ -4649,7 +4655,7 @@
       "learners": "Sinh viên"
     },
     "summary": {
-      "heading": "Tình trạng sinh viên",
+      "heading": "Trạng thái học viên",
       "description": "Đếm số học sinh trong tất cả các khóa học tuân thủ."
     }
   },
@@ -4711,7 +4717,7 @@
       "approaching": "Đang đến gần nắp",
       "totalActive": "Sinh viên năng động trong tháng này",
       "learnersHeading": "Sinh viên",
-      "headerLearner": "sinh viên",
+      "headerLearner": "Học viên",
       "headerMessages": "Tin nhắn",
       "headerTokens": "Mã thông báo",
       "headerStatus": "Trạng thái",
@@ -4748,13 +4754,13 @@
     "persona": {
       "encouraging": "Khuyến khích",
       "friendly": "Thân thiện",
-      "formal": "chính thức",
+      "formal": "Trang trọng",
       "socratic": "Socrate",
       "custom": "tùy chỉnh"
     },
     "field": {
       "enabled": "Đã bật gia sư AI",
-      "persona": "tính cách gia sư",
+      "persona": "Persona gia sư",
       "customPersona": "Tính cách tùy chỉnh",
       "customPersona_description": "Mô tả cách phát âm của gia sư - giọng điệu, phong cách xưng hô, bất cứ điều gì cụ thể đối với khán giả của bạn.",
       "responseLength": "Độ dài phản hồi",
@@ -4900,7 +4906,7 @@
       "post_submit": "bài đăng",
       "empty_title": "Chưa có bài viết nào",
       "empty_description": "Hãy là người đầu tiên đăng một cái gì đó.",
-      "heading": "Nguồn cấp tin tức",
+      "heading": "Bảng tin",
       "make_a_post": "Tạo một bài đăng",
       "edit_post": "Chỉnh sửa bài đăng",
       "editor_placeholder": "Chia sẻ bản cập nhật với nhóm học tập của bạn",
@@ -4935,7 +4941,7 @@
       "submit": "Tạo"
     },
     "sidebar": {
-      "newsfeed": "Nguồn cấp tin tức",
+      "newsfeed": "Bảng tin",
       "courses": "Khóa học",
       "people": "mọi người",
       "settings": "Cài đặt"
@@ -4967,8 +4973,8 @@
       "sort": "Sắp xếp",
       "order": "Đặt hàng",
       "status": "Trạng thái",
-      "ascending": "tăng dần",
-      "descending": "mô tả",
+      "ascending": "Tăng dần",
+      "descending": "Giảm dần",
       "sort_name": "Tên",
       "sort_courses": "Khóa học",
       "sort_students": "Sinh viên",
@@ -5029,12 +5035,12 @@
         "title_placeholder": "ví dụ: Đoạn đường nối",
         "description_label": "Mô tả",
         "description_placeholder": "Bối cảnh tùy chọn cho nhóm",
-        "type_label": "loại",
+        "type_label": "Loại",
         "courses_label": "Khóa học",
         "required_count_label": "Số lượng khóa học yêu cầu",
         "score_threshold_label": "Điểm đậu của mỗi học sinh (%)",
         "team_pass_rate_label": "Tỷ lệ vượt qua của đội (%)",
-        "deadline_label": "thời hạn",
+        "deadline_label": "Hạn chót",
         "deadline_date_label": "Ngày hết hạn",
         "relative_days_label": "Ngày kể từ khi học viên tham gia",
         "recurring_months_label": "Lặp lại mỗi (tháng)",
