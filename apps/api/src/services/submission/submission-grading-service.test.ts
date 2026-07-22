@@ -537,6 +537,9 @@ describe('submission grading transaction locks', () => {
 
     expect(canonicalQuestion).toEqual({
       id: 11,
+      title: 'Composite question',
+      order: 0,
+      exerciseSectionId: null,
       definition: {
         schemaVersion: 1,
         blocks: [

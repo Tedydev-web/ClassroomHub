@@ -635,7 +635,13 @@ export async function listSubmissionsForGrading(courseId: string) {
           >;
         }
       >;
-      canonicalQuestions: Array<{ id: number; definition: AssessmentDeliveryDefinition }>;
+      canonicalQuestions: Array<{
+        id: number;
+        title: string;
+        order: number | null;
+        exerciseSectionId: string | null;
+        definition: AssessmentDeliveryDefinition;
+      }>;
       answers: Record<string, AnswerData>;
       questionAnswers: Array<Pick<GradingAnswer, 'questionId' | 'answerData'>>;
       questionAnswerByPoint: Record<number, number>;
@@ -715,10 +721,17 @@ export async function listSubmissionsForGrading(courseId: string) {
 
       const canonicalRevisions = await getQuestionRevisionsByIds([...new Set(canonicalRevisionIds)]);
       const canonicalRevisionById = new Map(canonicalRevisions.map((revision) => [revision.id, revision]));
+      const exerciseQuestionById = new Map(
+        (submission.exercise.questions || []).map((question) => [question.id, question])
+      );
       const canonicalQuestions = canonicalAnswers.map((answer) => {
         const revision = canonicalRevisionById.get(answer.questionRevisionId!);
         if (!revision) {
           throw new AppError('The attempted assessment revision was not found', ErrorCodes.INTERNAL_ERROR, 500);
+        }
+        const question = exerciseQuestionById.get(answer.questionId);
+        if (!question) {
+          throw new AppError('The attempted assessment question was not found', ErrorCodes.INTERNAL_ERROR, 500);
         }
 
         const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
@@ -726,7 +739,13 @@ export async function listSubmissionsForGrading(courseId: string) {
           throw new AppError('The attempted assessment revision is invalid', ErrorCodes.INTERNAL_ERROR, 500);
         }
 
-        return { id: answer.questionId, definition: toAssessmentDeliveryDefinition(parsedDefinition.data) };
+        return {
+          id: answer.questionId,
+          title: question.title,
+          order: question.order ?? null,
+          exerciseSectionId: question.exerciseSectionId ?? null,
+          definition: toAssessmentDeliveryDefinition(parsedDefinition.data)
+        };
       });
       const legacyQuestions = (submission.exercise.questions || []).filter(
         (question) => question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM
