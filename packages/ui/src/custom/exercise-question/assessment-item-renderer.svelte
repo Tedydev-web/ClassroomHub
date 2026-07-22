@@ -14,6 +14,7 @@
   }
 
   let { definition, response = null, disabled = false, onResponseChange = () => {} }: Props = $props();
+  const rendererId = $props.id();
 
   const responsesByInteractionId = $derived(
     new Map((response?.responses ?? []).map((entry) => [entry.interactionId, entry.response]))
@@ -61,7 +62,7 @@
           >
             <div class="ui:space-y-2">
               {#each interaction.config.options as option}
-                {@const optionElementId = `${block.id}-${option.id}`}
+                {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
                 <div class="ui:flex ui:items-start ui:gap-2">
                   <RadioGroup.Item id={optionElementId} value={option.id} />
                   <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
@@ -74,7 +75,7 @@
         {:else}
           <div class="ui:space-y-2">
             {#each interaction.config.options as option}
-              {@const optionElementId = `${block.id}-${option.id}`}
+              {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
               <div class="ui:flex ui:items-start ui:gap-2">
                 <Checkbox
                   id={optionElementId}
@@ -96,10 +97,11 @@
         responsesByInteractionId.get(block.id)?.kind === 'text'
           ? (responsesByInteractionId.get(block.id)?.text ?? '')
           : ''}
+      {@const textElementId = `${rendererId}-${block.id}`}
       <div class="ui:space-y-3">
-        <Label for={block.id} class="ui:font-medium">{@html renderAuthoredHtml(interaction.prompt.html)}</Label>
+        <Label for={textElementId} class="ui:font-medium">{@html renderAuthoredHtml(interaction.prompt.html)}</Label>
         <Textarea
-          id={block.id}
+          id={textElementId}
           value={text}
           {disabled}
           maxlength={interaction.config.maxCharacters}
