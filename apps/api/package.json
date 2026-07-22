@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "rimraf dist tsconfig.tsbuildinfo && tsc && tsc-alias",
     "build:clean": "rimraf dist tsconfig.tsbuildinfo && pnpm run build",
     "dev": "pnpm --filter @cio/api --parallel \"/^dev:.*/\"",
     "dev:server": "tsx watch src/index.ts",
