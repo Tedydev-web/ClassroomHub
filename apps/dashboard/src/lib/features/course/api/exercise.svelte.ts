@@ -48,6 +48,27 @@ import { snackbar } from '$features/ui/snackbar/store';
 import { toast } from '@cio/ui/base/sonner';
 import { t } from '$lib/utils/functions/translations';
 
+function notifyAssessmentItemError(result: unknown) {
+  if (typeof result === 'string') {
+    snackbar.error(result);
+    return;
+  }
+
+  if (typeof result === 'object' && result !== null) {
+    if ('message' in result && typeof result.message === 'string') {
+      snackbar.error(result.message);
+      return;
+    }
+
+    if ('error' in result && typeof result.error === 'string') {
+      snackbar.error(result.error);
+      return;
+    }
+  }
+
+  snackbar.error('snackbar.something');
+}
+
 /**
  * API class for exercise operations
  */
@@ -104,7 +125,8 @@ export class ExerciseApi extends BaseApiWithErrors {
           param: { courseId, exerciseId },
           json: result.data
         }),
-      logContext: 'creating assessment question'
+      logContext: 'creating assessment question',
+      onError: notifyAssessmentItemError
     });
   }
 
@@ -126,7 +148,8 @@ export class ExerciseApi extends BaseApiWithErrors {
           param: { courseId, exerciseId, questionId: String(questionId) },
           json: result.data
         }),
-      logContext: 'publishing assessment question'
+      logContext: 'publishing assessment question',
+      onError: notifyAssessmentItemError
     });
   }
 

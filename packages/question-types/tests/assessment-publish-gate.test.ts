@@ -61,6 +61,37 @@ describe('validateAssessmentItemForPublish', () => {
     expectPublishViolation(noCorrect, 'correctOptionIds');
   });
 
+  it('rejects interactions, options, and feedback without meaningful authored content', () => {
+    const emptyPrompt = buildDefinition({
+      blocks: [interactionBlock('i1', buildChoiceInteraction({ prompt: { format: 'html', html: '<p>&nbsp;</p>' } }))]
+    });
+    const emptyOption = buildDefinition({
+      blocks: [
+        interactionBlock(
+          'i1',
+          buildChoiceInteraction({
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [
+                { id: 'a', html: 'A' },
+                { id: 'b', html: '<div> </div>' }
+              ],
+              correctOptionIds: ['a']
+            }
+          })
+        )
+      ]
+    });
+    const emptyFeedback = buildDefinition({
+      feedback: [{ id: 'feedback-1', scope: 'item', html: '<p></p>', visibility: 'after_submit' }]
+    });
+
+    expectPublishViolation(emptyPrompt, 'prompt');
+    expectPublishViolation(emptyOption, 'options.1.html');
+    expectPublishViolation(emptyFeedback, 'feedback.0.html');
+  });
+
   it('rejects single-cardinality choice with multiple correct options', () => {
     const multiCorrectSingle = buildDefinition({
       blocks: [

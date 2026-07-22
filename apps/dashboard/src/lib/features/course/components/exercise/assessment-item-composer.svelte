@@ -14,7 +14,11 @@
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import PlusIcon from '@lucide/svelte/icons/plus';
   import TrashIcon from '@lucide/svelte/icons/trash';
-  import { toAssessmentDeliveryDefinition, type AssessmentItemDefinition } from '@cio/question-types';
+  import {
+    toAssessmentDeliveryDefinition,
+    validateAssessmentItemForPublish,
+    type AssessmentItemDefinition
+  } from '@cio/question-types';
   import {
     addChoiceInteractionBlock,
     addContentBlock,
@@ -122,6 +126,12 @@
 
   async function save() {
     if (isSaving) return;
+
+    const publishable = validateAssessmentItemForPublish(composer.definition);
+    if (!publishable.success) {
+      snackbar.error(publishable.issues[0]?.message ?? t.get('snackbar.something'));
+      return;
+    }
 
     isSaving = true;
     try {
