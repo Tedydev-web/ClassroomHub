@@ -728,6 +728,9 @@ export async function listSubmissionsForGrading(courseId: string) {
 
         return { id: answer.questionId, definition: toAssessmentDeliveryDefinition(parsedDefinition.data) };
       });
+      const legacyQuestions = (submission.exercise.questions || []).filter(
+        (question) => question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM
+      );
 
       // Create submission item for sections
       const submissionItem = {
@@ -769,7 +772,7 @@ export async function listSubmissionsForGrading(courseId: string) {
         isEarly,
         title: submission.exercise.title,
         student: submission.groupmember?.profile || null,
-        questions: (submission.exercise.questions || []).map((q) => ({
+        questions: legacyQuestions.map((q) => ({
           id: q.id,
           title: q.title,
           name: q.name,

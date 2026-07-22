@@ -487,7 +487,23 @@ describe('submission grading transaction locks', () => {
         ...submission,
         createdAt: '2026-07-22T00:00:00.000Z',
         feedback: null,
-        exercise: { id: exerciseId, title: 'Assessment', dueBy: null, questions: [] },
+        exercise: {
+          id: exerciseId,
+          title: 'Assessment',
+          dueBy: null,
+          questions: [
+            {
+              id: 11,
+              title: 'Composite question',
+              name: null,
+              order: 0,
+              points: 3,
+              questionTypeId: 16,
+              settings: {},
+              options: []
+            }
+          ]
+        },
         lesson: null,
         groupmember: { profile: { id: 'profile-a', email: 'student@example.com', fullname: 'Student' } },
         answers: [canonicalAnswer]
@@ -539,5 +555,6 @@ describe('submission grading transaction locks', () => {
       }
     });
     expect(JSON.stringify(canonicalQuestion)).not.toContain('correctOptionIds');
+    expect(result.submissionIdData[submissionId]?.questions).toEqual([]);
   });
 });
