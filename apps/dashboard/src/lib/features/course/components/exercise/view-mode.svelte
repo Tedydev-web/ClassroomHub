@@ -1355,33 +1355,33 @@
         }}
       />
 
-      {#each currentSectionQuestions as sectionQuestion, sectionQuestionIndex (sectionQuestion.id)}
-        {@const sectionQuestionModel = toExerciseQuestionModel(sectionQuestion)}
-        {@const sectionQuestionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(sectionQuestion))}
-        <ExerciseQuestion.QuestionRenderer
-          contract={{
-            mode: 'take',
-            question: sectionQuestionModel,
-            answer: $questionnaireMetaData.answers[sectionQuestionKey],
-            labels: questionLabels,
-            disabled: isSubmitting,
-            platformMaxFileSizeMb,
-            onFileUpload: handleFileUpload,
-            onVideoRecordingUpload: handleVideoRecordingUpload
-          }}
-          questionNumber={sectionQuestionIndex + 1}
-          questionNumberActive={false}
-          onAnswerChange={(answerValue) => onSectionQuestionAnswerChange(sectionQuestion, answerValue)}
-        />
-      {/each}
-
-      {#each currentSectionTakeItems.filter((item) => item.kind === 'canonical') as canonicalItem (canonicalItem.id)}
-        <ExerciseQuestion.AssessmentItemRenderer
-          definition={canonicalItem.definition}
-          response={$questionnaireMetaData.canonicalAnswers[canonicalItem.id]}
-          disabled={isSubmitting}
-          onResponseChange={(response) => onCanonicalResponseChange(canonicalItem.id, response)}
-        />
+      {#each currentSectionTakeItems as sectionTakeItem, sectionQuestionIndex (sectionTakeItem.id)}
+        {#if sectionTakeItem.kind === 'canonical'}
+          <ExerciseQuestion.AssessmentItemRenderer
+            definition={sectionTakeItem.definition}
+            response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
+            disabled={isSubmitting}
+            onResponseChange={(response) => onCanonicalResponseChange(sectionTakeItem.id, response)}
+          />
+        {:else}
+          {@const sectionQuestionModel = toExerciseQuestionModel(sectionTakeItem.question)}
+          {@const sectionQuestionKey = getExerciseQuestionContractKey(sectionQuestionModel)}
+          <ExerciseQuestion.QuestionRenderer
+            contract={{
+              mode: 'take',
+              question: sectionQuestionModel,
+              answer: $questionnaireMetaData.answers[sectionQuestionKey],
+              labels: questionLabels,
+              disabled: isSubmitting,
+              platformMaxFileSizeMb,
+              onFileUpload: handleFileUpload,
+              onVideoRecordingUpload: handleVideoRecordingUpload
+            }}
+            questionNumber={sectionQuestionIndex + 1}
+            questionNumberActive={false}
+            onAnswerChange={(answerValue) => onSectionQuestionAnswerChange(sectionTakeItem.question, answerValue)}
+          />
+        {/if}
       {/each}
 
       <div class="flex justify-end">

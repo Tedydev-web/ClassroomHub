@@ -98,6 +98,71 @@ export function addTextInteractionBlock(
   return appendBlock(state, block);
 }
 
+export function setChoiceInteractionCardinality(
+  state: AssessmentComposerState,
+  blockId: string,
+  cardinality: 'single' | 'multiple'
+): AssessmentComposerState {
+  return {
+    ...state,
+    definition: {
+      ...state.definition,
+      blocks: state.definition.blocks.map((block) => {
+        if (block.id !== blockId || block.kind !== 'interaction' || block.interaction.kind !== 'choice') {
+          return block;
+        }
+
+        const correctOptionIds =
+          cardinality === 'single'
+            ? block.interaction.config.correctOptionIds.slice(0, 1)
+            : block.interaction.config.correctOptionIds;
+        return {
+          ...block,
+          interaction: {
+            ...block.interaction,
+            config: { ...block.interaction.config, cardinality, correctOptionIds }
+          }
+        };
+      })
+    }
+  };
+}
+
+export function setChoiceCorrectOption(
+  state: AssessmentComposerState,
+  blockId: string,
+  optionId: string,
+  checked: boolean
+): AssessmentComposerState {
+  return {
+    ...state,
+    definition: {
+      ...state.definition,
+      blocks: state.definition.blocks.map((block) => {
+        if (block.id !== blockId || block.kind !== 'interaction' || block.interaction.kind !== 'choice') {
+          return block;
+        }
+
+        const isKnownOption = block.interaction.config.options.some((option) => option.id === optionId);
+        if (!isKnownOption) return block;
+
+        const correctOptionIds = !checked
+          ? block.interaction.config.correctOptionIds.filter((correctOptionId) => correctOptionId !== optionId)
+          : block.interaction.config.cardinality === 'single'
+            ? [optionId]
+            : Array.from(new Set([...block.interaction.config.correctOptionIds, optionId]));
+        return {
+          ...block,
+          interaction: {
+            ...block.interaction,
+            config: { ...block.interaction.config, correctOptionIds }
+          }
+        };
+      })
+    }
+  };
+}
+
 export function reorderAssessmentBlock(
   state: AssessmentComposerState,
   blockId: string,

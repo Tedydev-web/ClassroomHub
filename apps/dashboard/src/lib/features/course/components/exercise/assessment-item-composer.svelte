@@ -9,6 +9,7 @@
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { InputField } from '@cio/ui/custom/input-field';
   import { IconButton } from '@cio/ui/custom/icon-button';
+  import { Label } from '@cio/ui/base/label';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import PlusIcon from '@lucide/svelte/icons/plus';
@@ -21,6 +22,8 @@
     createAssessmentComposerState,
     removeAssessmentBlock,
     reorderAssessmentBlock,
+    setChoiceCorrectOption,
+    setChoiceInteractionCardinality,
     type AssessmentComposerState
   } from '$features/course/utils/assessment-composer-state';
 
@@ -96,23 +99,6 @@
               (correctOptionId) => correctOptionId !== optionId
             )
           }
-        }
-      };
-    });
-  }
-
-  function toggleCorrectOption(blockId: string, optionId: string, checked: boolean) {
-    updateBlock(blockId, (block) => {
-      if (block.kind !== 'interaction' || block.interaction.kind !== 'choice') return block;
-
-      const correctOptionIds = checked
-        ? [...block.interaction.config.correctOptionIds, optionId]
-        : block.interaction.config.correctOptionIds.filter((correctOptionId) => correctOptionId !== optionId);
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: { ...block.interaction.config, correctOptionIds }
         }
       };
     });
@@ -276,12 +262,31 @@
                   : currentBlock;
               })}
           />
+          <div class="flex items-center gap-2">
+            <Checkbox
+              id={`${block.id}-multiple`}
+              checked={block.interaction.config.cardinality === 'multiple'}
+              onCheckedChange={(checked) =>
+                (composer = setChoiceInteractionCardinality(
+                  composer,
+                  block.id,
+                  checked === true ? 'multiple' : 'single'
+                ))}
+            />
+            <Label for={`${block.id}-multiple`} class="cursor-pointer font-normal">
+              {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.multiple')}
+            </Label>
+          </div>
           <div class="space-y-2">
             {#each block.interaction.config.options as option, optionIndex (option.id)}
               <div class="flex items-center gap-2">
                 <Checkbox
+                  aria-label={$t(
+                    'course.navItem.lessons.exercises.all_exercises.shared_question.checkbox.edit.toggle_correct_sr'
+                  )}
                   checked={block.interaction.config.correctOptionIds.includes(option.id)}
-                  onCheckedChange={(checked) => toggleCorrectOption(block.id, option.id, checked === true)}
+                  onCheckedChange={(checked) =>
+                    (composer = setChoiceCorrectOption(composer, block.id, option.id, checked === true))}
                 />
                 <InputField
                   value={option.html}

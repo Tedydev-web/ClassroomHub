@@ -6,7 +6,9 @@ import {
   addTextInteractionBlock,
   createAssessmentComposerState,
   removeAssessmentBlock,
-  reorderAssessmentBlock
+  reorderAssessmentBlock,
+  setChoiceCorrectOption,
+  setChoiceInteractionCardinality
 } from './assessment-composer-state';
 
 function createIdFactory() {
@@ -63,5 +65,71 @@ describe('assessment composer state', () => {
 
     expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-3']);
     expect(state.selectedBlockId).toBe('block-3');
+  });
+
+  it('preserves all correct answers for multiple choice and trims them for single choice', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addChoiceInteractionBlock(state, createId);
+    const choiceBlock = state.definition.blocks[0];
+    if (!choiceBlock || choiceBlock.kind !== 'interaction' || choiceBlock.interaction.kind !== 'choice') {
+      throw new Error('Expected a choice interaction');
+    }
+    const correctOptionIds = choiceBlock.interaction.config.options.map((option) => option.id);
+    state = {
+      ...state,
+      definition: {
+        ...state.definition,
+        blocks: [
+          {
+            ...choiceBlock,
+            interaction: {
+              ...choiceBlock.interaction,
+              config: { ...choiceBlock.interaction.config, correctOptionIds }
+            }
+          }
+        ]
+      }
+    };
+
+    state = setChoiceInteractionCardinality(state, choiceBlock.id, 'multiple');
+
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { cardinality: 'multiple', correctOptionIds } }
+    });
+
+    state = setChoiceInteractionCardinality(state, choiceBlock.id, 'single');
+
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { cardinality: 'single', correctOptionIds: [correctOptionIds[0]] } }
+    });
+  });
+
+  it('replaces a previous correct answer for single choice and accumulates answers for multiple choice', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addChoiceInteractionBlock(state, createId);
+    const choiceBlock = state.definition.blocks[0];
+    if (!choiceBlock || choiceBlock.kind !== 'interaction' || choiceBlock.interaction.kind !== 'choice') {
+      throw new Error('Expected a choice interaction');
+    }
+    const [firstOption, secondOption] = choiceBlock.interaction.config.options;
+    if (!firstOption || !secondOption) throw new Error('Expected two choice options');
+
+    state = setChoiceCorrectOption(state, choiceBlock.id, firstOption.id, true);
+    state = setChoiceCorrectOption(state, choiceBlock.id, secondOption.id, true);
+
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { cardinality: 'single', correctOptionIds: [secondOption.id] } }
+    });
+
+    state = setChoiceInteractionCardinality(state, choiceBlock.id, 'multiple');
+    state = setChoiceCorrectOption(state, choiceBlock.id, firstOption.id, true);
+
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { cardinality: 'multiple', correctOptionIds: [secondOption.id, firstOption.id] } }
+    });
   });
 });
