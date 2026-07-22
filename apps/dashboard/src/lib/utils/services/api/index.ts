@@ -19,10 +19,10 @@ export const getRequestBaseUrl = () => {
     return process.env.PRIVATE_SERVER_URL || env.PUBLIC_SERVER_URL;
   }
 
-  // Local dev keeps the direct API path so existing Vite/API workflows do not
-  // depend on the SvelteKit proxy.
+  // Keep browser requests same-origin so host-only auth cookies work when Vite
+  // is reached through the Cloudflare tunnel.
   if (dev) {
-    return env.PUBLIC_SERVER_URL ?? '';
+    return `${window.location.origin}/proxy`;
   }
 
   // Browser calls are same-origin in production. For self-hosted Node builds,
