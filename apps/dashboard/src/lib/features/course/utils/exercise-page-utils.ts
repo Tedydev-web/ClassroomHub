@@ -82,6 +82,7 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     isDescriptionDirty: false,
     isDueByDirty: false,
     questions,
+    canonicalQuestions: exercise.canonicalQuestions ?? [],
     sections,
     sectionDisplayMode: exercise.sectionDisplayMode ?? 'one_question',
     totalSubmissions: 0,

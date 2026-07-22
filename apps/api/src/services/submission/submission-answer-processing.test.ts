@@ -6,6 +6,29 @@ import {
 } from '@cio/utils/validation/exercise';
 import { prepareSubmissionAnswers, type SubmissionQuestionDefinition } from './submission-answer-processing';
 
+const assessmentDefinition = {
+  schemaVersion: 1 as const,
+  blocks: [
+    {
+      id: 'choice-1',
+      kind: 'interaction' as const,
+      interaction: {
+        kind: 'choice' as const,
+        prompt: { format: 'html' as const, html: '<p>Pick one.</p>' },
+        required: true,
+        maxScore: 1,
+        config: {
+          cardinality: 'single' as const,
+          presentation: 'list' as const,
+          options: [{ id: 'option-1', html: '<p>First</p>' }],
+          correctOptionIds: ['option-1']
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
 const questions: SubmissionQuestionDefinition[] = [
   {
     id: 1,
@@ -178,5 +201,28 @@ describe('prepareSubmissionAnswers', () => {
       questionType: 'TEXTAREA',
       points: 5
     });
+  });
+
+  it('validates a canonical assessment response against its immutable definition', () => {
+    const assessmentQuestion: SubmissionQuestionDefinition = {
+      id: 16,
+      title: 'Composite item',
+      questionTypeId: 16,
+      points: 1,
+      settings: {},
+      options: []
+    };
+    const response = {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'choice-1', response: { kind: 'choice' as const, selectedOptionIds: ['option-1'] } }]
+    };
+
+    const result = prepareSubmissionAnswers(
+      [assessmentQuestion],
+      [{ questionId: 16, response }],
+      new Map([[16, assessmentDefinition]])
+    );
+
+    expect(result.answers).toEqual([{ questionId: 16, answerData: { type: 'ASSESSMENT_ITEM', response } }]);
   });
 });

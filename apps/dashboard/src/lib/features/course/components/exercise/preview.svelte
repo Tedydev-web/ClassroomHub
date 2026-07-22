@@ -1,6 +1,11 @@
 <script lang="ts">
   import { getExerciseQuestionContractKey } from '@cio/question-types';
-  import type { AnswerData, ExerciseQuestionModel } from '@cio/question-types';
+  import type {
+    AnswerData,
+    AssessmentDeliveryDefinition,
+    AssessmentResponseEnvelope,
+    ExerciseQuestionModel
+  } from '@cio/question-types';
   import type { Question } from '$features/course/types';
   import { Grade, ReasonBox } from '$features/ui/question';
   import { toExerciseQuestionModel } from './question-type-utils';
@@ -22,6 +27,8 @@
     isLoading?: boolean;
     /** Optional AI grading copy keyed by question id. */
     reasons?: Record<string, string>;
+    canonicalQuestions?: Array<{ id: string; definition: AssessmentDeliveryDefinition }>;
+    canonicalAnswers?: Record<string, AssessmentResponseEnvelope | undefined>;
   }
 
   let {
@@ -32,7 +39,9 @@
     disableGrading = true,
     isGradeWithAI = $bindable(false),
     isLoading = $bindable(false),
-    reasons = $bindable({})
+    reasons = $bindable({}),
+    canonicalQuestions = [],
+    canonicalAnswers = {}
   }: Props = $props();
 
   function acceptGradeSuggestion() {
@@ -71,6 +80,18 @@
 
   function getSectionPoints(sectionQuestions: Question[]) {
     return sectionQuestions.reduce((total, question) => total + Number(question.points ?? 0), 0);
+  }
+
+  function getCanonicalQuestionMaxPoints(definition: AssessmentDeliveryDefinition) {
+    return definition.blocks.reduce((total, block) => {
+      if (block.kind === 'content') return total;
+
+      return total + block.interaction.maxScore;
+    }, 0);
+  }
+
+  function canonicalQuestionRequiresManualGrading(definition: AssessmentDeliveryDefinition) {
+    return definition.blocks.some((block) => block.kind === 'interaction' && block.interaction.kind === 'text');
   }
 </script>
 
@@ -167,3 +188,31 @@
     </div>
   {/each}
 {/if}
+
+{#each canonicalQuestions as canonicalQuestion, canonicalQuestionIndex (canonicalQuestion.id)}
+  <div class="mb-4 space-y-3">
+    <div class="flex items-center justify-between gap-2">
+      <NumberBadge number={questions.length + canonicalQuestionIndex + 1} active />
+      {#if disableGrading}
+        {#if Object.keys(grades || {}).length}
+          <Grade
+            grade={grades[canonicalQuestion.id]}
+            gradeMax={getCanonicalQuestionMaxPoints(canonicalQuestion.definition)}
+            disableGrading={true}
+          />
+        {/if}
+      {:else}
+        <Grade
+          bind:grade={grades[canonicalQuestion.id]}
+          gradeMax={getCanonicalQuestionMaxPoints(canonicalQuestion.definition)}
+          disableGrading={!canonicalQuestionRequiresManualGrading(canonicalQuestion.definition)}
+        />
+      {/if}
+    </div>
+    <ExerciseQuestion.AssessmentItemRenderer
+      definition={canonicalQuestion.definition}
+      response={canonicalAnswers[canonicalQuestion.id]}
+      disabled
+    />
+  </div>
+{/each}

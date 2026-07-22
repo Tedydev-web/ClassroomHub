@@ -26,6 +26,7 @@
   import { QUESTION_TYPES } from '$features/ui/question/constants';
   import { ExerciseQuestion } from '@cio/ui';
   import { Badge } from '@cio/ui/base/badge';
+  import { Button } from '@cio/ui/base/button';
   import * as Tooltip from '@cio/ui/base/tooltip';
 
   import OrderModal from './order-modal.svelte';
@@ -54,12 +55,16 @@
   import type { Question } from '$features/course/types';
   import type { ExerciseEditorErrors } from './store';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import { courseApi } from '$features/course/api';
+  import AssessmentItemComposer from './assessment-item-composer.svelte';
+  import type { Exercise } from '$features/course/utils/types';
 
   const flipDurationMs = 200;
   const uploadLimits = getResolvedUploadLimits();
   const platformMaxFileSizeMb = uploadLimits.exerciseFileMb;
   const initialQuestionsLength = $questionnaire.questions.length;
   type QuestionDndEvent = CustomEvent<{ items: Question[] }>;
+  type CanonicalQuestion = NonNullable<Exercise['canonicalQuestions']>[number];
 
   interface Props {
     shouldDeleteExercise?: boolean;
@@ -92,6 +97,7 @@
   let deleteConfirmationType = $state<'question' | 'section'>('question');
   let reorderQuestionItemsBySectionId = $state<Record<string, Question[]>>({});
   let previousReorderQuestions = $state(false);
+  let showNewAssessmentComposer = $state(false);
   let errors = $derived($questionnaireValidation);
   const questionLabels = $derived(getExerciseQuestionLabels());
   const activeSections = $derived(
@@ -357,6 +363,39 @@
     return isAutoGradableQuestionTypeId(questionTypeId);
   }
 
+  function addCanonicalQuestionToState(item: { questionId: number; title: string; points: number }) {
+    questionnaire.update((state) => {
+      if (state.canonicalQuestions.some((question) => Number(question.id) === item.questionId)) return state;
+
+      const nextOrder =
+        Math.max(
+          -1,
+          ...state.questions.map((question) => question.order ?? -1),
+          ...state.canonicalQuestions.map((question) => question.order ?? -1)
+        ) + 1;
+      const exerciseSectionId = activeSections[0]?.id ?? null;
+      const canonicalQuestion: CanonicalQuestion = {
+        id: item.questionId,
+        title: item.title,
+        points: item.points,
+        order: nextOrder,
+        exerciseSectionId
+      };
+
+      return { ...state, canonicalQuestions: [...state.canonicalQuestions, canonicalQuestion] };
+    });
+    showNewAssessmentComposer = false;
+  }
+
+  function updateCanonicalQuestionState(item: { questionId: number; title: string; points: number }) {
+    questionnaire.update((state) => ({
+      ...state,
+      canonicalQuestions: state.canonicalQuestions.map((question) =>
+        Number(question.id) === item.questionId ? { ...question, points: item.points } : question
+      )
+    }));
+  }
+
   $effect(() => {
     if (reorderQuestions && !previousReorderQuestions) {
       syncReorderQuestionItems();
@@ -574,6 +613,31 @@
           {@render questionEditor(question, index)}
         {/if}
       {/each}
+    {/if}
+
+    {#if courseApi.course?.id && !reorderQuestions}
+      <div class="mt-6 space-y-4">
+        {#each $questionnaire.canonicalQuestions as canonicalQuestion (canonicalQuestion.id)}
+          <AssessmentItemComposer
+            courseId={courseApi.course.id}
+            exerciseId={_exerciseId}
+            questionId={Number(canonicalQuestion.id)}
+            initialTitle={canonicalQuestion.title}
+            onSaved={updateCanonicalQuestionState}
+          />
+        {/each}
+        {#if showNewAssessmentComposer}
+          <AssessmentItemComposer
+            courseId={courseApi.course.id}
+            exerciseId={_exerciseId}
+            onSaved={addCanonicalQuestionToState}
+          />
+        {:else}
+          <Button type="button" variant="secondary" onclick={() => (showNewAssessmentComposer = true)}>
+            {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+          </Button>
+        {/if}
+      </div>
     {/if}
   </div>
 </div>

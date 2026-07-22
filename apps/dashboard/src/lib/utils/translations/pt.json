@@ -1957,6 +1957,22 @@
               "save_continue": "Salvar e continuar",
               "question_fallback": "Pergunta {number}",
               "zero_points_field": "A conclusão aprovada precisa de pelo menos um ponto disponível."
+            },
+            "assessment_item": {
+              "add": "Add advanced question",
+              "add_content": "Add content",
+              "add_choice": "Add choice",
+              "add_text": "Add extended text",
+              "add_option": "Add option",
+              "content_placeholder": "Add context, instructions, or media",
+              "move_down": "Move down",
+              "move_up": "Move up",
+              "option": "Option {index}",
+              "prompt": "Prompt",
+              "remove": "Remove",
+              "save": "Save advanced question",
+              "saved": "Advanced question saved",
+              "title": "Question title"
             }
           },
           "new_exercise_modal": {

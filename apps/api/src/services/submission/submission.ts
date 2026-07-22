@@ -1,6 +1,7 @@
 import type {
   AnswerData,
   AssessmentGradingMode,
+  AssessmentDeliveryDefinition,
   AssessmentItemDefinition,
   FileUploadAnswerData,
   VideoRecordingAnswerData
@@ -8,8 +9,12 @@ import type {
 import {
   deriveItemCapabilities,
   parseAssessmentItemDefinition,
+  QUESTION_TYPE_IDS,
   roundToTwoDecimals,
+  scoreAssessmentVerticalSlice,
   scoreSubmissionAnswers,
+  toAssessmentDeliveryDefinition,
+  validateAssessmentResponseEnvelope,
   type ScoreSubmissionResult
 } from '@cio/question-types';
 import { AppError, ErrorCodes } from '@api/utils/errors';
@@ -41,6 +46,7 @@ import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/co
 import {
   getExerciseById,
   getExerciseWithRelationsOptimized,
+  getCurrentQuestionRevision,
   getQuestionRevisionsByIds,
   resolveGroupMemberExerciseAccess
 } from '@cio/db/queries/exercise';
@@ -448,6 +454,61 @@ export async function getSubmission(
 
 /** Submission with answers + groupmember (when listing by exercise). Used for route typing. */
 type SubmissionWithDetails = Awaited<ReturnType<typeof getSubmissionsByCourseIdWithDetails>>[number];
+type SubmissionAnswerWithAssessmentDefinition = NonNullable<SubmissionWithDetails['answers']>[number] & {
+  assessmentDefinition?: ReturnType<typeof toAssessmentDeliveryDefinition>;
+};
+type SubmissionWithAssessmentDefinitions = Omit<SubmissionWithDetails, 'answers'> & {
+  answers: SubmissionAnswerWithAssessmentDefinition[];
+};
+
+/**
+ * Attaches a delivery-safe definition to canonical answers using the exact
+ * revision materialized at submission time. Historical review must never
+ * substitute a current question definition because authors can edit it later.
+ */
+async function attachAttemptedAssessmentDefinitions(
+  submission: SubmissionWithDetails
+): Promise<SubmissionWithAssessmentDefinitions> {
+  const answers = submission.answers ?? [];
+  const canonicalAnswers = answers.filter((answer) => answer.answerData?.type === 'ASSESSMENT_ITEM');
+  if (canonicalAnswers.length === 0) {
+    return { ...submission, answers };
+  }
+
+  const revisionIds = canonicalAnswers.map((answer) => answer.questionRevisionId).filter((id): id is string => !!id);
+  if (revisionIds.length !== canonicalAnswers.length) {
+    throw new AppError(
+      'A canonical assessment answer is missing its attempted revision',
+      ErrorCodes.INTERNAL_ERROR,
+      500
+    );
+  }
+
+  const revisions = await getQuestionRevisionsByIds([...new Set(revisionIds)]);
+  const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
+
+  return {
+    ...submission,
+    answers: answers.map((answer) => {
+      if (answer.answerData?.type !== 'ASSESSMENT_ITEM') return answer;
+
+      const revision = revisionById.get(answer.questionRevisionId!);
+      if (!revision) {
+        throw new AppError('The attempted assessment revision was not found', ErrorCodes.INTERNAL_ERROR, 500);
+      }
+
+      const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
+      if (!parsedDefinition.success) {
+        throw new AppError('The attempted assessment revision is invalid', ErrorCodes.INTERNAL_ERROR, 500);
+      }
+
+      return {
+        ...answer,
+        assessmentDefinition: toAssessmentDeliveryDefinition(parsedDefinition.data)
+      };
+    })
+  };
+}
 
 /**
  * Lists submissions for a course filtered by exercise (with answers, groupmember, enriched file URLs)
@@ -459,7 +520,7 @@ export async function listSubmissionsByExercise(
   courseId: string,
   exerciseId: string,
   submittedBy?: string
-): Promise<SubmissionWithDetails[]> {
+): Promise<SubmissionWithAssessmentDefinitions[]> {
   try {
     const submissions = await getSubmissionsByCourseIdWithDetails(courseId, exerciseId, submittedBy);
     const enriched = await Promise.all(
@@ -467,8 +528,11 @@ export async function listSubmissionsByExercise(
         s.answers?.length ? { ...s, answers: await enrichFileUploadAnswersArray(s.answers) } : s
       )
     );
-    enriched.sort((a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime());
-    return enriched;
+    const withAttemptedDefinitions = await Promise.all(enriched.map(attachAttemptedAssessmentDefinitions));
+    withAttemptedDefinitions.sort(
+      (a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime()
+    );
+    return withAttemptedDefinitions;
   } catch (error) {
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to list submissions by exercise',
@@ -571,6 +635,7 @@ export async function listSubmissionsForGrading(courseId: string) {
           >;
         }
       >;
+      canonicalQuestions: Array<{ id: number; definition: AssessmentDeliveryDefinition }>;
       answers: Record<string, AnswerData>;
       questionAnswers: Array<Pick<GradingAnswer, 'questionId' | 'answerData'>>;
       questionAnswerByPoint: Record<number, number>;
@@ -634,6 +699,35 @@ export async function listSubmissionsForGrading(courseId: string) {
       }
 
       const enrichedFormattedAnswers = await enrichFileUploadAnswersObject(formattedAnswers);
+      const canonicalAnswers = (submission.answers || []).filter(
+        (answer) => answer.answerData?.type === 'ASSESSMENT_ITEM'
+      );
+      const canonicalRevisionIds = canonicalAnswers
+        .map((answer) => answer.questionRevisionId)
+        .filter((revisionId): revisionId is string => !!revisionId);
+      if (canonicalRevisionIds.length !== canonicalAnswers.length) {
+        throw new AppError(
+          'A canonical assessment answer is missing its attempted revision',
+          ErrorCodes.INTERNAL_ERROR,
+          500
+        );
+      }
+
+      const canonicalRevisions = await getQuestionRevisionsByIds([...new Set(canonicalRevisionIds)]);
+      const canonicalRevisionById = new Map(canonicalRevisions.map((revision) => [revision.id, revision]));
+      const canonicalQuestions = canonicalAnswers.map((answer) => {
+        const revision = canonicalRevisionById.get(answer.questionRevisionId!);
+        if (!revision) {
+          throw new AppError('The attempted assessment revision was not found', ErrorCodes.INTERNAL_ERROR, 500);
+        }
+
+        const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
+        if (!parsedDefinition.success) {
+          throw new AppError('The attempted assessment revision is invalid', ErrorCodes.INTERNAL_ERROR, 500);
+        }
+
+        return { id: answer.questionId, definition: toAssessmentDeliveryDefinition(parsedDefinition.data) };
+      });
 
       // Create submission item for sections
       const submissionItem = {
@@ -691,6 +785,7 @@ export async function listSubmissionsForGrading(courseId: string) {
             settings: opt.settings ?? {}
           }))
         })),
+        canonicalQuestions,
         answers: enrichedFormattedAnswers,
         questionAnswers: (submission.answers || []).map((answer) => ({
           questionId: answer.questionId,
@@ -786,20 +881,87 @@ export async function createSubmissionService(
         throw new AppError('Exercise has no active questions to attempt', ErrorCodes.CONFLICT, 409);
       }
 
-      // The legacy flat payload cannot represent an internal assessment item:
-      // when the active set contains one, the request fails even if that item
-      // is omitted from the payload, so hidden composite content is never bypassed.
-      const internalQuestion = activeQuestions.find(
-        (question) => getQuestionTypeById(question.questionTypeId)?.internal === true
-      );
-      if (internalQuestion) {
-        throw new AppError(
-          `Question ${internalQuestion.id} cannot be answered through the legacy submission format`,
-          ErrorCodes.VALIDATION_ERROR,
-          400
-        );
+      const questionsById = new Map(activeQuestions.map((question) => [question.id, question]));
+      const submittedQuestionIds = new Set<number>();
+      for (const answer of answers) {
+        if (submittedQuestionIds.has(answer.questionId)) {
+          throw new AppError(
+            `Question ${answer.questionId} was answered more than once`,
+            ErrorCodes.VALIDATION_ERROR,
+            400
+          );
+        }
+        submittedQuestionIds.add(answer.questionId);
+
+        const question = questionsById.get(answer.questionId);
+        if (!question) {
+          throw new AppError(
+            `Question ${answer.questionId} does not belong to this exercise`,
+            ErrorCodes.VALIDATION_ERROR,
+            400
+          );
+        }
+        if (question.questionTypeId === QUESTION_TYPE_IDS.ASSESSMENT_ITEM) {
+          if (answer.optionId !== undefined || answer.answer !== undefined || answer.response === undefined) {
+            throw new AppError(
+              `Question ${answer.questionId} requires a canonical assessment response`,
+              ErrorCodes.VALIDATION_ERROR,
+              400
+            );
+          }
+        }
       }
 
+      const legacyQuestions = activeQuestions.filter(
+        (question) => question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM
+      );
+      const legacyAnswers = answers.filter(
+        (answer) => questionsById.get(answer.questionId)?.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM
+      );
+      prepareSubmissionAnswers(
+        legacyQuestions.map((question) => ({
+          id: question.id,
+          title: question.title,
+          questionTypeId: question.questionTypeId,
+          points: question.points,
+          settings: question.settings,
+          options: question.options
+        })),
+        legacyAnswers
+      );
+
+      for (const question of activeQuestions) {
+        if (question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM || submittedQuestionIds.has(question.id)) {
+          continue;
+        }
+
+        throw new AppError(`Question ${question.id} requires an answer`, ErrorCodes.VALIDATION_ERROR, 400);
+      }
+
+      // Materialize or reuse the immutable revision of every active question so
+      // each new answer links the exact attempted definition. Sequential on
+      // purpose: one transaction client cannot run parallel commands.
+      const revisionIdByQuestionId = new Map<number, string>();
+      for (const question of activeQuestions) {
+        if (question.questionTypeId === QUESTION_TYPE_IDS.ASSESSMENT_ITEM) {
+          const revision = await getCurrentQuestionRevision(question.id, txClient);
+          if (!revision) {
+            throw new AppError(
+              `Assessment question ${question.id} has no published revision`,
+              ErrorCodes.CONFLICT,
+              409
+            );
+          }
+
+          revisionIdByQuestionId.set(question.id, revision.id);
+          continue;
+        }
+
+        const revision = await materializeLegacyQuestionRevision(question.id, txClient);
+        revisionIdByQuestionId.set(question.id, revision.id);
+      }
+
+      const definitionByQuestionId = await loadAttemptedDefinitions(revisionIdByQuestionId, txClient);
       const preparedAnswers = prepareSubmissionAnswers(
         activeQuestions.map((question) => ({
           id: question.id,
@@ -809,19 +971,9 @@ export async function createSubmissionService(
           settings: question.settings,
           options: question.options
         })),
-        answers
+        answers,
+        definitionByQuestionId
       );
-
-      // Materialize or reuse the immutable revision of every active question so
-      // each new answer links the exact attempted definition. Sequential on
-      // purpose: one transaction client cannot run parallel commands.
-      const revisionIdByQuestionId = new Map<number, string>();
-      for (const question of activeQuestions) {
-        const revision = await materializeLegacyQuestionRevision(question.id, txClient);
-        revisionIdByQuestionId.set(question.id, revision.id);
-      }
-
-      const definitionByQuestionId = await loadAttemptedDefinitions(revisionIdByQuestionId, txClient);
       const gradingModeByQuestionId = new Map<number, AssessmentGradingMode>(
         activeQuestions.map((question) => [
           question.id,
@@ -903,21 +1055,47 @@ export async function createSubmissionService(
 
       let answersWithPoints = insertedAnswers;
       if (hasAutoGradableQuestions) {
-        const dbQuestions = activeQuestions.map((question) => ({
-          id: question.id,
-          title: question.title,
-          questionTypeId: question.questionTypeId,
-          points: question.points != null ? Number(question.points) : 0,
-          settings:
-            question.settings && typeof question.settings === 'object' && !Array.isArray(question.settings)
-              ? (question.settings as Record<string, unknown>)
-              : {},
-          options: question.options ?? []
-        }));
-        const { scores, total }: ScoreSubmissionResult = scoreSubmissionAnswers(
-          dbQuestions,
+        const scoreableLegacyQuestions = activeQuestions
+          .filter((question) => question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM)
+          .map((question) => ({
+            id: question.id,
+            title: question.title,
+            questionTypeId: question.questionTypeId,
+            points: question.points != null ? Number(question.points) : 0,
+            settings:
+              question.settings && typeof question.settings === 'object' && !Array.isArray(question.settings)
+                ? (question.settings as Record<string, unknown>)
+                : {},
+            options: question.options ?? []
+          }));
+        const legacyScoreResult: ScoreSubmissionResult = scoreSubmissionAnswers(
+          scoreableLegacyQuestions,
           preparedAnswers.answerByQuestionId
         );
+        const canonicalScores = activeQuestions.flatMap((question) => {
+          if (question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM) return [];
+
+          const definition = definitionByQuestionId.get(question.id);
+          const answer = preparedAnswers.answerByQuestionId.get(question.id);
+          if (!definition || answer?.type !== 'ASSESSMENT_ITEM') {
+            return [{ questionId: question.id, points: 0 }];
+          }
+
+          const validation = validateAssessmentResponseEnvelope(definition, answer.response);
+          if (!validation.success) {
+            throw new AppError(
+              `Stored assessment response for question ${question.id} is invalid`,
+              ErrorCodes.INTERNAL_ERROR,
+              500
+            );
+          }
+
+          return [
+            { questionId: question.id, points: scoreAssessmentVerticalSlice(definition, validation.data).autoScore }
+          ];
+        });
+        const scores = [...legacyScoreResult.scores, ...canonicalScores];
+        const total = scores.reduce((sum, score) => sum + score.points, 0);
         const gradedSubmission = await updateSubmissionGrades(
           courseId,
           submission.id,

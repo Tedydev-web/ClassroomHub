@@ -52,6 +52,13 @@ type ExerciseWithQuestions = TExercise & {
   isComplete: boolean;
   questions?: QuestionWithRelations[];
   sections?: ExerciseSectionWithQuestions[];
+  canonicalQuestions?: Array<{
+    id: number;
+    title: string;
+    points: number | null;
+    order: number | null;
+    exerciseSectionId: string | null;
+  }>;
 };
 
 type ExerciseSectionWithQuestions = {
@@ -429,6 +436,18 @@ export async function getExercise(
       questionScope: 'active'
     });
     const questions = activeQuestions.filter((question) => !INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId));
+    const canonicalQuestions = activeQuestions
+      .filter(
+        (question): question is typeof question & { id: number } =>
+          INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId) && question.id !== undefined
+      )
+      .map((question) => ({
+        id: question.id,
+        title: question.title,
+        points: question.points ?? null,
+        order: question.order ?? null,
+        exerciseSectionId: question.exerciseSectionId ?? null
+      }));
 
     const isComplete = profileId ? await getExerciseCompletionByProfile(exerciseId, profileId, dbClient) : false;
 
@@ -448,7 +467,8 @@ export async function getExercise(
       ...exercise,
       isComplete,
       questions: questionsWithOptions,
-      sections: sectionGroups.sections
+      sections: sectionGroups.sections,
+      canonicalQuestions
     };
   } catch (error) {
     if (error instanceof AppError) {

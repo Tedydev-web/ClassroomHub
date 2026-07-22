@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { assessmentResponseEnvelopeSchema } from '@cio/question-types';
 
 import {
   ENABLED_QUESTION_TYPE_REGISTRY,
@@ -254,7 +255,8 @@ export const ZExerciseSubmissionCreate = z.object({
       z.object({
         questionId: z.number().int(),
         optionId: z.number().int().optional(),
-        answer: z.string().max(EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS).optional()
+        answer: z.string().max(EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS).optional(),
+        response: assessmentResponseEnvelopeSchema.optional()
       })
     )
     .max(500)

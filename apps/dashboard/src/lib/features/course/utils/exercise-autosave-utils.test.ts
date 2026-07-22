@@ -67,6 +67,35 @@ describe('parseExerciseAutosave', () => {
     expect(parsed?.answers).toEqual({});
   });
 
+  it('restores only schema-valid canonical responses for current canonical questions', () => {
+    const parsed = parseExerciseAutosave({
+      serializedValue: createSerializedAutosave({
+        canonicalAnswers: {
+          'assessment-question': {
+            schemaVersion: 1,
+            responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['one'] } }]
+          },
+          'removed-assessment-question': {
+            schemaVersion: 1,
+            responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['one'] } }]
+          },
+          malformed: { schemaVersion: 2, responses: [] }
+        }
+      }),
+      exerciseId: 'exercise-1',
+      questions: [question],
+      sectionCount: 0,
+      canonicalQuestionIds: new Set(['assessment-question'])
+    });
+
+    expect(parsed?.canonicalAnswers).toEqual({
+      'assessment-question': {
+        schemaVersion: 1,
+        responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['one'] } }]
+      }
+    });
+  });
+
   it('accepts autosaves created before section metadata was introduced', () => {
     const legacyMetadata = JSON.parse(createSerializedAutosave()) as Record<string, unknown>;
     delete legacyMetadata.currentSectionIndex;

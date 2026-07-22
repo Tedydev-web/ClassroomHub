@@ -1,6 +1,7 @@
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import type {
   CreateExerciseFromTemplateRequest,
+  CreateAssessmentItemRequest,
   CreateExerciseRequest,
   DeleteExerciseRequest,
   Exercise,
@@ -9,6 +10,8 @@ import type {
   ExerciseFileUploadInitRequest,
   GetExerciseAssignmentsRequest,
   GetExerciseRequest,
+  GetAssessmentItemRequest,
+  PublishAssessmentItemRequest,
   SubmitExerciseRequest,
   UpdateExerciseAssignmentsRequest,
   UpdateExerciseRequest,
@@ -18,6 +21,8 @@ import type {
 } from '../utils/types';
 import type {
   TExerciseCreate,
+  TAssessmentItemCreate,
+  TAssessmentItemPublish,
   TExerciseAssignmentUpdate,
   TExerciseFileUploadComplete,
   TExerciseFileUploadInit,
@@ -28,6 +33,8 @@ import type {
 } from '@cio/utils/validation/exercise';
 import {
   ZExerciseCreate,
+  ZAssessmentItemCreate,
+  ZAssessmentItemPublish,
   ZExerciseFileUploadComplete,
   ZExerciseFileUploadInit,
   ZExerciseSubmissionCreate,
@@ -71,6 +78,55 @@ export class ExerciseApi extends BaseApiWithErrors {
           snackbar.error('Failed to fetch exercise');
         }
       }
+    });
+  }
+
+  async getAssessmentItem(courseId: string, exerciseId: string, questionId: number) {
+    return this.execute<GetAssessmentItemRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$get({
+          param: { courseId, exerciseId, questionId: String(questionId) }
+        }),
+      logContext: 'fetching assessment question'
+    });
+  }
+
+  async createAssessmentItem(courseId: string, exerciseId: string, fields: TAssessmentItemCreate) {
+    const result = ZAssessmentItemCreate.safeParse(fields);
+    if (!result.success) {
+      this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
+      return;
+    }
+
+    return this.execute<CreateAssessmentItemRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId']['assessment-item'].$post({
+          param: { courseId, exerciseId },
+          json: result.data
+        }),
+      logContext: 'creating assessment question'
+    });
+  }
+
+  async publishAssessmentItem(
+    courseId: string,
+    exerciseId: string,
+    questionId: number,
+    fields: TAssessmentItemPublish
+  ) {
+    const result = ZAssessmentItemPublish.safeParse(fields);
+    if (!result.success) {
+      this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
+      return;
+    }
+
+    return this.execute<PublishAssessmentItemRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$put({
+          param: { courseId, exerciseId, questionId: String(questionId) },
+          json: result.data
+        }),
+      logContext: 'publishing assessment question'
     });
   }
 

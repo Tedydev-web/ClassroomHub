@@ -6,4 +6,6 @@ export * from './assessment-capabilities';
 export * from './assessment-canonical-json';
 export * from './assessment-authored-html';
 export * from './assessment-response-envelope';
+export * from './assessment-delivery-definition';
+export * from './assessment-vertical-slice';
 export * from './assessment-legacy-adapter';

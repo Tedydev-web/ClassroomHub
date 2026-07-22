@@ -8,7 +8,7 @@
   import { STATUS } from './constants';
   import { t } from '$lib/utils/functions/translations';
   import type { SubmissionIdData } from '$features/course/utils/types';
-  import type { AnswerData } from '@cio/question-types';
+  import type { AnswerData, AssessmentResponseEnvelope } from '@cio/question-types';
 
   import Preview from './preview.svelte';
   import * as Dialog from '@cio/ui/base/dialog';
@@ -60,7 +60,7 @@
   let openDeletePrompt = $state(false);
   let isDeleting = $state(false);
 
-  const maxPoints = $derived(getMaxPoints(data.questions));
+  const maxPoints = $derived(getMaxPoints(data.questions) + getCanonicalMaxPoints(data.canonicalQuestions));
   const sortedQuestions = $derived(
     Array.isArray(data.questions)
       ? [...data.questions]
@@ -73,9 +73,34 @@
   );
 
   let answersToDisplay = $derived(data?.answers ? (data.answers as Record<string, AnswerData>) : {});
+  const canonicalAnswers = $derived(getCanonicalAnswers(data.questionAnswers));
+
+  function getCanonicalAnswers(questionAnswers: SubmissionIdData['questionAnswers']) {
+    const answers: Record<string, AssessmentResponseEnvelope | undefined> = {};
+    for (const questionAnswer of questionAnswers ?? []) {
+      if (questionAnswer.answerData?.type !== 'ASSESSMENT_ITEM') continue;
+
+      answers[String(questionAnswer.questionId)] = questionAnswer.answerData.response;
+    }
+
+    return answers;
+  }
 
   function getMaxPoints(questions: SubmissionIdData['questions']) {
     return (questions || []).reduce((acc, question) => acc + question.points, 0);
+  }
+
+  function getCanonicalMaxPoints(canonicalQuestions: SubmissionIdData['canonicalQuestions']) {
+    return (canonicalQuestions || []).reduce(
+      (questionTotal, question) =>
+        questionTotal +
+        question.definition.blocks.reduce((blockTotal, block) => {
+          if (block.kind === 'content') return blockTotal;
+
+          return blockTotal + block.interaction.maxScore;
+        }, 0),
+      0
+    );
   }
 
   let total = $derived(calculateTotal(data.questionAnswerByPoint));
@@ -270,6 +295,11 @@
             bind:isGradeWithAI
             bind:isLoading
             disableGrading={false}
+            canonicalQuestions={(data.canonicalQuestions ?? []).map((question) => ({
+              id: String(question.id),
+              definition: question.definition
+            }))}
+            {canonicalAnswers}
           />
         {/if}
       </div>

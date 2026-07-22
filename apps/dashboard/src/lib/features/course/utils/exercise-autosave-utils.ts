@@ -1,9 +1,11 @@
 import {
   decodeStoredAnswerData,
+  assessmentResponseEnvelopeSchema,
   getExerciseQuestionContractKey,
   isRecord,
   parseJsonRecord,
   type AnswerData,
+  type AssessmentResponseEnvelope,
   type ExerciseQuestionModel
 } from '@cio/question-types';
 
@@ -14,6 +16,8 @@ export interface ParseExerciseAutosaveInput {
   exerciseId: string;
   questions: ExerciseQuestionModel[];
   sectionCount: number;
+  canonicalQuestionIds?: ReadonlySet<string>;
+  takeItemCount?: number;
 }
 
 export interface HistoricalSubmissionHydrationInput {
@@ -41,7 +45,9 @@ export function parseExerciseAutosave({
   serializedValue,
   exerciseId,
   questions,
-  sectionCount
+  sectionCount,
+  canonicalQuestionIds = new Set<string>(),
+  takeItemCount = questions.length
 }: ParseExerciseAutosaveInput): QuestionnaireMetaData | null {
   const parsed = parseJsonRecord(serializedValue);
   if (!parsed || !isRecord(parsed.answers)) return null;
@@ -61,7 +67,7 @@ export function parseExerciseAutosave({
     typeof parsed.currentQuestionIndex !== 'number' ||
     !Number.isSafeInteger(parsed.currentQuestionIndex) ||
     parsed.currentQuestionIndex < 0 ||
-    parsed.currentQuestionIndex > questions.length + 1 ||
+    parsed.currentQuestionIndex > takeItemCount + 1 ||
     typeof parsed.isFinished !== 'boolean' ||
     typeof parsed.progressValue !== 'number' ||
     !Number.isFinite(parsed.progressValue) ||
@@ -91,8 +97,19 @@ export function parseExerciseAutosave({
     if (answer) answers[questionKey] = answer;
   }
 
+  const canonicalAnswers: Record<string, AssessmentResponseEnvelope | undefined> = {};
+  if (isRecord(parsed.canonicalAnswers)) {
+    for (const [questionId, storedResponse] of Object.entries(parsed.canonicalAnswers)) {
+      if (!canonicalQuestionIds.has(questionId)) continue;
+
+      const response = assessmentResponseEnvelopeSchema.safeParse(storedResponse);
+      if (response.success) canonicalAnswers[questionId] = response.data;
+    }
+  }
+
   return {
     answers,
+    canonicalAnswers,
     scores,
     grades,
     totalPossibleGrade: parsed.totalPossibleGrade,

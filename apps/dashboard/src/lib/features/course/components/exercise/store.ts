@@ -1,12 +1,14 @@
 import { DEFAULT_QUESTION_TYPE, QUESTION_TEMPLATE } from '$features/ui/question/constants';
 import type {
   AnswerData,
+  AssessmentResponseEnvelope,
   ExerciseSectionAfterBehavior,
   ExerciseSectionColorTheme,
   ExerciseSectionDisplayMode
 } from '@cio/question-types';
 
 import type { Question } from '$features/course/types';
+import type { Exercise } from '$features/course/utils/types';
 import { STATUS } from './constants';
 import type { Writable } from 'svelte/store';
 import { isUUID } from '$lib/utils/functions/isUUID';
@@ -31,6 +33,7 @@ export const questionnaireValidation = writable<ExerciseEditorErrors>({});
 
 export interface QuestionnaireMetaData {
   answers: Record<string, AnswerData | undefined>;
+  canonicalAnswers: Record<string, AssessmentResponseEnvelope | undefined>;
   scores: Record<string, number>;
   grades: Record<string, number>;
   totalPossibleGrade: number;
@@ -65,6 +68,7 @@ export interface QuestionnaireState {
   description?: string | null;
   isDescriptionDirty?: boolean;
   questions: Question[];
+  canonicalQuestions: NonNullable<Exercise['canonicalQuestions']>;
   sections: ExerciseSectionState[];
   sectionDisplayMode: ExerciseSectionDisplayMode;
   totalSubmissions: number;
@@ -76,6 +80,7 @@ export interface QuestionnaireState {
 
 const initAnswerState: QuestionnaireMetaData = {
   answers: {},
+  canonicalAnswers: {},
   scores: {},
   grades: {},
   totalPossibleGrade: 0,
@@ -100,6 +105,7 @@ export const questionnaire: Writable<QuestionnaireState> = writable({
   description: '',
   isDescriptionDirty: false,
   questions: [],
+  canonicalQuestions: [],
   sections: [],
   sectionDisplayMode: 'one_question',
   totalSubmissions: 0,
@@ -117,6 +123,7 @@ export function reset() {
   questionnaireMetaData.update((metaData) => ({
     ...metaData,
     answers: {},
+    canonicalAnswers: {},
     scores: {},
     grades: {},
     currentQuestionIndex: 0,

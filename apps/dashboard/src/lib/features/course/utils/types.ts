@@ -177,6 +177,15 @@ export type GetExerciseSuccess = Extract<InferResponseType<GetExerciseRequest>, 
 type ApiExercise = GetExerciseSuccess['data'];
 export type Exercise = Omit<ApiExercise, 'courseId' | 'sectionId' | 'order'>;
 
+export type GetAssessmentItemRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['assessment-item']['$get'];
+export type GetAssessmentItemSuccess = Extract<InferResponseType<GetAssessmentItemRequest>, { success: true }>;
+export type AssessmentItem = GetAssessmentItemSuccess['data'];
+export type CreateAssessmentItemRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['assessment-item']['$post'];
+export type PublishAssessmentItemRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['assessment-item']['$put'];
+
 // export type UpdateExercisePayload = Omit<ApiExercise, 'courseId' | 'sectionId' | 'order' | 'questions'> & {
 //   courseId?: string | null;
 //   sectionId?: string | null;
