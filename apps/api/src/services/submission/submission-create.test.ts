@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   getDashboardBaseUrl: vi.fn(),
   getExerciseById: vi.fn(),
   getProfileByGroupMemberId: vi.fn(),
+  getCurrentQuestionRevision: vi.fn(),
   getQuestionAnswersBySubmissionId: vi.fn(),
   getQuestionRevisionsByIds: vi.fn(),
   getSubmissionByIdempotencyKey: vi.fn(),
@@ -58,6 +59,7 @@ vi.mock('@cio/db/queries/submission', () => ({
 vi.mock('@cio/db/queries/exercise', () => ({
   getExerciseById: mocks.getExerciseById,
   getExerciseWithRelationsOptimized: mocks.getExerciseWithRelationsOptimized,
+  getCurrentQuestionRevision: mocks.getCurrentQuestionRevision,
   getQuestionRevisionsByIds: mocks.getQuestionRevisionsByIds,
   lockExerciseAssignmentState: mocks.lockExerciseAssignmentState,
   resolveGroupMemberExerciseAccess: mocks.resolveGroupMemberExerciseAccess
@@ -174,6 +176,11 @@ const compositeQuestion = {
   questionType: { id: 16, typename: 'ASSESSMENT_ITEM' },
   options: []
 };
+const persistedUnsupportedCompositeQuestion = {
+  ...compositeQuestion,
+  id: 7,
+  title: 'Persisted unsupported composite item'
+};
 
 /** Minimal structurally-valid canonical definition with one auto-gradable interaction. */
 const autoChoiceDefinition = {
@@ -214,6 +221,30 @@ const manualTextDefinition = {
         config: { format: 'plain' }
       }
     }
+  ],
+  feedback: []
+};
+
+const hybridCompositeDefinition = {
+  ...autoChoiceDefinition,
+  blocks: [autoChoiceDefinition.blocks[0], { ...manualTextDefinition.blocks[0], id: 'block-2' }]
+};
+
+const unsupportedHybridDefinition = {
+  schemaVersion: 1,
+  blocks: [
+    {
+      id: 'block-1',
+      kind: 'interaction',
+      interaction: {
+        kind: 'numeric',
+        prompt: { format: 'html', html: 'Enter the number' },
+        required: true,
+        maxScore: 3,
+        config: { correctValue: 42, tolerance: 0 }
+      }
+    },
+    { ...manualTextDefinition.blocks[0], id: 'block-2' }
   ],
   feedback: []
 };
@@ -517,6 +548,265 @@ describe('createSubmissionService transaction guards', () => {
         ],
         gradingState: 'awaiting_manual',
         total: 2
+      }),
+      expect.any(Object)
+    );
+  });
+
+  it('auto-scores the objective interaction inside one hybrid composite item', async () => {
+    const createdSubmission = {
+      id: 'submission-composite-hybrid',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'hybrid',
+      gradingState: 'awaiting_manual',
+      statusId: 2,
+      score: 0,
+      total: 0
+    };
+    const answerData = {
+      type: 'ASSESSMENT_ITEM',
+      response: {
+        schemaVersion: 1,
+        responses: [
+          { interactionId: 'block-1', response: { kind: 'choice', selectedOptionIds: ['option-1'] } },
+          { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
+        ]
+      }
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [compositeQuestion]
+    });
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: `revision-${compositeQuestion.id}`,
+      questionId: compositeQuestion.id,
+      revision: 1,
+      definition: hybridCompositeDefinition
+    });
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: `revision-${compositeQuestion.id}`,
+        questionId: compositeQuestion.id,
+        definition: hybridCompositeDefinition
+      }
+    ]);
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.createSubmission.mockResolvedValue(createdSubmission);
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([
+      {
+        id: 1,
+        submissionId: createdSubmission.id,
+        questionId: compositeQuestion.id,
+        groupMemberId: submittedBy,
+        answerData,
+        score: 0,
+        point: 0
+      }
+    ]);
+    mocks.updateSubmissionGrades.mockResolvedValue({ ...createdSubmission, score: 3, total: 3 });
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [{ questionId: compositeQuestion.id, response: answerData.response }],
+        '019cdef0-1234-7abc-8def-1234567890af'
+      )
+    ).resolves.toMatchObject({ overallStatus: 'hybrid', gradingState: 'awaiting_manual', score: 3 });
+    expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
+      courseId,
+      createdSubmission.id,
+      expect.objectContaining({
+        answers: [{ questionId: compositeQuestion.id, points: 3 }],
+        gradingState: 'awaiting_manual',
+        total: 3
+      }),
+      expect.any(Object)
+    );
+  });
+
+  it('keeps a persisted composite with unsupported scoring semantics in manual grading', async () => {
+    const createdSubmission = {
+      id: 'submission-unsupported-hybrid',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'manual_required',
+      gradingState: 'awaiting_manual',
+      statusId: 2,
+      score: 0,
+      total: 0
+    };
+    const response = {
+      schemaVersion: 1,
+      responses: [
+        { interactionId: 'block-1', response: { kind: 'numeric', value: 42 } },
+        { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
+      ]
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [compositeQuestion]
+    });
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: `revision-${compositeQuestion.id}`,
+      questionId: compositeQuestion.id,
+      revision: 1,
+      definition: unsupportedHybridDefinition
+    });
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: `revision-${compositeQuestion.id}`,
+        questionId: compositeQuestion.id,
+        definition: unsupportedHybridDefinition
+      }
+    ]);
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.createSubmission.mockResolvedValue(createdSubmission);
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([
+      {
+        id: 1,
+        submissionId: createdSubmission.id,
+        questionId: compositeQuestion.id,
+        groupMemberId: submittedBy,
+        answerData: { type: 'ASSESSMENT_ITEM', response },
+        score: 0,
+        point: 0
+      }
+    ]);
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [{ questionId: compositeQuestion.id, response }],
+        '019cdef0-1234-7abc-8def-1234567890b0'
+      )
+    ).resolves.toMatchObject({ overallStatus: 'manual_required', gradingState: 'awaiting_manual', score: 0 });
+    expect(mocks.createSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ overallStatus: 'manual_required', gradingState: 'awaiting_manual' }),
+      expect.any(Object)
+    );
+    expect(mocks.updateSubmissionGrades).not.toHaveBeenCalled();
+  });
+
+  it('scores supported canonical items while keeping an unsupported persisted item manual', async () => {
+    const createdSubmission = {
+      id: 'submission-mixed-canonical-support',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'hybrid',
+      gradingState: 'awaiting_manual',
+      statusId: 2,
+      score: 0,
+      total: 0
+    };
+    const supportedResponse = {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'block-1', response: { kind: 'choice', selectedOptionIds: ['option-1'] } }]
+    };
+    const unsupportedResponse = {
+      schemaVersion: 1,
+      responses: [
+        { interactionId: 'block-1', response: { kind: 'numeric', value: 42 } },
+        { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
+      ]
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [compositeQuestion, persistedUnsupportedCompositeQuestion]
+    });
+    mocks.getCurrentQuestionRevision
+      .mockResolvedValueOnce({
+        id: `revision-${compositeQuestion.id}`,
+        questionId: compositeQuestion.id,
+        revision: 1,
+        definition: autoChoiceDefinition
+      })
+      .mockResolvedValueOnce({
+        id: `revision-${persistedUnsupportedCompositeQuestion.id}`,
+        questionId: persistedUnsupportedCompositeQuestion.id,
+        revision: 1,
+        definition: unsupportedHybridDefinition
+      });
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: `revision-${compositeQuestion.id}`,
+        questionId: compositeQuestion.id,
+        definition: autoChoiceDefinition
+      },
+      {
+        id: `revision-${persistedUnsupportedCompositeQuestion.id}`,
+        questionId: persistedUnsupportedCompositeQuestion.id,
+        definition: unsupportedHybridDefinition
+      }
+    ]);
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.createSubmission.mockResolvedValue(createdSubmission);
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([
+      {
+        id: 1,
+        submissionId: createdSubmission.id,
+        questionId: compositeQuestion.id,
+        groupMemberId: submittedBy,
+        answerData: { type: 'ASSESSMENT_ITEM', response: supportedResponse },
+        score: 0,
+        point: 0
+      },
+      {
+        id: 2,
+        submissionId: createdSubmission.id,
+        questionId: persistedUnsupportedCompositeQuestion.id,
+        groupMemberId: submittedBy,
+        answerData: { type: 'ASSESSMENT_ITEM', response: unsupportedResponse },
+        score: 0,
+        point: 0
+      }
+    ]);
+    mocks.updateSubmissionGrades.mockResolvedValue({ ...createdSubmission, score: 3, total: 3 });
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [
+          { questionId: compositeQuestion.id, response: supportedResponse },
+          { questionId: persistedUnsupportedCompositeQuestion.id, response: unsupportedResponse }
+        ],
+        '019cdef0-1234-7abc-8def-1234567890b1'
+      )
+    ).resolves.toMatchObject({ overallStatus: 'hybrid', gradingState: 'awaiting_manual', score: 3 });
+    expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
+      courseId,
+      createdSubmission.id,
+      expect.objectContaining({
+        answers: [
+          { questionId: compositeQuestion.id, points: 3 },
+          { questionId: persistedUnsupportedCompositeQuestion.id, points: 0 }
+        ],
+        gradingState: 'awaiting_manual',
+        total: 3
       }),
       expect.any(Object)
     );

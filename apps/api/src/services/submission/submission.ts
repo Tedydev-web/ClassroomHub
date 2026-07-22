@@ -8,6 +8,7 @@ import type {
 } from '@cio/question-types';
 import {
   deriveItemCapabilities,
+  getUnsupportedAssessmentVerticalSliceInteractionKinds,
   parseAssessmentItemDefinition,
   QUESTION_TYPE_IDS,
   roundToTwoDecimals,
@@ -143,6 +144,9 @@ function resolveQuestionGradingMode(
   definition: AssessmentItemDefinition | undefined
 ): AssessmentGradingMode {
   if (definition) {
+    // Persisted future interactions stay manual until their scorer ships.
+    if (getUnsupportedAssessmentVerticalSliceInteractionKinds(definition).length > 0) return 'manual';
+
     return deriveItemCapabilities(definition).gradingMode;
   }
 
@@ -1052,7 +1056,7 @@ export async function createSubmissionService(
       }
 
       const hasAutoGradableQuestions = activeQuestions.some(
-        (question) => gradingModeByQuestionId.get(question.id) === 'auto'
+        (question) => gradingModeByQuestionId.get(question.id) !== 'manual'
       );
 
       const insertedAnswers = await insertQuestionAnswersBatch(answerRows, txClient);
@@ -1096,6 +1100,9 @@ export async function createSubmissionService(
         );
         const canonicalScores = activeQuestions.flatMap((question) => {
           if (question.questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM) return [];
+          if (gradingModeByQuestionId.get(question.id) === 'manual') {
+            return [{ questionId: question.id, points: 0 }];
+          }
 
           const definition = definitionByQuestionId.get(question.id);
           const answer = preparedAnswers.answerByQuestionId.get(question.id);

@@ -26,6 +26,16 @@ export default defineConfig({
           args: hostResolverRules ? [`--host-resolver-rules=${hostResolverRules}`] : []
         }
       }
+    },
+    {
+      name: 'mobile-chromium',
+      use: {
+        ...devices['Pixel 7'],
+        launchOptions: {
+          ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
+          args: hostResolverRules ? [`--host-resolver-rules=${hostResolverRules}`] : []
+        }
+      }
     }
   ]
 });

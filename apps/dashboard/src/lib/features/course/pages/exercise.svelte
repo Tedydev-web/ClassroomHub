@@ -476,7 +476,7 @@
   });
 
   $effect(() => {
-    const currentTab = page.url.searchParams.get('tab') ?? '';
+    const currentTab = normalizeExerciseTab(page.url.searchParams.get('tab'));
     // Prevent self-navigation loops: only update URL when it actually changes.
     if (currentTab === selectedTab) return;
 

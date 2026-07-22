@@ -10,7 +10,12 @@ import {
   lockExerciseAssignmentState,
   updateQuestion
 } from '@cio/db/queries/exercise';
-import { QUESTION_TYPE_IDS, parseAssessmentItemDefinition, toAssessmentDeliveryDefinition } from '@cio/question-types';
+import {
+  getUnsupportedAssessmentVerticalSliceInteractionKinds,
+  QUESTION_TYPE_IDS,
+  parseAssessmentItemDefinition,
+  toAssessmentDeliveryDefinition
+} from '@cio/question-types';
 import type { AssessmentItemDefinition } from '@cio/question-types';
 import { publishQuestionRevision } from '../assessment/question-revision';
 
@@ -24,6 +29,17 @@ function getAssessmentItemMaxScore(definition: AssessmentItemDefinition): number
   return definition.blocks.reduce(
     (total, block) => total + (block.kind === 'interaction' ? block.interaction.maxScore : 0),
     0
+  );
+}
+
+function assertSupportedAssessmentInteractions(definition: AssessmentItemDefinition): void {
+  const unsupportedKinds = getUnsupportedAssessmentVerticalSliceInteractionKinds(definition);
+  if (unsupportedKinds.length === 0) return;
+
+  throw new AppError(
+    `Unsupported assessment interactions: ${unsupportedKinds.join(', ')}`,
+    ErrorCodes.VALIDATION_ERROR,
+    400
   );
 }
 
@@ -67,6 +83,8 @@ export async function createAssessmentItemForCourseService(
   title: string,
   definition: AssessmentItemDefinition
 ): Promise<AssessmentItemRead> {
+  assertSupportedAssessmentInteractions(definition);
+
   return db.transaction(async (tx) => {
     const txClient = tx as DbOrTxClient;
     const exercise = await getExerciseById(exerciseId, txClient);
@@ -118,6 +136,8 @@ export async function publishAssessmentItemForCourseService(
   expectedRevision: number,
   definition: AssessmentItemDefinition
 ): Promise<AssessmentItemRead> {
+  assertSupportedAssessmentInteractions(definition);
+
   return db.transaction(async (tx) => {
     const txClient = tx as DbOrTxClient;
     await getAssessmentItemForCourse(courseId, exerciseId, questionId, txClient);

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { config } from 'dotenv';
 import { and, eq, inArray } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
+import { QUESTION_TYPE_IDS, type AssessmentItemDefinition } from '@cio/question-types';
 
 config();
 
@@ -107,7 +108,240 @@ const runDatabaseIntegration = process.env.RUN_DB_INTEGRATION === '1';
 // barriers, so it needs well beyond the 5s vitest default to pass anywhere.
 const DATABASE_INTEGRATION_TEST_TIMEOUT_MS = 120_000;
 
+function createCompositeAssessmentDefinition(
+  contentHtml: string,
+  choiceMaxScore: number,
+  textMaxScore: number
+): AssessmentItemDefinition {
+  return {
+    schemaVersion: 1,
+    blocks: [
+      {
+        id: 'content-1',
+        kind: 'content',
+        content: { format: 'html', html: contentHtml }
+      },
+      {
+        id: 'choice-1',
+        kind: 'interaction',
+        interaction: {
+          kind: 'choice',
+          prompt: { format: 'html', html: '<p>Choose the correct option.</p>' },
+          required: true,
+          maxScore: choiceMaxScore,
+          config: {
+            cardinality: 'single',
+            presentation: 'list',
+            options: [
+              { id: 'option-a', html: '<p>Option A</p>' },
+              { id: 'option-b', html: '<p>Option B</p>' }
+            ],
+            correctOptionIds: ['option-b']
+          }
+        }
+      },
+      {
+        id: 'text-1',
+        kind: 'interaction',
+        interaction: {
+          kind: 'text',
+          prompt: { format: 'html', html: '<p>Explain your reasoning.</p>' },
+          required: true,
+          maxScore: textMaxScore,
+          config: { format: 'plain', minCharacters: 3, maxCharacters: 500 }
+        }
+      }
+    ],
+    feedback: []
+  };
+}
+
 describe.runIf(runDatabaseIntegration)('createSubmissionService database transaction contract', () => {
+  it(
+    'preserves the attempted composite revision through authoring, hybrid grading, editing, and review',
+    async () => {
+      const [{ db }, schema, assessmentItemServices, submissionServices] = await Promise.all([
+        import('@cio/db/drizzle'),
+        import('@cio/db/schema'),
+        import('@cio/core/services/exercise/assessment-item'),
+        import('./submission')
+      ]);
+      const profileId = randomUUID();
+      const ids = {
+        course: randomUUID(),
+        exercise: randomUUID(),
+        group: randomUUID(),
+        member: randomUUID(),
+        organization: randomUUID(),
+        profile: profileId,
+        user: profileId
+      };
+      const definitionOne = createCompositeAssessmentDefinition('<p>Attempted revision content.</p>', 2, 3);
+      const definitionTwo = createCompositeAssessmentDefinition('<p>Current revision content.</p>', 1, 1);
+
+      try {
+        await db.insert(schema.role).values({ id: 3, type: 'student' }).onConflictDoNothing();
+        await db
+          .insert(schema.submissionstatus)
+          .values([
+            { id: 1, label: 'Submitted' },
+            { id: 2, label: 'In Progress' },
+            { id: 3, label: 'Graded' }
+          ])
+          .onConflictDoNothing();
+        await db
+          .insert(schema.questionType)
+          .values({
+            id: QUESTION_TYPE_IDS.ASSESSMENT_ITEM,
+            label: 'Assessment item',
+            typename: 'ASSESSMENT_ITEM'
+          })
+          .onConflictDoNothing();
+
+        const email = `${ids.user}@example.com`;
+        await db.insert(schema.user).values({ id: ids.user, name: 'Assessment student', email });
+        await db.insert(schema.profile).values({
+          id: ids.profile,
+          fullname: 'Assessment student',
+          username: `assessment-${ids.profile}`,
+          email
+        });
+        await db.insert(schema.organization).values({
+          id: ids.organization,
+          name: 'Assessment organization',
+          siteName: `assessment-${ids.organization}`
+        });
+        await db.insert(schema.group).values({
+          id: ids.group,
+          name: 'Assessment group',
+          organizationId: ids.organization
+        });
+        await db.insert(schema.course).values({
+          id: ids.course,
+          groupId: ids.group,
+          title: 'Assessment course',
+          description: 'Assessment lifecycle course'
+        });
+        await db.insert(schema.groupmember).values({
+          id: ids.member,
+          groupId: ids.group,
+          roleId: 3,
+          profileId: ids.profile,
+          email
+        });
+        await db.insert(schema.exercise).values({
+          id: ids.exercise,
+          courseId: ids.course,
+          title: 'Composite lifecycle exercise',
+          allowMultipleAttempts: true
+        });
+
+        const createdItem = await assessmentItemServices.createAssessmentItemForCourseService(
+          ids.course,
+          ids.exercise,
+          'Composite lifecycle item',
+          definitionOne
+        );
+        expect(createdItem).toMatchObject({ revision: 1, definition: definitionOne });
+
+        const authorItem = await assessmentItemServices.getAssessmentItemForAuthorService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId
+        );
+        const learnerItem = await assessmentItemServices.getAssessmentItemForLearnerService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId
+        );
+        expect(authorItem.definition).toEqual(definitionOne);
+        expect(learnerItem.revision).toBe(1);
+        expect(JSON.stringify(learnerItem.definition)).toContain('Attempted revision content.');
+        expect(JSON.stringify(learnerItem.definition)).not.toContain('correctOptionIds');
+
+        const submission = await submissionServices.createSubmissionService(
+          ids.course,
+          ids.exercise,
+          ids.member,
+          [
+            {
+              questionId: createdItem.questionId,
+              response: {
+                schemaVersion: 1,
+                responses: [
+                  {
+                    interactionId: 'choice-1',
+                    response: { kind: 'choice', selectedOptionIds: ['option-b'] }
+                  },
+                  {
+                    interactionId: 'text-1',
+                    response: { kind: 'text', text: 'The second option satisfies the prompt.' }
+                  }
+                ]
+              }
+            }
+          ],
+          randomUUID()
+        );
+        expect(submission).toMatchObject({
+          overallStatus: 'hybrid',
+          gradingState: 'awaiting_manual',
+          score: 2
+        });
+
+        const [attemptedAnswer] = await db
+          .select({
+            questionRevisionId: schema.questionAnswer.questionRevisionId,
+            score: schema.questionAnswer.score
+          })
+          .from(schema.questionAnswer)
+          .where(eq(schema.questionAnswer.submissionId, submission.id));
+        expect(attemptedAnswer).toMatchObject({ score: 2 });
+        expect(attemptedAnswer?.questionRevisionId).toBeTruthy();
+
+        const publishedItem = await assessmentItemServices.publishAssessmentItemForCourseService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId,
+          1,
+          definitionTwo
+        );
+        expect(publishedItem).toMatchObject({ revision: 2, definition: definitionTwo });
+        expect(publishedItem.definition).not.toEqual(definitionOne);
+
+        const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(ids.course, submission.id, {
+          answers: [{ questionId: createdItem.questionId, points: 4.5 }],
+          total: 4.5,
+          feedback: 'Automatic choice score reviewed with the written response.'
+        });
+        expect(gradedSubmission).toMatchObject({ gradingState: 'completed', score: 4.5, total: 5 });
+
+        const [reviewedSubmission] = await submissionServices.listSubmissionsByExercise(
+          ids.course,
+          ids.exercise,
+          ids.member
+        );
+        const reviewedAnswer = reviewedSubmission?.answers?.find(
+          (answer) => answer.questionId === createdItem.questionId
+        );
+        expect(reviewedAnswer?.questionRevisionId).toBe(attemptedAnswer?.questionRevisionId);
+        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).toContain('Attempted revision content.');
+        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).not.toContain('Current revision content.');
+        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).not.toContain('correctOptionIds');
+      } finally {
+        await db.delete(schema.submission).where(eq(schema.submission.exerciseId, ids.exercise));
+        await db.delete(schema.exercise).where(eq(schema.exercise.id, ids.exercise));
+        await db.delete(schema.groupmember).where(eq(schema.groupmember.id, ids.member));
+        await db.delete(schema.course).where(eq(schema.course.id, ids.course));
+        await db.delete(schema.group).where(eq(schema.group.id, ids.group));
+        await db.delete(schema.organization).where(eq(schema.organization.id, ids.organization));
+        await db.delete(schema.profile).where(eq(schema.profile.id, ids.profile));
+        await db.delete(schema.user).where(eq(schema.user.id, ids.user));
+      }
+    },
+    DATABASE_INTEGRATION_TEST_TIMEOUT_MS
+  );
+
   it(
     'rolls back invalid writes and preserves one keyed attempt under concurrency',
     async () => {
