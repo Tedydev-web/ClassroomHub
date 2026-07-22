@@ -1113,7 +1113,13 @@
       questions={filterOutDeleted($questionnaire.questions)}
       sections={$questionnaire.sections}
       questionnaireMetaData={$questionnaireMetaData}
-      canonicalQuestions={canonicalTakeItems.map((item) => ({ id: item.id, definition: item.definition }))}
+      canonicalQuestions={canonicalTakeItems.map((item) => ({
+        id: item.id,
+        title: item.question.title,
+        order: item.question.order,
+        exerciseSectionId: item.question.exerciseSectionId,
+        definition: item.definition
+      }))}
     />
   </RoleBasedSecurity>
 {/if}
@@ -1303,7 +1309,13 @@
       questionnaireMetaData={$questionnaireMetaData}
       grades={$questionnaireMetaData.grades}
       disableGrading={true}
-      canonicalQuestions={reviewedCanonicalTakeItems.map((item) => ({ id: item.id, definition: item.definition }))}
+      canonicalQuestions={reviewedCanonicalTakeItems.map((item) => ({
+        id: item.id,
+        title: item.question.title,
+        order: item.question.order,
+        exerciseSectionId: item.question.exerciseSectionId,
+        definition: item.definition
+      }))}
       canonicalAnswers={$questionnaireMetaData.canonicalAnswers}
     />
 
@@ -1361,6 +1373,10 @@
             definition={sectionTakeItem.definition}
             response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
             disabled={isSubmitting}
+            title={sectionTakeItem.question.title}
+            questionNumber={sectionQuestionIndex + 1}
+            questionNumberActive={false}
+            showContainer
             onResponseChange={(response) => onCanonicalResponseChange(sectionTakeItem.id, response)}
           />
         {:else}
@@ -1428,6 +1444,9 @@
                 definition={currentTakeItem.definition}
                 response={$questionnaireMetaData.canonicalAnswers[currentTakeItem.id]}
                 disabled={isSubmitting}
+                title={currentTakeItem.question.title}
+                questionNumber={$questionnaireMetaData.currentQuestionIndex}
+                showContainer
                 onResponseChange={(response) => onCanonicalResponseChange(currentTakeItem.id, response)}
               />
             {:else if sharedQuestionModel}

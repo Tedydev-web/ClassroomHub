@@ -297,6 +297,9 @@
             disableGrading={false}
             canonicalQuestions={(data.canonicalQuestions ?? []).map((question) => ({
               id: String(question.id),
+              title: question.title,
+              order: question.order,
+              exerciseSectionId: question.exerciseSectionId,
               definition: question.definition
             }))}
             {canonicalAnswers}
