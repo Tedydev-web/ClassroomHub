@@ -16,9 +16,13 @@
 #     services publish on loopback only; nothing here claims 80/443.
 #
 # Deploy contract:
-#   - Image references are immutable and required. Pass digest-pinned refs
-#     (ghcr.io/tedydev-web/classroom-api@sha256:...) so a redeploy can never
-#     silently move to a different build.
+#   - Images are built on this host from a pinned Git commit, not pulled. Coolify
+#     records the deployed commit, so a redeploy is reproducible without waiting
+#     on a registry release. The dashboard build args are hard-coded rather than
+#     env-driven: PUBLIC_IS_SELFHOSTED is baked into the bundle at build time, so
+#     a wrong value here cannot be corrected by runtime env.
+#   - To switch to pre-built GHCR images later, replace each `build:` block with
+#     a digest-pinned `image:` and drop the local image tags.
 #   - Every secret and public URL is required. The stack fails to start rather
 #     than booting with an empty auth secret or a wrong origin.
 #   - Development values must never be reused here; production starts from an
@@ -101,7 +105,10 @@ services:
   # release instead of leaving the API half-migrated.
   # `restart: "no"` also tells Coolify this container is not part of stack health.
   db-migrate:
-    image: ${CLASSROOM_API_IMAGE:?set CLASSROOM_API_IMAGE to a digest-pinned GHCR reference}
+    # Reuses the image the api service builds — same code, so the schema it
+    # applies always matches the API that will serve it.
+    image: classroomio-production-api:local
+    pull_policy: never
     labels:
       io.classroom.stack: production
       io.classroom.role: db-migrate
@@ -126,7 +133,11 @@ services:
           memory: 1G
 
   api:
-    image: ${CLASSROOM_API_IMAGE:?set CLASSROOM_API_IMAGE to a digest-pinned GHCR reference}
+    image: classroomio-production-api:local
+    build:
+      # Context is the repository root; this file lives two levels below it.
+      context: ../..
+      dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
       io.classroom.role: api
@@ -227,7 +238,15 @@ services:
           memory: 1536M
 
   dashboard:
-    image: ${CLASSROOM_DASHBOARD_IMAGE:?set CLASSROOM_DASHBOARD_IMAGE to a digest-pinned GHCR reference}
+    image: classroomio-production-dashboard:local
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.dashboard
+      # Hard-coded, not env-driven: SvelteKit bakes these into the bundle, so an
+      # override at deploy time would silently produce the wrong topology.
+      args:
+        PUBLIC_IS_SELFHOSTED: 'false'
+        PUBLIC_IS_SELF_OWNED: 'true'
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -300,7 +319,10 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: ${CLASSROOM_JOBS_IMAGE:?set CLASSROOM_JOBS_IMAGE to a digest-pinned GHCR reference}
+    image: classroomio-production-jobs:local
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.jobs
     labels:
       io.classroom.stack: production
       io.classroom.role: jobs
