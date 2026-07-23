@@ -6,8 +6,11 @@ ENV CI=true
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-ARG PUBLIC_IS_SELFHOSTED=true
+ARG PUBLIC_IS_SELFHOSTED=false
 ARG PUBLIC_IS_SELF_OWNED=true
+
+LABEL io.classroom.public-is-selfhosted="${PUBLIC_IS_SELFHOSTED}" \
+      io.classroom.public-is-self-owned="${PUBLIC_IS_SELF_OWNED}"
 
 RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 

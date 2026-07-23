@@ -69,6 +69,16 @@ case "${SERVICE}" in
     ;;
 
   dashboard)
+    # The dashboard bakes PUBLIC_IS_* into the bundle at build time, so a wrong
+    # build arg cannot be corrected at runtime — catch it before publishing.
+    # No container exists yet, so fail directly instead of dumping logs.
+    image_selfhosted="$(docker image inspect "${IMAGE}" --format '{{ index .Config.Labels "io.classroom.public-is-selfhosted" }}')"
+    image_self_owned="$(docker image inspect "${IMAGE}" --format '{{ index .Config.Labels "io.classroom.public-is-self-owned" }}')"
+    if [ "${image_selfhosted}" != "false" ] || [ "${image_self_owned}" != "true" ]; then
+      echo "SMOKE FAIL (dashboard): image built with wrong topology — selfhosted=${image_selfhosted}, self-owned=${image_self_owned} (expected false/true)"
+      exit 1
+    fi
+
     docker run -d --name "${NAME}" --network host \
       -e NODE_ENV=production -e PORT=3082 -e ORIGIN=http://localhost:3082 \
       -e PUBLIC_IS_SELFHOSTED=false -e PUBLIC_IS_SELF_OWNED=true \

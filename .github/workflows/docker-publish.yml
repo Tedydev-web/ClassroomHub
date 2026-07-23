@@ -48,12 +48,17 @@ jobs:
           - name: api
             dockerfile: ./docker/Dockerfile.api
             image: classroom-api
+            build_args: ""
           - name: dashboard
             dockerfile: ./docker/Dockerfile.dashboard
             image: classroom-dashboard
+            build_args: |
+              PUBLIC_IS_SELFHOSTED=false
+              PUBLIC_IS_SELF_OWNED=true
           - name: jobs
             dockerfile: ./docker/Dockerfile.jobs
             image: classroom-jobs
+            build_args: ""
     services:
       postgres:
         image: postgres:16-alpine
@@ -83,6 +88,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
           load: true
           tags: cio-smoke-${{ matrix.image }}:test
           platforms: linux/amd64
@@ -100,12 +106,17 @@ jobs:
           - name: api
             dockerfile: ./docker/Dockerfile.api
             image: classroom-api
+            build_args: ""
           - name: dashboard
             dockerfile: ./docker/Dockerfile.dashboard
             image: classroom-dashboard
+            build_args: |
+              PUBLIC_IS_SELFHOSTED=false
+              PUBLIC_IS_SELF_OWNED=true
           - name: jobs
             dockerfile: ./docker/Dockerfile.jobs
             image: classroom-jobs
+            build_args: ""
 
     steps:
       - name: Checkout code
@@ -145,6 +156,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
