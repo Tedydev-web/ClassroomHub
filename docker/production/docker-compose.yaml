@@ -1,0 +1,370 @@
+# Classroom — production stack for the operator-run deployment.
+#
+# Not to be confused with docker/coolify/docker-compose.yaml, which is the
+# public Coolify one-click service template: that file is self-contained,
+# bundles MinIO, and lets Coolify generate secrets and domains. This file is the
+# opposite — it describes one specific production deployment and refuses to boot
+# on anything it cannot verify.
+#
+# Ownership boundaries:
+#   - Owns the production application runtime only: database, cache, schema
+#     migration, API, dashboard, background workers.
+#   - Object storage is Cloudflare R2, not MinIO. The tenant-router Worker reads
+#     signed HLS objects straight from R2, so production must write to the same
+#     bucket the Worker binds to.
+#   - Ingress is the host Cloudflare Tunnel, not the Coolify proxy. Both web
+#     services publish on loopback only; nothing here claims 80/443.
+#
+# Deploy contract:
+#   - Image references are immutable and required. Pass digest-pinned refs
+#     (ghcr.io/tedydev-web/classroom-api@sha256:...) so a redeploy can never
+#     silently move to a different build.
+#   - Every secret and public URL is required. The stack fails to start rather
+#     than booting with an empty auth secret or a wrong origin.
+#   - Development values must never be reused here; production starts from an
+#     empty schema with its own credentials.
+#
+# Persistent state lives on the internal disk, deliberately outside the Docker
+# data-root on removable storage:
+#   ${CLASSROOM_DATA_DIR}/postgres
+#   ${CLASSROOM_DATA_DIR}/redis
+# Create both before the first deploy.
+
+services:
+  postgres:
+    image: postgres:16.14-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-classroom}
+      POSTGRES_USER: ${POSTGRES_USER:-classroom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD to a generated production secret}
+    volumes:
+      - ${CLASSROOM_DATA_DIR:-/data/classroomio-production}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      # Require a real query: pg_isready can pass while the server is still in
+      # recovery, which surfaces as 57P03 on the first sign-in after a restart.
+      test:
+        [
+          'CMD-SHELL',
+          "pg_isready -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} && psql -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} -tAc 'SELECT 1'"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    stop_grace_period: 60s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+
+  redis:
+    image: redis:7.4.9-alpine@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: redis
+    # Append-only so queued jobs survive a restart; a lost queue means lost
+    # transcodes, transcriptions, and outbound email.
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - ${CLASSROOM_DATA_DIR:-/data/classroomio-production}/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Schema migration runs once per deploy, before any app process serves traffic.
+  # Keeping it out of the API entrypoint means a failed migration blocks the
+  # release instead of leaving the API half-migrated.
+  # `restart: "no"` also tells Coolify this container is not part of stack health.
+  db-migrate:
+    image: ${CLASSROOM_API_IMAGE:?set CLASSROOM_API_IMAGE to a digest-pinned GHCR reference}
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: db-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ['pnpm', '--filter', '@cio/db', 'db:setup']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
+      PRIVATE_DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
+    restart: 'no'
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  api:
+    image: ${CLASSROOM_API_IMAGE:?set CLASSROOM_API_IMAGE to a digest-pinned GHCR reference}
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    ports:
+      # Loopback only — the host Cloudflare Tunnel is the sole public path.
+      - '127.0.0.1:${HOST_API_PORT:-18001}:3081'
+    environment:
+      NODE_ENV: production
+      PORT: 3081
+      # Migration already ran in db-migrate; the entrypoint must not repeat it.
+      SKIP_DB_SETUP: 'true'
+
+      # Self-owned multi-tenant platform: no upstream licence check, no single-org lock.
+      PUBLIC_IS_SELFHOSTED: 'false'
+      PUBLIC_IS_SELF_OWNED: 'true'
+
+      DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
+      REDIS_URL: redis://redis:6379
+
+      # Public identity. PUBLIC_SERVER_URL is the API's own canonical host, not
+      # the dashboard's — clients build API calls from it.
+      PUBLIC_SERVER_URL: ${PUBLIC_SERVER_URL:?set PUBLIC_SERVER_URL to the public API origin}
+      DASHBOARD_ORIGIN: ${DASHBOARD_ORIGIN:?set DASHBOARD_ORIGIN to the public dashboard origin}
+      TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-${DASHBOARD_ORIGIN}}
+
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET to a generated production secret}
+      PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set PRIVATE_SERVER_KEY to a generated production secret}
+      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set WEBHOOK_ENCRYPTION_KEY to a generated production secret}
+      # Must match the tenant-router Worker secret, or signed HLS playback fails.
+      HLS_SIGNING_SECRET: ${HLS_SIGNING_SECRET:?set HLS_SIGNING_SECRET to the value shared with the tenant-router Worker}
+
+      # Cloudflare R2. Virtual-hosted addressing, so path style stays off.
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:?set OBJECT_STORAGE_ENDPOINT to the R2 S3 API endpoint}
+      OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:?set OBJECT_STORAGE_PUBLIC_ENDPOINT to the R2 S3 API endpoint}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-auto}
+      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID for the R2 token}
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY for the R2 token}
+      OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-false}
+      OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL: ${OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL:?set OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL to the R2 media custom domain}
+      OBJECT_STORAGE_BUCKET_VIDEOS: ${OBJECT_STORAGE_BUCKET_VIDEOS:-videos}
+      OBJECT_STORAGE_BUCKET_DOCUMENTS: ${OBJECT_STORAGE_BUCKET_DOCUMENTS:-documents}
+      OBJECT_STORAGE_BUCKET_MEDIA: ${OBJECT_STORAGE_BUCKET_MEDIA:-media}
+
+      # Email is a go-live requirement: verification, password reset, and invites
+      # all depend on it.
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST for the production mail provider}
+      SMTP_PORT: ${SMTP_PORT:?set SMTP_PORT for the production mail provider}
+      SMTP_USER: ${SMTP_USER:?set SMTP_USER for the production mail provider}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?set SMTP_PASSWORD for the production mail provider}
+      SMTP_SENDER: ${SMTP_SENDER:?set SMTP_SENDER to the verified sender address}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-}
+
+      UPLOAD_MAX_DOCUMENT_MB: ${UPLOAD_MAX_DOCUMENT_MB:-}
+      UPLOAD_MAX_IMAGE_MB: ${UPLOAD_MAX_IMAGE_MB:-}
+      UPLOAD_MAX_VIDEO_MB: ${UPLOAD_MAX_VIDEO_MB:-}
+      UPLOAD_MAX_EXERCISE_FILE_MB: ${UPLOAD_MAX_EXERCISE_FILE_MB:-}
+      UPLOAD_MAX_AGENT_DOCUMENT_MB: ${UPLOAD_MAX_AGENT_DOCUMENT_MB:-}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      UNSPLASH_API_KEY: ${UNSPLASH_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+    healthcheck:
+      # node:slim ships no curl/wget; use the runtime's own fetch.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1536M
+
+  dashboard:
+    image: ${CLASSROOM_DASHBOARD_IMAGE:?set CLASSROOM_DASHBOARD_IMAGE to a digest-pinned GHCR reference}
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: dashboard
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:${HOST_DASHBOARD_PORT:-18000}:3082'
+    environment:
+      NODE_ENV: production
+      PORT: 3082
+      ORIGIN: ${DASHBOARD_ORIGIN:?set DASHBOARD_ORIGIN to the public dashboard origin}
+
+      # Runtime copy of the build-time topology. The image is built with these
+      # same values; a mismatch here means the wrong image is deployed.
+      PUBLIC_IS_SELFHOSTED: 'false'
+      PUBLIC_IS_SELF_OWNED: 'true'
+
+      # Server-to-server call stays on the stack network, never over the tunnel.
+      PRIVATE_SERVER_URL: http://api:3081
+      PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set PRIVATE_SERVER_KEY to a generated production secret}
+
+      # Tenant resolution: subdomains of PRIVATE_APP_HOST map to org sites,
+      # except the reserved app subdomains.
+      PRIVATE_APP_HOST: ${PRIVATE_APP_HOST:?set PRIVATE_APP_HOST to the tenant root domain}
+      PRIVATE_APP_SUBDOMAINS: ${PRIVATE_APP_SUBDOMAINS:-app}
+
+      ALLOWED_EXTERNAL_DOMAINS: ${ALLOWED_EXTERNAL_DOMAINS:-}
+      CSP_SCRIPT_SRC_DOMAINS: ${CSP_SCRIPT_SRC_DOMAINS:-}
+      CSP_STYLE_SRC_DOMAINS: ${CSP_STYLE_SRC_DOMAINS:-}
+      CSP_CONNECT_SRC_DOMAINS: ${CSP_CONNECT_SRC_DOMAINS:-${PUBLIC_SERVER_URL}}
+      CSP_FRAME_SRC_DOMAINS: ${CSP_FRAME_SRC_DOMAINS:-}
+      CSP_FONT_SRC_DOMAINS: ${CSP_FONT_SRC_DOMAINS:-}
+      # Media loads from the R2 custom domain, so it must be allowed explicitly.
+      CSP_MEDIA_SRC_DOMAINS: ${CSP_MEDIA_SRC_DOMAINS:-${OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL}}
+
+      UPLOAD_MAX_DOCUMENT_MB: ${UPLOAD_MAX_DOCUMENT_MB:-}
+      UPLOAD_MAX_IMAGE_MB: ${UPLOAD_MAX_IMAGE_MB:-}
+      UPLOAD_MAX_VIDEO_MB: ${UPLOAD_MAX_VIDEO_MB:-}
+      UPLOAD_MAX_EXERCISE_FILE_MB: ${UPLOAD_MAX_EXERCISE_FILE_MB:-}
+      UPLOAD_MAX_AGENT_DOCUMENT_MB: ${UPLOAD_MAX_AGENT_DOCUMENT_MB:-}
+      UPLOAD_MAX_LANDING_IMAGE_MB: ${UPLOAD_MAX_LANDING_IMAGE_MB:-}
+      UPLOAD_MAX_THUMBNAIL_MB: ${UPLOAD_MAX_THUMBNAIL_MB:-}
+    healthcheck:
+      # Any non-5xx proves the SvelteKit server is listening and routing.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3082/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 768M
+
+  # BullMQ workers: video processing, transcription, AI course generation, email,
+  # and notifications. Without this service those queues fill up silently.
+  jobs:
+    image: ${CLASSROOM_JOBS_IMAGE:?set CLASSROOM_JOBS_IMAGE to a digest-pinned GHCR reference}
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: jobs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      PUBLIC_IS_SELFHOSTED: 'false'
+      PUBLIC_IS_SELF_OWNED: 'true'
+
+      DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
+      REDIS_URL: redis://redis:6379
+
+      # Workers build absolute links for outbound email; without this they would
+      # fall back to a non-production host.
+      DASHBOARD_ORIGIN: ${DASHBOARD_ORIGIN:?set DASHBOARD_ORIGIN to the public dashboard origin}
+      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set WEBHOOK_ENCRYPTION_KEY to a generated production secret}
+
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:?set OBJECT_STORAGE_ENDPOINT to the R2 S3 API endpoint}
+      OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:?set OBJECT_STORAGE_PUBLIC_ENDPOINT to the R2 S3 API endpoint}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-auto}
+      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID for the R2 token}
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY for the R2 token}
+      OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-false}
+      OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL: ${OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL:?set OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL to the R2 media custom domain}
+      OBJECT_STORAGE_BUCKET_VIDEOS: ${OBJECT_STORAGE_BUCKET_VIDEOS:-videos}
+      OBJECT_STORAGE_BUCKET_DOCUMENTS: ${OBJECT_STORAGE_BUCKET_DOCUMENTS:-documents}
+      OBJECT_STORAGE_BUCKET_MEDIA: ${OBJECT_STORAGE_BUCKET_MEDIA:-media}
+
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST for the production mail provider}
+      SMTP_PORT: ${SMTP_PORT:?set SMTP_PORT for the production mail provider}
+      SMTP_USER: ${SMTP_USER:?set SMTP_USER for the production mail provider}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?set SMTP_PASSWORD for the production mail provider}
+      SMTP_SENDER: ${SMTP_SENDER:?set SMTP_SENDER to the verified sender address}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-}
+
+      # Conservative defaults: this host is also a desktop workstation. Raise
+      # these only after observing real CPU, memory, and disk load.
+      MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-1}
+      TRANSCRIBE_WORKER_CONCURRENCY: ${TRANSCRIBE_WORKER_CONCURRENCY:-1}
+      AGENT_COURSE_GENERATION_WORKER_CONCURRENCY: ${AGENT_COURSE_GENERATION_WORKER_CONCURRENCY:-1}
+      EMAIL_WORKER_CONCURRENCY: ${EMAIL_WORKER_CONCURRENCY:-2}
+
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+    # Long grace period so an in-flight transcode or upload can finish instead of
+    # being killed and retried from scratch.
+    stop_grace_period: 90s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 3G
