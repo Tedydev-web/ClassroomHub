@@ -67,7 +67,10 @@ import { emitWebhookEvent } from '@api/services/webhook';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { lockExerciseAssignmentState } from '@cio/db/queries/exercise';
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
-import { EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS } from '@cio/utils/validation/exercise';
+import {
+  EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS,
+  getExerciseSubmissionPayloadCharacterCount
+} from '@cio/utils/validation/exercise';
 import { prepareSubmissionAnswers, type SubmissionAnswerPayload } from './submission-answer-processing';
 import { prepareSubmissionGrades } from './submission-grading-validation';
 import { getCourseSubmissionOrThrow, lockCourseSubmissionOrThrow } from './submission-ownership';
@@ -135,25 +138,27 @@ function resolveSubmissionGradingState(submission: Partial<TSubmission>): Submis
 }
 
 /**
- * Grading mode of one attempted question: canonical capabilities when the
- * attempted revision definition exists, static registry metadata otherwise
- * (pre-revision compatibility only). Unknown type ids stay conservative.
+ * Grading mode of one attempted question: canonical capabilities only for
+ * ASSESSMENT_ITEM; legacy types keep their registry grading behavior after
+ * revision materialization. Unknown type ids stay conservative.
  */
 function resolveQuestionGradingMode(
   questionTypeId: number,
   definition: AssessmentItemDefinition | undefined
 ): AssessmentGradingMode {
-  if (definition) {
-    // Persisted future interactions stay manual until their scorer ships.
-    if (getUnsupportedAssessmentVerticalSliceInteractionKinds(definition).length > 0) return 'manual';
+  if (questionTypeId !== QUESTION_TYPE_IDS.ASSESSMENT_ITEM) {
+    const metadata = getQuestionTypeById(questionTypeId);
+    if (!metadata) return 'manual';
 
-    return deriveItemCapabilities(definition).gradingMode;
+    return requiresManualGrading(metadata.key) ? 'manual' : 'auto';
   }
 
-  const metadata = getQuestionTypeById(questionTypeId);
-  if (!metadata) return 'manual';
+  if (!definition) return 'manual';
 
-  return requiresManualGrading(metadata.key) ? 'manual' : 'auto';
+  // Persisted future interactions stay manual until their scorer ships.
+  if (getUnsupportedAssessmentVerticalSliceInteractionKinds(definition).length > 0) return 'manual';
+
+  return deriveItemCapabilities(definition).gradingMode;
 }
 
 function combineGradingModes(gradingModes: readonly AssessmentGradingMode[]): SubmissionOverallStatus {
@@ -464,15 +469,17 @@ type SubmissionAnswerWithAssessmentDefinition = NonNullable<SubmissionWithDetail
 type SubmissionWithAssessmentDefinitions = Omit<SubmissionWithDetails, 'answers'> & {
   answers: SubmissionAnswerWithAssessmentDefinition[];
 };
+type AttemptedQuestionRevision = Awaited<ReturnType<typeof getQuestionRevisionsByIds>>[number];
 
 /**
  * Attaches a delivery-safe definition to canonical answers using the exact
  * revision materialized at submission time. Historical review must never
  * substitute a current question definition because authors can edit it later.
  */
-async function attachAttemptedAssessmentDefinitions(
-  submission: SubmissionWithDetails
-): Promise<SubmissionWithAssessmentDefinitions> {
+function attachAttemptedAssessmentDefinitions(
+  submission: SubmissionWithDetails,
+  revisionById: ReadonlyMap<string, AttemptedQuestionRevision>
+): SubmissionWithAssessmentDefinitions {
   const answers = submission.answers ?? [];
   const canonicalAnswers = answers.filter((answer) => answer.answerData?.type === 'ASSESSMENT_ITEM');
   if (canonicalAnswers.length === 0) {
@@ -487,9 +494,6 @@ async function attachAttemptedAssessmentDefinitions(
       500
     );
   }
-
-  const revisions = await getQuestionRevisionsByIds([...new Set(revisionIds)]);
-  const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
 
   return {
     ...submission,
@@ -532,7 +536,26 @@ export async function listSubmissionsByExercise(
         s.answers?.length ? { ...s, answers: await enrichFileUploadAnswersArray(s.answers) } : s
       )
     );
-    const withAttemptedDefinitions = await Promise.all(enriched.map(attachAttemptedAssessmentDefinitions));
+    const canonicalAnswers = enriched.flatMap((submission) =>
+      (submission.answers ?? []).filter((answer) => answer.answerData?.type === 'ASSESSMENT_ITEM')
+    );
+    const canonicalRevisionIds = canonicalAnswers
+      .map((answer) => answer.questionRevisionId)
+      .filter((revisionId): revisionId is string => !!revisionId);
+    if (canonicalRevisionIds.length !== canonicalAnswers.length) {
+      throw new AppError(
+        'A canonical assessment answer is missing its attempted revision',
+        ErrorCodes.INTERNAL_ERROR,
+        500
+      );
+    }
+
+    const uniqueRevisionIds = [...new Set(canonicalRevisionIds)];
+    const revisions = uniqueRevisionIds.length > 0 ? await getQuestionRevisionsByIds(uniqueRevisionIds) : [];
+    const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
+    const withAttemptedDefinitions = enriched.map((submission) =>
+      attachAttemptedAssessmentDefinitions(submission, revisionById)
+    );
     withAttemptedDefinitions.sort(
       (a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime()
     );
@@ -599,6 +622,25 @@ export async function listSubmissionsForGrading(courseId: string) {
     type GradingQuestion = GradingSubmission['exercise']['questions'][number];
     type GradingOption = GradingQuestion['options'][number];
     type GradingStudent = NonNullable<GradingSubmission['groupmember']>['profile'];
+
+    const allCanonicalAnswers = rawSubmissions.flatMap((submission) =>
+      (submission.answers || []).filter((answer) => answer.answerData?.type === 'ASSESSMENT_ITEM')
+    );
+    const allCanonicalRevisionIds = allCanonicalAnswers
+      .map((answer) => answer.questionRevisionId)
+      .filter((revisionId): revisionId is string => !!revisionId);
+    if (allCanonicalRevisionIds.length !== allCanonicalAnswers.length) {
+      throw new AppError(
+        'A canonical assessment answer is missing its attempted revision',
+        ErrorCodes.INTERNAL_ERROR,
+        500
+      );
+    }
+
+    const uniqueCanonicalRevisionIds = [...new Set(allCanonicalRevisionIds)];
+    const canonicalRevisions =
+      uniqueCanonicalRevisionIds.length > 0 ? await getQuestionRevisionsByIds(uniqueCanonicalRevisionIds) : [];
+    const canonicalRevisionById = new Map(canonicalRevisions.map((revision) => [revision.id, revision]));
 
     type SubmissionItem = {
       id: string;
@@ -712,19 +754,6 @@ export async function listSubmissionsForGrading(courseId: string) {
       const canonicalAnswers = (submission.answers || []).filter(
         (answer) => answer.answerData?.type === 'ASSESSMENT_ITEM'
       );
-      const canonicalRevisionIds = canonicalAnswers
-        .map((answer) => answer.questionRevisionId)
-        .filter((revisionId): revisionId is string => !!revisionId);
-      if (canonicalRevisionIds.length !== canonicalAnswers.length) {
-        throw new AppError(
-          'A canonical assessment answer is missing its attempted revision',
-          ErrorCodes.INTERNAL_ERROR,
-          500
-        );
-      }
-
-      const canonicalRevisions = await getQuestionRevisionsByIds([...new Set(canonicalRevisionIds)]);
-      const canonicalRevisionById = new Map(canonicalRevisions.map((revision) => [revision.id, revision]));
       const exerciseQuestionById = new Map(
         (submission.exercise.questions || []).map((question) => [question.id, question])
       );
@@ -745,9 +774,15 @@ export async function listSubmissionsForGrading(courseId: string) {
 
         return {
           id: answer.questionId,
-          title: question.title,
-          order: question.order ?? null,
-          exerciseSectionId: question.exerciseSectionId ?? null,
+          title: typeof answer.attemptedQuestionTitle === 'string' ? answer.attemptedQuestionTitle : question.title,
+          order:
+            typeof answer.attemptedQuestionTitle === 'string'
+              ? (answer.attemptedQuestionOrder ?? null)
+              : (question.order ?? null),
+          exerciseSectionId:
+            typeof answer.attemptedQuestionTitle === 'string'
+              ? (answer.attemptedExerciseSectionId ?? null)
+              : (question.exerciseSectionId ?? null),
           definition: toAssessmentDeliveryDefinition(parsedDefinition.data)
         };
       });
@@ -850,7 +885,7 @@ export async function createSubmissionService(
   idempotencyKey?: string
 ): Promise<TSubmission & { answers?: TQuestionAnswer[] }> {
   try {
-    const totalAnswerCharacters = answers.reduce((total, answer) => total + (answer.answer?.length ?? 0), 0);
+    const totalAnswerCharacters = getExerciseSubmissionPayloadCharacterCount(answers);
     if (totalAnswerCharacters > EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS) {
       throw new AppError('Submission answers are too large', ErrorCodes.VALIDATION_ERROR, 400);
     }
@@ -928,13 +963,24 @@ export async function createSubmissionService(
           );
         }
         if (question.questionTypeId === QUESTION_TYPE_IDS.ASSESSMENT_ITEM) {
-          if (answer.optionId !== undefined || answer.answer !== undefined || answer.response === undefined) {
+          if (
+            answer.questionRevisionId === undefined ||
+            answer.optionId !== undefined ||
+            answer.answer !== undefined ||
+            answer.response === undefined
+          ) {
             throw new AppError(
-              `Question ${answer.questionId} requires a canonical assessment response`,
+              `Question ${answer.questionId} requires a canonical assessment response and delivered revision`,
               ErrorCodes.VALIDATION_ERROR,
               400
             );
           }
+        } else if (answer.questionRevisionId !== undefined) {
+          throw new AppError(
+            `Question ${answer.questionId} does not accept a question revision field`,
+            ErrorCodes.VALIDATION_ERROR,
+            400
+          );
         }
       }
 
@@ -968,10 +1014,11 @@ export async function createSubmissionService(
       // each new answer links the exact attempted definition. Sequential on
       // purpose: one transaction client cannot run parallel commands.
       const revisionIdByQuestionId = new Map<number, string>();
+      const submittedAnswerByQuestionId = new Map(answers.map((answer) => [answer.questionId, answer]));
       for (const question of activeQuestions) {
         if (question.questionTypeId === QUESTION_TYPE_IDS.ASSESSMENT_ITEM) {
-          const revision = await getCurrentQuestionRevision(question.id, txClient);
-          if (!revision) {
+          const currentRevision = await getCurrentQuestionRevision(question.id, txClient);
+          if (!currentRevision) {
             throw new AppError(
               `Assessment question ${question.id} has no published revision`,
               ErrorCodes.CONFLICT,
@@ -979,7 +1026,23 @@ export async function createSubmissionService(
             );
           }
 
-          revisionIdByQuestionId.set(question.id, revision.id);
+          const deliveredRevisionId = submittedAnswerByQuestionId.get(question.id)?.questionRevisionId;
+          if (!deliveredRevisionId) {
+            throw new AppError(
+              `Assessment question ${question.id} is missing its delivered revision`,
+              ErrorCodes.VALIDATION_ERROR,
+              400
+            );
+          }
+          if (currentRevision.id !== deliveredRevisionId) {
+            throw new AppError(
+              `Assessment question ${question.id} changed after it was delivered; reload the exercise before submitting`,
+              ErrorCodes.CONFLICT,
+              409
+            );
+          }
+
+          revisionIdByQuestionId.set(question.id, deliveredRevisionId);
           continue;
         }
 
@@ -1032,13 +1095,27 @@ export async function createSubmissionService(
 
         return revisionId;
       };
-      const answerRows: TNewQuestionAnswer[] = preparedAnswers.answers.map((answer) => ({
-        submissionId: submission.id,
-        questionId: answer.questionId,
-        groupMemberId: submittedBy,
-        answerData: answer.answerData,
-        questionRevisionId: attemptedRevisionIdOrThrow(answer.questionId)
-      }));
+      const answerRows: TNewQuestionAnswer[] = preparedAnswers.answers.map((answer) => {
+        const attemptedQuestion = questionsById.get(answer.questionId);
+        if (!attemptedQuestion) {
+          throw new AppError(
+            `Question "${answer.questionId}" disappeared before its attempt metadata was captured`,
+            ErrorCodes.INTERNAL_ERROR,
+            500
+          );
+        }
+
+        return {
+          submissionId: submission.id,
+          questionId: answer.questionId,
+          groupMemberId: submittedBy,
+          answerData: answer.answerData,
+          questionRevisionId: attemptedRevisionIdOrThrow(answer.questionId),
+          attemptedQuestionTitle: attemptedQuestion.title,
+          attemptedQuestionOrder: attemptedQuestion.order ?? null,
+          attemptedExerciseSectionId: attemptedQuestion.exerciseSectionId ?? null
+        };
+      });
 
       // The attempt covers the whole active set: unanswered (optional) questions
       // get an explicit empty row so the stored attempted set and its revision
@@ -1051,7 +1128,10 @@ export async function createSubmissionService(
           questionId: question.id,
           groupMemberId: submittedBy,
           answerData: null,
-          questionRevisionId: attemptedRevisionIdOrThrow(question.id)
+          questionRevisionId: attemptedRevisionIdOrThrow(question.id),
+          attemptedQuestionTitle: question.title,
+          attemptedQuestionOrder: question.order ?? null,
+          attemptedExerciseSectionId: question.exerciseSectionId ?? null
         });
       }
 

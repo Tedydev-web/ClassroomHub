@@ -40,6 +40,22 @@ describe('parseAssessmentItemDefinition — valid definitions', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts an explicit passage split presentation without changing the default flow contract', () => {
+    const defaultResult = parseAssessmentItemDefinition(buildHybridDefinition());
+    const splitResult = parseAssessmentItemDefinition({
+      ...buildHybridDefinition(),
+      presentation: { layout: 'passage_split' }
+    });
+
+    expect(defaultResult.success).toBe(true);
+    if (!defaultResult.success) return;
+    expect(defaultResult.data.presentation).toBeUndefined();
+
+    expect(splitResult.success).toBe(true);
+    if (!splitResult.success) return;
+    expect(splitResult.data.presentation).toEqual({ layout: 'passage_split' });
+  });
+
   it('accepts every golden adapter output shape', () => {
     for (const goldenCase of LEGACY_GOLDEN_CASES) {
       const result = parseAssessmentItemDefinition(goldenCase.expected);
@@ -142,6 +158,10 @@ describe('parseAssessmentItemDefinition — structural failures', () => {
       blocks: [{ ...interactionBlock('i1', { ...buildChoiceInteraction(), surprise: 1 } as never) }]
     };
     expectIssue(withExtra, 'MALFORMED_DEFINITION');
+  });
+
+  it('rejects unknown item presentation layouts', () => {
+    expectIssue({ ...buildHybridDefinition(), presentation: { layout: 'automatic_split' } }, 'MALFORMED_DEFINITION');
   });
 
   it('rejects invalid maxScore values with INVALID_SCORE', () => {

@@ -274,6 +274,21 @@ export function validateAssessmentItemForPublish(
 ): AssessmentResult<AssessmentItemDefinition> {
   const issues: AssessmentIssue[] = [];
 
+  if (definition.presentation?.layout === 'passage_split') {
+    const hasSupportingContent = definition.blocks.some(
+      (block) => block.kind === 'content' && hasMeaningfulAuthoredContent(block.content.html)
+    );
+    if (!hasSupportingContent) {
+      issues.push(
+        assessmentIssue(
+          'PUBLISH_RULE_VIOLATION',
+          ['presentation', 'layout'],
+          'Passage and question panel layout requires supporting content'
+        )
+      );
+    }
+  }
+
   definition.blocks.forEach((block, blockIndex) => {
     if (block.kind !== 'interaction') return;
 

@@ -22,6 +22,7 @@ import {
   getExerciseWithRelationsOptimized,
   getExercisesByCourseId,
   getQuestionsByExerciseIds,
+  getQuestionRevisionsByIds,
   getLMSExercises,
   lockExerciseAssignmentState,
   createExerciseSections,
@@ -31,10 +32,19 @@ import {
   updateOptions,
   updateQuestions
 } from '@cio/db/queries/exercise';
+import {
+  deriveItemCapabilities,
+  parseAssessmentItemDefinition,
+  toAssessmentDeliveryDefinition,
+  type AssessmentDeliveryDefinition,
+  type AssessmentGradingMode,
+  type AssessmentItemDefinition
+} from '@cio/question-types';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getCourseSectionById, touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
+import { applyAssessmentItemMutationsForExercise, type AssessmentItemMutationResult } from './assessment-item';
 
 import { db } from '@cio/db/drizzle';
 import type { DbOrTxClient } from '@cio/db/drizzle';
@@ -58,7 +68,13 @@ type ExerciseWithQuestions = TExercise & {
     points: number | null;
     order: number | null;
     exerciseSectionId: string | null;
+    gradingMode: AssessmentGradingMode;
+    revisionId: string;
+    revision: number;
+    definition: AssessmentDeliveryDefinition;
+    authorDefinition: AssessmentItemDefinition | null;
   }>;
+  assessmentItemMutationResults?: AssessmentItemMutationResult[];
 };
 
 type ExerciseSectionWithQuestions = {
@@ -209,6 +225,7 @@ function groupQuestionsBySections(
 async function syncExerciseSections(
   exerciseId: string,
   sections: NonNullable<TExerciseUpdate['sections']>,
+  canonicalQuestionPlacements: TExerciseUpdate['canonicalQuestionPlacements'],
   txClient: DbOrTxClient
 ) {
   const currentSections = await getExerciseSectionsByExerciseId(exerciseId, txClient);
@@ -227,6 +244,36 @@ async function syncExerciseSections(
     .map((section) => section.id);
 
   if (sectionsToDelete.length > 0) {
+    const questions = await getQuestionsByExerciseIds([exerciseId], txClient, { questionScope: 'active' });
+    const deletedSectionIdSet = new Set(sectionsToDelete);
+    const canonicalQuestionIdsInDeletedSections = questions
+      .filter(
+        (question): question is typeof question & { id: number } =>
+          question.id !== undefined &&
+          INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId) &&
+          typeof question.exerciseSectionId === 'string' &&
+          deletedSectionIdSet.has(question.exerciseSectionId)
+      )
+      .map((question) => question.id);
+    if (canonicalQuestionIdsInDeletedSections.length > 0 && canonicalQuestionPlacements === undefined) {
+      throw new AppError(
+        'Canonical question placements are required when deleting a section that contains assessment questions',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+    const attemptedCanonicalQuestionIds = await getAttemptedQuestionIds(
+      canonicalQuestionIdsInDeletedSections,
+      txClient
+    );
+    if (attemptedCanonicalQuestionIds.length > 0) {
+      throw new AppError(
+        'A section containing an attempted assessment question cannot be deleted',
+        ErrorCodes.CONFLICT,
+        409
+      );
+    }
+
     await deleteExerciseSectionsByIds(sectionsToDelete, txClient);
   }
 
@@ -280,6 +327,139 @@ function validateSectionQuestionAssignments(data: TExerciseUpdate) {
       400
     );
   }
+}
+
+async function syncCanonicalQuestionPlacements(
+  exerciseId: string,
+  placements: NonNullable<TExerciseUpdate['canonicalQuestionPlacements']>,
+  incomingLegacyQuestions: TExerciseUpdate['questions'],
+  txClient: DbOrTxClient
+): Promise<void> {
+  const [questions, sections] = await Promise.all([
+    getQuestionsByExerciseIds([exerciseId], txClient, { questionScope: 'active' }),
+    getExerciseSectionsByExerciseId(exerciseId, txClient)
+  ]);
+  const canonicalQuestions = questions.filter(
+    (question): question is typeof question & { id: number } =>
+      question.id !== undefined && INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId)
+  );
+  const canonicalQuestionById = new Map(canonicalQuestions.map((question) => [question.id, question]));
+  const placementByQuestionId = new Map(placements.map((placement) => [placement.id, placement]));
+
+  if (
+    placementByQuestionId.size !== placements.length ||
+    canonicalQuestionById.size !== placementByQuestionId.size ||
+    canonicalQuestions.some((question) => !placementByQuestionId.has(question.id))
+  ) {
+    throw new AppError(
+      'Canonical question placements must contain every active assessment question exactly once',
+      ErrorCodes.VALIDATION_ERROR,
+      400
+    );
+  }
+
+  const sectionIds = new Set(sections.map((section) => section.id));
+  const legacyQuestionsById = new Map(
+    questions
+      .filter(
+        (question): question is typeof question & { id: number } =>
+          question.id !== undefined && !INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId)
+      )
+      .map((question) => [question.id, question])
+  );
+  const finalLegacyPlacements = new Map<number | string, { exerciseSectionId: string | null; order: number }>(
+    [...legacyQuestionsById.values()].map((question) => [
+      question.id,
+      {
+        exerciseSectionId: question.exerciseSectionId ?? null,
+        order: question.order ?? 0
+      }
+    ])
+  );
+  for (const incomingQuestion of incomingLegacyQuestions ?? []) {
+    if (incomingQuestion.id !== undefined) {
+      const currentQuestion = legacyQuestionsById.get(incomingQuestion.id);
+      if (!currentQuestion) continue;
+      if (incomingQuestion.deletedAt) {
+        finalLegacyPlacements.delete(incomingQuestion.id);
+        continue;
+      }
+
+      finalLegacyPlacements.set(incomingQuestion.id, {
+        exerciseSectionId: incomingQuestion.exerciseSectionId ?? currentQuestion.exerciseSectionId ?? null,
+        order: incomingQuestion.order ?? currentQuestion.order ?? 0
+      });
+      continue;
+    }
+
+    if (incomingQuestion.deletedAt) continue;
+    finalLegacyPlacements.set(`new-${finalLegacyPlacements.size}`, {
+      exerciseSectionId: incomingQuestion.exerciseSectionId ?? null,
+      order: incomingQuestion.order ?? 0
+    });
+  }
+  const legacyPlacementKeys = new Set(
+    [...finalLegacyPlacements.values()].map(
+      (placement) => `${placement.exerciseSectionId ?? 'unsectioned'}:${placement.order}`
+    )
+  );
+  const canonicalPlacementKeys = new Set<string>();
+
+  for (const placement of placements) {
+    if (sections.length > 0 && placement.exerciseSectionId === null) {
+      throw new AppError(
+        'Every assessment question must be assigned to an exercise section',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+    if (placement.exerciseSectionId !== null && !sectionIds.has(placement.exerciseSectionId)) {
+      throw new AppError('Assessment question section must exist in this exercise', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    const placementKey = `${placement.exerciseSectionId ?? 'unsectioned'}:${placement.order}`;
+    if (canonicalPlacementKeys.has(placementKey) || legacyPlacementKeys.has(placementKey)) {
+      throw new AppError(
+        'Question orders must be unique within each exercise section',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+    canonicalPlacementKeys.add(placementKey);
+  }
+
+  const changedPlacements = placements.filter((placement) => {
+    const currentQuestion = canonicalQuestionById.get(placement.id);
+    return (
+      currentQuestion !== undefined &&
+      ((currentQuestion.exerciseSectionId ?? null) !== placement.exerciseSectionId ||
+        (currentQuestion.order ?? 0) !== placement.order)
+    );
+  });
+  if (changedPlacements.length === 0) return;
+
+  const attemptedQuestionIds = new Set(
+    await getAttemptedQuestionIds(
+      changedPlacements.map((placement) => placement.id),
+      txClient
+    )
+  );
+  if (attemptedQuestionIds.size > 0) {
+    throw new AppError(
+      'Assessment question placement cannot be changed after the question has been attempted',
+      ErrorCodes.CONFLICT,
+      409
+    );
+  }
+
+  const placementUpdates = changedPlacements.map((placement) => ({
+    id: placement.id,
+    data: {
+      exerciseSectionId: placement.exerciseSectionId,
+      order: placement.order
+    }
+  }));
+  await updateQuestions(placementUpdates, txClient);
 }
 
 async function resolveExerciseCourseId(exercise: TExercise): Promise<string | null> {
@@ -436,18 +616,70 @@ export async function getExercise(
       questionScope: 'active'
     });
     const questions = activeQuestions.filter((question) => !INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId));
-    const canonicalQuestions = activeQuestions
+    const canonicalQuestionRows = activeQuestions
       .filter(
         (question): question is typeof question & { id: number } =>
           INTERNAL_QUESTION_TYPE_IDS.has(question.questionTypeId) && question.id !== undefined
       )
-      .map((question) => ({
+      .map((question) => {
+        if (question.currentRevisionId) {
+          return { question, currentRevisionId: question.currentRevisionId };
+        }
+
+        throw new AppError(
+          `Canonical question "${question.id}" has no current revision`,
+          ErrorCodes.EXERCISE_FETCH_FAILED,
+          500
+        );
+      });
+    const currentRevisionIds = [...new Set(canonicalQuestionRows.map(({ currentRevisionId }) => currentRevisionId))];
+    const revisionRows =
+      currentRevisionIds.length === 0
+        ? []
+        : dbClient
+          ? await getQuestionRevisionsByIds(currentRevisionIds, dbClient)
+          : await getQuestionRevisionsByIds(currentRevisionIds);
+    const revisionsById = new Map(revisionRows.map((revision) => [revision.id, revision]));
+    const canViewAuthorDefinitions =
+      profileId !== undefined && exercise.courseId !== null
+        ? await isCourseTeamMemberOrOrgAdmin(exercise.courseId, profileId)
+        : false;
+    const canonicalQuestions = canonicalQuestionRows.map(({ question, currentRevisionId }) => {
+      const revision = revisionsById.get(currentRevisionId);
+      if (!revision) {
+        throw new AppError(
+          `Canonical question "${question.id}" current revision was not found`,
+          ErrorCodes.EXERCISE_FETCH_FAILED,
+          500
+        );
+      }
+
+      const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
+      if (!parsedDefinition.success) {
+        console.error(`Canonical question "${question.id}" current revision is invalid:`, parsedDefinition.issues);
+        throw new AppError(
+          `Canonical question "${question.id}" current revision is invalid`,
+          ErrorCodes.EXERCISE_FETCH_FAILED,
+          500
+        );
+      }
+
+      const gradingMode = deriveItemCapabilities(parsedDefinition.data).gradingMode;
+      const definition = toAssessmentDeliveryDefinition(parsedDefinition.data);
+
+      return {
         id: question.id,
         title: question.title,
         points: question.points ?? null,
         order: question.order ?? null,
-        exerciseSectionId: question.exerciseSectionId ?? null
-      }));
+        exerciseSectionId: question.exerciseSectionId ?? null,
+        gradingMode,
+        revisionId: currentRevisionId,
+        revision: revision.revision,
+        definition,
+        authorDefinition: canViewAuthorDefinitions ? parsedDefinition.data : null
+      };
+    });
 
     const isComplete = profileId ? await getExerciseCompletionByProfile(exerciseId, profileId, dbClient) : false;
 
@@ -490,12 +722,17 @@ export async function getExercise(
  * @param data Partial exercise update data
  * @returns Updated exercise
  */
-export async function updateExerciseService(exerciseId: string, data: TExerciseUpdate): Promise<TExercise> {
+export async function updateExerciseService(
+  exerciseId: string,
+  data: TExerciseUpdate,
+  profileId?: string
+): Promise<ExerciseWithQuestions> {
   try {
     const sanitizedData = sanitizeExercisePayload(data);
     validateSectionQuestionAssignments(sanitizedData);
 
     const existing = await getExerciseById(exerciseId);
+    const exerciseCourseId = existing ? await resolveExerciseCourseId(existing) : null;
 
     if (existing?.courseId) {
       await guardNonAutoGradableQuestionsForCourseType({
@@ -529,7 +766,21 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
       }
 
       if (sanitizedData.sections !== undefined) {
-        await syncExerciseSections(exerciseId, sanitizedData.sections, txClient);
+        await syncExerciseSections(
+          exerciseId,
+          sanitizedData.sections,
+          sanitizedData.canonicalQuestionPlacements,
+          txClient
+        );
+      }
+
+      if (sanitizedData.canonicalQuestionPlacements !== undefined) {
+        await syncCanonicalQuestionPlacements(
+          exerciseId,
+          sanitizedData.canonicalQuestionPlacements,
+          sanitizedData.questions,
+          txClient
+        );
       }
 
       // Process questions - only update what changed
@@ -625,8 +876,28 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
         }
       }
 
-      // Return the updated exercise
-      return await getExercise(exerciseId, txClient);
+      let assessmentItemMutationResults: AssessmentItemMutationResult[] | undefined;
+      if (sanitizedData.assessmentItemMutations !== undefined) {
+        if (!exerciseCourseId) {
+          throw new AppError(
+            'Exercise course could not be resolved for assessment item mutations',
+            ErrorCodes.EXERCISE_NOT_FOUND,
+            404
+          );
+        }
+
+        assessmentItemMutationResults = await applyAssessmentItemMutationsForExercise(
+          exerciseCourseId,
+          exerciseId,
+          sanitizedData.assessmentItemMutations,
+          txClient
+        );
+      }
+
+      const updatedExercise = await getExercise(exerciseId, txClient, profileId);
+      if (assessmentItemMutationResults === undefined) return updatedExercise;
+
+      return { ...updatedExercise, assessmentItemMutationResults };
     });
 
     const courseId = existing?.courseId;
@@ -648,8 +919,9 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
 export async function updateExerciseForCourseService(
   courseId: string,
   exerciseId: string,
-  data: TExerciseUpdate
-): Promise<TExercise> {
+  data: TExerciseUpdate,
+  profileId?: string
+): Promise<ExerciseWithQuestions> {
   const exercise = await getExerciseById(exerciseId);
   if (!exercise) {
     throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
@@ -662,7 +934,7 @@ export async function updateExerciseForCourseService(
 
   await assertExercisePlacementBelongsToCourse(courseId, data);
 
-  return updateExerciseService(exerciseId, data);
+  return updateExerciseService(exerciseId, data, profileId);
 }
 
 export async function updateExerciseSectionMetadataService(

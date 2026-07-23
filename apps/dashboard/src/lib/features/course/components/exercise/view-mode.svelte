@@ -1,10 +1,11 @@
 <script lang="ts">
   import { get } from 'svelte/store';
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import { fly } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
   import { courseApi } from '$features/course/api';
   import {
+    assessmentComposerPreviewItems,
     getQuestionsForSection,
     hasSections,
     questionnaire,
@@ -23,7 +24,9 @@
   import {
     assessmentResponseEnvelopeSchema,
     getExerciseQuestionContractKey,
-    parseAssessmentItemDefinition
+    getAssessmentVerticalSliceResponseProgress,
+    isAssessmentVerticalSliceResponseComplete,
+    parseAssessmentDeliveryDefinition
   } from '@cio/question-types';
   import { STATUS } from './constants';
   import { filterOutDeleted } from './functions';
@@ -64,6 +67,7 @@
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
   import {
     formatExercisePoints,
+    orderExerciseItemsBySections,
     roundExercisePointsForDisplay,
     shouldCompleteExerciseFromSubmission
   } from '$features/course/utils/exercise-progression-utils';
@@ -77,14 +81,23 @@
     parseExerciseAutosave,
     shouldHydrateHistoricalSubmission
   } from '$features/course/utils/exercise-autosave-utils';
-  import { sumAnswerScoresForRenderedQuestions } from '$features/course/utils/submission-review-score-utils';
+  import {
+    getCanonicalAssessmentReviewItems,
+    sumAnswerScoresForRenderedQuestions
+  } from '$features/course/utils/submission-review-score-utils';
   import { VIDEO_RECORDING_MIME_TYPES, type TExerciseVideoRecordingUploadInit } from '@cio/utils/validation/exercise';
   import type { TExerciseSubmissionCreate } from '@cio/utils/validation/exercise';
 
   type CanonicalQuestion = NonNullable<Exercise['canonicalQuestions']>[number];
   type TakeItem =
     | { kind: 'legacy'; id: string; question: Question }
-    | { kind: 'canonical'; id: string; question: CanonicalQuestion; definition: AssessmentDeliveryDefinition };
+    | {
+        kind: 'canonical';
+        id: string;
+        question: CanonicalQuestion;
+        definition: AssessmentDeliveryDefinition;
+        revisionId: string | null;
+      };
 
   interface Props {
     preview?: boolean;
@@ -119,10 +132,13 @@
   /** Submissions created in this session — the `mySubmissions` prop only refreshes on page load. */
   let localSubmissions = $state<SubmittedExerciseAttempt[]>([]);
   let canonicalDefinitionsByQuestionId = $state<Record<string, AssessmentDeliveryDefinition>>({});
-  let reviewedCanonicalDefinitionsByQuestionId = $state<Record<string, AssessmentDeliveryDefinition>>({});
+  let loadedCanonicalRevisionIdsByQuestionId = $state<Record<string, string>>({});
+  let reviewedCanonicalTakeItems = $state<Array<Extract<TakeItem, { kind: 'canonical' }>>>([]);
   let isLoadingCanonicalItems = $state(false);
   let canonicalItemsLoadFailed = $state(false);
   let loadedCanonicalExerciseId = $state('');
+  let canonicalValidationQuestionId = $state<string | null>(null);
+  let canonicalFocusRequestKey = $state(0);
 
   const submissionList = $derived.by(() => {
     const loadedSubmissions = Array.isArray(mySubmissions) ? mySubmissions : [];
@@ -194,8 +210,45 @@
     return (response?.responses.length ?? 0) > 0;
   }
 
+  function isCanonicalTakeItemAnswered(
+    item: Extract<TakeItem, { kind: 'canonical' }>,
+    response: AssessmentResponseEnvelope | undefined
+  ): boolean {
+    return (
+      hasMeaningfulCanonicalResponse(response) && isAssessmentVerticalSliceResponseComplete(item.definition, response)
+    );
+  }
+
+  function getTakeItemQuestionProgress(item: TakeItem): { answered: number; total: number } {
+    if (item.kind === 'canonical') {
+      return getAssessmentVerticalSliceResponseProgress(
+        item.definition,
+        $questionnaireMetaData.canonicalAnswers[item.id]
+      );
+    }
+
+    const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(item.question));
+    const answered = hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey]) ? 1 : 0;
+
+    return { answered, total: 1 };
+  }
+
+  function getExerciseQuestionProgress(items: TakeItem[]): { answered: number; total: number } {
+    return items.reduce(
+      (progress, item) => {
+        const itemProgress = getTakeItemQuestionProgress(item);
+
+        return {
+          answered: progress.answered + itemProgress.answered,
+          total: progress.total + itemProgress.total
+        };
+      },
+      { answered: 0, total: 0 }
+    );
+  }
+
   function getTakeItemPoints(item: TakeItem): number {
-    if (item.kind === 'legacy') return Number(item.question.points ?? 0);
+    if (item.kind === 'legacy') return getTotalPossibleGrade([item.question]);
 
     return item.definition.blocks.reduce((total, block) => {
       return block.kind === 'interaction' ? total + block.interaction.maxScore : total;
@@ -235,10 +288,21 @@
         })
         .filter((answer): answer is ApiPayload => answer !== null);
 
-      const canonicalAnswersForApi: TExerciseSubmissionCreate['answers'] = canonicalTakeItems.map((item) => ({
-        questionId: Number(item.question.id),
-        response: updated.canonicalAnswers[item.id] ?? { schemaVersion: 1, responses: [] }
-      }));
+      const canonicalAnswersForApi: TExerciseSubmissionCreate['answers'] = [];
+      for (const item of canonicalTakeItems) {
+        const questionRevisionId = updated.canonicalRevisionIds[item.id] ?? item.revisionId;
+        if (!questionRevisionId) {
+          console.error(`Assessment question "${item.id}" has no delivered revision`);
+          snackbar.error();
+          return;
+        }
+
+        canonicalAnswersForApi.push({
+          questionId: Number(item.question.id),
+          questionRevisionId,
+          response: updated.canonicalAnswers[item.id] ?? { schemaVersion: 1, responses: [] }
+        });
+      }
 
       const answersForApi: TExerciseSubmissionCreate['answers'] = [...legacyAnswersForApi, ...canonicalAnswersForApi];
 
@@ -383,7 +447,7 @@
     saveCurrentExerciseDraft();
 
     const currentIndex = $questionnaireMetaData.currentQuestionIndex;
-    const isLastQuestion = currentIndex === questions.length;
+    const isLastQuestion = currentIndex === currentTakeItemList.length;
 
     if (isLastQuestion) {
       if (hasSectionedExercise) {
@@ -407,16 +471,53 @@
         [questionId]: response
       }
     }));
+    const item = canonicalTakeItems.find((takeItem) => takeItem.id === questionId);
+    if (
+      canonicalValidationQuestionId === questionId &&
+      item &&
+      isAssessmentVerticalSliceResponseComplete(item.definition, response)
+    ) {
+      canonicalValidationQuestionId = null;
+    }
     scheduleExerciseDraftSave();
   }
 
-  function onCanonicalNext(item: Extract<TakeItem, { kind: 'canonical' }>) {
+  function getCanonicalQuestionElementId(questionId: string): string {
+    return `canonical-question-${questionId}`;
+  }
+
+  async function focusFirstInvalidCanonicalInteraction(item: Extract<TakeItem, { kind: 'canonical' }>) {
+    canonicalFocusRequestKey += 1;
+    canonicalValidationQuestionId = item.id;
+    await tick();
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const questionElement = document.getElementById(getCanonicalQuestionElementId(item.id));
+      const invalidControlSelectors = [
+        '[data-assessment-invalid="true"] textarea',
+        '[data-assessment-invalid="true"] [contenteditable="true"]',
+        '[data-assessment-invalid="true"] input:not([disabled])',
+        '[data-assessment-invalid="true"] button:not([disabled])'
+      ];
+      const invalidInteraction = questionElement?.querySelector<HTMLElement>('[data-assessment-invalid="true"]');
+      const invalidControl = invalidControlSelectors
+        .map((selector) => invalidInteraction?.querySelector<HTMLElement>(selector))
+        .find((control): control is HTMLElement => control !== null && control !== undefined);
+      invalidControl?.focus();
+      if (invalidControl && document.activeElement === invalidControl) return;
+    }
+  }
+
+  async function onCanonicalNext(item: Extract<TakeItem, { kind: 'canonical' }>) {
     const response = $questionnaireMetaData.canonicalAnswers[item.id];
-    if (!hasMeaningfulCanonicalResponse(response) && isRequiredTakeItem(item)) {
+    if (!isAssessmentVerticalSliceResponseComplete(item.definition, response)) {
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
+      await focusFirstInvalidCanonicalInteraction(item);
       return;
     }
 
+    canonicalValidationQuestionId = null;
     const isLastQuestion = $questionnaireMetaData.currentQuestionIndex === currentTakeItemList.length;
     if (isLastQuestion) {
       if (hasSectionedExercise) {
@@ -446,24 +547,15 @@
     saveCurrentExerciseDraft();
   }
 
-  function getProgressValue(currentQuestionIndex: number) {
+  function getProgressValue() {
     if ($questionnaireMetaData.isFinished) {
       return 100;
     }
 
-    if (hasSectionedExercise) {
-      const activeQuestionCount = allTakeItems.length;
-      const answeredLegacyCount = Object.values($questionnaireMetaData.answers).filter((answer) =>
-        hasMeaningfulAnswerData(answer)
-      ).length;
-      const answeredCanonicalCount = Object.values($questionnaireMetaData.canonicalAnswers).filter(
-        hasMeaningfulCanonicalResponse
-      ).length;
-      const answeredCount = answeredLegacyCount + answeredCanonicalCount;
-      return Math.round((answeredCount / activeQuestionCount) * 100) || 0;
-    }
+    const questionProgress = getExerciseQuestionProgress(allTakeItems);
+    if (questionProgress.total === 0) return 0;
 
-    return Math.round(((currentQuestionIndex - 1) / allTakeItems.length) * 100) || 0;
+    return Math.round((questionProgress.answered / questionProgress.total) * 100);
   }
 
   function getTotalPossibleGrade(questions: Question[]): number {
@@ -490,15 +582,21 @@
 
       if (stringifiedQuestionnaireMetaData) {
         const questions = $questionnaire.questions.map(toExerciseQuestionModel);
+        const activeSectionCount = $questionnaire.sections.filter((section) => !section.deletedAt).length;
+        const canonicalQuestionIds = new Set($questionnaire.canonicalQuestions.map((question) => String(question.id)));
+        const canonicalQuestionRevisionIds = Object.fromEntries(
+          $questionnaire.canonicalQuestions.map((question) => [String(question.id), question.revisionId])
+        );
+        const activeLegacyQuestionCount = $questionnaire.questions.filter((question) => !question.deletedAt).length;
+        const takeItemCount = activeLegacyQuestionCount + $questionnaire.canonicalQuestions.length;
         const autoSavedData = parseExerciseAutosave({
           serializedValue: stringifiedQuestionnaireMetaData,
           exerciseId,
           questions,
-          sectionCount: $questionnaire.sections.filter((section) => !section.deletedAt).length,
-          canonicalQuestionIds: new Set($questionnaire.canonicalQuestions.map((question) => String(question.id))),
-          takeItemCount:
-            $questionnaire.questions.filter((question) => !question.deletedAt).length +
-            $questionnaire.canonicalQuestions.length
+          sectionCount: activeSectionCount,
+          canonicalQuestionIds,
+          canonicalQuestionRevisionIds,
+          takeItemCount
         });
         if (autoSavedData) {
           questionnaireMetaData.set(autoSavedData);
@@ -675,12 +773,16 @@
     scheduleExerciseDraftSave();
   }
 
-  function completeAllQuestionsSection() {
+  async function completeAllQuestionsSection() {
     const missingAnswer = currentSectionTakeItems.find((item) => {
-      if (!isRequiredTakeItem(item)) return false;
       if (item.kind === 'canonical') {
-        return !hasMeaningfulCanonicalResponse($questionnaireMetaData.canonicalAnswers[item.id]);
+        return !isAssessmentVerticalSliceResponseComplete(
+          item.definition,
+          $questionnaireMetaData.canonicalAnswers[item.id]
+        );
       }
+
+      if (!isRequiredTakeItem(item)) return false;
 
       const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(item.question));
       return !hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey]);
@@ -688,6 +790,9 @@
 
     if (missingAnswer) {
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required'));
+      if (missingAnswer.kind === 'canonical') {
+        await focusFirstInvalidCanonicalInteraction(missingAnswer);
+      }
       return;
     }
 
@@ -776,41 +881,53 @@
   });
 
   $effect(() => {
+    if (loadedCanonicalExerciseId && loadedCanonicalExerciseId !== exerciseId) {
+      loadedCanonicalExerciseId = '';
+      canonicalDefinitionsByQuestionId = {};
+      loadedCanonicalRevisionIdsByQuestionId = {};
+      isLoadingCanonicalItems = false;
+    }
     if (!courseApi.course?.id || !exerciseId || isFetchingExercise) return;
+    if ($questionnaireMetaData.exerciseId !== exerciseId) return;
     if (loadedCanonicalExerciseId === exerciseId) return;
 
     const canonicalQuestions = $questionnaire.canonicalQuestions;
     loadedCanonicalExerciseId = exerciseId;
     canonicalDefinitionsByQuestionId = {};
+    loadedCanonicalRevisionIdsByQuestionId = {};
     canonicalItemsLoadFailed = false;
     if (canonicalQuestions.length === 0) return;
 
     isLoadingCanonicalItems = true;
-    void Promise.all(
-      canonicalQuestions.map(async (question) => {
-        const result = await exerciseApi.getAssessmentItem(courseApi.course!.id, exerciseId, Number(question.id));
-        if (!result?.data) return null;
-
-        const definition = parseAssessmentItemDefinition(result.data.definition);
-        if (!definition.success) {
-          throw new Error(`Assessment question ${question.id} has an invalid definition`);
+    try {
+      const entries = canonicalQuestions.map((question) => {
+        const deliveryDefinition = parseAssessmentDeliveryDefinition(question.definition);
+        if (!deliveryDefinition.success) {
+          throw new Error(`Assessment question ${question.id} has an invalid delivery definition`);
         }
 
-        return [String(question.id), result.data.definition] as [string, AssessmentDeliveryDefinition];
-      })
-    )
-      .then((entries) => {
-        canonicalDefinitionsByQuestionId = Object.fromEntries(
-          entries.filter((entry): entry is [string, AssessmentDeliveryDefinition] => entry !== null)
-        );
-      })
-      .catch((error) => {
-        console.error('Failed to load assessment questions', { exerciseId, error });
-        canonicalItemsLoadFailed = true;
-      })
-      .finally(() => {
-        isLoadingCanonicalItems = false;
+        return [String(question.id), deliveryDefinition.data, question.revisionId] as const;
       });
+
+      canonicalDefinitionsByQuestionId = Object.fromEntries(
+        entries.map(([questionId, definition]) => [questionId, definition])
+      );
+      loadedCanonicalRevisionIdsByQuestionId = Object.fromEntries(
+        entries.map(([questionId, , revisionId]) => [questionId, revisionId])
+      );
+      questionnaireMetaData.update((metaData) => ({
+        ...metaData,
+        canonicalRevisionIds: {
+          ...loadedCanonicalRevisionIdsByQuestionId,
+          ...metaData.canonicalRevisionIds
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to load assessment questions from the exercise response', { exerciseId, error });
+      canonicalItemsLoadFailed = true;
+    } finally {
+      isLoadingCanonicalItems = false;
+    }
   });
 
   function retryLoadingCanonicalItems() {
@@ -818,7 +935,7 @@
     canonicalItemsLoadFailed = false;
   }
 
-  const progressValue = $derived(getProgressValue($questionnaireMetaData.currentQuestionIndex));
+  const progressValue = $derived(getProgressValue());
   const activeSections = $derived(
     [...($questionnaire.sections ?? [])].filter((section) => !section.deletedAt).sort((a, b) => a.order - b.order)
   );
@@ -834,27 +951,83 @@
       .filter((question) => !question.deletedAt)
       .map((question) => ({ kind: 'legacy' as const, id: String(question.id), question }))
   );
-  const canonicalTakeItems = $derived(
+  const persistedCanonicalTakeItems = $derived(
     $questionnaire.canonicalQuestions.flatMap((question) => {
-      const definition = canonicalDefinitionsByQuestionId[String(question.id)];
-      return definition ? [{ kind: 'canonical' as const, id: String(question.id), question, definition }] : [];
+      const questionId = String(question.id);
+      const definition = canonicalDefinitionsByQuestionId[questionId];
+      const revisionId = loadedCanonicalRevisionIdsByQuestionId[questionId] ?? null;
+      return definition ? [{ kind: 'canonical' as const, id: questionId, question, definition, revisionId }] : [];
     })
   );
+  const canonicalTakeItems = $derived.by(() => {
+    if (!preview) return persistedCanonicalTakeItems;
+
+    const previewEntries = Object.entries($assessmentComposerPreviewItems).filter(
+      ([, item]) => item.exerciseId === exerciseId
+    );
+    const previewItemsByQuestionId = new Map(
+      previewEntries.flatMap(([, item]) => (item.questionId === null ? [] : [[String(item.questionId), item] as const]))
+    );
+    const persistedItems = persistedCanonicalTakeItems.map((item) => {
+      const previewItem = previewItemsByQuestionId.get(item.id);
+      if (!previewItem) return item;
+
+      return {
+        ...item,
+        question: {
+          ...item.question,
+          title: previewItem.title,
+          points: previewItem.points,
+          gradingMode: previewItem.gradingMode
+        },
+        definition: previewItem.definition,
+        revisionId: item.revisionId
+      };
+    });
+    const newDraftItems = previewEntries.flatMap(([composerId, item], draftIndex) => {
+      if (item.questionId !== null || item.definition.blocks.length === 0) return [];
+
+      const question: CanonicalQuestion = {
+        id: -(draftIndex + 1),
+        title: item.title,
+        points: item.points,
+        order: item.order,
+        exerciseSectionId: item.exerciseSectionId,
+        gradingMode: item.gradingMode
+      };
+
+      return [
+        {
+          kind: 'canonical' as const,
+          id: `draft:${composerId}`,
+          question,
+          definition: item.definition,
+          revisionId: null
+        }
+      ];
+    });
+
+    return [...persistedItems, ...newDraftItems];
+  });
   const allTakeItems = $derived(
-    [...legacyTakeItems, ...canonicalTakeItems].sort((leftItem, rightItem) => {
-      const leftOrder = leftItem.question.order ?? 0;
-      const rightOrder = rightItem.question.order ?? 0;
-      return leftOrder - rightOrder;
-    })
+    orderExerciseItemsBySections([...legacyTakeItems, ...canonicalTakeItems], activeSections)
   );
+  const exerciseQuestionProgress = $derived(getExerciseQuestionProgress(allTakeItems));
+  const interactionNumberStartByItemId = $derived.by(() => {
+    const numberStartByItemId: Record<string, number> = {};
+    let nextQuestionNumber = 1;
+
+    for (const item of allTakeItems) {
+      numberStartByItemId[item.id] = nextQuestionNumber;
+      nextQuestionNumber += getTakeItemQuestionProgress(item).total;
+    }
+
+    return numberStartByItemId;
+  });
   const currentSectionTakeItems = $derived(
     currentSection ? allTakeItems.filter((item) => item.question.exerciseSectionId === currentSection.id) : []
   );
-  const reviewedCanonicalTakeItems = $derived(
-    getTakeItemsForSubmission(reviewedCanonicalDefinitionsByQuestionId).filter(
-      (item): item is Extract<TakeItem, { kind: 'canonical' }> => item.kind === 'canonical'
-    )
-  );
+  const currentSectionQuestionCount = $derived(getExerciseQuestionProgress(currentSectionTakeItems).total);
   const currentSectionDisplayTitle = $derived(
     currentSection
       ? getExerciseSectionDisplayTitle({
@@ -883,6 +1056,14 @@
   );
   const canGoNextForSharedQuestion = $derived(
     !isRequiredQuestion(currentQuestion) || hasMeaningfulAnswerData(sharedCurrentAnswer)
+  );
+  const canGoNextForCurrentTakeItem = $derived(
+    currentTakeItem?.kind === 'canonical'
+      ? isAssessmentVerticalSliceResponseComplete(
+          currentTakeItem.definition,
+          $questionnaireMetaData.canonicalAnswers[currentTakeItem.id]
+        )
+      : canGoNextForSharedQuestion
   );
   const sectionQuestionTotalPoints = $derived(
     roundExercisePointsForDisplay(getTakeItemTotalPossibleGrade(currentSectionTakeItems))
@@ -917,15 +1098,21 @@
         }),
         isCurrent: currentSection?.id === section.id,
         questions: sectionItems.map((item, questionIndex) => {
+          const interactionNumberStart = interactionNumberStartByItemId[item.id] ?? questionIndex + 1;
+          const interactionCount = getTakeItemQuestionProgress(item).total;
+          const interactionNumberEnd = interactionNumberStart + interactionCount - 1;
           const questionKey =
             item.kind === 'legacy' ? getExerciseQuestionContractKey(toExerciseQuestionModel(item.question)) : item.id;
           const isAnswered =
             item.kind === 'legacy'
               ? hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey])
-              : hasMeaningfulCanonicalResponse($questionnaireMetaData.canonicalAnswers[questionKey]);
+              : isCanonicalTakeItemAnswered(item, $questionnaireMetaData.canonicalAnswers[questionKey]);
           return {
             key: questionKey,
-            label: `Q${questionIndex + 1}`,
+            label:
+              interactionCount > 1
+                ? `Q${interactionNumberStart}-${interactionNumberEnd}`
+                : `Q${interactionNumberStart}`,
             isAnswered,
             isCurrent:
               sectionIndex === $questionnaireMetaData.currentSectionIndex &&
@@ -998,15 +1185,19 @@
     localStorage.removeItem(`autosave-exercise-${exerciseId}`);
     localStorage.removeItem(`exercise-submission-idempotency-${exerciseId}`);
     selectedTryIndex = -1;
-    reviewedCanonicalDefinitionsByQuestionId = {};
+    reviewedCanonicalTakeItems = [];
+    canonicalValidationQuestionId = null;
     skipHydrateFromSubmissions = true;
     hasRestoredUnfinishedDraft = false;
     resetStudentExerciseTake();
+    questionnaireMetaData.update((metaData) => ({
+      ...metaData,
+      canonicalRevisionIds: { ...loadedCanonicalRevisionIdsByQuestionId }
+    }));
   }
 
   function applyMySubmission(submission: ExerciseAttempt) {
-    const attemptedCanonicalDefinitions = getAttemptedCanonicalDefinitions(submission);
-    const attemptedTakeItems = getTakeItemsForSubmission(attemptedCanonicalDefinitions);
+    const attemptedTakeItems = getTakeItemsForSubmission(submission);
     const totalPossibleGrade = getTakeItemTotalPossibleGrade(attemptedTakeItems);
     // Numerator and denominator share the same rendered question set: answers to
     // questions archived after the attempt are excluded so score never exceeds max.
@@ -1021,20 +1212,25 @@
       answers: submission.answers ?? []
     });
     const canonicalAnswers: Record<string, AssessmentResponseEnvelope | undefined> = {};
+    const canonicalRevisionIds: Record<string, string> = {};
     for (const answer of submission.answers ?? []) {
       if (!answer.answerData || typeof answer.answerData !== 'object' || !('type' in answer.answerData)) continue;
       if (answer.answerData.type !== 'ASSESSMENT_ITEM') continue;
 
       const response = assessmentResponseEnvelopeSchema.safeParse(answer.answerData.response);
       if (response.success) canonicalAnswers[String(answer.questionId)] = response.data;
+      if (answer.questionRevisionId) canonicalRevisionIds[String(answer.questionId)] = answer.questionRevisionId;
     }
 
-    reviewedCanonicalDefinitionsByQuestionId = attemptedCanonicalDefinitions;
+    reviewedCanonicalTakeItems = attemptedTakeItems.filter(
+      (item): item is Extract<TakeItem, { kind: 'canonical' }> => item.kind === 'canonical'
+    );
 
     questionnaireMetaData.update((m) => ({
       ...m,
       answers,
       canonicalAnswers,
+      canonicalRevisionIds,
       totalPossibleGrade,
       currentQuestionIndex: attemptedTakeItems.length + 1,
       currentSectionIndex: activeSections.length > 0 ? activeSections.length - 1 : 0,
@@ -1048,25 +1244,21 @@
     }));
   }
 
-  function getAttemptedCanonicalDefinitions(submission: ExerciseAttempt): Record<string, AssessmentDeliveryDefinition> {
-    const definitions: Record<string, AssessmentDeliveryDefinition> = {};
-    for (const answer of submission.answers ?? []) {
-      if (!('assessmentDefinition' in answer) || !answer.assessmentDefinition) continue;
-
-      definitions[String(answer.questionId)] = answer.assessmentDefinition;
-    }
-
-    return definitions;
-  }
-
-  function getTakeItemsForSubmission(
-    attemptedCanonicalDefinitions: Record<string, AssessmentDeliveryDefinition>
-  ): TakeItem[] {
-    const canonicalItems = $questionnaire.canonicalQuestions.flatMap((question) => {
-      const questionId = String(question.id);
-      const definition = attemptedCanonicalDefinitions[questionId] ?? canonicalDefinitionsByQuestionId[questionId];
-      return definition ? [{ kind: 'canonical' as const, id: questionId, question, definition }] : [];
-    });
+  function getTakeItemsForSubmission(submission: ExerciseAttempt): TakeItem[] {
+    const canonicalItems = getCanonicalAssessmentReviewItems($questionnaire.canonicalQuestions, submission.answers).map(
+      (item) => ({
+        kind: 'canonical' as const,
+        id: String(item.question.id),
+        question: {
+          id: Number(item.question.id),
+          title: item.question.title ?? '',
+          points: item.maxScore,
+          order: item.question.order ?? null,
+          exerciseSectionId: item.question.exerciseSectionId ?? null
+        },
+        definition: item.definition
+      })
+    );
 
     return [...legacyTakeItems, ...canonicalItems].sort((leftItem, rightItem) => {
       const leftOrder = leftItem.question.order ?? 0;
@@ -1084,7 +1276,8 @@
       hasRestoredUnfinishedDraft = false;
       selectedTryIndex = -1;
       localSubmissions = [];
-      reviewedCanonicalDefinitionsByQuestionId = {};
+      reviewedCanonicalTakeItems = [];
+      canonicalValidationQuestionId = null;
     }
     prevExerciseId = exerciseId;
   });
@@ -1093,13 +1286,7 @@
 {#if !preview && allTakeItems.length && !$questionnaireMetaData.isFinished && $questionnaireMetaData.currentQuestionIndex > 0}
   <div class="mb-6 flex min-w-0 items-center gap-3">
     <span class="ui:text-muted-foreground shrink-0 text-sm tabular-nums">
-      {#if hasSectionedExercise}
-        {Object.values($questionnaireMetaData.answers).filter((answer) => hasMeaningfulAnswerData(answer)).length +
-          Object.values($questionnaireMetaData.canonicalAnswers).filter(hasMeaningfulCanonicalResponse)
-            .length}/{allTakeItems.length}
-      {:else}
-        {$questionnaireMetaData.currentQuestionIndex}/{allTakeItems.length}
-      {/if}
+      {exerciseQuestionProgress.answered}/{exerciseQuestionProgress.total}
     </span>
     <Progress class="min-w-0 flex-1" value={$questionnaireMetaData.progressValue} />
   </div>
@@ -1107,7 +1294,7 @@
 
 <svelte:window onkeydown={handleEnterKey} />
 
-{#if preview}
+{#if preview && !canonicalItemsLoadFailed}
   <RoleBasedSecurity allowedRoles={[1, 2]}>
     <Preview
       questions={filterOutDeleted($questionnaire.questions)}
@@ -1133,9 +1320,7 @@
       </Button>
     </div>
   </Alert.Root>
-{/if}
-
-{#if !preview && !allTakeItems.length && !isLoadingCanonicalItems}
+{:else if !preview && !allTakeItems.length && !isLoadingCanonicalItems}
   <Empty
     title={$t('course.navItem.lessons.exercises.all_exercises.view_mode.no_question')}
     icon={FileQuestionIcon}
@@ -1160,7 +1345,7 @@
 
       <div class="flex items-center">
         <p class="mx-2 dark:text-white">
-          <strong>{allTakeItems.length}</strong>
+          <strong>{exerciseQuestionProgress.total}</strong>
           {$t('course.navItem.lessons.exercises.all_exercises.view_mode.questions')}
         </p>
         |
@@ -1335,7 +1520,7 @@
     sectionDescription={currentSection.description}
     sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
     totalSections={activeSections.length}
-    questionCount={currentSectionTakeItems.length}
+    questionCount={currentSectionQuestionCount}
     totalPoints={sectionQuestionTotalPoints}
     colorTheme={currentSection.colorTheme}
     onBegin={beginCurrentSection}
@@ -1358,7 +1543,7 @@
         sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
         totalSections={activeSections.length}
         colorTheme={currentSection.colorTheme}
-        questionCount={currentSectionTakeItems.length}
+        questionCount={currentSectionQuestionCount}
         totalPoints={sectionQuestionTotalPoints}
         labels={{
           section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'),
@@ -1369,16 +1554,22 @@
 
       {#each currentSectionTakeItems as sectionTakeItem, sectionQuestionIndex (sectionTakeItem.id)}
         {#if sectionTakeItem.kind === 'canonical'}
-          <ExerciseQuestion.AssessmentItemRenderer
-            definition={sectionTakeItem.definition}
-            response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
-            disabled={isSubmitting}
-            title={sectionTakeItem.question.title}
-            questionNumber={sectionQuestionIndex + 1}
-            questionNumberActive={false}
-            showContainer
-            onResponseChange={(response) => onCanonicalResponseChange(sectionTakeItem.id, response)}
-          />
+          <div id={getCanonicalQuestionElementId(sectionTakeItem.id)}>
+            <ExerciseQuestion.AssessmentItemRenderer
+              definition={sectionTakeItem.definition}
+              response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
+              disabled={isSubmitting}
+              title={sectionTakeItem.question.title}
+              questionNumber={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
+              interactionNumberStart={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
+              questionNumberActive={false}
+              showContainer
+              validationRequested={canonicalValidationQuestionId === sectionTakeItem.id}
+              validationMessage={$t('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required')}
+              focusRequestKey={canonicalFocusRequestKey}
+              onResponseChange={(response) => onCanonicalResponseChange(sectionTakeItem.id, response)}
+            />
+          </div>
         {:else}
           {@const sectionQuestionModel = toExerciseQuestionModel(sectionTakeItem.question)}
           {@const sectionQuestionKey = getExerciseQuestionContractKey(sectionQuestionModel)}
@@ -1393,7 +1584,7 @@
               onFileUpload: handleFileUpload,
               onVideoRecordingUpload: handleVideoRecordingUpload
             }}
-            questionNumber={sectionQuestionIndex + 1}
+            questionNumber={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
             questionNumberActive={false}
             onAnswerChange={(answerValue) => onSectionQuestionAnswerChange(sectionTakeItem.question, answerValue)}
           />
@@ -1422,7 +1613,7 @@
           sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
           totalSections={activeSections.length}
           colorTheme={currentSection.colorTheme}
-          questionCount={currentSectionTakeItems.length}
+          questionCount={currentSectionQuestionCount}
           totalPoints={sectionQuestionTotalPoints}
           labels={{
             section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'),
@@ -1440,15 +1631,23 @@
             out:fly={{ x: flyOutX, duration: 350, easing: cubicInOut }}
           >
             {#if currentTakeItem.kind === 'canonical'}
-              <ExerciseQuestion.AssessmentItemRenderer
-                definition={currentTakeItem.definition}
-                response={$questionnaireMetaData.canonicalAnswers[currentTakeItem.id]}
-                disabled={isSubmitting}
-                title={currentTakeItem.question.title}
-                questionNumber={$questionnaireMetaData.currentQuestionIndex}
-                showContainer
-                onResponseChange={(response) => onCanonicalResponseChange(currentTakeItem.id, response)}
-              />
+              <div id={getCanonicalQuestionElementId(currentTakeItem.id)}>
+                <ExerciseQuestion.AssessmentItemRenderer
+                  definition={currentTakeItem.definition}
+                  response={$questionnaireMetaData.canonicalAnswers[currentTakeItem.id]}
+                  disabled={isSubmitting}
+                  title={currentTakeItem.question.title}
+                  questionNumber={interactionNumberStartByItemId[currentTakeItem.id] ??
+                    $questionnaireMetaData.currentQuestionIndex}
+                  interactionNumberStart={interactionNumberStartByItemId[currentTakeItem.id] ??
+                    $questionnaireMetaData.currentQuestionIndex}
+                  showContainer
+                  validationRequested={canonicalValidationQuestionId === currentTakeItem.id}
+                  validationMessage={$t('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required')}
+                  focusRequestKey={canonicalFocusRequestKey}
+                  onResponseChange={(response) => onCanonicalResponseChange(currentTakeItem.id, response)}
+                />
+              </div>
             {:else if sharedQuestionModel}
               <ExerciseQuestion.QuestionRenderer
                 contract={{
@@ -1461,7 +1660,8 @@
                   onFileUpload: handleFileUpload,
                   onVideoRecordingUpload: handleVideoRecordingUpload
                 }}
-                questionNumber={$questionnaireMetaData.currentQuestionIndex}
+                questionNumber={interactionNumberStartByItemId[currentTakeItem.id] ??
+                  $questionnaireMetaData.currentQuestionIndex}
                 onAnswerChange={onSharedAnswerChange}
               />
             {/if}
@@ -1471,7 +1671,9 @@
       <div>
         <ExerciseQuestion.QuestionNavigation
           canGoBack={hasSectionedExercise || $questionnaireMetaData.currentQuestionIndex > 1}
-          canGoNext={canGoNextForSharedQuestion && !isSubmitting}
+          canGoNext={currentTakeItem.kind === 'canonical'
+            ? !isSubmitting
+            : canGoNextForCurrentTakeItem && !isSubmitting}
           isLast={$questionnaireMetaData.currentQuestionIndex === currentTakeItemList.length}
           {isSubmitting}
           previousLabel={t.get('course.navItem.lessons.exercises.all_exercises.previous')}

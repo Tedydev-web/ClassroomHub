@@ -1,0 +1,193 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 83724478dc9efc8a8cdfb8f42a1bfc7f907b573c..1fac877b09d559db797b5062bc60230d8fe242c4 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -60,6 +60,7 @@ var BubbleMenuView = class {
+   }) {
+     this.preventHide = false;
+     this.isVisible = false;
++    this.updatePositionRequest = 0;
+     this.scrollTarget = window;
+     this.floatingUIOptions = {
+       strategy: "absolute",
+@@ -152,8 +153,8 @@ var BubbleMenuView = class {
+         this.hide();
+         return;
+       }
+-      this.updatePosition();
+       this.show();
++      this.updatePosition();
+     };
+     this.transactionHandler = ({ transaction: tr }) => {
+       const meta = tr.getMeta("bubbleMenu");
+@@ -236,6 +237,9 @@ var BubbleMenuView = class {
+     if (referencedVirtualElement) {
+       return referencedVirtualElement;
+     }
++    if (!this.view.dom.parentNode) {
++      return;
++    }
+     const domRect = (0, import_core.posToDOMRect)(this.view, selection.from, selection.to);
+     let virtualElement = {
+       getBoundingClientRect: () => domRect,
+@@ -275,6 +279,10 @@ var BubbleMenuView = class {
+     return virtualElement;
+   }
+   updatePosition() {
++    if (!this.isVisible) {
++      return;
++    }
++    const updatePositionRequest = ++this.updatePositionRequest;
+     const virtualElement = this.virtualElement;
+     if (!virtualElement) {
+       return;
+@@ -284,6 +292,9 @@ var BubbleMenuView = class {
+       strategy: this.floatingUIOptions.strategy,
+       middleware: this.middlewares
+     }).then(({ x, y, strategy }) => {
++      if (updatePositionRequest !== this.updatePositionRequest || !this.isVisible || this.editor.isDestroyed || !this.element.isConnected) {
++        return;
++      }
+       this.element.style.width = "max-content";
+       this.element.style.position = strategy;
+       this.element.style.left = `${x}px`;
+@@ -337,6 +348,7 @@ var BubbleMenuView = class {
+     this.isVisible = true;
+   }
+   hide() {
++    this.updatePositionRequest += 1;
+     if (!this.isVisible) {
+       return;
+     }
+diff --git a/dist/index.js b/dist/index.js
+index c396ae7b068d8e821cd5d731055bc86c6e4b7f10..fbdc49fd2e5f7980aa99ef2de5af6c33fd3b2a10 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -41,6 +41,7 @@ var BubbleMenuView = class {
+   }) {
+     this.preventHide = false;
+     this.isVisible = false;
++    this.updatePositionRequest = 0;
+     this.scrollTarget = window;
+     this.floatingUIOptions = {
+       strategy: "absolute",
+@@ -133,8 +134,8 @@ var BubbleMenuView = class {
+         this.hide();
+         return;
+       }
+-      this.updatePosition();
+       this.show();
++      this.updatePosition();
+     };
+     this.transactionHandler = ({ transaction: tr }) => {
+       const meta = tr.getMeta("bubbleMenu");
+@@ -217,6 +218,9 @@ var BubbleMenuView = class {
+     if (referencedVirtualElement) {
+       return referencedVirtualElement;
+     }
++    if (!this.view.dom.parentNode) {
++      return;
++    }
+     const domRect = posToDOMRect(this.view, selection.from, selection.to);
+     let virtualElement = {
+       getBoundingClientRect: () => domRect,
+@@ -256,6 +260,10 @@ var BubbleMenuView = class {
+     return virtualElement;
+   }
+   updatePosition() {
++    if (!this.isVisible) {
++      return;
++    }
++    const updatePositionRequest = ++this.updatePositionRequest;
+     const virtualElement = this.virtualElement;
+     if (!virtualElement) {
+       return;
+@@ -265,6 +273,9 @@ var BubbleMenuView = class {
+       strategy: this.floatingUIOptions.strategy,
+       middleware: this.middlewares
+     }).then(({ x, y, strategy }) => {
++      if (updatePositionRequest !== this.updatePositionRequest || !this.isVisible || this.editor.isDestroyed || !this.element.isConnected) {
++        return;
++      }
+       this.element.style.width = "max-content";
+       this.element.style.position = strategy;
+       this.element.style.left = `${x}px`;
+@@ -318,6 +329,7 @@ var BubbleMenuView = class {
+     this.isVisible = true;
+   }
+   hide() {
++    this.updatePositionRequest += 1;
+     if (!this.isVisible) {
+       return;
+     }
+diff --git a/src/bubble-menu-plugin.ts b/src/bubble-menu-plugin.ts
+index 23e307e919c03ed71b22a793e22bed7debb09c85..6cfb4c4312c650ccd2e39fa0ce24dd3909f545c1 100644
+--- a/src/bubble-menu-plugin.ts
++++ b/src/bubble-menu-plugin.ts
+@@ -171,6 +171,8 @@ export class BubbleMenuView implements PluginView {
+ 
+   private isVisible = false
+ 
++  private updatePositionRequest = 0
++
+   private scrollTarget: HTMLElement | Window = window
+ 
+   private floatingUIOptions: NonNullable<BubbleMenuPluginProps['options']> = {
+@@ -269,6 +271,10 @@ export class BubbleMenuView implements PluginView {
+       return referencedVirtualElement
+     }
+ 
++    if (!this.view?.dom?.parentNode) {
++      return
++    }
++
+     const domRect = posToDOMRect(this.view, selection.from, selection.to)
+     let virtualElement = {
+       getBoundingClientRect: () => domRect,
+@@ -422,6 +428,11 @@ export class BubbleMenuView implements PluginView {
+   }
+ 
+   updatePosition() {
++    if (!this.isVisible) {
++      return
++    }
++
++    const updatePositionRequest = ++this.updatePositionRequest
+     const virtualElement = this.virtualElement
+ 
+     if (!virtualElement) {
+@@ -433,6 +444,15 @@ export class BubbleMenuView implements PluginView {
+       strategy: this.floatingUIOptions.strategy,
+       middleware: this.middlewares,
+     }).then(({ x, y, strategy }) => {
++      if (
++        updatePositionRequest !== this.updatePositionRequest ||
++        !this.isVisible ||
++        this.editor.isDestroyed ||
++        !this.element.isConnected
++      ) {
++        return
++      }
++
+       this.element.style.width = 'max-content'
+       this.element.style.position = strategy
+       this.element.style.left = `${x}px`
+@@ -515,8 +535,8 @@ export class BubbleMenuView implements PluginView {
+       return
+     }
+ 
+-    this.updatePosition()
+     this.show()
++    this.updatePosition()
+   }
+ 
+   show() {
+@@ -539,6 +559,8 @@ export class BubbleMenuView implements PluginView {
+   }
+ 
+   hide() {
++    this.updatePositionRequest += 1
++
+     if (!this.isVisible) {
+       return
+     }

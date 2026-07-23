@@ -96,6 +96,53 @@ describe('parseExerciseAutosave', () => {
     });
   });
 
+  it('restores only valid delivered revision ids for current canonical questions', () => {
+    const revisionId = '00000000-0000-4000-8000-000000000041';
+    const parsed = parseExerciseAutosave({
+      serializedValue: createSerializedAutosave({
+        canonicalRevisionIds: {
+          'assessment-question': revisionId,
+          'removed-assessment-question': '00000000-0000-4000-8000-000000000042',
+          malformed: 'revision-43'
+        }
+      }),
+      exerciseId: 'exercise-1',
+      questions: [question],
+      sectionCount: 0,
+      canonicalQuestionIds: new Set(['assessment-question', 'malformed'])
+    });
+
+    expect(parsed?.canonicalRevisionIds).toEqual({
+      'assessment-question': revisionId
+    });
+  });
+
+  it('drops a canonical response when its autosaved revision is no longer current', () => {
+    const storedRevisionId = '00000000-0000-4000-8000-000000000041';
+    const currentRevisionId = '00000000-0000-4000-8000-000000000042';
+    const parsed = parseExerciseAutosave({
+      serializedValue: createSerializedAutosave({
+        canonicalAnswers: {
+          'assessment-question': {
+            schemaVersion: 1,
+            responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['one'] } }]
+          }
+        },
+        canonicalRevisionIds: {
+          'assessment-question': storedRevisionId
+        }
+      }),
+      exerciseId: 'exercise-1',
+      questions: [question],
+      sectionCount: 0,
+      canonicalQuestionIds: new Set(['assessment-question']),
+      canonicalQuestionRevisionIds: { 'assessment-question': currentRevisionId }
+    });
+
+    expect(parsed?.canonicalAnswers).toEqual({});
+    expect(parsed?.canonicalRevisionIds).toEqual({});
+  });
+
   it('accepts autosaves created before section metadata was introduced', () => {
     const legacyMetadata = JSON.parse(createSerializedAutosave()) as Record<string, unknown>;
     delete legacyMetadata.currentSectionIndex;

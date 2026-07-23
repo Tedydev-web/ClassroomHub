@@ -12,15 +12,19 @@
   import { InputField } from '@cio/ui/custom/input-field';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { Label } from '@cio/ui/base/label';
+  import * as Select from '@cio/ui/base/select';
   import type { TiptapEditor } from '@cio/ui/custom/editor';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import PlusIcon from '@lucide/svelte/icons/plus';
   import TrashIcon from '@lucide/svelte/icons/trash';
   import {
+    deriveItemCapabilities,
+    getItemMaxScore,
     parseAssessmentItemDefinition,
     toAssessmentDeliveryDefinition,
     validateAssessmentItemForPublish,
+    type AssessmentGradingMode,
     type AssessmentIssue,
     type AssessmentItemDefinition
   } from '@cio/question-types';
@@ -29,31 +33,121 @@
     addContentBlock,
     addTextInteractionBlock,
     createAssessmentComposerState,
+    getAssessmentComposerSnapshot,
+    reconcileAssessmentComposerSave,
     removeAssessmentBlock,
     reorderAssessmentBlock,
+    setAssessmentItemPresentationLayout,
     setChoiceCorrectOption,
     setChoiceInteractionCardinality,
     type AssessmentComposerState
   } from '$features/course/utils/assessment-composer-state';
+  import {
+    removeAssessmentComposerPreviewItem,
+    registerAssessmentComposerMutationHandler,
+    registerAssessmentComposerSaveHandler,
+    setAssessmentComposerDirty,
+    setAssessmentComposerPreviewItem
+  } from '$features/course/components/exercise/store';
+  import type { CanonicalQuestionState } from '$features/course/components/exercise/store';
+  import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
 
   interface Props {
     courseId: string;
     exerciseId: string;
     questionId?: number;
+    exerciseSectionId?: string | null;
+    initialOrder?: number;
     initialTitle?: string;
-    onSaved?: (item: { questionId: number; title: string; points: number }) => Promise<void> | void;
+    initialDefinition?: AssessmentItemDefinition | null;
+    initialRevision?: number;
+    onSaveRequested: () => Promise<void>;
+    onSaved?: (item: {
+      questionId: number;
+      title: string;
+      order: number | null;
+      exerciseSectionId: string | null;
+      points: number;
+      gradingMode: AssessmentGradingMode;
+      revisionId: string;
+      revision: number;
+      definition: ReturnType<typeof toAssessmentDeliveryDefinition>;
+      authorDefinition: AssessmentItemDefinition;
+      hasNewerDraft: boolean;
+    }) => Promise<void> | void;
   }
 
-  let { courseId, exerciseId, questionId, initialTitle = '', onSaved = () => {} }: Props = $props();
+  let {
+    courseId,
+    exerciseId,
+    questionId,
+    exerciseSectionId,
+    initialOrder = 0,
+    initialTitle = '',
+    initialDefinition = null,
+    initialRevision,
+    onSaveRequested,
+    onSaved = () => {}
+  }: Props = $props();
   let composer = $state<AssessmentComposerState>(createAssessmentComposerState());
+  let activeQuestionId = $state<number | undefined>();
   let title = $state('');
   let revision = $state(0);
-  let isLoading = $state(false);
+  let isLoading = $state(true);
   let isSaving = $state(false);
+  let persistedSnapshot = $state('');
   let titleError = $state('');
   let validationIssues = $state<AssessmentIssue[]>([]);
   let pendingValidationFocusId: string | null = null;
+  let pendingAtomicSave: {
+    submittedSnapshot: string;
+    submittedTitle: string;
+  } | null = null;
   const textEditors = new SvelteMap<string, TiptapEditor>();
+  const composerInstanceId = $props.id();
+  const composerRegistrationId = $derived(`${exerciseId}:${activeQuestionId ?? composerInstanceId}`);
+
+  function getDraftSnapshot(): string {
+    return getAssessmentComposerSnapshot(title, composer.definition);
+  }
+
+  const isDirty = $derived(!isLoading && getDraftSnapshot() !== persistedSnapshot);
+
+  $effect(() => {
+    setAssessmentComposerDirty(composerRegistrationId, isDirty);
+  });
+
+  $effect(() => registerAssessmentComposerSaveHandler(composerRegistrationId, save));
+
+  $effect(() =>
+    registerAssessmentComposerMutationHandler(composerRegistrationId, {
+      prepare: prepareAtomicMutation,
+      reconcile: reconcileAtomicMutation
+    })
+  );
+
+  $effect(() => {
+    if (isLoading) {
+      removeAssessmentComposerPreviewItem(composerRegistrationId);
+      return;
+    }
+
+    const points = getItemMaxScore(composer.definition);
+    const gradingMode = deriveItemCapabilities(composer.definition).gradingMode;
+    const definition = toAssessmentDeliveryDefinition(composer.definition);
+    setAssessmentComposerPreviewItem(composerRegistrationId, {
+      exerciseId,
+      questionId: activeQuestionId ?? null,
+      title,
+      points,
+      order: initialOrder,
+      exerciseSectionId: exerciseSectionId ?? null,
+      gradingMode,
+      definition
+    });
+
+    return () => removeAssessmentComposerPreviewItem(composerRegistrationId);
+  });
 
   function createId(): string {
     return crypto.randomUUID();
@@ -163,16 +257,18 @@
   function focusValidationTarget(targetId: string) {
     pendingValidationFocusId = targetId;
     requestAnimationFrame(() => {
-      const editor = textEditors.get(targetId);
-      if (editor && !editor.isDestroyed) {
-        editor.commands.focus();
-        pendingValidationFocusId = null;
-        return;
-      }
+      requestAnimationFrame(() => {
+        const editor = textEditors.get(targetId);
+        if (editor && !editor.isDestroyed) {
+          editor.commands.focus();
+          pendingValidationFocusId = null;
+          return;
+        }
 
-      const target = document.getElementById(targetId);
-      target?.focus();
-      if (!target?.hasAttribute('data-assessment-text-prompt')) pendingValidationFocusId = null;
+        const target = document.getElementById(targetId);
+        target?.focus();
+        if (!target?.hasAttribute('data-assessment-text-prompt')) pendingValidationFocusId = null;
+      });
     });
   }
 
@@ -187,7 +283,7 @@
   function validateDraft(): AssessmentItemDefinition | null {
     clearValidationState();
 
-    if (!questionId && title.trim() === '') {
+    if (title.trim() === '') {
       titleError = t.get('validation.generic.required_field');
       snackbar.error(titleError);
       focusValidationTarget(`${getComposerDomId()}-title`);
@@ -215,6 +311,70 @@
     return publishable.data;
   }
 
+  function prepareAtomicMutation(): TAssessmentItemMutation | null {
+    const definition = validateDraft();
+    if (!definition) return null;
+
+    const submittedTitle = title;
+    const submittedSnapshot = getAssessmentComposerSnapshot(submittedTitle, definition);
+    pendingAtomicSave = { submittedSnapshot, submittedTitle };
+    if (activeQuestionId !== undefined) {
+      return {
+        action: 'publish',
+        clientMutationId: composerRegistrationId,
+        questionId: activeQuestionId,
+        title: submittedTitle,
+        expectedRevision: revision,
+        definition
+      };
+    }
+
+    return {
+      action: 'create',
+      clientMutationId: composerRegistrationId,
+      title: submittedTitle,
+      exerciseSectionId: exerciseSectionId ?? null,
+      order: initialOrder,
+      definition
+    };
+  }
+
+  async function reconcileAtomicMutation(savedQuestion: CanonicalQuestionState): Promise<void> {
+    const pendingSave = pendingAtomicSave;
+    const savedDefinition = savedQuestion.authorDefinition;
+    if (!pendingSave || !savedDefinition) {
+      throw new Error(`Missing saved assessment definition for composer "${composerRegistrationId}"`);
+    }
+
+    revision = savedQuestion.revision;
+    const reconciliation = reconcileAssessmentComposerSave({
+      currentTitle: title,
+      currentDefinition: composer.definition,
+      submittedSnapshot: pendingSave.submittedSnapshot,
+      submittedTitle: pendingSave.submittedTitle,
+      savedDefinition
+    });
+    activeQuestionId = Number(savedQuestion.id);
+    if (reconciliation.shouldApplySavedDefinition) {
+      composer = { definition: savedDefinition, selectedBlockId: null };
+    }
+    persistedSnapshot = reconciliation.persistedSnapshot;
+    pendingAtomicSave = null;
+    await onSaved({
+      questionId: Number(savedQuestion.id),
+      title: savedQuestion.title,
+      order: savedQuestion.order,
+      exerciseSectionId: savedQuestion.exerciseSectionId,
+      points: Number(savedQuestion.points ?? 0),
+      gradingMode: savedQuestion.gradingMode,
+      revisionId: savedQuestion.revisionId,
+      revision: savedQuestion.revision,
+      definition: savedQuestion.definition,
+      authorDefinition: savedDefinition,
+      hasNewerDraft: !reconciliation.shouldApplySavedDefinition
+    });
+  }
+
   function updateComposer(nextComposer: AssessmentComposerState) {
     clearValidationState();
     composer = nextComposer;
@@ -222,6 +382,12 @@
 
   function updateDefinition(nextDefinition: AssessmentItemDefinition) {
     updateComposer({ ...composer, definition: nextDefinition });
+  }
+
+  function updatePresentationLayout(value: string) {
+    if (value !== 'flow' && value !== 'passage_split') return;
+
+    updateComposer(setAssessmentItemPresentationLayout(composer, value));
   }
 
   function updateBlock(
@@ -285,62 +451,97 @@
 
   async function loadExistingItem() {
     title = initialTitle;
-    if (!questionId) return;
+    if (!questionId) {
+      persistedSnapshot = getDraftSnapshot();
+      isLoading = false;
+      return;
+    }
+    if (initialDefinition && initialRevision !== undefined) {
+      composer = { definition: initialDefinition, selectedBlockId: null };
+      revision = initialRevision;
+      persistedSnapshot = getDraftSnapshot();
+      isLoading = false;
 
-    isLoading = true;
+      return;
+    }
+
     try {
       const result = await exerciseApi.getAssessmentItem(courseId, exerciseId, questionId);
-      if (!result?.data) return;
+      if (!result?.data) {
+        console.error(`Failed to load assessment item "${questionId}"`);
+        snackbar.error();
+        return;
+      }
 
+      title = result.data.title;
       composer = { definition: result.data.definition as AssessmentItemDefinition, selectedBlockId: null };
       revision = result.data.revision;
+      persistedSnapshot = getDraftSnapshot();
+    } catch (error) {
+      console.error(`Failed to load assessment item "${questionId}":`, error);
+      snackbar.error();
     } finally {
       isLoading = false;
     }
   }
 
-  async function save() {
-    if (isSaving) return;
-
-    const definition = validateDraft();
-    if (!definition) return;
+  async function save(): Promise<boolean> {
+    if (isSaving) return false;
+    if (!validateDraft()) return false;
 
     isSaving = true;
     try {
-      const result = questionId
-        ? await exerciseApi.publishAssessmentItem(courseId, exerciseId, questionId, {
-            expectedRevision: revision,
-            definition
-          })
-        : await exerciseApi.createAssessmentItem(courseId, exerciseId, { title, definition });
-      if (!result?.data) return;
-
-      revision = result.data.revision;
-      snackbar.success(t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.saved'));
-      const points = definition.blocks.reduce(
-        (total, block) => total + (block.kind === 'interaction' ? block.interaction.maxScore : 0),
-        0
-      );
-      await onSaved({ questionId: result.data.questionId, title, points });
+      await onSaveRequested();
+      return true;
+    } catch (error) {
+      console.error(`Failed to request exercise save for assessment item "${activeQuestionId ?? 'new'}":`, error);
+      snackbar.error();
+      return false;
     } finally {
       isSaving = false;
     }
   }
 
-  onMount(loadExistingItem);
+  onMount(() => {
+    activeQuestionId = questionId;
+    void loadExistingItem();
+  });
 </script>
 
 <section class="space-y-4 rounded-md border p-4">
-  {#if !questionId}
-    <InputField
-      bind:value={title}
-      name={`${getComposerDomId()}-title`}
-      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.title')}
-      placeholder={$t('course.navItem.lessons.exercises.all_exercises.write_your_question_here')}
-      errorMessage={titleError}
-      oninput={clearValidationState}
-    />
-  {/if}
+  <InputField
+    bind:value={title}
+    name={`${getComposerDomId()}-title`}
+    label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.title')}
+    placeholder={$t('course.navItem.lessons.exercises.all_exercises.write_your_question_here')}
+    errorMessage={titleError}
+    oninput={clearValidationState}
+  />
+
+  <Field.Field>
+    <Field.Label for={`${getComposerDomId()}-layout`}>
+      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.layout')}
+    </Field.Label>
+    <Select.Root
+      type="single"
+      value={composer.definition.presentation?.layout ?? 'flow'}
+      onValueChange={updatePresentationLayout}
+    >
+      <Select.Trigger id={`${getComposerDomId()}-layout`} class="w-full">
+        {composer.definition.presentation?.layout === 'passage_split'
+          ? $t('course.navItem.lessons.exercises.all_exercises.assessment_item.layout_passage_split')
+          : $t('course.navItem.lessons.exercises.all_exercises.assessment_item.layout_flow')}
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="flow">
+          {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.layout_flow')}
+        </Select.Item>
+        <Select.Item value="passage_split">
+          {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.layout_passage_split')}
+        </Select.Item>
+      </Select.Content>
+    </Select.Root>
+  </Field.Field>
 
   {#if isLoading}
     <div class="ui:animate-pulse ui:h-24 ui:rounded ui:bg-muted"></div>

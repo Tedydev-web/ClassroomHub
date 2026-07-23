@@ -20,6 +20,8 @@ export type QuestionRowForRevision = {
   id: number;
   exerciseId: string;
   title: string;
+  order: number | null;
+  exerciseSectionId: string | null;
   questionTypeId: number;
   points: number | null;
   settings: unknown;
@@ -43,6 +45,8 @@ export async function getQuestionWithOptionsForRevision(
         id: schema.question.id,
         exerciseId: schema.question.exerciseId,
         title: schema.question.title,
+        order: schema.question.order,
+        exerciseSectionId: schema.question.exerciseSectionId,
         questionTypeId: schema.question.questionTypeId,
         points: schema.question.points,
         settings: schema.question.settings,

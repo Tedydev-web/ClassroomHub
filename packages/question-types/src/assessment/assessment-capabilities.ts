@@ -54,9 +54,11 @@ export function roundToTwoDecimals(value: number): number {
 }
 
 /** Item maximum = sum of interaction maxima, computed in integer cents to avoid float drift. */
-export function getItemMaxScore(definition: AssessmentItemDefinition): number {
-  const totalCents = getAssessmentInteractionBlocks(definition).reduce(
-    (cents, block) => cents + Math.round(block.interaction.maxScore * 100),
+export function getItemMaxScore(definition: {
+  blocks: ReadonlyArray<{ kind: 'content' } | { kind: 'interaction'; interaction: { maxScore: number } }>;
+}): number {
+  const totalCents = definition.blocks.reduce(
+    (cents, block) => cents + (block.kind === 'interaction' ? Math.round(block.interaction.maxScore * 100) : 0),
     0
   );
 

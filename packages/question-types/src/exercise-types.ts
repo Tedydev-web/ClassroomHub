@@ -258,6 +258,12 @@ export interface ExerciseQuestionRendererProps {
   maxSubmissionItems?: number;
   disabled?: boolean;
   labels?: ExerciseQuestionLabels;
+  /** ID of an external label for the renderer's primary response control. */
+  inputAriaLabelledby?: string;
+  inputAriaInvalid?: boolean;
+  inputAriaDescribedby?: string;
+  /** Monotonic request key used to focus the renderer's primary response control. */
+  inputFocusRequestKey?: number;
   /** Platform-wide cap for exercise file uploads (megabytes). */
   platformMaxFileSizeMb?: number;
   onAnswerChange?: (answer: AnswerData | null) => void;

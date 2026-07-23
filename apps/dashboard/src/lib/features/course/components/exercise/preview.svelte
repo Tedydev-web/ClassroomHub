@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getExerciseQuestionContractKey } from '@cio/question-types';
+  import { getAssessmentVerticalSliceResponseProgress, getExerciseQuestionContractKey } from '@cio/question-types';
   import type {
     AnswerData,
     AssessmentDeliveryDefinition,
@@ -15,6 +15,7 @@
   import type { ExerciseSectionState, QuestionnaireMetaData } from './store';
   import { t } from '$lib/utils/functions/translations';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
+  import { orderExerciseItemsBySections } from '$features/course/utils/exercise-progression-utils';
 
   type CanonicalPreviewQuestion = {
     id: string;
@@ -115,9 +116,18 @@
       question
     }));
 
-    return [...legacyItems, ...canonicalItems].sort(
-      (leftItem, rightItem) => leftItem.order - rightItem.order || leftItem.sourceIndex - rightItem.sourceIndex
-    );
+    return orderExerciseItemsBySections([...legacyItems, ...canonicalItems], activeSections);
+  });
+  const questionNumberStartByItemId = $derived.by(() => {
+    const numberStartByItemId: Record<string, number> = {};
+    let nextQuestionNumber = 1;
+
+    for (const item of mixedPreviewItems) {
+      numberStartByItemId[item.id] = nextQuestionNumber;
+      nextQuestionNumber += getMixedItemQuestionCount(item);
+    }
+
+    return numberStartByItemId;
   });
   const unsectionedMixedPreviewItems = $derived(mixedPreviewItems.filter((item) => item.exerciseSectionId === null));
   const answersByKey = $derived(
@@ -151,6 +161,16 @@
 
   function getMixedItemsPoints(items: MixedPreviewItem[]) {
     return items.reduce((total, item) => total + getMixedItemMaxPoints(item), 0);
+  }
+
+  function getMixedItemQuestionCount(item: MixedPreviewItem): number {
+    if (item.kind === 'legacy') return 1;
+
+    return getAssessmentVerticalSliceResponseProgress(item.question.definition, undefined).total;
+  }
+
+  function getMixedItemsQuestionCount(items: MixedPreviewItem[]): number {
+    return items.reduce((total, item) => total + getMixedItemQuestionCount(item), 0);
   }
 
   function getCanonicalQuestionMaxPoints(definition: AssessmentDeliveryDefinition) {
@@ -212,6 +232,7 @@
         disabled
         title={item.question.title}
         questionNumber={showMixedGradeControls ? undefined : questionNumber}
+        interactionNumberStart={questionNumber}
         questionNumberActive={false}
         showContainer
       />
@@ -235,7 +256,7 @@
             sectionNumber={sectionIndex + 1}
             totalSections={activeSections.length}
             colorTheme={section.colorTheme}
-            questionCount={sectionItems.length}
+            questionCount={getMixedItemsQuestionCount(sectionItems)}
             totalPoints={getMixedItemsPoints(sectionItems)}
             labels={{
               section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'),
@@ -245,18 +266,22 @@
           />
 
           {#each sectionItems as item, itemIndex (item.id)}
-            {@render mixedPreviewItem(item, itemIndex + 1)}
+            {@render mixedPreviewItem(item, questionNumberStartByItemId[item.id] ?? itemIndex + 1)}
           {/each}
         </section>
       {/each}
     </div>
 
     {#each unsectionedMixedPreviewItems as item, itemIndex (item.id)}
-      {@render mixedPreviewItem(item, mixedPreviewItems.length - unsectionedMixedPreviewItems.length + itemIndex + 1)}
+      {@render mixedPreviewItem(
+        item,
+        questionNumberStartByItemId[item.id] ??
+          mixedPreviewItems.length - unsectionedMixedPreviewItems.length + itemIndex + 1
+      )}
     {/each}
   {:else}
     {#each mixedPreviewItems as item, itemIndex (item.id)}
-      {@render mixedPreviewItem(item, itemIndex + 1)}
+      {@render mixedPreviewItem(item, questionNumberStartByItemId[item.id] ?? itemIndex + 1)}
     {/each}
   {/if}
 {:else if hasSectionGroups}

@@ -144,10 +144,41 @@ export async function getSubmissionsByCourseIdWithDetails(courseId: string, exer
             .from(schema.questionAnswer)
             .where(inArray(schema.questionAnswer.submissionId, submissionIds))
         : [];
+    const answeredQuestionIds = [...new Set(questionAnswers.map((answer) => answer.questionId))];
+    const answeredQuestions =
+      answeredQuestionIds.length > 0
+        ? await db
+            .select({
+              id: schema.question.id,
+              title: schema.question.title,
+              order: schema.question.order,
+              exerciseSectionId: schema.question.exerciseSectionId,
+              archivedAt: schema.question.archivedAt
+            })
+            .from(schema.question)
+            .where(inArray(schema.question.id, answeredQuestionIds))
+        : [];
+    const answeredQuestionById = new Map(answeredQuestions.map((question) => [question.id, question]));
 
     // Group data by submission
     const result = submissions.map((row) => {
-      const submissionAnswers = questionAnswers.filter((qa) => qa.submissionId === row.submission.id);
+      const submissionAnswers = questionAnswers
+        .filter((answer) => answer.submissionId === row.submission.id)
+        .map((answer) => {
+          const currentQuestion = answeredQuestionById.get(answer.questionId) ?? null;
+          const attemptedQuestion =
+            typeof answer.attemptedQuestionTitle === 'string'
+              ? {
+                  id: answer.questionId,
+                  title: answer.attemptedQuestionTitle,
+                  order: answer.attemptedQuestionOrder,
+                  exerciseSectionId: answer.attemptedExerciseSectionId,
+                  archivedAt: currentQuestion?.archivedAt ?? null
+                }
+              : currentQuestion;
+
+          return { ...answer, attemptedQuestion };
+        });
 
       return {
         ...row.submission,

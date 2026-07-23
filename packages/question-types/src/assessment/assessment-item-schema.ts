@@ -209,8 +209,13 @@ const itemFeedbackSchema = z.strictObject({
   visibility: z.enum(['after_submit', 'after_grading'])
 });
 
+const itemPresentationSchema = z.strictObject({
+  layout: z.enum(['flow', 'passage_split'])
+});
+
 export const assessmentItemDefinitionSchema = z.strictObject({
   schemaVersion: z.literal(1),
+  presentation: itemPresentationSchema.optional(),
   blocks: z.array(assessmentBlockSchema).min(1).max(MAX_ASSESSMENT_BLOCKS),
   feedback: z.array(itemFeedbackSchema).max(MAX_ITEM_FEEDBACK_ENTRIES)
 });

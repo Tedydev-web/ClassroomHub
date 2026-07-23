@@ -5,8 +5,11 @@ import {
   addContentBlock,
   addTextInteractionBlock,
   createAssessmentComposerState,
+  getAssessmentComposerSnapshot,
+  reconcileAssessmentComposerSave,
   removeAssessmentBlock,
   reorderAssessmentBlock,
+  setAssessmentItemPresentationLayout,
   setChoiceCorrectOption,
   setChoiceInteractionCardinality
 } from './assessment-composer-state';
@@ -21,6 +24,15 @@ function createIdFactory() {
 }
 
 describe('assessment composer state', () => {
+  it('keeps the native flow layout by default and changes presentation only through an explicit author action', () => {
+    const initialState = createAssessmentComposerState();
+    const splitState = setAssessmentItemPresentationLayout(initialState, 'passage_split');
+
+    expect(initialState.definition.presentation).toEqual({ layout: 'flow' });
+    expect(splitState.definition.presentation).toEqual({ layout: 'passage_split' });
+    expect(splitState.definition.blocks).toBe(initialState.definition.blocks);
+  });
+
   it('creates content and interaction blocks with stable ids and selects each new block', () => {
     const createId = createIdFactory();
     let state = createAssessmentComposerState();
@@ -130,6 +142,59 @@ describe('assessment composer state', () => {
 
     expect(state.definition.blocks[0]).toMatchObject({
       interaction: { config: { cardinality: 'multiple', correctOptionIds: [secondOption.id, firstOption.id] } }
+    });
+  });
+
+  it('keeps a newer draft dirty when an older save response resolves', () => {
+    const submittedState = addTextInteractionBlock(createAssessmentComposerState(), createIdFactory());
+    const submittedSnapshot = getAssessmentComposerSnapshot('Assessment', submittedState.definition);
+    const currentState = {
+      ...submittedState,
+      definition: {
+        ...submittedState.definition,
+        blocks: submittedState.definition.blocks.map((block) =>
+          block.kind === 'interaction' && block.interaction.kind === 'text'
+            ? {
+                ...block,
+                interaction: {
+                  ...block.interaction,
+                  prompt: { ...block.interaction.prompt, html: 'Newer draft' }
+                }
+              }
+            : block
+        )
+      }
+    };
+
+    const reconciliation = reconcileAssessmentComposerSave({
+      currentTitle: 'Assessment',
+      currentDefinition: currentState.definition,
+      submittedSnapshot,
+      submittedTitle: 'Assessment',
+      savedDefinition: submittedState.definition
+    });
+
+    expect(reconciliation.shouldApplySavedDefinition).toBe(false);
+    expect(getAssessmentComposerSnapshot('Assessment', currentState.definition)).not.toBe(
+      reconciliation.persistedSnapshot
+    );
+  });
+
+  it('applies a canonical save response when the submitted draft did not change', () => {
+    const submittedState = addChoiceInteractionBlock(createAssessmentComposerState(), createIdFactory());
+    const submittedSnapshot = getAssessmentComposerSnapshot('Assessment', submittedState.definition);
+
+    const reconciliation = reconcileAssessmentComposerSave({
+      currentTitle: 'Assessment',
+      currentDefinition: submittedState.definition,
+      submittedSnapshot,
+      submittedTitle: 'Assessment',
+      savedDefinition: submittedState.definition
+    });
+
+    expect(reconciliation).toEqual({
+      persistedSnapshot: submittedSnapshot,
+      shouldApplySavedDefinition: true
     });
   });
 });

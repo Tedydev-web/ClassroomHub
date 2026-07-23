@@ -5,6 +5,7 @@ import type {
   AssessmentItemDefinition,
   ItemFeedback
 } from '@cio/question-types';
+import { canonicalizeAssessmentItemDefinition } from '@cio/question-types';
 
 export type AssessmentComposerDraft = Omit<AssessmentItemDefinition, 'blocks' | 'feedback'> & {
   blocks: AssessmentBlock[];
@@ -17,15 +18,55 @@ export type AssessmentComposerState = {
 };
 
 export type AssessmentComposerIdFactory = () => string;
+export type AssessmentItemPresentationLayout = NonNullable<AssessmentItemDefinition['presentation']>['layout'];
+
+export interface AssessmentComposerSaveReconciliation {
+  persistedSnapshot: string;
+  shouldApplySavedDefinition: boolean;
+}
+
+export function getAssessmentComposerSnapshot(title: string, definition: AssessmentItemDefinition): string {
+  return `${JSON.stringify(title)}:${canonicalizeAssessmentItemDefinition(definition)}`;
+}
+
+export function reconcileAssessmentComposerSave(input: {
+  currentTitle: string;
+  currentDefinition: AssessmentItemDefinition;
+  submittedSnapshot: string;
+  submittedTitle: string;
+  savedDefinition: AssessmentItemDefinition;
+}): AssessmentComposerSaveReconciliation {
+  const currentSnapshot = getAssessmentComposerSnapshot(input.currentTitle, input.currentDefinition);
+  const persistedSnapshot = getAssessmentComposerSnapshot(input.submittedTitle, input.savedDefinition);
+
+  return {
+    persistedSnapshot,
+    shouldApplySavedDefinition: currentSnapshot === input.submittedSnapshot
+  };
+}
 
 export function createAssessmentComposerState(): AssessmentComposerState {
   return {
     definition: {
       schemaVersion: 1,
+      presentation: { layout: 'flow' },
       blocks: [],
       feedback: []
     },
     selectedBlockId: null
+  };
+}
+
+export function setAssessmentItemPresentationLayout(
+  state: AssessmentComposerState,
+  layout: AssessmentItemPresentationLayout
+): AssessmentComposerState {
+  return {
+    ...state,
+    definition: {
+      ...state.definition,
+      presentation: { layout }
+    }
   };
 }
 

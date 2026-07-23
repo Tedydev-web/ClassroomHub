@@ -1,6 +1,8 @@
 import { DEFAULT_QUESTION_TYPE, QUESTION_TEMPLATE } from '$features/ui/question/constants';
 import type {
   AnswerData,
+  AssessmentDeliveryDefinition,
+  AssessmentGradingMode,
   AssessmentResponseEnvelope,
   ExerciseSectionAfterBehavior,
   ExerciseSectionColorTheme,
@@ -9,10 +11,12 @@ import type {
 
 import type { Question } from '$features/course/types';
 import type { Exercise } from '$features/course/utils/types';
+import type { UpdateExerciseData } from '$features/course/utils/types';
+import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
 import { STATUS } from './constants';
 import type { Writable } from 'svelte/store';
 import { isUUID } from '$lib/utils/functions/isUUID';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { UNTITLED_EXERCISE_SECTION_TITLE } from '$features/course/utils/exercise-section-utils';
 
 export const isQuestionnaireFetching = writable(false);
@@ -31,9 +35,149 @@ export type ExerciseEditorErrors = Record<string, ExerciseEditorFieldErrors>;
 // {'question-or-section-id': { option: '', title: '', description: '', ... }}
 export const questionnaireValidation = writable<ExerciseEditorErrors>({});
 
+type AssessmentComposerSaveHandler = () => Promise<boolean>;
+type AssessmentItemMutationResult = NonNullable<UpdateExerciseData['assessmentItemMutationResults']>[number];
+
+type AssessmentComposerMutationHandler = {
+  prepare: () => TAssessmentItemMutation | null;
+  reconcile: (question: CanonicalQuestionState) => Promise<void> | void;
+};
+
+const assessmentComposerSaveHandlers = new Map<string, AssessmentComposerSaveHandler>();
+const assessmentComposerMutationHandlers = new Map<string, AssessmentComposerMutationHandler>();
+export const dirtyAssessmentComposerIds = writable<ReadonlySet<string>>(new Set());
+
+export interface AssessmentComposerPreviewItem {
+  exerciseId: string;
+  questionId: number | null;
+  title: string;
+  points: number;
+  order: number;
+  exerciseSectionId: string | null;
+  gradingMode: AssessmentGradingMode;
+  definition: AssessmentDeliveryDefinition;
+}
+
+export const assessmentComposerPreviewItems = writable<Readonly<Record<string, AssessmentComposerPreviewItem>>>({});
+
+export function setAssessmentComposerPreviewItem(composerId: string, item: AssessmentComposerPreviewItem): void {
+  assessmentComposerPreviewItems.update((currentItems) => ({
+    ...currentItems,
+    [composerId]: item
+  }));
+}
+
+export function removeAssessmentComposerPreviewItem(composerId: string): void {
+  assessmentComposerPreviewItems.update((currentItems) => {
+    if (!(composerId in currentItems)) return currentItems;
+
+    const nextItems = { ...currentItems };
+    delete nextItems[composerId];
+
+    return nextItems;
+  });
+}
+
+export function registerAssessmentComposerSaveHandler(
+  composerId: string,
+  saveHandler: AssessmentComposerSaveHandler
+): () => void {
+  assessmentComposerSaveHandlers.set(composerId, saveHandler);
+
+  return () => {
+    assessmentComposerSaveHandlers.delete(composerId);
+    setAssessmentComposerDirty(composerId, false);
+  };
+}
+
+export function registerAssessmentComposerMutationHandler(
+  composerId: string,
+  handler: AssessmentComposerMutationHandler
+): () => void {
+  assessmentComposerMutationHandlers.set(composerId, handler);
+
+  return () => {
+    assessmentComposerMutationHandlers.delete(composerId);
+  };
+}
+
+export function prepareDirtyAssessmentItemMutations(): {
+  success: boolean;
+  mutations: TAssessmentItemMutation[];
+} {
+  const mutations: TAssessmentItemMutation[] = [];
+  for (const composerId of get(dirtyAssessmentComposerIds)) {
+    const handler = assessmentComposerMutationHandlers.get(composerId);
+    if (!handler) {
+      console.error(`Missing mutation handler for dirty assessment composer "${composerId}"`);
+      return { success: false, mutations: [] };
+    }
+
+    const mutation = handler.prepare();
+    if (!mutation) return { success: false, mutations: [] };
+    mutations.push(mutation);
+  }
+
+  return { success: true, mutations };
+}
+
+export async function reconcileAssessmentItemMutations(
+  results: AssessmentItemMutationResult[],
+  canonicalQuestions: CanonicalQuestionState[]
+): Promise<boolean> {
+  const canonicalQuestionById = new Map(canonicalQuestions.map((question) => [Number(question.id), question]));
+  for (const result of results) {
+    const handler = assessmentComposerMutationHandlers.get(result.clientMutationId);
+    const question = canonicalQuestionById.get(result.questionId);
+    if (!handler || !question) {
+      console.error(
+        `Missing assessment composer reconciliation state for mutation "${result.clientMutationId}" and question "${result.questionId}"`
+      );
+      return false;
+    }
+
+    await handler.reconcile(question);
+  }
+
+  return true;
+}
+
+export function setAssessmentComposerDirty(composerId: string, isDirty: boolean): void {
+  dirtyAssessmentComposerIds.update((currentIds) => {
+    const nextIds = new Set(currentIds);
+    if (isDirty) nextIds.add(composerId);
+    else nextIds.delete(composerId);
+
+    return nextIds;
+  });
+}
+
+export async function saveDirtyAssessmentComposers(): Promise<boolean> {
+  const dirtyComposerIds = [...get(dirtyAssessmentComposerIds)];
+  for (const composerId of dirtyComposerIds) {
+    const saveHandler = assessmentComposerSaveHandlers.get(composerId);
+    if (!saveHandler) {
+      console.error(`Missing save handler for dirty assessment composer "${composerId}"`);
+      return false;
+    }
+
+    if (!(await saveHandler())) return false;
+  }
+
+  return true;
+}
+
+export function clearAssessmentComposerRegistry(): void {
+  assessmentComposerSaveHandlers.clear();
+  assessmentComposerMutationHandlers.clear();
+  dirtyAssessmentComposerIds.set(new Set());
+  assessmentComposerPreviewItems.set({});
+}
+
 export interface QuestionnaireMetaData {
   answers: Record<string, AnswerData | undefined>;
   canonicalAnswers: Record<string, AssessmentResponseEnvelope | undefined>;
+  canonicalRevisionIds: Record<string, string>;
   scores: Record<string, number>;
   grades: Record<string, number>;
   totalPossibleGrade: number;
@@ -60,6 +204,14 @@ export interface ExerciseSectionState {
   deletedAt?: string;
 }
 
+export type CanonicalQuestionState = NonNullable<Exercise['canonicalQuestions']>[number] & {
+  isPlacementDirty?: boolean;
+};
+
+export type ExerciseQuestionPlacementItem =
+  | { id: string; kind: 'legacy'; question: Question }
+  | { id: string; kind: 'canonical'; question: CanonicalQuestionState };
+
 export interface QuestionnaireState {
   title?: string | null;
   dueBy?: string | null;
@@ -68,7 +220,7 @@ export interface QuestionnaireState {
   description?: string | null;
   isDescriptionDirty?: boolean;
   questions: Question[];
-  canonicalQuestions: NonNullable<Exercise['canonicalQuestions']>;
+  canonicalQuestions: CanonicalQuestionState[];
   sections: ExerciseSectionState[];
   sectionDisplayMode: ExerciseSectionDisplayMode;
   totalSubmissions: number;
@@ -81,6 +233,7 @@ export interface QuestionnaireState {
 const initAnswerState: QuestionnaireMetaData = {
   answers: {},
   canonicalAnswers: {},
+  canonicalRevisionIds: {},
   scores: {},
   grades: {},
   totalPossibleGrade: 0,
@@ -124,6 +277,7 @@ export function reset() {
     ...metaData,
     answers: {},
     canonicalAnswers: {},
+    canonicalRevisionIds: {},
     scores: {},
     grades: {},
     currentQuestionIndex: 0,
@@ -203,6 +357,57 @@ export function getQuestionsForSection(questions: Question[], exerciseSectionId:
     .sort(compareQuestionsByOrder);
 }
 
+export function getQuestionPlacementItemsForSection(
+  questions: Question[],
+  canonicalQuestions: CanonicalQuestionState[],
+  exerciseSectionId: string | null
+): ExerciseQuestionPlacementItem[] {
+  const legacyItems: ExerciseQuestionPlacementItem[] = questions
+    .filter((question) => !question.deletedAt && (question.exerciseSectionId ?? null) === exerciseSectionId)
+    .map((question) => ({ id: `legacy:${question.id}`, kind: 'legacy', question }));
+  const canonicalItems: ExerciseQuestionPlacementItem[] = canonicalQuestions
+    .filter((question) => (question.exerciseSectionId ?? null) === exerciseSectionId)
+    .map((question) => ({ id: `canonical:${question.id}`, kind: 'canonical', question }));
+
+  return [...legacyItems, ...canonicalItems].sort((leftItem, rightItem) => {
+    const orderDifference = (leftItem.question.order ?? 0) - (rightItem.question.order ?? 0);
+    if (orderDifference !== 0) return orderDifference;
+
+    return leftItem.id.localeCompare(rightItem.id);
+  });
+}
+
+export function handleReorderQuestionPlacementItems(
+  exerciseSectionId: string | null,
+  orderedItems: ExerciseQuestionPlacementItem[]
+) {
+  const nextLegacyPlacementById = new Map<string, number>();
+  const nextCanonicalPlacementById = new Map<string, number>();
+
+  for (const [order, item] of orderedItems.entries()) {
+    const targetMap = item.kind === 'legacy' ? nextLegacyPlacementById : nextCanonicalPlacementById;
+    targetMap.set(String(item.question.id), order);
+  }
+
+  questionnaire.update((state) => ({
+    ...state,
+    questions: state.questions.map((question) => {
+      const nextOrder = nextLegacyPlacementById.get(String(question.id));
+      if (nextOrder === undefined) return question;
+      if (question.order === nextOrder && (question.exerciseSectionId ?? null) === exerciseSectionId) return question;
+
+      return { ...question, exerciseSectionId, order: nextOrder, isDirty: true };
+    }),
+    canonicalQuestions: state.canonicalQuestions.map((question) => {
+      const nextOrder = nextCanonicalPlacementById.get(String(question.id));
+      if (nextOrder === undefined) return question;
+      if (question.order === nextOrder && (question.exerciseSectionId ?? null) === exerciseSectionId) return question;
+
+      return { ...question, exerciseSectionId, order: nextOrder, isPlacementDirty: true };
+    })
+  }));
+}
+
 export function handleAddQuestion(exerciseSectionId?: string | null) {
   let nextQuestionId: string | number = '';
 
@@ -210,6 +415,9 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
     const { questions } = q;
     const activeSections = q.sections.filter((section) => !section.deletedAt);
     const nextExerciseSectionId = exerciseSectionId ?? (activeSections.length > 0 ? activeSections[0].id : null);
+    const placementItems = getQuestionPlacementItemsForSection(questions, q.canonicalQuestions, nextExerciseSectionId);
+    const nextQuestionOrder =
+      placementItems.reduce((highestOrder, item) => Math.max(highestOrder, item.question.order ?? 0), -1) + 1;
     nextQuestionId = `${questions.length + 1}-form`;
 
     return {
@@ -222,7 +430,7 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
           name: `${nextQuestionId}`,
           value: '',
           points: 0,
-          order: questions.length,
+          order: nextQuestionOrder,
           exerciseSectionId: nextExerciseSectionId,
           questionType: DEFAULT_QUESTION_TYPE,
           questionTypeId: DEFAULT_QUESTION_TYPE.id,
@@ -242,6 +450,32 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
   return nextQuestionId;
 }
 
+function isUntouchedLegacyQuestionDraft(question: Question): boolean {
+  if (typeof question.id !== 'string' || !question.id.endsWith('-form') || question.isDirty) return false;
+
+  const hasTitle = question.title.trim() !== '';
+  const hasPoints = Number(question.points ?? 0) !== 0;
+  const hasAnswer = question.answers.some((answer) => answer !== null && `${answer}`.trim() !== '');
+  const hasOptionContent = question.options.some((option) => {
+    const label = option.label ?? '';
+    const value = option.value ?? '';
+
+    return `${label}`.trim() !== '' || `${value}`.trim() !== '' || option.isCorrect;
+  });
+  const hasSettings = Object.keys(question.settings ?? {}).length > 0;
+
+  return !hasTitle && !hasPoints && !hasAnswer && !hasOptionContent && !hasSettings;
+}
+
+export function removeUntouchedLegacyQuestionDrafts(): void {
+  questionnaire.update((state) => {
+    const questions = state.questions.filter((question) => !isUntouchedLegacyQuestionDraft(question));
+    if (questions.length === state.questions.length) return state;
+
+    return { ...state, questions };
+  });
+}
+
 export function handleAddSection() {
   let nextSectionId = '';
 
@@ -252,12 +486,16 @@ export function handleAddSection() {
     const activeUnsectionedQuestions = q.questions.filter(
       (question) => !question.deletedAt && !question.exerciseSectionId
     );
-    const nextSectionDisplayNumber = activeSections.length + (activeUnsectionedQuestions.length > 0 ? 2 : 1);
+    const activeUnsectionedCanonicalQuestions = q.canonicalQuestions.filter((question) => !question.exerciseSectionId);
+    const hasUnsectionedQuestions =
+      activeUnsectionedQuestions.length > 0 || activeUnsectionedCanonicalQuestions.length > 0;
+    const nextSectionDisplayNumber = activeSections.length + (hasUnsectionedQuestions ? 2 : 1);
     const nextSections = [...q.sections];
     let questions = q.questions;
+    let canonicalQuestions = q.canonicalQuestions;
     let nextSectionOrder = firstAvailableSectionOrder;
 
-    if (activeUnsectionedQuestions.length > 0) {
+    if (hasUnsectionedQuestions) {
       const untitledSectionId = crypto.randomUUID();
       const untitledSection: ExerciseSectionState = {
         id: untitledSectionId,
@@ -280,6 +518,15 @@ export function handleAddSection() {
           isDirty: true
         };
       });
+      canonicalQuestions = q.canonicalQuestions.map((question) => {
+        if (question.exerciseSectionId) return question;
+
+        return {
+          ...question,
+          exerciseSectionId: untitledSectionId,
+          isPlacementDirty: true
+        };
+      });
     }
 
     const sectionId = crypto.randomUUID();
@@ -297,6 +544,7 @@ export function handleAddSection() {
     return {
       ...q,
       questions,
+      canonicalQuestions,
       sections: [...nextSections, nextSection]
     };
   });
@@ -310,19 +558,56 @@ export function handleRemoveSection(exerciseSectionId: string, moveQuestionsToEx
     const remainingSections = activeSections.filter((section) => section.id !== exerciseSectionId);
     const shouldClearSections = remainingSections.length === 0;
     const deletedAt = new Date().toString();
+    const targetExerciseSectionId = shouldClearSections ? null : (moveQuestionsToExerciseSectionId ?? null);
+    const sourceQuestions = [
+      ...q.questions
+        .filter((question) => !question.deletedAt && question.exerciseSectionId === exerciseSectionId)
+        .map((question) => ({ id: String(question.id), order: question.order ?? 0 })),
+      ...q.canonicalQuestions
+        .filter((question) => question.exerciseSectionId === exerciseSectionId)
+        .map((question) => ({ id: String(question.id), order: question.order ?? 0 }))
+    ].sort((leftQuestion, rightQuestion) => leftQuestion.order - rightQuestion.order);
+    const highestTargetOrder = [
+      ...q.questions
+        .filter(
+          (question) =>
+            !question.deletedAt &&
+            question.exerciseSectionId === targetExerciseSectionId &&
+            question.exerciseSectionId !== exerciseSectionId
+        )
+        .map((question) => question.order ?? 0),
+      ...q.canonicalQuestions
+        .filter(
+          (question) =>
+            question.exerciseSectionId === targetExerciseSectionId && question.exerciseSectionId !== exerciseSectionId
+        )
+        .map((question) => question.order ?? 0)
+    ].reduce((highestOrder, order) => Math.max(highestOrder, order), -1);
+    const nextOrderByQuestionId = new Map(
+      sourceQuestions.map((question, index) => [question.id, highestTargetOrder + index + 1])
+    );
 
     return {
       ...q,
-      sections: q.sections.map((section) =>
-        section.id === exerciseSectionId ? { ...section, deletedAt, isDirty: true } : section
-      ),
+      sections: q.sections.map((section) => {
+        if (section.id === exerciseSectionId) return { ...section, deletedAt, isDirty: true };
+        if (
+          section.afterBehavior.action === 'go_to_section' &&
+          section.afterBehavior.exerciseSectionId === exerciseSectionId
+        ) {
+          return { ...section, afterBehavior: { action: 'continue' }, isDirty: true };
+        }
+
+        return section;
+      }),
       questions: q.questions.map((question) => {
         if (question.exerciseSectionId !== exerciseSectionId) return question;
 
         if (moveQuestionsToExerciseSectionId || shouldClearSections) {
           return {
             ...question,
-            exerciseSectionId: shouldClearSections ? null : moveQuestionsToExerciseSectionId,
+            exerciseSectionId: targetExerciseSectionId,
+            order: nextOrderByQuestionId.get(String(question.id)) ?? question.order,
             isDirty: true
           };
         }
@@ -331,6 +616,17 @@ export function handleRemoveSection(exerciseSectionId: string, moveQuestionsToEx
           ...question,
           deletedAt,
           isDirty: true
+        };
+      }),
+      canonicalQuestions: q.canonicalQuestions.map((question) => {
+        if (question.exerciseSectionId !== exerciseSectionId) return question;
+        if (!moveQuestionsToExerciseSectionId && !shouldClearSections) return question;
+
+        return {
+          ...question,
+          exerciseSectionId: targetExerciseSectionId,
+          order: nextOrderByQuestionId.get(String(question.id)) ?? question.order,
+          isPlacementDirty: true
         };
       })
     };

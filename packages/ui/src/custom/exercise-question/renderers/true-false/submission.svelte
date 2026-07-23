@@ -1,16 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { ChartConfig } from '../../../../base/chart';
+  import * as Chart from '../../../../base/chart';
   import type { ExerciseQuestionRendererProps } from '@cio/question-types';
 
   import { getAnswerForQuestion, getSubmissionLabel, normalizeLabel, withChartColors } from '../submission-utils';
-
-  // Load layerchart client-only — its circular ESM graph breaks Vite dev SSR and
-  // charts need the DOM. See submission-response-bar-chart.svelte for detail.
-  let Chart = $state<typeof import('../../../../base/chart') | null>(null);
-  onMount(async () => {
-    Chart = await import('../../../../base/chart');
-  });
 
   let {
     question,
@@ -38,7 +30,7 @@
       label: getSubmissionLabel(labels, 'submission.chart.responses', 'Responses'),
       color: 'var(--chart-1)'
     }
-  } satisfies ChartConfig);
+  } satisfies Chart.ChartConfig);
 
   const chartData = $derived.by(() => {
     let trueCount = 0;
@@ -90,12 +82,10 @@
 </script>
 
 {#if chartData.length > 0}
-  {#if Chart}
-    <Chart.Container config={chartConfig} class="ui:h-[280px] ui:w-full ui:flex-col ui:items-center">
-      <Chart.PieChart data={chartData} key="key" label="label" value="responses" c="color" />
-      <Chart.ChartLegend items={chartData.map((d) => ({ label: d.label, color: d.color, value: d.responses }))} />
-    </Chart.Container>
-  {/if}
+  <Chart.Container config={chartConfig} class="ui:h-[280px] ui:w-full ui:flex-col ui:items-center">
+    <Chart.PieChart data={chartData} key="key" label="label" value="responses" c="color" />
+    <Chart.ChartLegend items={chartData.map((d) => ({ label: d.label, color: d.color, value: d.responses }))} />
+  </Chart.Container>
 {:else}
   <p class="ui:text-muted-foreground ui:text-sm">
     {getSubmissionLabel(labels, 'submission.chart.no_data', 'No responses yet')}

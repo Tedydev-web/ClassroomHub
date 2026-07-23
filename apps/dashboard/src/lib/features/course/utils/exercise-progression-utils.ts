@@ -1,4 +1,10 @@
-import { isAutoGradableQuestionTypeId } from '@cio/question-types';
+import {
+  deriveItemCapabilities,
+  getItemMaxScore,
+  isAutoGradableQuestionTypeId,
+  type AssessmentGradingMode
+} from '@cio/question-types';
+import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
 
 import type { Question } from '$features/course/types';
 import type { SubmissionListItem } from '$features/course/utils/types';
@@ -17,8 +23,52 @@ export type ExerciseSubmissionStudentGroup = {
   attempts: ExerciseAttempt[];
 };
 
+export type CanonicalExerciseQuestionSummary = {
+  id: string | number;
+  title: string;
+  points: number | null;
+  gradingMode: AssessmentGradingMode;
+};
+
+type ExerciseOrderedItem = {
+  id: string;
+  question: {
+    order?: number | null;
+    exerciseSectionId?: string | null;
+  };
+};
+
+type ExerciseOrderedSection = {
+  id: string;
+  order: number;
+};
+
 export function getActiveExerciseQuestions(questions: Question[]): Question[] {
   return questions.filter((question) => !question.deletedAt);
+}
+
+export function orderExerciseItemsBySections<T extends ExerciseOrderedItem>(
+  items: ReadonlyArray<T>,
+  sections: ReadonlyArray<ExerciseOrderedSection>
+): T[] {
+  const orderedSections = [...sections].sort(
+    (leftSection, rightSection) =>
+      leftSection.order - rightSection.order || leftSection.id.localeCompare(rightSection.id)
+  );
+  const sectionIndexById = new Map(orderedSections.map((section, index) => [section.id, index]));
+  const unsectionedIndex = orderedSections.length;
+
+  return [...items].sort((leftItem, rightItem) => {
+    const leftSectionIndex = sectionIndexById.get(leftItem.question.exerciseSectionId ?? '') ?? unsectionedIndex;
+    const rightSectionIndex = sectionIndexById.get(rightItem.question.exerciseSectionId ?? '') ?? unsectionedIndex;
+    if (leftSectionIndex !== rightSectionIndex) return leftSectionIndex - rightSectionIndex;
+
+    const leftOrder = leftItem.question.order ?? 0;
+    const rightOrder = rightItem.question.order ?? 0;
+    if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+
+    return leftItem.id.localeCompare(rightItem.id, undefined, { numeric: true });
+  });
 }
 
 // Display-only rounding: summed fractional points (e.g. 0.1 + 0.2) carry floating-point
@@ -36,6 +86,54 @@ export function formatExercisePoints(value: number | string | null | undefined):
 
 export function getTotalPossibleExercisePoints(questions: Question[]): number {
   return getActiveExerciseQuestions(questions).reduce((total, question) => total + Number(question.points ?? 0), 0);
+}
+
+export function getExerciseGradingSummary(
+  questions: Question[],
+  canonicalQuestions: CanonicalExerciseQuestionSummary[]
+) {
+  const activeQuestions = getActiveExerciseQuestions(questions);
+  const manualCanonicalQuestions = canonicalQuestions.filter((question) => question.gradingMode !== 'auto');
+  const questionCount = activeQuestions.length + canonicalQuestions.length;
+  const canonicalPoints = canonicalQuestions.reduce((total, question) => total + Number(question.points ?? 0), 0);
+  const isFullyAutoGradable =
+    questionCount > 0 &&
+    getManualGradedExerciseQuestions(activeQuestions).length === 0 &&
+    manualCanonicalQuestions.length === 0;
+
+  return {
+    questionCount,
+    totalPossiblePoints: getTotalPossibleExercisePoints(activeQuestions) + canonicalPoints,
+    isFullyAutoGradable,
+    manualCanonicalQuestions
+  };
+}
+
+export function projectCanonicalQuestionsAfterMutations(
+  canonicalQuestions: CanonicalExerciseQuestionSummary[],
+  mutations: TAssessmentItemMutation[]
+): CanonicalExerciseQuestionSummary[] {
+  const projectedQuestions = new Map<string, CanonicalExerciseQuestionSummary>();
+
+  for (const question of canonicalQuestions) {
+    projectedQuestions.set(`question:${question.id}`, question);
+  }
+
+  for (const mutation of mutations) {
+    const capabilities = deriveItemCapabilities(mutation.definition);
+    const points = getItemMaxScore(mutation.definition);
+    const id = mutation.action === 'publish' ? mutation.questionId : mutation.clientMutationId;
+    const projectionKey = mutation.action === 'publish' ? `question:${mutation.questionId}` : `create:${id}`;
+
+    projectedQuestions.set(projectionKey, {
+      id,
+      title: mutation.title,
+      points,
+      gradingMode: capabilities.gradingMode
+    });
+  }
+
+  return [...projectedQuestions.values()];
 }
 
 export function getManualGradedExerciseQuestions(questions: Question[]): Question[] {

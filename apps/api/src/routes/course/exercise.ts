@@ -185,8 +185,14 @@ export const exerciseRouter = new Hono()
       try {
         const courseId = c.req.param('courseId')!;
         const { exerciseId } = c.req.valid('param');
-        const { title, definition } = c.req.valid('json');
-        const item = await createAssessmentItemForCourseService(courseId, exerciseId, title, definition);
+        const { title, exerciseSectionId, definition } = c.req.valid('json');
+        const item = await createAssessmentItemForCourseService(
+          courseId,
+          exerciseId,
+          title,
+          definition,
+          exerciseSectionId
+        );
 
         return c.json({ success: true, data: item }, 201);
       } catch (error) {
@@ -204,11 +210,12 @@ export const exerciseRouter = new Hono()
       try {
         const courseId = c.req.param('courseId')!;
         const { exerciseId, questionId } = c.req.valid('param');
-        const { expectedRevision, definition } = c.req.valid('json');
+        const { title, expectedRevision, definition } = c.req.valid('json');
         const item = await publishAssessmentItemForCourseService(
           courseId,
           exerciseId,
           questionId,
+          title,
           expectedRevision,
           definition
         );
@@ -454,7 +461,8 @@ export const exerciseRouter = new Hono()
           }
         }
 
-        const exercise = await updateExerciseForCourseService(courseId, exerciseId, data);
+        const viewerProfileId = automationKey ? undefined : user?.id;
+        const exercise = await updateExerciseForCourseService(courseId, exerciseId, data, viewerProfileId);
 
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'update_course_exercise', { courseId, exerciseId });

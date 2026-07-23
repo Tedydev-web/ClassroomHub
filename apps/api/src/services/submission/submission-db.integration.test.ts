@@ -160,16 +160,19 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
   it(
     'preserves the attempted composite revision through authoring, hybrid grading, editing, and review',
     async () => {
-      const [{ db }, schema, assessmentItemServices, submissionServices] = await Promise.all([
+      const [{ db }, schema, assessmentItemServices, exerciseServices, submissionServices] = await Promise.all([
         import('@cio/db/drizzle'),
         import('@cio/db/schema'),
         import('@cio/core/services/exercise/assessment-item'),
+        import('@cio/core/services/exercise/exercise'),
         import('./submission')
       ]);
       const profileId = randomUUID();
       const ids = {
         course: randomUUID(),
         exercise: randomUUID(),
+        exerciseSectionOne: randomUUID(),
+        exerciseSectionTwo: randomUUID(),
         group: randomUUID(),
         member: randomUUID(),
         organization: randomUUID(),
@@ -177,6 +180,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
         user: profileId
       };
       const definitionOne = createCompositeAssessmentDefinition('<p>Attempted revision content.</p>', 2, 3);
+      const definitionAfterDelivery = createCompositeAssessmentDefinition('<p>Delivered revision content.</p>', 2, 3);
       const definitionTwo = createCompositeAssessmentDefinition('<p>Current revision content.</p>', 1, 1);
 
       try {
@@ -235,14 +239,56 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           title: 'Composite lifecycle exercise',
           allowMultipleAttempts: true
         });
+        await db.insert(schema.exerciseSection).values([
+          { id: ids.exerciseSectionOne, exerciseId: ids.exercise, title: 'First section', order: 0 },
+          { id: ids.exerciseSectionTwo, exerciseId: ids.exercise, title: 'Second section', order: 1 }
+        ]);
+        await expect(
+          assessmentItemServices.createAssessmentItemForCourseService(
+            ids.course,
+            ids.exercise,
+            'Foreign section item',
+            definitionOne,
+            randomUUID()
+          )
+        ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
 
         const createdItem = await assessmentItemServices.createAssessmentItemForCourseService(
           ids.course,
           ids.exercise,
           'Composite lifecycle item',
+          definitionOne,
+          ids.exerciseSectionTwo
+        );
+        expect(createdItem).toMatchObject({
+          exerciseSectionId: ids.exerciseSectionTwo,
+          order: 0,
+          revision: 1,
+          definition: definitionOne
+        });
+        const renamedItem = await assessmentItemServices.publishAssessmentItemForCourseService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId,
+          'Renamed composite lifecycle item',
+          1,
           definitionOne
         );
-        expect(createdItem).toMatchObject({ revision: 1, definition: definitionOne });
+        expect(renamedItem).toMatchObject({
+          title: 'Renamed composite lifecycle item',
+          revision: 1,
+          revisionId: createdItem.revisionId,
+          definition: definitionOne
+        });
+        const exerciseRead = await exerciseServices.getExercise(ids.exercise);
+        expect(exerciseRead.canonicalQuestions).toEqual([
+          expect.objectContaining({
+            id: createdItem.questionId,
+            title: 'Renamed composite lifecycle item',
+            points: 5,
+            gradingMode: 'hybrid'
+          })
+        ]);
 
         const authorItem = await assessmentItemServices.getAssessmentItemForAuthorService(
           ids.course,
@@ -255,10 +301,65 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           createdItem.questionId
         );
         expect(authorItem.definition).toEqual(definitionOne);
+        expect(authorItem.title).toBe('Renamed composite lifecycle item');
         expect(learnerItem.revision).toBe(1);
+        expect(learnerItem.revisionId).toEqual(expect.any(String));
+        expect(learnerItem.revisionId).toBe(createdItem.revisionId);
         expect(JSON.stringify(learnerItem.definition)).toContain('Attempted revision content.');
         expect(JSON.stringify(learnerItem.definition)).not.toContain('correctOptionIds');
 
+        const canonicalResponse = {
+          schemaVersion: 1 as const,
+          responses: [
+            {
+              interactionId: 'choice-1',
+              response: { kind: 'choice' as const, selectedOptionIds: ['option-b'] }
+            },
+            {
+              interactionId: 'text-1',
+              response: { kind: 'text' as const, text: 'The second option satisfies the prompt.' }
+            }
+          ]
+        };
+        const deliveredAfterOpen = await assessmentItemServices.publishAssessmentItemForCourseService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId,
+          'Renamed composite lifecycle item',
+          1,
+          definitionAfterDelivery
+        );
+        expect(deliveredAfterOpen).toMatchObject({ revision: 2, definition: definitionAfterDelivery });
+        await expect(
+          submissionServices.createSubmissionService(
+            ids.course,
+            ids.exercise,
+            ids.member,
+            [
+              {
+                questionId: createdItem.questionId,
+                questionRevisionId: learnerItem.revisionId,
+                response: canonicalResponse
+              }
+            ],
+            randomUUID()
+          )
+        ).rejects.toMatchObject({ code: 'CONFLICT', statusCode: 409 });
+        const submissionsAfterStaleAttempt = await db
+          .select({ id: schema.submission.id })
+          .from(schema.submission)
+          .where(eq(schema.submission.exerciseId, ids.exercise));
+        expect(submissionsAfterStaleAttempt).toEqual([]);
+
+        const refreshedLearnerItem = await assessmentItemServices.getAssessmentItemForLearnerService(
+          ids.course,
+          ids.exercise,
+          createdItem.questionId
+        );
+        expect(refreshedLearnerItem).toMatchObject({
+          revisionId: deliveredAfterOpen.revisionId,
+          revision: 2
+        });
         const submission = await submissionServices.createSubmissionService(
           ids.course,
           ids.exercise,
@@ -266,19 +367,8 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           [
             {
               questionId: createdItem.questionId,
-              response: {
-                schemaVersion: 1,
-                responses: [
-                  {
-                    interactionId: 'choice-1',
-                    response: { kind: 'choice', selectedOptionIds: ['option-b'] }
-                  },
-                  {
-                    interactionId: 'text-1',
-                    response: { kind: 'text', text: 'The second option satisfies the prompt.' }
-                  }
-                ]
-              }
+              questionRevisionId: refreshedLearnerItem.revisionId,
+              response: canonicalResponse
             }
           ],
           randomUUID()
@@ -303,10 +393,15 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           ids.course,
           ids.exercise,
           createdItem.questionId,
-          1,
+          'Post-submission renamed item',
+          2,
           definitionTwo
         );
-        expect(publishedItem).toMatchObject({ revision: 2, definition: definitionTwo });
+        expect(publishedItem).toMatchObject({
+          title: 'Post-submission renamed item',
+          revision: 3,
+          definition: definitionTwo
+        });
         expect(publishedItem.definition).not.toEqual(definitionOne);
 
         const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(ids.course, submission.id, {
@@ -315,6 +410,9 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           feedback: 'Automatic choice score reviewed with the written response.'
         });
         expect(gradedSubmission).toMatchObject({ gradingState: 'completed', score: 4.5, total: 5 });
+
+        const archivedAt = new Date().toISOString();
+        await db.update(schema.question).set({ archivedAt }).where(eq(schema.question.id, createdItem.questionId));
 
         const [reviewedSubmission] = await submissionServices.listSubmissionsByExercise(
           ids.course,
@@ -325,9 +423,16 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           (answer) => answer.questionId === createdItem.questionId
         );
         expect(reviewedAnswer?.questionRevisionId).toBe(attemptedAnswer?.questionRevisionId);
-        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).toContain('Attempted revision content.');
+        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).toContain('Delivered revision content.');
+        expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).not.toContain('Attempted revision content.');
         expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).not.toContain('Current revision content.');
         expect(JSON.stringify(reviewedAnswer?.assessmentDefinition)).not.toContain('correctOptionIds');
+        expect(reviewedAnswer?.attemptedQuestion).toMatchObject({
+          id: createdItem.questionId,
+          title: 'Renamed composite lifecycle item',
+          archivedAt: expect.any(String)
+        });
+        expect(new Date(reviewedAnswer!.attemptedQuestion!.archivedAt!).toISOString()).toBe(archivedAt);
       } finally {
         await db.delete(schema.submission).where(eq(schema.submission.exerciseId, ids.exercise));
         await db.delete(schema.exercise).where(eq(schema.exercise.id, ids.exercise));

@@ -12,6 +12,7 @@ import {
 import { QUESTION_TYPE } from '../constants';
 import { ZSlug } from '../shared/slug';
 import { ZExerciseSection } from './exercise-section';
+import { ZAssessmentItemMutation } from './assessment-item';
 
 const ENABLED_EXERCISE_QUESTION_TYPE_IDS = ENABLED_QUESTION_TYPE_REGISTRY.map((type) => type.id);
 const ENABLED_EXERCISE_QUESTION_TYPE_ID_SET = new Set(ENABLED_EXERCISE_QUESTION_TYPE_IDS);
@@ -182,6 +183,38 @@ function validateQuestionOptions(question: z.infer<typeof ZExerciseUpdateQuestio
 // Final schema with validation refinement
 const ZExerciseUpdateQuestion = ZExerciseUpdateQuestionBase.superRefine(validateQuestionOptions);
 
+const ZCanonicalQuestionPlacement = z.object({
+  id: z.number().int().positive(),
+  exerciseSectionId: z.string().uuid().nullable(),
+  order: z.number().int().min(0)
+});
+
+const ZCanonicalQuestionPlacements = z.array(ZCanonicalQuestionPlacement).superRefine((placements, ctx) => {
+  const placementIds = new Set<number>();
+  const placementOrderKeys = new Set<string>();
+
+  for (const [placementIndex, placement] of placements.entries()) {
+    if (placementIds.has(placement.id)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Canonical question placement IDs must be unique',
+        path: [placementIndex, 'id']
+      });
+    }
+    placementIds.add(placement.id);
+
+    const placementOrderKey = `${placement.exerciseSectionId ?? 'unsectioned'}:${placement.order}`;
+    if (placementOrderKeys.has(placementOrderKey)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Canonical question orders must be unique within each section',
+        path: [placementIndex, 'order']
+      });
+    }
+    placementOrderKeys.add(placementOrderKey);
+  }
+});
+
 const ZExerciseCreateQuestionBase = z.object({
   question: z.string().min(1),
   questionTypeId: ZExerciseQuestionTypeId.optional(),
@@ -225,6 +258,8 @@ export const ZExerciseUpdate = z.object({
   allowMultipleAttempts: z.boolean().optional(),
   slug: ZSlug.optional(),
   questions: z.array(ZExerciseUpdateQuestion).optional(),
+  canonicalQuestionPlacements: ZCanonicalQuestionPlacements.optional(),
+  assessmentItemMutations: z.array(ZAssessmentItemMutation).max(100).optional(),
   sections: z.array(ZExerciseSection).optional(),
   sectionDisplayMode: z.enum(['one_question', 'all_questions']).optional(),
   completionPolicy: z.enum(['submitted', 'passed']).optional(),
@@ -247,6 +282,20 @@ export type TExerciseListQuery = z.infer<typeof ZExerciseListQuery>;
 export const EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS = 100_000;
 export const EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS = 1_000_000;
 
+export function getExerciseSubmissionPayloadCharacterCount(
+  answers: ReadonlyArray<{ answer?: string; response?: unknown }>
+): number {
+  return answers.reduce((total, answer) => {
+    if (answer.response === undefined) return total + (answer.answer?.length ?? 0);
+
+    try {
+      return total + (answer.answer?.length ?? 0) + (JSON.stringify(answer.response)?.length ?? 0);
+    } catch {
+      return Number.POSITIVE_INFINITY;
+    }
+  }, 0);
+}
+
 export const ZExerciseSubmissionCreate = z.object({
   exerciseId: z.string().min(1),
   idempotencyKey: z.uuid().optional(),
@@ -254,6 +303,7 @@ export const ZExerciseSubmissionCreate = z.object({
     .array(
       z.object({
         questionId: z.number().int(),
+        questionRevisionId: z.uuid().optional(),
         optionId: z.number().int().optional(),
         answer: z.string().max(EXERCISE_SUBMISSION_MAX_ANSWER_CHARACTERS).optional(),
         response: assessmentResponseEnvelopeSchema.optional()
@@ -261,7 +311,7 @@ export const ZExerciseSubmissionCreate = z.object({
     )
     .max(500)
     .superRefine((answers, ctx) => {
-      const totalAnswerCharacters = answers.reduce((total, answer) => total + (answer.answer?.length ?? 0), 0);
+      const totalAnswerCharacters = getExerciseSubmissionPayloadCharacterCount(answers);
       if (totalAnswerCharacters <= EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS) return;
 
       ctx.addIssue({

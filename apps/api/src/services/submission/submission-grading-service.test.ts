@@ -412,7 +412,14 @@ describe('submission grading transaction locks', () => {
       questionRevisionId: 'revision-canonical'
     };
     mocks.getSubmissionsByCourseIdWithDetails.mockResolvedValue([
-      { ...submission, createdAt: '2026-07-22T00:00:00.000Z', answers: [canonicalAnswer], groupmember: null }
+      { ...submission, createdAt: '2026-07-22T00:00:00.000Z', answers: [canonicalAnswer], groupmember: null },
+      {
+        ...submission,
+        id: 'submission-second',
+        createdAt: '2026-07-22T00:01:00.000Z',
+        answers: [{ ...canonicalAnswer, questionRevisionId: 'revision-canonical-second' }],
+        groupmember: null
+      }
     ]);
     mocks.getQuestionRevisionsByIds.mockResolvedValue([
       {
@@ -439,13 +446,39 @@ describe('submission grading transaction locks', () => {
           ],
           feedback: [{ id: 'feedback-1', scope: 'item', html: '<p>Feedback</p>', visibility: 'after_grading' }]
         }
+      },
+      {
+        id: 'revision-canonical-second',
+        definition: {
+          schemaVersion: 1,
+          blocks: [
+            {
+              id: 'choice-2',
+              kind: 'interaction',
+              interaction: {
+                kind: 'choice',
+                prompt: { format: 'html', html: '<p>Choose another answer.</p>' },
+                required: true,
+                maxScore: 1,
+                config: {
+                  cardinality: 'single',
+                  presentation: 'list',
+                  options: [{ id: 'option-b', html: '<p>B</p>' }],
+                  correctOptionIds: ['option-b']
+                }
+              }
+            }
+          ],
+          feedback: []
+        }
       }
     ]);
 
     const [listedSubmission] = await listSubmissionsByExercise(courseId, exerciseId, 'member-a');
     const assessmentDefinition = listedSubmission?.answers[0]?.assessmentDefinition;
 
-    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-canonical']);
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-canonical', 'revision-canonical-second']);
     expect(assessmentDefinition).toEqual({
       schemaVersion: 1,
       blocks: [
@@ -480,7 +513,10 @@ describe('submission grading transaction locks', () => {
           responses: [{ interactionId: 'text-1', response: { kind: 'text', text: 'Answer' } }]
         }
       },
-      questionRevisionId: 'revision-text'
+      questionRevisionId: 'revision-text',
+      attemptedQuestionTitle: 'Attempted composite question',
+      attemptedQuestionOrder: 4,
+      attemptedExerciseSectionId: 'section-attempted'
     };
     mocks.getSubmissionsForGrading.mockResolvedValue([
       {
@@ -506,6 +542,32 @@ describe('submission grading transaction locks', () => {
         },
         lesson: null,
         groupmember: { profile: { id: 'profile-a', email: 'student@example.com', fullname: 'Student' } },
+        answers: [canonicalAnswer]
+      },
+      {
+        ...submission,
+        id: 'submission-second',
+        createdAt: '2026-07-22T00:01:00.000Z',
+        feedback: null,
+        exercise: {
+          id: exerciseId,
+          title: 'Assessment',
+          dueBy: null,
+          questions: [
+            {
+              id: 11,
+              title: 'Composite question',
+              name: null,
+              order: 0,
+              points: 3,
+              questionTypeId: 16,
+              settings: {},
+              options: []
+            }
+          ]
+        },
+        lesson: null,
+        groupmember: { profile: { id: 'profile-b', email: 'student-b@example.com', fullname: 'Student B' } },
         answers: [canonicalAnswer]
       }
     ]);
@@ -535,11 +597,13 @@ describe('submission grading transaction locks', () => {
     const result = await listSubmissionsForGrading(courseId);
     const canonicalQuestion = result.submissionIdData[submissionId]?.canonicalQuestions[0];
 
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-text']);
     expect(canonicalQuestion).toEqual({
       id: 11,
-      title: 'Composite question',
-      order: 0,
-      exerciseSectionId: null,
+      title: 'Attempted composite question',
+      order: 4,
+      exerciseSectionId: 'section-attempted',
       definition: {
         schemaVersion: 1,
         blocks: [

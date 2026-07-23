@@ -1,16 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import * as Chart from '../../../../base/chart';
   import type { ChartConfig } from '../../../../base/chart';
-
-  // layerchart has an internal circular ESM graph that Vite's dev SSR module
-  // runner cannot evaluate ("dependency module is not yet fully initialized"),
-  // so importing the chart module statically breaks every page that transitively
-  // pulls it through the @cio/ui barrel. Charts need the DOM anyway, so load the
-  // chart module on the client only.
-  let Chart = $state<typeof import('../../../../base/chart') | null>(null);
-  onMount(async () => {
-    Chart = await import('../../../../base/chart');
-  });
 
   interface Row {
     key: string;
@@ -42,19 +32,17 @@
 </script>
 
 {#if chartData.length > 0}
-  {#if Chart}
-    <Chart.Container config={chartConfig} class="ui:aspect-auto ui:w-full" style="height: {chartHeightPx}px">
-      <Chart.BarChart
-        data={chartData}
-        orientation="horizontal"
-        y="label"
-        axis="y"
-        bandPadding={0.25}
-        props={{ yAxis: { format: truncateAxisLabel } }}
-        {series}
-      />
-    </Chart.Container>
-  {/if}
+  <Chart.Container config={chartConfig} class="ui:aspect-auto ui:w-full" style="height: {chartHeightPx}px">
+    <Chart.BarChart
+      data={chartData}
+      orientation="horizontal"
+      y="label"
+      axis="y"
+      bandPadding={0.25}
+      props={{ yAxis: { format: truncateAxisLabel } }}
+      {series}
+    />
+  </Chart.Container>
 {:else}
   <p class="ui:text-muted-foreground ui:text-sm">{emptyLabel}</p>
 {/if}

@@ -15,6 +15,7 @@ import {
 
 export type SubmissionAnswerPayload = {
   questionId: number;
+  questionRevisionId?: string;
   optionId?: number;
   answer?: string;
   response?: unknown;
@@ -67,15 +68,28 @@ function toQuestionModel(question: SubmissionQuestionDefinition): ExerciseQuesti
 
 function validatePayloadShape(payload: SubmissionAnswerPayload, question: ExerciseQuestionModel): void {
   if (question.questionType === QUESTION_TYPE_KEY.ASSESSMENT_ITEM) {
-    if (payload.optionId !== undefined || payload.answer !== undefined || payload.response === undefined) {
+    if (
+      payload.questionRevisionId === undefined ||
+      payload.optionId !== undefined ||
+      payload.answer !== undefined ||
+      payload.response === undefined
+    ) {
       throw new AppError(
-        `Question ${payload.questionId} requires a canonical assessment response`,
+        `Question ${payload.questionId} requires a canonical assessment response and delivered revision`,
         ErrorCodes.VALIDATION_ERROR,
         400
       );
     }
 
     return;
+  }
+
+  if (payload.questionRevisionId !== undefined) {
+    throw new AppError(
+      `Question ${payload.questionId} does not accept a question revision field`,
+      ErrorCodes.VALIDATION_ERROR,
+      400
+    );
   }
 
   if (question.questionType === QUESTION_TYPE_KEY.RADIO) {

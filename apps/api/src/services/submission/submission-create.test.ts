@@ -166,6 +166,16 @@ const manualQuestion = {
   questionType: { id: 3, typename: 'TEXTAREA' },
   options: []
 };
+const numericQuestion = {
+  ...question,
+  id: 5,
+  title: 'Enter the answer',
+  questionTypeId: 6,
+  points: 4,
+  settings: { correctValue: 42, tolerance: 0 },
+  questionType: { id: 6, typename: 'NUMERIC' },
+  options: []
+};
 const compositeQuestion = {
   ...question,
   id: 6,
@@ -322,6 +332,27 @@ describe('createSubmissionService transaction guards', () => {
     // Payload validation precedes materialization, so an invalid submission
     // leaves no revision writes behind to roll back.
     expect(questionRevisionGatewayMocks.materializeLegacyQuestionRevision).not.toHaveBeenCalled();
+  });
+
+  it('rejects an oversized aggregate canonical payload before opening a transaction', async () => {
+    const oversizedAnswers = Array.from({ length: 11 }, (_, index) => ({
+      questionId: index + 1,
+      response: {
+        schemaVersion: 1 as const,
+        responses: [
+          {
+            interactionId: `text-${index}`,
+            response: { kind: 'text' as const, text: 'x'.repeat(100_000) }
+          }
+        ]
+      }
+    }));
+
+    await expect(createSubmissionService(courseId, exerciseId, submittedBy, oversizedAnswers)).rejects.toMatchObject({
+      code: ErrorCodes.VALIDATION_ERROR,
+      statusCode: 400
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
   it('returns an existing keyed attempt without writing or re-running grading', async () => {
@@ -553,6 +584,75 @@ describe('createSubmissionService transaction guards', () => {
     );
   });
 
+  it('auto-scores a legacy numeric question after materializing its revision', async () => {
+    const createdSubmission = {
+      id: 'submission-legacy-numeric',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'auto_graded',
+      gradingState: 'completed',
+      statusId: 3,
+      score: 0,
+      total: 0
+    };
+    const insertedAnswer = {
+      id: 5,
+      submissionId: createdSubmission.id,
+      questionId: numericQuestion.id,
+      groupMemberId: submittedBy,
+      answerData: { type: 'NUMERIC', value: 42 },
+      score: 0,
+      point: 0
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [numericQuestion]
+    });
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.createSubmission.mockResolvedValue(createdSubmission);
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([insertedAnswer]);
+    mocks.updateSubmissionGrades.mockResolvedValue({ ...createdSubmission, score: 4, total: 4 });
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [{ questionId: numericQuestion.id, answer: JSON.stringify({ type: 'NUMERIC', value: 42 }) }],
+        '019cdef0-1234-7abc-8def-1234567890c0'
+      )
+    ).resolves.toMatchObject({
+      id: createdSubmission.id,
+      overallStatus: 'auto_graded',
+      gradingState: 'completed',
+      score: 4
+    });
+    expect(questionRevisionGatewayMocks.materializeLegacyQuestionRevision).toHaveBeenCalledWith(
+      numericQuestion.id,
+      expect.any(Object)
+    );
+    expect(mocks.createSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ overallStatus: 'auto_graded', gradingState: 'completed' }),
+      expect.any(Object)
+    );
+    expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
+      courseId,
+      createdSubmission.id,
+      expect.objectContaining({
+        answers: [{ questionId: numericQuestion.id, points: 4 }],
+        gradingState: 'completed',
+        total: 4
+      }),
+      expect.any(Object)
+    );
+  });
+
   it('auto-scores the objective interaction inside one hybrid composite item', async () => {
     const createdSubmission = {
       id: 'submission-composite-hybrid',
@@ -617,7 +717,13 @@ describe('createSubmissionService transaction guards', () => {
         courseId,
         exerciseId,
         submittedBy,
-        [{ questionId: compositeQuestion.id, response: answerData.response }],
+        [
+          {
+            questionId: compositeQuestion.id,
+            questionRevisionId: `revision-${compositeQuestion.id}`,
+            response: answerData.response
+          }
+        ],
         '019cdef0-1234-7abc-8def-1234567890af'
       )
     ).resolves.toMatchObject({ overallStatus: 'hybrid', gradingState: 'awaiting_manual', score: 3 });
@@ -631,6 +737,62 @@ describe('createSubmissionService transaction guards', () => {
       }),
       expect.any(Object)
     );
+  });
+
+  it('rejects a canonical response when the delivered revision is no longer current', async () => {
+    const deliveredRevisionId = '00000000-0000-4000-8000-000000000006';
+    const currentRevisionId = '00000000-0000-4000-8000-000000000106';
+    const response = {
+      schemaVersion: 1 as const,
+      responses: [{ interactionId: 'block-1', response: { kind: 'choice' as const, selectedOptionIds: ['option-1'] } }]
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [compositeQuestion]
+    });
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: currentRevisionId,
+      questionId: compositeQuestion.id,
+      revision: 2,
+      definition: autoChoiceDefinition
+    });
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: currentRevisionId,
+        questionId: compositeQuestion.id,
+        definition: autoChoiceDefinition
+      }
+    ]);
+    mocks.createSubmission.mockResolvedValue({
+      id: 'submission-stale-revision',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'auto_graded',
+      gradingState: 'completed',
+      statusId: 3,
+      score: 0,
+      total: 0
+    });
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([]);
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [{ questionId: compositeQuestion.id, questionRevisionId: deliveredRevisionId, response }],
+        '019cdef0-1234-7abc-8def-1234567890bf'
+      )
+    ).rejects.toMatchObject({ code: ErrorCodes.CONFLICT, statusCode: 409 });
+    expect(mocks.createSubmission).not.toHaveBeenCalled();
+    expect(mocks.insertQuestionAnswersBatch).not.toHaveBeenCalled();
   });
 
   it('keeps a persisted composite with unsupported scoring semantics in manual grading', async () => {
@@ -693,7 +855,13 @@ describe('createSubmissionService transaction guards', () => {
         courseId,
         exerciseId,
         submittedBy,
-        [{ questionId: compositeQuestion.id, response }],
+        [
+          {
+            questionId: compositeQuestion.id,
+            questionRevisionId: `revision-${compositeQuestion.id}`,
+            response
+          }
+        ],
         '019cdef0-1234-7abc-8def-1234567890b0'
       )
     ).resolves.toMatchObject({ overallStatus: 'manual_required', gradingState: 'awaiting_manual', score: 0 });
@@ -791,8 +959,16 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [
-          { questionId: compositeQuestion.id, response: supportedResponse },
-          { questionId: persistedUnsupportedCompositeQuestion.id, response: unsupportedResponse }
+          {
+            questionId: compositeQuestion.id,
+            questionRevisionId: `revision-${compositeQuestion.id}`,
+            response: supportedResponse
+          },
+          {
+            questionId: persistedUnsupportedCompositeQuestion.id,
+            questionRevisionId: `revision-${persistedUnsupportedCompositeQuestion.id}`,
+            response: unsupportedResponse
+          }
         ],
         '019cdef0-1234-7abc-8def-1234567890b1'
       )
@@ -1373,8 +1549,8 @@ describe('createSubmissionService transaction guards', () => {
       score: 0,
       total: 0
     };
-    // Statically TEXTAREA is manual; the attempted revision definition says the
-    // item is fully auto-gradable, and the canonical capability must win.
+    // Statically ASSESSMENT_ITEM is manual; the attempted revision definition
+    // says the item is fully auto-gradable, and the canonical capability wins.
     mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
       exercise: {
         id: exerciseId,
@@ -1382,10 +1558,16 @@ describe('createSubmissionService transaction guards', () => {
         allowMultipleAttempts: true,
         assignmentMode: 'ALL_STUDENTS'
       },
-      questions: [manualQuestion]
+      questions: [compositeQuestion]
+    });
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: `revision-${compositeQuestion.id}`,
+      questionId: compositeQuestion.id,
+      revision: 1,
+      definition: autoChoiceDefinition
     });
     mocks.getQuestionRevisionsByIds.mockResolvedValue([
-      { id: `revision-${manualQuestion.id}`, questionId: manualQuestion.id, definition: autoChoiceDefinition }
+      { id: `revision-${compositeQuestion.id}`, questionId: compositeQuestion.id, definition: autoChoiceDefinition }
     ]);
     mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
     mocks.createSubmission.mockResolvedValue(createdSubmission);
@@ -1396,7 +1578,21 @@ describe('createSubmissionService transaction guards', () => {
       courseId,
       exerciseId,
       submittedBy,
-      [{ questionId: manualQuestion.id, answer: 'Detailed answer' }],
+      [
+        {
+          questionId: compositeQuestion.id,
+          questionRevisionId: `revision-${compositeQuestion.id}`,
+          response: {
+            schemaVersion: 1,
+            responses: [
+              {
+                interactionId: 'block-1',
+                response: { kind: 'choice', selectedOptionIds: ['option-1'] }
+              }
+            ]
+          }
+        }
+      ],
       '019cdef0-1234-7abc-8def-1234567890b7'
     );
 

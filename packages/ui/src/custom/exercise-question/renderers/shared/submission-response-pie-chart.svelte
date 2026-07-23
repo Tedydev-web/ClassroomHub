@@ -1,15 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import * as Chart from '../../../../base/chart';
   import type { ChartConfig } from '../../../../base/chart';
 
   import { CHART_COLORS } from '../submission-utils';
-
-  // Load layerchart client-only — its circular ESM graph breaks Vite dev SSR and
-  // charts need the DOM. See submission-response-bar-chart.svelte for detail.
-  let Chart = $state<typeof import('../../../../base/chart') | null>(null);
-  onMount(async () => {
-    Chart = await import('../../../../base/chart');
-  });
 
   interface Row {
     key: string;
@@ -28,18 +21,16 @@
 </script>
 
 {#if chartData.length > 0}
-  {#if Chart}
-    <Chart.Container config={chartConfig} class="ui:h-[280px] ui:w-full ui:flex-col ui:items-center">
-      <Chart.PieChart data={chartData} key="key" label="label" value="responses" c="color" />
-      <Chart.ChartLegend
-        items={chartData.map((d) => ({
-          label: d.label,
-          color: d.color ?? CHART_COLORS[0],
-          value: d.responses
-        }))}
-      />
-    </Chart.Container>
-  {/if}
+  <Chart.Container config={chartConfig} class="ui:h-[280px] ui:w-full ui:flex-col ui:items-center">
+    <Chart.PieChart data={chartData} key="key" label="label" value="responses" c="color" />
+    <Chart.ChartLegend
+      items={chartData.map((d) => ({
+        label: d.label,
+        color: d.color ?? CHART_COLORS[0],
+        value: d.responses
+      }))}
+    />
+  </Chart.Container>
 {:else}
   <p class="ui:text-muted-foreground ui:text-sm">{emptyLabel}</p>
 {/if}
