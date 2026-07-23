@@ -135,8 +135,12 @@ services:
   api:
     image: classroomio-production-api:local
     build:
-      # Context is the repository root; this file lives two levels below it.
-      context: ../..
+      # Context is the repository root. Coolify's compose build pack resolves
+      # build contexts relative to the repo root it clones into, not relative to
+      # this file, so `.` is the root here even though the file is nested under
+      # docker/production. (A relative `../..` escapes above the clone and fails
+      # with "lstat /docker: no such file".) `dockerfile` is then root-relative.
+      context: .
       dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
@@ -240,7 +244,8 @@ services:
   dashboard:
     image: classroomio-production-dashboard:local
     build:
-      context: ../..
+      # Root-relative for Coolify's build pack — see the api service note.
+      context: .
       dockerfile: docker/Dockerfile.dashboard
       # Hard-coded, not env-driven: SvelteKit bakes these into the bundle, so an
       # override at deploy time would silently produce the wrong topology.
@@ -321,7 +326,8 @@ services:
   jobs:
     image: classroomio-production-jobs:local
     build:
-      context: ../..
+      # Root-relative for Coolify's build pack — see the api service note.
+      context: .
       dockerfile: docker/Dockerfile.jobs
     labels:
       io.classroom.stack: production
