@@ -1,8 +1,38 @@
 import type { EmailBranding } from '../core/branding';
 import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
 
+/**
+ * Shared shell for every transactional email.
+ *
+ * Layout follows the pattern that reads well across clients: sender mark above
+ * a bordered card, content inside it, legal footer below on the page
+ * background. The card is capped with a thin accent band in the brand colour —
+ * it gives the message a deliberate, designed edge without depending on a
+ * hosted illustration, which would break the moment images are blocked.
+ *
+ * Colours mirror the product design tokens in `packages/ui/src/index.css`,
+ * converted from oklch because no mail client understands that syntax.
+ *
+ * Every email composes plain HTML and hands it to this function, so restyling
+ * here restyles all of them. Content may rely on `.button`, `.tooltip` and
+ * `.brandcolor`; those class names are part of the contract.
+ */
+
 const DEFAULT_BUTTON_COLOR = '#1D4EE2';
 const PRODUCT_WEBSITE_URL = `https://${PRODUCT_HOSTS.marketing}`;
+
+/** Product tokens, resolved to hex for mail clients. */
+const PAGE_BG = '#F5F5F5'; // --muted
+const CARD_BG = '#FFFFFF'; // --card
+const BORDER = '#E5E5E5'; // --border
+const TEXT = '#0A0A0A'; // --foreground
+const TEXT_MUTED = '#737373'; // --muted-foreground
+const SURFACE_MUTED = '#F5F5F5';
+
+// Geist is the product typeface but no client will load a webfont reliably, so
+// the stack falls through to whatever the reader's OS considers native.
+const FONT_STACK =
+  "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 function escapeHtmlAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -14,21 +44,22 @@ function buildMasthead(branding: EmailBranding): string {
 
   if (logoUrl) {
     const nameHtml = orgName
-      ? `<span style="margin-left:10px;font-size:16px;font-weight:600;color:#111827;vertical-align:middle;">${orgName}</span>`
+      ? `<span style="margin-left:10px;font-size:15px;font-weight:600;color:${TEXT};vertical-align:middle;">${orgName}</span>`
       : '';
-    return `<img src="${logoUrl}" alt="${orgName || 'Logo'}" style="max-height:40px;width:auto;display:inline-block;vertical-align:middle;" />${nameHtml}`;
+    return `<img src="${logoUrl}" alt="${orgName || 'Logo'}" style="max-height:32px;width:auto;display:inline-block;vertical-align:middle;" />${nameHtml}`;
   }
 
   if (orgName) {
-    return `<span style="font-size:18px;font-weight:600;color:#111827;">${orgName}</span>`;
+    return `<span style="font-size:17px;font-weight:600;color:${TEXT};">${orgName}</span>`;
   }
 
-  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="font-size:18px;font-weight:600;color:#111827;text-decoration:none;">${PRODUCT_NAME}</a>`;
+  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="font-size:17px;font-weight:600;color:${TEXT};text-decoration:none;">${PRODUCT_NAME}</a>`;
 }
 
 export const getDefaultTemplate = (content: string, branding?: EmailBranding): string => {
-  const buttonColor = branding?.themeColor || DEFAULT_BUTTON_COLOR;
+  const accentColor = branding?.themeColor || DEFAULT_BUTTON_COLOR;
   const masthead = buildMasthead(branding);
+  const year = new Date().getFullYear();
 
   return `<!DOCTYPE html>
 <html>
@@ -40,121 +71,149 @@ export const getDefaultTemplate = (content: string, branding?: EmailBranding): s
 
   <style>
     body {
-      background-color: #F0F5FF;
-      font-family: "Poppins", "Helvetica Neue", "Segoe UI", Helvetica,
-        sans-serif;
+      background-color: ${PAGE_BG};
+      font-family: ${FONT_STACK};
       font-size: 15px;
       font-weight: 400;
-      line-height: 26px;
+      line-height: 24px;
+      color: ${TEXT};
       margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
     }
 
-    pre {
-      background: #f4f4f4;
-      padding: 2px;
+    p {
+      margin: 0 0 16px;
+    }
+
+    h1, h2, h3, h4 {
+      margin: 0 0 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: ${TEXT};
+    }
+
+    h1 { font-size: 24px; letter-spacing: -0.02em; }
+    h2 { font-size: 19px; letter-spacing: -0.01em; }
+    h3 { font-size: 16px; }
+
+    a {
+      color: ${accentColor};
+    }
+
+    strong {
+      font-weight: 600;
+      color: ${TEXT};
     }
 
     hr {
-      border-top: 1px dashed #94a3b8;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
+      border: none;
+      border-top: 1px solid ${BORDER};
+      margin: 24px 0;
+    }
+
+    pre {
+      background: ${SURFACE_MUTED};
+      border: 1px solid ${BORDER};
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     table {
       width: 100%;
+      border-collapse: collapse;
     }
 
     table td {
-      padding: 5px 10px 0px;
+      padding: 8px 0;
       vertical-align: middle;
     }
 
     .brandcolor {
-      color: #00c4b8;
+      color: ${accentColor};
+    }
+
+    /*
+     * Rendered as a centred block rather than an inline link: the emails wrap
+     * the anchor in a bare <div>, so there is no parent hook to centre from.
+     * Outlook ignores max-width and falls back to a full-width bar, which is a
+     * perfectly good call-to-action.
+     */
+    .button {
+      display: block;
+      max-width: 300px;
+      margin: 28px auto;
+      background: ${accentColor};
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      font-size: 15px;
+      line-height: 20px;
+      padding: 13px 24px;
     }
 
     .tooltip {
-      background-color: #f1f5f9;
-      padding: 1rem;
-      border-radius: 1rem;
-      color: #475569;
-      margin-top: 15px;
-      margin-bottom: 15px;
+      background-color: ${SURFACE_MUTED};
+      border: 1px solid ${BORDER};
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: ${TEXT_MUTED};
+      font-size: 14px;
+      line-height: 22px;
+      margin: 20px 0;
     }
 
     .tooltip a {
-      color: #1e293b;
-    }
-
-    .button {
-      margin-top: 12px;
-      background: ${buttonColor};
-      border-radius: 6px;
-      text-decoration: none !important;
-      color: #fff !important;
-      font-weight: 500;
-      padding: 8px 16px;
-      display: inline-block;
-      font-size: 14px;
-      line-height: 20px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 11px;
-      color: #94a3b8;
-    }
-
-    .footer a {
-      color: #94a3b8;
+      color: ${TEXT};
     }
 
     img {
       max-width: 100%;
       height: auto;
+      border: 0;
     }
 
-    h1,
-    h2,
-    h3,
-    h4 {
-      font-weight: 600;
+    .footer a {
+      color: ${TEXT_MUTED};
+      text-decoration: none;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .card-padding { padding: 24px 20px !important; }
+      .button { max-width: 100% !important; }
     }
   </style>
 </head>
 
-<body style="
-      background-color: #F0F5FF;
-      font-family: 'Poppins', 'Helvetica Neue', 'Segoe UI', Helvetica,
-        sans-serif;
-      font-size: 15px;
-      line-height: 26px;
-      padding: 20px 15px;
-      margin: 0;
-      color: #1e293b;
-    ">
-  <div style="background-color:#fff;max-width:525px;margin:0 auto;border-radius:4px;">
-    <div style="padding:10px;border-bottom:1px solid #f0f0f0;">
+<body style="background-color:${PAGE_BG};font-family:${FONT_STACK};font-size:15px;line-height:24px;color:${TEXT};margin:0;padding:32px 16px;">
+  <div style="max-width:600px;margin:0 auto;">
+
+    <div style="padding:0 4px 16px;">
       ${masthead}
     </div>
-    <div style="padding:10px 15px;">
-      ${content}
+
+    <div style="background-color:${CARD_BG};border:1px solid ${BORDER};border-radius:12px;overflow:hidden;">
+      <div style="height:4px;background-color:${accentColor};font-size:0;line-height:0;">&nbsp;</div>
+      <div class="card-padding" style="padding:32px;">
+        ${content}
+      </div>
     </div>
-    <div class="footer" style="
-      text-align:center;
-      font-size:11px;
-      color:#94a3b8;
-      padding:24px 30px;
-      border-top:1px solid #f0f0f0;">
-      ${PRODUCT_NAME} ${new Date().getFullYear()}. All rights reserved.
-      <br />
-      <a href="${PRODUCT_WEBSITE_URL}" style="color:#94a3b8;text-decoration:none;">Website</a>
+
+    <div class="footer" style="text-align:center;font-size:12px;line-height:20px;color:${TEXT_MUTED};padding:24px 16px 0;">
+      <a href="${PRODUCT_WEBSITE_URL}" style="color:${TEXT_MUTED};text-decoration:none;">Website</a>
       &nbsp;&middot;&nbsp;
-      <a href="${PRODUCT_WEBSITE_URL}/tos" style="color:#94a3b8;text-decoration:none;">Terms</a>
+      <a href="${PRODUCT_WEBSITE_URL}/tos" style="color:${TEXT_MUTED};text-decoration:none;">Terms</a>
       &nbsp;&middot;&nbsp;
-      <a href="${PRODUCT_WEBSITE_URL}/privacy" style="color:#94a3b8;text-decoration:none;">Privacy</a>
+      <a href="${PRODUCT_WEBSITE_URL}/privacy" style="color:${TEXT_MUTED};text-decoration:none;">Privacy</a>
+      <div style="margin-top:8px;">&copy; ${year} ${PRODUCT_NAME}. All rights reserved.</div>
     </div>
+
   </div>
 </body>
 
