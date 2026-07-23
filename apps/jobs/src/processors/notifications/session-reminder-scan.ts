@@ -60,7 +60,7 @@ export async function processSessionReminderScan(): Promise<ScanResult> {
       const ics =
         offset === 1440
           ? buildSessionIcs({
-              uid: `session-${row.lessonId}@classroom.tedydev.io.vn`,
+              uid: `session-${row.lessonId}@classroom.io.vn`,
               sequence: 0,
               method: 'PUBLISH',
               start: row.lessonAt,

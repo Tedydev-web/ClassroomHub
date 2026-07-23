@@ -135,12 +135,12 @@ class OpenAPISpecGenerator {
             description: 'Manage your organization on classroomio via the API',
             contact: {
               name: 'Classroom',
-              url: 'https://classroom.tedydev.io.vn'
+              url: 'https://classroom.io.vn'
             }
           },
           servers: [
             {
-              url: 'https://classroom-api.tedydev.io.vn',
+              url: 'https://api.classroom.io.vn',
               description: 'Production environment'
             },
             {

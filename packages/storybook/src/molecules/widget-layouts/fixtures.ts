@@ -43,7 +43,7 @@ function makeCourse(
     createdAt: partial.createdAt ?? new Date().toISOString(),
     tags: partial.tags ?? [],
     featured: partial.featured ?? false,
-    url: partial.url ?? `https://classroom.tedydev.io.vn/course/${partial.id}`
+    url: partial.url ?? `https://classroom.io.vn/course/${partial.id}`
   };
 }
 

@@ -1,7 +1,9 @@
 export const blockedSubdomain = [
   'academy',
+  'api',
   'app',
   'apps',
+  'assets',
   'blog',
   'build',
   'campaign',
@@ -19,6 +21,7 @@ export const blockedSubdomain = [
   'group',
   'groups',
   'help',
+  'hub',
   'launch',
   'launchweek',
   'mobile',

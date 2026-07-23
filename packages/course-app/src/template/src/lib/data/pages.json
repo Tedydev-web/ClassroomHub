@@ -11,8 +11,8 @@
         "settings": {
           "title": "Hype180 Academy",
           "description": "Learn React.js from industry experts at Hype180",
-          "url": "https://classroom-course-app.tedydev.io.vn",
-          "appUrl": "https://classroom-course-app.tedydev.io.vn",
+          "url": "https://course-app.classroom.io.vn",
+          "appUrl": "https://course-app.classroom.io.vn",
           "keywords": ["react.js", "javascript", "web development", "coding bootcamp"],
           "logo": "/logo.svg"
         }
@@ -28,17 +28,17 @@
             },
             {
               "title": "Blog",
-              "link": "https://classroom.tedydev.io.vn/blog",
+              "link": "https://classroom.io.vn/blog",
               "redirect": true
             },
             {
               "title": "API",
-              "link": "https://classroom.tedydev.io.vn/docs",
+              "link": "https://classroom.io.vn/docs",
               "redirect": true
             },
             {
               "title": "Docs",
-              "link": "https://classroom.tedydev.io.vn/docs",
+              "link": "https://classroom.io.vn/docs",
               "redirect": true
             }
           ]

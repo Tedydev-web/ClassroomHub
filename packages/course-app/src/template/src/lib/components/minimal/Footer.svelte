@@ -32,7 +32,7 @@
       {/if}
     </ul>
     <a
-      href="https://classroom.tedydev.io.vn"
+      href="https://classroom.io.vn"
       target="_blank"
       rel="noopener noreferrer"
       class="text-minimal flex items-center gap-1 hover:underline dark:text-white"

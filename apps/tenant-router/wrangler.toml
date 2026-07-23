@@ -4,26 +4,34 @@ main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
 # Production routes — bind the Worker to every browser-facing host.
-# Tenant subdomains and platform hosts live on the `tedydev.io.vn` zone.
-# The admin app is routed through the Worker so
-# it can use same-origin `/api/*` paths with host-only auth cookies.
+# The admin app is routed through the Worker so it can use same-origin `/api/*`
+# paths with host-only auth cookies.
+#
+# Routes are listed one by one instead of `*.classroom.io.vn/*` on purpose.
+# Tenant sites and platform hosts share a single label level, and this Worker
+# picks its upstream by path (`/proxy`, `/api/auth`) rather than by host — so a
+# wildcard would swallow `api.classroom.io.vn` and forward it to the dashboard.
+# `api` and `assets` therefore stay off the Worker entirely: the API is reached
+# through the tunnel and media is served straight from R2.
+#
+# Adding a tenant means adding its route here.
 routes = [
-  { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-learn.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-app.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-play.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-embed.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
+  { pattern = "classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "learn.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "hub.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "play.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "embed.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "msna.classroom.io.vn/*", zone_name = "classroom.io.vn" }
 ]
 
 # Override per environment. Origins must bypass this Worker to prevent loops.
 [vars]
-DASHBOARD_UPSTREAM_HOST = "dashboard-origin.tedydev.io.vn"
-API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
-APEX_REDIRECT_HOST = "classroom-learn.tedydev.io.vn"
-APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
-EMBED_HOST = "classroom-embed.tedydev.io.vn"
-API_URL = "https://classroom-api.tedydev.io.vn"
+DASHBOARD_UPSTREAM_HOST = "dashboard-origin.classroom.io.vn"
+API_UPSTREAM_HOST = "api-origin.classroom.io.vn"
+APEX_REDIRECT_HOST = "learn.classroom.io.vn"
+APEX_REDIRECT_TARGET = "https://classroom.io.vn"
+EMBED_HOST = "embed.classroom.io.vn"
+API_URL = "https://api.classroom.io.vn"
 
 # R2 bucket binding so /hls/* can stream segments directly from Cloudflare,
 # bypassing Render. The bucket name matches the storage config in

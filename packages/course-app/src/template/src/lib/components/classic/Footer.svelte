@@ -23,7 +23,7 @@
       <Logo src={seo?.settings.logo} alt={seo?.settings.title} />
 
       <a
-        href="https://classroom.tedydev.io.vn"
+        href="https://classroom.io.vn"
         target="_blank"
         rel="noopener noreferrer"
         class="flex items-center gap-1 md:hidden"
@@ -64,7 +64,7 @@
       {/if}
     </ul>
     <a
-      href="https://classroom.tedydev.io.vn"
+      href="https://classroom.io.vn"
       target="_blank"
       rel="noopener noreferrer"
       class="hidden items-center gap-1 md:flex"
