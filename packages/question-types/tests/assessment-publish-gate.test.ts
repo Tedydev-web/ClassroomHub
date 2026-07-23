@@ -5,7 +5,12 @@ import {
   validateAssessmentItemForPublish
 } from '../src/assessment';
 import type { AssessmentItemDefinition } from '../src/assessment';
-import { buildChoiceInteraction, buildDefinition, interactionBlock } from './fixtures/assessment/definition-builders';
+import {
+  buildChoiceInteraction,
+  buildDefinition,
+  contentBlock,
+  interactionBlock
+} from './fixtures/assessment/definition-builders';
 
 function expectPublishViolation(definition: AssessmentItemDefinition, pathFragment: string): void {
   const result = validateAssessmentItemForPublish(definition);
@@ -20,6 +25,22 @@ describe('validateAssessmentItemForPublish', () => {
   it('accepts a well-formed authorable definition', () => {
     const result = validateAssessmentItemForPublish(buildDefinition());
     expect(result.success).toBe(true);
+  });
+
+  it('requires meaningful supporting content for the passage split layout', () => {
+    const missingContent = buildDefinition({ presentation: { layout: 'passage_split' } });
+    const emptyContent = buildDefinition({
+      presentation: { layout: 'passage_split' },
+      blocks: [contentBlock('c1', '<p>&nbsp;</p>'), interactionBlock('i1', buildChoiceInteraction())]
+    });
+    const authoredContent = buildDefinition({
+      presentation: { layout: 'passage_split' },
+      blocks: [contentBlock('c1'), interactionBlock('i1', buildChoiceInteraction())]
+    });
+
+    expectPublishViolation(missingContent, 'presentation.layout');
+    expectPublishViolation(emptyContent, 'presentation.layout');
+    expect(validateAssessmentItemForPublish(authoredContent).success).toBe(true);
   });
 
   it('rejects choice interactions with fewer than two options or no correct option', () => {
@@ -59,6 +80,37 @@ describe('validateAssessmentItemForPublish', () => {
 
     expectPublishViolation(oneOption, 'options');
     expectPublishViolation(noCorrect, 'correctOptionIds');
+  });
+
+  it('rejects interactions, options, and feedback without meaningful authored content', () => {
+    const emptyPrompt = buildDefinition({
+      blocks: [interactionBlock('i1', buildChoiceInteraction({ prompt: { format: 'html', html: '<p>&nbsp;</p>' } }))]
+    });
+    const emptyOption = buildDefinition({
+      blocks: [
+        interactionBlock(
+          'i1',
+          buildChoiceInteraction({
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [
+                { id: 'a', html: 'A' },
+                { id: 'b', html: '<div> </div>' }
+              ],
+              correctOptionIds: ['a']
+            }
+          })
+        )
+      ]
+    });
+    const emptyFeedback = buildDefinition({
+      feedback: [{ id: 'feedback-1', scope: 'item', html: '<p></p>', visibility: 'after_submit' }]
+    });
+
+    expectPublishViolation(emptyPrompt, 'prompt');
+    expectPublishViolation(emptyOption, 'options.1.html');
+    expectPublishViolation(emptyFeedback, 'feedback.0.html');
   });
 
   it('rejects single-cardinality choice with multiple correct options', () => {

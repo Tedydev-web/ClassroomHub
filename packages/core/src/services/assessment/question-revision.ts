@@ -179,7 +179,10 @@ async function getQuestionOrThrow(questionId: number, dbClient: DbOrTxClient): P
  * (A-B-A) appends a new monotonic revision. A stale expectation fails 409
  * without writing.
  */
-export async function publishQuestionRevision(input: PublishQuestionRevisionInput): Promise<PublishedQuestionRevision> {
+export async function publishQuestionRevision(
+  input: PublishQuestionRevisionInput,
+  dbClient: DbOrTxClient = db
+): Promise<PublishedQuestionRevision> {
   if (!Number.isInteger(input.expectedRevision) || input.expectedRevision < 0) {
     throw new AppError(
       `Expected revision must be a non-negative integer, got "${input.expectedRevision}"`,
@@ -188,7 +191,7 @@ export async function publishQuestionRevision(input: PublishQuestionRevisionInpu
     );
   }
 
-  return db.transaction(async (tx) => {
+  return dbClient.transaction(async (tx) => {
     // Unlocked read only to learn the owning exercise; all state is re-read under the lock.
     const unlockedQuestion = await getQuestionOrThrow(input.questionId, tx);
     await lockExerciseAssignmentState(unlockedQuestion.exerciseId, tx);

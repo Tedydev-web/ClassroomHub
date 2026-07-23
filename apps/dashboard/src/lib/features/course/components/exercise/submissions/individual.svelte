@@ -8,24 +8,48 @@
   import { getQuestionsForSection, questionnaire } from '../store';
   import { t } from '$lib/utils/functions/translations';
   import type { Question } from '$features/course/types';
-  import type { AnswerData } from '@cio/question-types';
+  import { getAssessmentVerticalSliceResponseProgress, type AnswerData } from '@cio/question-types';
   import { toExerciseQuestionModel } from '../question-type-utils';
   import { getExerciseQuestionLabels } from '../question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
   import {
     formatExercisePoints,
     getActiveExerciseQuestions,
+    orderExerciseItemsBySections,
     roundExercisePointsForDisplay,
     shouldCompleteExerciseFromSubmission,
     type ExerciseSubmissionStudentGroup
   } from '$features/course/utils/exercise-progression-utils';
-  import { sumAnswerScoresForRenderedQuestions } from '$features/course/utils/submission-review-score-utils';
+  import {
+    getCanonicalAssessmentReviewItems,
+    sumAnswerScoresForRenderedQuestions,
+    type CanonicalAssessmentReviewItem
+  } from '$features/course/utils/submission-review-score-utils';
   import type { SubmissionListItem } from '$features/course/utils/types';
 
   interface Props {
     isLoading?: boolean;
     submissionGroups?: ExerciseSubmissionStudentGroup[];
   }
+
+  interface ReviewQuestionRef {
+    id: string | number;
+    points?: number | null;
+  }
+
+  interface CanonicalReviewScore {
+    score: number;
+    maxScore: number;
+  }
+
+  type MixedReviewItem =
+    | { id: string; kind: 'legacy'; question: Question }
+    | {
+        id: string;
+        kind: 'canonical';
+        question: CanonicalAssessmentReviewItem['question'];
+        reviewItem: CanonicalAssessmentReviewItem;
+      };
 
   let { isLoading = $bindable(false), submissionGroups = [] }: Props = $props();
 
@@ -60,26 +84,91 @@
     return submittedAnswer.answerData;
   }
 
-  function getSectionScore(submission: SubmissionListItem, questions: Question[]) {
+  function getSectionScore(submission: SubmissionListItem, questions: ReviewQuestionRef[]) {
     return sumAnswerScoresForRenderedQuestions(questions, submission.answers);
   }
 
-  function getSectionMaxPoints(questions: Question[]) {
+  function getSectionMaxPoints(questions: ReviewQuestionRef[]) {
     return questions.reduce((total, question) => total + Number(question.points ?? 0), 0);
+  }
+
+  function getCanonicalReviewScore(items: ReadonlyArray<CanonicalReviewScore>) {
+    return items.reduce((total, item) => total + item.score, 0);
+  }
+
+  function getCanonicalReviewMaxPoints(items: ReadonlyArray<CanonicalReviewScore>) {
+    return items.reduce((total, item) => total + item.maxScore, 0);
+  }
+
+  function getCanonicalReviewItemsForSection(submission: SubmissionListItem, exerciseSectionId: string) {
+    return getCanonicalAssessmentReviewItems($questionnaire.canonicalQuestions, submission.answers).filter(
+      (item) => item.question.exerciseSectionId === exerciseSectionId
+    );
+  }
+
+  function getMixedReviewItems(submission: SubmissionListItem): MixedReviewItem[] {
+    const legacyItems: MixedReviewItem[] = getActiveExerciseQuestions($questionnaire.questions).map((question) => ({
+      id: `legacy:${question.id}`,
+      kind: 'legacy',
+      question
+    }));
+    const canonicalItems: MixedReviewItem[] = getCanonicalAssessmentReviewItems(
+      $questionnaire.canonicalQuestions,
+      submission.answers
+    ).map((reviewItem) => ({
+      id: `canonical:${reviewItem.question.id}`,
+      kind: 'canonical',
+      question: reviewItem.question,
+      reviewItem
+    }));
+
+    return orderExerciseItemsBySections([...legacyItems, ...canonicalItems], activeSections);
+  }
+
+  function getMixedReviewItemQuestionCount(item: MixedReviewItem): number {
+    if (item.kind === 'legacy') return 1;
+
+    return getAssessmentVerticalSliceResponseProgress(item.reviewItem.definition, item.reviewItem.response).total;
+  }
+
+  function getMixedReviewQuestionCount(items: MixedReviewItem[]): number {
+    return items.reduce((total, item) => total + getMixedReviewItemQuestionCount(item), 0);
+  }
+
+  function getQuestionNumberStartByReviewItemId(items: MixedReviewItem[]): Record<string, number> {
+    const numberStartByItemId: Record<string, number> = {};
+    let nextQuestionNumber = 1;
+
+    for (const item of items) {
+      numberStartByItemId[item.id] = nextQuestionNumber;
+      nextQuestionNumber += getMixedReviewItemQuestionCount(item);
+    }
+
+    return numberStartByItemId;
   }
 
   // Numerator and denominator share the same rendered active question set:
   // answers to questions archived after the attempt are excluded so the
   // displayed score never exceeds the displayed maximum.
   function getTotalScore(submission: SubmissionListItem) {
-    return sumAnswerScoresForRenderedQuestions(
-      getActiveExerciseQuestions($questionnaire.questions),
+    const activeLegacyQuestions = getActiveExerciseQuestions($questionnaire.questions);
+    const legacyScore = sumAnswerScoresForRenderedQuestions(activeLegacyQuestions, submission.answers);
+    const canonicalReviewItems = getCanonicalAssessmentReviewItems(
+      $questionnaire.canonicalQuestions,
       submission.answers
     );
+
+    return legacyScore + getCanonicalReviewScore(canonicalReviewItems);
   }
 
-  function getTotalPossiblePoints() {
-    return getSectionMaxPoints(getActiveExerciseQuestions($questionnaire.questions));
+  function getTotalPossiblePoints(submission: SubmissionListItem) {
+    const activeLegacyQuestions = getActiveExerciseQuestions($questionnaire.questions);
+    const canonicalReviewItems = getCanonicalAssessmentReviewItems(
+      $questionnaire.canonicalQuestions,
+      submission.answers
+    );
+
+    return getSectionMaxPoints(activeLegacyQuestions) + getCanonicalReviewMaxPoints(canonicalReviewItems);
   }
 
   function formatSubmittedAt(submission: SubmissionListItem) {
@@ -113,7 +202,7 @@
     return shouldCompleteExerciseFromSubmission({
       completionPolicy: $questionnaire.completionPolicy,
       passThreshold: $questionnaire.passThreshold,
-      totalPossiblePoints: getTotalPossiblePoints(),
+      totalPossiblePoints: getTotalPossiblePoints(submission),
       submission
     });
   }
@@ -139,6 +228,35 @@
     };
   }
 </script>
+
+{#snippet reviewItem(item: MixedReviewItem, questionNumber: number, selectedSubmission: SubmissionListItem)}
+  <div class="pb-4">
+    {#if item.kind === 'legacy'}
+      <ExerciseQuestion.QuestionRenderer
+        contract={{
+          mode: 'review',
+          question: toExerciseQuestionModel(item.question),
+          answer: getStudentAnswerForQuestion(selectedSubmission, item.question),
+          labels: questionLabels,
+          disabled: true
+        }}
+        {questionNumber}
+        questionNumberActive={false}
+      />
+    {:else}
+      <ExerciseQuestion.AssessmentItemRenderer
+        definition={item.reviewItem.definition}
+        response={item.reviewItem.response}
+        disabled
+        title={item.question.title}
+        {questionNumber}
+        interactionNumberStart={questionNumber}
+        questionNumberActive={false}
+        showContainer
+      />
+    {/if}
+  </div>
+{/snippet}
 
 {#if isLoading}
   <Spinner />
@@ -208,7 +326,7 @@
                 -
                 {getStatusLabel(attempt.submission)}
                 -
-                {formatExercisePoints(attemptScore)}/{formatExercisePoints(getTotalPossiblePoints())}
+                {formatExercisePoints(attemptScore)}/{formatExercisePoints(getTotalPossiblePoints(attempt.submission))}
                 -
                 {getAttemptPassLabel(attempt.submission)}
               </Select.Item>
@@ -221,7 +339,9 @@
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <Badge variant="outline">{getStatusLabel(selectedSubmission)}</Badge>
       <Badge variant="secondary">
-        {formatExercisePoints(getTotalScore(selectedSubmission))}/{formatExercisePoints(getTotalPossiblePoints())}
+        {formatExercisePoints(getTotalScore(selectedSubmission))}/{formatExercisePoints(
+          getTotalPossiblePoints(selectedSubmission)
+        )}
         {$t('course.navItem.lessons.exercises.all_exercises.view_mode.points')}
       </Badge>
       <Badge variant={didAttemptCompleteExercise(selectedSubmission) ? 'success' : 'warning'}>
@@ -229,10 +349,16 @@
       </Badge>
     </div>
 
+    {@const mixedReviewItems = getMixedReviewItems(selectedSubmission)}
+    {@const questionNumberStartByReviewItemId = getQuestionNumberStartByReviewItemId(mixedReviewItems)}
     {#if hasSectionGroups}
       <div class="space-y-8">
         {#each activeSections as section, sectionIndex (section.id)}
           {@const sectionQuestions = getQuestionsForSection($questionnaire.questions, section.id)}
+          {@const canonicalSectionReviewItems = getCanonicalReviewItemsForSection(selectedSubmission, section.id)}
+          {@const sectionReviewItems = mixedReviewItems.filter(
+            (item) => item.question.exerciseSectionId === section.id
+          )}
           <section class="space-y-4">
             <ExerciseQuestion.SectionHeader
               title={getExerciseSectionDisplayTitle({
@@ -244,8 +370,10 @@
               sectionNumber={sectionIndex + 1}
               totalSections={activeSections.length}
               colorTheme={section.colorTheme}
-              questionCount={sectionQuestions.length}
-              totalPoints={roundExercisePointsForDisplay(getSectionMaxPoints(sectionQuestions))}
+              questionCount={getMixedReviewQuestionCount(sectionReviewItems)}
+              totalPoints={roundExercisePointsForDisplay(
+                getSectionMaxPoints(sectionQuestions) + getCanonicalReviewMaxPoints(canonicalSectionReviewItems)
+              )}
               labels={{
                 section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'),
                 questions: $t('course.navItem.lessons.exercises.all_exercises.view_mode.questions'),
@@ -253,46 +381,29 @@
               }}
             />
 
-            {#each sectionQuestions as q, i (`${q.id}-${i}`)}
-              <div class="pb-4">
-                <ExerciseQuestion.QuestionRenderer
-                  contract={{
-                    mode: 'review',
-                    question: toExerciseQuestionModel(q),
-                    answer: getStudentAnswerForQuestion(selectedSubmission, q),
-                    labels: questionLabels,
-                    disabled: true
-                  }}
-                  questionNumber={i + 1}
-                  questionNumberActive={false}
-                />
-              </div>
+            {#each sectionReviewItems as item, itemIndex (item.id)}
+              {@render reviewItem(
+                item,
+                questionNumberStartByReviewItemId[item.id] ?? itemIndex + 1,
+                selectedSubmission
+              )}
             {/each}
 
             <p class="border-t pt-2 text-sm font-medium">
-              {formatExercisePoints(getSectionScore(selectedSubmission, sectionQuestions))}/{formatExercisePoints(
-                getSectionMaxPoints(sectionQuestions)
+              {formatExercisePoints(
+                getSectionScore(selectedSubmission, sectionQuestions) +
+                  getCanonicalReviewScore(canonicalSectionReviewItems)
+              )}/{formatExercisePoints(
+                getSectionMaxPoints(sectionQuestions) + getCanonicalReviewMaxPoints(canonicalSectionReviewItems)
               )}
               {$t('course.navItem.lessons.exercises.all_exercises.view_mode.points')}
             </p>
           </section>
         {/each}
       </div>
-    {:else if $questionnaire.questions}
-      {#each $questionnaire.questions as q, i (`${q.id}-${i}`)}
-        <div class="pb-4">
-          <ExerciseQuestion.QuestionRenderer
-            contract={{
-              mode: 'review',
-              question: toExerciseQuestionModel(q),
-              answer: getStudentAnswerForQuestion(selectedSubmission, q),
-              labels: questionLabels,
-              disabled: true
-            }}
-            questionNumber={i + 1}
-            questionNumberActive={false}
-          />
-        </div>
+    {:else}
+      {#each mixedReviewItems as item, itemIndex (item.id)}
+        {@render reviewItem(item, questionNumberStartByReviewItemId[item.id] ?? itemIndex + 1, selectedSubmission)}
       {/each}
     {/if}
   {/if}

@@ -31,7 +31,7 @@
       {/if}
     </ul>
     <a
-      href="https://classroom.tedydev.io.vn"
+      href="https://classroom.io.vn"
       class="flex items-center gap-1 text-blue-700 hover:underline dark:text-white"
       target="_blank"
       rel="noopener noreferrer"

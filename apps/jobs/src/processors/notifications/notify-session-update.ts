@@ -56,7 +56,7 @@ export async function processNotifyCourseSessionUpdate(rawPayload: unknown): Pro
   const sequence = Math.floor(Date.parse(lesson.updatedAt ?? new Date().toISOString()) / 1000);
 
   const ics = buildSessionIcs({
-    uid: `session-${lesson.id}@classroom.tedydev.io.vn`,
+    uid: `session-${lesson.id}@classroom.io.vn`,
     sequence,
     method: 'REQUEST',
     start: lesson.lessonAt,

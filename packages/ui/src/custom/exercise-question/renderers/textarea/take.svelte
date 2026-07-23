@@ -20,6 +20,10 @@
     question,
     answer,
     disabled = false,
+    inputAriaLabelledby,
+    inputAriaInvalid = false,
+    inputAriaDescribedby,
+    inputFocusRequestKey,
     labels,
     onAnswerChange = () => {}
   }: ExerciseQuestionRendererProps = $props();
@@ -35,9 +39,47 @@
   );
 
   let detachEditorListeners: (() => void) | undefined;
+  let activeEditor = $state<Editor | null>(null);
+  let editorElement = $state<HTMLElement | null>(null);
+  let handledFocusRequestKey = $state<number | undefined>(undefined);
+
+  $effect(() => {
+    if (!editorElement) return;
+
+    if (inputAriaLabelledby) editorElement.setAttribute('aria-labelledby', inputAriaLabelledby);
+    else editorElement.removeAttribute('aria-labelledby');
+
+    if (inputAriaInvalid) editorElement.setAttribute('aria-invalid', 'true');
+    else editorElement.removeAttribute('aria-invalid');
+
+    if (inputAriaDescribedby) editorElement.setAttribute('aria-describedby', inputAriaDescribedby);
+    else editorElement.removeAttribute('aria-describedby');
+  });
+
+  $effect(() => {
+    if (
+      !activeEditor ||
+      activeEditor.isDestroyed ||
+      inputFocusRequestKey === undefined ||
+      inputFocusRequestKey === handledFocusRequestKey
+    ) {
+      return;
+    }
+
+    handledFocusRequestKey = inputFocusRequestKey;
+    activeEditor.commands.focus('start');
+    const focusEditor = activeEditor;
+    requestAnimationFrame(() => {
+      if (focusEditor.isDestroyed) return;
+
+      focusEditor.view.focus();
+    });
+  });
 
   onDestroy(() => {
     detachEditorListeners?.();
+    activeEditor = null;
+    editorElement = null;
   });
 
   function normalizeAnswerHtml(value: string | null | undefined): string {
@@ -98,7 +140,12 @@
 
     const editorDom = getEditorDom(editor);
 
-    if (!editorDom || disabled) return;
+    if (!editorDom) return;
+
+    activeEditor = editor;
+    editorElement = editorDom;
+
+    if (disabled) return;
 
     const blurHandler = () => {
       if (!editor.isDestroyed) updateAnswer(editor.getHTML());

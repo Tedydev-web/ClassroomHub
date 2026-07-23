@@ -13,7 +13,10 @@ import {
   ZExerciseVideoRecordingParam,
   ZExerciseVideoRecordingPlaybackParam,
   ZExerciseVideoRecordingUploadComplete,
-  ZExerciseVideoRecordingUploadInit
+  ZExerciseVideoRecordingUploadInit,
+  ZAssessmentItemCreate,
+  ZAssessmentItemPublish,
+  ZAssessmentItemQuestionParam
 } from '@cio/utils/validation/exercise';
 import { ZTemplateById, ZTemplateByTag } from '@cio/utils/validation/mocks';
 import { completeExerciseFileUpload, initExerciseFileUpload } from '@api/services/exercise/file-upload';
@@ -25,6 +28,12 @@ import {
   listExercises,
   updateExerciseForCourseService
 } from '@cio/core/services/exercise/exercise';
+import {
+  createAssessmentItemForCourseService,
+  getAssessmentItemForAuthorService,
+  getAssessmentItemForLearnerService,
+  publishAssessmentItemForCourseService
+} from '@cio/core/services/exercise/assessment-item';
 import { fetchAllTemplatesMetadata, fetchTemplateById, fetchTemplatesByTag } from '@api/services/exercise/template';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import {
@@ -166,6 +175,86 @@ export const exerciseRouter = new Hono()
       return handleError(c, error, 'Failed to fetch notification status');
     }
   })
+  .post(
+    '/:exerciseId/assessment-item',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
+    zValidator('json', ZAssessmentItemCreate),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId } = c.req.valid('param');
+        const { title, exerciseSectionId, definition } = c.req.valid('json');
+        const item = await createAssessmentItemForCourseService(
+          courseId,
+          exerciseId,
+          title,
+          definition,
+          exerciseSectionId
+        );
+
+        return c.json({ success: true, data: item }, 201);
+      } catch (error) {
+        return handleError(c, error, 'Failed to create assessment question');
+      }
+    }
+  )
+  .put(
+    '/:exerciseId/question/:questionId/assessment-item',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('param', ZAssessmentItemQuestionParam),
+    zValidator('json', ZAssessmentItemPublish),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId, questionId } = c.req.valid('param');
+        const { title, expectedRevision, definition } = c.req.valid('json');
+        const item = await publishAssessmentItemForCourseService(
+          courseId,
+          exerciseId,
+          questionId,
+          title,
+          expectedRevision,
+          definition
+        );
+
+        return c.json({ success: true, data: item }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to publish assessment question');
+      }
+    }
+  )
+  .get(
+    '/:exerciseId/question/:questionId/assessment-item',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZAssessmentItemQuestionParam),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId, questionId } = c.req.valid('param');
+        const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
+        if (isTeamMember) {
+          const item = await getAssessmentItemForAuthorService(courseId, exerciseId, questionId);
+          return c.json({ success: true, data: item }, 200);
+        }
+
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
+        const item = await getAssessmentItemForLearnerService(courseId, exerciseId, questionId);
+        return c.json({ success: true, data: item }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch assessment question');
+      }
+    }
+  )
   .get(
     '/:exerciseId',
     authOrAutomationKeyMiddleware,
@@ -372,7 +461,8 @@ export const exerciseRouter = new Hono()
           }
         }
 
-        const exercise = await updateExerciseForCourseService(courseId, exerciseId, data);
+        const viewerProfileId = automationKey ? undefined : user?.id;
+        const exercise = await updateExerciseForCourseService(courseId, exerciseId, data, viewerProfileId);
 
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'update_course_exercise', { courseId, exerciseId });

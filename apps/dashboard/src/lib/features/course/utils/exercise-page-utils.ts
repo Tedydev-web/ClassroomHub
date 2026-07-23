@@ -72,6 +72,48 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     questions = normalizeQuestionOrder(mappedQuestions);
   }
 
+  const canonicalQuestions = [...(exercise.canonicalQuestions ?? [])];
+  if (sections.length > 0) {
+    const unsectionedCanonicalQuestions = canonicalQuestions.filter((question) => question.exerciseSectionId === null);
+    if (unsectionedCanonicalQuestions.length > 0) {
+      let untitledSection = sections.find(
+        (section) => section.isDirty && section.title === UNTITLED_EXERCISE_SECTION_TITLE
+      );
+      if (!untitledSection) {
+        const nextSectionOrder =
+          sections.reduce((highestOrder, section) => Math.max(highestOrder, section.order), -1) + 1;
+        untitledSection = {
+          id: crypto.randomUUID(),
+          title: UNTITLED_EXERCISE_SECTION_TITLE,
+          description: null,
+          order: nextSectionOrder,
+          colorTheme: 'blue',
+          afterBehavior: { action: 'continue' },
+          isDirty: true
+        };
+        sections.push(untitledSection);
+      }
+
+      const highestSectionQuestionOrder = [
+        ...questions
+          .filter((question) => question.exerciseSectionId === untitledSection.id)
+          .map((question) => question.order ?? 0),
+        ...canonicalQuestions
+          .filter(
+            (question) =>
+              question.exerciseSectionId === untitledSection.id && !unsectionedCanonicalQuestions.includes(question)
+          )
+          .map((question) => question.order ?? 0)
+      ].reduce((highestOrder, order) => Math.max(highestOrder, order), -1);
+
+      for (const [questionIndex, question] of unsectionedCanonicalQuestions.entries()) {
+        question.exerciseSectionId = untitledSection.id;
+        question.order = highestSectionQuestionOrder + questionIndex + 1;
+        question.isPlacementDirty = true;
+      }
+    }
+  }
+
   clearQuestionnaireValidation();
 
   questionnaire.set({
@@ -82,6 +124,7 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     isDescriptionDirty: false,
     isDueByDirty: false,
     questions,
+    canonicalQuestions,
     sections,
     sectionDisplayMode: exercise.sectionDisplayMode ?? 'one_question',
     totalSubmissions: 0,

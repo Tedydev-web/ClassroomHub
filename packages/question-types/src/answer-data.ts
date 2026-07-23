@@ -1,3 +1,5 @@
+import type { AssessmentResponseEnvelope } from './assessment/assessment-response-envelope';
+
 export type RadioAnswerData = { type: 'RADIO'; optionId: number };
 export type CheckboxAnswerData = { type: 'CHECKBOX'; optionIds: number[] };
 export type TrueFalseAnswerData = { type: 'TRUE_FALSE'; value: boolean };
@@ -34,6 +36,7 @@ export type VideoRecordingAnswerData = {
   retakeCount?: number;
   playbackUrl?: string;
 };
+export type AssessmentItemAnswerData = { type: 'ASSESSMENT_ITEM'; response: AssessmentResponseEnvelope };
 
 export type AnswerData =
   | RadioAnswerData
@@ -50,4 +53,5 @@ export type AnswerData =
   | LinkAnswerData
   | HotspotAnswerData
   | StarAnswerData
-  | VideoRecordingAnswerData;
+  | VideoRecordingAnswerData
+  | AssessmentItemAnswerData;

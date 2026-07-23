@@ -21,16 +21,20 @@
     handleAddSection,
     getQuestionsForSection,
     hasSections,
+    clearAssessmentComposerRegistry,
+    dirtyAssessmentComposerIds,
     questionnaire,
     questionnaireOrder,
     reset,
     mapZodErrorsToQuestionErrors,
-    questionnaireValidation
+    questionnaireValidation,
+    prepareDirtyAssessmentItemMutations,
+    reconcileAssessmentItemMutations
   } from '$features/course/components/exercise/store';
   import { ZExerciseUpdate } from '@cio/utils/validation/exercise';
   import { mapZodErrorsToTranslations } from '$lib/utils/validation';
   import { transformQuestionsToApiFormat } from '$features/course/components/exercise/functions';
-  import { isOrgStudent, isStudentExperience } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isOrgStudent } from '$lib/utils/store/app';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
   import { exerciseApi } from '$features/course/api';
@@ -53,23 +57,22 @@
     // , refreshExercisePageData
   } from '$features/course/utils/exercise-page-utils';
   import StudentContentLockedNotice from '$features/course/components/student-content-locked-notice.svelte';
-  import {
-    getQuestionTypeId,
-    getQuestionTypeKeyFromId
-  } from '$features/course/components/exercise/question-type-utils';
+  import { getQuestionTypeId } from '$features/course/components/exercise/question-type-utils';
   import type { SubmissionListItem } from '$features/course/utils/types';
   import { Badge } from '@cio/ui/base/badge';
   import * as Alert from '@cio/ui/base/alert';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import InfoIcon from '@lucide/svelte/icons/info';
-  import { isAutoGradableQuestionType } from '@cio/question-types';
   import * as Dialog from '@cio/ui/base/dialog';
   import type { ExerciseSectionState } from '$features/course/components/exercise/store';
   import {
+    type CanonicalExerciseQuestionSummary,
     getActiveExerciseQuestions,
+    getExerciseGradingSummary,
     getManualGradedExerciseQuestions,
-    getTotalPossibleExercisePoints
+    projectCanonicalQuestionsAfterMutations
   } from '$features/course/utils/exercise-progression-utils';
+  import { isAutoGradableQuestionTypeId } from '@cio/question-types';
 
   interface Props {
     exerciseId?: string;
@@ -106,6 +109,7 @@
   let isDeleting = $state(false);
   let reorderQuestions = $state(false);
   let selectedTab = $state<ExerciseTab>('questions');
+  let hasInitializedDefaultQuestion = $state(false);
   // eslint-disable-next-line svelte/prefer-writable-derived -- must be writable: cleared before intentional navigations and bound to UnsavedChanges
   let hasUnsavedChanges = $state(false);
   type PassedPolicySaveAction = 'cancel' | 'save';
@@ -113,6 +117,7 @@
   type PassedPolicyDialogState = {
     open: boolean;
     manualQuestions: ReturnType<typeof getManualGradedExerciseQuestions>;
+    manualCanonicalQuestions: ReturnType<typeof getExerciseGradingSummary>['manualCanonicalQuestions'];
     hasManualWarning: boolean;
     hasSingleAttemptWarning: boolean;
     resolve: ((action: PassedPolicySaveAction) => void) | null;
@@ -121,6 +126,7 @@
   let passedPolicyDialog = $state<PassedPolicyDialogState>({
     open: false,
     manualQuestions: [],
+    manualCanonicalQuestions: [],
     hasManualWarning: false,
     hasSingleAttemptWarning: false,
     resolve: null
@@ -141,13 +147,16 @@
     const hasDirtySection = ($questionnaire.sections ?? []).some(
       (section) => section.isDirty || Boolean(section.deletedAt)
     );
+    const hasDirtyCanonicalPlacement = $questionnaire.canonicalQuestions.some((question) => question.isPlacementDirty);
 
     return Boolean(
       $questionnaire.isTitleDirty ||
         $questionnaire.isDescriptionDirty ||
         $questionnaire.isDueByDirty ||
         hasDirtyQuestion ||
-        hasDirtySection
+        hasDirtySection ||
+        hasDirtyCanonicalPlacement ||
+        $dirtyAssessmentComposerIds.size > 0
     );
   }
 
@@ -167,7 +176,9 @@
   }
 
   function patchExerciseListItemLocally() {
-    const nonDeletedQuestionsCount = ($questionnaire.questions || []).filter((question) => !question.deletedAt).length;
+    const nonDeletedQuestionsCount =
+      ($questionnaire.questions || []).filter((question) => !question.deletedAt).length +
+      $questionnaire.canonicalQuestions.length;
 
     courseApi.updateContentItem(exerciseId, ContentType.Exercise, {
       title: $questionnaire.title ?? '',
@@ -227,6 +238,7 @@
 
   function getPassedPolicyReviewSignature(params: {
     manualQuestions: ReturnType<typeof getManualGradedExerciseQuestions>;
+    manualCanonicalQuestions: ReturnType<typeof getExerciseGradingSummary>['manualCanonicalQuestions'];
     hasManualWarning: boolean;
     hasSingleAttemptWarning: boolean;
   }) {
@@ -234,10 +246,15 @@
       .map((question) => String(getQuestionTypeId(question)))
       .sort()
       .join(',');
+    const manualCanonicalQuestionProfile = params.manualCanonicalQuestions
+      .map((question) => `${question.id}:${question.gradingMode}`)
+      .sort()
+      .join(',');
 
     return [
-      'v1',
-      `manual:${params.hasManualWarning ? manualQuestionProfile : 'none'}`,
+      'v2',
+      `manual_legacy:${params.hasManualWarning && manualQuestionProfile ? manualQuestionProfile : 'none'}`,
+      `manual_canonical:${params.hasManualWarning && manualCanonicalQuestionProfile ? manualCanonicalQuestionProfile : 'none'}`,
       `single_attempt:${params.hasSingleAttemptWarning ? 'yes' : 'no'}`
     ].join('|');
   }
@@ -267,6 +284,7 @@
 
   function openPassedPolicyDialog(params: {
     manualQuestions: ReturnType<typeof getManualGradedExerciseQuestions>;
+    manualCanonicalQuestions: ReturnType<typeof getExerciseGradingSummary>['manualCanonicalQuestions'];
     hasManualWarning: boolean;
     hasSingleAttemptWarning: boolean;
   }) {
@@ -286,6 +304,7 @@
     passedPolicyDialog = {
       open: false,
       manualQuestions: [],
+      manualCanonicalQuestions: [],
       hasManualWarning: false,
       hasSingleAttemptWarning: false,
       resolve: null
@@ -293,22 +312,26 @@
     resolveDialog?.(action);
   }
 
-  async function runPassedPolicySaveGuard() {
+  async function runPassedPolicySaveGuard(
+    canonicalQuestions: CanonicalExerciseQuestionSummary[] = $questionnaire.canonicalQuestions
+  ) {
     if (($questionnaire.completionPolicy ?? 'submitted') !== 'passed') return true;
 
-    const totalPossiblePoints = getTotalPossibleExercisePoints($questionnaire.questions ?? []);
-    if (totalPossiblePoints <= 0) {
+    const gradingSummary = getExerciseGradingSummary($questionnaire.questions ?? [], canonicalQuestions);
+    if (gradingSummary.totalPossiblePoints <= 0) {
       setPassedPolicyPointValidationErrors();
       return false;
     }
 
     const manualQuestions = getManualGradedExerciseQuestions($questionnaire.questions ?? []);
-    const hasManualWarning = manualQuestions.length > 0;
+    const manualCanonicalQuestions = gradingSummary.manualCanonicalQuestions;
+    const hasManualWarning = manualQuestions.length > 0 || manualCanonicalQuestions.length > 0;
     const hasSingleAttemptWarning = !$questionnaire.allowMultipleAttempts;
     if (!hasManualWarning && !hasSingleAttemptWarning) return true;
 
     const passedPolicyReviewSignature = getPassedPolicyReviewSignature({
       manualQuestions,
+      manualCanonicalQuestions,
       hasManualWarning,
       hasSingleAttemptWarning
     });
@@ -318,6 +341,7 @@
 
     const action = await openPassedPolicyDialog({
       manualQuestions,
+      manualCanonicalQuestions,
       hasManualWarning,
       hasSingleAttemptWarning
     });
@@ -329,6 +353,7 @@
 
       const retryEnabledSignature = getPassedPolicyReviewSignature({
         manualQuestions,
+        manualCanonicalQuestions,
         hasManualWarning,
         hasSingleAttemptWarning: false
       });
@@ -357,12 +382,26 @@
       afterBehavior: section.afterBehavior,
       questionIds: getQuestionsForSection($questionnaire.questions, section.id).map((question) => question.id)
     }));
+    const canonicalQuestionPlacements = $questionnaire.canonicalQuestions.map((question) => ({
+      id: Number(question.id),
+      exerciseSectionId: question.exerciseSectionId ?? null,
+      order: question.order ?? 0
+    }));
+    const assessmentMutationPreparation = prepareDirtyAssessmentItemMutations();
+    if (!assessmentMutationPreparation.success) return;
+    const assessmentItemMutations = assessmentMutationPreparation.mutations;
+    const projectedCanonicalQuestions = projectCanonicalQuestionsAfterMutations(
+      $questionnaire.canonicalQuestions,
+      assessmentItemMutations
+    );
     const shouldSyncSections = $questionnaire.sections.length > 0 || hasSections($questionnaire.sections);
     const sectionValidationErrors = getSectionValidationErrors(activeSections);
 
     // Validate using Zod schema
     const zodResult = ZExerciseUpdate.safeParse({
       questions: transformedQuestions,
+      canonicalQuestionPlacements,
+      assessmentItemMutations,
       sections: shouldSyncSections ? sectionsPayload : undefined,
       sectionDisplayMode: $questionnaire.sectionDisplayMode
     });
@@ -378,27 +417,31 @@
       return;
     }
 
-    if (requiresPositivePointsForAutoGrade) {
-      const zeroPointQuestions = ($questionnaire.questions ?? []).filter((q) => !q.deletedAt && Number(q.points) === 0);
+    const zeroPointQuestions = ($questionnaire.questions ?? []).filter(
+      (question) =>
+        !question.deletedAt && isAutoGradableQuestionTypeId(getQuestionTypeId(question)) && Number(question.points) <= 0
+    );
+    const zeroPointCanonicalQuestions = projectedCanonicalQuestions.filter(
+      (question) => question.gradingMode === 'auto' && Number(question.points) <= 0
+    );
 
-      if (zeroPointQuestions.length > 0) {
-        const pointErrors: Record<string, { option?: string; title?: string; points?: string }> = {};
+    if (zeroPointQuestions.length > 0 || zeroPointCanonicalQuestions.length > 0) {
+      const pointErrors: Record<string, { option?: string; title?: string; points?: string }> = {};
 
-        for (const q of zeroPointQuestions) {
-          pointErrors[q.id] = {
-            points: t.get('course.navItem.lessons.exercises.all_exercises.points_required_auto_grade')
-          };
-        }
-
-        questionnaireValidation.set(pointErrors);
-
-        snackbar.error('snackbar.exercise.points_required_auto_grade');
-
-        return;
+      for (const question of zeroPointQuestions) {
+        pointErrors[question.id] = {
+          points: t.get('course.navItem.lessons.exercises.all_exercises.points_required_auto_grade')
+        };
       }
+
+      questionnaireValidation.set(pointErrors);
+
+      snackbar.error('snackbar.exercise.points_required_auto_grade');
+
+      return;
     }
 
-    const passedPolicyCanSave = await runPassedPolicySaveGuard();
+    const passedPolicyCanSave = await runPassedPolicySaveGuard(projectedCanonicalQuestions);
     if (!passedPolicyCanSave) return;
 
     isSaving = true;
@@ -415,11 +458,13 @@
       const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
       const passThreshold = $questionnaire.passThreshold ?? 100;
 
-      await exerciseApi.update(courseApi.course?.id, exerciseId, {
+      const updateResponse = await exerciseApi.update(courseApi.course?.id, exerciseId, {
         title: $questionnaire.title ?? '',
         description: $questionnaire.description ?? '',
         dueBy: $questionnaire.dueBy ?? '',
         questions: questions,
+        canonicalQuestionPlacements,
+        assessmentItemMutations,
         sections: shouldSyncSections ? sectionsPayload : undefined,
         sectionDisplayMode: $questionnaire.sectionDisplayMode,
         allowMultipleAttempts,
@@ -431,25 +476,39 @@
       if (Object.keys(exerciseApi.errors || {}).length > 0) {
         console.log('Validation errors from API:', exerciseApi.errors);
         snackbar.error('Please fix all validation errors before saving');
-        isSaving = false;
         return;
       }
 
       if (exerciseApi.success) {
-        if (exerciseApi.exercise) {
-          hydrateExercisePageData(exerciseApi.exercise, exerciseId);
+        const updatedExercise = updateResponse?.data;
+        if (updatedExercise) {
+          const mutationResults = updatedExercise.assessmentItemMutationResults ?? [];
+          const canonicalMutationsReconciled = await reconcileAssessmentItemMutations(
+            mutationResults,
+            updatedExercise.canonicalQuestions ?? []
+          );
+          if (!canonicalMutationsReconciled) {
+            hydrateExercisePageData(updatedExercise, exerciseId);
+            snackbar.error();
+            return;
+          }
+
+          hydrateExercisePageData(updatedExercise, exerciseId);
         }
         hasUnsavedChanges = false;
         patchExerciseListItemLocally();
         snackbar.success('snackbar.exercise.success');
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to save exercise:', error);
       snackbar.error();
+    } finally {
+      isSaving = false;
     }
-    isSaving = false;
   }
 
   onDestroy(() => {
+    clearAssessmentComposerRegistry();
     reset();
     questionnaire.update((q) => ({ ...q, questions: [] }));
   });
@@ -476,7 +535,7 @@
   });
 
   $effect(() => {
-    const currentTab = page.url.searchParams.get('tab') ?? '';
+    const currentTab = normalizeExerciseTab(page.url.searchParams.get('tab'));
     // Prevent self-navigation loops: only update URL when it actually changes.
     if (currentTab === selectedTab) return;
 
@@ -492,9 +551,11 @@
   });
 
   $effect(() => {
-    if ($isOrgStudent) return;
+    if ($isOrgStudent || hasInitializedDefaultQuestion || !courseApi.course?.id || isFetching) return;
 
-    const addNewQ = $questionnaire?.questions?.length < 1;
+    hasInitializedDefaultQuestion = true;
+
+    const addNewQ = $questionnaire.questions.length < 1 && $questionnaire.canonicalQuestions.length < 1;
 
     if (addNewQ) {
       untrack(() => {
@@ -528,20 +589,16 @@
 
   const isSelfPacedCourse = $derived(isSelfPacedLikeCourse(courseApi.course?.type));
   const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
-  const activeQuestionTypeIds = $derived(
-    ($questionnaire.questions ?? []).filter((q) => !q.deletedAt).map((q) => getQuestionTypeId(q))
+  const exerciseGradingSummary = $derived(
+    getExerciseGradingSummary($questionnaire.questions ?? [], $questionnaire.canonicalQuestions)
   );
-  function isExerciseFullyAutoGradable(typeIds: number[]): boolean {
-    return typeIds.length > 0 && typeIds.every((id) => isAutoGradableQuestionType(getQuestionTypeKeyFromId(id)));
-  }
-
-  const isFullyAutoGradable = $derived(isExerciseFullyAutoGradable(activeQuestionTypeIds));
+  const isFullyAutoGradable = $derived(exerciseGradingSummary.isFullyAutoGradable);
 
   /** When true, every question must have points &gt; 0 before save (for meaningful auto-grading) */
   const requiresPositivePointsForAutoGrade = $derived(isFullyAutoGradable);
 
   const teacherAutoGradeBadge = $derived.by(() => {
-    if ($isOrgStudent || isPublicCourse || activeQuestionTypeIds.length === 0) return null;
+    if ($isOrgStudent || isPublicCourse || exerciseGradingSummary.questionCount === 0) return null;
     return isFullyAutoGradable ? ('auto' as const) : ('manual' as const);
   });
 
@@ -556,7 +613,7 @@
     });
   }
 
-  $inspect('$isStudentExperience', $isStudentExperience);
+  $inspect('$isCourseLearnerView', $isCourseLearnerView);
   $inspect('isExerciseAccessible', isExerciseAccessible);
   $inspect('isExerciseAccessible', isExerciseAccessible);
   $inspect('mySubmissions', mySubmissions);
@@ -606,7 +663,7 @@
   </Page.HeaderContent>
   <Page.Action>
     <div class="flex items-center gap-2">
-      {#if $isStudentExperience && courseApi.course?.id && exerciseId}
+      {#if $isCourseLearnerView && courseApi.course?.id && exerciseId}
         <ContentNavigationActions courseId={courseApi.course.id} {exerciseId} />
       {/if}
 
@@ -717,7 +774,7 @@
 <Page.Body>
   {#snippet child()}
     <div class="overflow-x-hidden pb-20">
-      {#if $isStudentExperience}
+      {#if $isCourseLearnerView}
         {#if isExerciseAccessible}
           <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
         {:else}
@@ -741,9 +798,9 @@
               <Badge variant="outline">{submissions.length}</Badge>
             </UnderlineTabs.Trigger>
           </UnderlineTabs.List>
-          <UnderlineTabs.Content value="questions" class="mx-auto w-full md:max-w-3xl">
+          <UnderlineTabs.Content value="questions" class={preview ? 'w-full' : 'mx-auto w-full md:max-w-3xl'}>
             <UpdateDescription {preview} />
-            {#if !preview}
+            <div hidden={preview}>
               <EditMode
                 {exerciseId}
                 {goBack}
@@ -751,8 +808,10 @@
                 selfPacedCourse={isSelfPacedCourse}
                 {isPublicCourse}
                 {reorderQuestions}
+                onSaveRequested={handleSave}
               />
-            {:else}
+            </div>
+            {#if preview}
               <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
             {/if}
           </UnderlineTabs.Content>
@@ -878,6 +937,14 @@
                     <ul class="list-disc pl-5">
                       {#each passedPolicyDialog.manualQuestions as question, index (question.id)}
                         <li>{getQuestionDisplayTitle(question, index)}</li>
+                      {/each}
+                      {#each passedPolicyDialog.manualCanonicalQuestions as question, index (question.id)}
+                        <li>
+                          {question.title.trim() ||
+                            t.get('course.navItem.lessons.exercises.all_exercises.guard.question_fallback', {
+                              number: passedPolicyDialog.manualQuestions.length + index + 1
+                            })}
+                        </li>
                       {/each}
                     </ul>
                   </Alert.Description>

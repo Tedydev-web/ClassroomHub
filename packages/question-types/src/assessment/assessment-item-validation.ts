@@ -21,6 +21,12 @@ const KNOWN_INTERACTION_KINDS: ReadonlySet<string> = new Set(ASSESSMENT_INTERACT
 
 /** Word-bank blanks are runs of three or more underscores (mirrors exercise validation). */
 const WORD_BANK_BLANK_PATTERN = /_{3,}/g;
+const HTML_TAG_PATTERN = /<[^>]*>/g;
+const NON_BREAKING_SPACE_ENTITY_PATTERN = /&(nbsp|#160|#xa0);/gi;
+
+function hasMeaningfulAuthoredContent(html: string): boolean {
+  return html.replace(HTML_TAG_PATTERN, ' ').replace(NON_BREAKING_SPACE_ENTITY_PATTERN, ' ').trim().length > 0;
+}
 
 /**
  * Reports unknown interaction kinds before the full schema runs so callers can
@@ -268,10 +274,52 @@ export function validateAssessmentItemForPublish(
 ): AssessmentResult<AssessmentItemDefinition> {
   const issues: AssessmentIssue[] = [];
 
+  if (definition.presentation?.layout === 'passage_split') {
+    const hasSupportingContent = definition.blocks.some(
+      (block) => block.kind === 'content' && hasMeaningfulAuthoredContent(block.content.html)
+    );
+    if (!hasSupportingContent) {
+      issues.push(
+        assessmentIssue(
+          'PUBLISH_RULE_VIOLATION',
+          ['presentation', 'layout'],
+          'Passage and question panel layout requires supporting content'
+        )
+      );
+    }
+  }
+
   definition.blocks.forEach((block, blockIndex) => {
     if (block.kind !== 'interaction') return;
 
+    const promptPath = ['blocks', blockIndex, 'interaction', 'prompt', 'html'];
+    if (!hasMeaningfulAuthoredContent(block.interaction.prompt.html)) {
+      issues.push(assessmentIssue('PUBLISH_RULE_VIOLATION', promptPath, 'Interaction prompts cannot be empty'));
+    }
+
+    if (block.interaction.kind === 'choice') {
+      block.interaction.config.options.forEach((option, optionIndex) => {
+        if (hasMeaningfulAuthoredContent(option.html)) return;
+
+        issues.push(
+          assessmentIssue(
+            'PUBLISH_RULE_VIOLATION',
+            ['blocks', blockIndex, 'interaction', 'config', 'options', optionIndex, 'html'],
+            'Choice options cannot be empty'
+          )
+        );
+      });
+    }
+
     issues.push(...collectPublishIssues(block.interaction, ['blocks', blockIndex, 'interaction', 'config']));
+  });
+
+  definition.feedback.forEach((feedback, feedbackIndex) => {
+    if (hasMeaningfulAuthoredContent(feedback.html)) return;
+
+    issues.push(
+      assessmentIssue('PUBLISH_RULE_VIOLATION', ['feedback', feedbackIndex, 'html'], 'Feedback cannot be empty')
+    );
   });
 
   return issues.length > 0 ? assessmentFailure(issues) : assessmentSuccess(definition);

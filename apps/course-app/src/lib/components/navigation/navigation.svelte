@@ -16,10 +16,10 @@
   <p class="bg-blue-700 py-1.5 text-center text-sm font-medium text-white">
     brought to you by
     <a
-      href="https://classroom.tedydev.io.vn"
+      href="https://classroom.io.vn"
       target="_blank"
       class="inline-flex items-center font-semibold underline-offset-2 hover:underline"
-      >classroom.tedydev.io.vn
+      >classroom.io.vn
       <svg
         width="24"
         height="24"

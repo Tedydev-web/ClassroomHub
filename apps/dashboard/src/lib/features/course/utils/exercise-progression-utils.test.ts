@@ -2,11 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import type { Question } from '$features/course/types';
 import type { SubmissionListItem } from '$features/course/utils/types';
+import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
 import {
   formatExercisePoints,
+  getExerciseGradingSummary,
   getManualGradedExerciseQuestions,
   getTotalPossibleExercisePoints,
   groupSubmissionsByStudentAndAttempt,
+  orderExerciseItemsBySections,
+  projectCanonicalQuestionsAfterMutations,
   roundExercisePointsForDisplay,
   shouldCompleteExerciseFromSubmission
 } from './exercise-progression-utils';
@@ -42,7 +46,88 @@ function makeSubmission(overrides: Partial<SubmissionListItem> & { id: string })
   } as unknown as SubmissionListItem;
 }
 
+function makeAssessmentMutation(params: {
+  action: 'create' | 'publish';
+  clientMutationId: string;
+  questionId?: number;
+  title: string;
+  maxScore: number;
+  gradingMode: 'auto' | 'manual';
+}): TAssessmentItemMutation {
+  const interaction =
+    params.gradingMode === 'auto'
+      ? {
+          kind: 'choice' as const,
+          prompt: { format: 'html' as const, html: 'Choose' },
+          required: true,
+          maxScore: params.maxScore,
+          config: {
+            cardinality: 'single' as const,
+            presentation: 'list' as const,
+            options: [
+              { id: 'a', html: 'A' },
+              { id: 'b', html: 'B' }
+            ],
+            correctOptionIds: ['a']
+          }
+        }
+      : {
+          kind: 'text' as const,
+          prompt: { format: 'html' as const, html: 'Explain' },
+          required: true,
+          maxScore: params.maxScore,
+          config: { format: 'rich' as const }
+        };
+  const definition = {
+    schemaVersion: 1 as const,
+    blocks: [{ id: 'interaction-1', kind: 'interaction' as const, interaction }],
+    feedback: []
+  };
+
+  if (params.action === 'publish') {
+    if (params.questionId === undefined) throw new Error('Publish mutation requires a question id');
+
+    return {
+      action: 'publish',
+      clientMutationId: params.clientMutationId,
+      questionId: params.questionId,
+      title: params.title,
+      expectedRevision: 1,
+      definition
+    };
+  }
+
+  return {
+    action: 'create',
+    clientMutationId: params.clientMutationId,
+    title: params.title,
+    exerciseSectionId: null,
+    order: 0,
+    definition
+  };
+}
+
 describe('exercise progression helpers', () => {
+  it('orders mixed items by section before their section-local question order', () => {
+    const items = [
+      { id: 'section-b-first', question: { id: 3, order: 0, exerciseSectionId: 'section-b' } },
+      { id: 'unsectioned', question: { id: 4, order: 0, exerciseSectionId: null } },
+      { id: 'section-a-second', question: { id: 2, order: 1, exerciseSectionId: 'section-a' } },
+      { id: 'section-a-first', question: { id: 1, order: 0, exerciseSectionId: 'section-a' } }
+    ];
+    const sections = [
+      { id: 'section-b', order: 1 },
+      { id: 'section-a', order: 0 }
+    ];
+
+    expect(orderExerciseItemsBySections(items, sections).map((item) => item.id)).toEqual([
+      'section-a-first',
+      'section-a-second',
+      'section-b-first',
+      'unsectioned'
+    ]);
+  });
+
   it('detects manual-graded questions from question type ids', () => {
     const questions = [
       makeQuestion({ id: 1, questionTypeId: 1 }),
@@ -61,6 +146,88 @@ describe('exercise progression helpers', () => {
     ];
 
     expect(getTotalPossibleExercisePoints(questions)).toBe(5);
+  });
+
+  it('summarizes legacy and canonical questions through one grading policy', () => {
+    const questions = [makeQuestion({ id: 1, points: 2, questionTypeId: 1 })];
+    const canonicalQuestions = [
+      { id: 2, title: 'Automatic item', points: 3, gradingMode: 'auto' as const },
+      { id: 3, title: 'Hybrid item', points: 5, gradingMode: 'hybrid' as const }
+    ];
+
+    expect(getExerciseGradingSummary(questions, canonicalQuestions)).toEqual({
+      questionCount: 3,
+      totalPossiblePoints: 10,
+      isFullyAutoGradable: false,
+      manualCanonicalQuestions: [canonicalQuestions[1]]
+    });
+
+    expect(getExerciseGradingSummary(questions, canonicalQuestions.slice(0, 1))).toEqual({
+      questionCount: 2,
+      totalPossiblePoints: 5,
+      isFullyAutoGradable: true,
+      manualCanonicalQuestions: []
+    });
+  });
+
+  it('projects a new canonical question from its pending create mutation', () => {
+    const mutation = makeAssessmentMutation({
+      action: 'create',
+      clientMutationId: 'new-question',
+      title: 'New automatic question',
+      maxScore: 0,
+      gradingMode: 'auto'
+    });
+
+    expect(projectCanonicalQuestionsAfterMutations([], [mutation])).toEqual([
+      {
+        id: 'new-question',
+        title: 'New automatic question',
+        points: 0,
+        gradingMode: 'auto'
+      }
+    ]);
+  });
+
+  it('projects publish mutations over the persisted canonical grading summary', () => {
+    const currentQuestions = [{ id: 7, title: 'Manual question', points: 3, gradingMode: 'manual' as const }];
+    const mutation = makeAssessmentMutation({
+      action: 'publish',
+      clientMutationId: 'question-7',
+      questionId: 7,
+      title: 'Automatic revision',
+      maxScore: 4.25,
+      gradingMode: 'auto'
+    });
+
+    expect(projectCanonicalQuestionsAfterMutations(currentQuestions, [mutation])).toEqual([
+      {
+        id: 7,
+        title: 'Automatic revision',
+        points: 4.25,
+        gradingMode: 'auto'
+      }
+    ]);
+  });
+
+  it('includes a publish mutation even when the persisted projection is stale', () => {
+    const mutation = makeAssessmentMutation({
+      action: 'publish',
+      clientMutationId: 'question-11',
+      questionId: 11,
+      title: 'Recovered question',
+      maxScore: 2,
+      gradingMode: 'manual'
+    });
+
+    expect(projectCanonicalQuestionsAfterMutations([], [mutation])).toEqual([
+      {
+        id: 11,
+        title: 'Recovered question',
+        points: 2,
+        gradingMode: 'manual'
+      }
+    ]);
   });
 
   it('decides when a submission completes a passed-policy exercise', () => {

@@ -2,12 +2,12 @@
  * @cio/tenant-router — Cloudflare Worker that fronts every browser-facing host.
  *
  * Routes (see wrangler.toml):
- *   - classroom.tedydev.io.vn/*     — product apex
- *   - *.classroom.tedydev.io.vn/*   — tenant sites
- *   - classroom-learn.tedydev.io.vn/* — legacy learning apex redirect
- *   - classroom-app.tedydev.io.vn/* — admin dashboard
- *   - classroom-play.tedydev.io.vn/* — assessment play host
- *   - classroom-embed.tedydev.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
+ *   - classroom.io.vn/*     — product apex
+ *   - *.classroom.io.vn/*   — tenant sites
+ *   - learn.classroom.io.vn/* — legacy learning apex redirect
+ *   - hub.classroom.io.vn/* — admin dashboard
+ *   - play.classroom.io.vn/* — assessment play host
+ *   - embed.classroom.io.vn/* — public embed widgets (`/{name}` → R2 `assets`)
  *   - <BYOD>/*                      — customer-owned domains via Cloudflare for SaaS
  *
  * Per request, the Worker decides upstream by path:
@@ -71,8 +71,8 @@ const PROXY_HLS_PREFIX = '/proxy/hls/';
 const HLS_COOKIE_NAME = 'cio_hls';
 
 const LEGACY_SERVICE_HOST_REDIRECTS: Readonly<Record<string, string>> = {
-  'play.classroom.tedydev.io.vn': 'https://classroom-play.tedydev.io.vn',
-  'embed.classroom.tedydev.io.vn': 'https://classroom-embed.tedydev.io.vn'
+  'play.classroom.io.vn': 'https://play.classroom.io.vn',
+  'embed.classroom.io.vn': 'https://embed.classroom.io.vn'
 };
 
 const HLS_CONTENT_TYPES: Record<string, string> = {

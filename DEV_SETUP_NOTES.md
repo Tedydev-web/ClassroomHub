@@ -376,6 +376,7 @@ The optional accounts in `users.json` are inserted only with `--extended-demo`.
 | Login `Invalid email or password` | wrong demo password | Use `admin@test.com` / **`123456`** |
 | Login still fails after proxy target fix | API auth env empty | Fill `BETTER_AUTH_SECRET`, `TRUSTED_ORIGINS=http://localhost:8000`, `PUBLIC_SERVER_URL` in `apps/api/.env`, restart API |
 | Changed a `.env` but nothing changed | env is read at process start | Restart the affected `*:dev` server |
+| `Could not resolve` a `*.tedydev.io.vn` hostname on this machine, but a public DNS lookup works | Tailscale split DNS is claiming the zone locally | Run `sudo tailscale set --accept-dns=false`, then retry. This is machine-wide: it stops this device accepting all Tailnet-provided DNS settings, but does not disconnect Tailscale networking. |
 
 > After editing any `.env`, **restart** the relevant dev server.
 
@@ -390,6 +391,7 @@ The optional accounts in `users.json` are inserted only with `--extended-demo`.
   thumbnail-feature owner.
 - **ffmpeg/ffprobe not installed** — media jobs need these binaries on `PATH` (or set
   `FFMPEG_PATH` / `FFPROBE_PATH`). Other workers are unaffected.
+  On Ubuntu/Debian install them with `sudo apt-get update && sudo apt-get install -y ffmpeg`.
 - **`pnpm dev` concurrency** — full-stack run needs a turbo `--concurrency` bump;
   intentionally not changed. Use the scoped workflow.
 

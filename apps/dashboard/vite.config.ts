@@ -34,6 +34,11 @@ export default ({ mode }) => {
       target: 'es2020'
     },
     ssr: {
+      // LayerChart has internal circular imports. Pre-bundling its SSR graph avoids
+      // Vite 5 evaluating partially initialized Svelte modules during cold loads.
+      optimizeDeps: {
+        include: ['layerchart']
+      },
       // svelte-motion uses directory imports without `/index.js`; Node ESM fails unless bundled for SSR.
       noExternal: [
         'svelte-sonner',
@@ -48,9 +53,10 @@ export default ({ mode }) => {
     optimizeDeps: {
       entries: ['src/routes/**/+*.{js,ts,svelte}'],
       include: ['@cio/api/rpc-types'],
-      // Workspace packages must be processed by Svelte/Vite (not pre-bundled)
-      // so HMR fires when editing files under packages/*.
-      exclude: ['@cio/ui', '@cio/utils', '@cio/question-types']
+      // Keep type and utility workspaces live so HMR sees newly built exports.
+      // UI remains pre-bundled because LayerChart's circular graph is unstable
+      // when Vite evaluates the complete UI workspace directly during SSR.
+      exclude: ['@cio/utils', '@cio/question-types']
     },
     resolve: {
       mainFields: ['browser']

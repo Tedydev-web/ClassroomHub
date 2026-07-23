@@ -6,6 +6,29 @@ import {
 } from '@cio/utils/validation/exercise';
 import { prepareSubmissionAnswers, type SubmissionQuestionDefinition } from './submission-answer-processing';
 
+const assessmentDefinition = {
+  schemaVersion: 1 as const,
+  blocks: [
+    {
+      id: 'choice-1',
+      kind: 'interaction' as const,
+      interaction: {
+        kind: 'choice' as const,
+        prompt: { format: 'html' as const, html: '<p>Pick one.</p>' },
+        required: true,
+        maxScore: 1,
+        config: {
+          cardinality: 'single' as const,
+          presentation: 'list' as const,
+          options: [{ id: 'option-1', html: '<p>First</p>' }],
+          correctOptionIds: ['option-1']
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
 const questions: SubmissionQuestionDefinition[] = [
   {
     id: 1,
@@ -86,7 +109,7 @@ describe('prepareSubmissionAnswers', () => {
     expect(prepareSubmissionAnswers(optionalQuestions, []).answers).toEqual([]);
   });
 
-  it('rejects submissions whose aggregate structured answer payload is too large', () => {
+  it('rejects submissions whose aggregate legacy answer payload is too large', () => {
     const answer = 'x'.repeat(100_000);
     const answers = Array.from(
       { length: EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS / answer.length + 1 },
@@ -97,6 +120,54 @@ describe('prepareSubmissionAnswers', () => {
     );
 
     expect(ZExerciseSubmissionCreate.safeParse({ exerciseId: 'exercise-a', answers }).success).toBe(false);
+  });
+
+  it('rejects submissions whose aggregate canonical response payload is too large', () => {
+    const answers = Array.from({ length: 11 }, (_, index) => ({
+      questionId: index + 1,
+      response: {
+        schemaVersion: 1 as const,
+        responses: [
+          {
+            interactionId: `text-${index}`,
+            response: { kind: 'text' as const, text: 'x'.repeat(100_000) }
+          }
+        ]
+      }
+    }));
+
+    expect(ZExerciseSubmissionCreate.safeParse({ exerciseId: 'exercise-a', answers }).success).toBe(false);
+  });
+
+  it('accepts opaque revision links and rejects malformed revision identifiers', () => {
+    const canonicalResponse = {
+      schemaVersion: 1 as const,
+      responses: [
+        {
+          interactionId: 'choice-1',
+          response: { kind: 'choice' as const, selectedOptionIds: ['option-a'] }
+        }
+      ]
+    };
+
+    expect(
+      ZExerciseSubmissionCreate.safeParse({
+        exerciseId: 'exercise-a',
+        answers: [
+          {
+            questionId: 1,
+            questionRevisionId: '00000000-0000-4000-8000-000000000001',
+            response: canonicalResponse
+          }
+        ]
+      }).success
+    ).toBe(true);
+    expect(
+      ZExerciseSubmissionCreate.safeParse({
+        exerciseId: 'exercise-a',
+        answers: [{ questionId: 1, questionRevisionId: 'revision-1', response: canonicalResponse }]
+      }).success
+    ).toBe(false);
   });
 
   it('rejects disabled question types at the exercise API boundary', async () => {
@@ -178,5 +249,28 @@ describe('prepareSubmissionAnswers', () => {
       questionType: 'TEXTAREA',
       points: 5
     });
+  });
+
+  it('validates a canonical assessment response against its immutable definition', () => {
+    const assessmentQuestion: SubmissionQuestionDefinition = {
+      id: 16,
+      title: 'Composite item',
+      questionTypeId: 16,
+      points: 1,
+      settings: {},
+      options: []
+    };
+    const response = {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'choice-1', response: { kind: 'choice' as const, selectedOptionIds: ['option-1'] } }]
+    };
+
+    const result = prepareSubmissionAnswers(
+      [assessmentQuestion],
+      [{ questionId: 16, questionRevisionId: '00000000-0000-4000-8000-000000000016', response }],
+      new Map([[16, assessmentDefinition]])
+    );
+
+    expect(result.answers).toEqual([{ questionId: 16, answerData: { type: 'ASSESSMENT_ITEM', response } }]);
   });
 });

@@ -83,6 +83,8 @@ export function hasMeaningfulAnswerData(answer: AnswerData | null | undefined): 
       return answer.urls.length > 0;
     case 'HOTSPOT':
       return answer.coordinates.length > 0;
+    case 'ASSESSMENT_ITEM':
+      return answer.response.responses.length > 0;
   }
 }
 

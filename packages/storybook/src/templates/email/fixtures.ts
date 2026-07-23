@@ -14,7 +14,7 @@ const WELCOME_CONTENT = `
   <p>My name is Best, the founder of Classroom. I saw you signed up, any questions so far?</p>
   <p>Would you like to get a walkthrough of the platform in a 30 minute product demo? It's free and we won't try to sell you anything, just want to learn from your use case and show you all the cool features and flows we thought about.</p>
   <p>Interested? just book a 30-minute demo slot in our calendar!</p>
-  <div><a class="button" href="https://classroom.tedydev.io.vn/demo">Book demo</a></div>
+  <div><a class="button" href="https://classroom.io.vn/demo">Book demo</a></div>
   <p>PS: I reply personally to every email. We don't have an outsourced support team at the other end of the globe.. ;-)</p>
 `;
 

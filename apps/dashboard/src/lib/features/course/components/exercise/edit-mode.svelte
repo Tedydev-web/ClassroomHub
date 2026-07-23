@@ -13,19 +13,24 @@
     handleRemoveQuestion,
     handleCode,
     handleAddQuestion,
+    removeUntouchedLegacyQuestionDrafts,
     handleRemoveSection,
     handleReorderSections,
-    handleReorderQuestionsInSection,
+    handleReorderQuestionPlacementItems,
     handleUpdateSectionAfterBehavior,
     handleUpdateSectionColorTheme,
     handleUpdateSectionDescription,
     handleUpdateSectionTitle,
     hasSections,
-    getQuestionsForSection
+    getQuestionPlacementItemsForSection,
+    getQuestionsForSection,
+    type CanonicalQuestionState,
+    type ExerciseQuestionPlacementItem
   } from './store';
   import { QUESTION_TYPES } from '$features/ui/question/constants';
   import { ExerciseQuestion } from '@cio/ui';
   import { Badge } from '@cio/ui/base/badge';
+  import { Button } from '@cio/ui/base/button';
   import * as Tooltip from '@cio/ui/base/tooltip';
 
   import OrderModal from './order-modal.svelte';
@@ -54,12 +59,15 @@
   import type { Question } from '$features/course/types';
   import type { ExerciseEditorErrors } from './store';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import { courseApi } from '$features/course/api';
+  import AssessmentItemComposer from './assessment-item-composer.svelte';
 
   const flipDurationMs = 200;
   const uploadLimits = getResolvedUploadLimits();
   const platformMaxFileSizeMb = uploadLimits.exerciseFileMb;
   const initialQuestionsLength = $questionnaire.questions.length;
-  type QuestionDndEvent = CustomEvent<{ items: Question[] }>;
+  type QuestionDndEvent = CustomEvent<{ items: ExerciseQuestionPlacementItem[] }>;
+  type CanonicalQuestion = CanonicalQuestionState;
 
   interface Props {
     shouldDeleteExercise?: boolean;
@@ -71,6 +79,7 @@
     /** Public course restricts picker to auto-gradable question types only. */
     isPublicCourse?: boolean;
     reorderQuestions?: boolean;
+    onSaveRequested: () => Promise<void>;
   }
 
   let {
@@ -80,7 +89,8 @@
     requiresPositivePointsForAutoGrade = false,
     selfPacedCourse = false,
     isPublicCourse = false,
-    reorderQuestions = false
+    reorderQuestions = false,
+    onSaveRequested
   }: Props = $props();
 
   const availableQuestionTypes = $derived(
@@ -90,8 +100,10 @@
   let questionIdToDelete = $state(null);
   let sectionIdToDelete = $state<string | null>(null);
   let deleteConfirmationType = $state<'question' | 'section'>('question');
-  let reorderQuestionItemsBySectionId = $state<Record<string, Question[]>>({});
+  let reorderQuestionItemsBySectionId = $state<Record<string, ExerciseQuestionPlacementItem[]>>({});
   let previousReorderQuestions = $state(false);
+  let newAssessmentComposerSectionId = $state<string | null | undefined>(undefined);
+  let promotedAssessmentQuestionId = $state<number | null>(null);
   let errors = $derived($questionnaireValidation);
   const questionLabels = $derived(getExerciseQuestionLabels());
   const activeSections = $derived(
@@ -143,6 +155,11 @@
   async function addQuestionToSection(sectionId: string) {
     const questionId = handleAddQuestion(sectionId);
     await scrollToExerciseElement(getQuestionElementId(questionId));
+  }
+
+  function openAssessmentComposer(sectionId: string | null) {
+    newAssessmentComposerSectionId = sectionId;
+    removeUntouchedLegacyQuestionDrafts();
   }
 
   function onInitDeleteClicked(questionId) {
@@ -320,12 +337,15 @@
 
   function syncReorderQuestionItems() {
     reorderQuestionItemsBySectionId = Object.fromEntries(
-      activeSections.map((section) => [section.id, getQuestionsForSection($questionnaire.questions, section.id)])
+      activeSections.map((section) => [
+        section.id,
+        getQuestionPlacementItemsForSection($questionnaire.questions, $questionnaire.canonicalQuestions, section.id)
+      ])
     );
   }
 
-  function getReorderQuestionsForSection(sectionId: string, sectionQuestions: Question[]) {
-    return reorderQuestionItemsBySectionId[sectionId] ?? sectionQuestions;
+  function getReorderQuestionsForSection(sectionId: string, sectionItems: ExerciseQuestionPlacementItem[]) {
+    return reorderQuestionItemsBySectionId[sectionId] ?? sectionItems;
   }
 
   function handleSectionQuestionDndConsider(sectionId: string, event: QuestionDndEvent) {
@@ -340,10 +360,7 @@
       ...reorderQuestionItemsBySectionId,
       [sectionId]: event.detail.items
     };
-    handleReorderQuestionsInSection(
-      sectionId,
-      event.detail.items.map((question) => question.id)
-    );
+    handleReorderQuestionPlacementItems(sectionId, event.detail.items);
   }
 
   function getRequiredQuestionCount(questions: Question[]) {
@@ -355,6 +372,103 @@
     if (!Number.isFinite(questionTypeId)) return false;
 
     return isAutoGradableQuestionTypeId(questionTypeId);
+  }
+
+  type SavedCanonicalQuestion = Pick<
+    CanonicalQuestion,
+    'title' | 'order' | 'exerciseSectionId' | 'points' | 'gradingMode' | 'revisionId' | 'revision' | 'definition'
+  > & {
+    questionId: number;
+    authorDefinition: NonNullable<CanonicalQuestion['authorDefinition']>;
+    hasNewerDraft: boolean;
+  };
+
+  function addCanonicalQuestionToState(item: SavedCanonicalQuestion) {
+    questionnaire.update((state) => {
+      const canonicalQuestion: CanonicalQuestion = {
+        id: item.questionId,
+        title: item.title,
+        points: item.points,
+        order: item.order,
+        exerciseSectionId: item.exerciseSectionId,
+        gradingMode: item.gradingMode,
+        revisionId: item.revisionId,
+        revision: item.revision,
+        definition: item.definition,
+        authorDefinition: item.authorDefinition
+      };
+      const existingQuestionIndex = state.canonicalQuestions.findIndex(
+        (question) => Number(question.id) === item.questionId
+      );
+      if (existingQuestionIndex < 0) {
+        return { ...state, canonicalQuestions: [...state.canonicalQuestions, canonicalQuestion] };
+      }
+
+      const canonicalQuestions = [...state.canonicalQuestions];
+      canonicalQuestions[existingQuestionIndex] = {
+        ...canonicalQuestions[existingQuestionIndex],
+        ...canonicalQuestion
+      };
+
+      return { ...state, canonicalQuestions };
+    });
+
+    if (item.hasNewerDraft) {
+      promotedAssessmentQuestionId = item.questionId;
+      return;
+    }
+
+    promotedAssessmentQuestionId = null;
+    newAssessmentComposerSectionId = undefined;
+  }
+
+  function updateCanonicalQuestionState(item: SavedCanonicalQuestion) {
+    questionnaire.update((state) => ({
+      ...state,
+      canonicalQuestions: state.canonicalQuestions.map((question) =>
+        Number(question.id) === item.questionId
+          ? {
+              ...question,
+              title: item.title,
+              points: item.points,
+              gradingMode: item.gradingMode,
+              revisionId: item.revisionId,
+              revision: item.revision,
+              definition: item.definition,
+              authorDefinition: item.authorDefinition
+            }
+          : question
+      )
+    }));
+  }
+
+  function getCanonicalQuestionsForSection(exerciseSectionId: string | null) {
+    return $questionnaire.canonicalQuestions.filter(
+      (question) => (question.exerciseSectionId ?? null) === exerciseSectionId
+    );
+  }
+
+  function getRenderedQuestionPlacementItems(exerciseSectionId: string | null) {
+    const placementItems = getQuestionPlacementItemsForSection(
+      $questionnaire.questions,
+      $questionnaire.canonicalQuestions,
+      exerciseSectionId
+    );
+    if (promotedAssessmentQuestionId === null || reorderQuestions) return placementItems;
+
+    return placementItems.filter(
+      (item) => item.kind !== 'canonical' || Number(item.question.id) !== promotedAssessmentQuestionId
+    );
+  }
+
+  function getNextQuestionOrder(exerciseSectionId: string | null) {
+    return (
+      getQuestionPlacementItemsForSection(
+        $questionnaire.questions,
+        $questionnaire.canonicalQuestions,
+        exerciseSectionId
+      ).reduce((highestOrder, item) => Math.max(highestOrder, item.question.order ?? -1), -1) + 1
+    );
   }
 
   $effect(() => {
@@ -482,6 +596,38 @@
   </div>
 {/snippet}
 
+{#snippet compactCanonicalQuestionRow(question: CanonicalQuestion, index: number)}
+  <div class="border-border flex items-center gap-3 rounded-md border bg-white px-4 py-3 dark:bg-black">
+    <span class="ui:text-muted-foreground w-6 text-sm font-medium tabular-nums">{index + 1}</span>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-semibold">{question.title}</p>
+      <p class="ui:text-muted-foreground text-xs">
+        {$t(
+          question.gradingMode === 'auto'
+            ? 'course.navItem.lessons.exercises.all_exercises.question_auto_graded_badge'
+            : 'course.navItem.lessons.exercises.all_exercises.question_manual_grading_badge'
+        )}
+      </p>
+    </div>
+  </div>
+{/snippet}
+
+{#snippet canonicalQuestionEditor(canonicalQuestion: CanonicalQuestion)}
+  {#if courseApi.course?.id}
+    <AssessmentItemComposer
+      courseId={courseApi.course.id}
+      exerciseId={_exerciseId}
+      questionId={Number(canonicalQuestion.id)}
+      exerciseSectionId={canonicalQuestion.exerciseSectionId}
+      initialTitle={canonicalQuestion.title}
+      initialDefinition={canonicalQuestion.authorDefinition}
+      initialRevision={canonicalQuestion.revision}
+      {onSaveRequested}
+      onSaved={updateCanonicalQuestionState}
+    />
+  {/if}
+{/snippet}
+
 <div class="mb-20 w-full">
   {#if Object.values(errors).length}
     <div class="mb-4 flex w-full justify-center">
@@ -493,7 +639,9 @@
       <div class="space-y-5">
         {#each activeSections as section, sectionIndex (section.id)}
           {@const sectionQuestions = getQuestionsForSection($questionnaire.questions, section.id)}
-          {@const reorderSectionQuestions = getReorderQuestionsForSection(section.id, sectionQuestions)}
+          {@const canonicalSectionQuestions = getCanonicalQuestionsForSection(section.id)}
+          {@const sectionPlacementItems = getRenderedQuestionPlacementItems(section.id)}
+          {@const reorderSectionQuestions = getReorderQuestionsForSection(section.id, sectionPlacementItems)}
           <SectionEditor
             exerciseSectionId={section.id}
             title={section.title}
@@ -501,8 +649,8 @@
             sectionNumber={sectionIndex + 1}
             totalSections={activeSections.length}
             colorTheme={section.colorTheme}
-            questionCount={sectionQuestions.length}
-            requiredQuestionCount={getRequiredQuestionCount(sectionQuestions)}
+            questionCount={sectionQuestions.length + canonicalSectionQuestions.length}
+            requiredQuestionCount={getRequiredQuestionCount(sectionQuestions) + canonicalSectionQuestions.length}
             labels={sectionLabels}
             titleError={getSectionErrorMsg(errors, section.id, 'title')}
             descriptionError={getSectionErrorMsg(errors, section.id, 'description')}
@@ -520,7 +668,7 @@
             <div
               class="space-y-2"
               use:dndzone={{
-                items: reorderQuestions ? reorderSectionQuestions : sectionQuestions,
+                items: reorderQuestions ? reorderSectionQuestions : sectionPlacementItems,
                 flipDurationMs,
                 dropTargetStyle: {
                   border: '2px #1d4ed8 solid',
@@ -528,12 +676,12 @@
                   'border-radius': '0.5rem'
                 },
                 dragDisabled: !reorderQuestions,
-                type: `exercise-section-question-${section.id}`
+                type: 'exercise-question-placement'
               }}
               onconsider={(event) => handleSectionQuestionDndConsider(section.id, event)}
               onfinalize={(event) => handleSectionQuestionDndFinalize(section.id, event)}
             >
-              {#each reorderQuestions ? reorderSectionQuestions : sectionQuestions as question, index (question.id)}
+              {#each reorderQuestions ? reorderSectionQuestions : sectionPlacementItems as item, index (item.id)}
                 <div
                   animate:flip={{ duration: flipDurationMs }}
                   class="flex items-start gap-3 transition {reorderQuestions
@@ -547,15 +695,37 @@
                     <span class="text-xs font-medium tabular-nums">{index + 1}</span>
                   </div>
                   <div class="min-w-0 flex-1">
-                    {#if reorderQuestions}
-                      {@render compactQuestionRow(question, index)}
+                    {#if item.kind === 'legacy' && reorderQuestions}
+                      {@render compactQuestionRow(item.question, index)}
+                    {:else if item.kind === 'legacy'}
+                      {@render questionEditor(item.question, index)}
+                    {:else if reorderQuestions}
+                      {@render compactCanonicalQuestionRow(item.question, index)}
                     {:else}
-                      {@render questionEditor(question, index)}
+                      {@render canonicalQuestionEditor(item.question)}
                     {/if}
                   </div>
                 </div>
               {/each}
             </div>
+            {#if courseApi.course?.id && (newAssessmentComposerSectionId === section.id || !reorderQuestions)}
+              <div class="mt-4 space-y-4" hidden={reorderQuestions}>
+                {#if newAssessmentComposerSectionId === section.id}
+                  <AssessmentItemComposer
+                    courseId={courseApi.course.id}
+                    exerciseId={_exerciseId}
+                    exerciseSectionId={section.id}
+                    initialOrder={getNextQuestionOrder(section.id)}
+                    {onSaveRequested}
+                    onSaved={addCanonicalQuestionToState}
+                  />
+                {:else}
+                  <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(section.id)}>
+                    {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+                  </Button>
+                {/if}
+              </div>
+            {/if}
           </SectionEditor>
 
           <ExerciseQuestion.SectionAfterBehavior
@@ -569,11 +739,31 @@
         {/each}
       </div>
     {:else}
-      {#each $questionnaire.questions as question, index (question.id)}
-        {#if !question.deletedAt}
-          {@render questionEditor(question, index)}
+      {#each getRenderedQuestionPlacementItems(null) as item, index (item.id)}
+        {#if item.kind === 'legacy'}
+          {@render questionEditor(item.question, index)}
+        {:else}
+          {@render canonicalQuestionEditor(item.question)}
         {/if}
       {/each}
+      {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
+        <div class="mt-6 space-y-4" hidden={reorderQuestions}>
+          {#if newAssessmentComposerSectionId === null}
+            <AssessmentItemComposer
+              courseId={courseApi.course.id}
+              exerciseId={_exerciseId}
+              exerciseSectionId={null}
+              initialOrder={getNextQuestionOrder(null)}
+              {onSaveRequested}
+              onSaved={addCanonicalQuestionToState}
+            />
+          {:else}
+            <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(null)}>
+              {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+            </Button>
+          {/if}
+        </div>
+      {/if}
     {/if}
   </div>
 </div>

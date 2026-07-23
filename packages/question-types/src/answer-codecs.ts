@@ -475,6 +475,8 @@ export function toApiPayload(data: AnswerData, questionId: number): ApiPayload {
       return STAR_CODEC.toApiPayload(data, questionId);
     case QUESTION_TYPE_KEY.VIDEO_RECORDING:
       return VIDEO_RECORDING_CODEC.toApiPayload(data, questionId);
+    case QUESTION_TYPE_KEY.ASSESSMENT_ITEM:
+      return ASSESSMENT_ITEM_REJECT_CODEC.toApiPayload(data, questionId);
   }
 }
 

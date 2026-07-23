@@ -4,6 +4,7 @@ export { default as QuestionRenderer } from './question-renderer.svelte';
 export { default as QuestionList } from './question-list.svelte';
 export { default as QuestionSurface } from './question-surface.svelte';
 export { default as QuestionTitle } from './question-title.svelte';
+export { default as AssessmentItemRenderer } from './assessment-item-renderer.svelte';
 export { default as SectionAfterBehavior } from './section-after-behavior.svelte';
 export { default as SectionHeader } from './section-header.svelte';
 export { default as SectionNavigationSidebar } from './section-navigation-sidebar.svelte';

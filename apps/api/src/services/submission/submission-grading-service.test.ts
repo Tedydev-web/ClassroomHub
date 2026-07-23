@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   getQuestionAnswersBySubmissionId: vi.fn(),
   getQuestionRevisionsByIds: vi.fn(),
   getSubmissionById: vi.fn(),
+  getSubmissionsByCourseIdWithDetails: vi.fn(),
   getSubmissionsForGrading: vi.fn(),
   getCourseSubmissionOrThrow: vi.fn(),
   lockCourseSubmissionOrThrow: vi.fn(),
@@ -43,7 +44,7 @@ vi.mock('@cio/db/queries/submission', () => ({
   getQuestionAnswersBySubmissionId: mocks.getQuestionAnswersBySubmissionId,
   getSubmissionById: mocks.getSubmissionById,
   getSubmissionByIdempotencyKey: vi.fn(),
-  getSubmissionsByCourseIdWithDetails: vi.fn(),
+  getSubmissionsByCourseIdWithDetails: mocks.getSubmissionsByCourseIdWithDetails,
   getSubmissionsForGrading: mocks.getSubmissionsForGrading,
   hasSubmission: vi.fn(),
   insertQuestionAnswersBatch: vi.fn(),
@@ -98,7 +99,13 @@ vi.mock('./submission-ownership', () => ({
   lockCourseSubmissionOrThrow: mocks.lockCourseSubmissionOrThrow
 }));
 
-import { updateSubmissionAnswer, updateSubmissionGradesBatch, updateSubmissionService } from './submission';
+import {
+  listSubmissionsForGrading,
+  listSubmissionsByExercise,
+  updateSubmissionAnswer,
+  updateSubmissionGradesBatch,
+  updateSubmissionService
+} from './submission';
 
 const courseId = 'course-a';
 const exerciseId = 'exercise-a';
@@ -168,6 +175,7 @@ describe('submission grading transaction locks', () => {
     mocks.isExerciseCompletedForMember.mockResolvedValue(true);
     mocks.evaluateCourseCertification.mockResolvedValue(undefined);
     mocks.getSubmissionById.mockResolvedValue(null);
+    mocks.getSubmissionsByCourseIdWithDetails.mockResolvedValue([]);
     mocks.getSubmissionsForGrading.mockResolvedValue([]);
     mocks.getCourseById.mockResolvedValue([]);
     mocks.getCourseWithOrgData.mockResolvedValue(null);
@@ -389,5 +397,231 @@ describe('submission grading transaction locks', () => {
     });
 
     expect(mocks.updateSubmission).not.toHaveBeenCalled();
+  });
+
+  it('renders historical canonical answers from the attempted safe revision projection', async () => {
+    const canonicalAnswer = {
+      ...storedAnswer,
+      answerData: {
+        type: 'ASSESSMENT_ITEM' as const,
+        response: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['option-a'] } }]
+        }
+      },
+      questionRevisionId: 'revision-canonical'
+    };
+    mocks.getSubmissionsByCourseIdWithDetails.mockResolvedValue([
+      { ...submission, createdAt: '2026-07-22T00:00:00.000Z', answers: [canonicalAnswer], groupmember: null },
+      {
+        ...submission,
+        id: 'submission-second',
+        createdAt: '2026-07-22T00:01:00.000Z',
+        answers: [{ ...canonicalAnswer, questionRevisionId: 'revision-canonical-second' }],
+        groupmember: null
+      }
+    ]);
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: 'revision-canonical',
+        definition: {
+          schemaVersion: 1,
+          blocks: [
+            {
+              id: 'choice-1',
+              kind: 'interaction',
+              interaction: {
+                kind: 'choice',
+                prompt: { format: 'html', html: '<p>Choose the correct answer.</p>' },
+                required: true,
+                maxScore: 2,
+                config: {
+                  cardinality: 'single',
+                  presentation: 'list',
+                  options: [{ id: 'option-a', html: '<p>A</p>' }],
+                  correctOptionIds: ['option-a']
+                }
+              }
+            }
+          ],
+          feedback: [{ id: 'feedback-1', scope: 'item', html: '<p>Feedback</p>', visibility: 'after_grading' }]
+        }
+      },
+      {
+        id: 'revision-canonical-second',
+        definition: {
+          schemaVersion: 1,
+          blocks: [
+            {
+              id: 'choice-2',
+              kind: 'interaction',
+              interaction: {
+                kind: 'choice',
+                prompt: { format: 'html', html: '<p>Choose another answer.</p>' },
+                required: true,
+                maxScore: 1,
+                config: {
+                  cardinality: 'single',
+                  presentation: 'list',
+                  options: [{ id: 'option-b', html: '<p>B</p>' }],
+                  correctOptionIds: ['option-b']
+                }
+              }
+            }
+          ],
+          feedback: []
+        }
+      }
+    ]);
+
+    const [listedSubmission] = await listSubmissionsByExercise(courseId, exerciseId, 'member-a');
+    const assessmentDefinition = listedSubmission?.answers[0]?.assessmentDefinition;
+
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-canonical', 'revision-canonical-second']);
+    expect(assessmentDefinition).toEqual({
+      schemaVersion: 1,
+      blocks: [
+        {
+          id: 'choice-1',
+          kind: 'interaction',
+          interaction: {
+            kind: 'choice',
+            prompt: { format: 'html', html: '<p>Choose the correct answer.</p>' },
+            required: true,
+            maxScore: 2,
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [{ id: 'option-a', html: '<p>A</p>' }]
+            }
+          }
+        }
+      ]
+    });
+    expect(JSON.stringify(assessmentDefinition)).not.toContain('correctOptionIds');
+    expect(JSON.stringify(assessmentDefinition)).not.toContain('Feedback');
+  });
+
+  it('provides attempted canonical questions to the manual grading modal without answer keys', async () => {
+    const canonicalAnswer = {
+      ...storedAnswer,
+      answerData: {
+        type: 'ASSESSMENT_ITEM' as const,
+        response: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'text-1', response: { kind: 'text', text: 'Answer' } }]
+        }
+      },
+      questionRevisionId: 'revision-text',
+      attemptedQuestionTitle: 'Attempted composite question',
+      attemptedQuestionOrder: 4,
+      attemptedExerciseSectionId: 'section-attempted'
+    };
+    mocks.getSubmissionsForGrading.mockResolvedValue([
+      {
+        ...submission,
+        createdAt: '2026-07-22T00:00:00.000Z',
+        feedback: null,
+        exercise: {
+          id: exerciseId,
+          title: 'Assessment',
+          dueBy: null,
+          questions: [
+            {
+              id: 11,
+              title: 'Composite question',
+              name: null,
+              order: 0,
+              points: 3,
+              questionTypeId: 16,
+              settings: {},
+              options: []
+            }
+          ]
+        },
+        lesson: null,
+        groupmember: { profile: { id: 'profile-a', email: 'student@example.com', fullname: 'Student' } },
+        answers: [canonicalAnswer]
+      },
+      {
+        ...submission,
+        id: 'submission-second',
+        createdAt: '2026-07-22T00:01:00.000Z',
+        feedback: null,
+        exercise: {
+          id: exerciseId,
+          title: 'Assessment',
+          dueBy: null,
+          questions: [
+            {
+              id: 11,
+              title: 'Composite question',
+              name: null,
+              order: 0,
+              points: 3,
+              questionTypeId: 16,
+              settings: {},
+              options: []
+            }
+          ]
+        },
+        lesson: null,
+        groupmember: { profile: { id: 'profile-b', email: 'student-b@example.com', fullname: 'Student B' } },
+        answers: [canonicalAnswer]
+      }
+    ]);
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: 'revision-text',
+        definition: {
+          schemaVersion: 1,
+          blocks: [
+            {
+              id: 'text-1',
+              kind: 'interaction',
+              interaction: {
+                kind: 'text',
+                prompt: { format: 'html', html: '<p>Explain your reasoning.</p>' },
+                required: true,
+                maxScore: 3,
+                config: { format: 'rich', instructions: 'Use complete sentences.' }
+              }
+            }
+          ],
+          feedback: []
+        }
+      }
+    ]);
+
+    const result = await listSubmissionsForGrading(courseId);
+    const canonicalQuestion = result.submissionIdData[submissionId]?.canonicalQuestions[0];
+
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
+    expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-text']);
+    expect(canonicalQuestion).toEqual({
+      id: 11,
+      title: 'Attempted composite question',
+      order: 4,
+      exerciseSectionId: 'section-attempted',
+      definition: {
+        schemaVersion: 1,
+        blocks: [
+          {
+            id: 'text-1',
+            kind: 'interaction',
+            interaction: {
+              kind: 'text',
+              prompt: { format: 'html', html: '<p>Explain your reasoning.</p>' },
+              required: true,
+              maxScore: 3,
+              config: { format: 'rich', instructions: 'Use complete sentences.' }
+            }
+          }
+        ]
+      }
+    });
+    expect(JSON.stringify(canonicalQuestion)).not.toContain('correctOptionIds');
+    expect(result.submissionIdData[submissionId]?.questions).toEqual([]);
   });
 });

@@ -3,10 +3,15 @@ account_id = "da02bc7e271f6874328a990774afac5e"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
-# Production routes — bind the Worker to every browser-facing host.
-# Tenant subdomains and platform hosts live on the `tedydev.io.vn` zone.
-# The admin app is routed through the Worker so
-# it can use same-origin `/api/*` paths with host-only auth cookies.
+# Two deployments from one source: the top level serves the development stack on
+# tedydev.io.vn, `[env.production]` serves classroom.io.vn as a separate Worker
+# (`classroom-tenant-router-production`).
+#
+# They cannot share one config. `wrangler deploy` reconciles routes against what
+# is listed, so a single config would strip the routes of whichever zone it did
+# not name — and each environment needs its own upstream hosts, which live in
+# `vars` and so cannot be shared either.
+
 routes = [
   { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
   { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
@@ -16,7 +21,6 @@ routes = [
   { pattern = "classroom-embed.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
 ]
 
-# Override per environment. Origins must bypass this Worker to prevent loops.
 [vars]
 DASHBOARD_UPSTREAM_HOST = "dashboard-origin.tedydev.io.vn"
 API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
@@ -25,9 +29,8 @@ APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
 EMBED_HOST = "classroom-embed.tedydev.io.vn"
 API_URL = "https://classroom-api.tedydev.io.vn"
 
-# R2 bucket binding so /hls/* can stream segments directly from Cloudflare,
-# bypassing Render. The bucket name matches the storage config in
-# packages/agent-runtime/src/config/storage.ts (BUCKET_DEFAULTS.VIDEOS).
+# R2 binding so /hls/* streams segments straight from Cloudflare. The bucket name
+# matches BUCKET_DEFAULTS.VIDEOS in the storage config.
 [[r2_buckets]]
 binding = "VIDEOS_BUCKET"
 bucket_name = "videos"
@@ -37,9 +40,52 @@ bucket_name = "videos"
 binding = "ASSETS_BUCKET"
 bucket_name = "assets"
 
-# HLS_SIGNING_SECRET is set via `wrangler secret put HLS_SIGNING_SECRET` —
-# never commit it. The same value must be set as HLS_SIGNING_SECRET on the
-# API so the cookie minted by the API verifies on the Worker.
-
 [observability]
 enabled = true
+
+# --- production -------------------------------------------------------------
+# Tenant sites and platform hosts share one label level here, and this Worker
+# picks its upstream by request path rather than by host. A wildcard route would
+# therefore swallow api.classroom.io.vn and forward it to the dashboard, so the
+# hostnames are listed one by one and `api`/`assets` stay off the Worker: the API
+# is reached through the tunnel, media straight from R2.
+#
+# Adding a tenant means adding its route here and redeploying.
+[env.production]
+
+# Routes are inheritable, so leaving this out would point production at the
+# development hostnames.
+routes = [
+  { pattern = "classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "learn.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "hub.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "play.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "embed.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  { pattern = "msna.classroom.io.vn/*", zone_name = "classroom.io.vn" }
+]
+
+# Vars, bindings and secrets are not inherited by environments — each has to be
+# restated, or the deployed Worker silently comes up without them.
+[env.production.vars]
+DASHBOARD_UPSTREAM_HOST = "dashboard-origin.classroom.io.vn"
+API_UPSTREAM_HOST = "api-origin.classroom.io.vn"
+APEX_REDIRECT_HOST = "learn.classroom.io.vn"
+APEX_REDIRECT_TARGET = "https://classroom.io.vn"
+EMBED_HOST = "embed.classroom.io.vn"
+API_URL = "https://api.classroom.io.vn"
+
+[[env.production.r2_buckets]]
+binding = "VIDEOS_BUCKET"
+bucket_name = "videos"
+
+[[env.production.r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "assets"
+
+[env.production.observability]
+enabled = true
+
+# HLS_SIGNING_SECRET is set per environment with
+# `wrangler secret put HLS_SIGNING_SECRET --env production` — never committed.
+# It must equal HLS_SIGNING_SECRET on the API of the same environment, or the
+# cookie the API mints will not verify here.

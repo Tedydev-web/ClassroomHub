@@ -9,9 +9,23 @@
  * requires the canonical assessment read API, which does not exist yet.
  */
 
+import {
+  assessmentResponseEnvelopeSchema,
+  getItemMaxScore,
+  type AssessmentDeliveryDefinition,
+  type AssessmentResponseEnvelope
+} from '@cio/question-types';
+
 /** Minimal question shape shared by the exercise store and review components. */
 export interface RenderedQuestionRef {
   id: string | number;
+}
+
+export interface CanonicalReviewQuestionRef extends RenderedQuestionRef {
+  title?: string | null;
+  order?: number | null;
+  exerciseSectionId?: string | null;
+  archivedAt?: string | null;
 }
 
 /** Minimal answer shape shared by submission list/review payloads. */
@@ -19,6 +33,20 @@ export interface ScoredSubmissionAnswer {
   questionId: number;
   score?: number | string | null;
   point?: number | string | null;
+}
+
+export interface CanonicalSubmissionAnswer extends ScoredSubmissionAnswer {
+  answerData?: { type: string; response?: unknown } | null;
+  assessmentDefinition?: AssessmentDeliveryDefinition | null;
+  attemptedQuestion?: CanonicalReviewQuestionRef | null;
+}
+
+export interface CanonicalAssessmentReviewItem {
+  question: CanonicalReviewQuestionRef;
+  definition: AssessmentDeliveryDefinition;
+  response: AssessmentResponseEnvelope;
+  score: number;
+  maxScore: number;
 }
 
 /**
@@ -43,4 +71,51 @@ export function sumAnswerScoresForRenderedQuestions(
     const answerScore = Number(answer.score ?? answer.point ?? 0);
     return total + (Number.isFinite(answerScore) ? answerScore : 0);
   }, 0);
+}
+
+/**
+ * Resolve canonical review items from the immutable definition attached to
+ * each attempted answer. Current author definitions are deliberately not an
+ * input, so an edit after submission cannot alter historical review.
+ */
+export function getCanonicalAssessmentReviewItems(
+  renderedQuestions: ReadonlyArray<CanonicalReviewQuestionRef>,
+  answers: ReadonlyArray<CanonicalSubmissionAnswer> | null | undefined
+): CanonicalAssessmentReviewItem[] {
+  const renderedQuestionById = new Map(
+    renderedQuestions
+      .map((question) => [Number(question.id), question] as const)
+      .filter(([questionId]) => Number.isFinite(questionId))
+  );
+
+  return (answers ?? []).flatMap((answer) => {
+    if (answer.answerData?.type !== 'ASSESSMENT_ITEM' || !answer.assessmentDefinition) return [];
+
+    const questionId = Number(answer.questionId);
+    if (!Number.isFinite(questionId)) {
+      throw new Error('Canonical assessment answer has an invalid question id');
+    }
+
+    const question = answer.attemptedQuestion ?? renderedQuestionById.get(questionId) ?? { id: questionId };
+
+    const parsedResponse = assessmentResponseEnvelopeSchema.safeParse(answer.answerData?.response);
+    if (!parsedResponse.success) {
+      throw new Error(`Canonical assessment answer for question ${questionId} has an invalid response`);
+    }
+
+    const numericScore = Number(answer.score ?? answer.point ?? 0);
+    if (!Number.isFinite(numericScore)) {
+      throw new Error(`Canonical assessment answer for question ${questionId} has an invalid score`);
+    }
+
+    return [
+      {
+        question,
+        definition: answer.assessmentDefinition,
+        response: parsedResponse.data,
+        score: numericScore,
+        maxScore: getItemMaxScore(answer.assessmentDefinition)
+      }
+    ];
+  });
 }

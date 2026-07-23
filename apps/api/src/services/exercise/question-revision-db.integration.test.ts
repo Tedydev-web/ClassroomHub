@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { config } from 'dotenv';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
+import { parseAssessmentItemDefinition } from '@cio/question-types';
 
 config();
 
@@ -444,6 +445,34 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
       const rejectedPublishes = concurrentResults.filter((result) => result.status === 'rejected');
       expect(fulfilledPublishes).toHaveLength(1);
       expect(rejectedPublishes).toHaveLength(1);
+      expect((await listQuestionRevisions(draftQuestion.id)).map((revision) => revision.revision)).toEqual([
+        1, 2, 3, 4
+      ]);
+
+      // Exercise metadata and canonical publishes share one transaction. A stale
+      // canonical revision must roll back the metadata update that preceded it.
+      const parsedAtomicDefinition = parseAssessmentItemDefinition(definitionA);
+      expect(parsedAtomicDefinition.success).toBe(true);
+      if (!parsedAtomicDefinition.success) {
+        throw new Error('Atomic rollback fixture is not a valid assessment definition');
+      }
+      await expect(
+        exerciseServices.updateExerciseService(ids.draftExercise, {
+          title: 'This title must be rolled back',
+          assessmentItemMutations: [
+            {
+              action: 'publish',
+              clientMutationId: 'stale-publish',
+              questionId: draftQuestion.id,
+              title: draftQuestionTitle,
+              expectedRevision: 3,
+              definition: parsedAtomicDefinition.data
+            }
+          ]
+        })
+      ).rejects.toMatchObject({ statusCode: 409 });
+      const draftExerciseRows = await db.execute(sql`SELECT title FROM exercise WHERE id = ${ids.draftExercise}::uuid`);
+      expect([...draftExerciseRows][0]?.title).toBe('Draft deletion exercise');
       expect((await listQuestionRevisions(draftQuestion.id)).map((revision) => revision.revision)).toEqual([
         1, 2, 3, 4
       ]);

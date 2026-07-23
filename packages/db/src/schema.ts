@@ -2271,7 +2271,11 @@ export const questionAnswer = pgTable(
     point: bigint({ mode: 'number' }).default(sql`'0'`),
     score: numeric({ precision: 12, scale: 2, mode: 'number' }),
     /** Immutable revision that was attempted. NULL only for historical answers created before revision persistence. */
-    questionRevisionId: uuid('question_revision_id')
+    questionRevisionId: uuid('question_revision_id'),
+    /** Immutable display metadata captured when the attempt is created. NULL title marks a legacy row without a snapshot. */
+    attemptedQuestionTitle: text('attempted_question_title'),
+    attemptedQuestionOrder: integer('attempted_question_order'),
+    attemptedExerciseSectionId: uuid('attempted_exercise_section_id')
   },
   (table) => [
     foreignKey({

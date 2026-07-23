@@ -2,18 +2,23 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   QUESTION_TYPE_ID_TO_KEY,
   QUESTION_TYPE_KEY,
+  assessmentResponseEnvelopeSchema,
   decodeApiPayload,
   getVideoRecordingMaxDurationSeconds,
   hasMeaningfulAnswerData,
+  validateAssessmentResponseEnvelope,
   validateTextareaAnswer,
+  type AssessmentItemDefinition,
   type AnswerData,
   type ExerciseQuestionModel
 } from '@cio/question-types';
 
 export type SubmissionAnswerPayload = {
   questionId: number;
+  questionRevisionId?: string;
   optionId?: number;
   answer?: string;
+  response?: unknown;
 };
 
 export type SubmissionQuestionDefinition = {
@@ -62,6 +67,31 @@ function toQuestionModel(question: SubmissionQuestionDefinition): ExerciseQuesti
 }
 
 function validatePayloadShape(payload: SubmissionAnswerPayload, question: ExerciseQuestionModel): void {
+  if (question.questionType === QUESTION_TYPE_KEY.ASSESSMENT_ITEM) {
+    if (
+      payload.questionRevisionId === undefined ||
+      payload.optionId !== undefined ||
+      payload.answer !== undefined ||
+      payload.response === undefined
+    ) {
+      throw new AppError(
+        `Question ${payload.questionId} requires a canonical assessment response and delivered revision`,
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+
+    return;
+  }
+
+  if (payload.questionRevisionId !== undefined) {
+    throw new AppError(
+      `Question ${payload.questionId} does not accept a question revision field`,
+      ErrorCodes.VALIDATION_ERROR,
+      400
+    );
+  }
+
   if (question.questionType === QUESTION_TYPE_KEY.RADIO) {
     if (payload.answer !== undefined) {
       throw new AppError(
@@ -108,7 +138,8 @@ function validateAnswerConstraints(answerData: AnswerData, question: ExerciseQue
 
 export function prepareSubmissionAnswers(
   questions: readonly SubmissionQuestionDefinition[],
-  payloads: readonly SubmissionAnswerPayload[]
+  payloads: readonly SubmissionAnswerPayload[],
+  assessmentDefinitionsByQuestionId: ReadonlyMap<number, AssessmentItemDefinition> = new Map()
 ): PreparedSubmissionAnswers {
   const questionById = new Map<number, ExerciseQuestionModel>(
     questions.map((question) => [question.id, toQuestionModel(question)])
@@ -135,6 +166,40 @@ export function prepareSubmissionAnswers(
     }
 
     validatePayloadShape(payload, question);
+    if (question.questionType === QUESTION_TYPE_KEY.ASSESSMENT_ITEM) {
+      const definition = assessmentDefinitionsByQuestionId.get(payload.questionId);
+      if (!definition) {
+        throw new AppError(
+          `Question ${payload.questionId} has no canonical assessment definition`,
+          ErrorCodes.INTERNAL_ERROR,
+          500
+        );
+      }
+
+      const parsedResponse = assessmentResponseEnvelopeSchema.safeParse(payload.response);
+      if (!parsedResponse.success) {
+        throw new AppError(
+          `Invalid assessment response for question ${payload.questionId}`,
+          ErrorCodes.VALIDATION_ERROR,
+          400
+        );
+      }
+
+      const validation = validateAssessmentResponseEnvelope(definition, parsedResponse.data);
+      if (!validation.success) {
+        throw new AppError(
+          `Invalid assessment response for question ${payload.questionId}: ${validation.issues[0]?.message ?? 'unknown error'}`,
+          ErrorCodes.VALIDATION_ERROR,
+          400
+        );
+      }
+
+      const answerData: AnswerData = { type: QUESTION_TYPE_KEY.ASSESSMENT_ITEM, response: parsedResponse.data };
+      answerByQuestionId.set(payload.questionId, answerData);
+      answers.push({ questionId: payload.questionId, answerData });
+      continue;
+    }
+
     const decoded = decodeApiPayload(question.questionType, payload, question);
     if (!decoded.success) {
       throw new AppError(`${decoded.message} for question ${payload.questionId}`, ErrorCodes.VALIDATION_ERROR, 400);

@@ -1,19 +1,25 @@
 import {
   decodeStoredAnswerData,
+  assessmentResponseEnvelopeSchema,
   getExerciseQuestionContractKey,
   isRecord,
   parseJsonRecord,
   type AnswerData,
+  type AssessmentResponseEnvelope,
   type ExerciseQuestionModel
 } from '@cio/question-types';
 
 import type { QuestionnaireMetaData } from '../components/exercise/store';
+import { isUUID } from '$lib/utils/functions/isUUID';
 
 export interface ParseExerciseAutosaveInput {
   serializedValue: string;
   exerciseId: string;
   questions: ExerciseQuestionModel[];
   sectionCount: number;
+  canonicalQuestionIds?: ReadonlySet<string>;
+  canonicalQuestionRevisionIds?: Readonly<Record<string, string>>;
+  takeItemCount?: number;
 }
 
 export interface HistoricalSubmissionHydrationInput {
@@ -41,7 +47,10 @@ export function parseExerciseAutosave({
   serializedValue,
   exerciseId,
   questions,
-  sectionCount
+  sectionCount,
+  canonicalQuestionIds = new Set<string>(),
+  canonicalQuestionRevisionIds,
+  takeItemCount = questions.length
 }: ParseExerciseAutosaveInput): QuestionnaireMetaData | null {
   const parsed = parseJsonRecord(serializedValue);
   if (!parsed || !isRecord(parsed.answers)) return null;
@@ -61,7 +70,7 @@ export function parseExerciseAutosave({
     typeof parsed.currentQuestionIndex !== 'number' ||
     !Number.isSafeInteger(parsed.currentQuestionIndex) ||
     parsed.currentQuestionIndex < 0 ||
-    parsed.currentQuestionIndex > questions.length + 1 ||
+    parsed.currentQuestionIndex > takeItemCount + 1 ||
     typeof parsed.isFinished !== 'boolean' ||
     typeof parsed.progressValue !== 'number' ||
     !Number.isFinite(parsed.progressValue) ||
@@ -91,8 +100,35 @@ export function parseExerciseAutosave({
     if (answer) answers[questionKey] = answer;
   }
 
+  const canonicalRevisionIds: Record<string, string> = {};
+  if (isRecord(parsed.canonicalRevisionIds)) {
+    for (const [questionId, storedRevisionId] of Object.entries(parsed.canonicalRevisionIds)) {
+      if (!canonicalQuestionIds.has(questionId) || typeof storedRevisionId !== 'string' || !isUUID(storedRevisionId)) {
+        continue;
+      }
+      if (canonicalQuestionRevisionIds !== undefined && canonicalQuestionRevisionIds[questionId] !== storedRevisionId) {
+        continue;
+      }
+
+      canonicalRevisionIds[questionId] = storedRevisionId;
+    }
+  }
+
+  const canonicalAnswers: Record<string, AssessmentResponseEnvelope | undefined> = {};
+  if (isRecord(parsed.canonicalAnswers)) {
+    for (const [questionId, storedResponse] of Object.entries(parsed.canonicalAnswers)) {
+      if (!canonicalQuestionIds.has(questionId)) continue;
+      if (canonicalQuestionRevisionIds !== undefined && canonicalRevisionIds[questionId] === undefined) continue;
+
+      const response = assessmentResponseEnvelopeSchema.safeParse(storedResponse);
+      if (response.success) canonicalAnswers[questionId] = response.data;
+    }
+  }
+
   return {
     answers,
+    canonicalAnswers,
+    canonicalRevisionIds,
     scores,
     grades,
     totalPossibleGrade: parsed.totalPossibleGrade,

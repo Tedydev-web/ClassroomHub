@@ -9,6 +9,9 @@ overrides:
   miniflare>zod: 3.22.3
 
 patchedDependencies:
+  '@tiptap/extension-bubble-menu@3.14.0':
+    hash: 9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df
+    path: patches/@tiptap__extension-bubble-menu@3.14.0.patch
   layerchart@2.0.0-next.27:
     hash: 51dabc4b4462058655e01199047915e5582cfd0492e97d6ecd0c244dc17e5a3a
     path: patches/layerchart@2.0.0-next.27.patch
@@ -510,6 +513,9 @@ importers:
       '@eslint/js':
         specifier: ^9.36.0
         version: 9.39.2
+      '@playwright/test':
+        specifier: 1.57.0
+        version: 1.57.0
       '@rollup/plugin-replace':
         specifier: ^6.0.2
         version: 6.0.3(rollup@4.54.0)
@@ -561,6 +567,9 @@ importers:
       jessy:
         specifier: ^3.1.1
         version: 3.1.1
+      layerchart:
+        specifier: 2.0.0-next.27
+        version: 2.0.0-next.27(patch_hash=51dabc4b4462058655e01199047915e5582cfd0492e97d6ecd0c244dc17e5a3a)(svelte@5.46.0)
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -1478,7 +1487,7 @@ importers:
         version: 3.14.0(@tiptap/pm@3.14.0)
       '@tiptap/extension-bubble-menu':
         specifier: ^3.10.7
-        version: 3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)
+        version: 3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)
       '@tiptap/extension-code-block-lowlight':
         specifier: ^3.10.7
         version: 3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-code-block@3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(highlight.js@11.11.1)(lowlight@3.3.0)
@@ -1548,9 +1557,6 @@ importers:
       plyr:
         specifier: ^3.7.8
         version: 3.8.4
-      sanitize-html:
-        specifier: ^2.17.2
-        version: 2.17.2
       simple-icons:
         specifier: ^16.9.0
         version: 16.9.0
@@ -1565,7 +1571,7 @@ importers:
         version: 0.12.2(svelte@5.46.0)
       svelte-tiptap:
         specifier: ^2.2.0
-        version: 2.2.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-bubble-menu@3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/extension-floating-menu@3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(svelte@5.46.0)
+        version: 2.2.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-bubble-menu@3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/extension-floating-menu@3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(svelte@5.46.0)
       tippy.js:
         specifier: ^6.3.7
         version: 6.3.7
@@ -1603,9 +1609,6 @@ importers:
       '@types/dompurify':
         specifier: ^3.2.0
         version: 3.2.0
-      '@types/sanitize-html':
-        specifier: ^2.16.1
-        version: 2.16.1
       '@zxcvbn-ts/core':
         specifier: ^3.0.4
         version: 3.0.4
@@ -1621,6 +1624,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      jsdom:
+        specifier: ^29.0.1
+        version: 29.0.1(@noble/hashes@2.0.1)
       jsrepo:
         specifier: ^3.5.1
         version: 3.5.1(svelte@5.46.0)(vue@3.5.26(typescript@5.9.3))
@@ -1663,6 +1669,9 @@ importers:
       vaul-svelte:
         specifier: 1.0.0-next.7
         version: 1.0.0-next.7(svelte@5.46.0)
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@24.10.4)(jsdom@29.0.1(@noble/hashes@2.0.1))(lightningcss@1.32.0)(sass@1.97.1)
 
   packages/utils:
     dependencies:
@@ -7184,9 +7193,6 @@ packages:
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  '@types/sanitize-html@2.16.1':
-    resolution: {integrity: sha512-n9wjs8bCOTyN/ynwD8s/nTcTreIHB1vf31vhLMGqUPNHaweKC4/fAl4Dj+hUlCTKYgm4P3k83fmiFfzkZ6sgMA==}
-
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
 
@@ -9925,10 +9931,6 @@ packages:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
 
-  is-plain-object@5.0.0:
-    resolution: {integrity: sha512-VRSzKkbMm5jMDoKLbltAkFQ5Qr7VDiTFGXxYFXXowVj387GeGNOCsOH6Msy00SGZ3Fp84b1Naa1psqgcCIEP5Q==}
-    engines: {node: '>=0.10.0'}
-
   is-potential-custom-element-name@1.0.1:
     resolution: {integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==}
 
@@ -11263,9 +11265,6 @@ packages:
     resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}
     engines: {node: '>=8'}
 
-  parse-srcset@1.0.2:
-    resolution: {integrity: sha512-/2qh0lav6CmI15FzA3i/2Bzk2zCgQhGMkvhOhKNcBVQ1ldgpbfiNTVslmooUmWJcADi1f1kIeynbDRVzNlfR6Q==}
-
   parse5-htmlparser2-tree-adapter@7.1.0:
     resolution: {integrity: sha512-ruw5xyKs6lrpo9x9rCZqZZnIUntICjQAd0Wsmp396Ul9lN/h+ifgVV1x1gZHi8euej6wTfpqX8j+BFQxF0NS/g==}
 
@@ -12171,9 +12170,6 @@ packages:
 
   sander@0.5.1:
     resolution: {integrity: sha512-3lVqBir7WuKDHGrKRDn/1Ye3kwpXaDOMsiRP1wd6wpZW56gJhsbp5RqQpA6JG/P+pkXizygnr1dKR8vzWaVsfA==}
-
-  sanitize-html@2.17.2:
-    resolution: {integrity: sha512-EnffJUl46VE9uvZ0XeWzObHLurClLlT12gsOk1cHyP2Ol1P0BnBnsXmShlBmWVJM+dKieQI68R0tsPY5m/B+Jg==}
 
   sass@1.97.1:
     resolution: {integrity: sha512-uf6HoO8fy6ClsrShvMgaKUn14f2EHQLQRtpsZZLeU/Mv0Q1K5P0+x2uvH6Cub39TVVbWNSrraUhDAoFph6vh0A==}
@@ -13153,10 +13149,6 @@ packages:
 
   undici@7.14.0:
     resolution: {integrity: sha512-Vqs8HTzjpQXZeXdpsfChQTlafcMQaaIwnGwLam1wudSSjlJeQ3bw1j+TLPePgrCnCpUXx7Ba5Pdpf5OBih62NQ==}
-    engines: {node: '>=20.18.1'}
-
-  undici@7.24.6:
-    resolution: {integrity: sha512-Xi4agocCbRzt0yYMZGMA6ApD7gvtUFaxm4ZmeacWI4cZxaF6C+8I8QfofC20NAePiB/IcvZmzkJ7XPa471AEtA==}
     engines: {node: '>=20.18.1'}
 
   undici@7.24.8:
@@ -19720,7 +19712,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.14.0(@tiptap/pm@3.14.0)
 
-  '@tiptap/extension-bubble-menu@3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)':
+  '@tiptap/extension-bubble-menu@3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)':
     dependencies:
       '@floating-ui/dom': 1.7.4
       '@tiptap/core': 3.14.0(@tiptap/pm@3.14.0)
@@ -20098,10 +20090,6 @@ snapshots:
       csstype: 3.2.3
 
   '@types/resolve@1.20.2': {}
-
-  '@types/sanitize-html@2.16.1':
-    dependencies:
-      htmlparser2: 10.1.0
 
   '@types/tedious@4.0.14':
     dependencies:
@@ -21809,6 +21797,7 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
       entities: 4.5.0
+    optional: true
 
   domelementtype@2.3.0: {}
 
@@ -21823,6 +21812,7 @@ snapshots:
   domhandler@5.0.3:
     dependencies:
       domelementtype: 2.3.0
+    optional: true
 
   dompurify@2.5.8:
     optional: true
@@ -21846,6 +21836,7 @@ snapshots:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
+    optional: true
 
   dot-prop@5.3.0:
     dependencies:
@@ -21928,7 +21919,8 @@ snapshots:
 
   entities@6.0.1: {}
 
-  entities@7.0.1: {}
+  entities@7.0.1:
+    optional: true
 
   error-ex@1.3.4:
     dependencies:
@@ -23131,6 +23123,7 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.2.2
       entities: 7.0.1
+    optional: true
 
   http-errors@2.0.1:
     dependencies:
@@ -23356,8 +23349,6 @@ snapshots:
 
   is-plain-obj@4.1.0: {}
 
-  is-plain-object@5.0.0: {}
-
   is-potential-custom-element-name@1.0.1: {}
 
   is-promise@4.0.0: {}
@@ -23531,7 +23522,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
-      undici: 7.24.6
+      undici: 7.24.8
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -24964,8 +24955,6 @@ snapshots:
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
 
-  parse-srcset@1.0.2: {}
-
   parse5-htmlparser2-tree-adapter@7.1.0:
     dependencies:
       domhandler: 5.0.3
@@ -25957,15 +25946,6 @@ snapshots:
       mkdirp: 0.5.6
       rimraf: 2.7.1
 
-  sanitize-html@2.17.2:
-    dependencies:
-      deepmerge: 4.3.1
-      escape-string-regexp: 4.0.0
-      htmlparser2: 10.1.0
-      is-plain-object: 5.0.0
-      parse-srcset: 1.0.2
-      postcss: 8.5.6
-
   sass@1.97.1:
     dependencies:
       chokidar: 4.0.3
@@ -26573,10 +26553,10 @@ snapshots:
       runed: 0.28.0(svelte@5.46.0)
       svelte: 5.46.0
 
-  svelte-tiptap@2.2.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-bubble-menu@3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/extension-floating-menu@3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(svelte@5.46.0):
+  svelte-tiptap@2.2.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-bubble-menu@3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/extension-floating-menu@3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(svelte@5.46.0):
     dependencies:
       '@tiptap/core': 3.14.0(@tiptap/pm@3.14.0)
-      '@tiptap/extension-bubble-menu': 3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)
+      '@tiptap/extension-bubble-menu': 3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)
       '@tiptap/extension-floating-menu': 3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)
       '@tiptap/pm': 3.14.0
       svelte: 5.46.0
@@ -27042,8 +27022,6 @@ snapshots:
       '@fastify/busboy': 2.1.1
 
   undici@7.14.0: {}
-
-  undici@7.24.6: {}
 
   undici@7.24.8: {}
 
