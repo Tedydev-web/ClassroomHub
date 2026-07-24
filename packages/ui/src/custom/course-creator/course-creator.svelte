@@ -24,6 +24,8 @@
     loading?: boolean;
     levelOptions?: SelectOption[];
     model?: AgentModelId;
+    /** Models to offer in the picker. Defaults to the picker's own static list when omitted. */
+    modelIds?: readonly AgentModelId[];
     lockedModelIds?: readonly AgentModelId[];
     onModelChange?: (model: AgentModelId) => void;
     onLockedModelSelect?: (model: AgentModelId) => void;
@@ -37,6 +39,7 @@
     loading = false,
     levelOptions = [],
     model = DEFAULT_PICKER_MODEL_ID,
+    modelIds,
     lockedModelIds = [],
     onModelChange,
     onLockedModelSelect,
@@ -108,6 +111,7 @@
         value={selectedModel}
         disabled={loading}
         variant="select"
+        {modelIds}
         {lockedModelIds}
         onChange={handleModelChange}
         onLockedSelect={onLockedModelSelect}

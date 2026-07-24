@@ -13,7 +13,9 @@ export const ZGatewayModelAllowlistEntry = z.object({
   label: z.string().min(1),
   /** Relative quota burn. Zero or negative would break priority arithmetic. */
   quotaWeight: z.number().positive(),
-  role: z.enum(['default', 'light', 'optional'])
+  role: z.enum(['default', 'light', 'optional']),
+  /** Whether the chat model picker offers this model. Defaults to true when omitted. */
+  visible: z.boolean().optional()
 });
 
 export const ZGatewayWindow = z.object({

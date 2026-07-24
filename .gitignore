@@ -92,6 +92,10 @@ apps/db-agent
 !packages/question-types/tests/*.test.ts
 !packages/utils/scripts/exercise-question-type-validation.test.ts
 
+# Keep the gateway allowlist picker-model coverage even when a global ignore excludes test files.
+!apps/api/src/__tests__/
+!apps/api/src/__tests__/picker-models.test.ts
+
 # Keep canonical product brand sources and generated masters in the repository.
 !docs/
 !docs/brand/

@@ -195,9 +195,9 @@ export interface AgentStatus {
   /**
    * Whether the shared subscription gateway is currently serving.
    *
-   * Drives which models the picker offers: Codex while the gateway is up, the
-   * official-API fallback only when it is not. Teachers see the consequence, not
-   * the shared-pool numbers behind it.
+   * Drives which models the picker offers: the gateway allowlist while it is
+   * up, the official-API fallback only when it is not. Teachers see the
+   * consequence, not the shared-pool numbers behind it.
    */
   gatewayActive: boolean;
   /**
@@ -209,6 +209,24 @@ export interface AgentStatus {
    * against, and inventing a denominator would be worse than showing none.
    */
   gatewayUsage: GatewayUsageSummary | null;
+  /**
+   * Models the chat model picker should offer, in priority order.
+   *
+   * Resolved from the gateway's model allowlist (DB, super-admin managed) while
+   * the gateway is serving, so hiding or adding a model there takes effect here
+   * without a redeploy. Falls back to the registry's fallback models when the
+   * gateway cannot serve, so the picker always offers at least one working
+   * option.
+   */
+  pickerModels: PickerModelSummary[];
+  /** Model id the picker should default to. Always a member of `pickerModels` when it is non-empty. */
+  defaultModelId: string;
+}
+
+export interface PickerModelSummary {
+  id: string;
+  label: string;
+  isFree: boolean;
 }
 
 export interface GatewayUsageSummary {

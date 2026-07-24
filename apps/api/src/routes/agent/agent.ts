@@ -64,6 +64,7 @@ import {
 import { assertChatAdmitted, describeAdmissionRejection } from '@cio/core/services/agent/gateway-run-admission';
 import { getOrgGatewayUsage } from '@cio/core/services/agent/gateway-org-usage';
 import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID } from '@cio/utils/agent-models';
+import { resolvePickerStatus } from '@api/services/agent/picker-status';
 import { buildSystemPrompt, buildContextMessage } from '@cio/ai-assistant/prompt';
 import { trackAgentEvent, AgentEvent } from '@cio/core/utils/tinybird';
 import { redis } from '@cio/core/utils/redis/redis';
@@ -109,25 +110,32 @@ const agentCoreRouter = new Hono()
           usage: { used: 0, allowance: 0, creditBalance: 0, remaining: 0, isUnlimited: false },
           tutor: { enabled: false, capRemaining: null, cap: null, enforced: false },
           gatewayActive: false,
-          gatewayUsage: null
+          gatewayUsage: null,
+          pickerModels: [],
+          defaultModelId: DEFAULT_PICKER_MODEL_ID
         };
 
         return c.json({ success: true, data: status });
       }
 
-      const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
+      // courseId is optional here so a course-less surface (e.g. the org home
+      // "create a course" composer) can still read pickerModels/defaultModelId.
+      // Without a course to check membership against, default to the teacher
+      // role — that surface is never reached by pure students.
+      const isTeamMember = courseId ? await isCourseTeamMemberOrOrgAdmin(courseId, user.id) : true;
       const role = isTeamMember ? AgentRole.TEACHER : AgentRole.STUDENT;
 
       const usage = await getTokenBalance(orgId);
 
       const tutor =
-        role === AgentRole.STUDENT
+        role === AgentRole.STUDENT && courseId
           ? await getStudentTutorStatus(orgId, courseId, user.id)
           : { enabled: true, cap: null, capRemaining: null, enforced: false };
 
       // Only teachers see the capacity meter, so students never pay for the
       // window query — and it is scoped to this org, never the shared pool.
       const gatewayUsage = role === AgentRole.TEACHER ? await getOrgGatewayUsage(orgId) : null;
+      const { pickerModels, defaultModelId } = await resolvePickerStatus({ gatewayActive: gatewayStatus.active });
 
       const status: AgentStatus = {
         enabled: true,
@@ -135,7 +143,9 @@ const agentCoreRouter = new Hono()
         usage,
         tutor,
         gatewayActive: gatewayStatus.active,
-        gatewayUsage
+        gatewayUsage,
+        pickerModels,
+        defaultModelId
       };
 
       return c.json({ success: true, data: status });

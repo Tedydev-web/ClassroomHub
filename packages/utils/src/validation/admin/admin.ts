@@ -33,6 +33,14 @@ export const ZCreateAdminOrg = z.object({
   ownerUserId: z.string().uuid()
 });
 
+export const ZAdminOrgParam = z.object({ orgId: z.string().uuid() });
+
+/** Toggles an org's AI tutor without touching any of its other settings. */
+export const ZUpdateOrgAiTutor = z.object({
+  enabled: z.boolean()
+});
+
 export type TListUsersQuery = z.infer<typeof ZListUsersQuery>;
 export type TAddCredits = z.infer<typeof ZAddCredits>;
 export type TCreateAdminOrg = z.infer<typeof ZCreateAdminOrg>;
+export type TUpdateOrgAiTutor = z.infer<typeof ZUpdateOrgAiTutor>;

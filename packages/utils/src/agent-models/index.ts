@@ -39,11 +39,19 @@ export type AgentModelCostTier = 'low' | 'high';
 /**
  * Which transport is expected to serve a model.
  *
- * - `gateway`  — the shared subscription; the normal route.
- * - `fallback` — official provider API, surfaced only when the gateway is down.
- * - `legacy`   — kept so old stored ids resolve; never offered in the picker.
+ * - `gateway`             — the shared subscription; the static picker's normal
+ *   (allowlist-independent) contents.
+ * - `gateway-allowlisted` — also served by the shared subscription, but shown
+ *   only when the DB gateway allowlist (`ai_gateway_settings.modelAllowlist`)
+ *   marks it visible. Never appears in the static `route`-only picker lists
+ *   below (`GATEWAY_MODEL_IDS`/`getPickerModelIds`) — only the allowlist
+ *   resolver (`@cio/core/services/agent/picker-models`) offers it.
+ * - `fallback`            — official provider API, surfaced only when the
+ *   gateway is down.
+ * - `legacy`              — kept so old stored ids resolve; never offered in
+ *   the picker.
  */
-export type AgentModelRoute = 'gateway' | 'fallback' | 'legacy';
+export type AgentModelRoute = 'gateway' | 'gateway-allowlisted' | 'fallback' | 'legacy';
 
 export interface AgentModelDescriptor {
   provider: AgentModelProvider;
@@ -114,7 +122,7 @@ export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
     isFree: true,
     costTier: 'low',
     contextWindow: 1_000_000,
-    route: 'gateway'
+    route: 'gateway-allowlisted'
   },
   'claude-opus-4-8': {
     provider: 'anthropic',
@@ -123,7 +131,7 @@ export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
     isFree: false,
     costTier: 'high',
     contextWindow: 1_000_000,
-    route: 'gateway'
+    route: 'gateway-allowlisted'
   },
   'claude-haiku-4-5-20251001': {
     provider: 'anthropic',
@@ -132,7 +140,7 @@ export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
     isFree: true,
     costTier: 'low',
     contextWindow: 1_000_000,
-    route: 'gateway'
+    route: 'gateway-allowlisted'
   },
   'gemini-2.5-flash-lite': {
     provider: 'google',

@@ -47,7 +47,9 @@ export type TAgentUploadQuery = z.infer<typeof ZAgentUploadQuery>;
 // ─── GET /agent/status ───────────────────────────────────────────────────────
 
 export const ZAgentStatusQuery = z.object({
-  courseId: ZAgentCourseId
+  // Optional: course-less surfaces (e.g. the org home "create a course"
+  // composer) still need pickerModels/defaultModelId before a course exists.
+  courseId: ZAgentCourseId.optional()
 });
 
 export type TAgentStatusQuery = z.infer<typeof ZAgentStatusQuery>;

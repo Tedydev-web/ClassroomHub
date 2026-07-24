@@ -27,6 +27,13 @@ export interface GatewayModelAllowlistEntry {
    */
   quotaWeight: number;
   role: GatewayModelRole;
+  /**
+   * Whether the chat model picker should offer this model. Defaults to `true`
+   * when absent, so existing rows written before this field existed keep
+   * behaving exactly as before. Set to `false` to keep a model routable
+   * (runtime/admission logic still honors it) while hiding it from the picker.
+   */
+  visible?: boolean;
 }
 
 /**
@@ -157,13 +164,17 @@ export function parseModelAllowlist(value: unknown): GatewayModelAllowlistEntry[
     if (!Number.isFinite(quotaWeight) || quotaWeight <= 0) return [];
 
     const role = MODEL_ROLES.includes(entry.role as GatewayModelRole) ? (entry.role as GatewayModelRole) : 'optional';
+    // Absent/non-boolean means visible — only an explicit `false` hides a model,
+    // so rows written before this field existed keep showing in the picker.
+    const visible = entry.visible !== false;
 
     return [
       {
         modelId,
         label: typeof entry.label === 'string' && entry.label ? entry.label : modelId,
         quotaWeight,
-        role
+        role,
+        visible
       }
     ];
   });

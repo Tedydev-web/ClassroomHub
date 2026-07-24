@@ -62,15 +62,7 @@
     AI_ASSISTANT_QUICK_ACTION_ENTRIES,
     STUDENT_QUICK_ACTION_ENTRIES
   } from '$features/ai-assistant/utils/constants';
-  import {
-    AGENT_MODELS,
-    AGENT_MODEL_IDS,
-    DEFAULT_FALLBACK_MODEL_ID,
-    DEFAULT_PICKER_MODEL_ID,
-    UI_PICKER_MODEL_IDS,
-    getPickerModelIds,
-    type AgentModelId
-  } from '@cio/utils/agent-models';
+  import { AGENT_MODEL_IDS, DEFAULT_PICKER_MODEL_ID, type AgentModelId } from '@cio/utils/agent-models';
 
   /** Every ~30% / 60% / 90% of tool steps completed, refetch course so UI reflects partial mutations */
   const AGENT_STEP_PROGRESS_REFRESH_RATIOS = [0.3, 0.6, 0.9] as const;
@@ -125,10 +117,14 @@
   let activeConversationId: string | null = $state(null);
   let isLoadingHistory = $state(false);
   let selectedModel: AgentModelId = $state(DEFAULT_PICKER_MODEL_ID);
-  const paidModelIds = UI_PICKER_MODEL_IDS.filter((id) => !AGENT_MODELS[id].isFree);
 
   function isAgentModelId(value: unknown): value is AgentModelId {
     return typeof value === 'string' && (AGENT_MODEL_IDS as readonly string[]).includes(value);
+  }
+
+  /** Narrows a picker-model entry's `id` to `AgentModelId` without an unsafe cast. */
+  function isKnownPickerModel<T extends { id: string }>(model: T): model is T & { id: AgentModelId } {
+    return isAgentModelId(model.id);
   }
 
   function handleSelectModel(id: AgentModelId) {
@@ -153,23 +149,31 @@
   const tokenUsage = $derived(aiAssistantApi.status?.usage ?? null);
   const gatewayUsage = $derived(aiAssistantApi.status?.gatewayUsage ?? null);
 
-  // Assume the gateway is up until the status says otherwise, so the picker does
-  // not flash the fallback list on first paint.
-  const gatewayActive = $derived(aiAssistantApi.status?.gatewayActive ?? true);
-  const pickerModelIds = $derived(getPickerModelIds({ gatewayActive }));
+  // The gateway model allowlist (DB, super-admin managed) is the single source
+  // of truth for which models the picker offers — filtered to ids this build's
+  // registry still recognizes, so a descriptor lookup never fails. Empty until
+  // the status fetch resolves, same as before this list became dynamic.
+  const pickerModels = $derived((aiAssistantApi.status?.pickerModels ?? []).filter(isKnownPickerModel));
+  const pickerModelIds = $derived(pickerModels.map((model) => model.id));
+  const paidModelIds = $derived(pickerModels.filter((model) => !model.isFree).map((model) => model.id));
+  const defaultModelId = $derived.by((): AgentModelId => {
+    const candidate = aiAssistantApi.status?.defaultModelId;
 
-  // When the gateway drops, a Codex selection can no longer be served. Move the
-  // teacher to a model that works rather than letting the next send fail.
+    return isAgentModelId(candidate) ? candidate : DEFAULT_PICKER_MODEL_ID;
+  });
+
+  // When the selected model falls out of the offered list — gateway state
+  // changed, the allowlist changed, or a stale localStorage value — move the
+  // teacher to the current default rather than letting the next send fail.
   $effect(() => {
     if (pickerModelIds.includes(selectedModel)) {
       return;
     }
 
-    const replacement = gatewayActive ? DEFAULT_PICKER_MODEL_ID : DEFAULT_FALLBACK_MODEL_ID;
-    selectedModel = replacement;
+    selectedModel = defaultModelId;
 
     try {
-      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, replacement);
+      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, defaultModelId);
     } catch {
       // Storage is best-effort; the in-memory selection is what matters.
     }
@@ -180,10 +184,10 @@
       return;
     }
 
-    selectedModel = DEFAULT_PICKER_MODEL_ID;
+    selectedModel = defaultModelId;
 
     try {
-      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, DEFAULT_PICKER_MODEL_ID);
+      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, defaultModelId);
     } catch {
       // localStorage unavailable
     }

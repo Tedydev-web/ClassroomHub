@@ -93,11 +93,45 @@ export type GatewayOrgPolicy = {
   isBlocked: boolean;
   blockReason: string | null;
   consumedUnits: number;
+  tutorEnabled: boolean;
 };
 
 export type GatewayOrgs = {
   policies: GatewayOrgPolicy[];
-  consumptionOnly: Array<{ orgId: string; units: number }>;
+  consumptionOnly: Array<{ orgId: string; units: number; tutorEnabled: boolean }>;
+};
+
+export type GatewayModelAllowlistEntry = {
+  modelId: string;
+  label: string;
+  quotaWeight: number;
+  role: 'default' | 'light' | 'optional';
+  /** Whether the chat model picker offers this model. Absent means visible (defaults to true). */
+  visible?: boolean;
+};
+
+export type GatewaySettings = {
+  enabled: boolean;
+  pausedAt: string | null;
+  pauseReason: string | null;
+  pausedBy: string | null;
+  modelAllowlist: GatewayModelAllowlistEntry[];
+  defaultModelId: string | null;
+  lightModelId: string | null;
+  globalConcurrency: number;
+  sliceRounds: number;
+  defaultOrgActiveLimit: number;
+  defaultOrgQueuedLimit: number;
+  defaultOrgWindowBudgetUnits: number | null;
+  windows: Array<{ id: string; durationMinutes: number; capUnits: number }>;
+  fallbackEnabled: boolean;
+  fallbackMonthlyCapUnits: number | null;
+  circuitState: 'closed' | 'open' | 'half_open' | string;
+  circuitOpenedAt: string | null;
+  circuitResumeAfter: string | null;
+  consecutiveFailures: number;
+  /** Present on the GET response; absent on the PATCH response (secrets are never round-tripped either way). */
+  connectionConfigured?: boolean;
 };
 
 export type GatewayRun = {
