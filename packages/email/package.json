@@ -12,7 +12,8 @@
     "dev": "tsc --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:smtp": "tsx scripts/verify-smtp-connection.ts"
   },
   "exports": {
     ".": {
