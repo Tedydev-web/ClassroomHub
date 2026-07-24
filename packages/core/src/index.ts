@@ -11,3 +11,6 @@ export {
   runAgentCourseGenerationJob,
   type RunAgentCourseGenerationJobInput
 } from './services/agent/course-generation-runner';
+
+// Used by the worker to re-dispatch a run that yielded its shared gateway slot.
+export { computeAgentRunResumePriority } from './services/agent/gateway-resume-priority';

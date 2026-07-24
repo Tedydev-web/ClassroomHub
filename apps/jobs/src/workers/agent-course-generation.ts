@@ -3,8 +3,14 @@ import './../bootstrap';
 import { Worker } from 'bullmq';
 
 import { recordDeadLetterJob } from '@cio/db/queries';
-import { JOB_NAMES, QUEUE_NAMES, ZAgentCourseGenerationPayload, createRedisConnection } from '@cio/jobs';
-import { runAgentCourseGenerationJob } from '@cio/core';
+import {
+  JOB_NAMES,
+  QUEUE_NAMES,
+  ZAgentCourseGenerationPayload,
+  createRedisConnection,
+  enqueueAgentCourseGenerationRun
+} from '@cio/jobs';
+import { computeAgentRunResumePriority, runAgentCourseGenerationJob } from '@cio/core';
 
 import { errorMessage } from '../utils/cancel';
 import { env } from '../config/env';
@@ -26,10 +32,33 @@ const worker = new Worker(
       case JOB_NAMES.agentCourseGeneration.run: {
         const payload = ZAgentCourseGenerationPayload.parse(job.data);
 
-        return runAgentCourseGenerationJob({
+        const result = await runAgentCourseGenerationJob({
           runId: payload.runId,
           bullmqJobId: job.id ?? null
         });
+
+        // The run gave up the shared gateway slot part-way through so other orgs
+        // can be served. Re-queue it with a priority recomputed from how much
+        // this org has already consumed — that is what makes the sharing fair
+        // rather than first-come-first-served.
+        if (result.status === 'queued') {
+          const priority = await computeAgentRunResumePriority(payload.organizationId);
+
+          await enqueueAgentCourseGenerationRun(payload, {
+            // Rounds completed keep the job id unique per slice; reusing an id
+            // would make BullMQ silently drop the re-dispatch.
+            attempt: result.rounds,
+            priority
+          });
+
+          log.info('agent-course-generation-run-yielded', {
+            runId: payload.runId,
+            roundsCompleted: result.rounds,
+            priority
+          });
+        }
+
+        return result;
       }
       default:
         throw new Error(`Unknown agent course-generation job: ${job.name}`);

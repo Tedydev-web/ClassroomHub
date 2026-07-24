@@ -55,6 +55,14 @@ import {
   type AgentStatus
 } from '@cio/ai-assistant';
 import { createModel, getProviderConfigForProvider, pickAnyConfiguredProvider } from '@cio/ai-assistant/providers';
+import {
+  getGatewayServingStatus,
+  recordGatewayFailure,
+  recordGatewaySuccess,
+  resolveAgentGatewayTransport
+} from '@cio/core/services/agent/gateway-runtime';
+import { assertChatAdmitted, describeAdmissionRejection } from '@cio/core/services/agent/gateway-run-admission';
+import { getOrgGatewayUsage } from '@cio/core/services/agent/gateway-org-usage';
 import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID } from '@cio/utils/agent-models';
 import { buildSystemPrompt, buildContextMessage } from '@cio/ai-assistant/prompt';
 import { trackAgentEvent, AgentEvent } from '@cio/core/utils/tinybird';
@@ -88,13 +96,20 @@ const agentCoreRouter = new Hono()
       const orgId = c.req.header('cio-org-id')!;
       const { courseId } = c.req.valid('query');
 
+      // The gateway can serve on its own, so a deployment running purely on the
+      // shared subscription has no provider keys and must not be reported as
+      // "AI disabled".
+      const gatewayStatus = await getGatewayServingStatus();
       const providerConfig = pickAnyConfiguredProvider();
-      if (!providerConfig) {
+
+      if (!providerConfig && !gatewayStatus.active) {
         const status: AgentStatus = {
           enabled: false,
           role: AgentRole.STUDENT,
-          usage: { used: 0, allowance: 0, creditBalance: 0, remaining: 0 },
-          tutor: { enabled: false, capRemaining: null, cap: null, enforced: false }
+          usage: { used: 0, allowance: 0, creditBalance: 0, remaining: 0, isUnlimited: false },
+          tutor: { enabled: false, capRemaining: null, cap: null, enforced: false },
+          gatewayActive: false,
+          gatewayUsage: null
         };
 
         return c.json({ success: true, data: status });
@@ -110,11 +125,17 @@ const agentCoreRouter = new Hono()
           ? await getStudentTutorStatus(orgId, courseId, user.id)
           : { enabled: true, cap: null, capRemaining: null, enforced: false };
 
+      // Only teachers see the capacity meter, so students never pay for the
+      // window query — and it is scoped to this org, never the shared pool.
+      const gatewayUsage = role === AgentRole.TEACHER ? await getOrgGatewayUsage(orgId) : null;
+
       const status: AgentStatus = {
         enabled: true,
         role,
         usage,
-        tutor
+        tutor,
+        gatewayActive: gatewayStatus.active,
+        gatewayUsage
       };
 
       return c.json({ success: true, data: status });
@@ -400,13 +421,37 @@ const agentCoreRouter = new Hono()
       const modelId =
         role === AgentRole.STUDENT ? DEFAULT_PICKER_MODEL_ID : (requestedModel ?? DEFAULT_PICKER_MODEL_ID);
       const modelDescriptor = AGENT_MODELS[modelId];
+      // Resolved before demanding an official key: a subscription-only deployment
+      // has no provider keys, and rejecting there would refuse work the gateway
+      // can serve on its own.
       const baseProviderConfig = getProviderConfigForProvider(modelDescriptor.provider as AIProvider);
+      const officialProviderConfig = baseProviderConfig
+        ? { ...baseProviderConfig, model: modelDescriptor.backendModelId }
+        : null;
 
-      if (!baseProviderConfig) {
+      // An operator block is absolute; capacity limits are not applied to chat,
+      // which falls back to the official provider rather than making a person wait.
+      const chatAdmission = await assertChatAdmitted(orgId);
+
+      if (!chatAdmission.admitted) {
+        throw new AppError(describeAdmissionRejection(chatAdmission), 'AI_GATEWAY_ADMISSION_DENIED', 403);
+      }
+
+      // Prefer the shared subscription gateway when it can serve this exact model.
+      // Chat is interactive, so a busy or cooling gateway falls straight back to
+      // the official provider rather than making the teacher wait in a queue.
+      const gatewayResolution = await resolveAgentGatewayTransport({
+        requestedModelId: modelDescriptor.backendModelId,
+        workload: 'interactive',
+        hasOfficialKey: officialProviderConfig !== null
+      });
+      const providerConfig = gatewayResolution.gatewayConfig ?? officialProviderConfig;
+
+      if (!providerConfig) {
         throw new AppError(`AI assistant is not configured for model "${modelId}"`, 'AI_NOT_CONFIGURED', 503);
       }
 
-      const providerConfig = { ...baseProviderConfig, model: modelDescriptor.backendModelId };
+      const isGatewayCall = gatewayResolution.gatewayConfig !== null;
 
       const [courseRow] = await db
         .select({
@@ -560,12 +605,15 @@ const agentCoreRouter = new Hono()
       let completedStepCount = 0;
       let finishReason: string | undefined;
 
-      const isAnthropic = providerConfig.provider === AIProvider.ANTHROPIC;
+      // Driven by capability, not provider name: a gateway transport can front an
+      // OpenAI-compatible upstream whose caching semantics are unverified, so
+      // attaching cacheControl there would corrupt cache accounting.
+      const supportsPromptCaching = providerConfig.capabilities.promptCaching;
 
       // 1h TTL keeps the prefix warm across tool-execution gaps in long agent
       // runs. Break-even is 3 requests within the hour; well under most plan-
       // execution loops.
-      const systemContent = isAnthropic
+      const systemContent = supportsPromptCaching
         ? {
             role: 'system' as const,
             content: systemPrompt,
@@ -590,7 +638,7 @@ const agentCoreRouter = new Hono()
 
       // Cache the growing conversation prefix: each turn reads the prior
       // transcript at ~0.1x cost instead of reprocessing it at full price.
-      if (isAnthropic && modelMessages.length > 0) {
+      if (supportsPromptCaching && modelMessages.length > 0) {
         const lastMessage = modelMessages[modelMessages.length - 1];
         const existingAnthropic = (lastMessage.providerOptions?.anthropic as Record<string, unknown> | undefined) ?? {};
         lastMessage.providerOptions = {
@@ -604,11 +652,26 @@ const agentCoreRouter = new Hono()
 
       const result = streamText({
         model,
-        maxRetries: 2,
+        // Retries are owned by this layer for gateway calls: the SDK would happily
+        // re-send a 429 against an already-exhausted subscription, burning the
+        // remaining window instead of letting the breaker open and route away.
+        maxRetries: isGatewayCall ? 0 : 2,
         system: systemContent,
         messages: modelMessages,
         tools: agentTools,
         stopWhen: stepCountIs(MAX_STEPS_PER_ROUND),
+        onError: async ({ error }) => {
+          if (!isGatewayCall) return;
+
+          // Chat streams to the client, so this request cannot be transparently
+          // re-issued against the official provider once bytes are in flight.
+          // Opening the breaker here means the next request routes away instead.
+          const reason = await recordGatewayFailure(error).catch(() => null);
+
+          if (reason) {
+            console.warn(`[agent.chat] gateway failure (${reason}); breaker opened, next call falls back`);
+          }
+        },
         onStepFinish: () => {
           completedStepCount += 1;
         },
@@ -616,13 +679,18 @@ const agentCoreRouter = new Hono()
           completedStepCount = steps.length;
           finishReason = resultFinishReason;
           const durationMs = Date.now() - startTime;
+
+          // A completed gateway call closes a half-open circuit and resets backoff.
+          if (isGatewayCall) {
+            await recordGatewaySuccess().catch(() => undefined);
+          }
           const inputTokens = totalUsage?.inputTokens ?? 0;
           const outputTokens = totalUsage?.outputTokens ?? 0;
 
           // Cache hit/miss visibility. If cacheRead stays 0 across repeated
           // turns of the same conversation, a silent invalidator is leaking
           // into the cached prefix — audit system prompt and tool definitions.
-          if (isAnthropic) {
+          if (supportsPromptCaching) {
             const details = totalUsage?.inputTokenDetails;
             const cacheRead = details?.cacheReadTokens ?? 0;
             const cacheWrite = details?.cacheWriteTokens ?? 0;
@@ -644,7 +712,7 @@ const agentCoreRouter = new Hono()
                 completionTokens: outputTokens,
                 totalTokens: inputTokens + outputTokens
               },
-              providerConfig.model || providerConfig.provider
+              providerConfig.model
             );
           }
 
@@ -658,7 +726,7 @@ const agentCoreRouter = new Hono()
             courseId,
             inputTokens,
             outputTokens,
-            model: providerConfig.model || providerConfig.provider,
+            model: providerConfig.model,
             durationMs
           });
         }

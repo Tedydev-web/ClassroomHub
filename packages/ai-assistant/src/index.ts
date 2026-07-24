@@ -17,7 +17,6 @@ export {
 } from './types';
 
 export type {
-  AIProviderConfig,
   AgentContext,
   CoursePlan,
   CoursePlanSection,
@@ -26,11 +25,30 @@ export type {
   TokenBalance,
   AgentStatus,
   AgentTutorStatus,
+  GatewayUsageSummary,
   DocumentUploadResult
 } from './types';
 
 // Providers
-export { createModel, getProviderConfigForProvider, pickAnyConfiguredProvider } from './providers';
+export {
+  createModel,
+  getProviderConfigForProvider,
+  pickAnyConfiguredProvider,
+  assertValidTransport,
+  buildGatewayProviderConfig,
+  buildOfficialProviderConfig,
+  officialCapabilitiesFor,
+  resolveModelSpec,
+  DEFAULT_GATEWAY_CAPABILITIES
+} from './providers';
+
+export type {
+  AIProviderConfig,
+  AIModelCapabilities,
+  AIModelEntrypoint,
+  AITransport,
+  ResolvedModelSpec
+} from './providers';
 
 // Tools
 export { getToolSchemas } from './tools';

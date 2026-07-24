@@ -32,6 +32,7 @@ import { mailRouter } from '@api/routes/mail';
 import { mediaRouter } from '@api/routes/media';
 import { transcriptsRouter } from '@api/routes/transcripts';
 import { mountQueueDashboard } from '@api/routes/admin/queues';
+import { adminAiRouter } from '@api/routes/admin/ai';
 import { onboardingRouter } from '@api/routes/onboarding';
 import { notificationRouter } from '@api/routes/notification';
 import { organizationRouter } from '@api/routes/organization';
@@ -258,6 +259,7 @@ export const app = new Hono()
   .route('/widgets', publicWidgetsRouter)
   .route('/internal', internalRouter)
   .route('/agent', agentRouter)
+  .route('/admin/ai', adminAiRouter)
 
   // Error handling
   .onError((err, c) => {

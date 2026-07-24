@@ -65,8 +65,10 @@
   import {
     AGENT_MODELS,
     AGENT_MODEL_IDS,
+    DEFAULT_FALLBACK_MODEL_ID,
     DEFAULT_PICKER_MODEL_ID,
     UI_PICKER_MODEL_IDS,
+    getPickerModelIds,
     type AgentModelId
   } from '@cio/utils/agent-models';
 
@@ -149,6 +151,29 @@
   }
 
   const tokenUsage = $derived(aiAssistantApi.status?.usage ?? null);
+  const gatewayUsage = $derived(aiAssistantApi.status?.gatewayUsage ?? null);
+
+  // Assume the gateway is up until the status says otherwise, so the picker does
+  // not flash the fallback list on first paint.
+  const gatewayActive = $derived(aiAssistantApi.status?.gatewayActive ?? true);
+  const pickerModelIds = $derived(getPickerModelIds({ gatewayActive }));
+
+  // When the gateway drops, a Codex selection can no longer be served. Move the
+  // teacher to a model that works rather than letting the next send fail.
+  $effect(() => {
+    if (pickerModelIds.includes(selectedModel)) {
+      return;
+    }
+
+    const replacement = gatewayActive ? DEFAULT_PICKER_MODEL_ID : DEFAULT_FALLBACK_MODEL_ID;
+    selectedModel = replacement;
+
+    try {
+      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, replacement);
+    } catch {
+      // Storage is best-effort; the in-memory selection is what matters.
+    }
+  });
 
   $effect(() => {
     if (!$isFreePlan || !paidModelIds.includes(selectedModel)) {
@@ -1292,6 +1317,7 @@
 <div class="flex min-h-0 flex-1 flex-col">
   <ChatHeader
     {tokenUsage}
+    {gatewayUsage}
     {isStudent}
     {studentMessageUsage}
     {conversationTitle}
@@ -1353,6 +1379,7 @@
       {selectedModel}
       {isStudent}
       {tutorBlocked}
+      modelIds={pickerModelIds}
       lockedModelIds={$isFreePlan ? paidModelIds : []}
       error={chat.error}
       onSend={handleSend}

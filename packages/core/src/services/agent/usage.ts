@@ -39,7 +39,14 @@ const MODEL_COST_MULTIPLIER: Record<string, number> = {
   'gemini-2.5-flash-lite': 1,
   'gemini-3.1-flash-lite': 3.125,
   'gemini-2.5-flash': 1.5,
+  // Codex models served through the gateway. These weights express quota burn
+  // relative to the lightest model, not dollars — keep them in step with the
+  // gateway allowlist's `quotaWeight` until the two are unified.
   'gpt-5.4-mini': 4,
+  'gpt-5.4': 12,
+  'gpt-5.6-luna': 8,
+  'gpt-5.6-terra': 20,
+  'gpt-5.6-sol': 30,
   'claude-sonnet-4-6': 11,
   'claude-haiku-4-5-20251001': 1.5,
   'kimi-k2.6': 4
@@ -50,9 +57,17 @@ function computeCostUnits(promptTokens: number, completionTokens: number, model:
   return Math.round((promptTokens + completionTokens) * multiplier);
 }
 
+/**
+ * Sentinel for "no plan ceiling". Kept as a number so every arithmetic call site
+ * keeps working, but reported separately as `isUnlimited` so presentation layers
+ * never divide by it — that always renders 0% and implies a budget that does not
+ * exist.
+ */
+const UNLIMITED_ALLOWANCE = Number.MAX_SAFE_INTEGER;
+
 async function getPlanAllowance(orgId: string): Promise<{ planName: string; allowance: number }> {
   if (isSelfOwnedDeployment) {
-    return { planName: 'ENTERPRISE', allowance: Number.MAX_SAFE_INTEGER };
+    return { planName: 'ENTERPRISE', allowance: UNLIMITED_ALLOWANCE };
   }
 
   const activePlan = await getActiveOrganizationPlan(orgId);
@@ -91,7 +106,8 @@ export async function getTokenBalance(orgId: string): Promise<TokenBalance> {
     used: monthlyUsage,
     allowance,
     creditBalance,
-    remaining
+    remaining,
+    isUnlimited: allowance >= UNLIMITED_ALLOWANCE
   };
 }
 

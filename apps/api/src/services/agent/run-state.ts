@@ -16,6 +16,7 @@ import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import type { TAiAgentRun, TAiAgentRunEvent, TAiAgentRunStatus, TAiAgentRunStep } from '@cio/db/types';
 import { QUEUE_NAMES, enqueueAgentCourseGenerationRun, getQueue, isRedisConfigured } from '@cio/jobs';
+import { assertAgentRunAdmitted, describeAdmissionRejection } from '@cio/core/services/agent/gateway-run-admission';
 import { AppError } from '@api/utils/errors';
 
 const ACTIVE_RUN_STATUSES = new Set<TAiAgentRunStatus>(['queued', 'running', 'waiting_for_input', 'paused']);
@@ -208,6 +209,17 @@ async function updateOwnedAgentRun(
 export async function createAgentRunState(input: CreateAgentRunStateInput): Promise<AgentRunDetail> {
   await assertCourseRunAccess(input.courseId, input.userId, input.orgId);
   await assertConversationBelongsToCourse(input.conversationId, input.courseId, input.userId);
+
+  // Guards the shared gateway pool before any run row exists, so a rejected
+  // request leaves nothing behind to clean up.
+  const admission = await assertAgentRunAdmitted({
+    orgId: input.orgId,
+    hasOfficialKey: Boolean(process.env.OPENAI_API_KEY)
+  });
+
+  if (!admission.admitted) {
+    throw new AppError(describeAdmissionRejection(admission), 'AI_GATEWAY_ADMISSION_DENIED', 429);
+  }
 
   const executionCursor = {
     ...(input.executionCursor ?? {}),
