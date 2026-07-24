@@ -2,13 +2,14 @@
 
 ## Purpose
 
-Build a password-gated super admin panel that lets the ClassroomIO operator manage all users across the database without needing a user account. Use cases:
+Build a password-gated super admin panel that lets the Classroom Hub operator manage all users across the database without needing a user account. Use cases:
 
 1. **User management** — view a paginated, searchable table of every user; open individual profile pages with stats
 2. **AI chat inspection** — view all AI assistant conversations for any user and copy an entire chat transcript with one click
 3. **Credit management** — top up AI credits for any org directly from the panel
 4. **Org creation** — create a new organization and assign an existing user as its admin
 5. **Impersonation** — "Login as" any user to act on their behalf on `classroom-app.tedydev.io.vn`
+6. **AI gateway operations** — monitor and control the shared CCS Codex gateway that every org/tenant runs on: health, quota window, per-org consumption and priority, kill switch, and cross-org run inspection
 
 The panel has no user account of its own. Access is controlled by a single `SUPER_ADMIN_PASSWORD` env var, mirroring the existing `/admin/queues` pattern. It ships as a **separate app** (`apps/admin/`) so it never bloats the user-facing dashboard bundle and can be deployed independently.
 
@@ -23,6 +24,8 @@ The panel has no user account of its own. Access is controlled by a single `SUPE
 5. **Impersonation**: Reuses `mintLoginLinkToken` from `packages/db/src/auth/login-link.ts`. Admin opens the resulting URL (`https://classroom-app.tedydev.io.vn/api/auth/login-link?token=...&redirect=/home`) in a new tab. TTL: 60 minutes.
 6. **AI credits**: `aiCreditBalance` is per-org. The UI shows a user's admin orgs with current credit balance; operator enters an amount to add. Calls existing `upsertCreditBalance` query.
 7. **Org creation**: Reuses `createOrganization` + `createOrganizationMember` query pattern, accepting a target `userId` instead of the session user.
+8. **AI gateway is platform-scoped, not org-scoped**: the CCS Codex gateway is a singleton backed by one shared ChatGPT subscription. Its health, quota window, and controls belong to the super admin panel — never to org-level admin UI. Org admins cannot act on it, and exposing shared-pool numbers to them would leak cross-tenant consumption.
+9. **API-first delivery**: `/admin/ai/*` endpoints ship before the UI so the operator has a kill switch and health signal from day one (curl + `ccs` CLI + existing `/admin/queues`). The admin app screens described in Phase 3 are built afterwards against the same contract.
 
 ---
 
@@ -347,7 +350,7 @@ Uses plain `fetch` (no Hono RPC client — standalone app has no `@cio/api` dep)
   - 401 → show inline error
   - 200 → store in sessionStorage, show children
 - Pass password to all child pages via Svelte context (`setContext`)
-- Top nav: "ClassroomIO Admin" | Users | Create Org | Sign out (clears sessionStorage + reloads)
+- Top nav: "Classroom Hub Admin" | Users | Create Org | Sign out (clears sessionStorage + reloads)
 
 ### 2e. Pages
 
@@ -373,6 +376,138 @@ Fields: Org name, Site name, Owner user ID. On submit → success state with "Lo
 
 ---
 
+## Phase 3: AI Gateway Operations
+
+Design source: [`plans/reports/brainstorm-260723-1633-GH-2026-ccs-codex-shared-gateway-architecture.md`](../../plans/reports/brainstorm-260723-1633-GH-2026-ccs-codex-shared-gateway-architecture.md)
+
+### Why this lives in super admin
+
+Every org/tenant runs on **one shared ChatGPT subscription** through a CCS/CLIProxy Codex sidecar. That gateway is a platform singleton:
+
+- Its quota is finite, time-windowed, and shared — one org's burn reduces everyone else's headroom.
+- Org admins cannot fix an expired OAuth session, a tripped breaker, or an exhausted quota window.
+- Showing "shared quota 87%" inside an org dashboard leaks cross-tenant consumption and implies capacity the org does not own.
+
+Split the surfaces:
+
+| Plane | Audience | Shows |
+| --- | --- | --- |
+| Control plane (this phase) | Super admin | health, quota window, per-org consumption + priority, pause, allowlist, run inspection |
+| Status signal (org UI, separate work) | Teachers / org admins | abstracted state only — "AI is busy, you are #3 in queue", "AI paused, try later" |
+
+### 3a. Backing tables
+
+Two new tables (full column list in the brainstorm report):
+
+- **`ai_gateway_settings`** — single row. `enabled`, `pausedAt` / `pauseReason` / `pausedBy`, `modelAllowlist` (jsonb: `modelId`, `label`, `quotaWeight`, `role`), `defaultModelId`, `lightModelId`, `globalConcurrency`, `sliceRounds`, `chatConcurrencyPerOrg`, per-org defaults, `windowStartsAt` / `windowDurationMinutes`, breaker state (`circuitState`, `circuitResumeAfter`, `consecutiveFailures`).
+- **`ai_gateway_org_policy`** — one row per org, created lazily. `priorityWeight`, `maxActiveRuns`, `maxQueuedRuns`, `windowBudgetUnits`, `isBlocked`, `blockReason`.
+
+Consumption is **derived**, not duplicated — sum `cost_units` from the existing `ai_token_usage` filtered by gateway models and `windowStartsAt`.
+
+Secrets (`AI_GATEWAY_BASE_URL`, `AI_GATEWAY_AUTH_TOKEN`, optional `CCS_MANAGEMENT_SECRET`) stay in env and are never returned by any endpoint.
+
+### 3b. API routes
+
+**`apps/api/src/routes/admin/ai.ts`** (new file), mounted under the existing `superAdminMiddleware`:
+
+```
+GET   /ai/health               gateway reachability, auth state, model probe, breaker state
+GET   /ai/quota                window accounting + optional CCS snapshot
+GET   /ai/settings             current config (secrets redacted)
+PATCH /ai/settings             allowlist, concurrency, sliceRounds, budgets, window
+POST  /ai/pause                kill switch — `reason` required
+POST  /ai/resume               clear pause
+POST  /ai/breaker/reset        manual breaker reset
+GET   /ai/orgs                 per-org consumption, policy, active/queued counts
+PATCH /ai/orgs/:orgId          priorityWeight, limits, block/unblock
+GET   /ai/runs                 cross-org run list, filter by status
+POST  /ai/runs/:runId/cancel   force-cancel any org's run
+```
+
+Health probe is layered, cheapest first:
+
+1. `GET {baseURL}/v1/models` with the gateway key → reachability + key validity.
+2. Tiny completion probe against the light model → real Codex OAuth availability.
+3. CCS management API read when `CCS_MANAGEMENT_SECRET` is set → quota snapshot.
+
+Layer 3 is **best-effort**. CCS itself warns that its quota view omits live in-proxy 429 cooldowns, so treat it as advisory; the authoritative signal is an actual 429.
+
+> ⚠️ Do not build the model picker from `GET /v1/models`. CLIProxy advertises its full static catalog (including Claude models) even when only Codex is authenticated. The DB `modelAllowlist` is the only source of truth.
+
+### 3c. Validation
+
+**`packages/utils/src/validation/admin/ai-gateway.ts`** (new file)
+
+```typescript
+export const ZGatewayPause = z.object({ reason: z.string().min(3).max(500) });
+
+export const ZGatewaySettingsPatch = z.object({
+  enabled: z.boolean().optional(),
+  defaultModelId: z.string().optional(),
+  lightModelId: z.string().optional(),
+  modelAllowlist: z.array(z.object({
+    modelId: z.string().min(1),
+    label: z.string().min(1),
+    quotaWeight: z.number().positive(),
+    role: z.enum(['default', 'light', 'optional'])
+  })).optional(),
+  globalConcurrency: z.number().int().min(1).max(8).optional(),
+  sliceRounds: z.number().int().min(1).max(12).optional(),
+  chatConcurrencyPerOrg: z.number().int().min(1).max(10).optional(),
+  defaultOrgActiveLimit: z.number().int().min(1).max(10).optional(),
+  defaultOrgQueuedLimit: z.number().int().min(1).max(50).optional(),
+  defaultOrgWindowBudget: z.number().int().positive().nullable().optional(),
+  windowDurationMinutes: z.number().int().min(30).max(10_080).optional()
+}).refine((v) => Object.keys(v).length > 0, { message: 'Provide at least one field' });
+
+export const ZGatewayOrgPolicyPatch = z.object({
+  priorityWeight: z.number().int().min(1).max(100).optional(),
+  maxActiveRuns: z.number().int().min(1).max(10).nullable().optional(),
+  maxQueuedRuns: z.number().int().min(1).max(50).nullable().optional(),
+  windowBudgetUnits: z.number().int().positive().nullable().optional(),
+  isBlocked: z.boolean().optional(),
+  blockReason: z.string().max(500).nullable().optional()
+}).refine((v) => Object.keys(v).length > 0, { message: 'Provide at least one field' });
+```
+
+### 3d. Admin app screens
+
+**`/ai` (+page.svelte)** — Gateway overview
+
+1. **Status banner**: green healthy / amber cooling / red paused-or-down. Shows breaker state and `resumeAfter` countdown when tripped.
+2. **Kill switch**: prominent Pause button with a required reason field; Resume when paused. Displays who paused it and when.
+3. **Quota window**: window start, elapsed/remaining, consumed cost units vs soft cap, and the CCS snapshot when available (clearly labelled advisory).
+4. **Health checks**: three-row list (reachability, auth probe, model probe) with last-checked timestamp and a Re-check button.
+5. **Live load**: global concurrency in use, total active runs, total queued runs.
+
+**`/ai/orgs` (+page.svelte)** — Per-org consumption and policy
+
+Table columns: Org | Consumed units (window) | Share % | Priority weight | Active | Queued | Status | Actions
+
+- Sorted by consumption desc so the heaviest tenant is obvious.
+- Inline edit for `priorityWeight` (the weighted-fair-queue knob), active/queued limits, and window budget.
+- Block/unblock with reason.
+- Empty-state note explaining that a missing row means org defaults apply.
+
+**`/ai/runs` (+page.svelte)** — Cross-org run inspection
+
+Table columns: Run | Org | Course | Status | Phase | Rounds used | Updated | Actions
+
+- Status filter chips: running, queued, quota_exhausted, paused, failed, completed.
+- Force-cancel action with confirmation.
+- Row expands to the run's recent `ai_agent_run_event` entries for triage.
+
+Nav gains an "AI Gateway" group with the three pages above.
+
+### 3e. Operational guardrails
+
+- Pause takes effect at the next slice boundary, not mid-tool-call — the UI must say so rather than implying instant abort.
+- `pause` / `resume` / `priorityWeight` / `block` changes should be written to an audit trail (open question in the brainstorm report).
+- Never render `AI_GATEWAY_AUTH_TOKEN`, `CCS_MANAGEMENT_SECRET`, or any OAuth token in the UI or API responses.
+- The `ccs-auth` Docker volume holds OAuth access + refresh tokens; it is a secret store and must never be mounted into the API or admin containers.
+
+---
+
 ## Files to Create
 
 ### API (apps/api)
@@ -389,6 +524,18 @@ Fields: Org name, Site name, Owner user ID. On submit → success state with "Lo
 | `apps/api/src/routes/admin/users.ts` | User/chat/impersonate routes |
 | `apps/api/src/routes/admin/orgs.ts` | Org/credits routes |
 | `apps/api/src/routes/admin/index.ts` | Aggregate admin router |
+
+### AI Gateway (Phase 3)
+| File | Purpose |
+| --- | --- |
+| `packages/db/src/schema.ts` | +2 tables: `ai_gateway_settings`, `ai_gateway_org_policy` |
+| `packages/db/src/queries/admin/ai-gateway.ts` | Settings read/update, org policy upsert, window consumption aggregate |
+| `packages/utils/src/validation/admin/ai-gateway.ts` | `ZGatewayPause`, `ZGatewaySettingsPatch`, `ZGatewayOrgPolicyPatch` |
+| `apps/api/src/services/admin/ai-gateway.ts` | Health probe, quota view, pause/resume, breaker reset, run cancel |
+| `apps/api/src/routes/admin/ai.ts` | `/admin/ai/*` routes |
+| `apps/admin/src/routes/ai/+page.svelte` | Gateway overview + kill switch |
+| `apps/admin/src/routes/ai/orgs/+page.svelte` | Per-org consumption + priority weights |
+| `apps/admin/src/routes/ai/runs/+page.svelte` | Cross-org run inspection |
 
 ### API (modified)
 | File | Change |
@@ -428,3 +575,16 @@ Fields: Org name, Site name, Owner user ID. On submit → success state with "Lo
 8. Create an org via `/orgs/new` → verify row in DB
 9. "Login as user" → new tab opens at `classroom-app.tedydev.io.vn` as that user
 10. `pnpm build` in `apps/admin/` — builds independently with no dashboard code in the bundle
+
+### AI Gateway (Phase 3)
+
+11. `GET /admin/ai/health` without the super admin key → 401
+12. With the key → reachability, auth, and model-probe rows resolve; breaker state reported
+13. `POST /admin/ai/pause` without `reason` → 400; with reason → gateway rejects new AI work within one slice, no redeploy
+14. Paused state surfaces to teachers as an abstract "AI unavailable" message — never as a shared-quota percentage
+15. `POST /admin/ai/resume` → queued runs resume from their existing checkpoints, no duplicated sections/lessons
+16. `PATCH /admin/ai/orgs/:orgId` with `priorityWeight: 3` → that org receives roughly 3× the scheduling turns of a weight-1 org under contention
+17. Org exceeding its window budget is blocked at admission while other orgs keep running
+18. `/admin/ai/runs` lists runs across every org; force-cancel stops the run cleanly at a slice boundary
+19. Simulated 429 → breaker opens, affected run reports `quota_exhausted` rather than `failed`
+20. No response body or UI view contains the gateway token, CCS management secret, or any OAuth token

@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Define exactly how an MCP client such as Claude Desktop or another agent runtime should consume the ClassroomIO MCP server.
+Define exactly how an MCP client such as Claude Desktop or another agent runtime should consume the Classroom Hub MCP server.
 
 This spec assumes:
 
 1. the agent performs source extraction externally
 2. the MCP server only accepts structured course payloads
-3. ClassroomIO API is the system of record
+3. Classroom Hub API is the system of record
 
 ## Consumption Model
 
@@ -16,8 +16,8 @@ This spec assumes:
 User prompt/source material
   -> Claude or agent
   -> MCP tool call
-  -> ClassroomIO API
-  -> ClassroomIO DB
+  -> Classroom Hub API
+  -> Classroom Hub DB
 ```
 
 The MCP server is consumed as a tool surface, not as a conversational model.
@@ -35,8 +35,8 @@ The agent must:
 
 The agent must not:
 
-1. write directly to the ClassroomIO database
-2. assume ClassroomIO will parse raw PDFs
+1. write directly to the Classroom Hub database
+2. assume Classroom Hub will parse raw PDFs
 3. assume drafts are automatically published
 
 ## Authentication Model
@@ -47,7 +47,7 @@ Use an organization-scoped MCP key generated from the org `Automation -> MCP` ta
 
 That key should come from the same shared key infrastructure later reused by the Public API.
 
-The MCP server forwards that credential to ClassroomIO on every request.
+The MCP server forwards that credential to Classroom Hub on every request.
 
 Example environment:
 
@@ -221,7 +221,7 @@ Output:
 
 ### `publish_course_draft`
 
-Publishes a stored draft into real ClassroomIO entities.
+Publishes a stored draft into real Classroom Hub entities.
 
 Input:
 
@@ -278,7 +278,7 @@ The agent must ensure:
 4. every `lessonLanguage.lessonExternalId` references an existing lesson
 5. all required text fields are non-empty
 
-If these rules are violated, ClassroomIO should reject the request with validation errors.
+If these rules are violated, Classroom Hub should reject the request with validation errors.
 
 ## Error Handling Contract
 
@@ -340,7 +340,7 @@ The MCP server should:
 
 1. expose the draft/publish tools above
 2. validate required inputs before forwarding
-3. forward auth and org context to ClassroomIO
+3. forward auth and org context to Classroom Hub
 4. return structured JSON outputs to the client
 5. avoid embedding model logic
 

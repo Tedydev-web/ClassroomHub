@@ -5,6 +5,7 @@ import {
   clearAssessmentComposerRegistry,
   assessmentComposerPreviewItems,
   dirtyAssessmentComposerIds,
+  wideAssessmentComposerIds,
   getQuestionPlacementItemsForSection,
   handleAddQuestion,
   handleAddSection,
@@ -19,7 +20,8 @@ import {
   registerAssessmentComposerMutationHandler,
   saveDirtyAssessmentComposers,
   setAssessmentComposerDirty,
-  setAssessmentComposerPreviewItem
+  setAssessmentComposerPreviewItem,
+  setAssessmentComposerWide
 } from './store';
 
 const sectionOneId = '38b93783-427c-49e2-9c62-5c788fd28839';
@@ -131,6 +133,17 @@ describe('assessment composer save registry', () => {
 
     removeAssessmentComposerPreviewItem('exercise-1:42');
     expect(get(assessmentComposerPreviewItems)).toEqual({});
+  });
+
+  it('tracks composers that require the wide authoring workspace and clears stale registrations', () => {
+    setAssessmentComposerWide('passage-1', true);
+    setAssessmentComposerWide('passage-2', true);
+    setAssessmentComposerWide('passage-1', false);
+
+    expect([...get(wideAssessmentComposerIds)]).toEqual(['passage-2']);
+
+    clearAssessmentComposerRegistry();
+    expect(get(wideAssessmentComposerIds).size).toBe(0);
   });
 
   it('prepares and reconciles dirty assessment mutations by stable client ID', async () => {

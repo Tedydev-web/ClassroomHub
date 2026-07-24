@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Enable organization admins to send real-time ClassroomIO events to external systems (CRM, Slack, custom backend, analytics, HRIS) through secure outbound webhooks.
+Enable organization admins to send real-time Classroom Hub events to external systems (CRM, Slack, custom backend, analytics, HRIS) through secure outbound webhooks.
 
-This closes the current automation gap between ClassroomIO actions and downstream business workflows.
+This closes the current automation gap between Classroom Hub actions and downstream business workflows.
 
 ## Problem Statement
 
-Today, ClassroomIO has no outbound webhook product:
+Today, Classroom Hub has no outbound webhook product:
 
 - Organizations cannot trigger external workflows when key events happen (invites, enrollments, submissions, payment requests, etc.).
 - Teams rely on manual exports, inbox monitoring, or custom polling against internal APIs.
@@ -50,14 +50,14 @@ Today, ClassroomIO has no outbound webhook product:
 
 1. Admins can create and manage organization-scoped webhook endpoints.
 2. Admins can subscribe webhooks to all events or selected events.
-3. ClassroomIO delivers signed event payloads reliably with retry and delivery logs.
+3. Classroom Hub delivers signed event payloads reliably with retry and delivery logs.
 4. Admins can inspect delivery history and manually redeliver failed (or any past) events.
 5. Webhooks are exposed in a dedicated Automation UX (not Telegram settings).
 6. Initial event catalog maps directly to existing domain actions already implemented in services.
 
 ## Non-Goals (v1)
 
-- Incoming webhooks (ClassroomIO as receiver).
+- Incoming webhooks (Classroom Hub as receiver).
 - OAuth app ecosystem / public app marketplace.
 - Zapier app implementation (kept separate; can reuse webhook infrastructure later).
 - Custom per-webhook payload templates.
@@ -68,7 +68,7 @@ Today, ClassroomIO has no outbound webhook product:
 
 1. As an org admin, I want to send `course.submission.created` to Slack so tutors are alerted instantly.
 2. As an org admin, I want to sync `course.invite.accepted` and `course.member.added` to my CRM.
-3. As an org admin, I want a secret-signed payload so I can verify requests came from ClassroomIO.
+3. As an org admin, I want a secret-signed payload so I can verify requests came from Classroom Hub.
 4. As an org admin, I want delivery logs and redelivery so failures are operable and debuggable.
 
 ## UX Requirements
@@ -101,7 +101,7 @@ Today, ClassroomIO has no outbound webhook product:
 
 #### Add/Edit Form
 
-Fields (GitHub-like, adapted to ClassroomIO):
+Fields (GitHub-like, adapted to Classroom Hub):
 
 - `Payload URL` (required, HTTPS recommended)
 - `Content type` (v1: `application/json` only)
@@ -168,7 +168,7 @@ Default recommendation in UI for first-time setup:
 ### HTTP Headers
 
 - `Content-Type: application/json`
-- `User-Agent: ClassroomIO-Webhooks/1.0`
+- `User-Agent: Classroom Hub-Webhooks/1.0`
 - `X-Cio-Event: <event_type>`
 - `X-Cio-Delivery: <delivery_id>`
 - `X-Cio-Webhook: <webhook_id>`

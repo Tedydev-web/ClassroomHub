@@ -11,6 +11,16 @@ const adapterCloudflare = IS_CLOUDFLARE ? (await import('@sveltejs/adapter-cloud
 const isSelfHosted = process.env.PUBLIC_IS_SELFHOSTED === 'true';
 const csp = getCspDomains(isSelfHosted, process.env.PUBLIC_SERVER_URL);
 
+const { NODE_ENV: nodeEnvironment } = process['env'];
+const useWorkspaceSourceAliases = nodeEnvironment !== 'production';
+const utilsPackagePath = path.resolve(
+  useWorkspaceSourceAliases ? '../../packages/utils/src' : './node_modules/@cio/utils/dist'
+);
+const questionTypesPackagePath = path.resolve(
+  useWorkspaceSourceAliases ? '../../packages/question-types/src' : './node_modules/@cio/question-types/dist'
+);
+const SVELTE_EVENT_REPLAY_HASH = 'sha256-7dQwUgLau1NFCCGjfn9FsYptB6ZtWxJin6VohGIu20I=';
+
 // `upgrade-insecure-requests` forces the browser to fetch every subresource over
 // HTTPS. Production is always served over HTTPS (Cloudflare), so it belongs there.
 // In local dev the server speaks plain HTTP, and the directive is silently ignored
@@ -35,15 +45,17 @@ const config = {
       '@cio/ui/*': path.resolve('./node_modules/@cio/ui/src'),
       '@cio/api': path.resolve('./node_modules/@cio/api/dist'),
       '@cio/api/*': path.resolve('./node_modules/@cio/api/dist'),
-      '@cio/utils': path.resolve('./node_modules/@cio/utils/dist'),
-      '@cio/utils/*': path.resolve('./node_modules/@cio/utils/dist'),
+      '@cio/utils': utilsPackagePath,
+      '@cio/utils/*': utilsPackagePath,
+      '@cio/question-types': questionTypesPackagePath,
+      '@cio/question-types/*': questionTypesPackagePath,
       '@cio/db/types': path.resolve('./node_modules/@cio/db/src/types.ts')
     },
     csp: {
       mode: 'auto',
       directives: {
         'default-src': ['self'],
-        'script-src': ['self', ...csp.scriptSrc, 'unsafe-hashes', 'unsafe-eval'],
+        'script-src': ['self', ...csp.scriptSrc, 'unsafe-hashes', SVELTE_EVENT_REPLAY_HASH, 'unsafe-eval'],
         'style-src': ['self', 'unsafe-inline', ...csp.styleSrc],
         'style-src-elem': ['self', 'unsafe-inline', ...csp.styleSrc],
         'font-src': ['self', 'data:', ...csp.fontSrc],
@@ -77,7 +89,7 @@ const config = {
       },
       reportOnly: {
         'default-src': ['self'],
-        'script-src': ['self', ...csp.scriptSrc, 'unsafe-hashes', 'unsafe-eval'],
+        'script-src': ['self', ...csp.scriptSrc, 'unsafe-hashes', SVELTE_EVENT_REPLAY_HASH, 'unsafe-eval'],
         'style-src': ['self', 'unsafe-inline', ...csp.styleSrc],
         'style-src-elem': ['self', 'unsafe-inline', ...csp.styleSrc],
         'font-src': ['self', 'data:', ...csp.fontSrc],

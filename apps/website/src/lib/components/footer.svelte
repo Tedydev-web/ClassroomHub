@@ -1,4 +1,5 @@
 <script>
+  import { OPERATOR_EMAIL } from '@cio/utils/constants';
   import Facebook from '@lucide/svelte/icons/facebook';
   import Youtube from '@lucide/svelte/icons/youtube';
   import Twitter from '@lucide/svelte/icons/twitter';
@@ -191,7 +192,7 @@
           </li>
           <li>
             <a
-              href="mailto:hieudat2310.bh@gmail.com"
+              href="mailto:{OPERATOR_EMAIL}"
               target="_blank"
               class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Support</a
             >

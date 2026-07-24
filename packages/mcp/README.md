@@ -1,8 +1,8 @@
 # @classroomio/mcp
 
-Thin stdio MCP server for ClassroomIO course authoring.
+Thin stdio MCP server for Classroom Hub course authoring.
 
-The package does not parse PDFs or generate course structures. The agent does that work. `@classroomio/mcp` only exposes tools, validates tool input, and forwards requests to the ClassroomIO API.
+The package does not parse PDFs or generate course structures. The agent does that work. `@classroomio/mcp` only exposes tools, validates tool input, and forwards requests to the Classroom Hub API.
 
 ## Architecture
 
@@ -20,20 +20,20 @@ Claude Code / Codex / Cursor / OpenCode / other MCP client
   | 3. Sends authenticated tool calls
   |    Authorization: Bearer <cio_mcp_...>
   v
-ClassroomIO API
+Classroom Hub API
   |
   | 4. Validates payloads
   | 5. Resolves the organization from the key
   | 6. Creates drafts or applies changes to a course
   v
-ClassroomIO DB
+Classroom Hub DB
 ```
 
 ## Principles
 
 1. The agent owns reasoning.
 2. The MCP package owns transport and input validation.
-3. ClassroomIO API remains the trust boundary for auth, validation, and persistence.
+3. Classroom Hub API remains the trust boundary for auth, validation, and persistence.
 4. Draft creation and publish are separate operations.
 5. Updating an existing course is done through a seeded draft, not blind writes to the live course.
 
@@ -61,11 +61,11 @@ Current tools:
 
 ## Auth Model
 
-The package expects an org-scoped ClassroomIO automation key generated from `Automation -> MCP` in the ClassroomIO dashboard.
+The package expects an org-scoped Classroom Hub automation key generated from `Automation -> MCP` in the Classroom Hub dashboard.
 
 The MCP process sends the key as a bearer token on every request.
 
-ClassroomIO API:
+Classroom Hub API:
 
 1. hashes and verifies the key
 2. resolves the owning organization
@@ -190,7 +190,7 @@ Lesson authoring rule:
 - do not include the lesson title
 - do not use `h1` or `h2` in lesson content
 - start headings at `h3`
-- ClassroomIO already renders the lesson title in the course UI
+- Classroom Hub already renders the lesson title in the course UI
 
 ## After Publish
 
@@ -279,7 +279,7 @@ The tool can either:
 User says:
 
 ```text
-I have my course in a PDF. Extract it and turn it into a ClassroomIO course draft.
+I have my course in a PDF. Extract it and turn it into a Classroom Hub course draft.
 ```
 
 Expected tool sequence:
@@ -314,7 +314,7 @@ Expected tool sequence:
 Result:
 
 - the draft stores tag names
-- publish ensures the tags exist in ClassroomIO
+- publish ensures the tags exist in Classroom Hub
 - publish assigns those tags to the live course
 
 ### Flow 5: Update an existing course safely
@@ -392,7 +392,7 @@ When a draft is seeded from a live course:
 
 As long as the agent preserves those IDs while editing the draft, publish-to-existing-course can map draft items back to the live records and update them safely.
 
-If the agent adds a brand new section or lesson, it should assign a new synthetic `externalId`. ClassroomIO will create that record on publish.
+If the agent adds a brand new section or lesson, it should assign a new synthetic `externalId`. Classroom Hub will create that record on publish.
 
 ## Input Contract Notes
 

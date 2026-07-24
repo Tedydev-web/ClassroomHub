@@ -5,6 +5,7 @@ export * from './chat-model-context';
 export * from './run-state';
 export * from './credit-purchase';
 export * from './token-usage';
+export * from './gateway-settings';
 export * from './usage-aggregations';
 export * from './tutor-config';
 export * from './tutor-usage';

@@ -1,5 +1,6 @@
 import type { MetaTagsProps } from 'svelte-meta-tags';
 
+import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
 import { classroomio, type InferResponseType } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { error } from '@sveltejs/kit';
@@ -8,7 +9,7 @@ type GetPublicCourseItemRequest =
   (typeof classroomio)['org-site']['course'][':courseSlug']['item'][':itemSlug']['$get'];
 type GetPublicCourseItemSuccess = Extract<InferResponseType<GetPublicCourseItemRequest>, { success: true }>;
 
-export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent }) => {
+export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent, request }) => {
   const { tree } = await parent();
 
   const itemResult = await safeServerApi<GetPublicCourseItemSuccess>(() =>
@@ -30,7 +31,8 @@ export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent })
       ? item.body.replace(/<[^>]+>/g, '').slice(0, 155)
       : (tree.course.description ?? '');
 
-  const canonicalUrl = new URL(url.pathname, url.origin).href;
+  const publicRequestUrl = resolvePublicRequestUrl(url, request.headers);
+  const canonicalUrl = new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href;
   const fullTitle = `${itemTitle} · ${tree.course.title}`;
   const description = itemSummary || tree.course.description || '';
   const ogImage = tree.course.bannerImage || null;

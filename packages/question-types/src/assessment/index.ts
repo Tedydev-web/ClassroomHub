@@ -9,3 +9,4 @@ export * from './assessment-response-envelope';
 export * from './assessment-delivery-definition';
 export * from './assessment-vertical-slice';
 export * from './assessment-legacy-adapter';
+export * from './assessment-passage-groups';

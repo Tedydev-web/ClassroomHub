@@ -1,6 +1,6 @@
 # @cio/jobs-worker
 
-BullMQ worker process for ClassroomIO. Runs every background job the
+BullMQ worker process for Classroom Hub. Runs every background job the
 `@cio/api` enqueues — emails, lesson video post-processing (probe / thumbnail /
 extract-audio / transcribe), and maintenance tasks.
 
@@ -159,7 +159,7 @@ redis-cli LLEN bull:emails:active    # currently processing
 redis-cli LLEN bull:emails:failed    # exhausted retries
 ```
 
-For a real UI, ClassroomIO mounts [Workbench](https://github.com/pontusab/workbench)
+For a real UI, Classroom Hub mounts [Workbench](https://github.com/pontusab/workbench)
 in `apps/api` at `/admin/queues`.
 
 ## Behaviour matrix when the worker is down

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Let people control which emails ClassroomIO sends them. Today every email is
+Let people control which emails Classroom Hub sends them. Today every email is
 **fire-and-forget per event** — there is no preference table, no opt-out, and no
 settings UI anywhere in the product. This PRD adds notification preferences in
 **Settings**, at two scopes:

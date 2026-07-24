@@ -63,7 +63,7 @@
   } from '$features/course/store/course-completion-modal';
   import { isSelfPacedLikeCourse } from '$features/course/utils/compliance-utils';
   import { toExerciseQuestionModel } from './question-type-utils';
-  import { getExerciseQuestionLabels } from './question-labels';
+  import { getAssessmentPassageWorkspaceLabels, getExerciseQuestionLabels } from './question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
   import {
     formatExercisePoints,
@@ -127,6 +127,7 @@
   let selectedTryIndex = $state(-1);
   let draftSaveTimer: ReturnType<typeof setTimeout> | undefined;
   const questionLabels = $derived(getExerciseQuestionLabels());
+  const passageWorkspaceLabels = $derived(getAssessmentPassageWorkspaceLabels());
   const sectionFallbackTitle = $derived($t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'));
 
   /** Submissions created in this session — the `mySubmissions` prop only refreshes on page load. */
@@ -1563,10 +1564,12 @@
               questionNumber={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               interactionNumberStart={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               questionNumberActive={false}
+              showItemHeader={sectionTakeItem.definition.presentation?.layout !== 'passage_split'}
               showContainer
               validationRequested={canonicalValidationQuestionId === sectionTakeItem.id}
               validationMessage={$t('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required')}
               focusRequestKey={canonicalFocusRequestKey}
+              {passageWorkspaceLabels}
               onResponseChange={(response) => onCanonicalResponseChange(sectionTakeItem.id, response)}
             />
           </div>
@@ -1641,10 +1644,12 @@
                     $questionnaireMetaData.currentQuestionIndex}
                   interactionNumberStart={interactionNumberStartByItemId[currentTakeItem.id] ??
                     $questionnaireMetaData.currentQuestionIndex}
+                  showItemHeader={currentTakeItem.definition.presentation?.layout !== 'passage_split'}
                   showContainer
                   validationRequested={canonicalValidationQuestionId === currentTakeItem.id}
                   validationMessage={$t('course.navItem.lessons.exercises.all_exercises.view_mode.answer_required')}
                   focusRequestKey={canonicalFocusRequestKey}
+                  {passageWorkspaceLabels}
                   onResponseChange={(response) => onCanonicalResponseChange(currentTakeItem.id, response)}
                 />
               </div>

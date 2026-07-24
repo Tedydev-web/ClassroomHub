@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import * as schema from '@db/schema';
 import { db } from '@db/drizzle';
 import type {
@@ -116,6 +116,65 @@ export async function listAgentRuns(courseId: string, userId: string): Promise<T
   } catch (error) {
     console.error('listAgentRuns error:', error);
     throw new Error('Failed to list agent runs');
+  }
+}
+
+/**
+ * Cross-organization run listing for the operator API.
+ *
+ * Deliberately not scoped to a user or course: the gateway is shared, so
+ * triaging it means seeing whose runs are consuming it.
+ */
+export async function listAllAgentRuns(params: {
+  statuses?: TAiAgentRunStatus[];
+  limit?: number;
+}): Promise<TAiAgentRun[]> {
+  try {
+    const limit = Math.min(Math.max(params.limit ?? 50, 1), 200);
+    const query = db.select().from(schema.aiAgentRun);
+
+    const rows = params.statuses?.length
+      ? await query
+          .where(inArray(schema.aiAgentRun.status, params.statuses))
+          .orderBy(desc(schema.aiAgentRun.updatedAt))
+          .limit(limit)
+      : await query.orderBy(desc(schema.aiAgentRun.updatedAt)).limit(limit);
+
+    return rows;
+  } catch (error) {
+    console.error('listAllAgentRuns error:', error);
+    throw new Error('Failed to list agent runs');
+  }
+}
+
+/**
+ * Counts an organization's in-flight runs, split by whether they hold a worker
+ * slot or are waiting for one. Admission control uses both numbers to stop a
+ * single tenant from filling the shared gateway queue.
+ */
+export async function countOrgAgentRunsByState(orgId: string): Promise<{ active: number; queued: number }> {
+  try {
+    const rows = await db
+      .select({
+        status: schema.aiAgentRun.status,
+        total: sql<number>`COUNT(*)`
+      })
+      .from(schema.aiAgentRun)
+      .where(and(eq(schema.aiAgentRun.orgId, orgId), inArray(schema.aiAgentRun.status, ['running', 'queued'])))
+      .groupBy(schema.aiAgentRun.status);
+
+    let active = 0;
+    let queued = 0;
+
+    for (const row of rows) {
+      if (row.status === 'running') active = Number(row.total);
+      if (row.status === 'queued') queued = Number(row.total);
+    }
+
+    return { active, queued };
+  } catch (error) {
+    console.error('countOrgAgentRunsByState error:', error);
+    throw new Error('Failed to count organization agent runs');
   }
 }
 

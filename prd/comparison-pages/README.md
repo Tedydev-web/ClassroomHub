@@ -1,13 +1,13 @@
-# ClassroomIO Comparison Pages PRD
+# Classroom Hub Comparison Pages PRD
 
-Status: Draft  
-Owner: Marketing / Website  
-Prepared: 2026-05-12  
+Status: Draft
+Owner: Marketing / Website
+Prepared: 2026-05-12
 Source basis: `apps/dashboard` product surface plus current public competitor pages.
 
 ## Summary
 
-Create comparison pages that position ClassroomIO against 10 incumbent learning platforms. The page set should help buyers who are evaluating hosted course platforms, community-led learning products, company training LMS tools, and open-source/self-hosted LMS options.
+Create comparison pages that position Classroom Hub against 10 incumbent learning platforms. The page set should help buyers who are evaluating hosted course platforms, community-led learning products, company training LMS tools, and open-source/self-hosted LMS options.
 
 The first batch should include 7 SaaS competitors and 3 open-source incumbents:
 
@@ -22,9 +22,9 @@ The first batch should include 7 SaaS competitors and 3 open-source incumbents:
 9. Open edX
 10. Canvas LMS
 
-## ClassroomIO Product Surface
+## Classroom Hub Product Surface
 
-Based on `apps/dashboard`, ClassroomIO should be positioned as a modern learning platform for organizations that need to create, deliver, manage, and automate learning without stitching together a course tool, community tool, assessment tool, and custom portal.
+Based on `apps/dashboard`, Classroom Hub should be positioned as a modern learning platform for organizations that need to create, deliver, manage, and automate learning without stitching together a course tool, community tool, assessment tool, and custom portal.
 
 Core product capabilities to emphasize:
 
@@ -44,15 +44,15 @@ Core product capabilities to emphasize:
 
 ## Goals
 
-- Capture high-intent search demand for "[competitor] alternative", "ClassroomIO vs [competitor]", and "[competitor] vs ClassroomIO".
-- Position ClassroomIO as a flexible learning operating system for course businesses, training teams, and education organizations.
+- Capture high-intent search demand for "[competitor] alternative", "Classroom Hub vs [competitor]", and "[competitor] vs Classroom Hub".
+- Position Classroom Hub as a flexible learning operating system for course businesses, training teams, and education organizations.
 - Make the comparison pages useful enough that they can stand alone as buyer enablement assets, not just SEO landing pages.
-- Route users from competitor-specific objections into the right ClassroomIO strengths: assessments, certificates, communities, org portals, widgets, integrations, AI, API/MCP, custom domains, SSO, and self-host/control.
+- Route users from competitor-specific objections into the right Classroom Hub strengths: assessments, certificates, communities, org portals, widgets, integrations, AI, API/MCP, custom domains, SSO, and self-host/control.
 
 ## Non-Goals
 
 - Do not attack competitors with unverifiable claims.
-- Do not claim exact ClassroomIO superiority where the competitor has mature capabilities ClassroomIO may not fully match yet.
+- Do not claim exact Classroom Hub superiority where the competitor has mature capabilities Classroom Hub may not fully match yet.
 - Do not publish pricing claims without source dates and links.
 - Do not build the pages in this PRD. Another agent will implement from this analysis.
 
@@ -88,19 +88,19 @@ Implementation requirement:
 - Add a "Compare" or "Alternatives" footer column/section in `apps/website/src/lib/components/footer.svelte`.
 - Link to `/compare` and all 10 comparison pages, or link to `/compare` with the top 4 pages directly if the footer becomes too dense.
 - Suggested direct footer links: `Thinkific alternative`, `Teachable alternative`, `Kajabi alternative`, `Moodle alternative`, and `All comparisons`.
-- Footer copy should avoid hardcoded claims like "better than X". Use neutral labels such as "Compare ClassroomIO to Thinkific".
+- Footer copy should avoid hardcoded claims like "better than X". Use neutral labels such as "Compare Classroom Hub to Thinkific".
 
 ## Page Template
 
 Each comparison page should use the same structure:
 
 1. Hero
-   - H1: `ClassroomIO vs [Competitor]`
+   - H1: `Classroom Hub vs [Competitor]`
    - Subhead: one-sentence positioning that names the buyer and primary tradeoff.
    - CTA: Start free / Book demo / View pricing, depending on current website CTA conventions.
 
 2. Quick verdict
-   - "Choose ClassroomIO if..."
+   - "Choose Classroom Hub if..."
    - "Choose [Competitor] if..."
    - Keep this honest and practical.
 
@@ -126,7 +126,7 @@ Each comparison page should use the same structure:
 5. Migration considerations
    - What data/assets customers may need to move.
    - What workflows differ.
-   - What ClassroomIO can replace directly versus what may require setup.
+   - What Classroom Hub can replace directly versus what may require setup.
 
 6. Best-fit use cases
    - 3 to 5 bullets.
@@ -136,9 +136,9 @@ Each comparison page should use the same structure:
 
 ## Shared Positioning
 
-Primary ClassroomIO angle:
+Primary Classroom Hub angle:
 
-ClassroomIO is for teams that want a modern course and learning platform with assessments, certificates, learner management, communities, organization portals, integrations, and AI-assisted authoring in one place.
+Classroom Hub is for teams that want a modern course and learning platform with assessments, certificates, learner management, communities, organization portals, integrations, and AI-assisted authoring in one place.
 
 Secondary angles:
 
@@ -151,9 +151,9 @@ Secondary angles:
 
 ### 1. Thinkific
 
-Category: Hosted course platform  
-Recommended page slug: `/compare/thinkific`  
-Primary search intent: "Thinkific alternative", "Thinkific vs ClassroomIO", "best Thinkific alternative"
+Category: Hosted course platform
+Recommended page slug: `/compare/thinkific`
+Primary search intent: "Thinkific alternative", "Thinkific vs Classroom Hub", "best Thinkific alternative"
 
 Public positioning:
 
@@ -165,17 +165,17 @@ Pricing research:
 - Source: https://www.thinkific.com/pricing/
 - Verify again before launch. Pricing pages are high-change surfaces.
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
 - Use when buyers want more than a course storefront: assessments, grading, certificates, org/audience management, learner operations, widgets, API/MCP, and training workflows.
-- Thinkific is strong for course sales and creator businesses. ClassroomIO should be framed as stronger for structured learning delivery, teams, education businesses, and organizations that need learning operations.
+- Thinkific is strong for course sales and creator businesses. Classroom Hub should be framed as stronger for structured learning delivery, teams, education businesses, and organizations that need learning operations.
 
 Feature notes:
 
 - Thinkific has mature course commerce and course site features.
-- ClassroomIO should emphasize exercises/submissions/marks, certificates, compliance/attendance, programs, widgets, learner/community surfaces, and technical extensibility.
+- Classroom Hub should emphasize exercises/submissions/marks, certificates, compliance/attendance, programs, widgets, learner/community surfaces, and technical extensibility.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You need structured assessments and grading workflows.
 - You manage learners, tutors, cohorts, programs, or organizations.
@@ -188,9 +188,9 @@ Choose Thinkific if:
 
 ### 2. Teachable
 
-Category: Hosted course-selling platform  
-Recommended page slug: `/compare/teachable`  
-Primary search intent: "Teachable alternative", "Teachable vs ClassroomIO"
+Category: Hosted course-selling platform
+Recommended page slug: `/compare/teachable`
+Primary search intent: "Teachable alternative", "Teachable vs Classroom Hub"
 
 Public positioning:
 
@@ -202,16 +202,16 @@ Pricing research:
 - Source: https://teachable.com/pricing
 - Verify transaction fees, product limits, and membership/community availability before page launch.
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- Teachable is good for creators monetizing knowledge. ClassroomIO should be positioned for teams that need deeper learning management: exercises, submissions, marks, certificates, audience import, tutors, programs, communities, organization setup, and integrations.
+- Teachable is good for creators monetizing knowledge. Classroom Hub should be positioned for teams that need deeper learning management: exercises, submissions, marks, certificates, audience import, tutors, programs, communities, organization setup, and integrations.
 
 Feature notes:
 
 - Teachable's strongest frame is creator monetization.
-- ClassroomIO should not over-index on "selling courses"; focus on learning experience and operations.
+- Classroom Hub should not over-index on "selling courses"; focus on learning experience and operations.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You run a bootcamp, training program, cohort, school, or partner/customer education operation.
 - You need assignments, grading, certificates, attendance/compliance, and learner management.
@@ -223,9 +223,9 @@ Choose Teachable if:
 
 ### 3. Kajabi
 
-Category: Premium all-in-one creator business platform  
-Recommended page slug: `/compare/kajabi`  
-Primary search intent: "Kajabi alternative", "Kajabi vs ClassroomIO"
+Category: Premium all-in-one creator business platform
+Recommended page slug: `/compare/kajabi`
+Primary search intent: "Kajabi alternative", "Kajabi vs Classroom Hub"
 
 Public positioning:
 
@@ -237,16 +237,16 @@ Pricing research:
 - Source: https://www.kajabi.com/pricing
 - Verify plan names, monthly/annual rates, and limits immediately before publication.
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- Kajabi is a business/marketing suite for creators. ClassroomIO is the better comparison for teams that care more about learning delivery, assessments, certificates, learner management, and education operations than funnels and email marketing.
+- Kajabi is a business/marketing suite for creators. Classroom Hub is the better comparison for teams that care more about learning delivery, assessments, certificates, learner management, and education operations than funnels and email marketing.
 
 Feature notes:
 
 - Kajabi likely wins for built-in marketing funnels/email/sales-page maturity.
-- ClassroomIO should win the narrative around education workflows, organization learning portals, assessments, certifications, programs, API/MCP, and LMS customization.
+- Classroom Hub should win the narrative around education workflows, organization learning portals, assessments, certifications, programs, API/MCP, and LMS customization.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You need a learning platform first, not a marketing automation suite first.
 - You have tutors, cohorts, learners, programs, grading, certificates, or compliance needs.
@@ -258,9 +258,9 @@ Choose Kajabi if:
 
 ### 4. LearnWorlds
 
-Category: Advanced hosted LMS/course platform  
-Recommended page slug: `/compare/learnworlds`  
-Primary search intent: "LearnWorlds alternative", "LearnWorlds vs ClassroomIO"
+Category: Advanced hosted LMS/course platform
+Recommended page slug: `/compare/learnworlds`
+Primary search intent: "LearnWorlds alternative", "LearnWorlds vs Classroom Hub"
 
 Public positioning:
 
@@ -271,16 +271,16 @@ Pricing research:
 - Source: https://www.learnworlds.com/pricing/
 - Verify tiers such as Starter, Pro Trainer, Learning Center, and High Volume / Corporate before publication.
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- LearnWorlds is one of the closest advanced course-platform competitors. ClassroomIO should focus on modern team workflows, community/program management, widgets, MCP/API, organization learning portals, and simpler operations.
+- LearnWorlds is one of the closest advanced course-platform competitors. Classroom Hub should focus on modern team workflows, community/program management, widgets, MCP/API, organization learning portals, and simpler operations.
 
 Feature notes:
 
 - LearnWorlds is strong on interactive learning and mature course website features.
-- ClassroomIO should avoid claiming feature parity on every advanced LMS capability unless confirmed during implementation.
+- Classroom Hub should avoid claiming feature parity on every advanced LMS capability unless confirmed during implementation.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You want course operations, people management, community, programs, widgets, and modern technical integrations in one simpler platform.
 - You need an organization-first learning portal instead of a course-business storefront only.
@@ -291,9 +291,9 @@ Choose LearnWorlds if:
 
 ### 5. Mighty Networks
 
-Category: Community-led learning, memberships, events  
-Recommended page slug: `/compare/mighty-networks`  
-Primary search intent: "Mighty Networks alternative", "Mighty Networks vs ClassroomIO"
+Category: Community-led learning, memberships, events
+Recommended page slug: `/compare/mighty-networks`
+Primary search intent: "Mighty Networks alternative", "Mighty Networks vs Classroom Hub"
 
 Public positioning:
 
@@ -304,17 +304,17 @@ Pricing research:
 
 - Source: https://www.mightynetworks.com/pricing
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- Mighty is community-first. ClassroomIO is learning-first with community included.
+- Mighty is community-first. Classroom Hub is learning-first with community included.
 - This page should speak to teams that like community engagement but need course structure, assessments, certificates, grading, audience import, learner progress, and training operations.
 
 Feature notes:
 
 - Mighty should be credited for community UX, memberships, events, and mobile/community engagement.
-- ClassroomIO should emphasize course depth and learning operations.
+- Classroom Hub should emphasize course depth and learning operations.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - Courses, assessments, certificates, learner tracking, and programs are core to the business.
 - Community is important but should support a structured learning journey.
@@ -325,9 +325,9 @@ Choose Mighty Networks if:
 
 ### 6. Circle
 
-Category: Community platform with courses and memberships  
-Recommended page slug: `/compare/circle`  
-Primary search intent: "Circle alternative", "Circle vs ClassroomIO", "Circle community alternative"
+Category: Community platform with courses and memberships
+Recommended page slug: `/compare/circle`
+Primary search intent: "Circle alternative", "Circle vs Classroom Hub", "Circle community alternative"
 
 Public positioning:
 
@@ -340,16 +340,16 @@ Pricing research:
   - https://circle.so/pricing
   - https://circle.so/platform/courses
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- Circle is community-first and strong for member engagement. ClassroomIO is better positioned for organizations where courses, exercises, certificates, cohorts/programs, learner analytics, and integrations are first-class.
+- Circle is community-first and strong for member engagement. Classroom Hub is better positioned for organizations where courses, exercises, certificates, cohorts/programs, learner analytics, and integrations are first-class.
 
 Feature notes:
 
 - Circle is a serious community competitor and should be treated respectfully.
-- ClassroomIO pages should avoid saying "Circle is not an LMS" too bluntly; instead say "Circle is strongest when community is the center; ClassroomIO is built when learning delivery is the center."
+- Classroom Hub pages should avoid saying "Circle is not an LMS" too bluntly; instead say "Circle is strongest when community is the center; Classroom Hub is built when learning delivery is the center."
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You need assessments, marks, certificates, attendance/compliance, and course/program operations.
 - You want a learning portal with communities, not only a community with courses.
@@ -360,9 +360,9 @@ Choose Circle if:
 
 ### 7. TalentLMS
 
-Category: SMB/company training LMS  
-Recommended page slug: `/compare/talentlms`  
-Primary search intent: "TalentLMS alternative", "TalentLMS vs ClassroomIO"
+Category: SMB/company training LMS
+Recommended page slug: `/compare/talentlms`
+Primary search intent: "TalentLMS alternative", "TalentLMS vs Classroom Hub"
 
 Public positioning:
 
@@ -373,16 +373,16 @@ Pricing research:
 
 - Source: https://www.talentlms.com/prices
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- TalentLMS is a traditional business LMS. ClassroomIO should position as a more modern, education-business-friendly and creator-friendly alternative for teams that still need training-grade features.
+- TalentLMS is a traditional business LMS. Classroom Hub should position as a more modern, education-business-friendly and creator-friendly alternative for teams that still need training-grade features.
 
 Feature notes:
 
 - TalentLMS likely has mature SCORM, branches, compliance, and enterprise training features.
-- ClassroomIO should emphasize modern course authoring, public course/org pages, communities, widgets, AI/MCP, and learning experiences that can serve both business training and education businesses.
+- Classroom Hub should emphasize modern course authoring, public course/org pages, communities, widgets, AI/MCP, and learning experiences that can serve both business training and education businesses.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You need a modern learning portal for customers, partners, cohorts, or education communities.
 - You want branded public course pages, widgets, communities, and AI-assisted authoring alongside training controls.
@@ -393,9 +393,9 @@ Choose TalentLMS if:
 
 ### 8. Moodle
 
-Category: Open-source LMS  
-Recommended page slug: `/compare/moodle`  
-Primary search intent: "Moodle alternative", "Moodle vs ClassroomIO", "open source LMS alternative"
+Category: Open-source LMS
+Recommended page slug: `/compare/moodle`
+Primary search intent: "Moodle alternative", "Moodle vs Classroom Hub", "open source LMS alternative"
 
 Public positioning:
 
@@ -409,17 +409,17 @@ Pricing research:
   - https://moodle.com/products/moodlecloud/
   - https://moodle.com/solutions/moodle-workplace/
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
 - Moodle is powerful and highly customizable but often requires setup, hosting, plugins, theme work, maintenance, and admin expertise.
-- ClassroomIO should be positioned for teams that want a modern LMS-like experience without maintaining a Moodle stack.
+- Classroom Hub should be positioned for teams that want a modern LMS-like experience without maintaining a Moodle stack.
 
 Feature notes:
 
 - Do not imply Moodle lacks capabilities; it has a huge ecosystem.
 - The comparison should focus on operational complexity, modern UX, faster setup, creator/team workflows, widgets, AI/MCP, and integrated organization/course/community surfaces.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You want a hosted modern learning platform without plugin/theme/server maintenance.
 - You need fast course/program launch, branded portals, widgets, AI assistance, and integrated community/course operations.
@@ -430,9 +430,9 @@ Choose Moodle if:
 
 ### 9. Open edX
 
-Category: Open-source large-scale learning platform  
-Recommended page slug: `/compare/open-edx`  
-Primary search intent: "Open edX alternative", "Open edX vs ClassroomIO", "MOOC platform alternative"
+Category: Open-source large-scale learning platform
+Recommended page slug: `/compare/open-edx`
+Primary search intent: "Open edX alternative", "Open edX vs Classroom Hub", "MOOC platform alternative"
 
 Public positioning:
 
@@ -445,17 +445,17 @@ Pricing research:
   - https://openedx.org/
   - https://github.com/openedx/
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
 - Open edX is best for institutions that need large-scale, highly customizable online learning infrastructure.
-- ClassroomIO should be positioned for organizations that want a faster, simpler, more integrated learning platform for courses, communities, certificates, programs, and learner operations.
+- Classroom Hub should be positioned for organizations that want a faster, simpler, more integrated learning platform for courses, communities, certificates, programs, and learner operations.
 
 Feature notes:
 
 - Open edX has significant depth and scale but high implementation complexity.
-- ClassroomIO should focus on speed to launch, lower operational overhead, and practical all-in-one workflows.
+- Classroom Hub should focus on speed to launch, lower operational overhead, and practical all-in-one workflows.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You want a modern hosted platform without assembling and operating an Open edX deployment.
 - Your team prioritizes courses, assessments, certificates, programs, communities, and learner management over deep platform engineering.
@@ -466,9 +466,9 @@ Choose Open edX if:
 
 ### 10. Canvas LMS
 
-Category: LMS with open-source core and institutional market presence  
-Recommended page slug: `/compare/canvas-lms`  
-Primary search intent: "Canvas LMS alternative", "Canvas vs ClassroomIO"
+Category: LMS with open-source core and institutional market presence
+Recommended page slug: `/compare/canvas-lms`
+Primary search intent: "Canvas LMS alternative", "Canvas vs Classroom Hub"
 
 Public positioning:
 
@@ -481,16 +481,16 @@ Pricing research:
   - https://www.instructure.com/canvas
   - https://github.com/instructure/canvas-lms
 
-ClassroomIO comparison angle:
+Classroom Hub comparison angle:
 
-- Canvas is institution-first. ClassroomIO is better framed for smaller teams, education businesses, bootcamps, customer/partner training, and organizations that need modern course/community/program workflows without institutional LMS overhead.
+- Canvas is institution-first. Classroom Hub is better framed for smaller teams, education businesses, bootcamps, customer/partner training, and organizations that need modern course/community/program workflows without institutional LMS overhead.
 
 Feature notes:
 
 - Canvas likely wins for deep school/institution LMS workflows, gradebook maturity, SIS integrations, and academic administration.
-- ClassroomIO should emphasize fast launch, modern UX, public course/org pages, widgets, communities, AI/MCP, and business-friendly learning operations.
+- Classroom Hub should emphasize fast launch, modern UX, public course/org pages, widgets, communities, AI/MCP, and business-friendly learning operations.
 
-Choose ClassroomIO if:
+Choose Classroom Hub if:
 
 - You are not a traditional school district/university and do not need a full institutional LMS.
 - You want branded course delivery, communities, certificates, widgets, and simpler admin.
@@ -503,7 +503,7 @@ Choose Canvas if:
 
 Use this as a drafting guide, not a legal claim table. The implementation agent should verify final wording before publication.
 
-| Capability | ClassroomIO | Thinkific | Teachable | Kajabi | LearnWorlds | Mighty | Circle | TalentLMS | Moodle | Open edX | Canvas |
+| Capability | Classroom Hub | Thinkific | Teachable | Kajabi | LearnWorlds | Mighty | Circle | TalentLMS | Moodle | Open edX | Canvas |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Hosted course builder | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Self/managed | Self/managed | Self/managed/commercial |
 | Assessments/submissions/marks | Strong | Moderate | Moderate | Moderate | Strong | Limited/moderate | Limited/moderate | Strong | Strong | Strong | Strong |
@@ -561,8 +561,8 @@ Current pricing source links:
 Primary keyword pattern:
 
 - `[competitor] alternative`
-- `ClassroomIO vs [competitor]`
-- `[competitor] vs ClassroomIO`
+- `Classroom Hub vs [competitor]`
+- `[competitor] vs Classroom Hub`
 - `best [competitor] alternative`
 
 Secondary keyword patterns:
@@ -589,8 +589,8 @@ Every comparison page should include:
 
 Recommended CTA copy:
 
-- `Start building with ClassroomIO`
-- `See ClassroomIO pricing`
+- `Start building with Classroom Hub`
+- `See Classroom Hub pricing`
 - `Book a demo`
 
 ## Content Tone
@@ -615,7 +615,7 @@ Recommended CTA copy:
 - `/compare` exists and links to all 10 comparison pages.
 - All 10 individual comparison pages exist with unique competitor-specific copy.
 - Every page has a current pricing/source section with "verified on" date.
-- Every page includes an honest "choose ClassroomIO if / choose competitor if" section.
+- Every page includes an honest "choose Classroom Hub if / choose competitor if" section.
 - Footer includes comparison page navigation.
 - Pages do not contain unsupported superiority claims.
 - Pages are responsive and match the existing website visual system.

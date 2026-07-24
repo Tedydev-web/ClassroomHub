@@ -15,10 +15,10 @@ Today's onboarding is a sterile 2-step form:
 1. Org name + slug + full name
 2. Goal + source + locale
 
-Then the user is dropped onto `/org/{slug}/courses?create=true` — a page with zero courses, zero branding decisions made, and no visible evidence that ClassroomIO is anything more than a CRUD form for a course list. Two problems compound:
+Then the user is dropped onto `/org/{slug}/courses?create=true` — a page with zero courses, zero branding decisions made, and no visible evidence that Classroom Hub is anything more than a CRUD form for a course list. Two problems compound:
 
 1. **The landing page feature is invisible.** We ship 8 production-quality landing page themes (`minimal`, `bold`, `classic`, `saas`, `tech`, `studio`, `corporate`, `terminal`) with full preview PNGs, but new users never see them — they have to discover Settings → Landing Page on their own.
-2. **The workspace looks empty.** New users have no reference for what a "real" ClassroomIO course looks like (sections, lessons, video embeds, certificates). They have to imagine the product from a blank canvas.
+2. **The workspace looks empty.** New users have no reference for what a "real" Classroom Hub course looks like (sections, lessons, video embeds, certificates). They have to imagine the product from a blank canvas.
 
 Result: low activation, high time-to-first-meaningful-action, and the impression that the platform is thinner than it actually is.
 
@@ -29,7 +29,7 @@ Result: low activation, high time-to-first-meaningful-action, and the impression
 4. Customer-success teams running customer enablement.
 
 ## Target Jobs-To-Be-Done
-1. Quickly evaluate whether ClassroomIO can produce a school site that looks like the creator's brand.
+1. Quickly evaluate whether Classroom Hub can produce a school site that looks like the creator's brand.
 2. See what a "good" course structure looks like on the platform without having to build one to find out.
 3. Get to a publishable-feeling state in a single session.
 

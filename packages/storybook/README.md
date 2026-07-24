@@ -1,6 +1,6 @@
 # @cio/storybook
 
-Storybook for ClassroomIO UI components.
+Storybook for Classroom Hub UI components.
 
 ## Development
 
@@ -52,7 +52,7 @@ This will build the Storybook and then upload it to R2.
 
 ## How to Create Storybook Stories
 
-This guide documents the patterns and conventions for creating Storybook stories in the ClassroomIO UI component library.
+This guide documents the patterns and conventions for creating Storybook stories in the Classroom Hub UI component library.
 
 ### Table of Contents
 
@@ -318,7 +318,7 @@ Use the `ui:` prefix for utility classes to scope them properly:
 
 ### LMS Content Guidelines
 
-Since ClassroomIO is an LMS platform, all story content should be **LMS-related**:
+Since Classroom Hub is an LMS platform, all story content should be **LMS-related**:
 
 #### ✅ Good Examples
 

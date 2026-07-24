@@ -11,7 +11,7 @@ published: true
 ---
 
 ![classroomio-free-tools](/assets/assets/blog/free-tools.png)
-_ClassroomIO Free Tools_
+_Classroom Hub Free Tools_
 
 For a while now, we've been looking to build tools that will help educators and students be more productive. The only rule of thumb for every tool is that it must be FREE to use. I spent time conducting research, examining existing options, and talking to students. As a result, I came up with several tools that can help educators and students enhance their productivity.
 

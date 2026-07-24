@@ -492,3 +492,34 @@ export function getExerciseQuestionLabels(): ExerciseQuestionLabels {
     )
   };
 }
+
+export function getAssessmentPassageWorkspaceLabels() {
+  return {
+    passage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage'),
+    questions: t.get('course.navItem.lessons.exercises.all_exercises.questions'),
+    navigation: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_navigation'),
+    locatePassage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_locate'),
+    showPassage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_passage'),
+    showQuestions: t.get(
+      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_questions'
+    ),
+    formatPassage: (index: number) =>
+      t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage', {
+        index
+      }),
+    formatQuestionRange: (start: number, end: number) =>
+      start === end
+        ? t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', {
+            index: start
+          })
+        : t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_question_range', {
+            start,
+            end
+          }),
+    formatProgress: (answered: number, total: number) =>
+      t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_progress', {
+        answered,
+        total
+      })
+  };
+}

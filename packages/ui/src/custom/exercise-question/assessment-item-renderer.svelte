@@ -1,6 +1,8 @@
 <script lang="ts">
   import {
     QUESTION_TYPE_KEY,
+    groupAssessmentBlocksByPassage,
+    getAssessmentVerticalSliceResponseProgress,
     getTextareaAnswerCharacterCount,
     isAssessmentVerticalSliceResponseComplete,
     type AnswerData,
@@ -9,11 +11,17 @@
     type AssessmentResponseEnvelope
   } from '@cio/question-types';
   import NumberBadge from '$src/base/number-badge/number-badge.svelte';
+  import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
+  import ListChecksIcon from '@lucide/svelte/icons/list-checks';
+  import LocateFixedIcon from '@lucide/svelte/icons/locate-fixed';
+  import { Button } from '../../base/button';
   import { Checkbox } from '../../base/checkbox';
   import { Label } from '../../base/label';
   import * as RadioGroup from '../../base/radio-group';
   import { Textarea } from '../../base/textarea';
+  import * as Tooltip from '../../base/tooltip';
   import { sanitizeHtml } from '../../tools/sanitize';
+  import AssessmentPassageRail from './assessment-passage-rail.svelte';
   import { createAssessmentRichTextAnswer, createAssessmentRichTextQuestion } from './assessment-rich-text-adapter';
   import { getExerciseQuestionRenderer } from './renderer-contract';
   import QuestionSurface from './question-surface.svelte';
@@ -27,11 +35,25 @@
     questionNumber?: number;
     interactionNumberStart?: number;
     questionNumberActive?: boolean;
+    showItemHeader?: boolean;
     showContainer?: boolean;
     validationRequested?: boolean;
     validationMessage?: string;
     focusRequestKey?: number;
+    passageWorkspaceLabels?: PassageWorkspaceLabels | null;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
+  }
+
+  interface PassageWorkspaceLabels {
+    passage: string;
+    questions: string;
+    navigation: string;
+    locatePassage: string;
+    showPassage: string;
+    showQuestions: string;
+    formatPassage: (index: number) => string;
+    formatQuestionRange: (start: number, end: number) => string;
+    formatProgress: (answered: number, total: number) => string;
   }
 
   let {
@@ -42,10 +64,12 @@
     questionNumber,
     interactionNumberStart = 1,
     questionNumberActive = true,
+    showItemHeader = true,
     showContainer = false,
     validationRequested = false,
     validationMessage = '',
     focusRequestKey,
+    passageWorkspaceLabels = null,
     onResponseChange = () => {}
   }: Props = $props();
   const rendererId = $props.id();
@@ -60,6 +84,7 @@
     definition.blocks.filter((block): block is DeliveryInteractionBlock => block.kind === 'interaction')
   );
   const usesSplitLayout = $derived(definition.presentation?.layout === 'passage_split');
+  const usesPassageWorkspace = $derived(usesSplitLayout && passageWorkspaceLabels !== null);
   const showsInteractionNumbers = $derived(interactionBlocks.length > 1);
 
   const responsesByInteractionId = $derived(
@@ -67,6 +92,207 @@
   );
   let handledFocusRequestKey = $state<number | undefined>(undefined);
   let focusTargetInteractionId = $state<string | null>(null);
+  let mobileWorkspacePanel = $state<'passage' | 'questions'>('questions');
+  let passagePanel = $state<HTMLElement | null>(null);
+  let questionPanel = $state<HTMLElement | null>(null);
+  let activeQuestionGroupId = $state<string | null>(null);
+  let visiblePassageGroupId = $state<string | null>(null);
+  let followsQuestionContext = $state(true);
+  let synchronizedGroupId = $state<string | null>(null);
+  let synchronizationSequence = 0;
+
+  const passageGroups = $derived(groupAssessmentBlocksByPassage(definition.blocks));
+  const passageGroupViews = $derived.by(() => {
+    let passageIndex = 0;
+    let interactionOffset = 0;
+
+    return passageGroups.map((group) => {
+      if (group.passage) passageIndex += 1;
+
+      const questionStart = interactionNumberStart + interactionOffset;
+      const questionEnd = questionStart + Math.max(0, group.interactions.length - 1);
+      const groupResponseProgress = getAssessmentVerticalSliceResponseProgress(
+        { schemaVersion: definition.schemaVersion, blocks: group.interactions },
+        response
+      );
+      interactionOffset += group.interactions.length;
+
+      return {
+        ...group,
+        passageIndex: Math.max(1, passageIndex),
+        questionStart,
+        questionEnd,
+        answered: groupResponseProgress.answered,
+        total: group.interactions.length
+      };
+    });
+  });
+
+  const passageGroupSignature = $derived(passageGroupViews.map((group) => group.id).join('|'));
+  const activePassageGroupView = $derived(passageGroupViews.find((group) => group.id === activeQuestionGroupId));
+
+  const railItems = $derived.by(() => {
+    if (!passageWorkspaceLabels) return [];
+
+    return passageGroupViews.map((group) => ({
+      id: group.id,
+      passageLabel: passageWorkspaceLabels.formatPassage(group.passageIndex),
+      questionRangeLabel: passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd),
+      progressLabel: passageWorkspaceLabels.formatProgress(group.answered, group.total)
+    }));
+  });
+
+  function prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function scrollPanelToGroup(
+    panel: HTMLElement | null,
+    groupAttribute: 'data-assessment-passage-group' | 'data-assessment-question-group',
+    groupId: string,
+    behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth'
+  ) {
+    if (!panel) return;
+
+    const group = panel.querySelector<HTMLElement>(`[${groupAttribute}="${groupId}"]`);
+    if (!group) return;
+
+    const panelRect = panel.getBoundingClientRect();
+    const groupRect = group.getBoundingClientRect();
+    const stickyHeaderOffset = 56;
+    panel.scrollTo({
+      top: panel.scrollTop + groupRect.top - panelRect.top - stickyHeaderOffset,
+      behavior
+    });
+  }
+
+  function revealPassageGroup(groupId: string) {
+    followsQuestionContext = true;
+    visiblePassageGroupId = groupId;
+    scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId);
+  }
+
+  function revealActivePassageGroup() {
+    if (!activeQuestionGroupId) return;
+
+    revealPassageGroup(activeQuestionGroupId);
+  }
+
+  function selectPassageGroup(groupId: string) {
+    const currentSynchronizationSequence = ++synchronizationSequence;
+    synchronizedGroupId = groupId;
+    activeQuestionGroupId = groupId;
+    visiblePassageGroupId = groupId;
+    followsQuestionContext = true;
+    scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto');
+    scrollPanelToGroup(questionPanel, 'data-assessment-question-group', groupId, 'auto');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentSynchronizationSequence === synchronizationSequence) synchronizedGroupId = null;
+      });
+    });
+  }
+
+  function markPassageAsManuallyExplored() {
+    followsQuestionContext = false;
+  }
+
+  function selectMobileWorkspacePanel(panel: 'passage' | 'questions') {
+    mobileWorkspacePanel = panel;
+  }
+
+  function handleMobileWorkspaceKeydown(event: KeyboardEvent) {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const nextPanel = event.key === 'ArrowLeft' ? 'passage' : 'questions';
+    mobileWorkspacePanel = nextPanel;
+
+    const toolbar = event.currentTarget;
+    if (!(toolbar instanceof HTMLElement)) return;
+
+    toolbar.querySelector<HTMLButtonElement>(`[data-assessment-mobile-panel="${nextPanel}"]`)?.focus();
+  }
+
+  function observeGroups(
+    node: HTMLElement,
+    groupAttribute: 'data-assessment-passage-group' | 'data-assessment-question-group',
+    onActiveGroupChange: (groupId: string) => void
+  ) {
+    const visibility = new Map<string, IntersectionObserverEntry>();
+    let observer: IntersectionObserver | null = null;
+
+    function updateActiveGroup() {
+      const panelRect = node.getBoundingClientRect();
+      const focusLine = panelRect.top + 72;
+      const candidates = [...visibility.entries()]
+        .filter(([, entry]) => entry.isIntersecting)
+        .map(([groupId, entry]) => ({ groupId, entry }));
+      if (candidates.length === 0) return;
+
+      const containingFocusLine = candidates.find(
+        ({ entry }) => entry.boundingClientRect.top <= focusLine && entry.boundingClientRect.bottom > focusLine
+      );
+      const nearest =
+        containingFocusLine ??
+        candidates.sort(
+          (first, second) =>
+            Math.abs(first.entry.boundingClientRect.top - focusLine) -
+            Math.abs(second.entry.boundingClientRect.top - focusLine)
+        )[0];
+      if (nearest) onActiveGroupChange(nearest.groupId);
+    }
+
+    function connect() {
+      observer?.disconnect();
+      visibility.clear();
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const groupId = (entry.target as HTMLElement).getAttribute(groupAttribute);
+            if (groupId) visibility.set(groupId, entry);
+          }
+          updateActiveGroup();
+        },
+        {
+          root: node,
+          threshold: [0, 0.05, 0.15, 0.3, 0.5, 0.75, 1]
+        }
+      );
+      node.querySelectorAll<HTMLElement>(`[${groupAttribute}]`).forEach((group) => observer?.observe(group));
+    }
+
+    queueMicrotask(connect);
+
+    return {
+      update: () => queueMicrotask(connect),
+      destroy: () => observer?.disconnect()
+    };
+  }
+
+  function observePassagePanel(node: HTMLElement, _signature: string) {
+    passagePanel = node;
+
+    return observeGroups(node, 'data-assessment-passage-group', (groupId) => {
+      if (synchronizedGroupId && groupId !== synchronizedGroupId) return;
+
+      visiblePassageGroupId = groupId;
+    });
+  }
+
+  function observeQuestionPanel(node: HTMLElement, _signature: string) {
+    questionPanel = node;
+
+    return observeGroups(node, 'data-assessment-question-group', (groupId) => {
+      if (synchronizedGroupId && groupId !== synchronizedGroupId) return;
+      if (activeQuestionGroupId === groupId) return;
+
+      activeQuestionGroupId = groupId;
+      if (followsQuestionContext) revealPassageGroup(groupId);
+    });
+  }
 
   function updateResponse(
     interactionId: string,
@@ -147,6 +373,13 @@
 
     handledFocusRequestKey = focusRequestKey;
     focusTargetInteractionId = firstInvalidInteractionId;
+  });
+
+  $effect(() => {
+    const groupIds = passageGroupViews.map((group) => group.id);
+    const firstGroupId = groupIds[0] ?? null;
+    if (!activeQuestionGroupId || !groupIds.includes(activeQuestionGroupId)) activeQuestionGroupId = firstGroupId;
+    if (!visiblePassageGroupId || !groupIds.includes(visiblePassageGroupId)) visiblePassageGroupId = firstGroupId;
   });
 </script>
 
@@ -281,7 +514,7 @@
 {/snippet}
 
 {#snippet content()}
-  {#if questionNumber !== undefined || title?.trim()}
+  {#if showItemHeader && (questionNumber !== undefined || title?.trim())}
     <div class="ui:mb-4 ui:flex ui:items-center ui:gap-2">
       {#if questionNumber !== undefined}
         <NumberBadge number={questionNumber} active={questionNumberActive} />
@@ -292,7 +525,185 @@
     </div>
   {/if}
 
-  {#if usesSplitLayout}
+  {#if usesPassageWorkspace && passageWorkspaceLabels}
+    <div
+      class={['ui:bg-background ui:overflow-hidden', showContainer ? '' : 'ui:border-border ui:rounded-md ui:border']}
+      data-assessment-layout="passage-workspace"
+    >
+      <div
+        class="ui:border-border ui:bg-muted/20 ui:grid ui:grid-cols-2 ui:border-b ui:p-1 ui:lg:hidden"
+        role="toolbar"
+        tabindex="-1"
+        aria-label={passageWorkspaceLabels.navigation}
+        onkeydown={handleMobileWorkspaceKeydown}
+      >
+        <Button
+          type="button"
+          variant={mobileWorkspacePanel === 'passage' ? 'secondary' : 'ghost'}
+          class="ui:min-h-11"
+          data-assessment-mobile-panel="passage"
+          aria-pressed={mobileWorkspacePanel === 'passage'}
+          aria-controls={`${rendererId}-passage-panel`}
+          onclick={() => selectMobileWorkspacePanel('passage')}
+        >
+          <BookOpenTextIcon class="ui:size-4" aria-hidden="true" />
+          {passageWorkspaceLabels.showPassage}
+        </Button>
+        <Button
+          type="button"
+          variant={mobileWorkspacePanel === 'questions' ? 'secondary' : 'ghost'}
+          class="ui:min-h-11"
+          data-assessment-mobile-panel="questions"
+          aria-pressed={mobileWorkspacePanel === 'questions'}
+          aria-controls={`${rendererId}-questions-panel`}
+          onclick={() => selectMobileWorkspacePanel('questions')}
+        >
+          <ListChecksIcon class="ui:size-4" aria-hidden="true" />
+          {passageWorkspaceLabels.showQuestions}
+        </Button>
+      </div>
+
+      <div
+        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_2.75rem_minmax(28rem,7fr)]"
+      >
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <section
+          id={`${rendererId}-passage-panel`}
+          bind:this={passagePanel}
+          use:observePassagePanel={passageGroupSignature}
+          class={[
+            'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
+            mobileWorkspacePanel !== 'passage' ? 'ui:hidden' : ''
+          ]}
+          aria-label={passageWorkspaceLabels.passage}
+          tabindex="0"
+          onwheel={markPassageAsManuallyExplored}
+          ontouchstart={markPassageAsManuallyExplored}
+          onpointerdown={markPassageAsManuallyExplored}
+          onkeydown={markPassageAsManuallyExplored}
+        >
+          <header
+            class="ui:border-border ui:bg-background/95 ui:sticky ui:top-0 ui:z-10 ui:flex ui:min-h-14 ui:items-center ui:gap-2 ui:border-b ui:px-4 ui:backdrop-blur-sm"
+          >
+            <BookOpenTextIcon class="ui:text-muted-foreground ui:size-4" aria-hidden="true" />
+            <span class="ui:text-sm ui:font-semibold">
+              {passageWorkspaceLabels.formatPassage(
+                passageGroupViews.find((group) => group.id === visiblePassageGroupId)?.passageIndex ?? 1
+              )}
+            </span>
+          </header>
+          {#each passageGroupViews as group (group.id)}
+            <article
+              class="ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8"
+              data-assessment-passage-group={group.id}
+              aria-label={passageWorkspaceLabels.formatPassage(group.passageIndex)}
+            >
+              {#if group.passage}
+                {@render renderContentBlock(group.passage)}
+              {/if}
+            </article>
+          {/each}
+        </section>
+
+        <AssessmentPassageRail
+          items={railItems}
+          {activeQuestionGroupId}
+          {visiblePassageGroupId}
+          navigationLabel={passageWorkspaceLabels.navigation}
+          onSelect={selectPassageGroup}
+        />
+
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <section
+          id={`${rendererId}-questions-panel`}
+          bind:this={questionPanel}
+          use:observeQuestionPanel={passageGroupSignature}
+          class={[
+            'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
+            mobileWorkspacePanel !== 'questions' ? 'ui:hidden' : ''
+          ]}
+          aria-label={passageWorkspaceLabels.questions}
+          tabindex="0"
+        >
+          <header
+            class="ui:border-border ui:bg-background/95 ui:sticky ui:top-0 ui:z-10 ui:flex ui:min-h-14 ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-4 ui:backdrop-blur-sm"
+          >
+            <div class="ui:flex ui:min-w-0 ui:items-center ui:gap-2">
+              <ListChecksIcon class="ui:text-muted-foreground ui:size-4 ui:shrink-0" aria-hidden="true" />
+              <div class="ui:min-w-0">
+                <p class="ui:truncate ui:text-sm ui:font-semibold">
+                  {passageWorkspaceLabels.formatQuestionRange(
+                    activePassageGroupView?.questionStart ?? interactionNumberStart,
+                    activePassageGroupView?.questionEnd ?? interactionNumberStart
+                  )}
+                </p>
+                <p class="ui:text-muted-foreground ui:text-xs">
+                  {passageWorkspaceLabels.formatProgress(
+                    activePassageGroupView?.answered ?? 0,
+                    activePassageGroupView?.total ?? 0
+                  )}
+                </p>
+              </div>
+            </div>
+            {#if activeQuestionGroupId && activeQuestionGroupId !== visiblePassageGroupId}
+              <Tooltip.Provider>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    {#snippet child({ props })}
+                      <Button
+                        {...props}
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        class="ui:shrink-0"
+                        aria-label={passageWorkspaceLabels.locatePassage}
+                        onclick={revealActivePassageGroup}
+                      >
+                        <LocateFixedIcon class="ui:size-4" aria-hidden="true" />
+                      </Button>
+                    {/snippet}
+                  </Tooltip.Trigger>
+                  <Tooltip.Content side="left" sideOffset={6}>
+                    {passageWorkspaceLabels.locatePassage}
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Tooltip.Provider>
+            {/if}
+          </header>
+
+          {#each passageGroupViews as group (group.id)}
+            <article
+              class="ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8"
+              data-assessment-question-group={group.id}
+              aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+              onfocusin={() => {
+                activeQuestionGroupId = group.id;
+                if (followsQuestionContext) revealPassageGroup(group.id);
+              }}
+            >
+              <div class="ui:border-border ui:mb-6 ui:border-b ui:pb-3">
+                <p class="ui:text-sm ui:font-semibold">
+                  {passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+                </p>
+                <p class="ui:text-muted-foreground ui:text-xs">
+                  {passageWorkspaceLabels.formatProgress(group.answered, group.total)}
+                </p>
+              </div>
+              <div class="ui:space-y-8">
+                {#each group.interactions as block (block.id)}
+                  {@const interactionIndex = interactionBlocks.findIndex(
+                    (interactionBlock) => interactionBlock.id === block.id
+                  )}
+                  {@render renderInteractionBlock(block, interactionIndex)}
+                {/each}
+              </div>
+            </article>
+          {/each}
+        </section>
+      </div>
+    </div>
+  {:else if usesSplitLayout}
     <div
       class="ui:grid ui:min-w-0 ui:gap-6 ui:lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
       data-assessment-layout="split"
@@ -325,7 +736,7 @@
 {/snippet}
 
 {#if showContainer}
-  <QuestionSurface>
+  <QuestionSurface class={usesPassageWorkspace ? 'ui:overflow-hidden ui:p-0' : ''}>
     {@render content()}
   </QuestionSurface>
 {:else}

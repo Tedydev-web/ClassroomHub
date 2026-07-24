@@ -27,6 +27,9 @@ import { buildAgentTools } from './chat-tools';
 import { buildModelContextMessages } from './model-context';
 import { sanitizeDanglingToolCalls } from './sanitize-tool-calls';
 import { listCourseSections } from '../course/section';
+import { getGatewaySettings } from './gateway-settings-store';
+import { recordGatewayFailure, recordGatewaySuccess, resolveAgentGatewayTransport } from './gateway-runtime';
+import { computeSliceBounds } from './gateway-slice-bounds';
 
 const MAX_WORKER_ROUNDS = 24;
 const CONTINUE_IMPLEMENTATION_PROMPT =
@@ -101,7 +104,8 @@ async function assertRunCanContinue(runId: string): Promise<NonNullable<Awaited<
 
 export async function runAgentCourseGenerationJob(input: RunAgentCourseGenerationJobInput): Promise<{
   runId: string;
-  status: 'completed' | 'paused' | 'canceled';
+  /** `queued` means the run yielded its gateway slot mid-way and needs re-dispatch. */
+  status: 'completed' | 'paused' | 'canceled' | 'queued';
   rounds: number;
 }> {
   const workerId = getWorkerId(input.workerId);
@@ -154,13 +158,32 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
     const executionCursor = initialRun.executionCursor ?? {};
     const modelId = getRunModelId(executionCursor);
     const modelDescriptor = AGENT_MODELS[modelId];
+    // Resolve the gateway before demanding an official key. A subscription-only
+    // deployment has no provider keys at all, so requiring one up front would
+    // reject work the gateway is perfectly able to serve.
     const baseProviderConfig = getProviderConfigForProvider(modelDescriptor.provider as AIProvider);
+    const officialProviderConfig = baseProviderConfig
+      ? { ...baseProviderConfig, model: modelDescriptor.backendModelId }
+      : null;
 
-    if (!baseProviderConfig) {
+    // Transport is pinned for the whole run. Switching provider mid-run would
+    // change tool-call formatting and caching behavior partway through a course,
+    // producing inconsistent output across sections.
+    const gatewayResolution = await resolveAgentGatewayTransport({
+      requestedModelId: modelDescriptor.backendModelId,
+      // Batch work: a busy gateway means wait, not pay for the official API.
+      workload: 'batch',
+      hasOfficialKey: officialProviderConfig !== null
+    });
+
+    let providerConfig = gatewayResolution.gatewayConfig ?? officialProviderConfig;
+
+    if (!providerConfig) {
       throw new AppError(`AI assistant is not configured for model "${modelId}"`, 'AI_NOT_CONFIGURED', 503);
     }
 
-    const providerConfig = { ...baseProviderConfig, model: modelDescriptor.backendModelId };
+    let usingGateway = gatewayResolution.gatewayConfig !== null;
+
     const agentContext: AgentContext = {
       orgId: initialRun.orgId,
       courseId: initialRun.courseId,
@@ -209,7 +232,7 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
       content: [{ type: 'text', text: CONTINUE_IMPLEMENTATION_PROMPT }]
     });
 
-    const model = createModel(providerConfig);
+    let model = createModel(providerConfig);
     const isOrgPaid = await isOrgOnPaidPlan(initialRun.orgId);
     const agentTools = buildAgentTools(initialRun.orgId, initialRun.userId, initialRun.courseId, visibleMessages, {
       runId: initialRun.id,
@@ -217,7 +240,22 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
       documentAssets
     });
 
-    for (let roundIndex = 0; roundIndex < MAX_WORKER_ROUNDS; roundIndex += 1) {
+    // Rounds already spent by earlier slices of this run. A run yields its slot
+    // between slices, so one course generation can span several worker leases.
+    const gatewaySettings = await getGatewaySettings();
+
+    // Only slice when the gateway is actually in play: on the official API there
+    // is no shared slot to be fair about, so yielding would only add overhead.
+    const sliceRounds = usingGateway ? gatewaySettings.sliceRounds : MAX_WORKER_ROUNDS;
+    const sliceBounds = computeSliceBounds({
+      roundsAlreadySpent: Number((executionCursor as Record<string, unknown>).totalRounds ?? 0),
+      sliceRounds,
+      maxWorkerRounds: MAX_WORKER_ROUNDS
+    });
+
+    let roundIndex = sliceBounds.startRound;
+
+    for (; roundIndex < sliceBounds.endRound; roundIndex += 1) {
       const latestRun = await assertRunCanContinue(initialRun.id);
 
       if (latestRun.queuedInstructions.length > 0) {
@@ -255,18 +293,69 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
           ...latestRun.executionCursor,
           modelId,
           workerRound: roundIndex,
+          totalRounds: roundIndex,
           bullmqJobId: input.bullmqJobId ?? null
         }
       });
 
-      const result = await generateText({
-        model,
-        maxRetries: 2,
-        system: systemPrompt,
-        messages: modelMessages,
-        tools: agentTools,
-        stopWhen: stepCountIs(MAX_STEPS_PER_ROUND)
-      });
+      let result;
+
+      try {
+        result = await generateText({
+          model,
+          // Gateway retries are owned here: the SDK would re-send a 429 against an
+          // already-drained subscription instead of letting us route away.
+          maxRetries: usingGateway ? 0 : 2,
+          system: systemPrompt,
+          messages: modelMessages,
+          tools: agentTools,
+          stopWhen: stepCountIs(MAX_STEPS_PER_ROUND)
+        });
+
+        if (usingGateway) {
+          await recordGatewaySuccess().catch(() => undefined);
+        }
+      } catch (roundError) {
+        if (!usingGateway) throw roundError;
+
+        // Batch work can fall back cleanly because this loop owns the round: no
+        // bytes have been streamed to a client, so re-issuing against the
+        // official provider is invisible to the teacher.
+        const reason = await recordGatewayFailure(roundError).catch(() => null);
+
+        if (!officialProviderConfig) {
+          // Subscription-only deployment: there is nowhere to fall back to, so
+          // surface the failure rather than pretending a route exists.
+          await createAgentRunEvent({
+            runId: initialRun.id,
+            eventType: 'gateway.unavailable',
+            message: 'Gateway failed and no official provider is configured to fall back to',
+            payload: { round: roundIndex + 1, reason }
+          });
+
+          throw roundError;
+        }
+
+        await createAgentRunEvent({
+          runId: initialRun.id,
+          eventType: 'gateway.fallback',
+          message: 'Gateway unavailable; continuing this run on the official provider',
+          payload: { round: roundIndex + 1, reason }
+        });
+
+        usingGateway = false;
+        providerConfig = officialProviderConfig;
+        model = createModel(providerConfig);
+
+        result = await generateText({
+          model,
+          maxRetries: 2,
+          system: systemPrompt,
+          messages: modelMessages,
+          tools: agentTools,
+          stopWhen: stepCountIs(MAX_STEPS_PER_ROUND)
+        });
+      }
 
       if (result.usage) {
         await recordTokenUsage(
@@ -278,7 +367,7 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
             completionTokens: result.usage.outputTokens ?? 0,
             totalTokens: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0)
           },
-          providerConfig.model || providerConfig.provider
+          providerConfig.model
         );
       }
 
@@ -332,6 +421,36 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
       });
     }
 
+    // Slice exhausted but the run still has rounds left: give up the shared
+    // gateway slot so another org can be served, and queue this run to resume.
+    // Checkpointed steps make the resume free of duplicate work.
+    if (!sliceBounds.isFinalSlice) {
+      await updateAgentRun({
+        runId: initialRun.id,
+        userId: initialRun.userId,
+        status: 'queued',
+        phase: 'implementing',
+        currentStepKey: null,
+        workerId: null,
+        lockedAt: null,
+        executionCursor: {
+          ...initialRun.executionCursor,
+          modelId,
+          totalRounds: roundIndex,
+          yieldedAt: new Date().toISOString()
+        }
+      });
+
+      await createAgentRunEvent({
+        runId: initialRun.id,
+        eventType: 'run.yielded',
+        message: 'Run yielded the gateway slot and is queued to resume',
+        payload: { roundsCompleted: roundIndex, sliceRounds }
+      });
+
+      return { runId: initialRun.id, status: 'queued', rounds: roundIndex };
+    }
+
     await updateAgentRun({
       runId: initialRun.id,
       userId: initialRun.userId,
@@ -343,6 +462,7 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
       executionCursor: {
         ...initialRun.executionCursor,
         modelId,
+        totalRounds: roundIndex,
         pauseReason: 'max_worker_rounds_reached'
       }
     });

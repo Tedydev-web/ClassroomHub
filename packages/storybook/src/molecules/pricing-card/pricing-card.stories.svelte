@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import { PricingCard } from '@cio/ui/custom/pricing-card';
   import { FIELDS } from './fields';
+  import { SALES_EMAIL } from '@cio/utils/constants';
 
   const { Story } = defineMeta({
     title: 'Molecules/PricingCard',
@@ -83,9 +84,9 @@
     FEATURES: ['Everything in Early Adopters plus:', 'Unlimited students', 'Custom Domain', '24/7 Support'],
     CTA: {
       LABEL: 'Contact Us',
-      LINK: 'mailto:hieudat2310.bh@gmail.com?subject=Classroom enterprise',
+      LINK: `mailto:${SALES_EMAIL}?subject=Classroom enterprise`,
       DASHBOARD_LABEL: 'Contact Us',
-      DASHBOARD_LINK: 'mailto:hieudat2310.bh@gmail.com?subject=Classroom enterprise',
+      DASHBOARD_LINK: `mailto:${SALES_EMAIL}?subject=Classroom enterprise`,
       IS_DISABLED: false
     }
   };

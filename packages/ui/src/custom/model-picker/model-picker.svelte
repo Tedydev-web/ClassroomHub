@@ -4,18 +4,31 @@
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import CheckIcon from '@lucide/svelte/icons/check';
   import RocketIcon from '@lucide/svelte/icons/rocket';
-  import { AGENT_MODELS, UI_PICKER_MODEL_IDS, type AgentModelId } from '@cio/utils/agent-models';
+  import { AGENT_MODELS, getPickerModelIds, type AgentModelId } from '@cio/utils/agent-models';
 
   interface Props {
     value: AgentModelId;
     disabled?: boolean;
     variant?: 'compact' | 'select';
     lockedModelIds?: readonly AgentModelId[];
+    /**
+     * Models to offer. Callers pass the set that matches the current transport,
+     * so the picker never lists a model the backend would refuse to serve.
+     */
+    modelIds?: readonly AgentModelId[];
     onChange: (id: AgentModelId) => void;
     onLockedSelect?: (id: AgentModelId) => void;
   }
 
-  let { value, disabled = false, variant = 'compact', lockedModelIds = [], onChange, onLockedSelect }: Props = $props();
+  let {
+    value,
+    disabled = false,
+    variant = 'compact',
+    lockedModelIds = [],
+    modelIds = getPickerModelIds(),
+    onChange,
+    onLockedSelect
+  }: Props = $props();
 
   let open = $state(false);
 
@@ -48,7 +61,7 @@
       </span>
     </Select.Trigger>
     <Select.Content>
-      {#each UI_PICKER_MODEL_IDS as id (id)}
+      {#each modelIds as id (id)}
         <Select.Item value={id} label={AGENT_MODELS[id].label}>
           <span class="ui:flex ui:w-full ui:items-center ui:justify-between ui:gap-2">
             <span class="ui:flex ui:min-w-0 ui:items-center ui:gap-2">
@@ -86,7 +99,7 @@
 
     <Popover.Content class="ui:p-0! ui:z-[110] ui:w-48" align="end" side="top">
       <div class="ui:py-1">
-        {#each UI_PICKER_MODEL_IDS as id (id)}
+        {#each modelIds as id (id)}
           {@const isSelected = id === value}
           <button
             type="button"

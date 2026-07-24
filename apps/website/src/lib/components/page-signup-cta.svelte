@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SALES_EMAIL } from '@cio/utils/constants';
   import { Button } from '@cio/ui/base/button';
   import { Waves } from '@cio/ui/custom/animation/waves';
 
@@ -43,7 +44,7 @@
     <Button
       variant="ghost"
       data-cal-config="'layout':'month_view'"
-      href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+      href="mailto:{SALES_EMAIL}?subject=Classroom demo"
       class="relative z-10 mt-8 bg-white!"
     >
       {btnLabel}

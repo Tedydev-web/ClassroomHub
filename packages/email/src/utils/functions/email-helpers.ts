@@ -31,21 +31,48 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-// format: "Classroom Academy (via Classroom)" <hieudat2310.bh@gmail.com>
-export function extractNameAndEmail(str: string): FromData | undefined {
-  // Use regular expressions to match the name and email
-  const regex = /"(.*?)"\s+<\s*(.*?)@(.*?)\s*>/;
-  const match = str.match(regex);
+/** Address inside angle brackets, with an optional display name before it. */
+const ANGLE_ADDRESS_PATTERN = /^(.*)<\s*([^<>\s]+@[^<>\s]+?)\s*>\s*$/;
+const BARE_ADDRESS_PATTERN = /^[^<>\s]+@[^<>\s]+$/;
 
-  if (match) {
-    // Extract the name and email from the match groups
-    const name = match[1];
-    const email = match[2] + '@' + match[3];
-    return { name, email };
-  } else {
-    // Return undefined if the format doesn't match
-    return { name: str, email: str };
+/** Unwrap an RFC 5322 quoted display name and undo its backslash escaping. */
+function parseDisplayName(raw: string): string {
+  const trimmed = raw.trim();
+  const quoted = trimmed.match(/^"(.*)"$/s);
+  const inner = quoted ? quoted[1].replace(/\\(["\\])/g, '$1') : trimmed;
+
+  return stripEmailHeaderControlChars(inner);
+}
+
+/**
+ * Parse a `From`/`Reply-To` header into its display name and address.
+ *
+ * Accepts `"Name" <a@b>`, `Name <a@b>`, and a bare `a@b`. Anything else —
+ * including an already-nested `"A" <B <x@y>>` — returns undefined so callers
+ * fall back to a known-good sender instead of guessing.
+ *
+ * A caller must never be handed an "address" that is really the whole header
+ * string. That used to happen, and `buildEmailFromName` built
+ * `"Org" <Classroom <noreply@host>>` from it: a header Mailpit tolerates but
+ * that real providers reject or spam-file.
+ */
+export function extractNameAndEmail(str: string): FromData | undefined {
+  const value = stripEmailHeaderControlChars(str ?? '');
+
+  if (!value) {
+    return undefined;
   }
+
+  const angleMatch = value.match(ANGLE_ADDRESS_PATTERN);
+  if (angleMatch) {
+    return { name: parseDisplayName(angleMatch[1]), email: angleMatch[2] };
+  }
+
+  if (BARE_ADDRESS_PATTERN.test(value)) {
+    return { name: '', email: value };
+  }
+
+  return undefined;
 }
 
 export function buildEmailFromName(name?: string): string {

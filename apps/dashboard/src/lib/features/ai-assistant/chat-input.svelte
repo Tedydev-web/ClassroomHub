@@ -33,6 +33,7 @@
     mentionItems: MentionItem[];
     uploadedDocument: UploadedDocument | null;
     selectedModel: AgentModelId;
+    modelIds?: readonly AgentModelId[];
     lockedModelIds?: readonly AgentModelId[];
     isStudent?: boolean;
     /** Set to 'LEARNER_CAP_REACHED' | 'POOL_EXHAUSTED' | 'AI_TUTOR_DISABLED' to render the take-a-break empty state. */
@@ -54,6 +55,7 @@
     mentionItems,
     uploadedDocument,
     selectedModel,
+    modelIds,
     lockedModelIds = [],
     isStudent = false,
     tutorBlocked = null,
@@ -294,6 +296,7 @@
             {:else if !isStudent}
               <ModelPicker
                 value={selectedModel}
+                {modelIds}
                 disabled={isStreaming}
                 {lockedModelIds}
                 onChange={onSelectModel}

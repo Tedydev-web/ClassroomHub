@@ -1,6 +1,7 @@
 <script module lang="ts">
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import { ExerciseQuestion } from '@cio/ui';
+  import type { AssessmentDeliveryDefinition } from '@cio/question-types';
   import QuestionTypeModes from './question-type-modes.svelte';
   import {
     CHECKBOX_FIXTURE,
@@ -38,6 +39,76 @@
     title: 'Section 1',
     description: null,
     colorTheme: 'blue' as const
+  };
+  const passageWorkspaceDefinition = {
+    schemaVersion: 1,
+    presentation: { layout: 'passage_split' },
+    blocks: [
+      {
+        id: 'passage-one',
+        kind: 'content',
+        content: {
+          format: 'html',
+          html: '<h2>Passage one</h2><p>Read the passage, then answer the questions in the adjacent panel.</p>'
+        }
+      },
+      {
+        id: 'question-one',
+        kind: 'interaction',
+        interaction: {
+          kind: 'choice',
+          prompt: { format: 'html', html: '<p>Which answer matches passage one?</p>' },
+          required: true,
+          maxScore: 1,
+          config: {
+            cardinality: 'single',
+            presentation: 'list',
+            options: [
+              { id: 'one-a', html: 'Answer A' },
+              { id: 'one-b', html: 'Answer B' }
+            ]
+          }
+        }
+      },
+      {
+        id: 'passage-two',
+        kind: 'content',
+        content: {
+          format: 'html',
+          html: '<h2>Passage two</h2><p>Each content block starts a new semantic passage and question group.</p>'
+        }
+      },
+      {
+        id: 'question-two',
+        kind: 'interaction',
+        interaction: {
+          kind: 'choice',
+          prompt: { format: 'html', html: '<p>Which answer matches passage two?</p>' },
+          required: true,
+          maxScore: 1,
+          config: {
+            cardinality: 'single',
+            presentation: 'list',
+            options: [
+              { id: 'two-a', html: 'Answer A' },
+              { id: 'two-b', html: 'Answer B' }
+            ]
+          }
+        }
+      }
+    ]
+  } satisfies AssessmentDeliveryDefinition;
+  const passageWorkspaceLabels = {
+    passage: 'Passage',
+    questions: 'Questions',
+    navigation: 'Passage group navigation',
+    locatePassage: 'Locate matching passage',
+    showPassage: 'Passage',
+    showQuestions: 'Questions',
+    formatPassage: (index: number) => `Passage ${index}`,
+    formatQuestionRange: (start: number, end: number) =>
+      start === end ? `Question ${start}` : `Questions ${start}-${end}`,
+    formatProgress: (answered: number, total: number) => `${answered}/${total} answered`
   };
 </script>
 
@@ -127,6 +198,18 @@
           }}
         />
       </section>
+    </div>
+  {/snippet}
+</Story>
+
+<Story name="Assessment - Passage Workspace">
+  {#snippet template()}
+    <div class="ui:max-w-6xl">
+      <ExerciseQuestion.AssessmentItemRenderer
+        definition={passageWorkspaceDefinition}
+        mode="take"
+        {passageWorkspaceLabels}
+      />
     </div>
   {/snippet}
 </Story>

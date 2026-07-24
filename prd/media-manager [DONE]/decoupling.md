@@ -1,7 +1,7 @@
 # Media Storage Decoupling + MinIO Support PRD
 
 ## Purpose
-Decouple ClassroomIO media storage from Cloudflare-specific infrastructure so open-source and self-hosted users can control their own media storage backend, with first-class MinIO support.
+Decouple Classroom Hub media storage from Cloudflare-specific infrastructure so open-source and self-hosted users can control their own media storage backend, with first-class MinIO support.
 
 ## Problem Statement
 The current media pipeline is tightly coupled to Cloudflare R2 and Cloudflare Browser Rendering APIs. This creates friction for open-source adopters who want full infrastructure ownership, local/private deployments, and non-Cloudflare object storage.
@@ -134,7 +134,7 @@ Keep these contracts unchanged:
 - `POST /media/image`
 
 ### 5) Data Model Considerations
-Current assets schema default `storage_provider='s3'` is acceptable for initial rollout.  
+Current assets schema default `storage_provider='s3'` is acceptable for initial rollout.
 If multi-provider-per-instance or migration coexistence is introduced, consider updating unique constraint:
 - from `(organization_id, provider, storage_key)`
 - to `(organization_id, provider, storage_provider, storage_key)`

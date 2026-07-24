@@ -1,6 +1,6 @@
-# Publishing ClassroomIO Docker Images to Docker Hub
+# Publishing Classroom Hub Docker Images to Docker Hub
 
-This guide explains how to publish the ClassroomIO API and Dashboard Docker images to Docker Hub.
+This guide explains how to publish the Classroom Hub API and Dashboard Docker images to Docker Hub.
 
 ## Prerequisites
 

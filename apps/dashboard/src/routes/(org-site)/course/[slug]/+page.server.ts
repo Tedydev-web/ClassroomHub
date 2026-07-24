@@ -2,6 +2,7 @@ import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { CourseBySlugWithOrg, GetCourseBySlugRequest } from '$features/course/utils/types';
 import type { GetOrganizationRequest } from '$features/org/utils/types';
 import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { error, redirect } from '@sveltejs/kit';
 
@@ -11,7 +12,7 @@ type GetOrganizationSuccess = Extract<InferResponseType<GetOrganizationRequest>,
 type GetPublicCourseRequest = (typeof classroomio)['org-site']['course'][':courseSlug']['$get'];
 type GetPublicCourseSuccess = Extract<InferResponseType<GetPublicCourseRequest>, { success: true }>;
 
-export const load = async ({ params = { slug: '' }, parent, url }) => {
+export const load = async ({ params = { slug: '' }, parent, request, url }) => {
   const { org: parentOrg } = await parent();
 
   // PUBLIC courses are served by the anonymous org-site endpoint and bypass the
@@ -62,7 +63,8 @@ export const load = async ({ params = { slug: '' }, parent, url }) => {
     }
   }
 
-  const canonicalUrl = new URL(url.pathname, url.origin).href;
+  const publicRequestUrl = resolvePublicRequestUrl(url, request.headers);
+  const canonicalUrl = new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href;
 
   const pageMetaTags = Object.freeze({
     title: course.title,

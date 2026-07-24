@@ -1,4 +1,5 @@
 import type { MetaTagsProps } from 'svelte-meta-tags';
+import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
 import { classroomio, type InferResponseType } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 import { redirect } from '@sveltejs/kit';
@@ -17,7 +18,7 @@ function normalizeTagsParam(rawTags: string | null): string[] {
   return normalized ?? [];
 }
 
-export const load = async ({ parent, url }) => {
+export const load = async ({ parent, request, url }) => {
   const { isOrgSite, orgSiteName, org } = await parent();
 
   if (!isOrgSite || !org) {
@@ -67,7 +68,8 @@ export const load = async ({ parent, url }) => {
   const courseData = coursesResult.ok
     ? coursesResult.body.data
     : { courses: [], hasMoreCourses: false, total: 0, page: currentPage, limit: 0, totalPages: 0 };
-  const canonicalUrl = new URL(url.pathname, url.origin).href;
+  const publicRequestUrl = resolvePublicRequestUrl(url, request.headers);
+  const canonicalUrl = new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href;
   const orgTitle = `${org.name} – All Courses`;
   const orgDescription = `Browse all courses offered by ${org.name}`;
 

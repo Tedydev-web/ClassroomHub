@@ -1,4 +1,5 @@
 <script>
+  import { SALES_EMAIL } from '@cio/utils/constants';
   import {
     AiTutorSection,
     BoxedGrid,
@@ -224,7 +225,7 @@
         certify power-users, and drive adoption — under your own domain, with an AI tutor in every lesson.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
           >Book a Demo</Button
         >
         <Button href="/signup" variant="outline">Start free</Button>

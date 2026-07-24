@@ -69,7 +69,17 @@ export async function ffmpegRun(args: string[]): Promise<void> {
  * not present in stderr.
  */
 export async function ffmpegProbeLuma(filePath: string): Promise<number> {
-  const args = ['-hide_banner', '-nostats', '-i', filePath, '-vf', 'signalstats', '-f', 'null', '-'];
+  const args = [
+    '-hide_banner',
+    '-nostats',
+    '-i',
+    filePath,
+    '-vf',
+    'signalstats,metadata=print:key=lavfi.signalstats.YAVG',
+    '-f',
+    'null',
+    '-'
+  ];
   let stderr = '';
   try {
     const result = await execFileAsync(FFMPEG_BIN, args, { maxBuffer: MAX_OUTPUT_BYTES });
@@ -83,7 +93,7 @@ export async function ffmpegProbeLuma(filePath: string): Promise<number> {
     }
   }
 
-  const match = stderr.match(/YAVG:([0-9]+(?:\.[0-9]+)?)/);
+  const match = stderr.match(/lavfi\.signalstats\.YAVG=([0-9]+(?:\.[0-9]+)?)/);
   if (!match) {
     throw new Error('ffmpegProbeLuma: signalstats YAVG not found in ffmpeg output');
   }

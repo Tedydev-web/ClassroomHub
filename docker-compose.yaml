@@ -146,6 +146,13 @@ services:
       UPLOAD_MAX_AGENT_DOCUMENT_MB: ${UPLOAD_MAX_AGENT_DOCUMENT_MB:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set a strong BETTER_AUTH_SECRET in .env}
       SKIP_DB_SETUP: ${SKIP_DB_SETUP:-}
+      # Shared subscription gateway. Empty by default: the official provider keys
+      # above remain the route until an operator configures and enables it.
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-}
+      AI_GATEWAY_AUTH_TOKEN: ${AI_GATEWAY_AUTH_TOKEN:-}
+      # Gates /admin/ai/*. Unset in production leaves the operator API refusing
+      # every request rather than serving it unauthenticated.
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:-}
     restart: unless-stopped
 
   dashboard:
@@ -230,9 +237,43 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      # Shared subscription gateway. Empty by default: without these the runner
+      # uses the official provider keys above, exactly as before.
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-}
+      AI_GATEWAY_AUTH_TOKEN: ${AI_GATEWAY_AUTH_TOKEN:-}
+    restart: unless-stopped
+
+  # OpenAI-compatible proxy fronting the operator's ChatGPT/Codex subscription.
+  #
+  # Deliberately has no `ports:` mapping. Other services reach it as
+  # `http://ccs:8317` over the compose default network; the host and the internet
+  # cannot. The image tag is pinned because an upgrade can change proxy behavior
+  # and must be a deliberate act, not a side effect of `pull`.
+  #
+  # The `ccs-auth` volume holds OAuth access and refresh tokens. Treat it as a
+  # secret store: never mount it into api or jobs, and encrypt any backup of it.
+  ccs:
+    image: ghcr.io/kaitranntt/ccs:8.8.1
+    container_name: cio-ccs
+    volumes:
+      - ccs-auth:/root/.ccs
+    expose:
+      - '8317'
+    healthcheck:
+      # Liveness only. A 401 already proves the proxy is up and serving requests,
+      # so `-f` is deliberately absent: failing the container for an auth response
+      # would report a healthy proxy as dead. Whether the key and the upstream
+      # subscription actually work is answered by `GET /admin/ai/health`, which
+      # can distinguish reachable, authenticated, and able-to-serve.
+      test: ['CMD-SHELL', 'curl -s -o /dev/null http://127.0.0.1:8317/v1/models || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
   postgres-data:
   redis-data:
   minio-data:
+  ccs-auth:

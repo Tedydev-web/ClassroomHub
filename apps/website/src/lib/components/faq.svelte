@@ -1,4 +1,5 @@
 <script>
+  import { OPERATOR_EMAIL, SALES_EMAIL } from '@cio/utils/constants';
   import { faqs as defaultFaqs } from '$lib/utils/faqs';
   import { PageSignupCTA } from '$lib/components';
   import * as Accordion from '@cio/ui/base/accordion';
@@ -33,9 +34,8 @@
         {subheading}
       {:else}
         Can't find the answer you're looking for?
-        <a class="text-blue-700 hover:underline" href="mailto:hieudat2310.bh@gmail.com" target="_blank"
-          >Shoot us an email</a
-        > and we'll get back to you ASAP.
+        <a class="text-blue-700 hover:underline" href="mailto:{OPERATOR_EMAIL}" target="_blank">Shoot us an email</a> and
+        we'll get back to you ASAP.
       {/if}
     </p>
   </header>
@@ -58,7 +58,7 @@
       header="Your Custom Academy – Up & Running in Minutes!"
       subText="Try before you buy. No credit card required."
       btnLabel="Book a demo"
-      link="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+      link="mailto:{SALES_EMAIL}?subject=Classroom demo"
     />
   {/if}
 </div>

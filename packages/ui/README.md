@@ -1,6 +1,6 @@
 # @cio/ui
 
-UI component library for ClassroomIO, built with Svelte 5 and Tailwind CSS.
+UI component library for Classroom Hub, built with Svelte 5 and Tailwind CSS.
 
 ## Package Information
 
@@ -89,6 +89,7 @@ Learner and author UIs for exercise questions (take, preview, review, submission
 - **`renderers/shared/`** — Cross-type presentation pieces reused by multiple question families (for example `labeled-value-row.svelte`, `mcq-preview-option-row.svelte`, `submission-response-pie-chart.svelte`). Mode entry files stay thin; add new shared pieces here when two or more types need the same markup.
 - **`renderers/<question-type>/`** — One folder per type (`radio`, `numeric`, …) containing `take.svelte`, `preview.svelte`, and optional `review.svelte`, `submission.svelte`, `edit.svelte`, plus type-specific fragments (for example `numeric-expected-fields.svelte`, `ordering-display.svelte`).
 - **`renderers/option-image.svelte`**, **`renderers/submission-utils.ts`** — Existing shared helpers at the `renderers/` root; keep importing from there unless consolidating in a later pass.
+- **`AssessmentItemRenderer` passage workspace** — A learner delivery definition with `presentation.layout: 'passage_split'` and translated `passageWorkspaceLabels` renders independently scrollable passage/question panes, semantic group navigation, and a single-panel mobile switcher.
 
 **Types with heavier or distinct UIs** (textarea editor, file upload, matching/hotspot authoring, link lists) intentionally keep separate `take` / `preview` implementations until a second consumer (for example a dedicated `review` mode) justifies extracting more shared fragments.
 

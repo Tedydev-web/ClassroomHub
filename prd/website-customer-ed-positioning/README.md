@@ -42,7 +42,7 @@ todos:
     content: Create /automation page (replaces planned /integrations) — covers public API, webhooks, MCP server. Lives under the new Developers nav dropdown. No integration logo grid; no fake logos.
     status: pending
   - id: page-mcp-recipes
-    content: Create /mcp-recipes page — public gallery of agent prompts/workflows using ClassroomIO's MCP server. The developer-side analog to /templates. Ship 12 recipes grouped by category (Course creation, Content updates, Bulk ops, Publishing, Power user). Lives under the new Developers nav dropdown.
+    content: Create /mcp-recipes page — public gallery of agent prompts/workflows using Classroom Hub's MCP server. The developer-side analog to /templates. Ship 12 recipes grouped by category (Course creation, Content updates, Bulk ops, Publishing, Power user). Lives under the new Developers nav dropdown.
     status: pending
   - id: partner-training-rewrite
     content: Rewrite /partner-training to lead with the multi-workspace pattern ("spin up a dedicated partner workspace alongside your customer academy")
@@ -183,7 +183,7 @@ Do NOT add an integration logo grid (no native integrations).
 | `/customer-ed/vs-help-docs` | Solutions › Customer Education | Captures "alternative to Intercom Articles / Zendesk" intent | "alternative to intercom articles", "customer academy vs help docs" |
 | `/templates` | Top-level (linked from homepage section + `/customer-education` + footer). **Not** under Developers — audience is course creators / CS leaders. | Public gallery of AI course templates | "customer onboarding course template" |
 | `/automation` | **Developers (new dropdown)** | Public API + webhooks + MCP server | "lms api", "open source lms api", "mcp lms" |
-| `/mcp-recipes` | **Developers (new dropdown)** | Gallery of agent prompts/workflows using ClassroomIO's MCP server — developer-side analog to /templates | "mcp examples", "claude mcp lms", "claude course automation" |
+| `/mcp-recipes` | **Developers (new dropdown)** | Gallery of agent prompts/workflows using Classroom Hub's MCP server — developer-side analog to /templates | "mcp examples", "claude mcp lms", "claude course automation" |
 
 ### Rewrites / softening
 
@@ -234,8 +234,8 @@ Do NOT add an integration logo grid (no native integrations).
 ### `/mcp-recipes` page spec
 
 **Top of page:**
-- Hero — *"Build and manage courses with your AI agent. 12 recipes using ClassroomIO's MCP server."*
-- 3-step setup: install MCP, connect ClassroomIO, paste a recipe
+- Hero — *"Build and manage courses with your AI agent. 12 recipes using Classroom Hub's MCP server."*
+- 3-step setup: install MCP, connect Classroom Hub, paste a recipe
 - "Why MCP" 2-line explainer for non-technical readers
 
 **Body:**

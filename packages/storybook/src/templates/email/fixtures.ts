@@ -23,7 +23,7 @@ const FORGOT_PASSWORD_CONTENT = `
   <p>You are receiving this email because you have requested a password reset for your Classroom account.</p>
   <p>Please click the button below to reset your password:</p>
   <div><a class="button" href="#">Reset my password</a></div>
-  <p>PS: If you did not initiate this request, reply to this email or write to hieudat2310.bh@gmail.com so we can look into a possible attempt to breach your account.</p>
+  <p>PS: If you did not initiate this request, reply to this email or write to support@classroom.io.vn so we can look into a possible attempt to breach your account.</p>
 `;
 
 const COURSE_WELCOME_CONTENT = `

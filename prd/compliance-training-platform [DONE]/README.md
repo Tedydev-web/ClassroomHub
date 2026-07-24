@@ -7,7 +7,7 @@
 - February 21, 2026 (updated April 11, 2026)
 
 ## Purpose
-Add a `COMPLIANCE` course type to ClassroomIO for courses that must be retaken after a given period. This targets organizations in regulated industries (healthcare, finance, manufacturing, government) that need recurring training with automated renewal, reminders, and compliance status tracking.
+Add a `COMPLIANCE` course type to Classroom Hub for courses that must be retaken after a given period. This targets organizations in regulated industries (healthcare, finance, manufacturing, government) that need recurring training with automated renewal, reminders, and compliance status tracking.
 
 > **Scope**: This PRD covers the `COMPLIANCE` course type only — retake intervals, completion validity, automatic re-enrollment, reminders, certificates, and dashboards. Programs already exist in the app and are out of scope. Policy attestation, audit trails, and HRIS integrations are separate efforts.
 
@@ -16,7 +16,7 @@ Add a `COMPLIANCE` course type to ClassroomIO for courses that must be retaken a
 ## 1. Executive Summary
 
 ### The Problem
-Companies in regulated industries need courses that employees must retake periodically. Today, ClassroomIO courses are one-and-done — there's no way to say "this HIPAA course must be retaken every 12 months" and have the system enforce it.
+Companies in regulated industries need courses that employees must retake periodically. Today, Classroom Hub courses are one-and-done — there's no way to say "this HIPAA course must be retaken every 12 months" and have the system enforce it.
 
 ### Target Customers
 | Industry | Example Use Cases |
@@ -551,7 +551,7 @@ GET    /courses/:courseId/compliance/export
 ## 7. Background Job Infrastructure
 
 ### Current State
-There is no cron or job queue system in ClassroomIO today. Redis exists but is only used for rate limiting and caching. The compliance course type requires two daily jobs — this is the first scheduled work in the platform.
+There is no cron or job queue system in Classroom Hub today. Redis exists but is only used for rate limiting and caching. The compliance course type requires two daily jobs — this is the first scheduled work in the platform.
 
 ### Architecture: Internal API Routes + Cron Runner
 

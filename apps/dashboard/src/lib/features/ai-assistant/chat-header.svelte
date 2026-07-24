@@ -22,6 +22,13 @@
     used: number;
     allowance: number;
     remaining: number;
+    isUnlimited: boolean;
+  }
+
+  interface GatewayUsage {
+    usedUnits: number;
+    budgetUnits: number;
+    windowMinutes: number;
   }
 
   interface StudentMessageUsage {
@@ -31,6 +38,8 @@
 
   interface Props {
     tokenUsage: TokenUsage | null;
+    /** This workspace's share of the shared AI capacity, when a budget is configured. */
+    gatewayUsage: GatewayUsage | null;
     isStudent: boolean;
     studentMessageUsage: StudentMessageUsage | null;
     conversations: Conversation[];
@@ -46,6 +55,7 @@
 
   let {
     tokenUsage,
+    gatewayUsage,
     isStudent,
     studentMessageUsage,
     conversations,
@@ -59,6 +69,16 @@
   }: Props = $props();
 
   let historyPopoverOpen = $state(false);
+
+  /** Clamped so an over-budget window still renders a full bar rather than overflowing. */
+  function toPercent(used: number, total: number): number {
+    if (total <= 0) return 0;
+
+    return Math.min(100, Math.round((used / total) * 100));
+  }
+
+  const gatewayPercent = $derived(gatewayUsage ? toPercent(gatewayUsage.usedUnits, gatewayUsage.budgetUnits) : 0);
+  const gatewayWindowDays = $derived(gatewayUsage ? Math.max(1, Math.round(gatewayUsage.windowMinutes / 1440)) : 0);
 
   let editingConversationTitle = $state(false);
   let draftConversationTitle = $state('');
@@ -245,47 +265,60 @@
     </div>
   </div>
   {#if isStudent && studentMessageUsage}
-    {@const usagePercent = Math.min(100, Math.round((studentMessageUsage.used / studentMessageUsage.cap) * 100))}
+    {@render meter(
+      `${studentMessageUsage.used.toLocaleString()} / ${studentMessageUsage.cap.toLocaleString()} ${$t('ai_assistant.messages_used_label')}`,
+      toPercent(studentMessageUsage.used, studentMessageUsage.cap),
+      null
+    )}
+  {:else if !isStudent && gatewayUsage}
+    <!--
+      Progress against this workspace's own slice of the shared subscription. This
+      is the only denominator a teacher can act on: the plan allowance is
+      unbounded on this deployment, and the shared pool total is other tenants'
+      business.
+    -->
+    {@render meter(
+      `${gatewayUsage.usedUnits.toLocaleString()} / ${gatewayUsage.budgetUnits.toLocaleString()} ${$t('ai_assistant.capacity_label')}`,
+      gatewayPercent,
+      $t('ai_assistant.capacity_hint', { days: gatewayWindowDays })
+    )}
+  {:else if !isStudent && tokenUsage?.isUnlimited}
+    <!--
+      No plan ceiling and no configured capacity budget, so a used/total fraction
+      would divide by a sentinel and read 0% forever. Show consumption on its own
+      instead of implying a budget that does not exist.
+    -->
     <div class="mt-2">
-      <div class="ui:text-muted-foreground flex justify-between text-[10px]">
-        <span
-          >{studentMessageUsage.used.toLocaleString()} / {studentMessageUsage.cap.toLocaleString()}
-          {$t('ai_assistant.messages_used_label')}</span
-        >
-        <span>{usagePercent}%</span>
-      </div>
-      <div class="ui:bg-muted mt-0.5 h-1 w-full rounded-full">
-        <div
-          class="h-1 rounded-full transition-all {usagePercent > 90
-            ? 'bg-red-500'
-            : usagePercent > 70
-              ? 'bg-amber-500'
-              : 'ui:bg-primary'}"
-          style="width: {usagePercent}%"
-        ></div>
+      <div class="ui:text-muted-foreground text-[10px]">
+        {tokenUsage.used.toLocaleString()}
+        {$t('ai_assistant.tokens_label')}
       </div>
     </div>
   {:else if !isStudent && tokenUsage && tokenUsage.used + tokenUsage.remaining > 0}
     {@const totalBudget = tokenUsage.used + tokenUsage.remaining}
-    {@const usagePercent = Math.min(100, Math.round((tokenUsage.used / totalBudget) * 100))}
-    <div class="mt-2">
-      <div class="ui:text-muted-foreground flex justify-between text-[10px]">
-        <span
-          >{tokenUsage.used.toLocaleString()} / {totalBudget.toLocaleString()}
-          {$t('ai_assistant.tokens_label')}</span
-        >
-        <span>{usagePercent}%</span>
-      </div>
-      <div class="ui:bg-muted mt-0.5 h-1 w-full rounded-full">
-        <div
-          class="h-1 rounded-full transition-all {usagePercent > 90
-            ? 'bg-red-500'
-            : usagePercent > 70
-              ? 'bg-amber-500'
-              : 'ui:bg-primary'}"
-          style="width: {usagePercent}%"
-        ></div>
-      </div>
-    </div>
+    {@render meter(
+      `${tokenUsage.used.toLocaleString()} / ${totalBudget.toLocaleString()} ${$t('ai_assistant.tokens_label')}`,
+      toPercent(tokenUsage.used, totalBudget),
+      null
+    )}
   {/if}
 </div>
+
+{#snippet meter(label: string, percent: number, hint: string | null)}
+  <div class="mt-2" title={hint ?? undefined}>
+    <div class="ui:text-muted-foreground flex justify-between text-[10px]">
+      <span>{label}</span>
+      <span>{percent}%</span>
+    </div>
+    <div class="ui:bg-muted mt-0.5 h-1 w-full rounded-full">
+      <div
+        class="h-1 rounded-full transition-all {percent > 90
+          ? 'bg-red-500'
+          : percent > 70
+            ? 'bg-amber-500'
+            : 'ui:bg-primary'}"
+        style="width: {percent}%"
+      ></div>
+    </div>
+  </div>
+{/snippet}

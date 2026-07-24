@@ -6,9 +6,16 @@ import {
   addTextInteractionBlock,
   createAssessmentComposerState,
   getAssessmentComposerSnapshot,
+  initializeAssessmentPassageLayout,
+  moveAssessmentInteractionWithinPassage,
+  moveAssessmentBlockWithinKind,
+  moveAssessmentPassageGroup,
   reconcileAssessmentComposerSave,
   removeAssessmentBlock,
+  removeAssessmentBlocks,
   reorderAssessmentBlock,
+  restoreAssessmentBlock,
+  restoreAssessmentBlocks,
   setAssessmentItemPresentationLayout,
   setChoiceCorrectOption,
   setChoiceInteractionCardinality
@@ -54,6 +61,32 @@ describe('assessment composer state', () => {
     expect(state.selectedBlockId).toBe('block-5');
   });
 
+  it('initializes passage and question lanes for an empty item', () => {
+    const createId = createIdFactory();
+    const initialState = createAssessmentComposerState();
+    const passageState = initializeAssessmentPassageLayout(initialState, createId);
+    const initializedAgain = initializeAssessmentPassageLayout(passageState, createId);
+
+    expect(passageState.definition.presentation).toEqual({ layout: 'passage_split' });
+    expect(passageState.definition.blocks).toMatchObject([
+      { id: 'block-1', kind: 'content' },
+      { id: 'block-2', kind: 'interaction', interaction: { kind: 'choice' } }
+    ]);
+    expect(passageState.selectedBlockId).toBe('block-2');
+    expect(initializedAgain.definition.blocks).toBe(passageState.definition.blocks);
+    expect(initializedAgain.selectedBlockId).toBe(passageState.selectedBlockId);
+  });
+
+  it('does not add empty starter blocks when an existing item switches layout', () => {
+    const createId = createIdFactory();
+    const initialState = addContentBlock(createAssessmentComposerState(), createId);
+    const passageState = initializeAssessmentPassageLayout(initialState, createId);
+
+    expect(passageState.definition.presentation).toEqual({ layout: 'passage_split' });
+    expect(passageState.definition.blocks).toBe(initialState.definition.blocks);
+    expect(passageState.definition.blocks).toMatchObject([{ id: 'block-1', kind: 'content' }]);
+  });
+
   it('reorders by block id without changing selection or block identity', () => {
     const createId = createIdFactory();
     let state = createAssessmentComposerState();
@@ -64,6 +97,104 @@ describe('assessment composer state', () => {
 
     expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-2', 'block-1']);
     expect(state.selectedBlockId).toBe('block-2');
+  });
+
+  it('moves passage blocks only within their content or interaction lane', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId);
+    state = addContentBlock(state, createId);
+    state = addTextInteractionBlock(state, createId);
+    state = moveAssessmentBlockWithinKind(state, 'block-6', -1);
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-6', 'block-5', 'block-2']);
+    expect(state.definition.blocks.filter((block) => block.kind === 'content').map((block) => block.id)).toEqual([
+      'block-1',
+      'block-5'
+    ]);
+
+    state = moveAssessmentBlockWithinKind(state, 'block-1', 1);
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-5', 'block-6', 'block-1', 'block-2']);
+    expect(state.definition.blocks.filter((block) => block.kind === 'interaction').map((block) => block.id)).toEqual([
+      'block-6',
+      'block-2'
+    ]);
+    expect(state.selectedBlockId).toBe('block-6');
+  });
+
+  it('adds interactions to the selected passage group', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId, 'block-1');
+    state = addTextInteractionBlock(state, createId, 'block-2');
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-3', 'block-2', 'block-6']);
+    expect(state.selectedBlockId).toBe('block-6');
+  });
+
+  it('moves interactions only within their passage group', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId, 'block-1');
+    state = addTextInteractionBlock(state, createId, 'block-1');
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId, 'block-6');
+    state = moveAssessmentInteractionWithinPassage(state, 'block-5', -1);
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual([
+      'block-1',
+      'block-5',
+      'block-2',
+      'block-6',
+      'block-7'
+    ]);
+
+    const unchangedState = moveAssessmentInteractionWithinPassage(state, 'block-2', 1);
+    expect(unchangedState).toBe(state);
+  });
+
+  it('moves a passage together with its interactions', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId, 'block-1');
+    state = addContentBlock(state, createId);
+    state = addTextInteractionBlock(state, createId, 'block-5');
+    state = moveAssessmentPassageGroup(state, 'block-5', -1);
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-5', 'block-6', 'block-1', 'block-2']);
+    expect(state.selectedBlockId).toBe('block-6');
+  });
+
+  it('removes and restores a complete passage group atomically', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addChoiceInteractionBlock(state, createId, 'block-1');
+    state = addContentBlock(state, createId);
+    state = addTextInteractionBlock(state, createId, 'block-5');
+
+    const removedBlocks = state.definition.blocks.slice(0, 2);
+    state = removeAssessmentBlocks(
+      state,
+      removedBlocks.map((block) => block.id)
+    );
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-5', 'block-6']);
+
+    state = restoreAssessmentBlocks(state, removedBlocks, 0);
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-2', 'block-5', 'block-6']);
+    expect(state.selectedBlockId).toBe('block-1');
   });
 
   it('removes the selected block and selects its nearest remaining sibling', () => {
@@ -77,6 +208,23 @@ describe('assessment composer state', () => {
 
     expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-3']);
     expect(state.selectedBlockId).toBe('block-3');
+  });
+
+  it('restores a removed block at its previous position without replacing newer draft changes', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    state = addContentBlock(state, createId);
+    state = addTextInteractionBlock(state, createId);
+    const removedBlock = state.definition.blocks[0];
+    if (!removedBlock) throw new Error('Expected a content block');
+
+    state = removeAssessmentBlock(state, removedBlock.id);
+    state = addChoiceInteractionBlock(state, createId);
+    state = restoreAssessmentBlock(state, removedBlock, 0);
+
+    expect(state.definition.blocks.map((block) => block.id)).toEqual(['block-1', 'block-2', 'block-3']);
+    expect(state.selectedBlockId).toBe('block-1');
   });
 
   it('preserves all correct answers for multiple choice and trims them for single choice', () => {

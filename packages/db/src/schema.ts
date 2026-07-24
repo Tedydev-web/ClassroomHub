@@ -3887,6 +3887,87 @@ export const aiCreditPurchase = pgTable(
   ]
 );
 
+// ─── AI Gateway ──────────────────────────────────────────────────────────────
+
+/**
+ * Runtime configuration for the shared subscription-backed AI gateway.
+ *
+ * Exactly one row (id = 1). Lives in the database rather than env so the kill
+ * switch, model allowlist, and per-org defaults can change during an incident
+ * without a redeploy. Connection secrets stay in env and are never stored here.
+ */
+export const aiGatewaySettings = pgTable('ai_gateway_settings', {
+  id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
+    name: 'ai_gateway_settings_id_seq',
+    startWith: 1,
+    increment: 1,
+    minValue: 1,
+    cache: 1
+  }),
+  enabled: boolean().notNull().default(false),
+  /** Non-null means the operator has paused all gateway traffic. */
+  pausedAt: timestamp('paused_at', { withTimezone: true, mode: 'string' }),
+  pauseReason: text('pause_reason'),
+  pausedBy: text('paused_by'),
+  /** `[{ modelId, label, quotaWeight, role }]` — the only source of truth for allowed models. */
+  modelAllowlist: jsonb('model_allowlist')
+    .$type<Array<{ modelId: string; label: string; quotaWeight: number; role: string }>>()
+    .notNull()
+    .default([]),
+  defaultModelId: text('default_model_id'),
+  lightModelId: text('light_model_id'),
+  globalConcurrency: integer('global_concurrency').notNull().default(1),
+  /** Rounds a generation run may execute before yielding its slot. */
+  sliceRounds: integer('slice_rounds').notNull().default(3),
+  defaultOrgActiveLimit: integer('default_org_active_limit').notNull().default(1),
+  defaultOrgQueuedLimit: integer('default_org_queued_limit').notNull().default(3),
+  defaultOrgWindowBudgetUnits: bigint('default_org_window_budget_units', { mode: 'number' }),
+  /** Trailing consumption windows; every window must pass before work is admitted. */
+  windows: jsonb().$type<Array<{ id: string; durationMinutes: number; capUnits: number }>>().notNull().default([]),
+  /** Whether exhausted gateway traffic may fall back to the official API. */
+  fallbackEnabled: boolean('fallback_enabled').notNull().default(true),
+  fallbackMonthlyCapUnits: bigint('fallback_monthly_cap_units', { mode: 'number' }),
+  circuitState: text('circuit_state').notNull().default('closed'),
+  circuitOpenedAt: timestamp('circuit_opened_at', { withTimezone: true, mode: 'string' }),
+  circuitResumeAfter: timestamp('circuit_resume_after', { withTimezone: true, mode: 'string' }),
+  consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+});
+
+/**
+ * Per-organization gateway policy. Rows are created lazily — only when an
+ * operator customises an org — so a missing row means "inherit every default".
+ */
+export const aiGatewayOrgPolicy = pgTable(
+  'ai_gateway_org_policy',
+  {
+    id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
+      name: 'ai_gateway_org_policy_id_seq',
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      cache: 1
+    }),
+    orgId: uuid('org_id').notNull(),
+    /** Weighted-fair-queue knob: higher weight earns proportionally more turns. */
+    priorityWeight: integer('priority_weight').notNull().default(1),
+    maxActiveRuns: integer('max_active_runs'),
+    maxQueuedRuns: integer('max_queued_runs'),
+    windowBudgetUnits: bigint('window_budget_units', { mode: 'number' }),
+    isBlocked: boolean('is_blocked').notNull().default(false),
+    blockReason: text('block_reason'),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orgId],
+      foreignColumns: [organization.id],
+      name: 'ai_gateway_org_policy_org_id_fkey'
+    }),
+    unique('ai_gateway_org_policy_org_id_key').on(table.orgId)
+  ]
+);
+
 // ─── AI Tutor Fair-Use ───────────────────────────────────────────────────────
 
 export const aiTutorMessageCount = pgTable(

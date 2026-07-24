@@ -6,7 +6,9 @@ export const PUBLIC_API_BEARER_SCHEME = 'bearerAuth';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const;
 
-export const PUBLIC_API_OPENAPI_DESCRIPTION = `# Authentication
+export const PUBLIC_API_OPENAPI_DESCRIPTION = `Use the Classroom public API to manage audience members and courses with organization-scoped API keys.
+
+# Authentication
 
 All public API endpoints require an **organization-scoped API key** sent as a Bearer token.
 
@@ -33,7 +35,7 @@ Use the **Authorize** button (lock icon) on this page, choose **bearerAuth**, pa
 
 ## Plan access
 
-On Classroom Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.
+API key creation is enabled in self-owned deployments. Hosted deployments follow the configured plan entitlements.
 `;
 
 type OpenApiDocument = Record<string, unknown>;

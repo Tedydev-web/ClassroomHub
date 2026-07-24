@@ -58,6 +58,8 @@ const envSchema = z.object({
    * URL/history. Leave unset to keep the dashboard hidden outside dev.
    */
   QUEUE_DASHBOARD_PASSWORD: z.string().optional(),
+  /** Gates the /admin/* operator API. Unset in production leaves the routes unmounted. */
+  SUPER_ADMIN_PASSWORD: z.string().optional(),
   /** Optional Bearer token for Jina Reader (higher rate limits). */
   JINA_API_KEY: z.string().optional(),
   /** Max completed fetch_documentation_url calls per agent conversation (default 15). */

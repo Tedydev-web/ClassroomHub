@@ -41,6 +41,10 @@
       "types": "./dist/validation/constants.d.ts",
       "default": "./dist/validation/constants.js"
     },
+    "./validation/admin/ai-gateway": {
+      "types": "./dist/validation/admin/ai-gateway.d.ts",
+      "default": "./dist/validation/admin/ai-gateway.js"
+    },
     "./validation/*": {
       "types": "./dist/validation/*/index.d.ts",
       "default": "./dist/validation/*/index.js"

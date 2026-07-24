@@ -46,6 +46,7 @@ type AssessmentComposerMutationHandler = {
 const assessmentComposerSaveHandlers = new Map<string, AssessmentComposerSaveHandler>();
 const assessmentComposerMutationHandlers = new Map<string, AssessmentComposerMutationHandler>();
 export const dirtyAssessmentComposerIds = writable<ReadonlySet<string>>(new Set());
+export const wideAssessmentComposerIds = writable<ReadonlySet<string>>(new Set());
 
 export interface AssessmentComposerPreviewItem {
   exerciseId: string;
@@ -152,6 +153,16 @@ export function setAssessmentComposerDirty(composerId: string, isDirty: boolean)
   });
 }
 
+export function setAssessmentComposerWide(composerId: string, isWide: boolean): void {
+  wideAssessmentComposerIds.update((currentIds) => {
+    const nextIds = new Set(currentIds);
+    if (isWide) nextIds.add(composerId);
+    else nextIds.delete(composerId);
+
+    return nextIds;
+  });
+}
+
 export async function saveDirtyAssessmentComposers(): Promise<boolean> {
   const dirtyComposerIds = [...get(dirtyAssessmentComposerIds)];
   for (const composerId of dirtyComposerIds) {
@@ -171,6 +182,7 @@ export function clearAssessmentComposerRegistry(): void {
   assessmentComposerSaveHandlers.clear();
   assessmentComposerMutationHandlers.clear();
   dirtyAssessmentComposerIds.set(new Set());
+  wideAssessmentComposerIds.set(new Set());
   assessmentComposerPreviewItems.set({});
 }
 

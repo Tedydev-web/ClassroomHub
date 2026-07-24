@@ -1,3 +1,7 @@
+<script>
+  import { SALES_EMAIL } from '@cio/utils/constants';
+</script>
+
 <section class="bg-gray-50 px-6 py-16 text-center lg:px-12 lg:py-24">
   <h2 class="mb-4 text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight">
     Ready to replace Moodle<br />with something you'll <em class="text-blue-700 italic">actually enjoy?</em>
@@ -13,7 +17,7 @@
       Get Started Free →
     </a>
     <a
-      href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+      href="mailto:{SALES_EMAIL}?subject=Classroom demo"
       class="cursor-pointer rounded-lg border-[1.5px] border-gray-200 bg-transparent px-7 py-3.5 text-sm font-medium text-gray-950 transition-all duration-200 hover:border-gray-950 lg:text-base"
     >
       Book a Demo

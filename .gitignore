@@ -30,6 +30,9 @@ yarn-error.log*
 .env.production.local
 .env.dev
 
+# Google Cloud OAuth client downloads
+client_secret_*.apps.googleusercontent.com.json
+
 # turbo
 .turbo
 

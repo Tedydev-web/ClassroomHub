@@ -20,11 +20,9 @@ export const AIProvider = {
 
 export type AIProvider = (typeof AIProvider)[keyof typeof AIProvider];
 
-export interface AIProviderConfig {
-  provider: AIProvider;
-  apiKey: string;
-  model?: string;
-}
+// `AIProviderConfig`, `AITransport`, and the capability model live in
+// `./providers/transport` — they describe how a call is routed, which is a
+// provider-layer concern rather than a shared domain type.
 
 // ─── Agent Context (passed with each chat message) ───────────────────────────
 
@@ -167,6 +165,13 @@ export interface TokenBalance {
   allowance: number;
   creditBalance: number;
   remaining: number;
+  /**
+   * True when the deployment grants an unbounded allowance (self-hosted or
+   * self-owned). Callers must not render a used/total fraction in that case —
+   * the allowance is a sentinel, not a budget, and dividing by it always yields
+   * 0%. Show consumption on its own instead.
+   */
+  isUnlimited: boolean;
 }
 
 // ─── Agent Status (returned by GET /agent/status) ────────────────────────────
@@ -187,6 +192,32 @@ export interface AgentStatus {
   role: AgentRole;
   usage: TokenBalance;
   tutor: AgentTutorStatus;
+  /**
+   * Whether the shared subscription gateway is currently serving.
+   *
+   * Drives which models the picker offers: Codex while the gateway is up, the
+   * official-API fallback only when it is not. Teachers see the consequence, not
+   * the shared-pool numbers behind it.
+   */
+  gatewayActive: boolean;
+  /**
+   * This organization's own consumption inside the current gateway window.
+   *
+   * Deliberately scoped to the org: a bar driven by the shared pool would move
+   * because *other* tenants worked, which a teacher cannot act on or understand.
+   * Null when no budget is configured — there is then nothing to show progress
+   * against, and inventing a denominator would be worse than showing none.
+   */
+  gatewayUsage: GatewayUsageSummary | null;
+}
+
+export interface GatewayUsageSummary {
+  /** Cost units this org consumed inside the trailing window. */
+  usedUnits: number;
+  /** The org's ceiling for that window. */
+  budgetUnits: number;
+  /** Window length, so the UI can say what period the bar covers. */
+  windowMinutes: number;
 }
 
 // ─── Document Upload ─────────────────────────────────────────────────────────

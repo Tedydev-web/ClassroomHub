@@ -1,0 +1,115 @@
+name: Deploy production
+
+# Deploys only after Quality has passed on main. A plain `push` trigger would
+# deploy regardless of whether the tests went green, which is worse than the
+# manual deploy it replaces.
+on:
+  workflow_run:
+    workflows: ['Quality']
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  # One deploy at a time. The dashboard image needs ~8 GB to build and the host
+  # is also a workstation; overlapping builds exhaust memory.
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # `workflow_run` fires on failure too, so the conclusion has to be checked.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # The Access service token is created by hand in Cloudflare Zero Trust.
+      # Until it exists this job would fail on every push to main, so it skips
+      # instead — a red X on unrelated commits trains people to ignore CI.
+      - name: Check deploy credentials
+        id: creds
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+        run: |
+          if [ -z "${COOLIFY_TOKEN}" ] || [ -z "${CF_ACCESS_CLIENT_ID}" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploy skipped — set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to enable it."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Coolify deployment
+        id: trigger
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+          # The dashboard sits behind Cloudflare Access, so a browser login
+          # redirect is what an unauthenticated caller gets. Access issues
+          # service tokens for exactly this case.
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          response=$(curl -sS --fail-with-body --max-time 60 \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=false")
+
+          uuid=$(printf '%s' "$response" | jq -r '.deployments[0].deployment_uuid // empty')
+          if [ -z "$uuid" ]; then
+            echo "Coolify did not return a deployment uuid:" >&2
+            printf '%s\n' "$response" >&2
+            exit 1
+          fi
+
+          echo "deployment_uuid=$uuid" >> "$GITHUB_OUTPUT"
+          echo "Queued deployment $uuid"
+
+      - name: Wait for the deployment to settle
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DEPLOYMENT_UUID: ${{ steps.trigger.outputs.deployment_uuid }}
+        run: |
+          set -euo pipefail
+
+          # Polling rather than a webhook: Coolify has no callback, and the job
+          # has to fail loudly when a build breaks instead of reporting success
+          # for a deployment that never came up.
+          deadline=$(( SECONDS + 2400 ))
+          last=""
+
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            status=$(curl -sS --max-time 30 \
+              -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+              -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+              -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+              "${COOLIFY_URL}/api/v1/deployments/${DEPLOYMENT_UUID}" \
+              | jq -r '.status // "unknown"')
+
+            if [ "$status" != "$last" ]; then
+              echo "$(date -u +%H:%M:%S) $status"
+              last="$status"
+            fi
+
+            case "$status" in
+              finished) echo "Deployment finished."; exit 0 ;;
+              failed)   echo "Deployment failed — see the Coolify deployment log." >&2; exit 1 ;;
+            esac
+
+            sleep 20
+          done
+
+          echo "Timed out waiting for deployment ${DEPLOYMENT_UUID}." >&2
+          exit 1

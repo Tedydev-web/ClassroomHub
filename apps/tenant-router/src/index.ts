@@ -53,6 +53,18 @@ interface Env {
   HLS_SIGNING_SECRET: string;
   /** Optional analytics upstream. Unset disables the first-party PostHog proxy. */
   POSTHOG_UPSTREAM_HOST?: string;
+  /**
+   * Cloudflare Access service token for the upstream origins. Both origins are
+   * ordinary proxied hostnames, so without a policy in front of them a caller can
+   * reach the dashboard and API directly and skip this Worker — and with it the
+   * tenant resolution every request below depends on.
+   *
+   * Optional so the Worker keeps working while the policy is being added or
+   * removed; the origins are only unreachable if a policy exists and these are
+   * unset, which is the one ordering the rollout avoids.
+   */
+  CF_ACCESS_CLIENT_ID?: string;
+  CF_ACCESS_CLIENT_SECRET?: string;
   /** R2 bucket binding for the videos bucket (HLS manifests + segments + audio). */
   VIDEOS_BUCKET: R2Bucket;
   /** R2 bucket binding for static assets (embed scripts under `embeds/`). */
@@ -358,6 +370,16 @@ export default {
     const clientIp = request.headers.get('cf-connecting-ip');
     if (clientIp) {
       upstreamHeaders.set('x-forwarded-for', clientIp);
+    }
+
+    // The incoming headers were copied wholesale, so a caller could otherwise
+    // supply their own Access credentials and have them forwarded. Drop them
+    // first, then attach ours — the origins trust whatever arrives here.
+    upstreamHeaders.delete('CF-Access-Client-Id');
+    upstreamHeaders.delete('CF-Access-Client-Secret');
+    if (env.CF_ACCESS_CLIENT_ID && env.CF_ACCESS_CLIENT_SECRET) {
+      upstreamHeaders.set('CF-Access-Client-Id', env.CF_ACCESS_CLIENT_ID);
+      upstreamHeaders.set('CF-Access-Client-Secret', env.CF_ACCESS_CLIENT_SECRET);
     }
 
     // SvelteKit's immutable chunk filenames include a content hash, so they are

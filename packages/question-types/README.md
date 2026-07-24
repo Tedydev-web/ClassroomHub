@@ -1,6 +1,6 @@
 # @cio/question-types
 
-Shared, framework-agnostic question type contracts for ClassroomIO exercise products.
+Shared, framework-agnostic question type contracts for Classroom Hub exercise products.
 
 This package is the source of truth for:
 
