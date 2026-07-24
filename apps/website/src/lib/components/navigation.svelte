@@ -251,7 +251,7 @@
   <div class="mx-auto flex w-full items-center justify-between gap-20 px-4 py-1 lg:w-[90%] lg:px-0">
     <a href="/" class="shrink-0" aria-label="ClassroomHub home">
       <div class="flex w-full items-center">
-        <img loading="lazy" width="154" height="20" src="/wordmark.svg" alt="ClassroomHub" class="h-5 w-auto" />
+        <img loading="lazy" width="124" height="32" src="/wordmark.svg" alt="ClassroomHub" class="h-8 w-auto" />
         <h1 class="sr-only">ClassroomHub</h1>
       </div>
     </a>
@@ -350,7 +350,7 @@
         class="absolute top-0 right-0 h-screen w-[60%] border-2 bg-white px-3 pt-3 pb-2 sm:block md:w-[40%] md:p-7 lg:hidden"
       >
         <div class="mb-5 flex justify-between py-2">
-          <img loading="lazy" width="144" height="18" src="/wordmark.svg" alt="ClassroomHub" class="h-[18px] w-auto" />
+          <img loading="lazy" width="124" height="32" src="/wordmark.svg" alt="ClassroomHub" class="h-8 w-auto" />
           <button class="mr-5" onclick={handleShowSolutions}>
             <X size={24} />
           </button>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import * as Avatar from '@cio/ui/base/avatar';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { currentOrg } from '$lib/utils/store/org';
   import { Badge } from '@cio/ui/base/badge';
@@ -26,11 +25,7 @@
           rel="noopener noreferrer"
           {...props}
         >
-          <Avatar.Root class="ui:flex ui:size-6 ui:items-center ui:justify-center">
-            <Avatar.Image src="/logo-192.png" alt="ClassroomHub logo" />
-          </Avatar.Root>
-
-          <span class="truncate font-normal">ClassroomHub</span>
+          <img src="/wordmark.svg" alt="ClassroomHub" class="h-7 w-auto max-w-32 object-contain" />
           <Badge variant="outline" class="capitalize">
             {PLAN_NAMES[plan] || plan}
           </Badge>

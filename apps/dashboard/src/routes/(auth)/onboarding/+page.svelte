@@ -12,7 +12,7 @@
   import { GOALS, ONBOARDING_STEPS, SOURCES, DROPDOWN_ITEMS } from '$features/onboarding/utils/constants';
   import type { OnboardingField } from '$features/onboarding/utils/types';
   import { untrack } from 'svelte';
-  import { PRODUCT_NAME, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
+  import { TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
   let fields: OnboardingField = $state({
     fullname: '',
@@ -58,8 +58,7 @@
       <!-- Header With Logo -->
       <div class="flex flex-col items-center">
         <div class="mb-4 flex w-full items-center justify-center">
-          <img src="/logo-192.png" alt={`${PRODUCT_NAME} logo`} height="50" width="50" data-atf="1" />
-          <h4 class="text-xl dark:text-white">{PRODUCT_NAME}</h4>
+          <img src="/wordmark.svg" alt="ClassroomHub" class="h-14 w-auto object-contain" data-atf="1" />
         </div>
 
         <!-- Loggedin Email -->

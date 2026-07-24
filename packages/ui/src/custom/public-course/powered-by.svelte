@@ -66,15 +66,15 @@
       className
     )}
   >
-    <img src="/logo-192.png" class="ui:size-6" alt="ClassroomHub" />
     {label}
     <a
       {href}
       target="_blank"
       rel="noopener noreferrer"
-      class="ui:font-medium ui:text-muted-foreground ui:underline-offset-2 ui:hover:text-foreground ui:underline"
+      class="ui:opacity-80 ui:hover:opacity-100"
+      aria-label={`${label} ${brand}`}
     >
-      {brand}
+      <img src="/wordmark.svg" class="ui:h-7 ui:w-auto" alt={brand} />
     </a>
   </div>
 {/if}

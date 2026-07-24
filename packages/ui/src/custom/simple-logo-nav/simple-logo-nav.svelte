@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
+  import { PRODUCT_HOSTS } from '@cio/utils/constants';
 </script>
 
 <div
@@ -9,10 +9,9 @@
     href={`https://${PRODUCT_HOSTS.marketing}`}
     target="_blank"
     rel="noopener noreferrer"
-    class="ui:flex ui:items-center ui:justify-center ui:gap-2"
+    class="ui:flex ui:items-center ui:justify-center"
   >
-    <img src="/logo-512.png" class="ui:w-7 ui:h-7" alt={`${PRODUCT_NAME} Logo`} />
-    <span class="ui:text-foreground ui:text-md">{PRODUCT_NAME}</span>
+    <img src="/wordmark.svg" class="ui:h-10 ui:w-auto" alt="ClassroomHub" />
   </a>
 
   <p class="ui:text-muted-foreground ui:text-sm">One Platform for Customer, Partner, and Employee Training</p>
