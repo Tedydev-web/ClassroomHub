@@ -5,6 +5,12 @@ import { proxyRequestToApi, shouldForwardToApi } from '$lib/utils/proxy-api-requ
 import { type Handle, type HandleServerError, redirect } from '@sveltejs/kit';
 import { isPublicApiRoute, isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
 import { ROUTE } from '$lib/utils/constants/routes';
+import {
+  memberSiteNames,
+  pickHomeSiteName,
+  resolveTenantHostRedirect
+} from '$lib/utils/functions/tenant-host-redirect';
+import { PRODUCT_HOSTS, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const err = error as Error;
@@ -89,6 +95,33 @@ const handlePagesRoutes: Handle = async ({ event, resolve }) => {
       : ROUTE.LOGIN;
 
     return redirect(303, redirectPath);
+  }
+
+  // Host-authoritative tenancy (dark-launched behind ENFORCE_TENANT_HOST): send
+  // an authenticated request to the host that matches its tenant, so a session
+  // never forms on the wrong one. The decision is a pure, exhaustively tested
+  // function; everything here is just gathering its inputs. Only runs past the
+  // public-route and auth gates above, so invites and login are already exempt.
+  const organizations = event.locals?.organizations ?? [];
+  const tenantRedirect = resolveTenantHostRedirect({
+    enabled: process.env.ENFORCE_TENANT_HOST === 'true',
+    hostname: event.url.hostname,
+    pathAndSearch: pathname + event.url.search,
+    isAuthenticated: Boolean(event.locals?.user),
+    isPublicPath: isPublicRoute(pathname),
+    userEmail: event.locals?.user?.email ?? null,
+    memberSiteNames: memberSiteNames(organizations),
+    homeSiteName: pickHomeSiteName(organizations),
+    platformAdminEmails: (process.env.PLATFORM_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean),
+    hubHost: PRODUCT_HOSTS.dashboard,
+    tenantRoot: TENANT_ROOT_DOMAIN
+  });
+
+  if (tenantRedirect) {
+    return redirect(303, tenantRedirect.location);
   }
 
   return resolve(event);

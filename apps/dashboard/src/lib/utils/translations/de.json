@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Zum Dashboard",
       "messages": {
         "email_mismatch": "Sie sind mit einer anderen E-Mail-Adresse als dieser Einladung angemeldet.",
+        "switch_account": "Abmelden und fortfahren",
         "expired": "Dieser Einladungslink ist abgelaufen.",
         "revoked": "Dieser Einladungslink wurde widerrufen.",
         "accepted": "Diese Einladung wurde bereits verwendet.",

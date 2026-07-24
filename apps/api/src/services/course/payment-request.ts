@@ -5,7 +5,7 @@ import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
-import { getAppBaseUrl } from '@cio/core/config/dashboard-url';
+import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { emitWebhookEvent } from '@api/services/webhook';
 
 export interface PaymentRequestData {
@@ -49,7 +49,12 @@ export async function createPaymentRequest(data: PaymentRequestData) {
 
     const teacherEmail = teacherResult[0].email;
 
-    const appBaseUrl = getAppBaseUrl();
+    // The teacher grants access on their org's own site, not the operator host.
+    const appBaseUrl = getDashboardBaseUrl({
+      siteName: course.orgSiteName,
+      customDomain: course.orgCustomDomain,
+      isCustomDomainVerified: course.orgIsCustomDomainVerified
+    });
     const courseUrl = `${appBaseUrl}/courses/${data.courseId}`;
     const autoEnrollUrl = `${appBaseUrl}/courses/${data.courseId}/people?grantAccess=${encodeURIComponent(data.studentEmail)}`;
 

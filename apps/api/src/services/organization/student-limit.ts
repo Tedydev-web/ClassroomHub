@@ -33,7 +33,13 @@ async function notifyStudentMilestone(
 
   const admins = await getOrganizationAdminEmails(orgId);
   if (admins.length) {
-    const upgradeUrl = `${getDashboardBaseUrl()}/org/${org.siteName}?upgrade=true`;
+    // Org admins upgrade on their own org site, not the operator console.
+    const orgBaseUrl = getDashboardBaseUrl({
+      siteName: org.siteName,
+      customDomain: org.customDomain,
+      isCustomDomainVerified: org.isCustomDomainVerified
+    });
+    const upgradeUrl = `${orgBaseUrl}/org/${org.siteName}?upgrade=true`;
     const template = milestone === 'reached' ? 'studentLimitReached' : 'studentLimitApproaching';
 
     await enqueueTransactionalEmail(template, {

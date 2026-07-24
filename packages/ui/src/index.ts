@@ -65,6 +65,7 @@ export * as ImageCropper from './custom/image-cropper';
 export { Chip } from './custom/chip';
 export { IconButton } from './custom/icon-button';
 export { TextareaField } from './custom/textarea-field';
+export { EmailTagsField, isValidEmail } from './custom/email-tags-field';
 export { CheckboxField } from './custom/checkbox-field';
 export { RadioItem } from './custom/radio-item';
 export { RadioOptionCard, RadioOptionCardGroup, type RadioOptionCardOption } from './custom/radio-option-card';

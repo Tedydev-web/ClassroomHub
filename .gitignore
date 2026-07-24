@@ -106,3 +106,7 @@ apps/db-agent
 
 # Fumadocs generated output (docs site migrated to Blume)
 apps/docs/.source/
+!apps/api/src/__tests__/dashboard-base-url.test.ts
+
+# Keep the host-authoritative tenant-routing coverage even when a global ignore excludes test files.
+!apps/dashboard/src/lib/utils/functions/tenant-host-redirect.test.ts

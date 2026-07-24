@@ -445,8 +445,9 @@ Rule of thumb: if the recipient is being addressed **as a ClassroomHub customer*
 Links embedded in transactional emails must use the correct dashboard host. Templates only receive pre-built URLs — callers build them in API services before `enqueueTransactionalEmail`. See `packages/email/README.md` § Email link URLs.
 
 
-- **Teacher/tutor/admin dashboard actions** (course management, grading, team invites, auto-enroll): build URLs with `getAppBaseUrl()` from `@cio/core/config/dashboard-url`. This resolves to the configured ClassroomHub admin app (`classroom-app.tedydev.io.vn` by default, or `DASHBOARD_ORIGIN` / localhost in dev). Do **not** pass org `customDomain` or tenant `siteName` — staff sign in on the admin app, not the org public site.
-- **Student/learner-facing links** (course enroll, org audience invites, login): build URLs with `getDashboardBaseUrl(org)` so links land on the org's public site (verified custom domain, tenant subdomain, or platform fallback).
+- **Every org-scoped link — learners AND staff** (invites, enroll, login, grading, team invites, course management, auto-enroll): build URLs with `getDashboardBaseUrl(org)` from `@cio/core/config/dashboard-url`, passing the org's `siteName`/`customDomain`/`isCustomDomainVerified`. An org's people all work on that org's own site (verified custom domain or `<siteName>.<root>` tenant subdomain), not the platform host.
+- **Platform / super-admin links only** (no single org): build URLs with `getAppBaseUrl()`, which resolves to the operator console (`hub.<root>`, or `DASHBOARD_ORIGIN` / localhost in dev). Do **not** use this for anything scoped to one org.
+- **Why it matters:** the app serves every route on every host and auth cookies are host-only, so the host a link opens on is where the recipient's session forms. An org link on the platform host — or a platform link on a tenant — puts a session on the wrong domain. This is a security boundary, not a cosmetic preference.
 
 ## Best Practices Summary
 

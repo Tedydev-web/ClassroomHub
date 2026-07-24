@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MultiSelectList } from '@cio/ui';
-  import { TextareaField } from '@cio/ui/custom/textarea-field';
+  import { EmailTagsField, isValidEmail } from '@cio/ui/custom/email-tags-field';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import { Label } from '@cio/ui/base/label';
   import { t } from '$lib/utils/functions/translations';
@@ -28,7 +28,7 @@
 
   let { courses, cohorts }: Props = $props();
 
-  let recipientCsv = $state('');
+  let emails = $state<string[]>([]);
   let courseAccessMode = $state('none');
   let cohortAccessMode = $state('none');
   let selectedCourseIds = new SvelteSet<string>();
@@ -57,8 +57,14 @@
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
-    if (!recipientCsv.trim()) {
+    if (!emails.length) {
       snackbar.error('audience.import.snackbar_no_emails');
+      return;
+    }
+
+    // Block submit while any chip is an invalid email (flagged red in the field)
+    if (emails.some((email) => !isValidEmail(email))) {
+      snackbar.error('validations.email.not_valid');
       return;
     }
 
@@ -66,7 +72,7 @@
 
     try {
       const result = await orgApi.importAudienceMembers({
-        recipientCsv,
+        recipientCsv: emails.join(','),
         allCourses: courseAccessMode === 'all',
         allCohorts: cohortAccessMode === 'all',
         courseIds: courseAccessMode === 'select' ? [...selectedCourseIds] : undefined,
@@ -88,10 +94,9 @@
 <form id="import-audience-form" class="space-y-6" onsubmit={handleSubmit}>
   <p class="ui:text-muted-foreground text-sm">{$t('audience.import.description')}</p>
 
-  <TextareaField
+  <EmailTagsField
     label={$t('audience.import.emails_label')}
-    bind:value={recipientCsv}
-    rows={6}
+    bind:emails
     className="w-full"
     placeholder={$t('audience.import.emails_placeholder')}
   />

@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Ir al panel",
       "messages": {
         "email_mismatch": "Has iniciado sesión con un correo electrónico diferente al de esta invitación.",
+        "switch_account": "Cerrar sesión y continuar",
         "expired": "Este enlace de invitación ha caducado.",
         "revoked": "Este enlace de invitación ha sido revocado.",
         "accepted": "Esta invitación ya ha sido utilizada.",

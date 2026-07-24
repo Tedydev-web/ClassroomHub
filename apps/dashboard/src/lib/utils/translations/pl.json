@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Przejdź do panelu",
       "messages": {
         "email_mismatch": "Jesteś zalogowany przy użyciu innego adresu e-mail niż to zaproszenie.",
+        "switch_account": "Wyloguj się i kontynuuj",
         "expired": "Ten link z zaproszeniem wygasł.",
         "revoked": "Ten link z zaproszeniem został odwołany.",
         "accepted": "To zaproszenie zostało już wykorzystane.",

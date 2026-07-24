@@ -8,6 +8,7 @@
   import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { globalStore } from '$lib/utils/store/app';
   import { currentOrg, isFreePlan } from '$lib/utils/store/org';
+  import { isGoogleAuthConfigured } from '$lib/utils/deployment';
   import { authClient } from '$lib/utils/services/auth/client';
   import * as Field from '@cio/ui/base/field';
   import { Input } from '@cio/ui/base/input';
@@ -54,8 +55,9 @@
   const inviteOnly = $derived(!!org?.settings?.signup?.inviteOnly);
   const signupRestricted = $derived($globalStore.isOrgSite && (org.disableSignup || (inviteOnly && !hasInviteContext)));
 
-  // Hide Google Auth if disabled for org
-  const hideGoogleAuth = $derived(!!($globalStore.isOrgSite && org.disableGoogleAuth));
+  // Hide the Google button when the platform has no Google OAuth configured, or
+  // when this org turned it off. Either way the button would otherwise dead-end.
+  const hideGoogleAuth = $derived(!isGoogleAuthConfigured || !!($globalStore.isOrgSite && org.disableGoogleAuth));
 
   // Check if signup is disabled
   onMount(() => {

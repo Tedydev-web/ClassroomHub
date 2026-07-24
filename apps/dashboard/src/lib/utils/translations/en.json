@@ -4530,6 +4530,7 @@
       "go_to_dashboard": "Go to Dashboard",
       "messages": {
         "email_mismatch": "You are logged in with a different email from this invite.",
+        "switch_account": "Sign out and continue",
         "expired": "This invite link has expired.",
         "revoked": "This invite link has been revoked.",
         "accepted": "This invite has already been used.",

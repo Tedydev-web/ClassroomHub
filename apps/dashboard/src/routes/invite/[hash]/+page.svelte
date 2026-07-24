@@ -5,6 +5,7 @@
   import { Button } from '@cio/ui/base/button';
   import { AuthUI } from '$features/ui';
   import { currentOrg, mergeAccountOrgFromServer } from '$lib/utils/store/org';
+  import { logout } from '$lib/utils/functions/logout';
   import { setTheme } from '$lib/utils/functions/theme';
   import { classroomhub } from '$lib/utils/services/api';
   import { profile } from '$lib/utils/store/user';
@@ -37,7 +38,16 @@
     return parts.join('&');
   }
 
-  const loginParams = $derived(buildInviteAuthParams(page.url?.pathname || '', data.invite?.invite?.email || ''));
+  // Identifier-first routing: the server tells us whether the invited email
+  // already has an account, so we send the visitor straight to the correct
+  // auth screen (login for existing, signup for new) with the email locked and
+  // a redirect back to this invite — no manual login/signup guessing.
+  const emailHasAccount = $derived(Boolean(data.invite?.invite?.emailHasAccount));
+
+  function inviteAuthUrl(): string {
+    const qs = buildInviteAuthParams(page.url?.pathname || '', data.invite?.invite?.email || '');
+    return `${emailHasAccount ? '/login' : '/signup'}?${qs}`;
+  }
 
   const orgName = $derived(data.invite?.organization?.name ?? '');
   const inviteRoleId = $derived(data.invite?.invite?.roleId ?? 0);
@@ -69,8 +79,7 @@
     }
 
     if (!$profile.id || !$profile.email) {
-      const qs = buildInviteAuthParams(page.url?.pathname || '', data.invite?.invite?.email || '');
-      return goto(resolve(`/signup?${qs}`, {}));
+      return goto(resolve(inviteAuthUrl(), {}));
     }
 
     if (isInviteEmailMismatch) {
@@ -108,6 +117,22 @@
       return goto(resolve('/lms', {}));
     }
     return goto(resolve(orgSlug ? `/org/${orgSlug}` : '/org', {}));
+  }
+
+  // Email mismatch recovery: the visitor is signed in with a different account
+  // than the one this invite targets. Sign them out, then send them to the
+  // right auth screen for the invited email (login if it already has an
+  // account, signup if not), redirecting back to this invite once authenticated.
+  async function handleSwitchAccount() {
+    loading = true;
+    try {
+      await logout(false);
+    } catch (error) {
+      console.error('Failed to sign out before switching account', error);
+    }
+
+    // Hard navigation so the auth page loads with a clean state after sign-out.
+    window.location.href = inviteAuthUrl();
   }
 
   onMount(async () => {
@@ -156,14 +181,14 @@
           {$t('invite.organization.go_to_dashboard')}
         {/if}
       </Button>
+    {:else if isInviteEmailMismatch}
+      <Button type="button" onclick={handleSwitchAccount} disabled={loading} {loading}>
+        {$t('invite.organization.messages.switch_account')}
+      </Button>
     {:else}
       <Button type="submit" disabled={!canJoinOrganization || loading} {loading}>
         {$t('invite.organization.accept_button')}
       </Button>
     {/if}
-    <p class="ui:text-muted-foreground text-center text-sm">
-      {$t('login.already_have_account')}
-      <a class="ui:text-primary hover:underline" href={resolve(`/login?${loginParams}`, {})}> {$t('login.login')}</a>
-    </p>
   </div>
 </AuthUI>

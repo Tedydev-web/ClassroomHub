@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Gå til dashboard",
       "messages": {
         "email_mismatch": "Du er logget ind med en anden e-mail end denne invitation.",
+        "switch_account": "Log ud og fortsæt",
         "expired": "Dette invitationslink er udløbet.",
         "revoked": "Dette invitationslink er blevet tilbagekaldt.",
         "accepted": "Denne invitation er allerede blevet brugt.",

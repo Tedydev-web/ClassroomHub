@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Ir para o painel",
       "messages": {
         "email_mismatch": "Você está conectado com um e-mail diferente deste convite.",
+        "switch_account": "Sair e continuar",
         "expired": "Este link de convite expirou.",
         "revoked": "Este link de convite foi revogado.",
         "accepted": "Este convite já foi usado.",

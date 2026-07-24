@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Aller au tableau de bord",
       "messages": {
         "email_mismatch": "Vous êtes connecté avec un e-mail différent de celui de cette invitation.",
+        "switch_account": "Se déconnecter et continuer",
         "expired": "Ce lien d'invitation a expiré.",
         "revoked": "Ce lien d'invitation a été révoqué.",
         "accepted": "Cette invitation a déjà été utilisée.",

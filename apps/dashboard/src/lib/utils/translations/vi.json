@@ -4081,6 +4081,7 @@
       "go_to_dashboard": "Đi tới bảng điều khiển",
       "messages": {
         "email_mismatch": "Bạn đã đăng nhập bằng một email khác với lời mời này.",
+        "switch_account": "Đăng xuất và tiếp tục",
         "expired": "Liên kết mời này đã hết hạn.",
         "revoked": "Liên kết mời này đã bị thu hồi.",
         "accepted": "Lời mời này đã được sử dụng.",
