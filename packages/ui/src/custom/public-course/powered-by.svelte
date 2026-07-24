@@ -74,7 +74,7 @@
       class="ui:opacity-80 ui:hover:opacity-100"
       aria-label={`${label} ${brand}`}
     >
-      <img src="/wordmark.svg" class="ui:h-7 ui:w-auto" alt={brand} />
+      <img src="/wordmark.svg" class="ui:h-9 ui:w-auto" alt={brand} />
     </a>
   </div>
 {/if}

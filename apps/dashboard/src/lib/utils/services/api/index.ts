@@ -8,7 +8,7 @@ import { get } from 'svelte/store';
 import { currentOrg } from '$lib/utils/store/org';
 import type { Cookies } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
-import { getCioCookieString } from '$lib/utils/functions/cookies';
+import { getCioCookieString, getClientOrgIdFromCookie } from '$lib/utils/functions/cookies';
 import { CIO_ENVELOPE_CONTENT_TYPE } from '@cio/utils/constants';
 
 export const getRequestBaseUrl = () => {
@@ -118,10 +118,13 @@ class ApiClient {
       headers.set('Accept', 'application/json');
     }
 
-    // Add organization ID header if available
-    const org = get(currentOrg);
-    if (org?.id) {
-      headers.set('cio-org-id', org.id);
+    // Add organization ID header if available. Prefer the hydrated store; fall
+    // back to the org-scoped cookie so early client calls (e.g. notifications in
+    // the header, mounted before the layout hydrates the store) still carry org
+    // context instead of failing with ORG_ID_REQUIRED.
+    const orgId = get(currentOrg)?.id || getClientOrgIdFromCookie();
+    if (orgId) {
+      headers.set('cio-org-id', orgId);
     }
 
     // Handle body serialization and content-type

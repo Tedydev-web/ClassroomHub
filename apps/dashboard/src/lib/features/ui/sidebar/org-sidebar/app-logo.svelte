@@ -1,11 +1,8 @@
 <script lang="ts">
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { currentOrg } from '$lib/utils/store/org';
-  import { Badge } from '@cio/ui/base/badge';
-  import { PLAN_NAMES, PLAN } from '@cio/utils/plans';
   import { BRAND_ROOT_DOMAIN, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
-  const plan = $derived($currentOrg.plans?.[0]?.planName || PLAN.BASIC);
   const utmSource = $derived(
     $currentOrg.customDomain ||
       ($currentOrg.siteName ? `${$currentOrg.siteName}.${TENANT_ROOT_DOMAIN}` : BRAND_ROOT_DOMAIN)
@@ -25,10 +22,7 @@
           rel="noopener noreferrer"
           {...props}
         >
-          <img src="/wordmark.svg" alt="ClassroomHub" class="h-7 w-auto max-w-32 object-contain" />
-          <Badge variant="outline" class="capitalize">
-            {PLAN_NAMES[plan] || plan}
-          </Badge>
+          <img src="/wordmark.svg" alt="ClassroomHub" class="h-9 w-auto max-w-44 object-contain" />
         </a>
       {/snippet}
     </Sidebar.MenuButton>

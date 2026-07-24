@@ -57,7 +57,7 @@
       {#if !showOnlyLogo}
         {$t('course.navItem.landing_page.powered_by')}
       {/if}
-      <img src="/wordmark.svg" alt={PRODUCT_NAME} class="h-7 w-auto" />
+      <img src="/wordmark.svg" alt={PRODUCT_NAME} class="h-9 w-auto" />
     </span>
   </a>
 {/if}

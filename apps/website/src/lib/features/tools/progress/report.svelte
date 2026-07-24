@@ -128,7 +128,7 @@
       style="display: flex;"
       class="bottom-5 mx-auto mt-20 flex w-[50%] items-center justify-center gap-1 rounded-md border bg-white px-2 py-1"
     >
-      <img src="/wordmark.svg" alt="ClassroomHub" class="h-6 w-auto" />
+      <img src="/wordmark.svg" alt="ClassroomHub" class="h-8 w-auto" />
     </div>
     <!--  -->
   </div>

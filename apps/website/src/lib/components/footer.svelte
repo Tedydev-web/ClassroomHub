@@ -57,7 +57,7 @@
   <div class="relative z-10 flex flex-col gap-10 lg:flex-row lg:justify-between">
     <!-- Brand -->
     <div class="flex flex-col gap-4 lg:max-w-[220px]">
-      <img width="155" height="40" loading="lazy" src="/wordmark.svg" alt="ClassroomHub" class="h-10 w-auto" />
+      <img width="155" height="40" loading="lazy" src="/wordmark.svg" alt="ClassroomHub" class="h-12 w-auto" />
       <p class="ui:text-muted-foreground text-sm leading-6">
         The Open Source LMS for compliance training and certification programs.
       </p>

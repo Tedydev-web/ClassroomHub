@@ -58,7 +58,7 @@
       <!-- Header With Logo -->
       <div class="flex flex-col items-center">
         <div class="mb-4 flex w-full items-center justify-center">
-          <img src="/wordmark.svg" alt="ClassroomHub" class="h-14 w-auto object-contain" data-atf="1" />
+          <img src="/wordmark.svg" alt="ClassroomHub" class="h-16 w-auto object-contain" data-atf="1" />
         </div>
 
         <!-- Loggedin Email -->

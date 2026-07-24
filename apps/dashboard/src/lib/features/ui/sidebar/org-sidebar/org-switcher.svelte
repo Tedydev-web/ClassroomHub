@@ -73,7 +73,6 @@
             </Avatar.Root>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-normal">{$currentOrg.name}</span>
-              <span class="truncate text-xs">{$currentOrg.plans?.[0]?.planName || 'Free'}</span>
             </div>
           {:else}
             <Skeleton class="h-full w-full" />
@@ -172,9 +171,6 @@
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-normal">
                     {$currentOrg.name}
-                  </span>
-                  <span class="truncate text-xs">
-                    {$currentOrg.plans?.[0]?.planName || 'Free'}
                   </span>
                 </div>
                 <ChevronsUpDownIcon class="ml-auto" />
