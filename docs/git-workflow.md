@@ -4,8 +4,8 @@ This fork uses a lightweight trunk-based workflow. `main` is the only long-lived
 
 ## Repository topology
 
-- `origin`: the product repository, `Tedydev-web/classroomio`.
-- `upstream`: the fetch-only source repository, `classroomio/classroomio`.
+- `origin`: the product repository, `Tedydev-web/classroomhub`.
+- `upstream`: the fetch-only source repository, `classroomhub/classroomhub`.
 - `main`: the protected integration and release branch.
 
 Never push to `upstream`. Never develop directly on `main`.
@@ -52,13 +52,13 @@ Each concurrent agent gets its own branch and worktree. Agents must not share a 
 
 ```bash
 git fetch origin
-git worktree add ..\classroomio-worktrees\agent-scope -b agent/scope origin/main
+git worktree add ..\classroomhub-worktrees\agent-scope -b agent/scope origin/main
 ```
 
 The agent commits only its owned files. Review and integrate that commit through a normal feature branch or pull request. Remove the worktree only after its changes are committed or deliberately discarded:
 
 ```bash
-git worktree remove ..\classroomio-worktrees\agent-scope
+git worktree remove ..\classroomhub-worktrees\agent-scope
 git branch -d agent/scope
 ```
 
@@ -82,7 +82,7 @@ Resolve conflicts in favor of current product decisions for infrastructure, bran
 Push the resolved branch and merge its pull request with a merge commit:
 
 ```bash
-git commit -m "merge: sync upstream classroomio"
+git commit -m "merge: sync upstream classroomhub"
 git push -u origin sync/upstream-YYYY-MM-DD
 ```
 

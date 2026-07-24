@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 
 import { snackbar } from '$features/ui/snackbar/store';
 import type {
@@ -25,7 +25,7 @@ export class QuizApi extends BaseApiWithErrors {
   async list(orgId: string) {
     await this.execute<QuizListRequest>({
       requestFn: () =>
-        classroomio.organization[':orgId'].quiz.$get({
+        classroomhub.organization[':orgId'].quiz.$get({
           param: { orgId }
         }),
       logContext: 'listing quizzes',
@@ -48,7 +48,7 @@ export class QuizApi extends BaseApiWithErrors {
   async get(orgId: string, quizId: string) {
     await this.execute<QuizGetRequest>({
       requestFn: () =>
-        classroomio.organization[':orgId'].quiz[':quizId'].$get({
+        classroomhub.organization[':orgId'].quiz[':quizId'].$get({
           param: { orgId, quizId }
         }),
       logContext: 'fetching quiz',
@@ -71,7 +71,7 @@ export class QuizApi extends BaseApiWithErrors {
   async create(orgId: string, data: QuizCreateData) {
     await this.execute<QuizCreateRequest>({
       requestFn: () =>
-        classroomio.organization[':orgId'].quiz.$post({
+        classroomhub.organization[':orgId'].quiz.$post({
           param: { orgId },
           json: data
         }),
@@ -97,7 +97,7 @@ export class QuizApi extends BaseApiWithErrors {
   async update(orgId: string, quizId: string, data: QuizUpdateData) {
     await this.execute<QuizUpdateRequest>({
       requestFn: () =>
-        classroomio.organization[':orgId'].quiz[':quizId'].$put({
+        classroomhub.organization[':orgId'].quiz[':quizId'].$put({
           param: { orgId, quizId },
           json: data
         }),
@@ -124,7 +124,7 @@ export class QuizApi extends BaseApiWithErrors {
   async delete(orgId: string, quizId: string) {
     await this.execute<QuizDeleteRequest>({
       requestFn: () =>
-        classroomio.organization[':orgId'].quiz[':quizId'].$delete({
+        classroomhub.organization[':orgId'].quiz[':quizId'].$delete({
           param: { orgId, quizId }
         }),
       logContext: 'deleting quiz',

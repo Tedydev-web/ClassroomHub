@@ -1,5 +1,5 @@
 import type { ListSubmissionsForGradingSuccess } from '$features/course/utils/types';
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 import { getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
@@ -15,7 +15,7 @@ export const load = async ({ params, cookies }) => {
   }
 
   const result = await safeServerApi<ListSubmissionsForGradingSuccess>(() =>
-    classroomio.course[':courseId'].submission['for-grading'].$get(
+    classroomhub.course[':courseId'].submission['for-grading'].$get(
       {
         param: { courseId }
       },

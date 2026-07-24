@@ -9,7 +9,7 @@
   import * as Tooltip from '@cio/ui/base/tooltip';
   import InfoIcon from '@lucide/svelte/icons/info';
   import { toast } from '@cio/ui/base/sonner';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { t } from '$lib/utils/functions/translations';
   import { getBrowserTimezone, instantToZonedWallClock, zonedWallClockToInstant } from '$lib/utils/functions/date';
   import { getVideoTitle, type LessonVideo } from './video/video-card-utils';
@@ -133,7 +133,7 @@
     if (!courseId || !lessonId) return;
 
     try {
-      await classroomio.course[':courseId'].lesson[':lessonId']['notify-session-update'].$post({
+      await classroomhub.course[':courseId'].lesson[':lessonId']['notify-session-update'].$post({
         param: { courseId, lessonId }
       });
       toast.success(t.get('course.navItem.lessons.session.notified'));

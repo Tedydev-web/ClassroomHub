@@ -92,15 +92,15 @@ export function buildManagedEnvMaps({
       : `:${dashboardPublicPort}`;
   const dashboardPublicUrl = `${publicProtocol}://${publicHost}${dashboardPortSuffix}`;
   const redirectHost = environment.DEV_REDIRECT_HOST ?? '';
-  const databaseUrl = `postgresql://postgres:postgres@localhost:${postgresPort}/classroomio`;
+  const databaseUrl = `postgresql://postgres:postgres@localhost:${postgresPort}/classroomhub`;
   const redisUrl = `redis://localhost:${redisPort}`;
   const minioEndpoint = `http://localhost:${minioApiPort}`;
   const objectStoragePublicUrl = environment.DEV_OBJECT_STORAGE_PUBLIC_URL ?? minioEndpoint;
   const objectStorage = new Map([
     ['OBJECT_STORAGE_ENDPOINT', managedValue(minioEndpoint)],
     ['OBJECT_STORAGE_PUBLIC_ENDPOINT', managedValue(objectStoragePublicUrl)],
-    ['OBJECT_STORAGE_ACCESS_KEY_ID', managedValue('classroomio')],
-    ['OBJECT_STORAGE_SECRET_ACCESS_KEY', managedValue('classroomio-dev-only')],
+    ['OBJECT_STORAGE_ACCESS_KEY_ID', managedValue('classroomhub')],
+    ['OBJECT_STORAGE_SECRET_ACCESS_KEY', managedValue('classroomhub-dev-only')],
     ['OBJECT_STORAGE_FORCE_PATH_STYLE', managedValue('true')],
     ['OBJECT_STORAGE_BUCKET_VIDEOS', managedValue('videos')],
     ['OBJECT_STORAGE_BUCKET_DOCUMENTS', managedValue('documents')],

@@ -1,6 +1,6 @@
 # New Engineer Onboarding Checklist
 
-Welcome! This guide will walk you through every major feature in ClassroomIO so you
+Welcome! This guide will walk you through every major feature in ClassroomHub so you
 build a mental model of how the platform works. Work through each section in order.
 By the end you will have touched every core surface of the product.
 
@@ -30,12 +30,12 @@ Open these pages in a new tab so you understand the product before clicking arou
 
 | Topic | Link |
 |---|---|
-| What is ClassroomIO | https://classroomio.com/docs |
-| Terminology | https://classroomio.com/docs/terminology |
-| Quickstart | https://classroomio.com/docs/quickstart/signup |
-| Course Types | https://classroomio.com/docs/build-a-course/course-types |
-| Organization | https://classroomio.com/docs/core-features/organization |
-| Student Dashboard | https://classroomio.com/docs/core-features/student-dashboard |
+| What is ClassroomHub | https://classroom.io.vn/docs |
+| Terminology | https://classroom.io.vn/docs/terminology |
+| Quickstart | https://classroom.io.vn/docs/quickstart/signup |
+| Course Types | https://classroom.io.vn/docs/build-a-course/course-types |
+| Organization | https://classroom.io.vn/docs/core-features/organization |
+| Student Dashboard | https://classroom.io.vn/docs/core-features/student-dashboard |
 
 ### Explore the dashboard
 
@@ -51,7 +51,7 @@ Open these pages in a new tab so you understand the product before clicking arou
 ## Part 2 — Courses
 
 Create one course for each course type. For each course, follow the
-[Create First Course](https://classroomio.com/docs/get-started/create-first-course) guide,
+[Create First Course](https://classroom.io.vn/docs/get-started/create-first-course) guide,
 then complete the type-specific checklist below.
 
 ### 2.1 Self-Paced Course
@@ -342,12 +342,12 @@ Pick whichever agent you normally use. Add the MCP server using the key you just
 <summary>Claude Code</summary>
 
 ```bash
-claude mcp add-json classroomio '{
+claude mcp add-json classroomhub '{
   "command": "npx",
-  "args": ["-y", "@classroomio/mcp"],
+  "args": ["-y", "@classroomhub/mcp"],
   "env": {
-    "CLASSROOMIO_API_URL": "http://localhost:3002",
-    "CLASSROOMIO_API_KEY": "<your-key-here>"
+    "CLASSROOMHUB_API_URL": "http://localhost:3002",
+    "CLASSROOMHUB_API_KEY": "<your-key-here>"
   }
 }'
 ```
@@ -362,12 +362,12 @@ Add to `~/.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "classroomio": {
+    "classroomhub": {
       "command": "npx",
-      "args": ["-y", "@classroomio/mcp"],
+      "args": ["-y", "@classroomhub/mcp"],
       "env": {
-        "CLASSROOMIO_API_URL": "http://localhost:3002",
-        "CLASSROOMIO_API_KEY": "<your-key-here>"
+        "CLASSROOMHUB_API_URL": "http://localhost:3002",
+        "CLASSROOMHUB_API_KEY": "<your-key-here>"
       }
     }
   }
@@ -384,13 +384,13 @@ Add to your `opencode.json`:
 ```json
 {
   "mcp": {
-    "classroomio": {
+    "classroomhub": {
       "type": "local",
-      "command": ["npx", "-y", "@classroomio/mcp"],
+      "command": ["npx", "-y", "@classroomhub/mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOMIO_API_URL": "http://localhost:3002",
-        "CLASSROOMIO_API_KEY": "<your-key-here>"
+        "CLASSROOMHUB_API_URL": "http://localhost:3002",
+        "CLASSROOMHUB_API_KEY": "<your-key-here>"
       }
     }
   }
@@ -476,10 +476,10 @@ student-side testing. This keeps the admin session clean.
 
 | Topic | Link |
 |---|---|
-| Student Dashboard | https://classroomio.com/docs/core-features/student-dashboard |
-| Course Enrollment | https://classroomio.com/docs/enrollment-and-students/course-enrollment |
-| Welcome Email | https://classroomio.com/docs/enrollment-and-students/welcome-email |
-| Invite Students | https://classroomio.com/docs/enrollment-and-students/invite-students |
+| Student Dashboard | https://classroom.io.vn/docs/core-features/student-dashboard |
+| Course Enrollment | https://classroom.io.vn/docs/enrollment-and-students/course-enrollment |
+| Welcome Email | https://classroom.io.vn/docs/enrollment-and-students/welcome-email |
+| Invite Students | https://classroom.io.vn/docs/enrollment-and-students/invite-students |
 
 ### LMS Checklist
 
@@ -539,5 +539,5 @@ To visit a specific org's public catalog: `http://localhost:5173/?org=<siteName>
 ## Done?
 
 Once you have checked every box above, you will have hands-on experience with every
-core feature in ClassroomIO. If you find something that feels broken or confusing, open
+core feature in ClassroomHub. If you find something that feels broken or confusing, open
 an issue — fresh eyes are the best QA.

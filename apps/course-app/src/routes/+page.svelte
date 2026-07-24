@@ -20,43 +20,43 @@
       name: 'Bootcamps',
       image: '/assets/templates/bootcamp-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'Cal',
       image: '/assets/templates/cal-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'Classic',
       image: '/assets/templates/classic-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'Examprep',
       image: '/assets/templates/examprep-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'Minimal',
       image: '/assets/templates/minimal-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'PostHog',
       image: '/assets/templates/posthog-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     },
     {
       name: 'Webflow',
       image: '/assets/templates/webflow-template.png',
       url: '#templates',
-      github: 'https://github.com/Tedydev-web/classroomio'
+      github: 'https://github.com/Tedydev-web/classroomhub'
     }
   ];
 
@@ -251,7 +251,7 @@
 <section class="my-10 w-full">
   <div class="">
     <p class="text-center text-sm text-neutral-500">
-      Made with ❤️ by <a href="https://github.com/Tedydev-web/classroomio" target="_blank" rel="noopener noreferrer">
+      Made with ❤️ by <a href="https://github.com/Tedydev-web/classroomhub" target="_blank" rel="noopener noreferrer">
         ClassroomHub
       </a>
     </p>

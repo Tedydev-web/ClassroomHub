@@ -99,7 +99,7 @@ export function getAutomationSetupSecret(secret: string | null) {
 export function getClaudeCodeSnippet(secret: string | null) {
   const apiKey = getAutomationSetupSecret(secret);
 
-  return `claude mcp add-json classroomio '{
+  return `claude mcp add-json classroomhub '{
   "command": "npx",
   "args": ["-y", "@tedydev/classroom-mcp"],
   "env": {
@@ -112,7 +112,7 @@ export function getClaudeCodeSnippet(secret: string | null) {
 export function getCodexSnippet(secret: string | null) {
   const apiKey = getAutomationSetupSecret(secret);
 
-  return `codex mcp add classroomio \\
+  return `codex mcp add classroomhub \\
   --env CLASSROOM_API_URL=https://classroom-api.tedydev.io.vn \\
   --env CLASSROOM_API_KEY=${apiKey} \\
   -- npx -y @tedydev/classroom-mcp`;
@@ -124,7 +124,7 @@ export function getOpenCodeSnippet(secret: string | null) {
   return `{
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "classroomio": {
+    "classroomhub": {
       "type": "local",
       "command": ["npx", "-y", "@tedydev/classroom-mcp"],
       "enabled": true,
@@ -142,7 +142,7 @@ export function getCursorSnippet(secret: string | null) {
 
   return `{
   "mcpServers": {
-    "classroomio": {
+    "classroomhub": {
       "command": "npx",
       "args": ["-y", "@tedydev/classroom-mcp"],
       "env": {

@@ -1,12 +1,12 @@
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type UpdateProfileRequest = typeof classroomio.account.profile.$put;
+export type UpdateProfileRequest = typeof classroomhub.account.profile.$put;
 export type UpdateProfileSuccess = Extract<InferResponseType<UpdateProfileRequest>, { success: true }>;
 export type UpdateProfileResponseProfile = UpdateProfileSuccess['profile'];
 
-export type GetUsageRequest = typeof classroomio.agent.usage.$get;
-export type GetPurchasedRequest = (typeof classroomio.agent.usage)['purchased']['$get'];
-export type GetLeaderboardRequest = (typeof classroomio.agent.usage)['leaderboard']['$get'];
+export type GetUsageRequest = typeof classroomhub.agent.usage.$get;
+export type GetPurchasedRequest = (typeof classroomhub.agent.usage)['purchased']['$get'];
+export type GetLeaderboardRequest = (typeof classroomhub.agent.usage)['leaderboard']['$get'];
 
 type GetUsageSuccess = Extract<InferResponseType<GetUsageRequest>, { success: true }>;
 type GetPurchasedSuccess = Extract<InferResponseType<GetPurchasedRequest>, { success: true }>;
@@ -18,9 +18,9 @@ export type LeaderboardData = GetLeaderboardSuccess['data'];
 export type LeaderboardEntry = LeaderboardData['entries'][number];
 
 export type GetMemberEmailNotificationsRequest =
-  (typeof classroomio.organization.member)['email-notifications']['$get'];
+  (typeof classroomhub.organization.member)['email-notifications']['$get'];
 export type UpdateMemberEmailNotificationsRequest =
-  (typeof classroomio.organization.member)['email-notifications']['$put'];
+  (typeof classroomhub.organization.member)['email-notifications']['$put'];
 
 export type GetMemberEmailNotificationsSuccess = Extract<
   InferResponseType<GetMemberEmailNotificationsRequest>,

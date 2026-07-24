@@ -26,7 +26,7 @@ import {
   ZExerciseUpdate
 } from '@cio/utils/validation/exercise';
 
-import type { ClassroomIoApiClient } from '../api-client';
+import type { ClassroomHubApiClient } from '../api-client';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ZGetOrganizationCoursesQuery } from '@cio/utils/validation/organization';
 import { ENABLED_QUESTION_TYPE_REGISTRY } from '@cio/question-types';
@@ -112,7 +112,7 @@ const SUPPORTED_QUESTION_TYPES_GUIDE = `Supported questionTypeId values: ${suppo
 const LESSON_HTML_GUIDE =
   'For draft lesson HTML, put only the lesson body in lessonLanguages[].content. Do not include the lesson title. Do not use h1 or h2 anywhere in lesson HTML. Start headings at h3 because that is the highest heading level allowed in lesson content.';
 
-export function registerCourseDraftTools(server: McpServer, apiClient: ClassroomIoApiClient) {
+export function registerCourseDraftTools(server: McpServer, apiClient: ClassroomHubApiClient) {
   server.tool(
     'list_org_courses',
     'List all courses in the authenticated organization. Use this when the user refers to a course by name and you need to discover the available course IDs first.',

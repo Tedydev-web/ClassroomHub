@@ -565,12 +565,12 @@ File: `apps/dashboard/src/lib/features/course/utils/types.ts`
 Add:
 
 ```typescript
-export type ListCohortsRequest = typeof classroomio.course[':courseId']['cohort']['$get'];
-export type CreateCohortRequest = typeof classroomio.course[':courseId']['cohort']['$post'];
-export type UpdateCohortRequest = typeof classroomio.course[':courseId']['cohort'][':cohortId']['$put'];
-export type EnableCohortsRequest = typeof classroomio.course[':courseId']['cohort']['enable']['$post'];
-export type DeactivateCohortRequest = typeof classroomio.course[':courseId']['cohort'][':cohortId']['deactivate']['$post'];
-export type CohortAnalyticsRequest = typeof classroomio.course[':courseId']['cohort'][':cohortId']['analytics']['$get'];
+export type ListCohortsRequest = typeof classroomhub.course[':courseId']['cohort']['$get'];
+export type CreateCohortRequest = typeof classroomhub.course[':courseId']['cohort']['$post'];
+export type UpdateCohortRequest = typeof classroomhub.course[':courseId']['cohort'][':cohortId']['$put'];
+export type EnableCohortsRequest = typeof classroomhub.course[':courseId']['cohort']['enable']['$post'];
+export type DeactivateCohortRequest = typeof classroomhub.course[':courseId']['cohort'][':cohortId']['deactivate']['$post'];
+export type CohortAnalyticsRequest = typeof classroomhub.course[':courseId']['cohort'][':cohortId']['analytics']['$get'];
 
 export type ListCohortsSuccess = Extract<InferResponseType<ListCohortsRequest>, { success: true }>;
 export type Cohort = ListCohortsSuccess['data'][number];

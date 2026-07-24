@@ -58,7 +58,7 @@
           NPM <ArrowUpRight class="h-4 w-4" />
         </a>{' '}
         <!-- <a
-					href="https://github.com/Tedydev-web/classroomio"
+					href="https://github.com/Tedydev-web/classroomhub"
 					class="hover:text-foreground/80 text-foreground/60 transition-colors"
 				>
 					Github
@@ -69,7 +69,7 @@
     <div class="flex flex-1 items-center justify-end space-x-2">
       <nav class="flex items-center">
         <a
-          href="https://github.com/Tedydev-web/classroomio/tree/main/packages/course-app#readme"
+          href="https://github.com/Tedydev-web/classroomhub/tree/main/packages/course-app#readme"
           target="_blank"
           rel="noopener noreferrer"
         >

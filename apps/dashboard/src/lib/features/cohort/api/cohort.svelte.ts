@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type { Cohort, CohortDetail, CohortMember, CohortCourse, CohortNewsfeed } from '../utils/types';
 import type {
   TCreateCohort,
@@ -38,8 +38,8 @@ class CohortApi extends BaseApiWithErrors {
     const org = get(currentOrg);
     if (!org.id) return;
 
-    await this.execute<typeof classroomio.cohort.$get>({
-      requestFn: () => classroomio.cohort.$get({ query: { organizationId: org.id } }),
+    await this.execute<typeof classroomhub.cohort.$get>({
+      requestFn: () => classroomhub.cohort.$get({ query: { organizationId: org.id } }),
       onSuccess: (data) => {
         this.cohorts = data.data;
       },
@@ -50,8 +50,8 @@ class CohortApi extends BaseApiWithErrors {
   async getCohort(cohortId: string, force = false) {
     if (!force && this.loadedCohortId === cohortId) return;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['$get']>({
-      requestFn: () => classroomio.cohort[':cohortId'].$get({ param: { cohortId } }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['$get']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].$get({ param: { cohortId } }),
       onSuccess: (data) => {
         this.cohort = data.data;
         this.loadedCohortId = cohortId;
@@ -108,9 +108,9 @@ class CohortApi extends BaseApiWithErrors {
     const org = get(currentOrg);
     if (!org.id) return;
 
-    await this.execute<typeof classroomio.cohort.$post>({
+    await this.execute<typeof classroomhub.cohort.$post>({
       requestFn: () =>
-        classroomio.cohort.$post({
+        classroomhub.cohort.$post({
           json: { ...data, organizationId: org.id }
         }),
       onSuccess: (res) => {
@@ -122,8 +122,8 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async updateCohort(cohortId: string, data: TUpdateCohort) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['$put']>({
-      requestFn: () => classroomio.cohort[':cohortId'].$put({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['$put']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].$put({ param: { cohortId }, json: data }),
       onSuccess: (res) => {
         this.cohort = res.data;
         this.cohorts = this.cohorts.map((p) => (p.id === cohortId ? { ...p, ...res.data } : p));
@@ -138,8 +138,8 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async deleteCohort(cohortId: string) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['$delete']>({
-      requestFn: () => classroomio.cohort[':cohortId'].$delete({ param: { cohortId } }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['$delete']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].$delete({ param: { cohortId } }),
       onSuccess: () => {
         this.cohorts = this.cohorts.filter((p) => p.id !== cohortId);
         snackbar.success(t.get('cohorts.delete_success'));
@@ -153,8 +153,8 @@ class CohortApi extends BaseApiWithErrors {
   async listMembers(cohortId: string, force = false) {
     if (!force && this.loadedMembersCohortId === cohortId) return;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['members']['$get']>({
-      requestFn: () => classroomio.cohort[':cohortId'].members.$get({ param: { cohortId } }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['members']['$get']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].members.$get({ param: { cohortId } }),
       onSuccess: (data) => {
         this.members = data.data;
         this.loadedMembersCohortId = cohortId;
@@ -164,8 +164,8 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async addMembers(cohortId: string, data: TAddCohortMembers) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['members']['$post']>({
-      requestFn: () => classroomio.cohort[':cohortId'].members.$post({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['members']['$post']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].members.$post({ param: { cohortId }, json: data }),
       onSuccess: async () => {
         await this.listMembers(cohortId, true);
         snackbar.success(t.get('cohorts.members_added') || 'Members added');
@@ -175,9 +175,9 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async updateMember(cohortId: string, memberId: string, data: TUpdateCohortMember) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['members'][':memberId']['$put']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['members'][':memberId']['$put']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].members[':memberId'].$put({
+        classroomhub.cohort[':cohortId'].members[':memberId'].$put({
           param: { cohortId, memberId },
           json: data
         }),
@@ -189,9 +189,9 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async removeMember(cohortId: string, memberId: string) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['members'][':memberId']['$delete']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['members'][':memberId']['$delete']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].members[':memberId'].$delete({
+        classroomhub.cohort[':cohortId'].members[':memberId'].$delete({
           param: { cohortId, memberId }
         }),
       onSuccess: () => {
@@ -215,8 +215,8 @@ class CohortApi extends BaseApiWithErrors {
       return;
     }
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['courses']['$get']>({
-      requestFn: () => classroomio.cohort[':cohortId'].courses.$get({ param: { cohortId } }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['courses']['$get']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].courses.$get({ param: { cohortId } }),
       onSuccess: (data) => {
         this.courses = data.data;
         this.syncCohortCourseCount(cohortId, data.data.length);
@@ -228,8 +228,8 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async addCourse(cohortId: string, data: TAddCourseToCohort) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['courses']['$post']>({
-      requestFn: () => classroomio.cohort[':cohortId'].courses.$post({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['courses']['$post']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].courses.$post({ param: { cohortId }, json: data }),
       onSuccess: async () => {
         await this.listCourses(cohortId, true);
         this.syncCohortCourseCount(cohortId, this.courses.length);
@@ -250,7 +250,7 @@ class CohortApi extends BaseApiWithErrors {
 
     try {
       for (const courseId of courseIds) {
-        const response = await classroomio.cohort[':cohortId'].courses.$post({
+        const response = await classroomhub.cohort[':cohortId'].courses.$post({
           param: { cohortId },
           json: { courseId }
         });
@@ -283,9 +283,9 @@ class CohortApi extends BaseApiWithErrors {
   }
 
   async removeCourse(cohortId: string, courseId: string) {
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['courses'][':courseId']['$delete']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['courses'][':courseId']['$delete']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].courses[':courseId'].$delete({
+        classroomhub.cohort[':cohortId'].courses[':courseId'].$delete({
           param: { cohortId, courseId }
         }),
       onSuccess: () => {
@@ -307,8 +307,8 @@ class CohortApi extends BaseApiWithErrors {
   async inviteStudentsToCohort(cohortId: string, data: TInviteStudentsToCohort): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['invite']['$post']>({
-      requestFn: () => classroomio.cohort[':cohortId'].invite.$post({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['invite']['$post']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].invite.$post({ param: { cohortId }, json: data }),
       onSuccess: async () => {
         await this.listMembers(cohortId, true);
         snackbar.success(t.get('cohorts.invite_sent') || 'Invites sent');
@@ -328,8 +328,8 @@ class CohortApi extends BaseApiWithErrors {
   async assignExistingStudentsToCohort(cohortId: string, data: TAssignExistingStudentsToCohort): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['invite']['assign']['$post']>({
-      requestFn: () => classroomio.cohort[':cohortId'].invite.assign.$post({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['invite']['assign']['$post']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].invite.assign.$post({ param: { cohortId }, json: data }),
       onSuccess: async () => {
         await this.listMembers(cohortId, true);
         snackbar.success(t.get('cohorts.members_added') || 'Members added');
@@ -346,9 +346,9 @@ class CohortApi extends BaseApiWithErrors {
   async listNewsfeed(cohortId: string, force = false, cursor?: string) {
     if (!force && this.loadedNewsfeedCohortId === cohortId) return;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['newsfeed']['$get']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['newsfeed']['$get']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed.$get({
+        classroomhub.cohort[':cohortId'].newsfeed.$get({
           param: { cohortId },
           query: { limit: '10', ...(cursor ? { cursor } : {}) }
         }),
@@ -363,8 +363,8 @@ class CohortApi extends BaseApiWithErrors {
   // LMS — enrolled cohorts
 
   async listEnrolledCohorts() {
-    await this.execute<typeof classroomio.cohort.enrolled.$get>({
-      requestFn: () => classroomio.cohort.enrolled.$get({}),
+    await this.execute<typeof classroomhub.cohort.enrolled.$get>({
+      requestFn: () => classroomhub.cohort.enrolled.$get({}),
       onSuccess: (data) => {
         this.cohorts = data.data;
       },

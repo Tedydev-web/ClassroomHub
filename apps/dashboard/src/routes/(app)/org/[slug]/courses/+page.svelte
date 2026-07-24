@@ -85,8 +85,8 @@
       return;
     }
 
-    localStorage.setItem('classroomio_filter_course_sort_key', sortKey);
-    localStorage.setItem('classroomio_filter_course_order_key', selectedOrder);
+    localStorage.setItem('classroomhub_filter_course_sort_key', sortKey);
+    localStorage.setItem('classroomhub_filter_course_order_key', selectedOrder);
 
     if (!hasCompletedInitialUrlSync) {
       hasCompletedInitialUrlSync = true;
@@ -178,8 +178,8 @@
       $courseMetaDeta.view = courseView;
     }
 
-    const sortFromStorage = parseCourseSortValue(localStorage.getItem('classroomio_filter_course_sort_key'));
-    const orderFromStorage = parseCourseSortOrder(localStorage.getItem('classroomio_filter_course_order_key'));
+    const sortFromStorage = parseCourseSortValue(localStorage.getItem('classroomhub_filter_course_sort_key'));
+    const orderFromStorage = parseCourseSortOrder(localStorage.getItem('classroomhub_filter_course_order_key'));
 
     const searchParams = new URLSearchParams(window.location.search);
     const sortFromUrl = parseCourseSortValue(searchParams.get('sort'));

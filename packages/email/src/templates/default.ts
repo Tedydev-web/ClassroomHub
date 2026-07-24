@@ -20,6 +20,7 @@ import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
 
 const DEFAULT_BUTTON_COLOR = '#1D4EE2';
 const PRODUCT_WEBSITE_URL = `https://${PRODUCT_HOSTS.marketing}`;
+const PRODUCT_WORDMARK_URL = `https://${PRODUCT_HOSTS.dashboard}/wordmark.png`;
 
 /** Product tokens, resolved to hex for mail clients. */
 const PAGE_BG = '#F5F5F5'; // --muted
@@ -53,7 +54,7 @@ function buildMasthead(branding: EmailBranding): string {
     return `<span style="font-size:17px;font-weight:600;color:${TEXT};">${orgName}</span>`;
   }
 
-  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="font-size:17px;font-weight:600;color:${TEXT};text-decoration:none;">${PRODUCT_NAME}</a>`;
+  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${PRODUCT_WORDMARK_URL}" width="160" height="20" alt="${PRODUCT_NAME}" style="display:block;width:160px;height:auto;max-height:24px;" /></a>`;
 }
 
 export const getDefaultTemplate = (content: string, branding?: EmailBranding): string => {

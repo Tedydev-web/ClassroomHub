@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type {
   CommitScormRequest,
   GetScormContentRequest,
@@ -10,7 +10,7 @@ class ScormApi extends BaseApi {
   getContent(courseId: string, lessonId: string) {
     return this.execute<GetScormContentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].scorm.content.$get({
+        classroomhub.course[':courseId'].lesson[':lessonId'].scorm.content.$get({
           param: { courseId, lessonId }
         }),
       logContext: 'fetching SCORM lesson content'
@@ -20,7 +20,7 @@ class ScormApi extends BaseApi {
   launch(courseId: string, lessonId: string) {
     return this.execute<LaunchScormRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].scorm.launch.$post({
+        classroomhub.course[':courseId'].lesson[':lessonId'].scorm.launch.$post({
           param: { courseId, lessonId }
         }),
       logContext: 'launching SCORM lesson'
@@ -30,7 +30,7 @@ class ScormApi extends BaseApi {
   commit(courseId: string, lessonId: string, attemptId: string, values: Record<string, string>) {
     return this.execute<CommitScormRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].scorm.commit.$post({
+        classroomhub.course[':courseId'].lesson[':lessonId'].scorm.commit.$post({
           param: { courseId, lessonId },
           json: { attemptId, values }
         }),
@@ -41,7 +41,7 @@ class ScormApi extends BaseApi {
   terminate(courseId: string, lessonId: string, attemptId: string, values: Record<string, string>) {
     return this.execute<TerminateScormRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].scorm.terminate.$post({
+        classroomhub.course[':courseId'].lesson[':lessonId'].scorm.terminate.$post({
           param: { courseId, lessonId },
           json: { attemptId, values }
         }),

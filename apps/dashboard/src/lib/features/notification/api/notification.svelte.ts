@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type {
   GetNotificationsRequest,
   NotificationItem,
@@ -14,7 +14,7 @@ class NotificationApi extends BaseApi {
 
   async getNotifications(page = 1) {
     return this.execute<GetNotificationsRequest>({
-      requestFn: () => classroomio.notifications.$get({ query: { page: `${page}`, limit: '20' } }),
+      requestFn: () => classroomhub.notifications.$get({ query: { page: `${page}`, limit: '20' } }),
       logContext: 'fetching notifications',
       onSuccess: (response) => {
         this.items = response.data.items;
@@ -27,7 +27,7 @@ class NotificationApi extends BaseApi {
   async markRead(notificationId: string) {
     return this.execute<ReadNotificationRequest>({
       requestFn: () =>
-        classroomio.notifications[':notificationId'].read.$put({
+        classroomhub.notifications[':notificationId'].read.$put({
           param: { notificationId }
         }),
       logContext: 'marking notification as read',
@@ -40,7 +40,7 @@ class NotificationApi extends BaseApi {
 
   async markAllRead() {
     return this.execute<ReadAllNotificationsRequest>({
-      requestFn: () => classroomio.notifications['read-all'].$put(),
+      requestFn: () => classroomhub.notifications['read-all'].$put(),
       logContext: 'marking all notifications as read',
       onSuccess: () => {
         const readAt = new Date().toISOString();

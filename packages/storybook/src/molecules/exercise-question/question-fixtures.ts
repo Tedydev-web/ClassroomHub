@@ -15,7 +15,7 @@ export interface ExerciseSectionStoryFixture {
   questions: Record<string, unknown>[];
 }
 
-const OPTION_IMAGE_A = '/assets/brand/classroomio-lms-courses.png';
+const OPTION_IMAGE_A = '/assets/brand/classroomhub-lms-courses.png';
 const OPTION_IMAGE_B = '/assets/assets/www/futuristic-classroom.jpg';
 
 export const RADIO_FIXTURE: QuestionStoryFixture = {
@@ -26,7 +26,7 @@ export const RADIO_FIXTURE: QuestionStoryFixture = {
     questionType: 'RADIO',
     settings: {
       description: 'Choose one option.',
-      imageUrls: ['/assets/brand/classroomio-courses.png']
+      imageUrls: ['/assets/brand/classroomhub-courses.png']
     },
     options: [
       {

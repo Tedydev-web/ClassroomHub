@@ -1,5 +1,5 @@
 import type { GetLMSExercisesSuccess, LMSExercise } from './exercises.svelte';
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 
 /**
@@ -16,7 +16,7 @@ export class LMSExercisesApiServer {
   static async fetchLMSExercises(orgId: string): Promise<LMSExercise[] | null> {
     try {
       const result = await safeServerApi<GetLMSExercisesSuccess>(() =>
-        classroomio.organization[':orgId'].exercises.lms.$get(
+        classroomhub.organization[':orgId'].exercises.lms.$get(
           {
             param: { orgId }
           },

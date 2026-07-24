@@ -1,5 +1,5 @@
 import type { GetAutomationUsageSuccess, ListAutomationKeysSuccess } from '$features/automation/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
 export const load = async ({ parent, cookies }) => {
@@ -13,10 +13,10 @@ export const load = async ({ parent, cookies }) => {
 
   const [keysResult, usageResult] = await Promise.all([
     safeServerApi<ListAutomationKeysSuccess>(() =>
-      classroomio.organization.automation.keys.$get({ query: { type: 'mcp' } }, headers)
+      classroomhub.organization.automation.keys.$get({ query: { type: 'mcp' } }, headers)
     ),
     safeServerApi<GetAutomationUsageSuccess>(() =>
-      classroomio.organization.automation.usage.$get({ query: { type: 'mcp' } }, headers)
+      classroomhub.organization.automation.usage.$get({ query: { type: 'mcp' } }, headers)
     )
   ]);
 

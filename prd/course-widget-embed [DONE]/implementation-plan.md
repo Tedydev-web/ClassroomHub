@@ -130,7 +130,7 @@
 | CW-C4 | Loader Contract | Add loader/bootstrap interface inside `@cio/embeds` | `apps/embeds/src/widgets/course-widget/bootstrap.ts`, `apps/embeds/src/shared/mount.ts` | CW-C1 | Loader can mount widget by payload id/key |
 | CW-C5 | Size Budget | Add bundle size CI checks (loader ≤3KB, runtime ≤35KB gzip) | `apps/embeds/package.json`, CI workflow | CW-C1 | CI fails when runtime exceeds target budgets; budget file in `apps/embeds` |
 | CW-C6 | Renderer Contract | Add strict typed payload contract shared by dashboard, API, and embeds app | `packages/utils/src/validation/widget/widget.ts` | CW-A3,CW-B6,CW-C1 | Renderer accepts canonical payload schema only |
-| CW-D1 | Dashboard Types | Add request/response types for widget API | `apps/dashboard/src/lib/features/widget/utils/types.ts` | CW-B4 | Types follow `typeof classroomio...` pattern |
+| CW-D1 | Dashboard Types | Add request/response types for widget API | `apps/dashboard/src/lib/features/widget/utils/types.ts` | CW-B4 | Types follow `typeof classroomhub...` pattern |
 | CW-D2 | Dashboard API | Add widget API class | `apps/dashboard/src/lib/features/widget/api/widget.svelte.ts` | CW-D1 | All widget requests use `this.execute<RequestType>()` |
 | CW-D3 | Widgets List Page | Add `/org/[slug]/widgets` list route/page | `apps/dashboard/src/routes/org/[slug]/widgets/+page.svelte`, `+page.server.ts` | CW-D2 | Admin can see/create/open widgets |
 | CW-D4 | Editor Page | Add `/org/[slug]/widgets/[widgetId]` editor route/page | `apps/dashboard/src/routes/org/[slug]/widgets/[widgetId]/+page.svelte`, `+page.server.ts` | CW-D3,CW-D2 | Left panel tabs + live preview + save/publish works |

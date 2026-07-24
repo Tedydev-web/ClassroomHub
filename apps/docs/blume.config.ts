@@ -29,7 +29,7 @@ export default defineConfig({
   },
   github: {
     owner: 'Tedydev-web',
-    repo: 'classroomio',
+    repo: 'classroomhub',
     dir: 'apps/docs'
   },
   theme: {
@@ -62,7 +62,7 @@ export default defineConfig({
           {
             label: 'Introduction',
             items: [
-              '/what-is-classroomio',
+              '/what-is-classroomhub',
               '/terminology',
               {
                 label: 'Quickstart',

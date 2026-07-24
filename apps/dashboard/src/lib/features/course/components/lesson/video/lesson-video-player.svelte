@@ -6,7 +6,7 @@
   import { jobsApi, JobPoller, type MediaJobEnvelope } from '$features/jobs';
   import { t } from '$lib/utils/functions/translations';
   import { sidePanel } from '$features/side-panel';
-  import { classroomio, isAuthError } from '$lib/utils/services/api';
+  import { classroomhub, isAuthError } from '$lib/utils/services/api';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { lessonApi } from '$features/course/api';
@@ -41,13 +41,13 @@
     if (!match) return rawUrl;
 
     const [, assetId, rest] = match;
-    const built = classroomio.hls[':assetId']['*'].$url({ param: { assetId } });
+    const built = classroomhub.hls[':assetId']['*'].$url({ param: { assetId } });
     return built.toString().replace(/\/\*$/, '') + '/' + rest;
   }
 
   async function mintHlsCookie(assetId: string): Promise<{ authExpired?: boolean } | void> {
     try {
-      await classroomio.organization.assets[':assetId'].hls.cookie.$post({
+      await classroomhub.organization.assets[':assetId'].hls.cookie.$post({
         param: { assetId }
       });
     } catch (error) {
@@ -81,7 +81,7 @@
 
     const [, assetId] = match;
     try {
-      const response = await classroomio.transcripts[':assetId']['track.vtt'].$get({ param: { assetId } });
+      const response = await classroomhub.transcripts[':assetId']['track.vtt'].$get({ param: { assetId } });
       if (!response.ok) return;
 
       const blob = await response.blob();

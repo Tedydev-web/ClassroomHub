@@ -11,7 +11,7 @@ import type {
   WebhookDelivery,
   WebhookEndpoint
 } from '$features/automation/utils/types';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { snackbar } from '$features/ui/snackbar/store';
 
 class WebhooksApi extends BaseApiWithErrors {
@@ -21,7 +21,7 @@ class WebhooksApi extends BaseApiWithErrors {
 
   async list() {
     return this.execute<ListWebhooksRequest>({
-      requestFn: () => classroomio.organization.webhooks.$get(),
+      requestFn: () => classroomhub.organization.webhooks.$get(),
       logContext: 'fetching webhooks',
       onSuccess: (response) => {
         this.endpoints = response.data;
@@ -31,7 +31,7 @@ class WebhooksApi extends BaseApiWithErrors {
 
   async create(json: CreateWebhookPayload) {
     return this.execute<CreateWebhookRequest>({
-      requestFn: () => classroomio.organization.webhooks.$post({ json }),
+      requestFn: () => classroomhub.organization.webhooks.$post({ json }),
       logContext: 'creating webhook',
       onSuccess: (response) => {
         const { secret, ...endpoint } = response.data;
@@ -44,7 +44,7 @@ class WebhooksApi extends BaseApiWithErrors {
 
   async update(webhookId: string, json: UpdateWebhookPayload) {
     return this.execute<UpdateWebhookRequest>({
-      requestFn: () => classroomio.organization.webhooks[':webhookId'].$put({ json, param: { webhookId } }),
+      requestFn: () => classroomhub.organization.webhooks[':webhookId'].$put({ json, param: { webhookId } }),
       logContext: 'updating webhook',
       onSuccess: (response) => {
         this.endpoints = this.endpoints.map((endpoint) => (endpoint.id === webhookId ? response.data : endpoint));
@@ -55,7 +55,7 @@ class WebhooksApi extends BaseApiWithErrors {
 
   async remove(webhookId: string) {
     return this.execute<DeleteWebhookRequest>({
-      requestFn: () => classroomio.organization.webhooks[':webhookId'].$delete({ param: { webhookId } }),
+      requestFn: () => classroomhub.organization.webhooks[':webhookId'].$delete({ param: { webhookId } }),
       logContext: 'deleting webhook',
       onSuccess: () => {
         this.endpoints = this.endpoints.filter((endpoint) => endpoint.id !== webhookId);
@@ -66,7 +66,7 @@ class WebhooksApi extends BaseApiWithErrors {
 
   async sendTest(webhookId: string) {
     return this.execute<TestWebhookRequest>({
-      requestFn: () => classroomio.organization.webhooks[':webhookId'].test.$post({ param: { webhookId } }),
+      requestFn: () => classroomhub.organization.webhooks[':webhookId'].test.$post({ param: { webhookId } }),
       logContext: 'sending webhook test',
       onSuccess: () => snackbar.success('snackbar.webhooks.test_queued')
     });
@@ -75,7 +75,7 @@ class WebhooksApi extends BaseApiWithErrors {
   async listDeliveries(webhookId: string) {
     return this.execute<ListWebhookDeliveriesRequest>({
       requestFn: () =>
-        classroomio.organization.webhooks[':webhookId'].deliveries.$get({
+        classroomhub.organization.webhooks[':webhookId'].deliveries.$get({
           param: { webhookId },
           query: { limit: '20', page: '1' }
         }),
@@ -89,7 +89,7 @@ class WebhooksApi extends BaseApiWithErrors {
   async redeliver(webhookId: string, deliveryId: string) {
     return this.execute<RedeliverWebhookRequest>({
       requestFn: () =>
-        classroomio.organization.webhooks[':webhookId'].deliveries[':deliveryId'].redeliver.$post({
+        classroomhub.organization.webhooks[':webhookId'].deliveries[':deliveryId'].redeliver.$post({
           param: { deliveryId, webhookId }
         }),
       logContext: 'redelivering webhook',

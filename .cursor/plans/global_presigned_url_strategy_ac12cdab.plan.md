@@ -1,6 +1,6 @@
 ---
 name: Global presigned URL strategy
-overview: Add Redis caching for presigned download URLs on the API, and introduce a PresignApi class on the frontend so all presign requests go through one API class instead of calling classroomio.course.presign directly.
+overview: Add Redis caching for presigned download URLs on the API, and introduce a PresignApi class on the frontend so all presign requests go through one API class instead of calling classroomhub.course.presign directly.
 todos: []
 isProject: false
 ---
@@ -83,7 +83,7 @@ flowchart TB
 
 ## Part B: PresignApi class (frontend)
 
-Create a single API class responsible for all presigned URL requests so components never call `classroomio.course.presign...` directly.
+Create a single API class responsible for all presigned URL requests so components never call `classroomhub.course.presign...` directly.
 
 ### 1. PresignApi class
 
@@ -95,7 +95,7 @@ Create a single API class responsible for all presigned URL requests so componen
   - `getDocumentDownloadUrls(keys: string[])` → `Record<string, string>`
   - `getVideoUploadUrl(fileName: string, fileType: string)` → `{ url, fileKey }`
   - `getVideoDownloadUrls(keys: string[])` → `Record<string, string>`
-- Each method wraps `classroomio.course.presign.document.upload`, `document.download`, `video.upload`, or `video.download`
+- Each method wraps `classroomhub.course.presign.document.upload`, `document.download`, `video.upload`, or `video.download`
 - Export singleton: `export const presignApi = new PresignApi()`
 
 ### 2. Types in `utils/types.ts`
@@ -115,10 +115,10 @@ Create a single API class responsible for all presigned URL requests so componen
 
 | Caller                                                                                                             | Current                                                                                                | Change                                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| [view-mode.svelte](apps/dashboard/src/lib/features/course/components/exercise/view-mode.svelte)                    | `classroomio.course.presign.document.upload.$post` and `document.download.$post` in `handleFileUpload` | Use `presignApi.getDocumentUploadUrl` and `presignApi.getDocumentDownloadUrls`; remove `classroomio` import |
-| [functions.ts](apps/dashboard/src/lib/features/course/utils/functions.ts) `enrichFileUploadAnswersWithUrls`        | `classroomio.course.presign.document.download.$post`                                                   | Use `presignApi.getDocumentDownloadUrls` (needs access to presignApi singleton)                             |
-| [media-manager.svelte.ts](apps/dashboard/src/lib/features/media/api/media-manager.svelte.ts) `getAssetDownloadUrl` | `classroomio.course.presign.document.download` or `video.download`                                     | Use `presignApi.getDocumentDownloadUrls` or `presignApi.getVideoDownloadUrls`                               |
-| [presign.ts](apps/dashboard/src/lib/utils/services/courses/presign.ts) `GenericUploader`                           | Calls `classroomio.course.presign...` in `getPresignedUrl` and `getDownloadPresignedUrl`               | Use `presignApi` methods instead                                                                            |
+| [view-mode.svelte](apps/dashboard/src/lib/features/course/components/exercise/view-mode.svelte)                    | `classroomhub.course.presign.document.upload.$post` and `document.download.$post` in `handleFileUpload` | Use `presignApi.getDocumentUploadUrl` and `presignApi.getDocumentDownloadUrls`; remove `classroomhub` import |
+| [functions.ts](apps/dashboard/src/lib/features/course/utils/functions.ts) `enrichFileUploadAnswersWithUrls`        | `classroomhub.course.presign.document.download.$post`                                                   | Use `presignApi.getDocumentDownloadUrls` (needs access to presignApi singleton)                             |
+| [media-manager.svelte.ts](apps/dashboard/src/lib/features/media/api/media-manager.svelte.ts) `getAssetDownloadUrl` | `classroomhub.course.presign.document.download` or `video.download`                                     | Use `presignApi.getDocumentDownloadUrls` or `presignApi.getVideoDownloadUrls`                               |
+| [presign.ts](apps/dashboard/src/lib/utils/services/courses/presign.ts) `GenericUploader`                           | Calls `classroomhub.course.presign...` in `getPresignedUrl` and `getDownloadPresignedUrl`               | Use `presignApi` methods instead                                                                            |
 
 
 **Note**: `enrichFileUploadAnswersWithUrls` is a pure function in `functions.ts`. It would need to either:
@@ -139,7 +139,7 @@ The latter is simpler; we import presignApi where needed.
 | [apps/dashboard/src/lib/features/course/api/presign.svelte.ts](apps/dashboard/src/lib/features/course/api/presign.svelte.ts) | New: PresignApi class                                              |
 | [apps/dashboard/src/lib/features/course/utils/types.ts](apps/dashboard/src/lib/features/course/utils/types.ts)               | Add presign request types                                          |
 | [apps/dashboard/src/lib/features/course/api/index.ts](apps/dashboard/src/lib/features/course/api/index.ts)                   | Export presignApi                                                  |
-| [view-mode.svelte](apps/dashboard/src/lib/features/course/components/exercise/view-mode.svelte)                              | Use presignApi; remove classroomio import                          |
+| [view-mode.svelte](apps/dashboard/src/lib/features/course/components/exercise/view-mode.svelte)                              | Use presignApi; remove classroomhub import                          |
 | [functions.ts](apps/dashboard/src/lib/features/course/utils/functions.ts)                                                    | Use presignApi.getDocumentDownloadUrls                             |
 | [media-manager.svelte.ts](apps/dashboard/src/lib/features/media/api/media-manager.svelte.ts)                                 | Use presignApi for download URLs                                   |
 | [presign.ts](apps/dashboard/src/lib/utils/services/courses/presign.ts)                                                       | GenericUploader uses presignApi                                    |

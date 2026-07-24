@@ -1263,17 +1263,17 @@ async function checkAndNotifyCourseCompletion(courseId: string, profileId: strin
 Create `apps/dashboard/src/lib/features/notification/utils/types.ts`:
 
 ```typescript
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type GetNotificationsRequest = typeof classroomio.notification.$get;
+export type GetNotificationsRequest = typeof classroomhub.notification.$get;
 export type GetNotificationsSuccess = Extract<InferResponseType<GetNotificationsRequest>, { success: true }>;
 export type NotificationItem = GetNotificationsSuccess['data'][number];
 
-export type GetUnreadCountRequest = (typeof classroomio.notification)['unread-count']['$get'];
+export type GetUnreadCountRequest = (typeof classroomhub.notification)['unread-count']['$get'];
 export type GetUnreadCountSuccess = Extract<InferResponseType<GetUnreadCountRequest>, { success: true }>;
 
-export type MarkAsReadRequest = (typeof classroomio.notification)[':id']['read']['$put'];
-export type MarkAllReadRequest = (typeof classroomio.notification)['read-all']['$put'];
+export type MarkAsReadRequest = (typeof classroomhub.notification)[':id']['read']['$put'];
+export type MarkAllReadRequest = (typeof classroomhub.notification)['read-all']['$put'];
 ```
 
 ### 7b. API Class
@@ -1281,7 +1281,7 @@ export type MarkAllReadRequest = (typeof classroomio.notification)['read-all']['
 Create `apps/dashboard/src/lib/features/notification/api/notification.svelte.ts`:
 
 ```typescript
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type {
   GetNotificationsRequest,
   GetUnreadCountRequest,
@@ -1299,7 +1299,7 @@ class NotificationApi extends BaseApi {
   async fetchNotifications(page = 1) {
     await this.execute<GetNotificationsRequest>({
       requestFn: () =>
-        classroomio.notification.$get({
+        classroomhub.notification.$get({
           query: { page: page.toString(), limit: '20' }
         }),
       logContext: 'fetching notifications',
@@ -1317,7 +1317,7 @@ class NotificationApi extends BaseApi {
 
   async fetchUnreadCount() {
     await this.execute<GetUnreadCountRequest>({
-      requestFn: () => classroomio.notification['unread-count'].$get(),
+      requestFn: () => classroomhub.notification['unread-count'].$get(),
       logContext: 'fetching unread count',
       onSuccess: (response) => {
         this.unreadCount = response.data.count;
@@ -1328,7 +1328,7 @@ class NotificationApi extends BaseApi {
   async markAsRead(id: string) {
     await this.execute<MarkAsReadRequest>({
       requestFn: () =>
-        classroomio.notification[':id'].read.$put({
+        classroomhub.notification[':id'].read.$put({
           param: { id }
         }),
       logContext: 'marking notification as read',
@@ -1343,7 +1343,7 @@ class NotificationApi extends BaseApi {
 
   async markAllAsRead() {
     await this.execute<MarkAllReadRequest>({
-      requestFn: () => classroomio.notification['read-all'].$put(),
+      requestFn: () => classroomhub.notification['read-all'].$put(),
       logContext: 'marking all notifications as read',
       onSuccess: () => {
         this.notifications = this.notifications.map((n) => ({ ...n, isRead: true }));

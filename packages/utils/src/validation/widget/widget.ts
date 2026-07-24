@@ -13,7 +13,7 @@ export const WIDGET_LAYOUT_TYPE_VALUES = [
 ] as const;
 export const WIDGET_SELECTION_MODE_VALUES = ['manual', 'published'] as const;
 export const WIDGET_SORT_BY_VALUES = ['manual', 'newest', 'title'] as const;
-export const WIDGET_THEME_PRESET_VALUES = ['classroomio', 'graphite', 'linen', 'spruce'] as const;
+export const WIDGET_THEME_PRESET_VALUES = ['classroomhub', 'graphite', 'linen', 'spruce'] as const;
 export const WIDGET_SHADOW_SIZE_VALUES = ['none', 'sm', 'md', 'lg'] as const;
 export const WIDGET_TOP_BADGE_STYLE_VALUES = ['solid', 'outline'] as const;
 export const WIDGET_CARD_GRID_COLUMN_VALUES = ['2', '3'] as const;
@@ -146,7 +146,7 @@ const DEFAULT_LAYOUT_OPTIONS = {
 };
 
 const DEFAULT_WIDGET_CONFIG = {
-  themePreset: 'classroomio' as const,
+  themePreset: 'classroomhub' as const,
   sortBy: 'manual' as const,
   content: DEFAULT_WIDGET_CONTENT_CONFIG,
   colors: DEFAULT_WIDGET_COLORS_CONFIG,
@@ -266,7 +266,7 @@ export const ZWidgetLayoutOptions = z.object({
 });
 
 export const ZWidgetConfig = z.object({
-  themePreset: ZWidgetThemePreset.default('classroomio'),
+  themePreset: ZWidgetThemePreset.default('classroomhub'),
   sortBy: ZWidgetSortBy.default('manual'),
   content: ZWidgetContentConfig.default(DEFAULT_WIDGET_CONTENT_CONFIG),
   colors: ZWidgetColorsConfig.default(DEFAULT_WIDGET_COLORS_CONFIG),
@@ -551,9 +551,9 @@ export function resolveWidgetPlanGatedFields(
   selectedTheme?: TWidgetThemePreset
 ): TWidgetPlanGatedFields {
   const isPaidPlan = isPaidWidgetPlan(planName);
-  const availableThemes: TWidgetThemePreset[] = isPaidPlan ? [...WIDGET_THEME_PRESET_VALUES] : ['classroomio'];
-  const themeCandidate = selectedTheme ?? 'classroomio';
-  const selectedResolvedTheme = availableThemes.includes(themeCandidate) ? themeCandidate : 'classroomio';
+  const availableThemes: TWidgetThemePreset[] = isPaidPlan ? [...WIDGET_THEME_PRESET_VALUES] : ['classroomhub'];
+  const themeCandidate = selectedTheme ?? 'classroomhub';
+  const selectedResolvedTheme = availableThemes.includes(themeCandidate) ? themeCandidate : 'classroomhub';
 
   return {
     isPaidPlan,

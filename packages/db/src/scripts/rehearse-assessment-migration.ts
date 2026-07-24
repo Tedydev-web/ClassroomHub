@@ -426,7 +426,7 @@ async function verifyRevisionIntegrityHardening(sql: Sql): Promise<void> {
 
 async function rehearseAssessmentMigration(): Promise<void> {
   const suffix = randomUUID().replace(/-/g, '').slice(0, 12);
-  const databaseName = `classroomio_assessment_rehearsal_${suffix}`;
+  const databaseName = `classroomhub_assessment_rehearsal_${suffix}`;
   const adminUrl = buildDatabaseUrl('postgres');
   const rehearsalUrl = buildDatabaseUrl(databaseName);
   const adminSql = postgres(adminUrl, { max: 1 });

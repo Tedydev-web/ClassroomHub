@@ -6,7 +6,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { authClient } from '$lib/utils/services/auth/client';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { globalStore } from '$lib/utils/store/app';
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
@@ -31,7 +31,7 @@
   let domProtectionCleanup: ReturnType<typeof setupDOMProtection> | undefined;
 
   async function syncProfileFromAccount() {
-    const response = await classroomio.account.$get();
+    const response = await classroomhub.account.$get();
     if (!response.ok) {
       return;
     }

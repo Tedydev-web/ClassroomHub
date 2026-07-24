@@ -62,8 +62,8 @@ export const config = {
 export const { t, loading, locales, locale, initialized, translations, loadTranslations } = new i18n(config);
 
 export const selectedLocale = writable<string>('en');
-export const LOCALE_STORAGE_KEY = 'classroomio_locale';
-export const LOCALE_COOKIE_KEY = 'classroomio_locale';
+export const LOCALE_STORAGE_KEY = 'classroomhub_locale';
+export const LOCALE_COOKIE_KEY = 'classroomhub_locale';
 
 // Translations logs
 loading.subscribe(async ($loading) => {

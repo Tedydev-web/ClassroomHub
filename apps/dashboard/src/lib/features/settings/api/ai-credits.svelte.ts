@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type {
   AiUsageData,
   GetLeaderboardRequest,
@@ -19,7 +19,7 @@ class AiCreditsApi extends BaseApi {
 
   async fetchUsage() {
     await this.execute<GetUsageRequest>({
-      requestFn: () => classroomio.agent.usage.$get(),
+      requestFn: () => classroomhub.agent.usage.$get(),
       logContext: 'fetching AI usage',
       onSuccess: (result) => {
         this.usage = result.data;
@@ -29,7 +29,7 @@ class AiCreditsApi extends BaseApi {
 
   async fetchPurchased() {
     await this.execute<GetPurchasedRequest>({
-      requestFn: () => classroomio.agent.usage.purchased.$get(),
+      requestFn: () => classroomhub.agent.usage.purchased.$get(),
       logContext: 'fetching purchased summary',
       onSuccess: (result) => {
         this.purchased = result.data;
@@ -39,7 +39,7 @@ class AiCreditsApi extends BaseApi {
 
   async fetchLeaderboard() {
     await this.execute<GetLeaderboardRequest>({
-      requestFn: () => classroomio.agent.usage.leaderboard.$get(),
+      requestFn: () => classroomhub.agent.usage.leaderboard.$get(),
       logContext: 'fetching AI usage leaderboard',
       onSuccess: (result) => {
         this.leaderboard = result.data;

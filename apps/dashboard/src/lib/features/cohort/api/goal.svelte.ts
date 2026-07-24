@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type { TCreateCohortGoal, TUpdateCohortGoal } from '@cio/utils/validation/cohort';
 import type { GoalsOverviewRow, MyGoalAssignment, CohortGoal } from '../utils/types';
 import { snackbar } from '$features/ui/snackbar/store';
@@ -19,8 +19,8 @@ class CohortGoalApi extends BaseApiWithErrors {
   async listGoals(cohortId: string, force = false) {
     if (!force && this.goalsByCohortId[cohortId] && this.loadedCohortId === cohortId) return;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['goals']['$get']>({
-      requestFn: () => classroomio.cohort[':cohortId'].goals.$get({ param: { cohortId } }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['goals']['$get']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].goals.$get({ param: { cohortId } }),
       onSuccess: (res) => {
         this.goalsByCohortId = { ...this.goalsByCohortId, [cohortId]: res.data };
         this.loadedCohortId = cohortId;
@@ -32,8 +32,8 @@ class CohortGoalApi extends BaseApiWithErrors {
   async createGoal(cohortId: string, data: TCreateCohortGoal): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['goals']['$post']>({
-      requestFn: () => classroomio.cohort[':cohortId'].goals.$post({ param: { cohortId }, json: data }),
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['goals']['$post']>({
+      requestFn: () => classroomhub.cohort[':cohortId'].goals.$post({ param: { cohortId }, json: data }),
       onSuccess: async () => {
         await this.listGoals(cohortId, true);
         snackbar.success(t.get('cohorts.goals.created') || 'Goal created');
@@ -48,9 +48,9 @@ class CohortGoalApi extends BaseApiWithErrors {
   async updateGoal(cohortId: string, goalId: string, data: TUpdateCohortGoal): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['goals'][':goalId']['$put']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['goals'][':goalId']['$put']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].goals[':goalId'].$put({
+        classroomhub.cohort[':cohortId'].goals[':goalId'].$put({
           param: { cohortId, goalId },
           json: data
         }),
@@ -68,9 +68,9 @@ class CohortGoalApi extends BaseApiWithErrors {
   async deleteGoal(cohortId: string, goalId: string): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['goals'][':goalId']['$delete']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['goals'][':goalId']['$delete']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].goals[':goalId'].$delete({
+        classroomhub.cohort[':cohortId'].goals[':goalId'].$delete({
           param: { cohortId, goalId }
         }),
       onSuccess: async () => {
@@ -87,9 +87,9 @@ class CohortGoalApi extends BaseApiWithErrors {
   async evaluateGoal(cohortId: string, goalId: string): Promise<boolean> {
     let ok = false;
 
-    await this.execute<(typeof classroomio.cohort)[':cohortId']['goals'][':goalId']['evaluate']['$post']>({
+    await this.execute<(typeof classroomhub.cohort)[':cohortId']['goals'][':goalId']['evaluate']['$post']>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].goals[':goalId'].evaluate.$post({
+        classroomhub.cohort[':cohortId'].goals[':goalId'].evaluate.$post({
           param: { cohortId, goalId }
         }),
       onSuccess: async () => {
@@ -103,8 +103,8 @@ class CohortGoalApi extends BaseApiWithErrors {
   }
 
   async listMyGoals() {
-    await this.execute<typeof classroomio.cohort.my.goals.$get>({
-      requestFn: () => classroomio.cohort.my.goals.$get({}),
+    await this.execute<typeof classroomhub.cohort.my.goals.$get>({
+      requestFn: () => classroomhub.cohort.my.goals.$get({}),
       onSuccess: (res) => {
         this.myGoals = res.data;
       },
@@ -116,8 +116,8 @@ class CohortGoalApi extends BaseApiWithErrors {
     const org = get(currentOrg);
     if (!org.id) return;
 
-    await this.execute<typeof classroomio.cohort.goals.overview.$get>({
-      requestFn: () => classroomio.cohort.goals.overview.$get({ query: { organizationId: org.id } }),
+    await this.execute<typeof classroomhub.cohort.goals.overview.$get>({
+      requestFn: () => classroomhub.cohort.goals.overview.$get({ query: { organizationId: org.id } }),
       onSuccess: (res) => {
         this.overviewRows = res.data.goals;
       },

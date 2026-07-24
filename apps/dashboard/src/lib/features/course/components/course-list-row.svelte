@@ -75,7 +75,7 @@
 
   const titleInitial = $derived(title.trim().charAt(0).toUpperCase() || 'C');
 
-  const bannerImage = $derived(logo?.trim() ? logo : '/images/classroomio-course-img-template.jpg');
+  const bannerImage = $derived(logo?.trim() ? logo : '/images/classroomhub-course-img-template.jpg');
 
   const showPublicCourseLinks = $derived(isPublished && type === 'PUBLIC' && slug.trim().length > 0);
 

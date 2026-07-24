@@ -297,12 +297,12 @@ export function makeFixturePayload(layoutType: TWidgetLayoutType): TWidgetPayloa
       canUseCustomCss: true,
       canToggleBranding: true,
       isBrandingForced: false,
-      availableThemes: ['classroomio', 'graphite', 'linen', 'spruce'],
-      selectedTheme: 'classroomio'
+      availableThemes: ['classroomhub', 'graphite', 'linen', 'spruce'],
+      selectedTheme: 'classroomhub'
     },
     labels: {
       loadMoreLabel: 'Load more',
-      poweredByLabel: 'Powered by Classroomio'
+      poweredByLabel: 'Powered by Classroomhub'
     },
     courses: orderedCourses,
     tagPool: layoutType === 'tag_filter' ? TAGS : [],

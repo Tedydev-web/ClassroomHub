@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from '@cio/ui/base/button';
   import * as Dialog from '@cio/ui/base/dialog';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import { t } from '$lib/utils/functions/translations';
   import { ROLE } from '@cio/utils/constants';
@@ -39,7 +39,7 @@
     isLoading = true;
 
     try {
-      const response = await classroomio.invite.organization[':inviteId']['accept-by-id'].$post({
+      const response = await classroomhub.invite.organization[':inviteId']['accept-by-id'].$post({
         param: { inviteId: invite.id }
       });
       const result = await response.json();

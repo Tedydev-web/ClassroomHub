@@ -26,7 +26,7 @@ jobs:
       - name: Fetch upstream main
         run: |
           git remote get-url upstream >/dev/null 2>&1 || \
-            git remote add upstream https://github.com/classroomio/classroomio.git
+            git remote add upstream https://github.com/classroomhub/classroomhub.git
           git fetch --no-tags upstream main
 
       - name: Prepare sync branch

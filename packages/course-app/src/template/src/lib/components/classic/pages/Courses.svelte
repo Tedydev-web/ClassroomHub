@@ -113,7 +113,7 @@
               {#each filteredCourses.slice(0, viewAll ? filteredCourses.length : 3) as courseData}
                 <CourseCard
                   slug={courseData.slug}
-                  bannerImage={courseData.banner ?? './classroomio-courseData-img-template.jpg'}
+                  bannerImage={courseData.banner ?? './classroomhub-courseData-img-template.jpg'}
                   title={courseData.title}
                   type={courseData.type}
                   description={courseData.description}

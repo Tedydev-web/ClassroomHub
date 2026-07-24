@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { getErrMsg } from '$lib/utils/services/api/utils';
 import { snackbar } from '$features/ui/snackbar/store';
 import type { DeleteCourseContentRequest, UpdateCourseContentRequest } from '../utils/types';
@@ -17,7 +17,7 @@ export class ContentApi extends BaseApiWithErrors {
   ) {
     const result = await this.execute<UpdateCourseContentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].content.$put({
+        classroomhub.course[':courseId'].content.$put({
           param: { courseId },
           json: { items }
         }),
@@ -40,7 +40,7 @@ export class ContentApi extends BaseApiWithErrors {
   ) {
     const result = await this.execute<DeleteCourseContentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].content.$delete({
+        classroomhub.course[':courseId'].content.$delete({
           param: { courseId },
           json: payload
         }),

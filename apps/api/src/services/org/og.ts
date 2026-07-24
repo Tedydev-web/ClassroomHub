@@ -10,7 +10,7 @@ import { PRODUCT_HOSTS } from '@cio/utils/constants';
 import { getCachedOrgSiteOgBuffer, getOrgSiteOgPublicUrl, persistOrgSiteOgImage } from '@api/services/org/og-cache';
 import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 
-const DEFAULT_OG_IMAGE = `https://${PRODUCT_HOSTS.dashboard}/classroomio-opengraph-image.png`;
+const DEFAULT_OG_IMAGE = `https://${PRODUCT_HOSTS.dashboard}/classroomhub-opengraph.png`;
 const OG_VIEWPORT = { width: 1200, height: 630, deviceScaleFactor: 2 } as const;
 
 export function normalizeOrgOgSiteName(rawSiteName: string): string {

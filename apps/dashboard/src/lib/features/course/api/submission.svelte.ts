@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   DeleteSubmissionRequest,
   UpdateSubmissionAnswerRequest,
@@ -31,7 +31,7 @@ export class SubmissionApi extends BaseApiWithErrors {
 
     await this.execute<UpdateSubmissionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].submission[':submissionId'].$put({
+        classroomhub.course[':courseId'].submission[':submissionId'].$put({
           param: { courseId, submissionId },
           json: result.data
         }),
@@ -65,7 +65,7 @@ export class SubmissionApi extends BaseApiWithErrors {
   async delete(courseId: string, submissionId: string) {
     await this.execute<DeleteSubmissionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].submission[':submissionId'].$delete({
+        classroomhub.course[':courseId'].submission[':submissionId'].$delete({
           param: { courseId, submissionId }
         }),
       logContext: 'deleting submission',
@@ -96,7 +96,7 @@ export class SubmissionApi extends BaseApiWithErrors {
 
     await this.execute<UpdateSubmissionGradesRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].submission[':submissionId'].grades.$put({
+        classroomhub.course[':courseId'].submission[':submissionId'].grades.$put({
           param: { courseId, submissionId },
           json: result.data
         }),
@@ -134,7 +134,7 @@ export class SubmissionApi extends BaseApiWithErrors {
 
     await this.execute<UpdateSubmissionAnswerRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].submission[':submissionId'].answer.$put({
+        classroomhub.course[':courseId'].submission[':submissionId'].answer.$put({
           param: { courseId, submissionId },
           json: result.data
         }),

@@ -79,9 +79,9 @@ export default {
     ],
     CTA: {
       LABEL: 'Contact Us',
-      LINK: 'https://cal.com/classroomio/enterprise',
+      LINK: 'https://cal.com/classroomhub/enterprise',
       DASHBOARD_LABEL: 'Contact Us',
-      DASHBOARD_LINK: 'https://cal.com/classroomio/enterprise',
+      DASHBOARD_LINK: 'https://cal.com/classroomhub/enterprise',
       IS_DISABLED: false
     }
   }

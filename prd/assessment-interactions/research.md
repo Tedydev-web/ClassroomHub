@@ -38,7 +38,7 @@ TAO source is used only to discover behavior and edge cases. Implementation is c
 
 ### Source Repositories Inspected
 
-- [ClassroomHub](https://github.com/classroomio/classroomio)
+- [ClassroomHub](https://github.com/classroomhub/classroomhub)
 - [TAO CE](https://github.com/tao-ce/tao-ce)
 - [TAO Community](https://github.com/oat-sa/tao-community)
 - TAO community extensions for Item QTI, Test QTI, PCI, PIC, QTI SDK, and QTI libraries referenced by those distributions.

@@ -211,7 +211,7 @@ var OpenAPISpecGenerator = /** @class */ (function () {
                   info: {
                     title: 'ClassroomHub API',
                     version: '1.0.0',
-                    description: 'Manage your organization on classroomio via the API',
+                    description: 'Manage your organization on classroomhub via the API',
                     contact: {
                       name: 'ClassroomHub',
                       url: 'https://classroom.io.vn'

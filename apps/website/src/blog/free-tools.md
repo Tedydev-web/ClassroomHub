@@ -10,7 +10,7 @@ tags: ['Launch Week', 'Free tools']
 published: true
 ---
 
-![classroomio-free-tools](/assets/assets/blog/free-tools.png)
+![classroomhub-free-tools](/assets/assets/blog/free-tools.png)
 _Classroom Hub Free Tools_
 
 For a while now, we've been looking to build tools that will help educators and students be more productive. The only rule of thumb for every tool is that it must be FREE to use. I spent time conducting research, examining existing options, and talking to students. As a result, I came up with several tools that can help educators and students enhance their productivity.
@@ -66,6 +66,6 @@ This is my favorite because you can play with someone else. With our simple onli
 
 ## What's Next?
 
-Please try them out and give us feedback. We'd love to hear from you. If you experience any issues, please create a ticket on our [GitHub repository](https://github.com/Tedydev-web/classroomio/issues).
+Please try them out and give us feedback. We'd love to hear from you. If you experience any issues, please create a ticket on our [GitHub repository](https://github.com/Tedydev-web/classroomhub/issues).
 
-Don't forget to give us a star on [GitHub](https://github.com/Tedydev-web/classroomio).
+Don't forget to give us a star on [GitHub](https://github.com/Tedydev-web/classroomhub).

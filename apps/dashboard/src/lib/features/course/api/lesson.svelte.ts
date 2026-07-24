@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { courseApi } from './course.svelte';
 import { toggleConfetti } from '$features/ui/confetti/store';
 import { updateLessonCompletionInCourseContent } from '../utils/content-completion';
@@ -91,7 +91,7 @@ export class LessonApi extends BaseApiWithErrors {
   async get(courseId: string, lessonId: string) {
     return this.execute<GetLessonRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].$get({
+        classroomhub.course[':courseId'].lesson[':lessonId'].$get({
           param: { courseId, lessonId }
         }),
       logContext: 'fetching lesson',
@@ -119,7 +119,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<CreateLessonRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson.$post({
+        classroomhub.course[':courseId'].lesson.$post({
           param: { courseId },
           json: result.data
         }),
@@ -166,7 +166,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     const response = await this.execute<UpdateLessonRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].$put({
+        classroomhub.course[':courseId'].lesson[':lessonId'].$put({
           param: { courseId, lessonId },
           json: result.data
         }),
@@ -198,7 +198,7 @@ export class LessonApi extends BaseApiWithErrors {
   async delete(courseId: string, lessonId: string) {
     await this.execute<DeleteLessonRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].$delete({
+        classroomhub.course[':courseId'].lesson[':lessonId'].$delete({
           param: { courseId, lessonId }
         }),
       logContext: 'deleting lesson',
@@ -235,7 +235,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<CreateCourseSectionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].section.$post({
+        classroomhub.course[':courseId'].section.$post({
           param: { courseId },
           json: result.data
         }),
@@ -272,7 +272,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<PromoteUngroupedSectionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].section['promote-ungrouped'].$post({
+        classroomhub.course[':courseId'].section['promote-ungrouped'].$post({
           param: { courseId },
           json: result.data
         }),
@@ -312,7 +312,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<UpdateCourseSectionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].section[':sectionId'].$put({
+        classroomhub.course[':courseId'].section[':sectionId'].$put({
           param: { courseId, sectionId },
           json: result.data
         }),
@@ -338,7 +338,7 @@ export class LessonApi extends BaseApiWithErrors {
   async deleteSection(courseId: string, sectionId: string) {
     await this.execute<DeleteCourseSectionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].section[':sectionId'].$delete({
+        classroomhub.course[':courseId'].section[':sectionId'].$delete({
           param: { courseId, sectionId }
         }),
       logContext: 'deleting course section'
@@ -357,7 +357,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<ReorderCourseSectionsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].section.reorder.$post({
+        classroomhub.course[':courseId'].section.reorder.$post({
           param: { courseId },
           json: result.data
         }),
@@ -389,7 +389,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<ReorderLessonsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson.reorder.$post({
+        classroomhub.course[':courseId'].lesson.reorder.$post({
           param: { courseId },
           json: result.data
         }),
@@ -437,7 +437,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<GetLessonCommentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].comment.$get({
+        classroomhub.course[':courseId'].lesson[':lessonId'].comment.$get({
           param: { courseId, lessonId },
           query: { limit: String(limit) }
         }),
@@ -477,7 +477,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     await this.execute<GetLessonCommentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].comment.$get({
+        classroomhub.course[':courseId'].lesson[':lessonId'].comment.$get({
           param: { courseId, lessonId },
           query: { cursor: commentState.cursor!, limit: String(limit) }
         }),
@@ -523,7 +523,7 @@ export class LessonApi extends BaseApiWithErrors {
     try {
       await this.execute<CreateLessonCommentRequest>({
         requestFn: () =>
-          classroomio.course[':courseId'].lesson[':lessonId'].comment.$post({
+          classroomhub.course[':courseId'].lesson[':lessonId'].comment.$post({
             param: { courseId, lessonId },
             json: result.data
           }),
@@ -564,7 +564,7 @@ export class LessonApi extends BaseApiWithErrors {
     try {
       await this.execute<UpdateLessonCommentRequest>({
         requestFn: () =>
-          classroomio.course[':courseId'].lesson.comment[':commentId'].$put({
+          classroomhub.course[':courseId'].lesson.comment[':commentId'].$put({
             param: { courseId, commentId },
             json: result.data
           }),
@@ -599,7 +599,7 @@ export class LessonApi extends BaseApiWithErrors {
   async deleteComment(courseId: string, lessonId: string, commentId: string) {
     await this.execute<DeleteLessonCommentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson.comment[':commentId'].$delete({
+        classroomhub.course[':courseId'].lesson.comment[':commentId'].$delete({
           param: { courseId, commentId }
         }),
       logContext: 'deleting lesson comment',
@@ -631,7 +631,7 @@ export class LessonApi extends BaseApiWithErrors {
   async getWatchProgress(courseId: string, lessonId: string): Promise<LessonWatchProgress | null> {
     const response = await this.execute<GetLessonWatchProgressRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId']['watch-progress'].$get({
+        classroomhub.course[':courseId'].lesson[':lessonId']['watch-progress'].$get({
           param: { courseId, lessonId }
         }),
       logContext: 'fetching lesson watch progress'
@@ -652,7 +652,7 @@ export class LessonApi extends BaseApiWithErrors {
 
     return this.execute<UpdateLessonWatchProgressRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId']['watch-progress'].$put({
+        classroomhub.course[':courseId'].lesson[':lessonId']['watch-progress'].$put({
           param: { courseId, lessonId },
           json: payload
         }),
@@ -693,7 +693,7 @@ export class LessonApi extends BaseApiWithErrors {
   async updateCompletion(courseId: string, lessonId: string, isComplete: boolean) {
     return this.execute<UpdateLessonCompletionRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].completion.$put({
+        classroomhub.course[':courseId'].lesson[':lessonId'].completion.$put({
           param: { courseId, lessonId },
           json: { isComplete }
         }),
@@ -889,7 +889,7 @@ export class LessonApi extends BaseApiWithErrors {
   async getHistory(courseId: string, lessonId: string, locale: TLocale, endRange: number) {
     return this.execute<GetLessonHistoryRequest>({
       requestFn: () =>
-        classroomio.course[':courseId']['lesson'][':lessonId']['history'].$get({
+        classroomhub.course[':courseId']['lesson'][':lessonId']['history'].$get({
           param: { courseId, lessonId },
           query: { locale, endRange: endRange.toString() }
         }),
@@ -907,7 +907,7 @@ export class LessonApi extends BaseApiWithErrors {
   async upsertLanguage(courseId: string, lessonId: string, locale: TLocale, content: string) {
     return this.execute<GetLessonLanguageRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].lesson[':lessonId'].language.$post({
+        classroomhub.course[':courseId'].lesson[':lessonId'].language.$post({
           param: { courseId, lessonId },
           json: { locale, content }
         }),

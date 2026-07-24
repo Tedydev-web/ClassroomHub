@@ -1,10 +1,10 @@
 <a href="https://classroom.tedydev.io.vn/">
-  <img alt="ClassroomHub is a no-code tool that allows you build and scale your online bootcamp with ease." src="apps/website/static/classroomio-opengraph-image.jpg" />
+  <img alt="ClassroomHub is a no-code tool that allows you build and scale your online bootcamp with ease." src="apps/website/static/classroomhub-opengraph-image.jpg" />
   <h1 align="center">ClassroomHub</h1>
   <p align="center">
     The Open Source Learning Management System for Companies
     <br />
-    <a href="https://classroom.tedydev.io.vn">Website</a>  |  <a href="https://github.com/Tedydev-web/classroomio/issues">Support</a>
+    <a href="https://classroom.tedydev.io.vn">Website</a>  |  <a href="https://github.com/Tedydev-web/classroomhub/issues">Support</a>
   </p>
 </a>
 
@@ -117,13 +117,13 @@ auth secrets, and private server keys are intentionally never stored in document
 1. Fork the repo, then clone it:
 
    ```bash
-   git clone https://github.com/Tedydev-web/classroomio.git
+   git clone https://github.com/Tedydev-web/classroomhub.git
    ```
 
 2. Go to project folder:
 
    ```bash
-   cd classroomio
+   cd classroomhub
    ```
 
 3. Set up Node (using `nvm`):
@@ -159,7 +159,7 @@ auth secrets, and private server keys are intentionally never stored in document
 
      ```bash
      PORT=8001
-     DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"
+     DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomhub"
      REDIS_URL="redis://localhost:8003"
      PUBLIC_SERVER_URL="http://localhost:8001"
      TRUSTED_ORIGINS="http://localhost:8000"        # the dashboard dev origin
@@ -191,7 +191,7 @@ auth secrets, and private server keys are intentionally never stored in document
    pnpm --filter @cio/db db:setup:seed
    ```
 
-   - Connect with `DATABASE_URL=postgresql://postgres:postgres@localhost:8002/classroomio`
+   - Connect with `DATABASE_URL=postgresql://postgres:postgres@localhost:8002/classroomhub`
    - Connect with `REDIS_URL=redis://localhost:8003`
    - `db:setup:seed` creates the schema and seeds demo data once Postgres is up. The db scripts run with their own working directory, so they read `DATABASE_URL` from `packages/db/.env` (not `apps/api/.env`).
    - `db:setup` runs migrations and the post-migration assessment finalizer. If an operator runs `db:migrate` directly, also run `pnpm --filter @cio/db db:finalize-assessment-schema` before starting the API.
@@ -209,8 +209,8 @@ auth secrets, and private server keys are intentionally never stored in document
    - Add to `apps/api/.env` when using MinIO locally:
      - `OBJECT_STORAGE_ENDPOINT=http://localhost:8004`
      - `OBJECT_STORAGE_PUBLIC_ENDPOINT=http://localhost:8004`
-     - `OBJECT_STORAGE_ACCESS_KEY_ID=classroomio`
-     - `OBJECT_STORAGE_SECRET_ACCESS_KEY=classroomio-dev-only`
+     - `OBJECT_STORAGE_ACCESS_KEY_ID=classroomhub`
+     - `OBJECT_STORAGE_SECRET_ACCESS_KEY=classroomhub-dev-only`
      - `OBJECT_STORAGE_FORCE_PATH_STYLE=true`
      - `OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=http://localhost:8004/media`
 
@@ -260,7 +260,7 @@ MOONSHOT_API_KEY=...
 
 Notes:
 - The `GET /agent/status` endpoint flips to `enabled: true` as soon as any of those keys is set, which is what the dashboard checks before showing the AI button on a course.
-- Each chat request sends the user-selected `model` (persisted in `localStorage` as `classroomio-ai-chat-model`). The API resolves the provider for that model (`packages/utils/src/agent-models`) and returns 503 `AI_NOT_CONFIGURED` if that provider's key is missing.
+- Each chat request sends the user-selected `model` (persisted in `localStorage` as `classroomhub-ai-chat-model`). The API resolves the provider for that model (`packages/utils/src/agent-models`) and returns 503 `AI_NOT_CONFIGURED` if that provider's key is missing.
 - Optional Tinybird observability: set `TINYBIRD_TOKEN` (and optionally `TINYBIRD_BASE_URL`) in `apps/api/.env`. Events are silently skipped when the token is absent.
 - More detail on architecture, tools, and routes lives in [`prd/ai-course-assistant [DONE]/README.md`](prd/ai-course-assistant%20[DONE]/README.md).
 

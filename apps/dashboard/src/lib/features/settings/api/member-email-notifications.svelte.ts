@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   GetMemberEmailNotificationsRequest,
   UpdateMemberEmailNotificationsRequest
@@ -7,14 +7,14 @@ import type {
 class MemberEmailNotificationsApi extends BaseApiWithErrors {
   async fetch() {
     return this.execute<GetMemberEmailNotificationsRequest>({
-      requestFn: () => classroomio.organization.member['email-notifications'].$get(),
+      requestFn: () => classroomhub.organization.member['email-notifications'].$get(),
       logContext: 'fetching member email notification preferences'
     });
   }
 
   async update(preferences: Record<string, boolean>) {
     return this.execute<UpdateMemberEmailNotificationsRequest>({
-      requestFn: () => classroomio.organization.member['email-notifications'].$put({ json: preferences }),
+      requestFn: () => classroomhub.organization.member['email-notifications'].$put({ json: preferences }),
       logContext: 'updating member email notification preferences'
     });
   }

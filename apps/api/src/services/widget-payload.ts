@@ -278,7 +278,7 @@ export async function listWidgetAvailableEditorData(orgId: string) {
         groupId: group.id
       }))
     ),
-    planGatedFields: resolveWidgetPlanGatedFields(planName, 'classroomio'),
+    planGatedFields: resolveWidgetPlanGatedFields(planName, 'classroomhub'),
     planName
   };
 }

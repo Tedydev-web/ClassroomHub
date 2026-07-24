@@ -9,7 +9,7 @@ import type {
   RotateAutomationKeyRequest
 } from '$features/automation/utils/types';
 import { getDefaultAutomationKeyLabel } from '$features/automation/utils/automation-utils';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 
 import { snackbar } from '$features/ui/snackbar/store';
 
@@ -22,7 +22,7 @@ class AutomationApi extends BaseApiWithErrors {
   async listKeys(type?: AutomationKeyType) {
     return this.execute<ListAutomationKeysRequest>({
       requestFn: () =>
-        classroomio.organization.automation.keys.$get({
+        classroomhub.organization.automation.keys.$get({
           query: type ? { type } : {}
         }),
       logContext: 'fetching automation keys',
@@ -36,7 +36,7 @@ class AutomationApi extends BaseApiWithErrors {
   async getUsage(type: AutomationKeyType = 'mcp') {
     return this.execute<GetAutomationUsageRequest>({
       requestFn: () =>
-        classroomio.organization.automation.usage.$get({
+        classroomhub.organization.automation.usage.$get({
           query: { type }
         }),
       logContext: 'fetching automation usage',
@@ -49,7 +49,7 @@ class AutomationApi extends BaseApiWithErrors {
   async createKey(type: AutomationKeyType, label?: string) {
     return this.execute<CreateAutomationKeyRequest>({
       requestFn: () =>
-        classroomio.organization.automation.keys.$post({
+        classroomhub.organization.automation.keys.$post({
           json: {
             type,
             label: label?.trim() || getDefaultAutomationKeyLabel(type)
@@ -80,7 +80,7 @@ class AutomationApi extends BaseApiWithErrors {
 
   async revokeKey(keyId: string) {
     return this.execute<RevokeAutomationKeyRequest>({
-      requestFn: () => classroomio.organization.automation.keys[':keyId'].$delete({ param: { keyId } }),
+      requestFn: () => classroomhub.organization.automation.keys[':keyId'].$delete({ param: { keyId } }),
       logContext: 'revoking automation key',
       onSuccess: (response) => {
         this.keys = this.keys.map((key) => (key.id === response.data.id ? response.data : key));
@@ -96,7 +96,7 @@ class AutomationApi extends BaseApiWithErrors {
 
   async rotateKey(keyId: string) {
     return this.execute<RotateAutomationKeyRequest>({
-      requestFn: () => classroomio.organization.automation.keys[':keyId'].rotate.$post({ param: { keyId } }),
+      requestFn: () => classroomhub.organization.automation.keys[':keyId'].rotate.$post({ param: { keyId } }),
       logContext: 'rotating automation key',
       onSuccess: (response) => {
         this.generatedSecret = response.data.secret;

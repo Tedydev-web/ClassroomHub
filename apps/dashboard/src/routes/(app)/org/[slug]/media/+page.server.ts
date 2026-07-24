@@ -1,5 +1,5 @@
 import type { GetAssetStorageSuccess, ListAssetsSuccess } from '$features/media/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
 function parsePositiveInt(value: string | null, fallback: number) {
@@ -40,10 +40,10 @@ export const load = async ({ parent, cookies, url }) => {
 
   const [assetsResult, storageResult] = await Promise.all([
     safeServerApi<ListAssetsSuccess>(() =>
-      classroomio.organization.assets.$get({ query }, getApiHeaders(cookies, orgId))
+      classroomhub.organization.assets.$get({ query }, getApiHeaders(cookies, orgId))
     ),
     safeServerApi<GetAssetStorageSuccess>(() =>
-      classroomio.organization.assets.storage.$get({}, getApiHeaders(cookies, orgId))
+      classroomhub.organization.assets.storage.$get({}, getApiHeaders(cookies, orgId))
     )
   ]);
 

@@ -1,5 +1,5 @@
 import type { GetLessonSuccess } from '$features/course/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
 export const load = async ({ params, cookies }) => {
@@ -11,7 +11,7 @@ export const load = async ({ params, cookies }) => {
   }
 
   const result = await safeServerApi<GetLessonSuccess>(() =>
-    classroomio.course[':courseId'].lesson[':lessonId'].$get({ param: { courseId, lessonId } }, getApiHeaders(cookies))
+    classroomhub.course[':courseId'].lesson[':lessonId'].$get({ param: { courseId, lessonId } }, getApiHeaders(cookies))
   );
   const lesson = result.ok ? result.body.data : null;
 

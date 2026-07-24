@@ -1,4 +1,4 @@
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 import type { MarksPageData } from '$features/course/utils/marks-utils';
 
@@ -12,7 +12,7 @@ export const load = async ({ params, cookies }) => {
   }
 
   const result = await safeServerApi<{ success: true; data: MarksPageData }>(() =>
-    classroomio.course[':courseId'].mark.gradebook.$get({ param: { courseId } }, getApiHeaders(cookies, ''))
+    classroomhub.course[':courseId'].mark.gradebook.$get({ param: { courseId } }, getApiHeaders(cookies, ''))
   );
   const marksData: MarksPageData | null = result.ok ? result.body.data : null;
 

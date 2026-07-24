@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type { GetMarksRequest, Marks } from '../utils/types';
 
 import { snackbar } from '$features/ui/snackbar/store';
@@ -15,7 +15,7 @@ export class MarkApi extends BaseApiWithErrors {
   async getMarks(courseId: string) {
     await this.execute<GetMarksRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].mark.$get({
+        classroomhub.course[':courseId'].mark.$get({
           param: { courseId }
         }),
       logContext: 'fetching marks',

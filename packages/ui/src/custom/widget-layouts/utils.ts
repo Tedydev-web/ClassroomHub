@@ -85,7 +85,7 @@ export function getOrgDomainForUtm(organization: TWidgetPayload['organization'])
 export function buildPoweredByMarketingUrl(payload: TWidgetPayload): string {
   const orgDomain = getOrgDomainForUtm(payload.organization);
   const params = new URLSearchParams({
-    utm_source: 'classroomio_widget',
+    utm_source: 'classroomhub_widget',
     utm_medium: 'embed',
     utm_campaign: 'powered_by',
     utm_content: payload.widgetId,

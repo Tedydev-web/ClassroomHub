@@ -235,7 +235,7 @@
     const sanitizedDomain = sanitizeDomain(customDomain);
 
     if (sanitizedDomain.includes(BRAND_ROOT_DOMAIN) || sanitizedDomain.includes(TENANT_ROOT_DOMAIN)) {
-      errors.customDomain = $t('components.settings.domains.custom_domain_not_classroomio');
+      errors.customDomain = $t('components.settings.domains.custom_domain_not_classroomhub');
       return;
     }
 

@@ -315,7 +315,7 @@ CLAUDE.md ("Form Structure"). Each personal toggle is a horizontal switch row.
 Reuse the profile API flow: the toggles bind to a `$state` object and save
 through the existing profile-update API class
 (`apps/dashboard/src/lib/features/auth/api/profile.svelte.ts` → `updateProfile()`
-→ `classroomio.account.profile.$put`), sending `emailNotifications` in the
+→ `classroomhub.account.profile.$put`), sending `emailNotifications` in the
 payload. Server side, `PUT /account/profile` → `updateUser()`
 (`apps/api/src/services/account/profile.ts`) → `updateProfile()` query.
 

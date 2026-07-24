@@ -10,10 +10,10 @@ tags: ['Launch Week', 'Self-host', 'Company Update']
 published: true
 ---
 
-![self-host-classroomio](/assets/assets/blog/self-host.png)
+![self-host-classroomhub](/assets/assets/blog/self-host.png)
 _Selfhost ClassroomHub on your Servers_
 
-Today we are happy to share that you can now easily self-host classroomio and use it for whatever purpose you want without paying us a dime. Our mission is to build the simplest yet customisable open source learning management system on the planet, and this is taking us 1 step closer to that goal.
+Today we are happy to share that you can now easily self-host classroomhub and use it for whatever purpose you want without paying us a dime. Our mission is to build the simplest yet customisable open source learning management system on the planet, and this is taking us 1 step closer to that goal.
 
 If you are interested in just trying out the product, it is advisable to use the [cloud version](https://classroom-app.tedydev.io.vn). You can use almost all the features for free on the cloud version unless you need more students. Right now the main reason you'd have to upgrade is because your students are growing. If you don't want to upgrade and/or face this, then you'd be fine self hosting the whole application.
 
@@ -27,4 +27,4 @@ Below is a demo showing you step by step how to self host the project
 
 We want to support self-hosting using a Coolify template or just using a Dockerfile. We currently have Dockerfiles for our api, dashboard, and jobs worker projects however contributions from the open source community would help us in properly testing and improving them.
 
-If you prefer deployment with Docker, do checkout our [docker-compose.yaml](https://github.com/Tedydev-web/classroomio/blob/main/docker-compose.yaml) file to get started and we can kick off a conversation on Github.
+If you prefer deployment with Docker, do checkout our [docker-compose.yaml](https://github.com/Tedydev-web/classroomhub/blob/main/docker-compose.yaml) file to get started and we can kick off a conversation on Github.

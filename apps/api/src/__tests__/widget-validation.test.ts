@@ -140,7 +140,7 @@ describe('Widget Validation Schemas', () => {
       const result = ZWidgetConfig.safeParse({});
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.themePreset).toBe('classroomio');
+        expect(result.data.themePreset).toBe('classroomhub');
         expect(result.data.sortBy).toBe('manual');
         expect(result.data.colors.primaryColor).toBe('#0f172a');
         expect(result.data.layoutOptions.cardGrid.maxCount).toBe(9);
@@ -281,7 +281,7 @@ describe('resolveWidgetPlanGatedFields', () => {
   it('should restrict free plan to one theme', () => {
     const fields = resolveWidgetPlanGatedFields(PLAN.BASIC);
     expect(fields.isPaidPlan).toBe(false);
-    expect(fields.availableThemes).toEqual(['classroomio']);
+    expect(fields.availableThemes).toEqual(['classroomhub']);
     expect(fields.canUseCustomColors).toBe(false);
     expect(fields.canUseCustomCss).toBe(false);
     expect(fields.isBrandingForced).toBe(true);
@@ -296,9 +296,9 @@ describe('resolveWidgetPlanGatedFields', () => {
     expect(fields.isBrandingForced).toBe(false);
   });
 
-  it('should fallback invalid theme to classroomio on free plan', () => {
+  it('should fallback invalid theme to classroomhub on free plan', () => {
     const fields = resolveWidgetPlanGatedFields(PLAN.BASIC, 'graphite');
-    expect(fields.selectedTheme).toBe('classroomio');
+    expect(fields.selectedTheme).toBe('classroomhub');
   });
 
   it('should allow selected theme on paid plan', () => {
@@ -366,6 +366,6 @@ describe('normalizeWidgetConfig', () => {
   it('should handle null/undefined config input', () => {
     const config = normalizeWidgetConfig(null);
     expect(config).toBeDefined();
-    expect(config.themePreset).toBe('classroomio');
+    expect(config.themePreset).toBe('classroomhub');
   });
 });

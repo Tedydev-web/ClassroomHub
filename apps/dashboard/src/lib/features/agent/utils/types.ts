@@ -1,4 +1,4 @@
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type GenerateTextRequest = (typeof classroomio.agent)['generate-text']['$post'];
+export type GenerateTextRequest = (typeof classroomhub.agent)['generate-text']['$post'];
 export type GenerateTextSuccess = Extract<InferResponseType<GenerateTextRequest>, { success: true }>;

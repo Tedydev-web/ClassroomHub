@@ -82,12 +82,15 @@
   <Card.Root class="ui:w-full relative z-10 max-w-[400px] shadow-sm">
     {#if !showOnlyContent || showLogo}
       <Card.Header class="ui:flex ui:flex-col ui:items-center ui:gap-4">
-        <Avatar.Root>
+        <Avatar.Root class="ui:size-14 ui:bg-transparent">
           <Avatar.Image
             src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
             alt={$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}
+            class="ui:object-contain"
           />
-          <Avatar.Fallback>{$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}</Avatar.Fallback>
+          <Avatar.Fallback class="ui:bg-transparent">
+            <img src="/logo-192.png" alt="" class="size-full object-contain" aria-hidden="true" />
+          </Avatar.Fallback>
         </Avatar.Root>
 
         {#if !showOnlyContent}

@@ -6,7 +6,7 @@
   import { AuthUI } from '$features/ui';
   import { currentOrg, mergeAccountOrgFromServer } from '$lib/utils/store/org';
   import { setTheme } from '$lib/utils/functions/theme';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { profile } from '$lib/utils/store/user';
   import { snackbar } from '$features/ui/snackbar/store';
   import { page } from '$app/state';
@@ -46,7 +46,7 @@
     loading = true;
 
     try {
-      const response = await classroomio.invite.link[':token'].accept.$post({
+      const response = await classroomhub.invite.link[':token'].accept.$post({
         param: { token: data.token }
       });
       const result = await response.json();

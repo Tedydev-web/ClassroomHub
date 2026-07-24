@@ -10,7 +10,7 @@ tags: ['Launch Week', 'Company Update']
 published: true
 ---
 
-![classroomio-launch-week-001](/assets/assets/blog/launch-week-001.png)
+![classroomhub-launch-week-001](/assets/assets/blog/launch-week-001.png)
 _Classroom Hub Launch Week 001_
 
 Welcome to our first launch week for ClassroomHub.

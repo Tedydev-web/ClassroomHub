@@ -1,11 +1,11 @@
-import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 
-export type ListAutomationKeysRequest = (typeof classroomio.organization)['automation']['keys']['$get'];
-export type GetAutomationUsageRequest = (typeof classroomio.organization)['automation']['usage']['$get'];
-export type CreateAutomationKeyRequest = (typeof classroomio.organization)['automation']['keys']['$post'];
-export type RevokeAutomationKeyRequest = (typeof classroomio.organization)['automation']['keys'][':keyId']['$delete'];
+export type ListAutomationKeysRequest = (typeof classroomhub.organization)['automation']['keys']['$get'];
+export type GetAutomationUsageRequest = (typeof classroomhub.organization)['automation']['usage']['$get'];
+export type CreateAutomationKeyRequest = (typeof classroomhub.organization)['automation']['keys']['$post'];
+export type RevokeAutomationKeyRequest = (typeof classroomhub.organization)['automation']['keys'][':keyId']['$delete'];
 export type RotateAutomationKeyRequest =
-  (typeof classroomio.organization)['automation']['keys'][':keyId']['rotate']['$post'];
+  (typeof classroomhub.organization)['automation']['keys'][':keyId']['rotate']['$post'];
 
 export type ListAutomationKeysSuccess = Extract<InferResponseType<ListAutomationKeysRequest>, { success: true }>;
 export type GetAutomationUsageSuccess = Extract<InferResponseType<GetAutomationUsageRequest>, { success: true }>;
@@ -17,15 +17,15 @@ export type AutomationKey = ListAutomationKeysSuccess['data'][number];
 export type AutomationKeyType = AutomationKey['type'];
 export type AutomationUsage = GetAutomationUsageSuccess['data'];
 
-export type ListWebhooksRequest = (typeof classroomio.organization)['webhooks']['$get'];
-export type CreateWebhookRequest = (typeof classroomio.organization)['webhooks']['$post'];
-export type UpdateWebhookRequest = (typeof classroomio.organization)['webhooks'][':webhookId']['$put'];
-export type DeleteWebhookRequest = (typeof classroomio.organization)['webhooks'][':webhookId']['$delete'];
-export type TestWebhookRequest = (typeof classroomio.organization)['webhooks'][':webhookId']['test']['$post'];
+export type ListWebhooksRequest = (typeof classroomhub.organization)['webhooks']['$get'];
+export type CreateWebhookRequest = (typeof classroomhub.organization)['webhooks']['$post'];
+export type UpdateWebhookRequest = (typeof classroomhub.organization)['webhooks'][':webhookId']['$put'];
+export type DeleteWebhookRequest = (typeof classroomhub.organization)['webhooks'][':webhookId']['$delete'];
+export type TestWebhookRequest = (typeof classroomhub.organization)['webhooks'][':webhookId']['test']['$post'];
 export type ListWebhookDeliveriesRequest =
-  (typeof classroomio.organization)['webhooks'][':webhookId']['deliveries']['$get'];
+  (typeof classroomhub.organization)['webhooks'][':webhookId']['deliveries']['$get'];
 export type RedeliverWebhookRequest =
-  (typeof classroomio.organization)['webhooks'][':webhookId']['deliveries'][':deliveryId']['redeliver']['$post'];
+  (typeof classroomhub.organization)['webhooks'][':webhookId']['deliveries'][':deliveryId']['redeliver']['$post'];
 
 export type ListWebhooksSuccess = Extract<InferResponseType<ListWebhooksRequest>, { success: true }>;
 export type WebhookEndpoint = ListWebhooksSuccess['data'][number];

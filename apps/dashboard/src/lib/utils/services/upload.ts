@@ -1,4 +1,4 @@
-import { classroomio } from './api';
+import { classroomhub } from './api';
 
 /**
  * Uploads an image file to R2 storage and returns the public URL
@@ -8,7 +8,7 @@ import { classroomio } from './api';
  */
 export async function uploadImage(file: File): Promise<string> {
   try {
-    const response = await classroomio.media.image.$post({
+    const response = await classroomhub.media.image.$post({
       form: {
         file: file
       }

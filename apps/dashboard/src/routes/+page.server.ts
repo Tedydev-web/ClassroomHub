@@ -1,7 +1,7 @@
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
-type GetPublicCoursesRequest = typeof classroomio.organization.courses.public.$get;
+type GetPublicCoursesRequest = typeof classroomhub.organization.courses.public.$get;
 type GetPublicCoursesSuccess = Extract<InferResponseType<GetPublicCoursesRequest>, { success: true }>;
 
 export const load = async ({ parent }) => {
@@ -29,7 +29,7 @@ export const load = async ({ parent }) => {
   }
 
   const coursesResult = await safeServerApi<GetPublicCoursesSuccess>(() =>
-    classroomio.organization.courses.public.$get({
+    classroomhub.organization.courses.public.$get({
       query: { siteName }
     })
   );

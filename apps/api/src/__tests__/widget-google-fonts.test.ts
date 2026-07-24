@@ -29,7 +29,7 @@ describe('Widget Google Fonts', () => {
   it('merges quoted custom Google fonts from typography.fontFamily', () => {
     const config = {
       ...getDefaultWidgetConfig(),
-      themePreset: 'classroomio' as const,
+      themePreset: 'classroomhub' as const,
       typography: {
         ...getDefaultWidgetConfig().typography,
         fontFamily: "'Manrope', ui-sans-serif, sans-serif"
@@ -39,7 +39,7 @@ describe('Widget Google Fonts', () => {
   });
 
   it('exposes serif stacks per theme', () => {
-    expect(getWidgetThemeSerifStack('classroomio')).toContain('Lora');
+    expect(getWidgetThemeSerifStack('classroomhub')).toContain('Lora');
     expect(getWidgetThemeSerifStack('spruce')).toContain('Fraunces');
   });
 });

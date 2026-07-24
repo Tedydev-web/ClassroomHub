@@ -17,4 +17,4 @@ export const NAV_IDS = {
 export const COURSE_SIDEBAR_DEFAULT_WIDTH = 320;
 export const COURSE_SIDEBAR_MIN_WIDTH = 220;
 export const COURSE_SIDEBAR_MAX_WIDTH = 420;
-export const COURSE_SIDEBAR_STORAGE_KEY = 'classroomio-course-sidebar-width';
+export const COURSE_SIDEBAR_STORAGE_KEY = 'classroomhub-course-sidebar-width';

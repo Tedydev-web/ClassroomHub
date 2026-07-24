@@ -992,9 +992,9 @@ MVP can defer:
 
 ## Related Files and References
 
-- [Study from Source PRD](/Users/rotimibest/_pros/classroomio/prd/study-from-source/README.md)
-- [AI Course Assistant PRD](</Users/rotimibest/_pros/classroomio/prd/ai-course-assistant [DONE]/README.md>)
-- [Asset service](/Users/rotimibest/_pros/classroomio/packages/core/src/services/assets/assets.ts)
-- [Uploaded video transcription processor](/Users/rotimibest/_pros/classroomio/apps/jobs/src/processors/media/transcribe-audio.ts)
-- [Course generation runner](/Users/rotimibest/_pros/classroomio/packages/core/src/services/agent/course-generation-runner.ts)
-- [YouTube link form utility](/Users/rotimibest/_pros/classroomio/packages/ui/src/custom/youtube-link-form/youtube-link-utils.ts)
+- [Study from Source PRD](/Users/rotimibest/_pros/classroomhub/prd/study-from-source/README.md)
+- [AI Course Assistant PRD](</Users/rotimibest/_pros/classroomhub/prd/ai-course-assistant [DONE]/README.md>)
+- [Asset service](/Users/rotimibest/_pros/classroomhub/packages/core/src/services/assets/assets.ts)
+- [Uploaded video transcription processor](/Users/rotimibest/_pros/classroomhub/apps/jobs/src/processors/media/transcribe-audio.ts)
+- [Course generation runner](/Users/rotimibest/_pros/classroomhub/packages/core/src/services/agent/course-generation-runner.ts)
+- [YouTube link form utility](/Users/rotimibest/_pros/classroomhub/packages/ui/src/custom/youtube-link-form/youtube-link-utils.ts)

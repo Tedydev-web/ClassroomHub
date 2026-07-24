@@ -22,7 +22,7 @@ docker login
 Use the provided script to build and push both images:
 
 ```bash
-# Default (uses 'classroomio' as username and 'latest' as version)
+# Default (uses 'classroomhub' as username and 'latest' as version)
 ./docker/docker-push.sh
 
 # Custom username
@@ -32,14 +32,14 @@ DOCKERHUB_USERNAME=your-username ./docker/docker-push.sh
 VERSION=v0.1.0 ./docker/docker-push.sh
 
 # Both custom username and version
-DOCKERHUB_USERNAME=classroomio VERSION=v0.1.0 ./docker/docker-push.sh
+DOCKERHUB_USERNAME=classroomhub VERSION=v0.1.0 ./docker/docker-push.sh
 ```
 
 ### Step 3: Verify Images
 
 Check your Docker Hub repository at:
-- https://hub.docker.com/r/classroomio/api
-- https://hub.docker.com/r/classroomio/dashboard
+- https://hub.docker.com/r/classroomhub/api
+- https://hub.docker.com/r/classroomhub/dashboard
 
 ## Method 2: GitHub Actions (Automated)
 
@@ -83,15 +83,15 @@ git push origin v0.1.0
 ### Build API Image
 
 ```bash
-docker build -f docker/Dockerfile.api -t classroomio/api:latest .
-docker push classroomio/api:latest
+docker build -f docker/Dockerfile.api -t classroomhub/api:latest .
+docker push classroomhub/api:latest
 ```
 
 ### Build Dashboard Image
 
 ```bash
-docker build -f docker/Dockerfile.dashboard -t classroomio/dashboard:latest .
-docker push classroomio/dashboard:latest
+docker build -f docker/Dockerfile.dashboard -t classroomhub/dashboard:latest .
+docker push classroomhub/dashboard:latest
 ```
 
 ## Using Published Images
@@ -99,8 +99,8 @@ docker push classroomio/dashboard:latest
 ### Pull Images
 
 ```bash
-docker pull classroomio/api:latest
-docker pull classroomio/dashboard:latest
+docker pull classroomhub/api:latest
+docker pull classroomhub/dashboard:latest
 ```
 
 ### Deploy with Compose
@@ -181,7 +181,7 @@ docker image prune -a
 3. **Enable 2FA** on your Docker Hub account
 4. **Scan images** for vulnerabilities:
    ```bash
-   docker scan classroomio/api:latest
+   docker scan classroomhub/api:latest
    ```
 5. **Use specific version tags** in production, not `latest`
 

@@ -1,5 +1,5 @@
 import type { UIMessage } from 'ai';
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 import type { CourseTemplateId } from '@cio/ai-assistant';
 
 export interface UploadedDocument {
@@ -91,59 +91,59 @@ export interface AiAssistantMessageMetadata {
 
 export type AiAssistantMessage = UIMessage<AiAssistantMessageMetadata>;
 
-export type AgentStatusRequest = typeof classroomio.agent.status.$get;
+export type AgentStatusRequest = typeof classroomhub.agent.status.$get;
 export type AgentStatusSuccess = Extract<InferResponseType<AgentStatusRequest>, { success: true }>;
 export type AgentStatusData = AgentStatusSuccess['data'];
 
-export type AgentUsageRequest = typeof classroomio.agent.usage.$get;
+export type AgentUsageRequest = typeof classroomhub.agent.usage.$get;
 export type AgentUsageSuccess = Extract<InferResponseType<AgentUsageRequest>, { success: true }>;
 export type AgentUsageData = AgentUsageSuccess['data'];
 
-export type AgentHistoryGetRequest = typeof classroomio.agent.history.$get;
+export type AgentHistoryGetRequest = typeof classroomhub.agent.history.$get;
 export type AgentHistoryGetSuccess = Extract<InferResponseType<AgentHistoryGetRequest>, { success: true }>;
 export type AgentHistoryData = AgentHistoryGetSuccess['data'];
 
 export type AgentConversationSummary = AgentHistoryData[number];
 
-export type AgentConversationRequest = (typeof classroomio.agent.history)[':conversationId']['$get'];
+export type AgentConversationRequest = (typeof classroomhub.agent.history)[':conversationId']['$get'];
 export type AgentConversationSuccess = Extract<InferResponseType<AgentConversationRequest>, { success: true }>;
 export type AgentConversation = Omit<AgentConversationSuccess['data'], 'messages'> & {
   messages: AiAssistantMessage[];
 };
 
-export type AgentConversationCreateRequest = typeof classroomio.agent.history.$post;
+export type AgentConversationCreateRequest = typeof classroomhub.agent.history.$post;
 export type AgentConversationCreateSuccess = Extract<
   InferResponseType<AgentConversationCreateRequest>,
   { success: true }
 >;
 export type AgentConversationCreateData = AgentConversationCreateSuccess['data'];
 
-export type AgentHistorySaveRequest = (typeof classroomio.agent.history)[':conversationId']['$put'];
+export type AgentHistorySaveRequest = (typeof classroomhub.agent.history)[':conversationId']['$put'];
 
-export type AgentHistoryRenameRequest = (typeof classroomio.agent.history)[':conversationId']['$patch'];
+export type AgentHistoryRenameRequest = (typeof classroomhub.agent.history)[':conversationId']['$patch'];
 
-export type AgentHistoryDeleteRequest = (typeof classroomio.agent.history)[':conversationId']['$delete'];
+export type AgentHistoryDeleteRequest = (typeof classroomhub.agent.history)[':conversationId']['$delete'];
 
-export type CompactConversationRequest = (typeof classroomio.agent.history)[':conversationId']['compact']['$post'];
+export type CompactConversationRequest = (typeof classroomhub.agent.history)[':conversationId']['compact']['$post'];
 export type CompactConversationSuccess = Extract<InferResponseType<CompactConversationRequest>, { success: true }>;
 
-export type GenerateCourseTitleRequest = (typeof classroomio.agent)['generate-course-title']['$post'];
+export type GenerateCourseTitleRequest = (typeof classroomhub.agent)['generate-course-title']['$post'];
 export type GenerateCourseTitleSuccess = Extract<InferResponseType<GenerateCourseTitleRequest>, { success: true }>;
 export type GenerateCourseTitleData = GenerateCourseTitleSuccess['data'];
 
-export type AgentRunsListRequest = typeof classroomio.agent.runs.$get;
+export type AgentRunsListRequest = typeof classroomhub.agent.runs.$get;
 export type AgentRunsListSuccess = Extract<InferResponseType<AgentRunsListRequest>, { success: true }>;
 export type AgentRunsListData = AgentRunsListSuccess['data'];
 export type AgentRunSummary = AgentRunsListData[number];
 
-export type AgentRunCreateRequest = typeof classroomio.agent.runs.$post;
+export type AgentRunCreateRequest = typeof classroomhub.agent.runs.$post;
 export type AgentRunCreateSuccess = Extract<InferResponseType<AgentRunCreateRequest>, { success: true }>;
 export type AgentRunDetail = AgentRunCreateSuccess['data'];
 export type AgentRun = AgentRunDetail['run'];
 export type AgentRunStep = AgentRunDetail['steps'][number];
 export type AgentRunEvent = AgentRunDetail['events'][number];
 
-export type AgentRunGetRequest = (typeof classroomio.agent.runs)[':runId']['$get'];
-export type AgentRunCancelRequest = (typeof classroomio.agent.runs)[':runId']['cancel']['$post'];
-export type AgentRunRetryRequest = (typeof classroomio.agent.runs)[':runId']['retry']['$post'];
-export type AgentRunResumeRequest = (typeof classroomio.agent.runs)[':runId']['resume']['$post'];
+export type AgentRunGetRequest = (typeof classroomhub.agent.runs)[':runId']['$get'];
+export type AgentRunCancelRequest = (typeof classroomhub.agent.runs)[':runId']['cancel']['$post'];
+export type AgentRunRetryRequest = (typeof classroomhub.agent.runs)[':runId']['retry']['$post'];
+export type AgentRunResumeRequest = (typeof classroomhub.agent.runs)[':runId']['resume']['$post'];

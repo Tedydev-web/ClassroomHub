@@ -1,10 +1,10 @@
-# Scalable Tags Feature PRD (Classroomio)
+# Scalable Tags Feature PRD (Classroomhub)
 
 ## Purpose
-Define a scalable tagging system for Classroomio that improves course discoverability, organization, and personalization across admin, teacher, and student experiences.
+Define a scalable tagging system for Classroomhub that improves course discoverability, organization, and personalization across admin, teacher, and student experiences.
 
 ## Problem Statement
-Classroomio currently supports course type labels (`LIVE_CLASS`, `SELF_PACED`) but does not have a reusable, organization-scoped tagging model for catalog management and discovery.
+Classroomhub currently supports course type labels (`LIVE_CLASS`, `SELF_PACED`) but does not have a reusable, organization-scoped tagging model for catalog management and discovery.
 
 This creates gaps:
 - Course catalogs become harder to browse as organizations scale.
@@ -27,7 +27,7 @@ Hard requirement:
 1. Introduce organization-scoped tags with governance controls.
 2. Support course tagging in v1 with grouped/faceted filtering for scalable discovery.
 3. Add role-aware workflows for admin, teacher, and student.
-4. Integrate tags into existing Classroomio surfaces without breaking current flows.
+4. Integrate tags into existing Classroomhub surfaces without breaking current flows.
 5. Keep query performance strong for large catalogs.
 
 ## Confirmed Decisions

@@ -9,5 +9,5 @@ export const load = async ({ request }) => {
     event: 'github page visited'
   });
 
-  redirect(307, 'https://github.com/Tedydev-web/classroomio');
+  redirect(307, 'https://github.com/Tedydev-web/classroomhub');
 };

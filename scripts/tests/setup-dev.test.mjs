@@ -20,11 +20,11 @@ const EXAMPLES = new Map([
     'PUBLIC_IS_SELFHOSTED=false\nPUBLIC_SERVER_URL=\nPRIVATE_APP_HOST=classroom.tedydev.io.vn\n'
   ],
   ['apps/jobs/.env.example', 'REDIS_URL="redis://localhost:8003"\nDATABASE_URL=""\n'],
-  ['packages/db/.env.example', 'DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"\n']
+  ['packages/db/.env.example', 'DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomhub"\n']
 ]);
 
 async function createFixture() {
-  const rootDirectory = await mkdtemp(path.join(tmpdir(), 'classroomio-setup-'));
+  const rootDirectory = await mkdtemp(path.join(tmpdir(), 'classroomhub-setup-'));
   for (const [relativePath, content] of EXAMPLES) {
     const filePath = path.join(rootDirectory, relativePath);
     await mkdir(path.dirname(filePath), { recursive: true });
@@ -96,7 +96,7 @@ test('explicit mode updates only mode values while local-default consent resolve
   await writeFile(path.join(rootDirectory, 'packages/db/.env'), 'DATABASE_URL="postgresql://external/db"\n');
   await runSetupEnv({ args: ['--apply-local-defaults'], rootDirectory });
   const database = await readValues(rootDirectory, 'packages/db/.env');
-  assert.equal(database.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:8002/classroomio');
+  assert.equal(database.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:8002/classroomhub');
 });
 
 test('development Compose pins images and binds parameterized ports to loopback', async () => {
@@ -132,7 +132,7 @@ test('uses alternate infrastructure ports in generated endpoints', async () => {
   });
   const api = await readValues(rootDirectory, 'apps/api/.env');
 
-  assert.equal(api.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:15432/classroomio');
+  assert.equal(api.get('DATABASE_URL'), 'postgresql://postgres:postgres@localhost:15432/classroomhub');
   assert.equal(api.get('REDIS_URL'), 'redis://localhost:16379');
   assert.equal(api.get('OBJECT_STORAGE_ENDPOINT'), 'http://localhost:19000');
   assert.equal(api.get('SMTP_PORT'), '11025');

@@ -334,7 +334,7 @@
             <div class="min-w-0">
               <p class="ui:text-primary truncate text-sm font-semibold">{$t(themeCard.titleKey)}</p>
               <p class="ui:text-muted-foreground truncate text-xs">
-                {$t('settings.landing_page.gallery.by_classroomio')}
+                {$t('settings.landing_page.gallery.by_classroomhub')}
               </p>
             </div>
             <Button variant="outline" size="sm" onclick={() => handleAddTheme(themeCard.value)}>

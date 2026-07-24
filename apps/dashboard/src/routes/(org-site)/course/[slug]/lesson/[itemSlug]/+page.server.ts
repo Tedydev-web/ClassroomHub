@@ -1,19 +1,19 @@
 import type { MetaTagsProps } from 'svelte-meta-tags';
 
 import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { error } from '@sveltejs/kit';
 
 type GetPublicCourseItemRequest =
-  (typeof classroomio)['org-site']['course'][':courseSlug']['item'][':itemSlug']['$get'];
+  (typeof classroomhub)['org-site']['course'][':courseSlug']['item'][':itemSlug']['$get'];
 type GetPublicCourseItemSuccess = Extract<InferResponseType<GetPublicCourseItemRequest>, { success: true }>;
 
 export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent, request }) => {
   const { tree } = await parent();
 
   const itemResult = await safeServerApi<GetPublicCourseItemSuccess>(() =>
-    classroomio['org-site'].course[':courseSlug'].item[':itemSlug'].$get(
+    classroomhub['org-site'].course[':courseSlug'].item[':itemSlug'].$get(
       { param: { courseSlug: params.slug, itemSlug: params.itemSlug } },
       getApiKeyHeaders()
     )

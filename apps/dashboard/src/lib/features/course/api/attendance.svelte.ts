@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 
 import type { InferResponseType } from '@cio/api/rpc-types';
 import type { TAttendanceUpsert } from '@cio/utils/validation/attendance';
@@ -25,7 +25,7 @@ export class AttendanceApi extends BaseApiWithErrors {
 
     return await this.execute<UpsertAttendanceRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].attendance.$post({
+        classroomhub.course[':courseId'].attendance.$post({
           param: { courseId: fields.courseId },
           json: result.data
         }),

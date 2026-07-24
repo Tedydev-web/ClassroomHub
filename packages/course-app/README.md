@@ -17,7 +17,7 @@ Create a beautiful course website in seconds with our SvelteKit-powered CLI tool
 ## Quick Start
 
 ```bash
-pnpx @classroomio/course-app@latest
+pnpx @classroomhub/course-app@latest
 ```
 
 You'll be prompted to:

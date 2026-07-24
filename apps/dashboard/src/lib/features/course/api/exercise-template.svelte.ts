@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type {
   GetTemplateByIdData,
   GetTemplateByIdRequest,
@@ -24,7 +24,7 @@ class ExerciseTemplateApi extends BaseApi {
   async fetchTemplateById(courseId: string, id: string) {
     await this.execute<GetTemplateByIdRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise.template[':id'].$get({
+        classroomhub.course[':courseId'].exercise.template[':id'].$get({
           param: { courseId, id }
         }),
       logContext: 'fetching exercise template by id',
@@ -49,7 +49,7 @@ class ExerciseTemplateApi extends BaseApi {
 
     await this.execute<GetTemplateByTagRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise.template.tag[':tag'].$get({
+        classroomhub.course[':courseId'].exercise.template.tag[':tag'].$get({
           param: { courseId, tag }
         }),
       logContext: 'fetching exercise template by tag',

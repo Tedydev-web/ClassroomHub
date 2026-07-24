@@ -3,7 +3,7 @@ import { TOKEN_PACK } from '@cio/utils/plans';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import type { RequestEvent } from './$types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 export const GET = async ({ url, locals, cookies }: RequestEvent) => {
@@ -23,7 +23,7 @@ export const GET = async ({ url, locals, cookies }: RequestEvent) => {
     return new Response('Missing orgId', { status: 400 });
   }
 
-  const accountResponse = await classroomio.account.$get(undefined, getApiHeaders(cookies));
+  const accountResponse = await classroomhub.account.$get(undefined, getApiHeaders(cookies));
 
   if (!accountResponse.ok) {
     return new Response('Failed to fetch account data', { status: 500 });

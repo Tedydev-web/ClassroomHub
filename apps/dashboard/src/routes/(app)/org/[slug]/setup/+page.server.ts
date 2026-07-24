@@ -1,7 +1,7 @@
-import { classroomio, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
-type GetOrganizationSetupRequest = typeof classroomio.organization.setup.$get;
+type GetOrganizationSetupRequest = typeof classroomhub.organization.setup.$get;
 type GetOrganizationSetupSuccess = Extract<InferResponseType<GetOrganizationSetupRequest>, { success: true }>;
 
 export const load = async ({ params, parent, cookies }) => {
@@ -14,7 +14,7 @@ export const load = async ({ params, parent, cookies }) => {
 
   const setupApiStart = performance.now();
   const result = await safeServerApi<GetOrganizationSetupSuccess>(() =>
-    classroomio.organization.setup.$get({ query: { siteName } }, getApiHeaders(cookies, orgId))
+    classroomhub.organization.setup.$get({ query: { siteName } }, getApiHeaders(cookies, orgId))
   );
   const setupApiMs = Math.round((performance.now() - setupApiStart) * 100) / 100;
 

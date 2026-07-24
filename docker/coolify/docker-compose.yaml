@@ -9,13 +9,13 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-classroomio}
+      - POSTGRES_DB=${POSTGRES_DB:-classroomhub}
       - POSTGRES_USER=$SERVICE_USER_POSTGRES
       - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $SERVICE_USER_POSTGRES -d ${POSTGRES_DB:-classroomio}"]
+      test: ["CMD-SHELL", "pg_isready -U $SERVICE_USER_POSTGRES -d ${POSTGRES_DB:-classroomhub}"]
       interval: 5s
       timeout: 5s
       retries: 15
@@ -73,7 +73,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3081
-      - DATABASE_URL=postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgres:5432/${POSTGRES_DB:-classroomio}
+      - DATABASE_URL=postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgres:5432/${POSTGRES_DB:-classroomhub}
       - REDIS_URL=redis://redis:6379
       - PUBLIC_IS_SELFHOSTED=false
       - PUBLIC_IS_SELF_OWNED=true
@@ -130,7 +130,7 @@ services:
     environment:
       - NODE_ENV=production
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgres:5432/${POSTGRES_DB:-classroomio}
+      - DATABASE_URL=postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgres:5432/${POSTGRES_DB:-classroomhub}
       - PUBLIC_IS_SELFHOSTED=false
       - PUBLIC_IS_SELF_OWNED=true
       - WEBHOOK_ENCRYPTION_KEY=$SERVICE_HEX_64_WEBHOOKENCRYPTION

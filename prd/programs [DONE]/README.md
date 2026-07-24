@@ -966,18 +966,18 @@ pnpm --filter @cio/api build
 File: `apps/dashboard/src/lib/features/program/utils/types.ts`
 
 ```typescript
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type ListProgramsRequest = typeof classroomio.program.$get;
-export type CreateProgramRequest = typeof classroomio.program.$post;
-export type GetProgramRequest = (typeof classroomio.program)[':programId']['$get'];
-export type UpdateProgramRequest = (typeof classroomio.program)[':programId']['$put'];
-export type ListProgramCoursesRequest = (typeof classroomio.program)[':programId']['courses']['$get'];
-export type AddCourseToProgramRequest = (typeof classroomio.program)[':programId']['courses']['$post'];
-export type ListProgramMembersRequest = (typeof classroomio.program)[':programId']['members']['$get'];
-export type AddProgramMembersRequest = (typeof classroomio.program)[':programId']['members']['$post'];
-export type ListProgramNewsfeedRequest = (typeof classroomio.program)[':programId']['newsfeed']['$get'];
-export type CreateProgramNewsfeedRequest = (typeof classroomio.program)[':programId']['newsfeed']['$post'];
+export type ListProgramsRequest = typeof classroomhub.program.$get;
+export type CreateProgramRequest = typeof classroomhub.program.$post;
+export type GetProgramRequest = (typeof classroomhub.program)[':programId']['$get'];
+export type UpdateProgramRequest = (typeof classroomhub.program)[':programId']['$put'];
+export type ListProgramCoursesRequest = (typeof classroomhub.program)[':programId']['courses']['$get'];
+export type AddCourseToProgramRequest = (typeof classroomhub.program)[':programId']['courses']['$post'];
+export type ListProgramMembersRequest = (typeof classroomhub.program)[':programId']['members']['$get'];
+export type AddProgramMembersRequest = (typeof classroomhub.program)[':programId']['members']['$post'];
+export type ListProgramNewsfeedRequest = (typeof classroomhub.program)[':programId']['newsfeed']['$get'];
+export type CreateProgramNewsfeedRequest = (typeof classroomhub.program)[':programId']['newsfeed']['$post'];
 
 export type ListProgramsSuccess = Extract<InferResponseType<ListProgramsRequest>, { success: true }>;
 export type ProgramItem = ListProgramsSuccess['data'][number];
@@ -994,7 +994,7 @@ export type ProgramMember = ListProgramMembersSuccess['data'][number];
 export type ListProgramNewsfeedSuccess = Extract<InferResponseType<ListProgramNewsfeedRequest>, { success: true }>;
 export type ProgramNewsfeedPost = ListProgramNewsfeedSuccess['data'][number];
 
-export type EnrolledProgramsRequest = typeof classroomio.organization.programs.enrolled['$get'];
+export type EnrolledProgramsRequest = typeof classroomhub.organization.programs.enrolled['$get'];
 export type EnrolledProgramsSuccess = Extract<InferResponseType<EnrolledProgramsRequest>, { success: true }>;
 export type EnrolledProgram = EnrolledProgramsSuccess['data'][number];
 ```

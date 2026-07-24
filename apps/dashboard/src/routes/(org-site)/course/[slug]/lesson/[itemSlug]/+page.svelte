@@ -9,7 +9,7 @@
   } from '@cio/ui/custom/public-course';
   import { getExerciseQuestionLabels } from '$features/course/components/exercise/question-labels';
   import { t } from '$lib/utils/functions/translations';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
 
   /** Build a fully-qualified HLS URL from the relative `/hls/{assetId}/...` shape. */
   function resolveHlsUrl(rawUrl: string): string {
@@ -18,7 +18,7 @@
     if (!match) return rawUrl;
 
     const [, assetId, rest] = match;
-    const built = classroomio.hls[':assetId']['*'].$url({ param: { assetId } });
+    const built = classroomhub.hls[':assetId']['*'].$url({ param: { assetId } });
     return built.toString().replace(/\/\*$/, '') + '/' + rest;
   }
 
@@ -29,7 +29,7 @@
    * already have access to via this lesson URL.
    */
   async function mintPublicHlsCookie(courseSlug: string, itemSlug: string): Promise<void> {
-    await classroomio['org-site'].course[':courseSlug'].item[':itemSlug']['hls-cookie'].$post({
+    await classroomhub['org-site'].course[':courseSlug'].item[':itemSlug']['hls-cookie'].$post({
       param: { courseSlug, itemSlug }
     });
   }

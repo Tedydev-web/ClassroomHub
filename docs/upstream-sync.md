@@ -2,8 +2,8 @@
 
 The fork keeps two remotes:
 
-- `origin`: `Tedydev-web/classroomio`, the independently operated product repository.
-- `upstream`: `classroomio/classroomio`, fetch-only reference source.
+- `origin`: `Tedydev-web/classroomhub`, the independently operated product repository.
+- `upstream`: `classroomhub/classroomhub`, fetch-only reference source.
 
 Only sync commits merged into `upstream/main`. Upstream feature branches are unreviewed inputs and must not be merged directly into the product branch.
 

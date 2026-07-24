@@ -34,7 +34,7 @@
       {/if}
       <a
         href={resolve(coursesPath, {})}
-        title="{$t('navigation.goto')} {isCoursePage ? $t('navigation.courses') : $t('navigation.classroomio_home')}"
+        title="{$t('navigation.goto')} {isCoursePage ? $t('navigation.courses') : $t('navigation.classroomhub_home')}"
         id="logo"
         class="line-clamp-1 text-lg"
       >

@@ -13,7 +13,7 @@
   import TargetIcon from '@lucide/svelte/icons/target';
   import UserRoundIcon from '@lucide/svelte/icons/user-round';
   import { t } from '$lib/utils/functions/translations';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { currentOrg, currentOrgDomain } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { coursesApi } from '$features/course/api';
@@ -133,7 +133,7 @@
 
   async function loadLoginStreak() {
     try {
-      const response = await classroomio.dash['login-streak'].$get();
+      const response = await classroomhub.dash['login-streak'].$get();
       const result = await response.json();
 
       if (result.success) {

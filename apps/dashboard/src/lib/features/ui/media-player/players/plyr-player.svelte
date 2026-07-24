@@ -4,7 +4,7 @@
   import type { MediaPlayerOptions } from '../types';
   import { isYoutubeUrl, getYoutubeVideoId } from '../utils';
   import { PLYR_DEFAULT_CONTROLS } from './constants';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import type Plyr from 'plyr';
 
   /**
@@ -25,7 +25,7 @@
     if (!match) return src;
 
     const [, assetId, rest] = match;
-    const built = classroomio.hls[':assetId']['*'].$url({ param: { assetId } });
+    const built = classroomhub.hls[':assetId']['*'].$url({ param: { assetId } });
     return built.toString().replace(/\/\*$/, '') + '/' + rest;
   }
 

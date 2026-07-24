@@ -1,9 +1,9 @@
 import type { TProfile } from '@cio/db/types';
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 
 export async function getProfile(email: string): Promise<TProfile | null> {
   try {
-    const response = await classroomio.account.profile.$get({
+    const response = await classroomhub.account.profile.$get({
       query: { email }
     });
 

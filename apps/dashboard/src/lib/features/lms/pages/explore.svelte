@@ -23,7 +23,7 @@
   $effect(() => {
     if (!browser) return;
     void sortKey;
-    localStorage.setItem('classroomio_filter_course_key', sortKey);
+    localStorage.setItem('classroomhub_filter_course_key', sortKey);
   });
 
   const filteredExploreCourses: RecommendedCourses = $derived.by(() => {
@@ -68,7 +68,7 @@
       $courseMetaDeta.view = courseView;
     }
 
-    sortKey = parseCourseSortValue(localStorage.getItem('classroomio_filter_course_key'));
+    sortKey = parseCourseSortValue(localStorage.getItem('classroomhub_filter_course_key'));
   });
 
   $effect(() => {

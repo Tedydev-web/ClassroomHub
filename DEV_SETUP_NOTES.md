@@ -1,6 +1,6 @@
 # ClassroomHub — Local Dev Setup Guide
 
-A practical guide to running classroomio locally for development, plus a
+A practical guide to running classroomhub locally for development, plus a
 troubleshooting reference for the errors you're likely to hit. Use it to set up a
 fresh machine or to onboard a new contributor.
 
@@ -95,10 +95,10 @@ only because the services bind to loopback.
 
 | Service | Connection | Development credentials |
 |---------|------------|-------------------------|
-| PostgreSQL | `postgresql://postgres:postgres@localhost:8002/classroomio` | User `postgres`, password `postgres`, database `classroomio` |
+| PostgreSQL | `postgresql://postgres:postgres@localhost:8002/classroomhub` | User `postgres`, password `postgres`, database `classroomhub` |
 | Redis | `redis://localhost:8003` | No password |
-| MinIO S3 | `http://localhost:8004` | Access key `classroomio`, secret key `classroomio-dev-only` |
-| MinIO console | `http://localhost:8005` | User `classroomio`, password `classroomio-dev-only` |
+| MinIO S3 | `http://localhost:8004` | Access key `classroomhub`, secret key `classroomhub-dev-only` |
+| MinIO console | `http://localhost:8005` | User `classroomhub`, password `classroomhub-dev-only` |
 | Mailpit SMTP | `localhost:8006` | No authentication |
 | Mailpit UI | `http://localhost:8007` | No authentication |
 
@@ -168,8 +168,8 @@ projects.
 
 | Remote | URL | Policy |
 |--------|-----|--------|
-| `origin` | `https://github.com/Tedydev-web/classroomio.git` | Fetch and push this fork |
-| `upstream` | `https://github.com/classroomio/classroomio.git` | Fetch only; push is disabled |
+| `origin` | `https://github.com/Tedydev-web/classroomhub.git` | Fetch and push this fork |
+| `upstream` | `https://github.com/classroomhub/classroomhub.git` | Fetch only; push is disabled |
 
 The working integration branch is `main`. Follow [`docs/git-workflow.md`](docs/git-workflow.md)
 for feature branches and [`docs/upstream-sync.md`](docs/upstream-sync.md) before importing
@@ -222,7 +222,7 @@ into both files.
 **`apps/api/.env`**
 ```bash
 PORT=8001
-DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomio"
+DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomhub"
 REDIS_URL="redis://localhost:8003"
 PUBLIC_SERVER_URL="http://localhost:8001"
 TRUSTED_ORIGINS="http://localhost:8000"        # the dashboard dev origin

@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CreateWidgetInput,
   CreateWidgetRequest,
@@ -23,7 +23,7 @@ class WidgetApi extends BaseApiWithErrors {
 
   async getWidgets() {
     return this.execute<GetWidgetsRequest>({
-      requestFn: () => classroomio.organization.widgets.$get(),
+      requestFn: () => classroomhub.organization.widgets.$get(),
       logContext: 'fetching widgets',
       onSuccess: (response) => {
         this.widgets = response.data;
@@ -34,7 +34,7 @@ class WidgetApi extends BaseApiWithErrors {
   async getWidget(widgetId: string) {
     return this.execute<GetWidgetDetailRequest>({
       requestFn: () =>
-        classroomio.organization.widgets[':widgetId'].$get({
+        classroomhub.organization.widgets[':widgetId'].$get({
           param: { widgetId }
         }),
       logContext: 'fetching widget detail',
@@ -54,7 +54,7 @@ class WidgetApi extends BaseApiWithErrors {
 
     const response = await this.execute<CreateWidgetRequest>({
       requestFn: () =>
-        classroomio.organization.widgets.$post({
+        classroomhub.organization.widgets.$post({
           json: result.data
         }),
       logContext: 'creating widget',
@@ -77,7 +77,7 @@ class WidgetApi extends BaseApiWithErrors {
 
     const response = await this.execute<UpdateWidgetRequest>({
       requestFn: () =>
-        classroomio.organization.widgets[':widgetId'].$put({
+        classroomhub.organization.widgets[':widgetId'].$put({
           param: { widgetId },
           json: result.data
         }),
@@ -95,7 +95,7 @@ class WidgetApi extends BaseApiWithErrors {
   async publishWidget(widgetId: string) {
     return this.execute<PublishWidgetRequest>({
       requestFn: () =>
-        classroomio.organization.widgets[':widgetId'].publish.$post({
+        classroomhub.organization.widgets[':widgetId'].publish.$post({
           param: { widgetId }
         }),
       logContext: 'publishing widget',
@@ -108,7 +108,7 @@ class WidgetApi extends BaseApiWithErrors {
   async rollbackWidget(widgetId: string, versionId: string) {
     return this.execute<RollbackWidgetRequest>({
       requestFn: () =>
-        classroomio.organization.widgets[':widgetId'].rollback.$post({
+        classroomhub.organization.widgets[':widgetId'].rollback.$post({
           param: { widgetId },
           json: { versionId }
         }),
@@ -122,7 +122,7 @@ class WidgetApi extends BaseApiWithErrors {
   async deleteWidget(widgetId: string) {
     return this.execute<DeleteWidgetRequest>({
       requestFn: () =>
-        classroomio.organization.widgets[':widgetId'].$delete({
+        classroomhub.organization.widgets[':widgetId'].$delete({
           param: { widgetId }
         }),
       logContext: 'deleting widget',

@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import type { TCancelOrgPlan, TCreateOrgPlan, TUpdateOrgPlan } from '@cio/utils/validation/organization';
 
 /**
@@ -13,7 +13,7 @@ class OrgPlanApi extends BaseApi {
    */
   async createOrgPlan(params: TCreateOrgPlan) {
     return this.execute({
-      requestFn: () => classroomio.organization.plan.$post({ json: params }),
+      requestFn: () => classroomhub.organization.plan.$post({ json: params }),
       logContext: 'creating organization plan'
     });
   }
@@ -25,7 +25,7 @@ class OrgPlanApi extends BaseApi {
    */
   async updateOrgPlan(params: TUpdateOrgPlan) {
     return this.execute({
-      requestFn: () => classroomio.organization.plan.$put({ json: params }),
+      requestFn: () => classroomhub.organization.plan.$put({ json: params }),
       logContext: 'updating organization plan'
     });
   }
@@ -37,7 +37,7 @@ class OrgPlanApi extends BaseApi {
    */
   async cancelOrgPlan(params: TCancelOrgPlan) {
     return this.execute({
-      requestFn: () => classroomio.organization.plan.cancel.$post({ json: params }),
+      requestFn: () => classroomhub.organization.plan.cancel.$post({ json: params }),
       logContext: 'canceling organization plan'
     });
   }

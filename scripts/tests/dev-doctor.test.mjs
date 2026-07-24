@@ -62,7 +62,7 @@ test('inspects env metadata without returning secret values', async () => {
       envPath,
       [
         '# local fixture',
-        'DATABASE_URL="postgresql://secret-user:secret-password@localhost:8002/classroomio"',
+        'DATABASE_URL="postgresql://secret-user:secret-password@localhost:8002/classroomhub"',
         'PRIVATE_SERVER_KEY="super-secret-value"',
         'PUBLIC_IS_SELFHOSTED=false',
         'PUBLIC_IS_SELF_OWNED=true'
