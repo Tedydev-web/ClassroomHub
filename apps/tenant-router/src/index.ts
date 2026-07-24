@@ -54,6 +54,13 @@ interface Env {
   /** Optional analytics upstream. Unset disables the first-party PostHog proxy. */
   POSTHOG_UPSTREAM_HOST?: string;
   /**
+   * Comma-separated hosts that the wildcard route catches but that must reach
+   * their origin unchanged — the public API and the R2 asset domain. The two
+   * internal origins (API/DASHBOARD upstreams) are always added, so this only
+   * needs the browser-facing service hosts that are not tenants.
+   */
+  DIRECT_PASSTHROUGH_HOSTS?: string;
+  /**
    * Cloudflare Access service token for the upstream origins. Both origins are
    * ordinary proxied hostnames, so without a policy in front of them a caller can
    * reach the dashboard and API directly and skip this Worker — and with it the
@@ -294,6 +301,24 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const originalHost = request.headers.get('host') ?? url.host;
+
+    // The wildcard route binds this Worker to every *.classroom.io.vn host so a
+    // newly created tenant resolves without touching Cloudflare. The cost is that
+    // the Worker now also intercepts hosts that must reach their origin untouched:
+    // the public API, the R2 asset domain, and the two internal origins the Worker
+    // itself forwards to. Hand those straight back to the origin.
+    //
+    // `fetch(request)` does not loop: Cloudflare does not re-invoke a Worker on a
+    // subrequest to a route bound to that same Worker, so this reaches the origin
+    // (tunnel or R2) exactly as a direct hit would have before the wildcard route.
+    const passthroughHosts = new Set(
+      [env.API_UPSTREAM_HOST, env.DASHBOARD_UPSTREAM_HOST, ...(env.DIRECT_PASSTHROUGH_HOSTS ?? '').split(',')]
+        .map((host) => host.trim())
+        .filter(Boolean)
+    );
+    if (passthroughHosts.has(originalHost)) {
+      return fetch(request);
+    }
 
     // Legacy learning apex → permanent redirect to marketing apex.
     if (originalHost === env.APEX_REDIRECT_HOST) {
