@@ -106,3 +106,4 @@ apps/db-agent
 
 # Fumadocs generated output (docs site migrated to Blume)
 apps/docs/.source/
+!apps/api/src/__tests__/dashboard-base-url.test.ts

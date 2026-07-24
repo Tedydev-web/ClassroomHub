@@ -1,6 +1,7 @@
 import { DASHBOARD_HOST, TENANT_ROOT_DOMAIN } from '@cio/utils/constants/domains';
 
 import { env } from './env';
+import { isSelfOwnedDeployment } from './deployment';
 
 /**
  * Dashboard host helpers for links embedded in emails and other outbound URLs.
@@ -35,20 +36,34 @@ export type DashboardOrg = {
  * login) so links land on the org's public site.
  *
  * Resolution order (highest precedence first):
- *  1. Org's verified `customDomain`  → `https://<customDomain>`
- *  2. `DASHBOARD_ORIGIN` env var      → that value (self-hosted override)
- *  3. `NODE_ENV === 'development'`    → `http://localhost:8000`
- *  4. Org's `siteName`                → `https://<siteName>.<tenant root>`
- *  5. Final fallback                  → configured product dashboard host
+ *  1. Org's verified `customDomain`   → `https://<customDomain>`
+ *  2. Hosted tenant `siteName`         → `https://<siteName>.<tenant root>`
+ *     (self-owned production only)
+ *  3. `DASHBOARD_ORIGIN` env var       → that value (self-hosted override)
+ *  4. `NODE_ENV === 'development'`     → `http://localhost:8000`
+ *  5. Org's `siteName`                 → `https://<siteName>.<tenant root>`
+ *  6. Final fallback                   → configured product dashboard host
  *
- * `customDomain` wins over `DASHBOARD_ORIGIN` because per-org BYOD must
- * override the platform-wide self-hosted dashboard host for that org's URLs.
+ * Both `customDomain` and a hosted tenant `siteName` win over `DASHBOARD_ORIGIN`
+ * for the same reason: a per-org URL must override the platform-wide dashboard
+ * host for that org's links. Without step 2, `DASHBOARD_ORIGIN` (the admin host,
+ * e.g. `hub.<root>`) captured every student invite and sent learners to the
+ * platform host instead of their own org site.
  *
  * For teacher/tutor/admin dashboard actions in email, use `getAppBaseUrl()`.
  */
 export function getDashboardBaseUrl(org?: DashboardOrg): string {
   if (org?.customDomain && org.isCustomDomainVerified) {
     return `https://${org.customDomain}`;
+  }
+
+  // A tenant's own subdomain is a per-org URL, so on the hosted multi-tenant
+  // platform it must beat the platform-wide DASHBOARD_ORIGIN — exactly the
+  // precedence a verified customDomain gets above. Gated to self-owned
+  // production so local dev (localhost below) and self-hosted single-host
+  // installs (no routable `<siteName>.<root>` subdomains) are unaffected.
+  if (isSelfOwnedDeployment && env.NODE_ENV === 'production' && org?.siteName) {
+    return `https://${org.siteName}.${TENANT_ROOT_DOMAIN}`;
   }
 
   if (env.DASHBOARD_ORIGIN) {
