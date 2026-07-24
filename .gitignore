@@ -96,3 +96,9 @@ apps/db-agent
 !docs/
 !docs/brand/
 !docs/brand/**
+
+# Stray brand-kit export drop at repo root — canonical brand sources live in docs/brand/
+/ClassroomHub_Icon_Assets_v2/
+
+# Fumadocs generated output (docs site migrated to Blume)
+apps/docs/.source/

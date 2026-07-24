@@ -15,6 +15,37 @@ The panel has no user account of its own. Access is controlled by a single `SUPE
 
 ---
 
+## Implementation Status
+
+_Last verified 2026-07-24 at the file / route-mount / middleware level. `apps/admin`: `svelte-check` 0 errors, `vitest` 13/13 pass, `build` (adapter-node) succeeds._
+
+| Phase | Scope | Status |
+| --- | --- | --- |
+| Phase 1 — API layer | env var, `superAdminMiddleware`, admin queries / services / routes, mounted at `/admin` | ✅ Done |
+| Phase 2 — `apps/admin` app | scaffold, password gate, users table + profile (chats, credits, impersonate), create-org, dark mode | ✅ Done |
+| Phase 3 — AI gateway | `ai_gateway_settings` + `ai_gateway_org_policy` tables, validation, `/admin/ai/*` routes, 3 operator screens + nav | ✅ Core done — gaps below |
+
+### Verified present
+
+- **Auth**: `superAdminMiddleware` (timing-safe `X-Super-Admin-Key`) applied on both `adminRouter` (`/admin/*`) and `adminAiRouter` (`/admin/ai/*`). Gateway secrets returned only through `getRedactedGatewaySettings`.
+- **Phase 3 routes**: all 11 endpoints exist and are mounted — `GET /ai/health|quota|settings|orgs|runs`, `PATCH /ai/settings|orgs/:orgId`, `POST /ai/pause|resume|breaker/reset|runs/:runId/cancel`.
+- **Phase 3 screens**: `/ai` (health checks + quota windows + kill-switch pause/resume/breaker-reset), `/ai/orgs` (per-org priority-weight edit + block/unblock + limits), `/ai/runs` (list + status-filter tabs + force-cancel). Nav has an "AI Gateway" group with Overview / Organizations / Runs sub-tabs.
+
+### Deferred / not implemented
+
+- **Audit trail** for `pause` / `resume` / `priorityWeight` / `block` — not built. PRD §3e flagged this as an open question in the brainstorm report; there is no `ai_gateway_audit` table, route, or UI. (The `*_invite_audit` tables in the codebase are unrelated — they trail course/org invites.)
+- **Live-load panel** on `/ai` (§3d.5: global concurrency in use, active/queued totals) — not surfaced.
+- **Run-event expansion** on `/ai/runs` (§3d: expand a row to recent `ai_agent_run_event` for triage) — not implemented. List, status filter, and force-cancel are present.
+- **Settings editor UI** — `PATCH /admin/ai/settings` exists on the API, but there is no allowlist / concurrency / window editor screen. Intentionally out of scope this round; operate via curl / `ccs` CLI.
+- **Slice-boundary pause messaging** (§3e) — the UI does not yet state that pause takes effect at the next slice boundary rather than mid-tool-call.
+
+### Deviations from the plan (implemented, different shape than "Files to Create")
+
+- Gateway settings + window-consumption logic lives in `@cio/core/services/agent/gateway-settings-store` and `gateway-runtime`, not the PRD-listed `packages/db/src/queries/admin/ai-gateway.ts`. Deliverable met; file path differs.
+- `/admin/ai` is mounted directly in `app.ts` with its own `superAdminMiddleware`, kept separate from the aggregate `adminRouter`, rather than nested inside it. Auth is enforced either way.
+
+---
+
 ## Confirmed Decisions
 
 1. **Separate app**: `apps/admin/` — own SvelteKit app, own `package.json`, own deployment. Zero code shared with `apps/dashboard/` at the bundle level.

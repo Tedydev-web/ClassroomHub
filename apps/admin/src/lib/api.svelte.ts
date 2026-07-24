@@ -1,4 +1,14 @@
-import type { AdminUserWithStats, ChatConversation, ChatSummary, CreatedOrg, ListUsersResult } from './types';
+import type {
+  AdminUserWithStats,
+  ChatConversation,
+  ChatSummary,
+  CreatedOrg,
+  GatewayHealth,
+  GatewayOrgs,
+  GatewayQuota,
+  GatewayRun,
+  ListUsersResult
+} from './types';
 
 /**
  * Thin client over the super-admin API. Every request carries the operator's
@@ -27,9 +37,14 @@ export class AdminApi {
     }
 
     if (!res.ok || !body || typeof body !== 'object' || (body as { success?: boolean }).success !== true) {
+      // `error` is a string for AppError responses, but zValidator rejections put a
+      // raw ZodError object here — only trust it when it is actually a string, else
+      // the operator sees "[object Object]" instead of a reason.
+      const errField = (body as { error?: unknown })?.error;
+      const msgField = (body as { message?: unknown })?.message;
       const message =
-        (body as { error?: string; message?: string })?.error ??
-        (body as { message?: string })?.message ??
+        (typeof errField === 'string' && errField) ||
+        (typeof msgField === 'string' && msgField) ||
         `Request failed (${res.status})`;
       throw new Error(message);
     }
@@ -76,5 +91,44 @@ export class AdminApi {
       method: 'POST',
       body: JSON.stringify(input)
     });
+  }
+
+  // --- AI gateway ---
+
+  gatewayHealth(): Promise<GatewayHealth> {
+    return this.call<GatewayHealth>('/ai/health');
+  }
+
+  gatewayQuota(): Promise<GatewayQuota> {
+    return this.call<GatewayQuota>('/ai/quota');
+  }
+
+  gatewayPause(reason: string): Promise<unknown> {
+    return this.call('/ai/pause', { method: 'POST', body: JSON.stringify({ reason }) });
+  }
+
+  gatewayResume(): Promise<unknown> {
+    return this.call('/ai/resume', { method: 'POST' });
+  }
+
+  gatewayResetBreaker(): Promise<unknown> {
+    return this.call('/ai/breaker/reset', { method: 'POST' });
+  }
+
+  gatewayOrgs(): Promise<GatewayOrgs> {
+    return this.call<GatewayOrgs>('/ai/orgs');
+  }
+
+  updateGatewayOrg(orgId: string, values: Record<string, unknown>): Promise<unknown> {
+    return this.call(`/ai/orgs/${orgId}`, { method: 'PATCH', body: JSON.stringify(values) });
+  }
+
+  gatewayRuns(status?: string): Promise<GatewayRun[]> {
+    const q = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this.call<GatewayRun[]>(`/ai/runs${q}`);
+  }
+
+  cancelGatewayRun(runId: string): Promise<unknown> {
+    return this.call(`/ai/runs/${runId}/cancel`, { method: 'POST' });
   }
 }

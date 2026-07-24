@@ -15,8 +15,8 @@ export default defineConfig({
   description:
     'Learn how to create customer academies, partner certification programs, and employee training workflows in ClassroomHub.',
   logo: {
-    text: 'ClassroomHub',
-    image: '/docs/logo-192.png',
+    text: '',
+    image: '/docs/wordmark.svg',
     href: '/docs'
   },
   content: {

@@ -86,18 +86,20 @@
 
   const nav = [
     { href: '/users', label: 'Users' },
-    { href: '/orgs/new', label: 'Create org' }
+    { href: '/orgs/new', label: 'Create org' },
+    { href: '/ai', label: 'AI Gateway' }
   ];
   const path = $derived($page.url.pathname);
 </script>
 
-{#snippet brandMark(sm: boolean)}
-  <span
-    class="bg-accent grid place-items-center font-bold text-white {sm
-      ? 'h-[26px] w-[26px] rounded-[6px] text-[15px]'
-      : 'h-11 w-11 rounded-[10px] text-[24px]'}"
-    aria-hidden="true">C</span
-  >
+{#snippet brandIdentity(compact: boolean)}
+  <span class="inline-flex items-center gap-2 rounded-[6px] bg-white px-2 py-1">
+    <img src="/wordmark.svg" alt="ClassroomHub" class={compact ? 'hidden h-6 w-auto sm:block' : 'h-12 w-auto'} />
+    {#if compact}
+      <img src="/logo.svg" alt="ClassroomHub" class="h-7 w-7 sm:hidden" />
+    {/if}
+    <strong class="text-[13px] font-semibold text-[#07152f] {compact ? 'hidden sm:inline' : ''}">Admin</strong>
+  </span>
 {/snippet}
 
 {#snippet themeToggle()}
@@ -141,7 +143,7 @@
 {/snippet}
 
 {#if phase === 'checking'}
-  <div class="grid min-h-screen place-items-center p-4">{@render brandMark(false)}</div>
+  <div class="grid min-h-screen place-items-center p-4">{@render brandIdentity(false)}</div>
 {:else if phase === 'locked'}
   <div class="grid min-h-screen place-items-center p-4">
     <form
@@ -149,8 +151,8 @@
       onsubmit={onSubmit}
     >
       <div class="absolute top-3 right-3">{@render themeToggle()}</div>
-      <div class="mx-auto">{@render brandMark(false)}</div>
-      <h1 class="mt-1">ClassroomHub Admin</h1>
+      <div class="mx-auto">{@render brandIdentity(false)}</div>
+      <h1 class="mt-1">Admin access</h1>
       <p class="text-muted mb-2 text-[13px]">Operator access. Enter the super-admin password.</p>
       <!-- svelte-ignore a11y_autofocus -->
       <input
@@ -173,9 +175,8 @@
     <header
       class="border-border bg-surface sticky top-0 z-10 flex h-[52px] items-center gap-6 border-b px-6 max-[640px]:gap-3 max-[640px]:px-3"
     >
-      <a class="text-text inline-flex items-center gap-2 hover:no-underline" href="/users">
-        {@render brandMark(true)}
-        <span class="text-[14px] font-medium max-[640px]:hidden">ClassroomHub <b class="font-semibold">Admin</b></span>
+      <a class="text-text inline-flex items-center hover:no-underline" href="/users">
+        {@render brandIdentity(true)}
       </a>
       <nav class="mr-auto flex gap-1">
         {#each nav as item (item.href)}

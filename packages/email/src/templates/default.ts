@@ -54,7 +54,7 @@ function buildMasthead(branding: EmailBranding): string {
     return `<span style="font-size:17px;font-weight:600;color:${TEXT};">${orgName}</span>`;
   }
 
-  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${PRODUCT_WORDMARK_URL}" width="160" height="20" alt="${PRODUCT_NAME}" style="display:block;width:160px;height:auto;max-height:24px;" /></a>`;
+  return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${PRODUCT_WORDMARK_URL}" width="180" height="46" alt="${PRODUCT_NAME}" style="display:block;width:180px;height:auto;" /></a>`;
 }
 
 export const getDefaultTemplate = (content: string, branding?: EmailBranding): string => {

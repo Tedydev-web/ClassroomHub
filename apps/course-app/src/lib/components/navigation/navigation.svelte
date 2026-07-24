@@ -38,9 +38,7 @@
   <div class="mx-auto flex h-14 max-w-5xl items-center">
     <div class="mr-4 flex">
       <a href="/" class="mr-6 flex items-center">
-        <img src="/logo-512.png" alt="Course App" class="h-8 w-8" />
-        {' '}
-        <span class="inline-block font-bold">ourseapp</span>
+        <img src="/wordmark.svg" alt="ClassroomHub" class="h-9 w-auto" />
       </a>{' '}
       <nav class="hidden items-center gap-6 text-sm md:flex">
         <a href="#templates" class="hover:text-foreground/80 {activeClass.template} transition-colors">

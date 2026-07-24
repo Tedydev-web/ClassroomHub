@@ -98,7 +98,7 @@
 
 <svelte:head>
   {#if !data.isOrgSite}
-    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/logo-32.png" />
   {/if}
 </svelte:head>

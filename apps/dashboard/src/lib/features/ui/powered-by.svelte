@@ -1,6 +1,4 @@
 <script lang="ts">
-  import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
-
   import { PublicCoursePoweredBy } from '@cio/ui/custom/public-course';
   import { PRODUCT_HOSTS, PRODUCT_NAME, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
   import { t } from '$lib/utils/functions/translations';
@@ -51,20 +49,15 @@
   >
     <span
       class={cn(
-        'relative flex items-center gap-1 overflow-hidden rounded-md border border-gray-100 bg-white text-sm font-medium text-black shadow-sm transition duration-500 group-hover:border-blue-600 group-hover:bg-blue-600 group-hover:text-white dark:border-neutral-700 dark:bg-transparent dark:text-white',
+        'relative flex items-center gap-1 overflow-hidden rounded-md border border-gray-100 bg-white text-sm font-medium text-black shadow-sm transition duration-500 group-hover:border-blue-600 dark:border-neutral-700 dark:bg-white',
 
         showOnlyLogo ? 'border-none p-0' : 'border px-2 py-1'
       )}
     >
-      <ArrowUpRightIcon
-        size={16}
-        class="custom absolute left-[5%] -translate-x-full translate-y-full text-white
-            opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-      />
-      <img src="/logo-192.png" alt="logo" class="h-[24px] opacity-100 group-hover:opacity-0" />
       {#if !showOnlyLogo}
-        {$t('course.navItem.landing_page.powered_by')} {PRODUCT_NAME}
+        {$t('course.navItem.landing_page.powered_by')}
       {/if}
+      <img src="/wordmark.svg" alt={PRODUCT_NAME} class="h-7 w-auto" />
     </span>
   </a>
 {/if}

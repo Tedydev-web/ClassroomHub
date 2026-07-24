@@ -68,7 +68,7 @@ GET /org-site/og/:siteName.png
 
 The `.png` suffix is optional; `normalizeOrgOgSiteName()` strips it before lookup.
 
-The handler returns `image/png` with `ETag`, `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`, and falls back to the dashboard's local `classroomhub-opengraph-image.png` asset on 404 or render errors.
+The handler returns `image/png` with `ETag`, `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`, and falls back to the dashboard's local `classroomhub-opengraph.png` asset on 404 or render errors.
 
 ### Render pipeline
 
