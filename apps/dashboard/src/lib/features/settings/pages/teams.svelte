@@ -14,12 +14,12 @@
   import { validateEmailInString } from '$lib/utils/functions/validator';
 
   import { Badge } from '@cio/ui/base/badge';
-  import { Input } from '@cio/ui/base/input';
+  import { EmailTagsField } from '@cio/ui/custom/email-tags-field';
   import { Button } from '@cio/ui/base/button';
   import { ComingSoon, UpgradeBanner } from '$features/ui';
   import * as Field from '@cio/ui/base/field';
 
-  let emailsStr = $state('');
+  let emails = $state<string[]>([]);
   let errorMessage = $state('');
   let role = $state(ROLE.TUTOR.toString());
   let isRemoving: number | null = $state(null);
@@ -49,7 +49,7 @@
       return;
     }
 
-    const { hasError, error: _error, emails } = validateEmailInString(emailsStr);
+    const { hasError, error: _error, emails: parsedEmails } = validateEmailInString(emails.join(','));
 
     if (hasError) {
       errorMessage = _error;
@@ -57,11 +57,11 @@
     }
 
     errorMessage = '';
-    await orgApi.inviteTeamMembers(emails, parseInt(role));
+    await orgApi.inviteTeamMembers(parsedEmails, parseInt(role));
 
     if (orgApi.success) {
       snackbar.success('snackbar.team_members.invite_sent');
-      emailsStr = '';
+      emails = [];
     } else {
       // Errors are handled by orgApi, but check for field-specific errors
       if (orgApi.errors.emails) {
@@ -110,17 +110,13 @@
     <Field.Description class="mb-5">{$t('course.navItem.people.teams.add_team')}</Field.Description>
 
     <div class="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem_auto] lg:items-start">
-      <Field.Field class="min-w-0">
-        <Input
-          placeholder={$t('course.navItem.people.teams.placeholder')}
-          bind:value={emailsStr}
-          class="w-full"
-          disabled={$isFreePlan}
-        />
-        {#if errorMessage}
-          <Field.Error>{errorMessage}</Field.Error>
-        {/if}
-      </Field.Field>
+      <EmailTagsField
+        className="min-w-0"
+        placeholder={$t('course.navItem.people.teams.placeholder')}
+        bind:emails
+        disabled={$isFreePlan}
+        {errorMessage}
+      />
 
       <div class="w-full lg:w-64">
         <Select.Root type="single" bind:value={role} disabled={$isFreePlan}>

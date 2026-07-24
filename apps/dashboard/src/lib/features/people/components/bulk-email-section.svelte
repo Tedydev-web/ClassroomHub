@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Field from '@cio/ui/base/field';
   import { Button } from '@cio/ui/base/button';
-  import { TextareaField } from '@cio/ui/custom/textarea-field';
+  import { EmailTagsField, isValidEmail } from '@cio/ui/custom/email-tags-field';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -24,21 +24,27 @@
     disabled = false
   }: Props = $props();
 
-  let recipientCsv = $state('');
+  let emails = $state<string[]>([]);
   let sendInviteEmails = $state(true);
   let isSubmitting = $state(false);
 
   async function inviteStudents() {
-    if (!recipientCsv.trim()) {
+    if (!emails.length) {
       snackbar.error(noEmailsKey);
+      return;
+    }
+
+    // Block submit while any chip is an invalid email (flagged red in the field)
+    if (emails.some((email) => !isValidEmail(email))) {
+      snackbar.error('validations.email.not_valid');
       return;
     }
 
     isSubmitting = true;
 
     try {
-      await onInvite(recipientCsv, sendInviteEmails);
-      recipientCsv = '';
+      await onInvite(emails.join(','), sendInviteEmails);
+      emails = [];
     } finally {
       isSubmitting = false;
     }
@@ -50,10 +56,9 @@
   <Field.Description>{$t(descriptionKey)}</Field.Description>
 
   <Field.Group>
-    <TextareaField
+    <EmailTagsField
       label={$t('audience.import.emails_label')}
-      bind:value={recipientCsv}
-      rows={4}
+      bind:emails
       className="w-full"
       {disabled}
       placeholder={$t('audience.import.emails_placeholder')}
