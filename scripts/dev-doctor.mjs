@@ -380,7 +380,7 @@ async function runDoctor() {
   await checkEnvFilesAndProductMode(diagnostics);
   await checkLocalApplications(diagnostics);
 
-  console.log('Classroom development doctor');
+  console.log('ClassroomHub development doctor');
   console.log('================================');
 
   for (const diagnostic of diagnostics) {

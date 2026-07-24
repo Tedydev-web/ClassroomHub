@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>Certificates - Classroom</title>
+  <title>Certificates - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

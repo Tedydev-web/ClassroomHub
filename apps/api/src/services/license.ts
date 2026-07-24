@@ -9,7 +9,7 @@ export type LicenseStatus = {
 const ENABLED_FEATURES: readonly LicenseFeatureId[] = Object.values(LICENSE_FEATURE);
 
 /**
- * Returns the capabilities owned by this Classroom deployment.
+ * Returns the capabilities owned by this ClassroomHub deployment.
  */
 export async function getLicenseStatus(): Promise<LicenseStatus> {
   return { valid: true, features: [...ENABLED_FEATURES] };

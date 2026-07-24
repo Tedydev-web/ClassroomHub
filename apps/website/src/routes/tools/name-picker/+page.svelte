@@ -106,9 +106,9 @@
 </script>
 
 <svelte:head>
-  <title>Random Name Picker | Classroom</title>
+  <title>Random Name Picker | ClassroomHub</title>
   <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
-  <meta property="og:title" content="Random Name Picker | Classroom" />
+  <meta property="og:title" content="Random Name Picker | ClassroomHub" />
   <meta
     property="og:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."
@@ -116,7 +116,7 @@
 
   <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Random Name Picker | Classroom" />
+  <meta name="twitter:title" content="Random Name Picker | ClassroomHub" />
   <meta
     name="twitter:description"
     content="Use this online name picker to draw a random name from a list of names for your online or physical classroom."

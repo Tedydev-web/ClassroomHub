@@ -36,7 +36,7 @@
 </script>
 
 <svelte:head>
-  <title>Student Dashboard - Classroom</title>
+  <title>Student Dashboard - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-4xl">

@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-  <title>Interactive Quizzes - Classroom</title>
+  <title>Interactive Quizzes - ClassroomHub</title>
 </svelte:head>
 
 <section class="mx-auto w-full max-w-6xl">

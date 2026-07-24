@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('audience.import.title')} - Classroom</title>
+  <title>{$t('audience.import.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-3xl">

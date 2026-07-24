@@ -1,6 +1,6 @@
 # Google OAuth across multiple apex domains
 
-This doc explains how Google sign-in works for Classroom across three different host families:
+This doc explains how Google sign-in works for ClassroomHub across three different host families:
 
 - `classroom-app.tedydev.io.vn` — admin dashboard
 - `<orgSiteName>.classroom.tedydev.io.vn` — free-tier tenant sites
@@ -97,7 +97,7 @@ The same flow works for `classroom-app.tedydev.io.vn` (the proxy-skip branch in 
 
 ## Why the Redis handoff exists
 
-Better Auth's `oAuthProxy` plugin handles cross-origin OAuth by encrypting **every Set-Cookie** the OAuth callback emits — `session_token`, `session_data`, `account_data`, `dontRememberToken` — into a single `cookies=<huge>` query parameter on the redirect URL. For Classroom with `cookieCache.enabled: true` and `storeAccountCookie: true`, that blob hits ~5KB raw / ~10KB hex-encoded.
+Better Auth's `oAuthProxy` plugin handles cross-origin OAuth by encrypting **every Set-Cookie** the OAuth callback emits — `session_token`, `session_data`, `account_data`, `dontRememberToken` — into a single `cookies=<huge>` query parameter on the redirect URL. For ClassroomHub with `cookieCache.enabled: true` and `storeAccountCookie: true`, that blob hits ~5KB raw / ~10KB hex-encoded.
 
 Some hop between Render and the browser (Render's edge proxy, suspect HTTP header size limit) silently drops responses with a Location header that big — the API thinks it sent a 302, but the browser never receives one. The OAuth flow hangs.
 

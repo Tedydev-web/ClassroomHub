@@ -26,7 +26,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       NODE_OPTIONS: --max-old-space-size=6144
     steps:

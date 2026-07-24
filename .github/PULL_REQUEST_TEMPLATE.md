@@ -43,7 +43,7 @@ Fixes # (place issue number here without bracket)
 ### Appreciated
 
 - [ ] If a UI change was made: Added a screen recording or screenshots to this PR
-- [ ] Updated the Classroom docs if changes were necessary
+- [ ] Updated the ClassroomHub docs if changes were necessary
 
 ## Fork workflow
 

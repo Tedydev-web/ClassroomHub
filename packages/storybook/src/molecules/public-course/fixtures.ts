@@ -16,7 +16,7 @@ export const CALLOUT_FIXTURE: PublicCourseCalloutData = {
 
 export const ORG_FIXTURE: PublicCourseOrgData = {
   id: 'org-1',
-  name: 'Classroom',
+  name: 'ClassroomHub',
   siteName: 'classroomio',
   avatarUrl: 'https://avatars.githubusercontent.com/u/119528464?s=200&v=4'
 };

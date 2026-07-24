@@ -120,6 +120,12 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_PORT: ${SMTP_PORT:-}
       SMTP_SENDER: ${SMTP_SENDER:-}
+      # Both default sensibly from the port, but must still be passable: an
+      # authless relay is rejected unless SMTP_SECURE and SMTP_REQUIRE_TLS are
+      # both an explicit "false", and a variable the container never receives
+      # cannot say that.
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-}
       # Object storage (S3-compatible). Works with the bundled MinIO, AWS S3, or Cloudflare R2
       # — for R2, point OBJECT_STORAGE_ENDPOINT at your R2 endpoint.
       OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
@@ -226,12 +232,15 @@ services:
       OBJECT_STORAGE_BUCKET_VIDEOS: ${OBJECT_STORAGE_BUCKET_VIDEOS:-videos}
       OBJECT_STORAGE_BUCKET_DOCUMENTS: ${OBJECT_STORAGE_BUCKET_DOCUMENTS:-documents}
       OBJECT_STORAGE_BUCKET_MEDIA: ${OBJECT_STORAGE_BUCKET_MEDIA:-media}
-      # Email (worker sends invites, notifications, etc.).
+      # Email (worker sends invites, notifications, etc.). This service is the
+      # one that actually delivers: the API only enqueues.
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_SENDER: ${SMTP_SENDER:-}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-}
       # Transcription + provider-backed agent runs.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}

@@ -1,9 +1,9 @@
 ---
 title: Email (SMTP)
-description: Configure SMTP so Classroom can send signup verification, password reset, and invite emails.
+description: Configure SMTP so ClassroomHub can send signup verification, password reset, and invite emails.
 ---
 
-Classroom sends transactional email — **signup verification, password resets, and invite emails** —
+ClassroomHub sends transactional email — **signup verification, password resets, and invite emails** —
 over SMTP. Without it the app still runs, but it can't send any of those messages, so have mail
 credentials ready before you deploy.
 
@@ -15,14 +15,14 @@ credentials ready before you deploy.
 | `SMTP_PORT` | SMTP server port (commonly `587`) |
 | `SMTP_USER` | SMTP username |
 | `SMTP_PASSWORD` | SMTP password |
-| `SMTP_SENDER` | From address, e.g. `Classroom <you@yourdomain.com>` |
+| `SMTP_SENDER` | From address, e.g. `ClassroomHub <you@yourdomain.com>` |
 
 ```zsh title=".env"
 SMTP_HOST=smtp.yourprovider.com
 SMTP_PORT=587
 SMTP_USER=<smtp username>
 SMTP_PASSWORD=<smtp password>
-SMTP_SENDER=Classroom <you@yourdomain.com>
+SMTP_SENDER=ClassroomHub <you@yourdomain.com>
 ```
 
 :::note[Which services need SMTP]

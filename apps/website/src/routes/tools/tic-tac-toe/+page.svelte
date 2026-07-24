@@ -77,9 +77,9 @@
 </script>
 
 <svelte:head>
-  <title>Tic Tac Toe | Classroom</title>
+  <title>Tic Tac Toe | ClassroomHub</title>
   <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
-  <meta property="og:title" content="Tic Tac Toe | Classroom" />
+  <meta property="og:title" content="Tic Tac Toe | ClassroomHub" />
   <meta
     property="og:description"
     content="A simple and free tic tac toe game to play to your friends in class or outside the classroom."
@@ -87,7 +87,7 @@
 
   <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Tic Tac Toe | Classroom" />
+  <meta name="twitter:title" content="Tic Tac Toe | ClassroomHub" />
   <meta
     name="twitter:description"
     content="A simple and free tic tac toe game to play to your friends in class or outside the classroom."

@@ -7,9 +7,9 @@ This document separates four evidence classes so product scope is not inferred f
 1. **Standard semantics:** official 1EdTech QTI specifications and conformance material.
 2. **Documented product behavior:** official TAO user and developer guides.
 3. **Community implementation evidence:** TAO CE/community extension repositories and fixtures, inspected read-only.
-4. **Current product evidence:** Classroom Hub source, schema, tests, and runtime probes in this repository.
+4. **Current product evidence:** ClassroomHub source, schema, tests, and runtime probes in this repository.
 
-TAO source is used only to discover behavior and edge cases. Implementation is clean-room and based on standards, public documentation, independently designed tests, and current Classroom Hub patterns.
+TAO source is used only to discover behavior and edge cases. Implementation is clean-room and based on standards, public documentation, independently designed tests, and current ClassroomHub patterns.
 
 ## Primary Sources
 
@@ -38,7 +38,7 @@ TAO source is used only to discover behavior and edge cases. Implementation is c
 
 ### Source Repositories Inspected
 
-- [Classroom Hub](https://github.com/classroomio/classroomio)
+- [ClassroomHub](https://github.com/classroomio/classroomio)
 - [TAO CE](https://github.com/tao-ce/tao-ce)
 - [TAO Community](https://github.com/oat-sa/tao-community)
 - TAO community extensions for Item QTI, Test QTI, PCI, PIC, QTI SDK, and QTI libraries referenced by those distributions.
@@ -55,13 +55,13 @@ Relevant QTI primitives discovered in community SDK code include:
 - Base types: identifier, boolean, integer, float, string, point, pair, directed pair, duration, file, URI, coordinates, and compatibility-specific variants.
 - Item-level concepts: response declarations, outcome declarations, response processing, modal/inline feedback, supporting content, and one or more interactions.
 
-The internal schema should model only semantics Classroom Hub can author, render, validate, score, review, import, and export correctly. It must not mirror the full QTI XSD speculatively.
+The internal schema should model only semantics ClassroomHub can author, render, validate, score, review, import, and export correctly. It must not mirror the full QTI XSD speculatively.
 
 ## Interaction Taxonomy
 
 The official TAO interaction guide presents these standard interaction families:
 
-| Family | Interaction | Core response shape | Classroom Hub status |
+| Family | Interaction | Core response shape | ClassroomHub status |
 | --- | --- | --- | --- |
 | Common | Choice | single/multiple identifier | Existing `RADIO`/`CHECKBOX`; needs canonical adapter |
 | Common | Order | ordered identifiers | Existing `ORDERING`; needs stronger permutation validation |
@@ -81,11 +81,11 @@ The official TAO interaction guide presents these standard interaction families:
 | Graphic | Graphic Gap | graphical objects placed in gaps | Missing |
 | Graphic | Select Point | one/more coordinates | Disabled `HOTSPOT` prototype is closer to this semantic |
 
-TAO documentation also describes custom interactions. Those must not be treated as standard or assumed to exist in the CE repositories. Any future custom interaction remains a Classroom Hub-native type unless it is explicitly mapped to a QTI/PCI profile.
+TAO documentation also describes custom interactions. Those must not be treated as standard or assumed to exist in the CE repositories. Any future custom interaction remains a ClassroomHub-native type unless it is explicitly mapped to a QTI/PCI profile.
 
-## Existing Classroom Hub Capability Map
+## Existing ClassroomHub Capability Map
 
-| Classroom Hub type | Closest standard semantic | Current grading | Decision |
+| ClassroomHub type | Closest standard semantic | Current grading | Decision |
 | --- | --- | --- | --- |
 | `RADIO` | Choice, single | Automatic | Preserve UI; adapt to canonical choice |
 | `CHECKBOX` | Choice, multiple | Automatic, partial | Preserve UI; reject duplicates/unknown options |
@@ -96,10 +96,10 @@ TAO documentation also describes custom interactions. Those must not be treated 
 | `FILL_BLANK` | Multiple Text Entry subset | Automatic, partial | Preserve; later normalize to inline entries |
 | `FILE_UPLOAD` | Upload | Manual | Preserve; bind to managed asset authorization |
 | `ORDERING` | Order | Automatic, partial | Preserve; enforce exact permutation |
-| `LINK` | Classroom Hub custom | Manual | Preserve without forcing QTI equivalence |
+| `LINK` | ClassroomHub custom | Manual | Preserve without forcing QTI equivalence |
 | `WORD_BANK` | Gap Match subset | Automatic, partial | Preserve; later share canonical gap renderer |
-| `STAR` | Classroom Hub custom scale | Automatic | Preserve; optional future QTI downgrade report |
-| `VIDEO_RECORDING` | Classroom Hub custom media response | Manual | Preserve; no false standard mapping |
+| `STAR` | ClassroomHub custom scale | Automatic | Preserve; optional future QTI downgrade report |
+| `VIDEO_RECORDING` | ClassroomHub custom media response | Manual | Preserve; no false standard mapping |
 | `MATCHING` | Match subset | Automatic prototype | Keep disabled until real author/take UI and validation ship |
 | `HOTSPOT` | Select Point subset | Automatic prototype | Keep disabled until image coordinate and accessibility model ship |
 
@@ -149,26 +149,26 @@ These are not theoretical risks. They were found in current source or reproduced
 
 TAO interaction authoring separates contextual states such as question/content selection, choice editing, answer selection, correct response, response mapping, custom settings, and inactive state. The useful principle is contextual configuration, not the TAO visual design.
 
-Classroom Hub adaptation:
+ClassroomHub adaptation:
 
-- Selecting a content block exposes content/media controls already native to Classroom Hub.
+- Selecting a content block exposes content/media controls already native to ClassroomHub.
 - Selecting an interaction exposes only its prompt/options/constraints in the current question card.
 - Correct answer and scoring controls use existing form grouping and review patterns.
 - Preview remains adjacent to authoring and renders the delivery component.
 - Advanced response mapping is progressive and appears only for interactions that support it.
 
-This retains the domain correctness of explicit interaction configuration while matching current Classroom Hub interaction patterns.
+This retains the domain correctness of explicit interaction configuration while matching current ClassroomHub interaction patterns.
 
 ## Clean-Room And License Boundary
 
-The inspected TAO repositories do not present a single uniform permissive license. Community packages inspected declare GPL-family licenses, while repository metadata can also be inconsistent across files. Classroom Hub itself is AGPL-3.0.
+The inspected TAO repositories do not present a single uniform permissive license. Community packages inspected declare GPL-family licenses, while repository metadata can also be inconsistent across files. ClassroomHub itself is AGPL-3.0.
 
 Implementation constraints:
 
 - Do not copy TAO source, fixtures, templates, CSS, labels, icons, or component structure.
 - Do not translate TAO PHP/JavaScript implementation line by line.
 - Record semantic requirements using official standards/docs and independently authored examples.
-- Build Classroom Hub-native fixtures from the standard and product acceptance criteria.
+- Build ClassroomHub-native fixtures from the standard and product acceptance criteria.
 - Keep source links and a decision log so future reviewers can distinguish semantic research from copied implementation.
 - Perform a separate license/compliance review before production distribution; no feature phase may claim that research resolved deployment obligations.
 
@@ -183,7 +183,7 @@ Implementation constraints:
 
 ## Research Conclusions
 
-- The target is a Classroom Hub upgrade, not TAO integration at runtime.
+- The target is a ClassroomHub upgrade, not TAO integration at runtime.
 - A raw-QTI source of truth would spread XML and broad standard complexity through every current product path.
 - A separate assessment subsystem would duplicate Exercise/Question, submissions, UI, permissions, analytics, and authoring concepts.
 - A constrained canonical model with a legacy adapter and boundary translators gives the strongest compatibility and lowest long-term coupling.

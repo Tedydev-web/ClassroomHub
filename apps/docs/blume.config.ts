@@ -11,11 +11,11 @@ import { defineConfig } from 'blume';
  * `/docs/guides`. They live in scripts/package-assets.mjs as a `_redirects` file.
  */
 export default defineConfig({
-  title: 'Classroom Docs | Customer, Partner, and Employee Education',
+  title: 'ClassroomHub Docs | Customer, Partner, and Employee Education',
   description:
-    'Learn how to create customer academies, partner certification programs, and employee training workflows in Classroom.',
+    'Learn how to create customer academies, partner certification programs, and employee training workflows in ClassroomHub.',
   logo: {
-    text: 'Classroom',
+    text: 'ClassroomHub',
     image: '/docs/logo-192.png',
     href: '/docs'
   },

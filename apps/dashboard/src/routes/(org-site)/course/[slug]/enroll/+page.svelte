@@ -216,7 +216,7 @@
 </script>
 
 <svelte:head>
-  <title>Join {data.course?.title ?? 'Course'} on Classroom</title>
+  <title>Join {data.course?.title ?? 'Course'} on ClassroomHub</title>
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

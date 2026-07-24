@@ -17,7 +17,7 @@ I started my open source journey in October of 2023 by working on [Formbricks](h
 
 Later in November, a project I have been working on for over 3 years got accepted into an open source program by the amazing Codacy called [Codacy Pioneers](https://codacy.com/pioneers). Where they provide open source contributors with financial support, training from mentors and access to their suite of tools.
 
-After I made [Classroom Hub](https://github.com/Tedydev-web/classroomio) open source, a lot of people helped us get traction from the community and soon enough we got noticed by several educators in the community.
+After I made [ClassroomHub](https://github.com/Tedydev-web/classroomio) open source, a lot of people helped us get traction from the community and soon enough we got noticed by several educators in the community.
 
 ## What is the Google Open Source Peer Bonus?
 
@@ -25,7 +25,7 @@ I will quote the official [documentation](https://opensource.google/documentatio
 
 > In the same way that a Google Peer Bonus is used to recognize a fellow Googler who has gone above and beyond, an Open Source Peer Bonus recognizes external people who have made exceptional contributions to open source. Googlers can nominate contributors who they feel deserve our recognition (and some cash)!
 
-I want to use this opportunity to thank [Ada Nduka Oyom](https://x.com/Kolokodess) for reaching out to me and recommending [Classroom Hub](https://github.com/Tedydev-web/classroomio) internally at Google to receive the Google Open Source Peer Bonus.
+I want to use this opportunity to thank [Ada Nduka Oyom](https://x.com/Kolokodess) for reaching out to me and recommending [ClassroomHub](https://github.com/Tedydev-web/classroomio) internally at Google to receive the Google Open Source Peer Bonus.
 
 I received the award letter this week and the official blog post will be made on their website in the coming weeks.
 

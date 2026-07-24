@@ -81,7 +81,7 @@ import { getDefaultTemplate } from '../templates';
 
 export const forgotPasswordEmail = defineEmail({
   id: 'forgotPassword',
-  subject: 'Password reset notification - Classroom',
+  subject: 'Password reset notification - ClassroomHub',
   schema: z.object({
     name: z.string().min(1),
     email: z.string().email(),

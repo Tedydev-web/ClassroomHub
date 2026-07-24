@@ -88,7 +88,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('components.quiz.title')} - Classroom</title>
+  <title>{$t('components.quiz.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Dialog.Root

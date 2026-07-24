@@ -46,7 +46,7 @@
       Icon: Sparkles,
       title: 'Clean lesson pages',
       description:
-        'Public course pages use the same design system as the rest of Classroom, so they feel like part of your product instead of a separate microsite.'
+        'Public course pages use the same design system as the rest of ClassroomHub, so they feel like part of your product instead of a separate microsite.'
     },
     {
       Icon: Zap,
@@ -89,7 +89,7 @@
     {
       title: 'Switch type to PUBLIC',
       description:
-        'Change the course type to `PUBLIC`. If a question type is not supported, Classroom flags it before publish.',
+        'Change the course type to `PUBLIC`. If a question type is not supported, ClassroomHub flags it before publish.',
       label: 'Step 02'
     },
     {
@@ -109,7 +109,7 @@
     {
       question: 'Does hosting a public course cost extra?',
       answer:
-        'No. Public courses are part of your existing Classroom workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course.'
+        'No. Public courses are part of your existing ClassroomHub workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course.'
     },
     {
       question: 'Can I require payment, or capture leads on a public course?',
@@ -119,7 +119,7 @@
     {
       question: 'Do I need a custom domain?',
       answer:
-        'No. Every public course is available on your Classroom public site by default. A custom domain is optional if you want the course to live at your own URL.'
+        'No. Every public course is available on your ClassroomHub public site by default. A custom domain is optional if you want the course to live at your own URL.'
     },
     {
       question: 'Can search engines index a public course?',
@@ -145,12 +145,12 @@
 </script>
 
 <svelte:head>
-  <title>Public Courses | Classroom</title>
+  <title>Public Courses | ClassroomHub</title>
   <meta
     name="description"
     content="Publish public courses on your own branded page, with built-in quizzes, lesson callouts, and optional custom domains."
   />
-  <meta property="og:title" content="Public Courses | Classroom" />
+  <meta property="og:title" content="Public Courses | ClassroomHub" />
   <meta
     property="og:description"
     content="A branded public course page for sharing free lessons, quizzes, and previews before someone enrolls."
@@ -175,7 +175,7 @@
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
           >Book a Demo</Button
         >
         <Button href="/signup" variant="outline">Start free</Button>
@@ -327,7 +327,7 @@
   <WorkflowSteps
     eyebrow="How it works"
     title="Set it up in the same workflow you already use."
-    description="You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of Classroom."
+    description="You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of ClassroomHub."
     steps={workflow}
   />
 
@@ -344,7 +344,7 @@
   <!-- Final CTA -->
   <PageSignupCTA
     header="Publish a public course without spinning up a separate site."
-    subText="Use the same Classroom workspace to share free lessons, add quizzes, and point interested learners toward the next step."
+    subText="Use the same ClassroomHub workspace to share free lessons, add quizzes, and point interested learners toward the next step."
     btnLabel="Book a Demo"
   />
 </section>

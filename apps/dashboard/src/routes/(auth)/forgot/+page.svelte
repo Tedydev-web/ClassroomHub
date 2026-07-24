@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-  <title>Forgot Password - Classroom</title>
+  <title>Forgot Password - ClassroomHub</title>
 </svelte:head>
 
 <AuthUI handleSubmit={() => forgotApi.submit(fields)} showOnlyContent={true} showLogo={!forgotApi.success}>

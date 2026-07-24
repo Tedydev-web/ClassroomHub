@@ -1,7 +1,7 @@
 # Media Storage Decoupling + MinIO Support PRD
 
 ## Purpose
-Decouple Classroom Hub media storage from Cloudflare-specific infrastructure so open-source and self-hosted users can control their own media storage backend, with first-class MinIO support.
+Decouple ClassroomHub media storage from Cloudflare-specific infrastructure so open-source and self-hosted users can control their own media storage backend, with first-class MinIO support.
 
 ## Problem Statement
 The current media pipeline is tightly coupled to Cloudflare R2 and Cloudflare Browser Rendering APIs. This creates friction for open-source adopters who want full infrastructure ownership, local/private deployments, and non-Cloudflare object storage.

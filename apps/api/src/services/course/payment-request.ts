@@ -28,7 +28,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
     }
 
     const courseName = course.courseTitle || '';
-    const orgName = course.orgName || 'Classroom';
+    const orgName = course.orgName || 'ClassroomHub';
     const branding = buildEmailBranding({
       name: course.orgName,
       avatarUrl: course.orgAvatarUrl,
@@ -64,7 +64,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
           autoEnrollUrl,
           branding
         },
-        from: buildEmailFromName('Classroom'),
+        from: buildEmailFromName('ClassroomHub'),
         idempotencyKey: `payment-request:teacher:${data.courseId}:${data.studentEmail}`
       });
     } catch (emailError) {
@@ -81,7 +81,7 @@ export async function createPaymentRequest(data: PaymentRequestData) {
           orgName,
           branding
         },
-        from: buildEmailFromName(`${orgName} - Classroom`),
+        from: buildEmailFromName(`${orgName} - ClassroomHub`),
         replyTo: teacherEmail,
         idempotencyKey: `payment-request:student:${data.courseId}:${data.studentEmail}`
       });

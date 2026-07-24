@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>Pricing | Classroom</title>
+  <title>Pricing | ClassroomHub</title>
 </svelte:head>
 
 <section>

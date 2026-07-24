@@ -372,7 +372,7 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
       return;
     }
 
-    const orgName = feedData.organization?.name || 'Classroom';
+    const orgName = feedData.organization?.name || 'ClassroomHub';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,
@@ -413,7 +413,7 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
         orgName,
         branding
       },
-      from: buildEmailFromName(`${orgName} - Classroom`),
+      from: buildEmailFromName(`${orgName} - ClassroomHub`),
       replyTo: feedData.author?.email || OPERATOR_EMAIL,
       idempotencyKey: `newsfeed:post:${feedId}`,
       preference: { organizationId: feedData.organization.id }
@@ -439,7 +439,7 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
       return;
     }
 
-    const orgName = feedData.organization?.name || 'Classroom';
+    const orgName = feedData.organization?.name || 'ClassroomHub';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,
@@ -470,7 +470,7 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
         orgName,
         branding
       },
-      from: buildEmailFromName(`${orgName} - Classroom`),
+      from: buildEmailFromName(`${orgName} - ClassroomHub`),
       replyTo: OPERATOR_EMAIL,
       preference: { organizationId: feedData.organization.id }
     });

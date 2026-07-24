@@ -1,7 +1,7 @@
-# Classroom — Feature & Flow Map (QA Audit)
+# ClassroomHub — Feature & Flow Map (QA Audit)
 
 > **Purpose of this document:** a reverse‑engineered, citation‑backed map of every
-> feature in the Classroom application, produced for QA to build test cases and
+> feature in the ClassroomHub application, produced for QA to build test cases and
 > record demo videos. **Files are the source of truth.** Every claim is backed by a
 > file reference. Claims that could not be traced to code are marked
 > `⚠️ UNVERIFIED`. Ambiguities live in **§7 Open Questions**, not in the body.
@@ -16,7 +16,7 @@
 
 ## 1. System Overview
 
-**What it is.** Classroom is an open‑source **Learning Management System (LMS) for
+**What it is.** ClassroomHub is an open‑source **Learning Management System (LMS) for
 companies** — compliance/employee training, customer education, and partner
 certification. It supports multi‑organization workspaces, courses/lessons/exercises,
 cohorts (cohorts), certificates, an AI course builder + in‑lesson tutor, a public
@@ -384,7 +384,7 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
   `token-auth`, `no-tracking` (`packages/utils/src/license/constants.ts:8–10`),
   plan→feature mapping `packages/utils/src/license/plan-features.ts`. Dashboard side
   `apps/dashboard/src/lib/features/license/api/license.svelte.ts` (`licenseApi.hasAccess`).
-- **User flow:** the Classroom deployment publishes its known capabilities through `/license/features`.
+- **User flow:** the ClassroomHub deployment publishes its known capabilities through `/license/features`.
 - **Edge cases:** unknown capability identifiers remain denied by `requireLicense`.
 
 ### 3.26 Billing (Polar) — cloud
@@ -485,7 +485,7 @@ API, dashboard, and jobs processes.
 - **Signup:** requires org context unless bootstrapping the first org or the email already
   belongs to the org (`signup-guard.ts:75–91`).
 - **Capabilities:** Enterprise features (`sso`, `token-auth`, `no-tracking`) are owned by
-  the Classroom deployment and checked against the shared capability registry.
+  the ClassroomHub deployment and checked against the shared capability registry.
 - **Tracking:** cloud analytics (PostHog/Umami) are **disabled**
   (`apps/dashboard/src/lib/utils/functions/appSetup.ts:23–27`); a `no-tracking` license also
   suppresses tracking (`appSetup.ts:29–37`).

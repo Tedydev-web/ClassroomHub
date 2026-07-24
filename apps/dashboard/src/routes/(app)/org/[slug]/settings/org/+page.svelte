@@ -35,7 +35,7 @@
 </script>
 
 <svelte:head>
-  <title>Organization Settings - Classroom</title>
+  <title>Organization Settings - ClassroomHub</title>
 </svelte:head>
 
 <OrgPage bind:this={orgComponent} />

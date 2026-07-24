@@ -88,7 +88,7 @@ export function scheduleCertificationCompletionWork(params: {
             theme: courseRow.orgTheme
           })
         },
-        from: buildEmailFromName(`${courseRow.orgName} (via Classroom)`),
+        from: buildEmailFromName(`${courseRow.orgName} (via ClassroomHub)`),
         idempotencyKey: `course-completion:${groupMemberId}`,
         preference: { organizationId: courseRow.orgId, recipientProfileId: profileId }
       });

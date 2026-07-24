@@ -1,6 +1,6 @@
 # @cio/tenant-router
 
-Cloudflare Worker that fronts every browser-facing Classroom Hub host:
+Cloudflare Worker that fronts every browser-facing ClassroomHub host:
 
 - `*.classroom.tedydev.io.vn/*` — free-tier tenant sites
 - `classroom.tedydev.io.vn/*` — apex (301 → `classroom.tedydev.io.vn`)

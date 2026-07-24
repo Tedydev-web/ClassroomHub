@@ -11,7 +11,7 @@ import { env } from './env';
  * - **Student/learner links** (course enroll, audience invites, login):
  *   `getDashboardBaseUrl(org)` — org custom domain, tenant subdomain, or fallback.
  * - **Teacher/tutor/admin dashboard actions** (course management, grading, team
- *   invites, auto-enroll): `getAppBaseUrl()` — configured Classroom admin app.
+ *   invites, auto-enroll): `getAppBaseUrl()` — configured ClassroomHub admin app.
  *   Do not pass org `customDomain` or tenant `siteName`.
  *
  * See `packages/email/README.md` and `AGENTS.md` § Email link URLs.
@@ -67,7 +67,7 @@ export function getDashboardBaseUrl(org?: DashboardOrg): string {
 }
 
 /**
- * Returns the configured Classroom admin dashboard origin.
+ * Returns the configured ClassroomHub admin dashboard origin.
  *
  * Use for **teacher/tutor/admin email links** — course management, grading,
  * team invites, auto-enroll, and any other staff dashboard action. Staff sign

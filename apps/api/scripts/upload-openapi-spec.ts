@@ -9,6 +9,7 @@ import { app } from '../src/app';
 import { env } from '@cio/core/config/env';
 import { generateSpecs } from 'hono-openapi';
 import { join } from 'path';
+import { PRODUCT_NAME, PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { enrichPublicApiOpenApiSpec, PUBLIC_API_OPENAPI_URL } from '@cio/utils/openapi/public-api';
 
 const OPENAPI_CDN_BASE_URL = PUBLIC_API_OPENAPI_URL.replace(/\/openapi-latest\.json$/, '');
@@ -137,12 +138,12 @@ class OpenAPISpecGenerator {
       const spec = await generateSpecs(app, {
         documentation: {
           info: {
-            title: 'Classroom API',
+            title: `${PRODUCT_NAME} API`,
             version: '1.0.0',
-            description: 'Manage your organization on classroomio via the API',
+            description: `Manage your organization on ${PRODUCT_NAME} via the API`,
             contact: {
-              name: 'Classroom',
-              url: 'https://classroom.io.vn'
+              name: PRODUCT_NAME,
+              url: `https://${PRODUCT_ROOT_DOMAIN}`
             }
           },
           servers: [

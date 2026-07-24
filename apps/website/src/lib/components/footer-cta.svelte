@@ -17,7 +17,7 @@
       Get Started Free →
     </a>
     <a
-      href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+      href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
       class="cursor-pointer rounded-lg border-[1.5px] border-gray-200 bg-transparent px-7 py-3.5 text-sm font-medium text-gray-950 transition-all duration-200 hover:border-gray-950 lg:text-base"
     >
       Book a Demo

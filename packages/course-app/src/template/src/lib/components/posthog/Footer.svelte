@@ -36,7 +36,7 @@
       target="_blank"
       rel="noopener noreferrer"
     >
-      <p class="text-base font-semibold">Built on Classroom</p>
+      <p class="text-base font-semibold">Built on ClassroomHub</p>
     </a>
   </nav>
 {/if}

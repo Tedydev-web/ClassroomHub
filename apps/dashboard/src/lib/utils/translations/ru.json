@@ -1263,7 +1263,7 @@
           "audit_actor": "Участник",
           "audit_ip": "ИП",
           "scan_qr": "Сканировать QR",
-          "classroomio_brand": "Classroom.com",
+          "classroomio_brand": "ClassroomHub.com",
           "snackbar_invite_link_copied": "Ссылка для приглашения скопирована.",
           "snackbar_invite_link_regenerated": "Создана новая ссылка для приглашения.",
           "snackbar_failed_generate_link": "Не удалось создать ссылку для приглашения.",
@@ -2536,7 +2536,7 @@
     },
     "creator": {
       "heading": "Какой курс вы хотите создать?",
-      "placeholder": "Попросите Classroom создать для вас курс...",
+      "placeholder": "Попросите ClassroomHub создать для вас курс...",
       "type": {
         "self_paced": "Самостоятельный темп",
         "live_class": "Живой урок"
@@ -2889,12 +2889,12 @@
     "goto": "Перейти к",
     "courses": "Курсы",
     "home": "Главная",
-    "classroomio_home": "Главная Classroom",
+    "classroomio_home": "Главная ClassroomHub",
     "dashboard": "Панель управления",
     "discussion": "Обсуждение",
     "people": "Люди",
     "goto_lms": "Перейти в СДО",
-    "goto_home": "Перейти на главную страницу Classroom",
+    "goto_home": "Перейти на главную страницу ClassroomHub",
     "login": "Войти",
     "signup": "Зарегистрироваться",
     "redirecting": "Перенаправление",
@@ -2998,7 +2998,7 @@
     "upgrade_left": "{count} осталось"
   },
   "media_manager": {
-    "page_title": "Медиаменеджер — Classroom",
+    "page_title": "Медиаменеджер — ClassroomHub",
     "heading": "Медиа-менеджер",
     "empty": "Активы не найдены",
     "usage": {
@@ -3150,7 +3150,7 @@
       "provider": "Мы используем Polar, чтобы управлять вашими платежами.",
       "open_billing": "Открыть биллинг",
       "error": "Произошла ошибка при открытии счета.",
-      "page_subtitle": "Ваш тариф, портал оплаты и способы оплаты Classroom.",
+      "page_subtitle": "Ваш тариф, портал оплаты и способы оплаты ClassroomHub.",
       "ai_credits": "AI credits",
       "ai_tokens_used": "AI credits использовано в этом месяце",
       "ai_bonus_credits": "доступны bonus AI credits"
@@ -3158,7 +3158,7 @@
     "integrations": {
       "heading": "Telegram",
       "sub_heading": "Подключите свою учетную запись к Telegram, чтобы получать уведомления о любых изменениях в приложении.",
-      "step_authenticate": "Шаг 1. Подтвердите свою учетную запись с помощью бота Classroom.",
+      "step_authenticate": "Шаг 1. Подтвердите свою учетную запись с помощью бота ClassroomHub.",
       "open_bot_button": "Открыть бот",
       "step_chatId": "Шаг 2. Введите идентификатор чата, предоставленный вам ботом.",
       "connect_button": "Подключиться",
@@ -3478,7 +3478,7 @@
       "gallery": {
         "heading": "Популярные темы",
         "description": "Создан с использованием основных функций, которые можно легко настроить — кодирование не требуется.",
-        "by_classroomio": "от Classroom",
+        "by_classroomio": "от ClassroomHub",
         "add": "Добавить",
         "upgrade": "Обновить",
         "apply_theme": "Применить тему",
@@ -3556,7 +3556,7 @@
         "accepted": "Принято:",
         "validation_error": "Размер файла превышает максимальный предел:"
       },
-      "page_subtitle": "Ваше имя, эл. почта и то, как вы отображаетесь в Classroom."
+      "page_subtitle": "Ваше имя, эл. почта и то, как вы отображаетесь в ClassroomHub."
     },
     "tabs": {
       "profile_tab": "Профиль",
@@ -3817,7 +3817,7 @@
           "description": "Записи, сдачи, уроки, объявления и завершения в ваших курсах."
         }
       },
-      "personal_page_subtitle": "Выберите, какие уведомления по электронной почте вы получаете от Classroom."
+      "personal_page_subtitle": "Выберите, какие уведомления по электронной почте вы получаете от ClassroomHub."
     }
   },
   "profileMenu": {
@@ -3994,7 +3994,7 @@
     "snackbar_error": "ошибка при отправке кода"
   },
   "public_courses": {
-    "page_title": "Курсы - Classroom",
+    "page_title": "Курсы - ClassroomHub",
     "heading": "Курсы",
     "subtitle": "Просмотреть все опубликованные курсы",
     "clear_filters": "Очистить фильтры",
@@ -4019,7 +4019,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Теги — Classroom",
+    "page_title": "Теги — ClassroomHub",
     "heading": "Теги",
     "create": "Создать",
     "tag_modal": {
@@ -4071,7 +4071,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Присоединяйтесь к {orgName} в Classroom.",
+      "page_title": "Присоединяйтесь к {orgName} в ClassroomHub.",
       "invitation_student": "Вас пригласили в {orgName} в качестве ученика.",
       "invitation_teacher": "Вас пригласили в {orgName} в качестве преподавателя.",
       "invitation_admin": "Вас пригласили в {orgName} в качестве администратора.",
@@ -4090,7 +4090,7 @@
       }
     },
     "link": {
-      "page_title": "Присоединяйтесь к {orgName} в Classroom.",
+      "page_title": "Присоединяйтесь к {orgName} в ClassroomHub.",
       "invitation_student": "Вас пригласили присоединиться к {orgName} в качестве студента.",
       "invitation_teacher": "Вас пригласили присоединиться к {orgName} в качестве преподавателя.",
       "invitation_admin": "Вас пригласили присоединиться к {orgName} в качестве администратора.",
@@ -4111,20 +4111,20 @@
         "title": "Настройка клиента",
         "description": "Используйте один ключ на уровне организации для каждой интеграции. Если ключ заменен или отозван, клиент перестает работать до тех пор, пока не будет настроен новый секрет.",
         "claude_code_description": "Регистрирует `@tedydev/classroom-mcp` в Claude Code, используя сгенерированный ключ на уровне организации.",
-        "codex_description": "Добавляет сервер Classroom MCP в Кодекс с тем же ключом на уровне организации.",
+        "codex_description": "Добавляет сервер ClassroomHub MCP в Кодекс с тем же ключом на уровне организации.",
         "cursor_description": "Вставьте это в `~/.cursor/mcp.json` или в конфигурацию MCP вашей рабочей области.",
         "opencode_description": "Добавьте это в `opencode.json` в корне проекта или в `~/.config/opencode/opencode.json`."
       },
       "keys": {
         "title": "Ключи MCP",
-        "description": "Эти ключи аутентифицируют текущую организацию, когда клиент MCP вызывает Classroom через @tedydev/classroom-mcp.",
+        "description": "Эти ключи аутентифицируют текущую организацию, когда клиент MCP вызывает ClassroomHub через @tedydev/classroom-mcp.",
         "generate": "Создать ключ MCP",
         "secret_once": "Этот секрет раскрывается один раз. Скопируйте его в свой клиент MCP сейчас.",
         "modal": {
           "title": "Создать MCP-ключ",
           "description": "Выберите имя для этого MCP-ключа перед его созданием.",
           "name_label": "Имя ключа",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Отмена",
           "save": "Создать ключ"
         }
@@ -4140,17 +4140,17 @@
         "rate_limits_description": "Запросы на чтение/запись/публикацию разрешены в минуту.",
         "used_label": "Использовано:"
       },
-      "page_subtitle": "Подключайте ИИ-инструменты к Classroom с помощью ключей организации, которые можно менять в любое время."
+      "page_subtitle": "Подключайте ИИ-инструменты к ClassroomHub с помощью ключей организации, которые можно менять в любое время."
     },
     "api": {
-      "subtitle": "Управляйте API-ключами для интеграции с публичным API Classroom.",
+      "subtitle": "Управляйте API-ключами для интеграции с публичным API ClassroomHub.",
       "keys": {
         "title": "API-ключи",
-        "description": "Эти ключи аутентифицируют текущую организацию при вызове публичного API Classroom.",
+        "description": "Эти ключи аутентифицируют текущую организацию при вызове публичного API ClassroomHub.",
         "generate": "Сгенерировать API-ключ",
         "secret_once": "Этот секрет показывается один раз. Скопируйте и сохраните его в надёжном месте.",
         "empty_title": "API-ключей пока нет",
-        "empty_description": "Создайте первый API-ключ организации для использования публичного API Classroom.",
+        "empty_description": "Создайте первый API-ключ организации для использования публичного API ClassroomHub.",
         "modal": {
           "title": "Создать API-ключ",
           "description": "Выберите имя для этого API-ключа перед его созданием.",
@@ -4205,10 +4205,10 @@
       "disabled_description": "Только администраторы организации могут создавать, менять или отзывать ключи автоматизации. Учителя могут ознакомиться с инструкциями по настройке здесь."
     },
     "zapier": {
-      "page_subtitle": "Автоматизируйте Classroom с тысячами приложений через Zapier. Скоро."
+      "page_subtitle": "Автоматизируйте ClassroomHub с тысячами приложений через Zapier. Скоро."
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
+      "subtitle": "Send signed ClassroomHub events to your external systems.",
       "endpoints_title": "Webhook endpoints",
       "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
       "add": "Add webhook",
@@ -4228,11 +4228,11 @@
       "secret_unchanged": "Leave blank to keep the current secret.",
       "secret_once": "This signing secret is shown once. Store it securely.",
       "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
       "save": "Save webhook",
       "cancel": "Cancel",
       "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
       "event": "Event",
       "status": "Status",
       "attempt": "Attempt",
@@ -4480,7 +4480,7 @@
       "border_radius": "Радиус границы",
       "font_family": "Семейство шрифтов",
       "font_scale": "Шкала размера шрифта",
-      "show_powered_by": "Показать брендинг Classroom",
+      "show_powered_by": "Показать брендинг ClassroomHub",
       "custom_css": "Пользовательский CSS",
       "custom_css_locked": "Обновите, чтобы включить пользовательский CSS.",
       "embed_code": "Встроить код",

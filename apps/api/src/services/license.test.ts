@@ -3,7 +3,7 @@ import { LICENSE_FEATURE } from '@cio/utils/license';
 import { getLicenseStatus, isFeatureLicensed, isFeatureLicensedSync } from './license';
 
 describe('deployment capabilities', () => {
-  it('enables every known Classroom capability', async () => {
+  it('enables every known ClassroomHub capability', async () => {
     const status = await getLicenseStatus();
 
     expect(status).toEqual({

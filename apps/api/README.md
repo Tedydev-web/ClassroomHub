@@ -1,4 +1,4 @@
-# Classroom Hub Backend
+# ClassroomHub Backend
 
 ## Supported Features
 

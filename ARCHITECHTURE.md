@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide outlines standard practices for creating API routes in Classroom. **All routes should be designed as potential public API endpoints.**
+This guide outlines standard practices for creating API routes in ClassroomHub. **All routes should be designed as potential public API endpoints.**
 
 ---
 

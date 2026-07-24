@@ -16,7 +16,7 @@
     /** Builds the `href` for a given item. Omit to render rows as buttons. */
     hrefFor?: (item: PublicCourseSidebarItem) => string;
     /**
-     * Show the "Powered by Classroom" footer pinned to the bottom of the sidebar.
+     * Show the "Powered by ClassroomHub" footer pinned to the bottom of the sidebar.
      * Defaults to `true` when paired with `courseSlug` / `orgSlug`.
      */
     showPoweredBy?: boolean;
@@ -39,7 +39,7 @@
     courseSlug = null,
     orgSlug = null,
     poweredByLabel = 'Powered by',
-    poweredByBrand = 'Classroom',
+    poweredByBrand = 'ClassroomHub',
     class: className
   }: Props = $props();
 </script>

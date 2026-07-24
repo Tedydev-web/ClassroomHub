@@ -50,17 +50,17 @@ describe('sanitizeEmailSubject', () => {
 
 describe('extractNameAndEmail', () => {
   it('parses a quoted display name', () => {
-    expect(extractNameAndEmail('"Classroom" <noreply@classroom.io.vn>')).toEqual({
-      name: 'Classroom',
+    expect(extractNameAndEmail('"ClassroomHub" <noreply@classroom.io.vn>')).toEqual({
+      name: 'ClassroomHub',
       email: 'noreply@classroom.io.vn'
     });
   });
 
   it('parses an unquoted display name', () => {
-    // The shape a plain `SMTP_SENDER="Classroom <noreply@host>"` produces. It
+    // The shape a plain `SMTP_SENDER="ClassroomHub <noreply@host>"` produces. It
     // used to fall through to the "whole string is the address" branch.
-    expect(extractNameAndEmail('Classroom <noreply@classroom.io.vn>')).toEqual({
-      name: 'Classroom',
+    expect(extractNameAndEmail('ClassroomHub <noreply@classroom.io.vn>')).toEqual({
+      name: 'ClassroomHub',
       email: 'noreply@classroom.io.vn'
     });
   });
@@ -82,11 +82,11 @@ describe('extractNameAndEmail', () => {
   it('rejects an already-nested header instead of guessing', () => {
     // Exactly what was observed in the dev mailbox before the fix. Callers fall
     // back to the configured sender rather than salvaging an address.
-    expect(extractNameAndEmail('"Udemy Test (via Classroom)" <Classroom <noreply@localhost>>')).toBeUndefined();
+    expect(extractNameAndEmail('"Udemy Test (via ClassroomHub)" <ClassroomHub <noreply@localhost>>')).toBeUndefined();
   });
 
   it('returns undefined when there is no address to send to', () => {
-    expect(extractNameAndEmail('Classroom')).toBeUndefined();
+    expect(extractNameAndEmail('ClassroomHub')).toBeUndefined();
     expect(extractNameAndEmail('')).toBeUndefined();
     expect(extractNameAndEmail('   ')).toBeUndefined();
   });
@@ -95,9 +95,9 @@ describe('extractNameAndEmail', () => {
 describe('buildEmailFromName', () => {
   it('does not nest brackets when the sender has an unquoted display name', () => {
     // Regression: an unquoted SMTP_SENDER produced
-    // `"Org (via Classroom)" <Classroom <noreply@host>>`, which real providers
+    // `"Org (via ClassroomHub)" <ClassroomHub <noreply@host>>`, which real providers
     // reject. The address must be extracted, not the whole header.
-    const from = buildEmailFromName('Udemy Test (via Classroom)');
+    const from = buildEmailFromName('Udemy Test (via ClassroomHub)');
 
     expect(from).not.toMatch(/<[^>]*</);
     expect(extractNameAndEmail(from)?.email).toBe('support@classroom.io.vn');
@@ -110,14 +110,14 @@ describe('buildEmailFromName', () => {
   });
 
   it('wraps a plain display name in a quoted From header', () => {
-    expect(buildEmailFromName('Acme Academy (via Classroom)')).toBe(
-      '"Acme Academy (via Classroom)" <support@classroom.io.vn>'
+    expect(buildEmailFromName('Acme Academy (via ClassroomHub)')).toBe(
+      '"Acme Academy (via ClassroomHub)" <support@classroom.io.vn>'
     );
   });
 
   it('sanitizes embedded quotes in the display name', () => {
-    expect(buildEmailFromName('Alice "Admin" Academy (via Classroom)')).toBe(
-      '"Alice \\"Admin\\" Academy (via Classroom)" <support@classroom.io.vn>'
+    expect(buildEmailFromName('Alice "Admin" Academy (via ClassroomHub)')).toBe(
+      '"Alice \\"Admin\\" Academy (via ClassroomHub)" <support@classroom.io.vn>'
     );
   });
 });

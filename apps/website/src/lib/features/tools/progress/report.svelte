@@ -129,7 +129,7 @@
       class="bottom-5 mx-auto mt-20 flex w-[50%] items-center justify-center gap-1 rounded-md border bg-white px-2 py-1"
     >
       <img src="/logo-192.png" alt="classroomio logo" class="w-4" />
-      <p class="text-[10px] font-bold">Classroom</p>
+      <p class="text-[10px] font-bold">ClassroomHub</p>
     </div>
     <!--  -->
   </div>

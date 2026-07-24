@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>AI Tutor Settings - Classroom</title>
+  <title>AI Tutor Settings - ClassroomHub</title>
 </svelte:head>
 
 <OrgAiTutorSettingsPage />

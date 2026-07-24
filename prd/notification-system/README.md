@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Add a notification system to Classroom Hub that:
+Add a notification system to ClassroomHub that:
 1. Sends **in-app notifications** visible in the bell icon popover at the top nav bar
 2. Sends **email notifications** for important events via background tasks
 3. Runs **scheduled reminders** (exercise due dates, upcoming live classes)
@@ -1055,7 +1055,7 @@ These need to be converted to templates first (Phase 4: `submissionGraded` and `
 **Before:**
 ```typescript
 await deliverEmail([{
-  from: buildEmailFromName(`${orgName} (via Classroom Hub.com)`),
+  from: buildEmailFromName(`${orgName} (via ClassroomHub.com)`),
   to: fullSubmission.groupmember.profile.email,
   subject: 'Submission Update',
   content  // raw HTML string
@@ -1118,7 +1118,7 @@ async function sendNewsfeedNotifications(feedId: string, authorId: string, cours
   if (!feedData?.courseId || !feedData.courseTitle || !feedData.organization?.siteName) return;
   if (feedData.courseMembers.length === 0) return;
 
-  const orgName = feedData.organization?.name || 'Classroom Hub';
+  const orgName = feedData.organization?.name || 'ClassroomHub';
   const orgSiteName = feedData.organization?.siteName || 'app';
   const postLink = `https://${orgSiteName}.classroom.tedydev.io.vn/courses/${feedData.courseId}?feedId=${feedData.feedId}`;
 
@@ -1142,7 +1142,7 @@ async function sendNewsfeedNotifications(feedId: string, authorId: string, cours
           postLink,
           orgName
         },
-        from: buildEmailFromName(`${orgName} - Classroom Hub`),
+        from: buildEmailFromName(`${orgName} - ClassroomHub`),
         replyTo: feedData.author?.email || 'noreply@classroom.tedydev.io.vn'
       }
     }));

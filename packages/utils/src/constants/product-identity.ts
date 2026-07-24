@@ -4,8 +4,8 @@
  * picks a different shape in each of those — `classroom-hub`, `classroomhub`,
  * `ClassroomHub` — giving four spellings to keep in sync instead of one.
  *
- * It also reads correctly: "Classroom Hub" parses as the hub belonging to some
- * product called Classroom, when the hub is the product.
+ * It also reads correctly: "ClassroomHub" parses as the hub belonging to some
+ * product called ClassroomHub, when the hub is the product.
  */
 export const PRODUCT_NAME = 'ClassroomHub';
 export const PRODUCT_ROOT_DOMAIN = 'classroom.io.vn';
@@ -15,7 +15,7 @@ export const PRODUCT_ROOT_DOMAIN = 'classroom.io.vn';
  * email and printed in the body of the password-reset and welcome templates, so
  * it must be a mailbox somebody actually reads — not a `noreply` alias.
  *
- * Kept on the product domain deliberately: a "Classroom" invite that replies to
+ * Kept on the product domain deliberately: a "ClassroomHub" invite that replies to
  * a personal consumer address reads as phishing, and consumer providers cannot
  * DKIM-sign for this domain.
  */

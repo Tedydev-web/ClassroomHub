@@ -247,7 +247,7 @@
     },
     "powered_by": {
       "label": "Powered by",
-      "brand": "Classroom"
+      "brand": "ClassroomHub"
     },
     "exercise": {
       "submit": "Check my answers",
@@ -443,7 +443,7 @@
       "teams_tab": "Teams"
     },
     "profile": {
-      "page_subtitle": "Your name, email, and how you appear wherever you work in Classroom.",
+      "page_subtitle": "Your name, email, and how you appear wherever you work in ClassroomHub.",
       "profile_picture": {
         "heading": "Profile Picture",
         "upload_image": "Upload Image",
@@ -469,7 +469,7 @@
       "heading": "Notifications",
       "page_title": "Notifications",
       "page_subtitle": "Choose which email notifications you receive and, as an admin, which emails your organization sends.",
-      "personal_page_subtitle": "Choose which email notifications you receive from Classroom.",
+      "personal_page_subtitle": "Choose which email notifications you receive from ClassroomHub.",
       "personal": {
         "heading": "Your email preferences",
         "description": "These apply to emails sent to you in this organization. Your organization may still disable certain emails for everyone.",
@@ -771,7 +771,7 @@
       "gallery": {
         "heading": "Popular themes",
         "description": "Made with core features you can easily customize — no coding needed.",
-        "by_classroomio": "by Classroom",
+        "by_classroomio": "by ClassroomHub",
         "add": "Add",
         "upgrade": "Upgrade",
         "apply_theme": "Apply Theme",
@@ -1040,7 +1040,7 @@
       "page_subtitle": "Connect Telegram to get notified when important things happen.",
       "heading": "Telegram",
       "sub_heading": "Connect your account to telegram to get notified of any change within the application.",
-      "step_authenticate": "Step 1: Authenticate your account via the Classroom bot.",
+      "step_authenticate": "Step 1: Authenticate your account via the ClassroomHub bot.",
       "open_bot_button": "Open Bot",
       "step_chatId": "Step 2: Enter the Chat ID given to you by the bot.",
       "connect_button": "Connect",
@@ -1048,7 +1048,7 @@
       "disconnect": "Disconnect"
     },
     "billing": {
-      "page_subtitle": "Your plan, billing portal, and how you pay for Classroom.",
+      "page_subtitle": "Your plan, billing portal, and how you pay for ClassroomHub.",
       "sub_title": "Billing details",
       "manage": "Manage your billing",
       "active": "You don't have any active billing",
@@ -1119,7 +1119,7 @@
     }
   },
   "media_manager": {
-    "page_title": "Media Manager - Classroom",
+    "page_title": "Media Manager - ClassroomHub",
     "heading": "Media Manager",
     "page_subtitle": "Keep files, videos, and links for your courses in one library.",
     "empty": "No assets found",
@@ -1263,7 +1263,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Tags - Classroom",
+    "page_title": "Tags - ClassroomHub",
     "heading": "Tags",
     "page_subtitle": "Organize courses with labels so filters and lists stay easy to scan.",
     "create": "Create",
@@ -1314,7 +1314,7 @@
     }
   },
   "public_courses": {
-    "page_title": "Courses - Classroom",
+    "page_title": "Courses - ClassroomHub",
     "heading": "Courses",
     "subtitle": "Browse all published courses",
     "clear_filters": "Clear Filters",
@@ -1576,7 +1576,7 @@
       "border_radius": "Border radius",
       "font_family": "Font family",
       "font_scale": "Font size scale",
-      "show_powered_by": "Show Classroom branding",
+      "show_powered_by": "Show ClassroomHub branding",
       "custom_css": "Custom CSS",
       "custom_css_locked": "Upgrade to enable custom CSS.",
       "custom_css_hint": "Max 5,000 characters.",
@@ -1650,13 +1650,13 @@
     "goto": "Go to",
     "courses": "Courses",
     "home": "Home",
-    "classroomio_home": "Classroom Home",
+    "classroomio_home": "ClassroomHub Home",
     "dashboard": "Dashboard",
     "discussion": "Discussion",
     "people": "People",
     "goto_lms": "Go to LMS",
     "goto_dashboard": "Dashboard",
-    "goto_home": "Go to Classroom Home",
+    "goto_home": "Go to ClassroomHub Home",
     "login": "Login",
     "signup": "Sign Up",
     "redirecting": "Redirecting",
@@ -1954,7 +1954,7 @@
   "course": {
     "creator": {
       "heading": "What course do you want to create?",
-      "placeholder": "Ask Classroom to create a course for you...",
+      "placeholder": "Ask ClassroomHub to create a course for you...",
       "drafting": {
         "heading": "Drafting your course idea",
         "subtext": "We're turning your prompt into a course title and workspace.",
@@ -3354,7 +3354,7 @@
           "audit_actor": "Actor",
           "audit_ip": "IP",
           "scan_qr": "Scan QR",
-          "classroomio_brand": "Classroom",
+          "classroomio_brand": "ClassroomHub",
           "snackbar_invite_link_copied": "Invite link copied",
           "snackbar_invite_link_regenerated": "A new invite link has been generated",
           "snackbar_failed_generate_link": "Failed to generate invite link",
@@ -4058,7 +4058,7 @@
       "rotate_confirm": "Rotate this automation key?"
     },
     "mcp": {
-      "page_subtitle": "Connect AI tools to Classroom with org-scoped keys you can rotate anytime.",
+      "page_subtitle": "Connect AI tools to ClassroomHub with org-scoped keys you can rotate anytime.",
       "usage": {
         "title": "Usage and limits",
         "description": "MCP is available on every plan, but usage is controlled with monthly automation credits and key limits.",
@@ -4072,14 +4072,14 @@
       },
       "keys": {
         "title": "MCP keys",
-        "description": "These keys authenticate the current organization when an MCP client calls Classroom through `@tedydev/classroom-mcp`.",
+        "description": "These keys authenticate the current organization when an MCP client calls ClassroomHub through `@tedydev/classroom-mcp`.",
         "generate": "Generate MCP key",
         "secret_once": "This secret is shown once. Copy it into your MCP client now.",
         "modal": {
           "title": "Create MCP key",
           "description": "Choose a name for this MCP key before it is generated.",
           "name_label": "Key name",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Cancel",
           "save": "Create key"
         }
@@ -4088,20 +4088,20 @@
         "title": "Client setup",
         "description": "Use one org-scoped key per integration. If a key is rotated or revoked, the client stops working until the new secret is configured.",
         "claude_code_description": "Registers `@tedydev/classroom-mcp` with Claude Code using the generated org-scoped key.",
-        "codex_description": "Adds the Classroom MCP server to Codex with the same org-scoped key.",
+        "codex_description": "Adds the ClassroomHub MCP server to Codex with the same org-scoped key.",
         "cursor_description": "Paste this into `~/.cursor/mcp.json` or your workspace MCP config.",
         "opencode_description": "Add this to `opencode.json` in your project root or `~/.config/opencode/opencode.json`."
       }
     },
     "api": {
-      "subtitle": "Manage API keys to integrate with the Classroom public API.",
+      "subtitle": "Manage API keys to integrate with the ClassroomHub public API.",
       "keys": {
         "title": "API keys",
-        "description": "These keys authenticate the current organization when calling the Classroom public API.",
+        "description": "These keys authenticate the current organization when calling the ClassroomHub public API.",
         "generate": "Generate API key",
         "secret_once": "This secret is shown once. Copy it and store it securely.",
         "empty_title": "No API keys yet",
-        "empty_description": "Create the first org-scoped API key to use the Classroom public API.",
+        "empty_description": "Create the first org-scoped API key to use the ClassroomHub public API.",
         "modal": {
           "title": "Create API key",
           "description": "Choose a name for this API key before it is generated.",
@@ -4118,10 +4118,10 @@
       "view_docs": "View Docs"
     },
     "zapier": {
-      "page_subtitle": "Automate Classroom with thousands of apps through Zapier. Coming soon."
+      "page_subtitle": "Automate ClassroomHub with thousands of apps through Zapier. Coming soon."
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
+      "subtitle": "Send signed ClassroomHub events to your external systems.",
       "endpoints_title": "Webhook endpoints",
       "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
       "add": "Add webhook",
@@ -4141,11 +4141,11 @@
       "secret_unchanged": "Leave blank to keep the current secret.",
       "secret_once": "This signing secret is shown once. Store it securely.",
       "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
       "save": "Save webhook",
       "cancel": "Cancel",
       "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
       "event": "Event",
       "status": "Status",
       "attempt": "Attempt",
@@ -4520,7 +4520,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Join {orgName} on Classroom",
+      "page_title": "Join {orgName} on ClassroomHub",
       "invitation_student": "You've been invited into {orgName} as a student.",
       "invitation_teacher": "You've been invited into {orgName} as a teacher.",
       "invitation_admin": "You've been invited into {orgName} as an admin.",
@@ -4539,7 +4539,7 @@
       }
     },
     "link": {
-      "page_title": "Join {orgName} on Classroom",
+      "page_title": "Join {orgName} on ClassroomHub",
       "invitation_student": "You've been invited to join {orgName} as a student.",
       "invitation_teacher": "You've been invited to join {orgName} as a teacher.",
       "invitation_admin": "You've been invited to join {orgName} as an admin.",

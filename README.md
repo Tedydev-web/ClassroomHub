@@ -1,6 +1,6 @@
 <a href="https://classroom.tedydev.io.vn/">
-  <img alt="Classroom is a no-code tool that allows you build and scale your online bootcamp with ease." src="apps/website/static/classroomio-opengraph-image.jpg" />
-  <h1 align="center">Classroom</h1>
+  <img alt="ClassroomHub is a no-code tool that allows you build and scale your online bootcamp with ease." src="apps/website/static/classroomio-opengraph-image.jpg" />
+  <h1 align="center">ClassroomHub</h1>
   <p align="center">
     The Open Source Learning Management System for Companies
     <br />
@@ -8,11 +8,11 @@
   </p>
 </a>
 
-## ✨ About Classroom
+## ✨ About ClassroomHub
 
-<img alt="Classroom Courses page" src="/assets/assets/www/home/ai-course-builder.jpeg" />
+<img alt="ClassroomHub Courses page" src="/assets/assets/www/home/ai-course-builder.jpeg" />
 
-Classroom is an open source LMS for companies. Run compliance/employee training, customer education, and partner certification cohorts — all from one platform. Self-host it on your own infrastructure or use the cloud version.
+ClassroomHub is an open source LMS for companies. Run compliance/employee training, customer education, and partner certification cohorts — all from one platform. Self-host it on your own infrastructure or use the cloud version.
 
 ### Who It's For
 
@@ -59,7 +59,7 @@ For what's coming next, see the [public roadmap](https://classroom.tedydev.io.vn
 
 ## Get a Demo
 
-You can book a quick 15 min demo to see if Classroom is a good fit for you
+You can book a quick 15 min demo to see if ClassroomHub is a good fit for you
 
 Contact [hieudat2310.bh@gmail.com](mailto:hieudat2310.bh@gmail.com) to schedule a demo.
 
@@ -71,7 +71,7 @@ To get a local copy up and running, please follow these simple steps.
 
 ### Prerequisites
 
-Here is what you need to be able to run Classroom
+Here is what you need to be able to run ClassroomHub
 
 - **[Node.js](https://nodejs.org/)** (Version: `22.23.1`, pinned by `.nvmrc`) — _required_
 - **[pnpm](https://pnpm.io/installation)** (v10) — _required_; the package scripts call `pnpm` directly, so npm/yarn are not substitutes
@@ -81,10 +81,10 @@ Here is what you need to be able to run Classroom
 
 This repo is a monorepo that consists of these primary apps:
 
-1. `website`: The landing page of Classroom hosted [here](https://classroom.tedydev.io.vn)
+1. `website`: The landing page of ClassroomHub hosted [here](https://classroom.tedydev.io.vn)
 2. `api`: The api service that handles PDF, video processing, Emailing and Notifications.
 3. `dashboard`: The web application that runs the learning management system hosted [here](https://classroom-app.tedydev.io.vn).
-4. `docs`: Official documentation of Classroom hosted [here](https://classroom.tedydev.io.vn/docs)
+4. `docs`: Official documentation of ClassroomHub hosted [here](https://classroom.tedydev.io.vn/docs)
 
 The repository also contains shared packages under `packages/` (for example `packages/db`, `packages/utils`, and `packages/ui`).
 

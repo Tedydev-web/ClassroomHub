@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Build a password-gated super admin panel that lets the Classroom Hub operator manage all users across the database without needing a user account. Use cases:
+Build a password-gated super admin panel that lets the ClassroomHub operator manage all users across the database without needing a user account. Use cases:
 
 1. **User management** — view a paginated, searchable table of every user; open individual profile pages with stats
 2. **AI chat inspection** — view all AI assistant conversations for any user and copy an entire chat transcript with one click
@@ -350,7 +350,7 @@ Uses plain `fetch` (no Hono RPC client — standalone app has no `@cio/api` dep)
   - 401 → show inline error
   - 200 → store in sessionStorage, show children
 - Pass password to all child pages via Svelte context (`setContext`)
-- Top nav: "Classroom Hub Admin" | Users | Create Org | Sign out (clears sessionStorage + reloads)
+- Top nav: "ClassroomHub Admin" | Users | Create Org | Sign out (clears sessionStorage + reloads)
 
 ### 2e. Pages
 

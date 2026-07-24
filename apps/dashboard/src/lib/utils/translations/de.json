@@ -1257,7 +1257,7 @@
           "audit_actor": "Akteur",
           "audit_ip": "IP",
           "scan_qr": "QR scannen",
-          "classroomio_brand": "Classroom",
+          "classroomio_brand": "ClassroomHub",
           "snackbar_invite_link_copied": "Einladungslink kopiert",
           "snackbar_invite_link_regenerated": "Ein neuer Einladungslink wurde generiert",
           "snackbar_failed_generate_link": "Der Einladungslink konnte nicht generiert werden",
@@ -2536,7 +2536,7 @@
     },
     "creator": {
       "heading": "Welchen Kurs möchten Sie erstellen?",
-      "placeholder": "Bitten Sie Classroom, einen Kurs für Sie zu erstellen ...",
+      "placeholder": "Bitten Sie ClassroomHub, einen Kurs für Sie zu erstellen ...",
       "type": {
         "self_paced": "Eigenständig",
         "live_class": "Live-Klasse"
@@ -2889,12 +2889,12 @@
     "goto": "Gehe zu",
     "courses": "Kurse",
     "home": "Zuhause",
-    "classroomio_home": "Classroom Startseite",
+    "classroomio_home": "ClassroomHub Startseite",
     "dashboard": "Dashboard",
     "discussion": "Diskussion",
     "people": "Menschen",
     "goto_lms": "Gehen Sie zu LMS",
-    "goto_home": "Gehen Sie zur Classroom-Startseite",
+    "goto_home": "Gehen Sie zur ClassroomHub-Startseite",
     "login": "Anmelden",
     "signup": "Melden Sie sich an",
     "redirecting": "Umleiten",
@@ -2998,7 +2998,7 @@
     "upgrade_left": "{count} übrig"
   },
   "media_manager": {
-    "page_title": "Medienverwaltung - Classroom",
+    "page_title": "Medienverwaltung - ClassroomHub",
     "heading": "Medienmanager",
     "empty": "Keine Vermögenswerte gefunden",
     "usage": {
@@ -3150,7 +3150,7 @@
       "provider": "Wir verwenden Polar, um Ihre Abrechnung zu verwalten",
       "open_billing": "Abrechnung öffnen",
       "error": "Beim Öffnen der Abrechnung ist ein Fehler aufgetreten",
-      "page_subtitle": "Ihr Plan, Abrechnungsportal und wie Sie Classroom bezahlen.",
+      "page_subtitle": "Ihr Plan, Abrechnungsportal und wie Sie ClassroomHub bezahlen.",
       "ai_credits": "AI credits",
       "ai_tokens_used": "AI credits diesen Monat verwendet",
       "ai_bonus_credits": "Bonus-AI credits verfügbar"
@@ -3158,7 +3158,7 @@
     "integrations": {
       "heading": "Telegram",
       "sub_heading": "Verbinden Sie Ihr Konto mit Telegram, um über jede Änderung innerhalb der Anwendung benachrichtigt zu werden.",
-      "step_authenticate": "Schritt 1: Authentifizieren Sie Ihr Konto über den Classroom-Bot.",
+      "step_authenticate": "Schritt 1: Authentifizieren Sie Ihr Konto über den ClassroomHub-Bot.",
       "open_bot_button": "Bot öffnen",
       "step_chatId": "Schritt 2: Geben Sie die Chat-ID ein, die Ihnen der Bot gegeben hat.",
       "connect_button": "Verbinden",
@@ -3478,7 +3478,7 @@
       "gallery": {
         "heading": "Beliebte Themen",
         "description": "Entwickelt mit Kernfunktionen, die Sie einfach anpassen können – keine Programmierung erforderlich.",
-        "by_classroomio": "von Classroom",
+        "by_classroomio": "von ClassroomHub",
         "add": "Hinzufügen",
         "upgrade": "Upgrade",
         "apply_theme": "Theme anwenden",
@@ -3556,7 +3556,7 @@
         "accepted": "Akzeptiert:",
         "validation_error": "Die Dateigröße überschreitet die maximale Grenze:"
       },
-      "page_subtitle": "Ihr Name, Ihre E-Mail und wie Sie überall in Classroom erscheinen."
+      "page_subtitle": "Ihr Name, Ihre E-Mail und wie Sie überall in ClassroomHub erscheinen."
     },
     "tabs": {
       "profile_tab": "Profil",
@@ -3817,7 +3817,7 @@
           "description": "Anmeldungen, Abgaben, Lektionen, Ankündigungen und Abschlüsse in Ihren Kursen."
         }
       },
-      "personal_page_subtitle": "Wählen Sie, welche E-Mail-Benachrichtigungen Sie von Classroom erhalten."
+      "personal_page_subtitle": "Wählen Sie, welche E-Mail-Benachrichtigungen Sie von ClassroomHub erhalten."
     }
   },
   "profileMenu": {
@@ -3994,7 +3994,7 @@
     "snackbar_error": "Fehler beim Senden des Codes"
   },
   "public_courses": {
-    "page_title": "Kurse - Classroom",
+    "page_title": "Kurse - ClassroomHub",
     "heading": "Kurse",
     "subtitle": "Durchsuchen Sie alle veröffentlichten Kurse",
     "clear_filters": "Filter löschen",
@@ -4019,7 +4019,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Schlagwörter - Classroom",
+    "page_title": "Schlagwörter - ClassroomHub",
     "heading": "Schlagwörter",
     "create": "Erstellen",
     "tag_modal": {
@@ -4071,7 +4071,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Treten Sie {orgName} auf Classroom bei",
+      "page_title": "Treten Sie {orgName} auf ClassroomHub bei",
       "invitation_student": "Sie wurden zu {orgName} als Schüler/in eingeladen.",
       "invitation_teacher": "Sie wurden zu {orgName} als Lehrer/in eingeladen.",
       "invitation_admin": "Sie wurden zu {orgName} als Administrator/in eingeladen.",
@@ -4090,7 +4090,7 @@
       }
     },
     "link": {
-      "page_title": "Treten Sie {orgName} auf Classroom bei",
+      "page_title": "Treten Sie {orgName} auf ClassroomHub bei",
       "invitation_student": "Sie wurden eingeladen, sich {orgName} als Student anzuschließen.",
       "invitation_teacher": "Sie wurden eingeladen, sich {orgName} als Lehrer anzuschließen.",
       "invitation_admin": "Sie wurden eingeladen, {orgName} als Administrator beizutreten.",
@@ -4111,20 +4111,20 @@
         "title": "Client-Setup",
         "description": "Verwenden Sie einen organisationsweiten Schlüssel pro Integration. Wenn ein Schlüssel rotiert oder widerrufen wird, funktioniert der Client nicht mehr, bis das neue Geheimnis konfiguriert ist.",
         "claude_code_description": "Registriert „@tedydev/classroom-mcp“ bei Claude Code unter Verwendung des generierten organisationsweit gültigen Schlüssels.",
-        "codex_description": "Fügt den Classroom MCP-Server mit demselben organisationsweit gültigen Schlüssel zu Codex hinzu.",
+        "codex_description": "Fügt den ClassroomHub MCP-Server mit demselben organisationsweit gültigen Schlüssel zu Codex hinzu.",
         "cursor_description": "Fügen Sie dies in „~/.cursor/mcp.json“ oder Ihre Workspace-MCP-Konfiguration ein.",
         "opencode_description": "Fügen Sie dies in `opencode.json` im Projektstamm oder in `~/.config/opencode/opencode.json` ein."
       },
       "keys": {
         "title": "MCP-Schlüssel",
-        "description": "Diese Schlüssel authentifizieren die aktuelle Organisation, wenn ein MCP-Client Classroom über „@tedydev/classroom-mcp“ aufruft.",
+        "description": "Diese Schlüssel authentifizieren die aktuelle Organisation, wenn ein MCP-Client ClassroomHub über „@tedydev/classroom-mcp“ aufruft.",
         "generate": "MCP-Schlüssel generieren",
         "secret_once": "Dieses Geheimnis wird einmal gezeigt. Kopieren Sie es jetzt in Ihren MCP-Client.",
         "modal": {
           "title": "MCP-Schlüssel erstellen",
           "description": "Wählen Sie einen Namen für diesen MCP-Schlüssel, bevor er generiert wird.",
           "name_label": "Schlüsselname",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Abbrechen",
           "save": "Schlüssel erstellen"
         }
@@ -4140,17 +4140,17 @@
         "rate_limits_description": "Zulässige Lese-/Schreib-/Veröffentlichungsanfragen pro Minute.",
         "used_label": "Verwendet:"
       },
-      "page_subtitle": "Verbinden Sie KI-Tools mit Classroom über organisationsbezogene Schlüssel, die Sie jederzeit rotieren können."
+      "page_subtitle": "Verbinden Sie KI-Tools mit ClassroomHub über organisationsbezogene Schlüssel, die Sie jederzeit rotieren können."
     },
     "api": {
-      "subtitle": "Verwalten Sie API-Schlüssel zur Integration mit der öffentlichen Classroom-API.",
+      "subtitle": "Verwalten Sie API-Schlüssel zur Integration mit der öffentlichen ClassroomHub-API.",
       "keys": {
         "title": "API-Schlüssel",
-        "description": "Diese Schlüssel authentifizieren die aktuelle Organisation beim Aufruf der öffentlichen Classroom-API.",
+        "description": "Diese Schlüssel authentifizieren die aktuelle Organisation beim Aufruf der öffentlichen ClassroomHub-API.",
         "generate": "API-Schlüssel generieren",
         "secret_once": "Dieses Geheimnis wird nur einmal angezeigt. Kopieren Sie es und speichern Sie es sicher.",
         "empty_title": "Noch keine API-Schlüssel",
-        "empty_description": "Erstellen Sie den ersten organisationsbezogenen API-Schlüssel, um die öffentliche Classroom-API zu nutzen.",
+        "empty_description": "Erstellen Sie den ersten organisationsbezogenen API-Schlüssel, um die öffentliche ClassroomHub-API zu nutzen.",
         "modal": {
           "title": "API-Schlüssel erstellen",
           "description": "Wählen Sie einen Namen für diesen API-Schlüssel, bevor er generiert wird.",
@@ -4205,10 +4205,10 @@
       "disabled_description": "Nur Organisationsadministratoren können Automatisierungsschlüssel erstellen, rotieren oder widerrufen. Lehrer können die Einrichtungsanweisungen hier einsehen."
     },
     "zapier": {
-      "page_subtitle": "Automatisieren Sie Classroom mit Tausenden von Apps über Zapier. Demnächst verfügbar."
+      "page_subtitle": "Automatisieren Sie ClassroomHub mit Tausenden von Apps über Zapier. Demnächst verfügbar."
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
+      "subtitle": "Send signed ClassroomHub events to your external systems.",
       "endpoints_title": "Webhook endpoints",
       "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
       "add": "Add webhook",
@@ -4228,11 +4228,11 @@
       "secret_unchanged": "Leave blank to keep the current secret.",
       "secret_once": "This signing secret is shown once. Store it securely.",
       "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
       "save": "Save webhook",
       "cancel": "Cancel",
       "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
       "event": "Event",
       "status": "Status",
       "attempt": "Attempt",
@@ -4480,7 +4480,7 @@
       "border_radius": "Grenzradius",
       "font_family": "Schriftfamilie",
       "font_scale": "Schriftgrößenskala",
-      "show_powered_by": "Classroom-Branding anzeigen",
+      "show_powered_by": "ClassroomHub-Branding anzeigen",
       "custom_css": "Benutzerdefiniertes CSS",
       "custom_css_locked": "Führen Sie ein Upgrade durch, um benutzerdefiniertes CSS zu aktivieren.",
       "embed_code": "Code einbetten",

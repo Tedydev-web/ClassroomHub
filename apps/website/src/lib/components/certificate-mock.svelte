@@ -3,7 +3,7 @@
   import { renderCertificateDocument, DEFAULT_CERTIFICATE_DESIGN } from '@cio/certificates';
 
   /**
-   * Renders the default Classroom certificate template (classique) in an iframe.
+   * Renders the default ClassroomHub certificate template (classique) in an iframe.
    * Used on customer-education and compliance-training pages.
    *
    * @typedef {Object} Props
@@ -11,7 +11,7 @@
    * @property {string} achievement         Course or cohort name
    * @property {string} issued              Issue date (e.g. "11 May 2026")
    * @property {string} verifyValue         Certificate ID rendered in the seal
-   * @property {string} [orgName]           Org name shown on the top tag (default "Classroom")
+   * @property {string} [orgName]           Org name shown on the top tag (default "ClassroomHub")
    * @property {string} [courseDescription] Body description (default derived from achievement)
    */
 
@@ -21,7 +21,7 @@
     achievement,
     issued,
     verifyValue,
-    orgName = 'Classroom',
+    orgName = 'ClassroomHub',
     courseDescription = `For successfully completing ${achievement}.`
   } = $props();
 

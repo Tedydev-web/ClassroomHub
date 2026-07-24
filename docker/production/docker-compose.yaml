@@ -1,4 +1,4 @@
-# Classroom — production stack for the operator-run deployment.
+# ClassroomHub — production stack for the operator-run deployment.
 #
 # Not to be confused with docker/coolify/docker-compose.yaml, which is the
 # public Coolify one-click service template: that file is self-contained,
@@ -51,8 +51,8 @@ services:
       # recovery, which surfaces as 57P03 on the first sign-in after a restart.
       test:
         [
-          'CMD-SHELL',
-          "pg_isready -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} && psql -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} -tAc 'SELECT 1'"
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} && psql -U ${POSTGRES_USER:-classroom} -d ${POSTGRES_DB:-classroom} -tAc 'SELECT 1'",
         ]
       interval: 10s
       timeout: 5s
@@ -63,12 +63,12 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '1.5'
+          cpus: "1.5"
           memory: 2G
 
   redis:
@@ -78,11 +78,11 @@ services:
       io.classroom.role: redis
     # Append-only so queued jobs survive a restart; a lost queue means lost
     # transcodes, transcriptions, and outbound email.
-    command: ['redis-server', '--appendonly', 'yes']
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - ${CLASSROOM_DATA_DIR:-/data/classroomio-production}/redis:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -92,12 +92,12 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
   # Schema migration runs once per deploy, before any app process serves traffic.
@@ -115,21 +115,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    entrypoint: ['pnpm', '--filter', '@cio/db', 'db:setup']
+    entrypoint: ["pnpm", "--filter", "@cio/db", "db:setup"]
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
       PRIVATE_DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
-    restart: 'no'
+    restart: "no"
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 1G
 
   api:
@@ -154,16 +154,16 @@ services:
         condition: service_completed_successfully
     ports:
       # Loopback only — the host Cloudflare Tunnel is the sole public path.
-      - '127.0.0.1:${HOST_API_PORT:-18001}:3081'
+      - "127.0.0.1:${HOST_API_PORT:-18001}:3081"
     environment:
       NODE_ENV: production
       PORT: 3081
       # Migration already ran in db-migrate; the entrypoint must not repeat it.
-      SKIP_DB_SETUP: 'true'
+      SKIP_DB_SETUP: "true"
 
       # Self-owned multi-tenant platform: no upstream licence check, no single-org lock.
-      PUBLIC_IS_SELFHOSTED: 'false'
-      PUBLIC_IS_SELF_OWNED: 'true'
+      PUBLIC_IS_SELFHOSTED: "false"
+      PUBLIC_IS_SELF_OWNED: "true"
 
       DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
       REDIS_URL: redis://redis:6379
@@ -219,10 +219,10 @@ services:
       # node:slim ships no curl/wget; use the runtime's own fetch.
       test:
         [
-          'CMD',
-          'node',
-          '-e',
-          "fetch('http://localhost:3081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 10s
       timeout: 5s
@@ -233,12 +233,12 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '1.5'
+          cpus: "1.5"
           memory: 1536M
 
   dashboard:
@@ -250,8 +250,8 @@ services:
       # Hard-coded, not env-driven: SvelteKit bakes these into the bundle, so an
       # override at deploy time would silently produce the wrong topology.
       args:
-        PUBLIC_IS_SELFHOSTED: 'false'
-        PUBLIC_IS_SELF_OWNED: 'true'
+        PUBLIC_IS_SELFHOSTED: "false"
+        PUBLIC_IS_SELF_OWNED: "true"
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -259,7 +259,7 @@ services:
       api:
         condition: service_healthy
     ports:
-      - '127.0.0.1:${HOST_DASHBOARD_PORT:-18000}:3082'
+      - "127.0.0.1:${HOST_DASHBOARD_PORT:-18000}:3082"
     environment:
       NODE_ENV: production
       PORT: 3082
@@ -267,8 +267,8 @@ services:
 
       # Runtime copy of the build-time topology. The image is built with these
       # same values; a mismatch here means the wrong image is deployed.
-      PUBLIC_IS_SELFHOSTED: 'false'
-      PUBLIC_IS_SELF_OWNED: 'true'
+      PUBLIC_IS_SELFHOSTED: "false"
+      PUBLIC_IS_SELF_OWNED: "true"
 
       # Server-to-server call stays on the stack network, never over the tunnel.
       PRIVATE_SERVER_URL: http://api:3081
@@ -299,10 +299,10 @@ services:
       # Any non-5xx proves the SvelteKit server is listening and routing.
       test:
         [
-          'CMD',
-          'node',
-          '-e',
-          "fetch('http://localhost:3082/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3082/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 10s
       timeout: 5s
@@ -313,12 +313,12 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '0.75'
+          cpus: "0.75"
           memory: 768M
 
   # BullMQ workers: video processing, transcription, AI course generation, email,
@@ -341,8 +341,8 @@ services:
         condition: service_completed_successfully
     environment:
       NODE_ENV: production
-      PUBLIC_IS_SELFHOSTED: 'false'
-      PUBLIC_IS_SELF_OWNED: 'true'
+      PUBLIC_IS_SELFHOSTED: "false"
+      PUBLIC_IS_SELF_OWNED: "true"
 
       DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
       REDIS_URL: redis://redis:6379
@@ -389,10 +389,10 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: '20m'
-        max-file: '5'
+        max-size: "20m"
+        max-file: "5"
     deploy:
       resources:
         limits:
-          cpus: '2.0'
+          cpus: "2.0"
           memory: 3G

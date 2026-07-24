@@ -16,7 +16,7 @@
   let {
     eyebrow = 'MCP server',
     title = 'Course authoring from your coding agent.',
-    description = 'Connect Cursor, Claude Code, Codex, or OpenCode to Classroom and let your agent draft courses, reorganise sections, generate exercises, and publish them without leaving your terminal.',
+    description = 'Connect Cursor, Claude Code, Codex, or OpenCode to ClassroomHub and let your agent draft courses, reorganise sections, generate exercises, and publish them without leaving your terminal.',
     showTools = true
   } = $props();
 

@@ -10,17 +10,17 @@
 
 ## Purpose
 
-Define a Classroom Hub product concept that lets customer academies create, publish, and embed in-app onboarding walkthroughs inside their own applications, so admins can guide learners, instructors, partners, or customers through key product workflows without custom engineering for every tutorial.
+Define a ClassroomHub product concept that lets customer academies create, publish, and embed in-app onboarding walkthroughs inside their own applications, so admins can guide learners, instructors, partners, or customers through key product workflows without custom engineering for every tutorial.
 
 ## Executive Summary
 
-Classroom Hub customers who operate academies and certification programs often need to teach users how to use both the academy and the surrounding product. Today, that guidance usually lives in static help docs, course lessons, support tickets, or one-off engineering work inside the customer's application.
+ClassroomHub customers who operate academies and certification programs often need to teach users how to use both the academy and the surrounding product. Today, that guidance usually lives in static help docs, course lessons, support tickets, or one-off engineering work inside the customer's application.
 
-The walkthrough widget would give Classroom Hub a lightweight embedded onboarding layer:
+The walkthrough widget would give ClassroomHub a lightweight embedded onboarding layer:
 
-1. Admins create a walkthrough in Classroom Hub.
+1. Admins create a walkthrough in ClassroomHub.
 2. Admins identify target elements in their application manually or through a guided element picker.
-3. Classroom Hub stores the walkthrough steps, display rules, and published versions.
+3. ClassroomHub stores the walkthrough steps, display rules, and published versions.
 4. Customers install a small JavaScript widget in their app.
 5. The widget evaluates targeting criteria and walks the end user through the relevant features with next, back, skip, and completion controls.
 
@@ -46,9 +46,9 @@ For customer academies and certification training, courses teach concepts and as
 This creates a useful bridge between:
 
 - **Learning content**: lessons, exercises, certifications, and knowledge checks.
-- **In-product enablement**: contextual guidance on the customer's app or Classroom Hub-powered academy.
+- **In-product enablement**: contextual guidance on the customer's app or ClassroomHub-powered academy.
 
-If Classroom Hub owns both layers, customers can pair training content with embedded product adoption flows:
+If ClassroomHub owns both layers, customers can pair training content with embedded product adoption flows:
 
 - "Take the course on creating your first campaign."
 - "Open the product and follow the guided walkthrough."
@@ -100,7 +100,7 @@ Current options are limited:
 
 ## Goals
 
-1. Let customers create and publish app walkthroughs from Classroom Hub.
+1. Let customers create and publish app walkthroughs from ClassroomHub.
 2. Provide a simple embed installation path for third-party applications.
 3. Support reliable step targeting through stable selectors and element metadata.
 4. Allow customer-defined display criteria such as first-time user, role, plan, or custom traits.
@@ -129,7 +129,7 @@ Current options are limited:
 5. Published walkthroughs should use immutable version snapshots so live customer apps do not break when a draft changes.
 6. Targeting rules should be explicit and based on page path, user traits, completion state, or manual triggers.
 7. The runtime must support single-page applications where routes change without full page reloads.
-8. Progress and completion should be stored by Classroom Hub when the customer provides a stable user identifier.
+8. Progress and completion should be stored by ClassroomHub when the customer provides a stable user identifier.
 9. Anonymous session support is allowed, but cross-device completion requires user identity from the customer app.
 10. Privacy and consent controls must be part of the product design before any broader recording capability is considered.
 
@@ -137,7 +137,7 @@ Current options are limited:
 
 ### UC-1: New Customer Activation
 
-- A SaaS company embeds the Classroom Hub walkthrough widget in its product.
+- A SaaS company embeds the ClassroomHub walkthrough widget in its product.
 - New users with `traits.firstTimeUser = true` see a setup walkthrough.
 - The tour highlights dashboard navigation, first project creation, and key settings.
 - Completion is stored so the walkthrough does not appear again.
@@ -147,11 +147,11 @@ Current options are limited:
 - A customer academy teaches users how to complete a workflow in the customer's app.
 - After a lesson, the user launches the app and receives an embedded walkthrough.
 - The walkthrough guides the user through the same workflow required for certification.
-- Classroom Hub tracks whether the walkthrough was started or completed.
+- ClassroomHub tracks whether the walkthrough was started or completed.
 
 ### UC-3: Instructor/Admin Onboarding
 
-- A training organization uses Classroom Hub to onboard new instructors.
+- A training organization uses ClassroomHub to onboard new instructors.
 - A walkthrough explains how to create a course, invite learners, and publish a certificate.
 - Admins can relaunch it from a help menu.
 
@@ -164,7 +164,7 @@ Current options are limited:
 ### UC-5: Contextual Help
 
 - A user opens a confusing page.
-- The host application calls `Classroom HubWalkthrough.start("billing-setup")`.
+- The host application calls `ClassroomHub HubWalkthrough.start("billing-setup")`.
 - The user gets a short guided explanation without leaving the page.
 
 ## Functional Requirements
@@ -232,7 +232,7 @@ Element picker mode is the recommended first capture experience.
 Flow:
 
 1. Admin opens their application with the widget installed.
-2. Admin starts picker mode from Classroom Hub or a temporary recorder token.
+2. Admin starts picker mode from ClassroomHub or a temporary recorder token.
 3. Hovering over elements highlights potential targets.
 4. Clicking an element captures a proposed selector and metadata.
 5. Admin adds title/body copy for that step.
@@ -314,7 +314,7 @@ V1 targeting should support:
 Example runtime initialization:
 
 ```typescript
-Classroom HubWalkthrough.init({
+ClassroomHub HubWalkthrough.init({
   organizationId: "org_123",
   userId: currentUser.id,
   traits: {
@@ -341,9 +341,9 @@ Customers can install the widget with a script tag:
 Or with an npm package:
 
 ```typescript
-import { Classroom HubWalkthrough } from "@classroomio/walkthrough";
+import { ClassroomHub HubWalkthrough } from "@classroomio/walkthrough";
 
-Classroom HubWalkthrough.init({
+ClassroomHub HubWalkthrough.init({
   organizationId: "org_123",
   userId: currentUser.id,
   traits: currentUser.traits
@@ -363,9 +363,9 @@ Runtime responsibilities:
 9. Expose a manual API:
 
 ```typescript
-window.Classroom HubWalkthrough.start("walkthrough_key");
-window.Classroom HubWalkthrough.end();
-window.Classroom HubWalkthrough.identify(userId, traits);
+window.ClassroomHub HubWalkthrough.start("walkthrough_key");
+window.ClassroomHub HubWalkthrough.end();
+window.ClassroomHub HubWalkthrough.identify(userId, traits);
 ```
 
 ### FR-7: End-User Experience
@@ -435,7 +435,7 @@ Customers can configure:
 5. Tooltip width.
 6. Overlay opacity.
 7. Button labels.
-8. Optional "Powered by Classroom Hub" branding depending on plan.
+8. Optional "Powered by ClassroomHub" branding depending on plan.
 
 The runtime must isolate styles from the host app, preferably through Shadow DOM.
 
@@ -624,7 +624,7 @@ Public runtime routes:
 ### 4. Runtime Flow
 
 ```text
-Host app                         Classroom Hub
+Host app                         ClassroomHub
   |                                  |
   |-- load walkthrough.js ---------->|
   |<-- static runtime ---------------|
@@ -716,10 +716,10 @@ Show:
 
 Ship this PRD and validate:
 
-1. Whether customers want walkthroughs for their own products, Classroom Hub portals, or both.
+1. Whether customers want walkthroughs for their own products, ClassroomHub portals, or both.
 2. Whether academy use cases are better served by forms, checklists, or walkthroughs.
 3. Whether customers can add stable target attributes to their apps.
-4. Whether progress tracking should live in Classroom Hub or remain customer-owned.
+4. Whether progress tracking should live in ClassroomHub or remain customer-owned.
 
 ### Phase 1: Walkthrough MVP
 
@@ -818,7 +818,7 @@ Recommended priority:
    - Mitigation: route listeners, MutationObserver, configurable wait timeouts.
 
 6. **Support burden**
-   - Customers may expect Classroom Hub to fix selectors in their app.
+   - Customers may expect ClassroomHub to fix selectors in their app.
    - Mitigation: selector health UI, docs, and install guidance.
 
 7. **Product focus**
@@ -827,7 +827,7 @@ Recommended priority:
 
 ## Open Questions
 
-1. Is the primary target external customer applications, Classroom Hub course portals, or both?
+1. Is the primary target external customer applications, ClassroomHub course portals, or both?
 2. Should v1 require customers to add `data-cio-tour` attributes for production-ready tours?
 3. Should anonymous users be eligible for walkthrough progress tracking?
 4. How much trait data should customers be allowed to send and store?
@@ -850,4 +850,4 @@ Recommended priority:
 
 ## Bottom Line
 
-The walkthrough widget is a promising activation feature for Classroom Hub, especially for customer academies that need users to learn by doing inside a real application. The safest path is to start with a manual builder and explicit element picker, then expand toward recording and intelligence only after the runtime, selector model, privacy posture, and customer demand are proven.
+The walkthrough widget is a promising activation feature for ClassroomHub, especially for customer academies that need users to learn by doing inside a real application. The safest path is to start with a manual builder and explicit element picker, then expand toward recording and intelligence only after the runtime, selector model, privacy posture, and customer demand are proven.

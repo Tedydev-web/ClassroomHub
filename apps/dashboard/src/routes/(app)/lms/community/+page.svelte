@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Community - Classroom</title>
+  <title>Community - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

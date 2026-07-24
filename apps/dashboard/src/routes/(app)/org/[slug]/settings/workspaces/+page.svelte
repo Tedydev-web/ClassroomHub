@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('account.workspaces.page_title')} - Classroom</title>
+  <title>{$t('account.workspaces.page_title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Header>

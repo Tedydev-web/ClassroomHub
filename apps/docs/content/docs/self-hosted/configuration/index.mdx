@@ -1,16 +1,16 @@
 ---
 title: Configuration
-description: Shared configuration reference for self-hosting Classroom — secrets, email, storage, CSP, integrations, licensing, and versions.
+description: Shared configuration reference for self-hosting ClassroomHub — secrets, email, storage, CSP, integrations, licensing, and versions.
 ---
 
-However you deploy Classroom — [Docker](/self-hosted/docker), [Railway](/self-hosted/railway), or
+However you deploy ClassroomHub — [Docker](/self-hosted/docker), [Railway](/self-hosted/railway), or
 [Coolify](/self-hosted/coolify) — the stack reads the **same set of environment variables**. This
 section is the single source of truth for what each group of variables does. The provider guides show
 you *where* to set them for that platform; these pages explain *what* to set and *why*.
 
 ## How to read these pages
 
-Classroom is configured entirely through environment variables. On Docker they live in one root
+ClassroomHub is configured entirely through environment variables. On Docker they live in one root
 `.env` file that every `docker compose` command reads via `--env-file .env`; on Railway and Coolify you
 set the same variables on each service.
 

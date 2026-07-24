@@ -203,7 +203,7 @@ export function assertSupportedCustomDomain(domain: string) {
   }
 
   if (domain === PRODUCT_ROOT_DOMAIN || domain.endsWith(`.${PRODUCT_ROOT_DOMAIN}`)) {
-    throw new AppError('Domain belongs to the Classroom platform', ErrorCodes.VALIDATION_ERROR, 400, 'domain');
+    throw new AppError('Domain belongs to the ClassroomHub platform', ErrorCodes.VALIDATION_ERROR, 400, 'domain');
   }
 }
 

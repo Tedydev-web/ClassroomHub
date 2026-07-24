@@ -1,9 +1,9 @@
 ---
 title: Self Hosting
-description: Run Classroom on your own infrastructure — with Docker, DigitalOcean, Railway, Coolify, or Dokploy.
+description: Run ClassroomHub on your own infrastructure — with Docker, DigitalOcean, Railway, Coolify, or Dokploy.
 ---
 
-Classroom is open source, and you can run the whole platform on your own infrastructure. Every
+ClassroomHub is open source, and you can run the whole platform on your own infrastructure. Every
 option below runs the same stack — the API, the dashboard, and the background jobs worker, backed by
 Postgres and Redis.
 
@@ -55,7 +55,7 @@ variable the stack reads.
 
 ## Server requirements
 
-Classroom is not a single container — it runs **seven services**: Postgres, Redis, MinIO (object
+ClassroomHub is not a single container — it runs **seven services**: Postgres, Redis, MinIO (object
 storage), the API, the dashboard, and a background **jobs worker** that handles video processing,
 transcription, and AI course generation. The jobs worker spikes RAM whenever it runs, so a server's
 idle memory use understates what you actually need.
@@ -67,15 +67,15 @@ idle memory use understates what you actually need.
 | Disk     | 20 GB + uploads  | 40 GB+ SSD    |
 
 :::warning[Don't under-provision RAM]
-A **1 GB server cannot run Classroom at all** — it exhausts memory on the base stack before the
+A **1 GB server cannot run ClassroomHub at all** — it exhausts memory on the base stack before the
 app is even up. **2 GB is only enough for a PaaS control plane** (Coolify, Dokploy) with little left
 over for the app. Target **8 GB for reliable operation**, especially once the jobs worker starts
 processing video or AI generation.
 :::
 
 :::note[Running a PaaS on the same box?]
-Coolify and Dokploy need roughly **2 GB for themselves** on top of Classroom's requirement. If
-they share the server, size it for both — e.g. 8 GB for Classroom plus the PaaS overhead.
+Coolify and Dokploy need roughly **2 GB for themselves** on top of ClassroomHub's requirement. If
+they share the server, size it for both — e.g. 8 GB for ClassroomHub plus the PaaS overhead.
 :::
 
 Building the images **from source** is a separate, heavier job that needs ~8 GB RAM at build time —
@@ -85,7 +85,7 @@ default) avoids that.
 ## HTTPS is required in production
 
 :::warning[Serve over HTTPS on any real domain]
-Classroom's authentication session cookies are marked `Secure`, so browsers refuse to store or
+ClassroomHub's authentication session cookies are marked `Secure`, so browsers refuse to store or
 send them over plain HTTP — **login silently fails**. Plain HTTP works only for local evaluation on
 `localhost`. Any internet-facing deployment **must** be served over HTTPS.
 :::

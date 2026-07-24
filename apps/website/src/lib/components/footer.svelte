@@ -57,7 +57,7 @@
   <div class="relative z-10 flex flex-col gap-10 lg:flex-row lg:justify-between">
     <!-- Brand -->
     <div class="flex flex-col gap-4 lg:max-w-[220px]">
-      <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="Classroom logo" />
+      <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="ClassroomHub logo" />
       <p class="ui:text-muted-foreground text-sm leading-6">
         The Open Source LMS for compliance training and certification programs.
       </p>
@@ -215,6 +215,6 @@
   <div
     class="ui:border-border ui:text-muted-foreground relative z-10 mt-10 border-t pt-6 text-center text-xs lg:text-left"
   >
-    All rights reserved — Classroom © {new Date().getFullYear()}
+    All rights reserved — ClassroomHub © {new Date().getFullYear()}
   </div>
 </footer>

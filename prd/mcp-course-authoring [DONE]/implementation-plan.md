@@ -5,8 +5,8 @@
 1. The MCP server is a thin API adapter, not a persistence layer.
 2. Draft review is mandatory before publish.
 3. External agents submit normalized course payloads.
-4. Classroom Hub does not parse PDFs or source material in v1.
-5. Publish uses existing Classroom Hub services for course, section, lesson, and lesson language creation.
+4. ClassroomHub does not parse PDFs or source material in v1.
+5. Publish uses existing ClassroomHub services for course, section, lesson, and lesson language creation.
 6. Authentication is org-scoped and must reject cross-org mutations.
 
 ## Delivery Phases

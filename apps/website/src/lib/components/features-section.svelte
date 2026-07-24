@@ -53,7 +53,7 @@
         Make it yours,<br />down to the favicon.
       </h2>
       <p class="mt-3 max-w-[620px] text-sm leading-relaxed text-gray-500">
-        Your brand, your domain, your content. Classroom bends to fit the academy you want to ship.
+        Your brand, your domain, your content. ClassroomHub bends to fit the academy you want to ship.
       </p>
     </BlurFade>
 
@@ -102,7 +102,7 @@
         <div class="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-[#ecebe6] p-6 lg:p-7">
           <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Your domain</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            Map a CNAME, click verify. SSL is handled. No Classroom branding on the page.
+            Map a CNAME, click verify. SSL is handled. No ClassroomHub branding on the page.
           </p>
 
           <!-- Visual: browser bar mock -->

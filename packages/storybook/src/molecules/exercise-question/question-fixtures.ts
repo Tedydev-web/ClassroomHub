@@ -22,7 +22,7 @@ export const RADIO_FIXTURE: QuestionStoryFixture = {
   question: {
     id: 'q-radio',
     key: 'q-radio',
-    title: 'Which runtime powers most Classroom backend APIs? [RADIO]',
+    title: 'Which runtime powers most ClassroomHub backend APIs? [RADIO]',
     questionType: 'RADIO',
     settings: {
       description: 'Choose one option.',
@@ -237,7 +237,7 @@ export const MATCHING_FIXTURE: QuestionStoryFixture = {
   question: {
     id: 'q-matching',
     key: 'q-matching',
-    title: 'Match each layer to the Classroom responsibility. [MATCHING]',
+    title: 'Match each layer to the ClassroomHub responsibility. [MATCHING]',
     questionType: 'MATCHING',
     settings: {
       pairs: [

@@ -43,9 +43,9 @@
   {#snippet template()}
     <Accordion.Root type="single" class="w-[450px]">
       <Accordion.Item value="item-1">
-        <Accordion.Trigger>What is Classroom?</Accordion.Trigger>
+        <Accordion.Trigger>What is ClassroomHub?</Accordion.Trigger>
         <Accordion.Content>
-          Classroom is an open-source learning management system designed to help educators create and manage online
+          ClassroomHub is an open-source learning management system designed to help educators create and manage online
           courses efficiently.
         </Accordion.Content>
       </Accordion.Item>
@@ -59,7 +59,7 @@
       <Accordion.Item value="item-3">
         <Accordion.Trigger>Is it free to use?</Accordion.Trigger>
         <Accordion.Content>
-          Yes! Classroom is open-source and free to use. We also offer premium features for organizations that need
+          Yes! ClassroomHub is open-source and free to use. We also offer premium features for organizations that need
           additional capabilities.
         </Accordion.Content>
       </Accordion.Item>

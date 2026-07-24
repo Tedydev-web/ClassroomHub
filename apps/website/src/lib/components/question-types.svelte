@@ -5,7 +5,7 @@
       Exams that go beyond multiple choice.
     </h2>
     <p class="mx-auto max-w-[560px] text-base leading-relaxed text-gray-500 lg:text-lg">
-      Most LMS platforms give you multiple choice and call it a day. Classroom supports the full range so your exams
+      Most LMS platforms give you multiple choice and call it a day. ClassroomHub supports the full range so your exams
       actually test what matters.
     </p>
   </div>

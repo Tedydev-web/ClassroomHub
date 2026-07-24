@@ -1,6 +1,6 @@
 <a href="https://classroom.tedydev.io.vn/">
   <img alt="A flexible, user-friendly platform for creating, managing, and delivering trainings for companies and training organisations" src="/assets/brand/og/classroomio-opengraph.jpg" />
-  <h1 align="center">Classroom Hub</h1>
+  <h1 align="center">ClassroomHub</h1>
   <p align="center">
     The Open Source Teaching Platform for Bootcamps
     <br />
@@ -10,15 +10,15 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/629e2bb8994345729513c4d69ccbe3d5)](https://app.codacy.com/gh/rotimi-best/classroomio?utm_source=github.com&utm_medium=referral&utm_content=rotimi-best/classroomio&utm_campaign=Badge_Grade)
 
-## ✨ About Classroom Hub
+## ✨ About ClassroomHub
 
-<img alt="Classroom Hub Courses page" src="/assets/brand/classroomio-courses.png" />
+<img alt="ClassroomHub Courses page" src="/assets/brand/classroomio-courses.png" />
 
-Streamline training for everyone with Classroom Hub.com. Our all-in-one platform empowers bootcamps, educators, and businesses to manage training programs easily. With our platform, anyone can run multiple classes and cohorts all from one UI. The application is mobile-first, which means that students can access your lesson materials from any device.
+Streamline training for everyone with ClassroomHub.com. Our all-in-one platform empowers bootcamps, educators, and businesses to manage training programs easily. With our platform, anyone can run multiple classes and cohorts all from one UI. The application is mobile-first, which means that students can access your lesson materials from any device.
 
 ### Mission: Provide Students with the best learning experience
 
-At Classroom Hub, our mission is to provide students with the best possible learning experience. We believe in empowering educators with the tools they need to deliver high-quality education that is accessible, engaging, and effective.
+At ClassroomHub, our mission is to provide students with the best possible learning experience. We believe in empowering educators with the tools they need to deliver high-quality education that is accessible, engaging, and effective.
 
 ### Key Features
 
@@ -48,10 +48,10 @@ Please reach out to me on [twitter](https://x.com/rotimi_best) if you have any f
 
 ## Get a Demo
 
-You can book a quick 15 min demo to see if Classroom Hub is a good fit for you
+You can book a quick 15 min demo to see if ClassroomHub is a good fit for you
 
 <a href="https://cal.com/classroomio/demo">
-  <img src="https://cal.com/book-with-cal-dark.svg" alt="Book a Call with Classroom Hub.com">
+  <img src="https://cal.com/book-with-cal-dark.svg" alt="Book a Call with ClassroomHub.com">
 </a>
 
 <!-- GETTING STARTED -->
@@ -118,4 +118,4 @@ Here is what you need to be able to run Cal.com.
 You can find other repos related to classroomio here:
 
 - Help Docs: <https://github.com/rotimi-best/classroom.tedydev.io.vn/docs>
-- Classroom Hub.com: <https://github.com/rotimi-best/classroom.tedydev.io.vn>
+- ClassroomHub.com: <https://github.com/rotimi-best/classroom.tedydev.io.vn>

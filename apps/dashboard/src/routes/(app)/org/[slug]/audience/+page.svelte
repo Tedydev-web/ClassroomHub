@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Audience - Classroom</title>
+  <title>Audience - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-6xl">

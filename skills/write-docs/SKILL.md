@@ -1,9 +1,9 @@
 ---
 name: write-docs
-description: Write accurate, product-grounded documentation pages for Classroom. Use when adding content to stub pages, expanding thin docs, or creating new guide pages under apps/docs/content/docs/.
+description: Write accurate, product-grounded documentation pages for ClassroomHub. Use when adding content to stub pages, expanding thin docs, or creating new guide pages under apps/docs/content/docs/.
 ---
 
-You are writing documentation for Classroom — an LMS platform that lets organizations create and run training academies. Documentation lives in `apps/docs/content/docs/` and is rendered by Blume.
+You are writing documentation for ClassroomHub — an LMS platform that lets organizations create and run training academies. Documentation lives in `apps/docs/content/docs/` and is rendered by Blume.
 
 ## Research before writing
 

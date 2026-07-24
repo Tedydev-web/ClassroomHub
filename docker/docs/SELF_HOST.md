@@ -1,4 +1,4 @@
-# Classroom Hub Docker Self-Hosting
+# ClassroomHub Docker Self-Hosting
 
 ## Prerequisites
 
@@ -174,7 +174,7 @@ Data is preserved in the `minio-data` volume.
 
 ## Background Jobs Worker
 
-The `jobs` service (`cio-jobs`) is a BullMQ worker that processes everything Classroom Hub does
+The `jobs` service (`cio-jobs`) is a BullMQ worker that processes everything ClassroomHub does
 asynchronously:
 
 - **Video processing** — probe, thumbnails, audio extraction, transcoding

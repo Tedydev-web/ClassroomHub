@@ -202,7 +202,7 @@
 </script>
 
 <svelte:head>
-  <title>Customer academy software for SaaS | Classroom</title>
+  <title>Customer academy software for SaaS | ClassroomHub</title>
   <meta
     name="description"
     content="Launch a branded customer academy. Onboarding, feature adoption, admin training, and certification — under your own domain, with an AI tutor in every lesson."
@@ -225,7 +225,7 @@
         certify power-users, and drive adoption — under your own domain, with an AI tutor in every lesson.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
           >Book a Demo</Button
         >
         <Button href="/signup" variant="outline">Start free</Button>
@@ -308,7 +308,7 @@
   <EmbedCodePreview
     eyebrow="Embed anywhere"
     title="Bring lessons to your help center, your app, your marketing site."
-    description="Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to Classroom."
+    description="Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to ClassroomHub."
     fileName="help-center.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your help center --&gt;</span>',

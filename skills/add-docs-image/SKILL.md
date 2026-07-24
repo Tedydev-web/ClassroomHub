@@ -1,9 +1,9 @@
 ---
 name: add-docs-image
-description: Add screenshots/images to Classroom Hub docs — convert source PNGs to optimized WebP, place them in apps/docs/public/, and reference them from the .mdx pages under apps/docs/content/docs/. Use when a doc page needs annotated screenshots or other images.
+description: Add screenshots/images to ClassroomHub docs — convert source PNGs to optimized WebP, place them in apps/docs/public/, and reference them from the .mdx pages under apps/docs/content/docs/. Use when a doc page needs annotated screenshots or other images.
 ---
 
-You are adding images to the Classroom Hub docs site (Fumadocs). Pages live in `apps/docs/content/docs/*.mdx`
+You are adding images to the ClassroomHub docs site (Fumadocs). Pages live in `apps/docs/content/docs/*.mdx`
 and images live in `apps/docs/public/`, referenced with **root-relative** paths like `/my-image.webp`.
 
 The job has three parts: optimize + convert the source image to WebP, drop it in `apps/docs/public/`, and

@@ -1,13 +1,13 @@
 ---
 title: MCP
-description: Connect Claude Code, Codex, Cursor, OpenCode, and other MCP clients to Classroom for draft-based course authoring.
+description: Connect Claude Code, Codex, Cursor, OpenCode, and other MCP clients to ClassroomHub for draft-based course authoring.
 ---
 
-`@tedydev/classroom-mcp` is a thin stdio MCP server for Classroom course authoring.
+`@tedydev/classroom-mcp` is a thin stdio MCP server for ClassroomHub course authoring.
 
 It does not parse PDFs or generate course structures itself. The agent does that work. The MCP
 server exposes tools, validates tool input, and forwards authenticated requests to the
-Classroom API.
+ClassroomHub API.
 
 ## Architecture
 
@@ -25,31 +25,31 @@ Claude Code / Codex / Cursor / OpenCode / other MCP client
   | 3. Sends authenticated tool calls
   |    Authorization: Bearer <cio_mcp_...>
   v
-Classroom API
+ClassroomHub API
   |
   | 4. Validates payloads
   | 5. Resolves the organization from the key
   | 6. Creates drafts or applies changes to a course
   v
-Classroom DB
+ClassroomHub DB
 ```
 
 ## Core Principles
 
 1. The agent owns reasoning.
 2. The MCP package owns transport and input validation.
-3. Classroom API remains the trust boundary for auth, validation, and persistence.
+3. ClassroomHub API remains the trust boundary for auth, validation, and persistence.
 4. Draft creation and publish are separate operations.
 5. Updating an existing course is done through a seeded draft, not blind writes to the live
    course.
 
 ## Authentication
 
-Generate an org-scoped MCP key from `Automation -> MCP` in the Classroom dashboard.
+Generate an org-scoped MCP key from `Automation -> MCP` in the ClassroomHub dashboard.
 
 The MCP process sends that key as a bearer token on every request.
 
-Classroom API:
+ClassroomHub API:
 
 1. hashes and verifies the key
 2. resolves the owning organization
@@ -196,7 +196,7 @@ Lesson authoring rule:
 - do not include the lesson title
 - do not use `h1` or `h2` in lesson content
 - start headings at `h3`
-- Classroom already renders the lesson title in the course UI
+- ClassroomHub already renders the lesson title in the course UI
 
 ## After Publish
 
@@ -283,7 +283,7 @@ The tool can either:
 User says:
 
 ```text
-I have my course in a PDF. Extract it and turn it into a Classroom course draft.
+I have my course in a PDF. Extract it and turn it into a ClassroomHub course draft.
 ```
 
 Expected tool sequence:
@@ -318,7 +318,7 @@ Expected tool sequence:
 Result:
 
 - the draft stores tag names
-- publish ensures the tags exist in Classroom
+- publish ensures the tags exist in ClassroomHub
 - publish assigns those tags to the live course
 
 ### Flow 5: Update an existing course safely
@@ -406,7 +406,7 @@ When a draft is seeded from a live course:
 
 As long as the agent preserves those IDs while editing the draft, publish-to-existing-course can map draft items back to the live records and update them safely.
 
-If the agent adds a brand new section or lesson, it should assign a new synthetic `externalId`. Classroom will create that record on publish.
+If the agent adds a brand new section or lesson, it should assign a new synthetic `externalId`. ClassroomHub will create that record on publish.
 
 ## Input Contract Notes
 

@@ -1,6 +1,6 @@
 ---
 title: 'Welcome to Launch Week <i>001</i>'
-description: 'We are excited to announce our first launch week for Classroom. We will be sharing a new feature every day for 5 days.'
+description: 'We are excited to announce our first launch week for ClassroomHub. We will be sharing a new feature every day for 5 days.'
 imageUrl: '/assets/assets/blog/launch-week-001.png'
 date: '2024-10-07'
 author: Rotimi Best
@@ -13,11 +13,11 @@ published: true
 ![classroomio-launch-week-001](/assets/assets/blog/launch-week-001.png)
 _Classroom Hub Launch Week 001_
 
-Welcome to our first launch week for Classroom.
+Welcome to our first launch week for ClassroomHub.
 
 I have personally enjoyed watching the likes of Supabase, Resend, Documenso and many other amazing products do launch weeks and I decided why not give it a try.
 
-In this launch week, we want to share 5+ cool features with you, showing off some of the things we've built to make it easier for anyone to build a brand friendly alternative to Teachable/Thinkific/Edx/Google Classroom and the likes.
+In this launch week, we want to share 5+ cool features with you, showing off some of the things we've built to make it easier for anyone to build a brand friendly alternative to Teachable/Thinkific/Edx/Google ClassroomHub and the likes.
 
 ### What's the problem with these platforms?
 
@@ -34,7 +34,7 @@ Below are all the features for each day that we will be sharing. As the day goes
 
 1. Day 1 - [Brand Customisations](/blog/brand-customisations)
 2. Day 2 - [Multi-Language Support](/blog/multi-language)
-3. Day 3 - [Self-host Classroom Hub on your Servers](/blog/self-host)
+3. Day 3 - [Self-host ClassroomHub on your Servers](/blog/self-host)
 4. Day 4 - [Free Tools](/blog/free-tools)
 5. Day 5 - [Custom Domains](/blog/custom-domain)
 6. Extras - 😍😍😍😍

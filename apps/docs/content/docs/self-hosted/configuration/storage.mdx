@@ -3,8 +3,8 @@ title: Object storage & uploads
 description: Configure object storage (MinIO or S3-compatible) for file and video uploads, plus upload size limits.
 ---
 
-Classroom stores uploaded files and videos in **object storage**. You have two choices: run the
-**bundled MinIO** alongside the stack, or point Classroom at an **external S3-compatible** service
+ClassroomHub stores uploaded files and videos in **object storage**. You have two choices: run the
+**bundled MinIO** alongside the stack, or point ClassroomHub at an **external S3-compatible** service
 (AWS S3, Cloudflare R2, etc.). Both speak the S3 API and use the same `OBJECT_STORAGE_*` variables.
 
 ## Option 1 — Bundled MinIO (default)
@@ -46,7 +46,7 @@ including Cloudflare R2 and AWS S3. Point them at the provider and start **witho
 | `OBJECT_STORAGE_BUCKET_VIDEOS` / `_DOCUMENTS` / `_MEDIA` | Bucket names (default `videos`, `documents`, `media`) |
 
 :::note[Legacy `CLOUDFLARE_*` variables]
-Classroom also accepts a legacy Cloudflare R2 config (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_KEY`,
+ClassroomHub also accepts a legacy Cloudflare R2 config (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_KEY`,
 `CLOUDFLARE_SECRET_ACCESS_KEY`, …). It is a **fallback** used only when the `OBJECT_STORAGE_*` variables
 are absent — prefer `OBJECT_STORAGE_*` for new deployments (it covers R2 too). For step-by-step R2 bucket
 and CORS setup, see the [Cloudflare Setup](/guides/contributing/cloudflare-setup) guide.
@@ -70,5 +70,5 @@ the `api` and `dashboard` containers. Unset = built-in defaults. On [Railway](/s
 
 :::warning[Reverse proxy limits]
 If you raise these values, also increase your reverse proxy body-size limit (e.g. nginx
-`client_max_body_size`) so large uploads aren't rejected before they reach Classroom.
+`client_max_body_size`) so large uploads aren't rejected before they reach ClassroomHub.
 :::

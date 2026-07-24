@@ -36,7 +36,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('analytics.title')} - Classroom</title>
+  <title>{$t('analytics.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

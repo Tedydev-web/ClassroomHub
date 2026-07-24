@@ -40,7 +40,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('compliance.title')} - Classroom</title>
+  <title>{$t('compliance.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

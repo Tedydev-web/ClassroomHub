@@ -44,7 +44,7 @@
     editableStorageKey = 'edra-editable',
     class: className = '',
     editorClass = '',
-    placeholder = 'Welcome to Classroom',
+    placeholder = 'Welcome to ClassroomHub',
     onChange,
     onReady,
     onEditorDestroy

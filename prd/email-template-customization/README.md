@@ -13,7 +13,7 @@ Today, all templates in `packages/email/src/emails/*.ts` are:
 - Hardcoded in English
 - Hardcoded in code (no admin editing surface)
 - Always sent when the related business event occurs
-- Coupled to a static Classroom Hub logo in `getDefaultTemplate(...)`
+- Coupled to a static ClassroomHub logo in `getDefaultTemplate(...)`
 
 This limits localization, white-labeling, and product control.
 

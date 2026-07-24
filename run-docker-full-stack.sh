@@ -295,7 +295,7 @@ else
 fi
 
 if [[ "${PROVISION_ONLY}" == "true" ]]; then
-  echo "Provisioned Classroom production environment in .env without starting containers."
+  echo "Provisioned ClassroomHub production environment in .env without starting containers."
   exit 0
 fi
 
@@ -306,7 +306,7 @@ if [[ "$(get_env_value PUBLIC_IS_SELFHOSTED)" != "true" && "${USE_IMAGES}" == "t
   echo "Cloud mode requires a dashboard built with PUBLIC_IS_SELFHOSTED=false; building from source."
 fi
 
-echo "Starting Classroom Docker full stack..."
+echo "Starting ClassroomHub Docker full stack..."
 if [[ "${COMPOSE_PROFILES}" != "" ]]; then
   echo "Including MinIO (object storage, default)..."
 fi

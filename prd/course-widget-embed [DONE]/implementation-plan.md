@@ -22,14 +22,14 @@
 - it finally mounts the widget once both data and script are available
 3. That means Senja’s normal widget path is operationally clean, but not the absolute minimum-latency model for first render.
 4. Senja does use a more latency-efficient pattern for rich snippets: a single JS endpoint returns executable script with the data already embedded.
-5. For Classroom Hub, the useful parts to copy are:
+5. For ClassroomHub, the useful parts to copy are:
 - release-based static asset publishing
 - a stable public widget key/URL that does not change on each publish
 - a compact public bundle/payload contract
 6. The parts not worth copying directly for our first render path are:
 - uncached `no-store` widget-config responses
 - always requiring a separate JSON fetch before widget render
-7. Preferred Classroom Hub direction:
+7. Preferred ClassroomHub direction:
 - keep versioned CDN assets plus a release/manifest pointer
 - make public widget payload responses cacheable at CDN/browser level
 - if first-render performance becomes the top priority, consider a published widget JS endpoint with payload embedded for fully static widgets

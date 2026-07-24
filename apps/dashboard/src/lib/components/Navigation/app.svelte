@@ -38,7 +38,7 @@
         id="logo"
         class="line-clamp-1 text-lg"
       >
-        {isCoursePage ? title : 'Classroom'}
+        {isCoursePage ? title : 'ClassroomHub'}
       </a>
     </div>
 

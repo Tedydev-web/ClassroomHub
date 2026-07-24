@@ -28,7 +28,7 @@
     "url": "https://github.com/Tedydev-web/classroomio/issues"
   },
   "homepage": "https://github.com/Tedydev-web/classroomio/blob/main/packages/mcp#readme",
-  "author": "Classroom <support@classroom.io.vn>",
+  "author": "ClassroomHub <support@classroom.io.vn>",
   "license": "MIT",
   "publishConfig": {
     "access": "public",

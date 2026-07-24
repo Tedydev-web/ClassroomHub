@@ -86,7 +86,7 @@
     footerNextLabel = 'Next',
     courseSlug = null,
     poweredByLabel = 'Powered by',
-    poweredByBrand = 'Classroom',
+    poweredByBrand = 'ClassroomHub',
     showPoweredBy = true,
     children,
     topRight,

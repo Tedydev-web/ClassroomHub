@@ -82,11 +82,6 @@ const HLS_PREFIX = '/hls/';
 const PROXY_HLS_PREFIX = '/proxy/hls/';
 const HLS_COOKIE_NAME = 'cio_hls';
 
-const LEGACY_SERVICE_HOST_REDIRECTS: Readonly<Record<string, string>> = {
-  'play.classroom.io.vn': 'https://play.classroom.io.vn',
-  'embed.classroom.io.vn': 'https://embed.classroom.io.vn'
-};
-
 const HLS_CONTENT_TYPES: Record<string, string> = {
   m3u8: 'application/vnd.apple.mpegurl',
   ts: 'video/mp2t',
@@ -299,13 +294,6 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const originalHost = request.headers.get('host') ?? url.host;
-
-    const canonicalServiceOrigin = LEGACY_SERVICE_HOST_REDIRECTS[originalHost];
-    if (canonicalServiceOrigin) {
-      const target = new URL(url.pathname, canonicalServiceOrigin);
-      target.search = url.search;
-      return Response.redirect(target.toString(), 301);
-    }
 
     // Legacy learning apex → permanent redirect to marketing apex.
     if (originalHost === env.APEX_REDIRECT_HOST) {

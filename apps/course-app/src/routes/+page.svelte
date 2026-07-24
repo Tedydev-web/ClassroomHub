@@ -139,7 +139,7 @@
             animationStyle="from-right"
             videoSrc="https://www.youtube.com/embed/P2I2HoyrjVo"
             thumbnailSrc="/assets/courseapp-og.png"
-            thumbnailAlt="Courseapp by Classroom – Create your SAAS Academy in Minutes"
+            thumbnailAlt="Courseapp by ClassroomHub – Create your SAAS Academy in Minutes"
           />
         </div>
       </section>
@@ -252,7 +252,7 @@
   <div class="">
     <p class="text-center text-sm text-neutral-500">
       Made with ❤️ by <a href="https://github.com/Tedydev-web/classroomio" target="_blank" rel="noopener noreferrer">
-        Classroom
+        ClassroomHub
       </a>
     </p>
   </div>

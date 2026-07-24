@@ -74,7 +74,7 @@ export async function addMember(
 
         if (courseOrgData) {
           const courseName = courseOrgData.courseTitle || '';
-          const orgName = courseOrgData.orgName || 'Classroom';
+          const orgName = courseOrgData.orgName || 'ClassroomHub';
           const branding = buildEmailBranding({
             name: courseOrgData.orgName,
             avatarUrl: courseOrgData.orgAvatarUrl,
@@ -113,7 +113,7 @@ export async function addMember(
                   customMessage: courseOrgData.welcomeEmailMessage ?? undefined,
                   branding
                 },
-                from: buildEmailFromName(`${orgName} (via Classroom)`),
+                from: buildEmailFromName(`${orgName} (via ClassroomHub)`),
                 idempotencyKey: `course-people-student-welcome:${courseId}:${studentEmail}`,
                 ics: await getWelcomeSessionIcs(courseId),
                 preference: { organizationId: courseOrgData.orgId, recipientProfileId: data.profileId }
@@ -138,7 +138,7 @@ export async function addMember(
                     studentEmail,
                     branding
                   },
-                  from: buildEmailFromName('Classroom'),
+                  from: buildEmailFromName('ClassroomHub'),
                   idempotencyKey: `course-people-teacher-joined:${courseId}:${studentEmail}`,
                   preference: { organizationId: courseOrgData.orgId }
                 });
@@ -198,7 +198,7 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
     }
 
     const courseName = courseOrgData.courseTitle || '';
-    const orgName = courseOrgData.orgName || 'Classroom';
+    const orgName = courseOrgData.orgName || 'ClassroomHub';
     const orgSiteName = courseOrgData.orgSiteName || '';
     const branding = buildEmailBranding({
       name: courseOrgData.orgName,
@@ -248,7 +248,7 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
               inviteLink,
               branding
             },
-            from: buildEmailFromName(`${orgName} (via Classroom)`),
+            from: buildEmailFromName(`${orgName} (via ClassroomHub)`),
             idempotencyKey: `teacher-course-welcome:${courseId}:${email}`,
             preference: { organizationId: courseOrgData.orgId }
           }).catch((emailError) => {

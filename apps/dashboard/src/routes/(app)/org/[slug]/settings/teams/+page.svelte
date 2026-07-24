@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-  <title>Teams - Classroom</title>
+  <title>Teams - ClassroomHub</title>
 </svelte:head>
 
 <TeamsPage />

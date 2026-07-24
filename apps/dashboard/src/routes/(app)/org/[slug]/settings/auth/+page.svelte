@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.get('settings.auth.title')} - Classroom</title>
+  <title>{t.get('settings.auth.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Header>

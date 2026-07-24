@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-  <title>Community - Classroom</title>
+  <title>Community - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-3xl">

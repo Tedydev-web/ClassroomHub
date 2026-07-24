@@ -286,8 +286,8 @@ export async function inviteTeamMembers(orgId: string, emails: string[], roleId:
             inviteLink,
             branding: buildEmailBranding(organization)
           },
-          from: buildEmailFromName(`${organization.name} (via Classroom)`),
-          subject: sanitizeEmailSubject(`You have been invited to join ${organization.name} on Classroom`),
+          from: buildEmailFromName(`${organization.name} (via ClassroomHub)`),
+          subject: sanitizeEmailSubject(`You have been invited to join ${organization.name} on ClassroomHub`),
           idempotencyKey: `org-invite-teacher:${invite.id}`
         });
 

@@ -1,4 +1,4 @@
-# Contributing to Classroom
+# Contributing to ClassroomHub
 
 First and foremost, we're absolutely thrilled that you're considering becoming a part of the community
 
@@ -8,7 +8,7 @@ Did you stumble upon a bug? Encountered a hiccup in deployment? Perhaps you have
 
 ## Feature Architects
 
-We invite innovative minds to contribute to the evolution of Classroom. If you have a compelling feature proposal that could enhance our platform, please initiate a formal issue submission and apply the "Enhancement" label. We highly value and eagerly anticipate each unique idea presented by our community. To ensure thorough understanding and effective evaluation, kindly include a detailed rationale for your proposed feature. Your insights are crucial to our continuous growth and innovation.
+We invite innovative minds to contribute to the evolution of ClassroomHub. If you have a compelling feature proposal that could enhance our platform, please initiate a formal issue submission and apply the "Enhancement" label. We highly value and eagerly anticipate each unique idea presented by our community. To ensure thorough understanding and effective evaluation, kindly include a detailed rationale for your proposed feature. Your insights are crucial to our continuous growth and innovation.
 
 ## 🛠 Crafting Pull Requests
 
@@ -24,6 +24,6 @@ Would you prefer to discuss the change before you dive into a lot of work? Open 
 
 ## Features
 
-If you spot a feature that isn't part of our official plan but could propel Classroom forward, don't hesitate. Raise it as an enhancement issue, and let us know you're ready to take the lead. We'll be quick to respond.
+If you spot a feature that isn't part of our official plan but could propel ClassroomHub forward, don't hesitate. Raise it as an enhancement issue, and let us know you're ready to take the lead. We'll be quick to respond.
 
-Together, let's craft the future of Classroom, making it better, bolder, and more brilliant!
+Together, let's craft the future of ClassroomHub, making it better, bolder, and more brilliant!

@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.get('audience.user_analytics.title')} - Classroom</title>
+  <title>{t.get('audience.user_analytics.title')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full md:max-w-5xl lg:mx-auto">

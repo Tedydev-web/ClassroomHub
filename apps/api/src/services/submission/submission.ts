@@ -1597,7 +1597,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
   // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(fullSubmission.courseId || '');
 
-  const orgName = orgResult?.orgName || 'Classroom';
+  const orgName = orgResult?.orgName || 'ClassroomHub';
 
   const statusText = LEGACY_BOARD_STATUS_LABELS[newStatusId] || 'Updated';
   const baseUrl = getDashboardBaseUrl({
@@ -1659,7 +1659,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via Classroom)`),
+      from: buildEmailFromName(`${orgName} (via ClassroomHub)`),
       idempotencyKey: `submission-update:${submissionId}:${newStatusId}`,
       preference: {
         organizationId: orgResult?.orgId,
@@ -1709,7 +1709,7 @@ async function sendExerciseSubmissionUpdateEmail(
   // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(courseId);
 
-  const orgName = orgResult?.orgName || 'Classroom';
+  const orgName = orgResult?.orgName || 'ClassroomHub';
 
   const baseUrl = getDashboardBaseUrl({
     siteName: orgResult?.orgSiteName,
@@ -1739,7 +1739,7 @@ async function sendExerciseSubmissionUpdateEmail(
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via Classroom)`),
+      from: buildEmailFromName(`${orgName} (via ClassroomHub)`),
       idempotencyKey: `exercise-submitted:${courseId}:${exerciseId}:${submittedBy}:${submissionId}`,
       preference: { organizationId: orgResult?.orgId }
     });

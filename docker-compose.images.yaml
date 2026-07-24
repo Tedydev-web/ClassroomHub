@@ -1,4 +1,4 @@
-# Classroom — pull-based stack (pre-built images, no local build).
+# ClassroomHub — pull-based stack (pre-built images, no local build).
 #
 # This is the same topology as docker-compose.yaml but the app services pull
 # published images from GHCR instead of building from source. You only need

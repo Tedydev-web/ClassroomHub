@@ -1,7 +1,7 @@
 # Enterprise SSO PRD (SAML 2.0 + OIDC)
 
 ## Purpose
-Add enterprise SSO for Classroom Hub with per-organization configuration, supporting both SAML 2.0 and OIDC, while preserving the current Better Auth session model and multi-tenant org permissions.
+Add enterprise SSO for ClassroomHub with per-organization configuration, supporting both SAML 2.0 and OIDC, while preserving the current Better Auth session model and multi-tenant org permissions.
 
 ## Confirmed Decisions (2026-02-17)
 1. IdPs to support: Auth0, Google Workspace, Okta.
@@ -286,7 +286,7 @@ The SSO plugin provides these endpoints automatically:
   - Auto-join toggle
   - Break-glass toggle
 - `Role Mapping` section:
-  - Simple table: IdP group name → Classroom Hub role
+  - Simple table: IdP group name → ClassroomHub role
 
 #### Setup Wizard (Create/Edit Connection)
 - Step 1 `Choose Provider`:
