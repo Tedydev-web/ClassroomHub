@@ -13,6 +13,13 @@ import { enrichPublicApiOpenApiSpec, PUBLIC_API_OPENAPI_URL } from '@cio/utils/o
 
 const OPENAPI_CDN_BASE_URL = PUBLIC_API_OPENAPI_URL.replace(/\/openapi-latest\.json$/, '');
 
+/**
+ * The bucket behind the host in {@link PUBLIC_API_OPENAPI_URL}. Uploading anywhere
+ * else makes this script pass while the published URL keeps returning 404, which
+ * is worse than failing: the spec looks shipped and is not.
+ */
+const OPENAPI_BUCKET = 'media';
+
 /** Cloudflare allows a limited number of URLs per purge request. */
 const PURGE_URL_BATCH = 30;
 
@@ -187,7 +194,7 @@ class OpenAPISpecGenerator {
       console.log(`🔄 Uploading to R2 bucket`);
 
       const command = new PutObjectCommand({
-        Bucket: 'api',
+        Bucket: OPENAPI_BUCKET,
         Key: options.key,
         Body: options.content,
         ContentType: options.contentType || 'application/json',
