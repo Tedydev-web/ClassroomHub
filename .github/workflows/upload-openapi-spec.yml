@@ -10,7 +10,7 @@ on:
 
 jobs:
   generate-and-upload-openapi:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: production
     
     steps:
