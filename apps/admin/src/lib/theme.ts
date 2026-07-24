@@ -10,7 +10,8 @@ export function currentTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme): void {
-  document.documentElement.dataset.theme = theme;
+  // A `.dark` class on <html>, matching the dashboard's Tailwind dark variant.
+  document.documentElement.classList.toggle('dark', theme === 'dark');
   localStorage.setItem(KEY, theme);
 }
 

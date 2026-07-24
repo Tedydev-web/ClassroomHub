@@ -1,339 +1,191 @@
+@import 'tailwindcss';
+
 /*
- * ClassroomHub Admin — design system.
+ * ClassroomHub Admin — Tailwind v4, wired the same way as the dashboard:
+ * `@tailwindcss/postcss` + `@import 'tailwindcss'` + a `.dark` variant. The
+ * design tokens live in `@theme` so they are real Tailwind colors (`bg-surface`,
+ * `text-accent`, `border-border`); the reusable component classes below are
+ * `@apply`-composed from those utilities so the markup stays terse.
  *
- * One accent (the ClassroomHub blue) does all the "look here" work; the neutral
- * ramp does everything else. Every value below comes from a scale — spacing on a
- * 4px grid, three type steps, one radius, one shadow — so consistency is
- * structural rather than remembered. Text tokens are all WCAG-AA on white
- * (verified: 4.5:1+); `--faint` is 2.5:1 and is reserved for borders and icons,
- * never text.
+ * Dark mode is a re-decision, not an inversion: the accent fails contrast on a
+ * dark surface (2.7:1) so it is re-tuned brighter for text/borders (#5B8CFF,
+ * 5.6:1) while the primary button keeps the vivid blue with white text (6.5:1).
+ * Shadows do nothing on dark, so a hairline border carries separation. Every
+ * dark text token is WCAG-AA, computed.
  */
-:root {
-  --accent: #1d4ee2;
-  --accent-hover: #1a45c9;
-  --accent-weak: #eef2fe;
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --text: #0a0a0a;
-  --muted: #737373;
-  --faint: #a3a3a3;
+@theme {
+  --color-accent: #1d4ee2;
+  --color-accent-hover: #1a45c9;
+  --color-accent-weak: #eef2fe;
+  --color-accent-btn: #1d4ee2;
+  --color-accent-btn-hover: #1a45c9;
 
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-hover: #f5f5f5;
-  --border: #e5e5e5;
-  --border-strong: #d4d4d4;
+  --color-text: #0a0a0a;
+  --color-muted: #737373;
+  --color-faint: #a3a3a3;
 
-  --danger: #dc2626;
-  --danger-weak: #fef2f2;
-  --success: #16a34a;
-  --success-weak: #f0fdf4;
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f5f5;
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
 
-  --radius: 6px;
-  --radius-sm: 4px;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --skeleton-hi: #ededed;
+  --color-danger: #dc2626;
+  --color-danger-weak: #fef2f2;
+  --color-success: #16a34a;
+  --color-success-weak: #f0fdf4;
 
-  --font:
+  --color-skeleton-hi: #ededed;
+
+  --radius-DEFAULT: 6px;
+  --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
     'Segoe UI Emoji';
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
-
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
-  --sp-6: 32px;
-  --sp-8: 48px;
 }
 
-/*
- * Dark theme — a re-decision, not an inversion. The original accent fails
- * contrast on a dark surface (2.7:1), so it is re-tuned brighter for text and
- * borders (#5B8CFF, 5.6:1) while the primary button keeps the vivid blue with
- * white text (6.5:1). Shadows do almost nothing on dark, so borders carry the
- * separation instead. Set on <html> by an inline script before first paint, so
- * an explicit choice always wins and there is no flash.
- */
-:root[data-theme='dark'] {
-  --accent: #5b8cff;
-  --accent-hover: #7aa3ff;
-  --accent-btn: #1d4ee2;
-  --accent-btn-hover: #2f5be8;
-  --accent-weak: #182238;
+.dark {
+  --color-accent: #5b8cff;
+  --color-accent-hover: #7aa3ff;
+  --color-accent-weak: #182238;
+  --color-accent-btn: #1d4ee2;
+  --color-accent-btn-hover: #2f5be8;
 
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --faint: #71717a;
+  --color-text: #f4f4f5;
+  --color-muted: #a1a1aa;
+  --color-faint: #71717a;
 
-  --bg: #0d0e10;
-  --surface: #17181b;
-  --surface-hover: #202126;
-  --border: #2a2b30;
-  --border-strong: #3a3b42;
+  --color-bg: #0d0e10;
+  --color-surface: #17181b;
+  --color-surface-hover: #202126;
+  --color-border: #2a2b30;
+  --color-border-strong: #3a3b42;
 
-  --danger: #f87171;
-  --danger-weak: #2a1618;
-  --success: #4ade80;
-  --success-weak: #14251a;
+  --color-danger: #f87171;
+  --color-danger-weak: #2a1618;
+  --color-success: #4ade80;
+  --color-success-weak: #14251a;
 
-  --shadow-sm: 0 0 0 1px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --skeleton-hi: #26272c;
-}
-/* Light default keeps the vivid blue as both accent and button. */
-:root {
-  --accent-btn: var(--accent);
-  --accent-btn-hover: var(--accent-hover);
+  --color-skeleton-hi: #26272c;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@layer base {
+  body {
+    @apply bg-bg text-text font-sans text-[14px] leading-normal antialiased;
+  }
+  h1 {
+    @apply text-[20px] font-semibold tracking-[-0.01em];
+  }
+  h2 {
+    @apply text-[16px] font-semibold tracking-[-0.01em];
+  }
+  a {
+    @apply text-accent no-underline hover:underline;
+  }
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn {
+    @apply border-border-strong bg-surface text-text hover:bg-surface-hover inline-flex h-[34px] cursor-pointer items-center justify-center gap-2 rounded-[6px] border px-3 text-[13px] font-medium whitespace-nowrap transition-colors;
+  }
+  .btn:focus-visible {
+    @apply outline-accent outline outline-2 outline-offset-1;
+  }
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .btn-primary {
+    @apply border-accent-btn bg-accent-btn hover:bg-accent-btn-hover text-white;
+  }
+  .btn-danger {
+    @apply text-danger hover:border-danger hover:bg-danger-weak;
+  }
+  .btn-sm {
+    @apply h-[28px] px-2 text-[12px];
+  }
+  .btn-ghost {
+    @apply hover:bg-surface-hover border-transparent bg-transparent;
+  }
+
+  .input {
+    @apply border-border-strong bg-surface text-text h-[34px] w-full rounded-[6px] border px-3 text-[13px];
+  }
+  .input::placeholder {
+    @apply text-faint;
+  }
+  .input:focus {
+    @apply border-accent outline-accent outline outline-2 -outline-offset-1;
+  }
+
+  .card {
+    @apply border-border bg-surface rounded-[6px] border shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_0_0_1px_rgba(0,0,0,0.2)];
+  }
+
+  .badge {
+    @apply inline-flex h-[20px] items-center gap-1 rounded-full px-2 text-[11px] font-medium whitespace-nowrap;
+  }
+  .badge-neutral {
+    @apply bg-surface-hover text-muted;
+  }
+  .badge-accent {
+    @apply bg-accent-weak text-accent;
+  }
+  .badge-danger {
+    @apply bg-danger-weak text-danger;
+  }
+  .badge-success {
+    @apply bg-success-weak text-success;
+  }
+
+  .table-wrap {
+    @apply border-border bg-surface overflow-x-auto rounded-[6px] border;
+  }
+  table.data {
+    @apply w-full border-collapse text-[13px];
+  }
+  table.data th {
+    @apply border-border bg-surface text-muted sticky top-0 border-b px-3 py-2 text-left text-[11px] font-semibold tracking-[0.04em] whitespace-nowrap uppercase;
+  }
+  table.data td {
+    @apply border-border border-b px-3 py-2 align-middle;
+  }
+  table.data tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  table.data tbody tr:hover {
+    @apply bg-surface-hover;
+  }
+  td.num,
+  th.num {
+    @apply text-right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .error-text {
+    @apply text-danger text-[13px];
+  }
+  .empty {
+    @apply text-muted px-4 py-12 text-center text-[13px];
+  }
+
+  .skeleton {
+    @apply rounded-[4px];
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-hover) 25%,
+      var(--color-skeleton-hi) 50%,
+      var(--color-surface-hover) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.3s ease-in-out infinite;
+  }
 }
 
-body {
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-h1,
-h2,
-h3 {
-  margin: 0;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-h1 {
-  font-size: 20px;
-}
-h2 {
-  font-size: 16px;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
-
-/* Numbers in tables and stats align on the decimal and share glyph width. */
-.tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-/* --- Buttons --- */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  height: 34px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease;
-  white-space: nowrap;
-}
-.btn:hover {
-  background: var(--surface-hover);
-}
-.btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-primary {
-  color: #fff;
-  background: var(--accent-btn);
-  border-color: var(--accent-btn);
-}
-.btn-primary:hover {
-  background: var(--accent-btn-hover);
-}
-.btn-danger {
-  color: var(--danger);
-  border-color: var(--border-strong);
-}
-.btn-danger:hover {
-  background: var(--danger-weak);
-  border-color: var(--danger);
-}
-.btn-sm {
-  height: 28px;
-  padding: 0 var(--sp-2);
-  font-size: 12px;
-}
-.btn-ghost {
-  border-color: transparent;
-  background: transparent;
-}
-.btn-ghost:hover {
-  background: var(--surface-hover);
-}
-
-/* --- Inputs --- */
-.input {
-  height: 34px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-size: 13px;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  width: 100%;
-}
-.input::placeholder {
-  color: var(--faint);
-}
-.input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-  border-color: var(--accent);
-}
-label.field {
-  display: block;
-  margin-bottom: var(--sp-4);
-}
-label.field > span {
-  display: block;
-  margin-bottom: var(--sp-1);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-.hint {
-  margin-top: var(--sp-1);
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* --- Surfaces --- */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-}
-
-/* --- Tables --- */
-.table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-table.data {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-table.data th {
-  position: sticky;
-  top: 0;
-  text-align: left;
-  padding: var(--sp-2) var(--sp-3);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-table.data td {
-  padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-table.data tbody tr:last-child td {
-  border-bottom: none;
-}
-table.data tbody tr:hover {
-  background: var(--surface-hover);
-}
-td.num,
-th.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* --- Badges --- */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 20px;
-  padding: 0 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-.badge-neutral {
-  color: var(--muted);
-  background: var(--surface-hover);
-}
-.badge-accent {
-  color: var(--accent);
-  background: var(--accent-weak);
-}
-.badge-danger {
-  color: var(--danger);
-  background: var(--danger-weak);
-}
-.badge-success {
-  color: var(--success);
-  background: var(--success-weak);
-}
-
-/* --- Feedback --- */
-.error-text {
-  color: var(--danger);
-  font-size: 13px;
-}
-.empty {
-  padding: var(--sp-8) var(--sp-4);
-  text-align: center;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* --- Loading skeleton --- */
-.skeleton {
-  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--skeleton-hi) 50%, var(--surface-hover) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.3s ease-in-out infinite;
-  border-radius: var(--radius-sm);
-}
 @keyframes shimmer {
   0% {
     background-position: 200% 0;

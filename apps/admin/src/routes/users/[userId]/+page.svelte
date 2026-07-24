@@ -112,80 +112,92 @@
   const roleLabel = (roleId: number) => (roleId === 1 ? 'Admin' : roleId === 2 ? 'Teacher' : 'Student');
 </script>
 
-<a class="back" href="/users">← Users</a>
+<a class="text-muted mb-3 inline-block text-[13px]" href="/users">← Users</a>
 
-{#if error}<p class="error-text" role="alert" style="margin:var(--sp-3) 0">{error}</p>{/if}
+{#if error}<p class="error-text my-3" role="alert">{error}</p>{/if}
 
 {#if loading}
-  <div class="card profile-head">
-    <div class="avatar-lg skeleton"></div>
-    <div style="flex:1">
-      <div class="skeleton" style="height:18px;width:180px;margin-bottom:8px"></div>
-      <div class="skeleton" style="height:12px;width:240px"></div>
+  <div class="card flex items-center gap-4 p-5">
+    <div class="skeleton h-14 w-14 rounded-full"></div>
+    <div class="flex-1">
+      <div class="skeleton mb-2 h-[18px] w-[180px]"></div>
+      <div class="skeleton h-3 w-[240px]"></div>
     </div>
   </div>
 {:else if user}
-  <div class="card profile-head">
+  <div class="card flex flex-wrap items-center gap-4 p-5">
     {#if user.image}
-      <img class="avatar-lg" src={user.image} alt="" referrerpolicy="no-referrer" />
+      <img class="h-14 w-14 shrink-0 rounded-full object-cover" src={user.image} alt="" referrerpolicy="no-referrer" />
     {:else}
-      <span class="avatar-lg fallback">{initials(user.name, user.email)}</span>
+      <span
+        class="bg-accent-weak text-accent grid h-14 w-14 shrink-0 place-items-center rounded-full text-[20px] font-semibold"
+        >{initials(user.name, user.email)}</span
+      >
     {/if}
-    <div class="who">
-      <div class="who-top">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
         <h1>{user.name || 'Unnamed user'}</h1>
         {#if user.banned}<span class="badge badge-danger">Banned</span>
         {:else if user.role === 'admin'}<span class="badge badge-accent">Super-admin</span>
         {:else if user.emailVerified}<span class="badge badge-success">Verified</span>
         {:else}<span class="badge badge-neutral">Unverified</span>{/if}
       </div>
-      <p class="who-email">{user.email}</p>
-      <p class="who-meta">Joined {formatDate(user.createdAt)} · <span class="tabular">{user.id}</span></p>
+      <p class="text-text mt-1 mb-0.5 text-[14px]">{user.email}</p>
+      <p class="text-muted m-0 text-[12px] break-all">
+        Joined {formatDate(user.createdAt)} · <span class="tabular">{user.id}</span>
+      </p>
     </div>
     <button class="btn btn-primary" onclick={loginAs} disabled={impersonating}>
       {impersonating ? 'Opening…' : 'Login as user'}
     </button>
   </div>
 
-  <div class="stats">
-    <div class="stat card">
-      <span class="stat-num tabular">{user.orgCount}</span><span class="stat-label">Orgs</span>
+  <div class="my-6 mt-4 grid grid-cols-4 gap-3 max-[640px]:grid-cols-2">
+    <div class="card flex flex-col gap-0.5 p-4">
+      <span class="tabular text-[22px] font-semibold tracking-[-0.02em]">{user.orgCount}</span><span
+        class="text-muted text-[12px]">Orgs</span
+      >
     </div>
-    <div class="stat card">
-      <span class="stat-num tabular">{user.adminOrgCount}</span><span class="stat-label">Admin of</span>
+    <div class="card flex flex-col gap-0.5 p-4">
+      <span class="tabular text-[22px] font-semibold tracking-[-0.02em]">{user.adminOrgCount}</span><span
+        class="text-muted text-[12px]">Admin of</span
+      >
     </div>
-    <div class="stat card">
-      <span class="stat-num tabular">{user.courseCount}</span><span class="stat-label">Courses</span>
+    <div class="card flex flex-col gap-0.5 p-4">
+      <span class="tabular text-[22px] font-semibold tracking-[-0.02em]">{user.courseCount}</span><span
+        class="text-muted text-[12px]">Courses</span
+      >
     </div>
-    <div class="stat card">
-      <span class="stat-num">{user.banned ? 'Banned' : user.emailVerified ? 'Active' : 'Pending'}</span>
-      <span class="stat-label">Status</span>
+    <div class="card flex flex-col gap-0.5 p-4">
+      <span class="text-[22px] font-semibold tracking-[-0.02em]"
+        >{user.banned ? 'Banned' : user.emailVerified ? 'Active' : 'Pending'}</span
+      ><span class="text-muted text-[12px]">Status</span>
     </div>
   </div>
 
-  <section>
-    <h2>Organizations & credits</h2>
+  <section class="mb-6">
+    <h2 class="mb-3">Organizations & credits</h2>
     {#if user.orgs.length === 0}
       <div class="card"><div class="empty">Not a member of any organization.</div></div>
     {:else}
       <div class="table-wrap">
         <table class="data">
           <thead>
-            <tr><th>Organization</th><th>Role</th><th class="num">AI credits</th><th class="actions-col">Add</th></tr>
+            <tr><th>Organization</th><th>Role</th><th class="num">AI credits</th><th class="w-px">Add</th></tr>
           </thead>
           <tbody>
             {#each user.orgs as org (org.orgId)}
               <tr>
                 <td>
-                  <span class="org-name">{org.name}</span>
-                  {#if org.siteName}<span class="org-site">{org.siteName}.classroom.io.vn</span>{/if}
+                  <span class="block font-medium">{org.name}</span>
+                  {#if org.siteName}<span class="text-muted text-[12px]">{org.siteName}.classroom.io.vn</span>{/if}
                 </td>
                 <td><span class="badge badge-neutral">{roleLabel(org.roleId)}</span></td>
                 <td class="num">{org.creditBalance.toLocaleString()}</td>
-                <td class="actions-col">
-                  <form class="credit-form" onsubmit={(e) => (e.preventDefault(), addCredits(org.orgId))}>
+                <td class="w-px">
+                  <form class="flex justify-end gap-2" onsubmit={(e) => (e.preventDefault(), addCredits(org.orgId))}>
                     <input
-                      class="input input-sm tabular"
+                      class="input tabular h-[28px] w-[90px] px-2 text-[12px]"
                       type="number"
                       min="1"
                       placeholder="0"
@@ -209,8 +221,8 @@
     {/if}
   </section>
 
-  <section>
-    <div class="sec-head">
+  <section class="mb-6">
+    <div class="mb-3 flex items-center justify-between">
       <h2>AI conversations</h2>
       {#if !chatsLoaded}
         <button class="btn btn-sm" onclick={loadChats}>Load</button>
@@ -220,32 +232,43 @@
       {#if chats.length === 0}
         <div class="card"><div class="empty">No AI conversations.</div></div>
       {:else}
-        <div class="card chat-list">
+        <div class="card overflow-hidden">
           {#each chats as chat (chat.id)}
-            <div class="chat-item">
-              <button class="chat-row" onclick={() => toggleChat(chat.id)} aria-expanded={openChatId === chat.id}>
-                <span class="chat-caret" class:open={openChatId === chat.id}>▸</span>
-                <span class="chat-title">{chat.title || 'Untitled conversation'}</span>
-                <span class="chat-meta tabular">{chat.messageCount} msg · {relativeTime(chat.updatedAt)}</span>
+            <div class="border-border border-b last:border-b-0">
+              <button
+                class="text-text hover:bg-surface-hover flex w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left"
+                onclick={() => toggleChat(chat.id)}
+                aria-expanded={openChatId === chat.id}
+              >
+                <span
+                  class="text-faint transition-transform {openChatId === chat.id ? 'rotate-90' : ''}"
+                  aria-hidden="true">▸</span
+                >
+                <span class="flex-1 truncate font-medium">{chat.title || 'Untitled conversation'}</span>
+                <span class="tabular text-muted text-[12px] whitespace-nowrap"
+                  >{chat.messageCount} msg · {relativeTime(chat.updatedAt)}</span
+                >
               </button>
               {#if openChatId === chat.id}
-                <div class="chat-body">
+                <div class="bg-bg py-0 pr-4 pb-4 pl-6">
                   {#if openChat}
-                    <div class="chat-actions">
+                    <div class="py-3">
                       <button class="btn btn-sm" onclick={() => copyChat(chat.id)}>
                         {copiedId === chat.id ? 'Copied' : 'Copy chat'}
                       </button>
                     </div>
                     {#each openChat.messages as m, i (i)}
-                      <div class="msg">
-                        <span class="msg-role">{(m.role ?? 'message').toUpperCase()}</span>
-                        <div class="msg-text">
+                      <div class="border-border border-t py-2">
+                        <span class="text-muted mb-0.5 block text-[11px] font-semibold"
+                          >{(m.role ?? 'message').toUpperCase()}</span
+                        >
+                        <div class="text-[13px] break-words whitespace-pre-wrap">
                           {typeof m.content === 'string' ? m.content : JSON.stringify(m.content)}
                         </div>
                       </div>
                     {/each}
                   {:else}
-                    <div class="empty" style="padding:var(--sp-4)">Loading…</div>
+                    <div class="empty p-4">Loading…</div>
                   {/if}
                 </div>
               {/if}
@@ -256,186 +279,3 @@
     {/if}
   </section>
 {/if}
-
-<style>
-  .back {
-    display: inline-block;
-    margin-bottom: var(--sp-3);
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .profile-head {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-4);
-    padding: var(--sp-5);
-  }
-  .avatar-lg {
-    width: 56px;
-    height: 56px;
-    border-radius: 999px;
-    object-fit: cover;
-    flex-shrink: 0;
-  }
-  .avatar-lg.fallback {
-    display: grid;
-    place-items: center;
-    background: var(--accent-weak);
-    color: var(--accent);
-    font-size: 20px;
-    font-weight: 600;
-  }
-  .who {
-    flex: 1;
-    min-width: 0;
-  }
-  .who-top {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
-  }
-  .who-email {
-    margin: 4px 0 2px;
-    color: var(--text);
-    font-size: 14px;
-  }
-  .who-meta {
-    margin: 0;
-    color: var(--muted);
-    font-size: 12px;
-    word-break: break-all;
-  }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--sp-3);
-    margin: var(--sp-4) 0 var(--sp-6);
-  }
-  .stat {
-    padding: var(--sp-4);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .stat-num {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-  .stat-label {
-    color: var(--muted);
-    font-size: 12px;
-  }
-  section {
-    margin-bottom: var(--sp-6);
-  }
-  section h2 {
-    margin-bottom: var(--sp-3);
-  }
-  .sec-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--sp-3);
-  }
-  .sec-head h2 {
-    margin-bottom: 0;
-  }
-  .org-name {
-    font-weight: 500;
-    display: block;
-  }
-  .org-site {
-    color: var(--muted);
-    font-size: 12px;
-  }
-  .actions-col {
-    width: 1%;
-  }
-  .credit-form {
-    display: flex;
-    gap: var(--sp-2);
-    justify-content: flex-end;
-  }
-  .input-sm {
-    height: 28px;
-    width: 90px;
-    padding: 0 var(--sp-2);
-    font-size: 12px;
-  }
-  .chat-list {
-    overflow: hidden;
-  }
-  .chat-item {
-    border-bottom: 1px solid var(--border);
-  }
-  .chat-item:last-child {
-    border-bottom: none;
-  }
-  .chat-row {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    width: 100%;
-    padding: var(--sp-3) var(--sp-4);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
-    color: var(--text);
-  }
-  .chat-row:hover {
-    background: var(--surface-hover);
-  }
-  .chat-caret {
-    color: var(--faint);
-    transition: transform 0.12s ease;
-  }
-  .chat-caret.open {
-    transform: rotate(90deg);
-  }
-  .chat-title {
-    flex: 1;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .chat-meta {
-    color: var(--muted);
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  .chat-body {
-    padding: 0 var(--sp-4) var(--sp-4) var(--sp-6);
-    background: var(--bg);
-  }
-  .chat-actions {
-    padding: var(--sp-3) 0;
-  }
-  .msg {
-    padding: var(--sp-2) 0;
-    border-top: 1px solid var(--border);
-  }
-  .msg-role {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 2px;
-  }
-  .msg-text {
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-size: 13px;
-  }
-  @media (max-width: 640px) {
-    .stats {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .profile-head {
-      flex-wrap: wrap;
-    }
-  }
-</style>

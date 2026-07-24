@@ -91,9 +91,18 @@
   const path = $derived($page.url.pathname);
 </script>
 
+{#snippet brandMark(sm: boolean)}
+  <span
+    class="bg-accent grid place-items-center font-bold text-white {sm
+      ? 'h-[26px] w-[26px] rounded-[6px] text-[15px]'
+      : 'h-11 w-11 rounded-[10px] text-[24px]'}"
+    aria-hidden="true">C</span
+  >
+{/snippet}
+
 {#snippet themeToggle()}
   <button
-    class="btn btn-ghost btn-sm theme-btn"
+    class="btn btn-ghost btn-sm text-muted hover:text-text w-[30px] px-0"
     type="button"
     onclick={flipTheme}
     aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
@@ -101,6 +110,7 @@
   >
     {#if theme === 'dark'}
       <svg
+        class="block"
         width="15"
         height="15"
         viewBox="0 0 24 24"
@@ -115,6 +125,7 @@
       </svg>
     {:else}
       <svg
+        class="block"
         width="15"
         height="15"
         viewBox="0 0 24 24"
@@ -130,19 +141,20 @@
 {/snippet}
 
 {#if phase === 'checking'}
-  <div class="center">
-    <div class="brand-mark" aria-hidden="true">C</div>
-  </div>
+  <div class="grid min-h-screen place-items-center p-4">{@render brandMark(false)}</div>
 {:else if phase === 'locked'}
-  <div class="center">
-    <form class="gate card" onsubmit={onSubmit}>
-      <div class="brand-mark" aria-hidden="true">C</div>
-      <h1>ClassroomHub Admin</h1>
-      <p class="gate-sub">Operator access. Enter the super-admin password.</p>
-      <div class="gate-toggle">{@render themeToggle()}</div>
+  <div class="grid min-h-screen place-items-center p-4">
+    <form
+      class="card relative flex w-[340px] max-w-full flex-col items-stretch gap-3 p-8 text-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+      onsubmit={onSubmit}
+    >
+      <div class="absolute top-3 right-3">{@render themeToggle()}</div>
+      <div class="mx-auto">{@render brandMark(false)}</div>
+      <h1 class="mt-1">ClassroomHub Admin</h1>
+      <p class="text-muted mb-2 text-[13px]">Operator access. Enter the super-admin password.</p>
       <!-- svelte-ignore a11y_autofocus -->
       <input
-        class="input"
+        class="input text-left"
         type="password"
         placeholder="Super-admin password"
         bind:value={password}
@@ -157,15 +169,23 @@
     </form>
   </div>
 {:else}
-  <div class="shell">
-    <header class="topbar">
-      <a class="brand" href="/users">
-        <span class="brand-mark sm" aria-hidden="true">C</span>
-        <span class="brand-name">ClassroomHub <b>Admin</b></span>
+  <div class="min-h-screen">
+    <header
+      class="border-border bg-surface sticky top-0 z-10 flex h-[52px] items-center gap-6 border-b px-6 max-[640px]:gap-3 max-[640px]:px-3"
+    >
+      <a class="text-text inline-flex items-center gap-2 hover:no-underline" href="/users">
+        {@render brandMark(true)}
+        <span class="text-[14px] font-medium max-[640px]:hidden">ClassroomHub <b class="font-semibold">Admin</b></span>
       </a>
-      <nav class="nav">
+      <nav class="mr-auto flex gap-1">
         {#each nav as item (item.href)}
-          <a class="nav-link" class:active={path === item.href || path.startsWith(item.href + '/')} href={item.href}>
+          <a
+            class="rounded-[6px] px-3 py-1.5 text-[13px] font-medium {path === item.href ||
+            path.startsWith(item.href + '/')
+              ? 'bg-accent-weak text-accent'
+              : 'text-muted hover:bg-surface-hover hover:text-text hover:no-underline'}"
+            href={item.href}
+          >
             {item.label}
           </a>
         {/each}
@@ -173,148 +193,8 @@
       {@render themeToggle()}
       <button class="btn btn-ghost btn-sm" type="button" onclick={signOut}>Sign out</button>
     </header>
-    <main class="content">
+    <main class="mx-auto max-w-[1080px] px-6 py-8 max-[640px]:px-3 max-[640px]:py-4">
       {@render children()}
     </main>
   </div>
 {/if}
-
-<style>
-  .center {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: var(--sp-4);
-  }
-  .brand-mark {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: var(--accent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 24px;
-  }
-  .brand-mark.sm {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    font-size: 15px;
-  }
-  .gate {
-    width: 340px;
-    max-width: 100%;
-    padding: var(--sp-6);
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-    align-items: stretch;
-    text-align: center;
-    box-shadow: var(--shadow-md);
-  }
-  .gate .brand-mark {
-    margin: 0 auto;
-  }
-  .gate h1 {
-    margin-top: var(--sp-1);
-  }
-  .gate-sub {
-    margin: 0 0 var(--sp-2);
-    color: var(--muted);
-    font-size: 13px;
-  }
-  .gate .input {
-    text-align: left;
-  }
-  .gate {
-    position: relative;
-  }
-  .gate-toggle {
-    position: absolute;
-    top: var(--sp-3);
-    right: var(--sp-3);
-  }
-  .theme-btn {
-    width: 30px;
-    padding: 0;
-    color: var(--muted);
-  }
-  .theme-btn:hover {
-    color: var(--text);
-  }
-  .theme-btn svg {
-    display: block;
-  }
-
-  .shell {
-    min-height: 100vh;
-  }
-  .topbar {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-5);
-    height: 52px;
-    padding: 0 var(--sp-5);
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-2);
-    color: var(--text);
-  }
-  .brand:hover {
-    text-decoration: none;
-  }
-  .brand-name {
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .brand-name b {
-    font-weight: 600;
-  }
-  .nav {
-    display: flex;
-    gap: var(--sp-1);
-    margin-right: auto;
-  }
-  .nav-link {
-    padding: 6px var(--sp-3);
-    border-radius: var(--radius);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-  }
-  .nav-link:hover {
-    background: var(--surface-hover);
-    color: var(--text);
-    text-decoration: none;
-  }
-  .nav-link.active {
-    color: var(--accent);
-    background: var(--accent-weak);
-  }
-  .content {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: var(--sp-6) var(--sp-5);
-  }
-  @media (max-width: 640px) {
-    .topbar {
-      gap: var(--sp-3);
-      padding: 0 var(--sp-3);
-    }
-    .brand-name {
-      display: none;
-    }
-    .content {
-      padding: var(--sp-4) var(--sp-3);
-    }
-  }
-</style>
