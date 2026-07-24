@@ -1,19 +1,19 @@
 ---
 title: How Course Enrollment Works
-description: Understand the ways students can join a course in ClassroomIO—public enrollment, invites, admin assignment, and paid access—and how to restrict who can enroll.
+description: Understand the ways students can join a course in Classroom Hub—public enrollment, invites, admin assignment, and paid access—and how to restrict who can enroll.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Enrollment is how a student becomes a member of a course group and gets access to lessons, exercises, and the LMS. ClassroomIO supports several enrollment paths. Which ones are available depends on your course price, publish status, and settings.
+Enrollment is how a student becomes a member of a course group and gets access to lessons, exercises, and the LMS. Classroom Hub supports several enrollment paths. Which ones are available depends on your course price, publish status, and settings.
 
 ## Enrollment paths at a glance
 
 | Path | Who initiates it | Typical use |
 | --- | --- | --- |
 | **Public self-enrollment** | Student | Open free courses on your landing page |
-| **Email invite** | You (admin) | Enter email addresses; ClassroomIO sends each recipient a unique enrollment link |
+| **Email invite** | You (admin) | Enter email addresses; Classroom Hub sends each recipient a unique enrollment link |
 | **Direct add** | You (admin) | Pick existing students from a list; they are enrolled instantly with no action needed from them |
 | **Paid enrollment** | Student (after payment) or invite | Courses with a price set |
 
@@ -46,13 +46,13 @@ No invite token is required. This is the default for free, published courses.
 
 ## Email invites
 
-From **People → Add people**, you enter one or more email addresses and ClassroomIO sends each recipient a unique enrollment link. Each invite can have:
+From **People → Add people**, you enter one or more email addresses and Classroom Hub sends each recipient a unique enrollment link. Each invite can have:
 
 - An **expiry** (e.g. 24 hours, 7 days)
 - A **max use** count (one-time or reusable)
 - **Allowed emails** or domains (optional restriction)
 
-When a student opens the link, they sign in (or sign up) and click **Join course**. ClassroomIO validates the token, expiry, and usage limit before enrolling them.
+When a student opens the link, they sign in (or sign up) and click **Join course**. Classroom Hub validates the token, expiry, and usage limit before enrolling them.
 
 For step-by-step instructions, see [How to Invite Students](/docs/invite-students).
 
@@ -103,7 +103,7 @@ Restricting who can **join** a course is not the same as hiding it from every st
 | **Internal Enrollment Only** (org-wide) | When on, any student in your organization can self-enroll in any published course, bypassing per-course **Allow New Students** |
 
 <Callout type="warn" title="Explore shows published courses">
-  **Explore** in the student LMS lists published courses the student has not enrolled in yet. Turning off **Allow New Students** blocks open enrollment from the landing page. It does **not** remove the course from Explore. ClassroomIO does not support hiding a published course from specific people in Explore today.
+  **Explore** in the student LMS lists published courses the student has not enrolled in yet. Turning off **Allow New Students** blocks open enrollment from the landing page. It does **not** remove the course from Explore. Classroom Hub does not support hiding a published course from specific people in Explore today.
 </Callout>
 
 **Workarounds:**
@@ -143,7 +143,7 @@ A student might be in your org but not enrolled in any course until you assign t
 
 Once enrolled, the course appears in the student LMS (home/dashboard). They can open lessons, submit exercises, and download materials according to course settings (for example, lesson download or certificate rules).
 
-If a student follows an invite or enrollment link while logged out, ClassroomIO sends them through sign-in or sign-up first, then returns them to the enrollment page so they can finish joining.
+If a student follows an invite or enrollment link while logged out, Classroom Hub sends them through sign-in or sign-up first, then returns them to the enrollment page so they can finish joining.
 
 ## Common scenarios
 

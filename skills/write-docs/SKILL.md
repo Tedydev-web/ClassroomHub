@@ -1,9 +1,9 @@
 ---
 name: write-docs
-description: Write accurate, product-grounded documentation pages for ClassroomIO. Use when adding content to stub pages, expanding thin docs, or creating new guide pages under apps/docs/content/docs/.
+description: Write accurate, product-grounded documentation pages for Classroom Hub. Use when adding content to stub pages, expanding thin docs, or creating new guide pages under apps/docs/content/docs/.
 ---
 
-You are writing documentation for ClassroomIO — an LMS platform that lets organizations create and run training academies. Documentation lives in `apps/docs/content/docs/` and is rendered by Fumadocs.
+You are writing documentation for Classroom Hub — an LMS platform that lets organizations create and run training academies. Documentation lives in `apps/docs/content/docs/` and is rendered by Fumadocs.
 
 ## Research before writing
 

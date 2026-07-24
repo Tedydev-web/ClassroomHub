@@ -11,9 +11,9 @@ published: true
 ---
 
 ![multi-language-support](/assets/assets/blog/multi-language-support.png)
-_ClassroomIO now supports 8 languages_
+_Classroom Hub now supports 8 languages_
 
-We are happy to share that within the ClassroomIO dashboard and your dedicated student dashboard we now support 8 languages including English. These 8 languages include:
+We are happy to share that within the Classroom Hub dashboard and your dedicated student dashboard we now support 8 languages including English. These 8 languages include:
 
 1. English
 2. French
@@ -29,7 +29,7 @@ The best thing about this feature is that you can have students from different c
 To change your language within the dashboard, you can go to the settings page by clicking your profile picture at the bottom left and select your preferred language in the drop down in the Profiles tab.
 
 ![select-language-settings](/assets/assets/blog/select-language-settings.png)
-_Language selector in ClassroomIO Dashboard._
+_Language selector in Classroom Hub Dashboard._
 
 ## We went a step further 😁
 

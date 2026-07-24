@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SALES_EMAIL } from '@cio/utils/constants';
   import { PageHeader, PageSignupCTA, WorkflowSteps } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
@@ -184,7 +185,7 @@
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:hieudat2310.bh@gmail.com?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
           >Book a Demo</Button
         >
         <Button href="/customer-education" variant="outline">Explore academies</Button>

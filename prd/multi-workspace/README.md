@@ -50,7 +50,7 @@ isProject: true
 
 ## Problem
 
-Today, every ClassroomIO organization is its own billing entity. A customer who wants:
+Today, every Classroom Hub organization is its own billing entity. A customer who wants:
 - A customer-facing academy on `learn.acme.com`, AND
 - An internal employee training portal on `team.acme.com`
 

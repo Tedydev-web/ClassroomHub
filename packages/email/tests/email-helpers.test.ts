@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   buildEmailFromName,
   escapeHtml,
+  extractNameAndEmail,
   sanitizeEmailDisplayName,
   sanitizeEmailSubject
 } from '../src/utils/functions/email-helpers';
 
-const DEFAULT_FROM = '"Classroom" <hieudat2310.bh@gmail.com>';
+const DEFAULT_FROM = '"Classroom" <support@classroom.io.vn>';
 
 describe('escapeHtml', () => {
   it('escapes HTML metacharacters', () => {
@@ -42,7 +43,61 @@ describe('sanitizeEmailSubject', () => {
   });
 });
 
+describe('extractNameAndEmail', () => {
+  it('parses a quoted display name', () => {
+    expect(extractNameAndEmail('"Classroom" <noreply@classroom.io.vn>')).toEqual({
+      name: 'Classroom',
+      email: 'noreply@classroom.io.vn'
+    });
+  });
+
+  it('parses an unquoted display name', () => {
+    // The shape a plain `SMTP_SENDER="Classroom <noreply@host>"` produces. It
+    // used to fall through to the "whole string is the address" branch.
+    expect(extractNameAndEmail('Classroom <noreply@classroom.io.vn>')).toEqual({
+      name: 'Classroom',
+      email: 'noreply@classroom.io.vn'
+    });
+  });
+
+  it('parses a bare address', () => {
+    expect(extractNameAndEmail('noreply@classroom.io.vn')).toEqual({
+      name: '',
+      email: 'noreply@classroom.io.vn'
+    });
+  });
+
+  it('unescapes a quoted display name', () => {
+    expect(extractNameAndEmail('"Alice \\"Admin\\" Academy" <a@b.com>')).toEqual({
+      name: 'Alice "Admin" Academy',
+      email: 'a@b.com'
+    });
+  });
+
+  it('rejects an already-nested header instead of guessing', () => {
+    // Exactly what was observed in the dev mailbox before the fix. Callers fall
+    // back to the configured sender rather than salvaging an address.
+    expect(extractNameAndEmail('"Udemy Test (via Classroom)" <Classroom <noreply@localhost>>')).toBeUndefined();
+  });
+
+  it('returns undefined when there is no address to send to', () => {
+    expect(extractNameAndEmail('Classroom')).toBeUndefined();
+    expect(extractNameAndEmail('')).toBeUndefined();
+    expect(extractNameAndEmail('   ')).toBeUndefined();
+  });
+});
+
 describe('buildEmailFromName', () => {
+  it('does not nest brackets when the sender has an unquoted display name', () => {
+    // Regression: an unquoted SMTP_SENDER produced
+    // `"Org (via Classroom)" <Classroom <noreply@host>>`, which real providers
+    // reject. The address must be extracted, not the whole header.
+    const from = buildEmailFromName('Udemy Test (via Classroom)');
+
+    expect(from).not.toMatch(/<[^>]*</);
+    expect(extractNameAndEmail(from)?.email).toBe('support@classroom.io.vn');
+  });
+
   it('returns the default sender when name is missing or empty after sanitization', () => {
     expect(buildEmailFromName()).toBe(DEFAULT_FROM);
     expect(buildEmailFromName('')).toBe(DEFAULT_FROM);
@@ -51,13 +106,13 @@ describe('buildEmailFromName', () => {
 
   it('wraps a plain display name in a quoted From header', () => {
     expect(buildEmailFromName('Acme Academy (via Classroom)')).toBe(
-      '"Acme Academy (via Classroom)" <hieudat2310.bh@gmail.com>'
+      '"Acme Academy (via Classroom)" <support@classroom.io.vn>'
     );
   });
 
   it('sanitizes embedded quotes in the display name', () => {
     expect(buildEmailFromName('Alice "Admin" Academy (via Classroom)')).toBe(
-      '"Alice \\"Admin\\" Academy (via Classroom)" <hieudat2310.bh@gmail.com>'
+      '"Alice \\"Admin\\" Academy (via Classroom)" <support@classroom.io.vn>'
     );
   });
 });

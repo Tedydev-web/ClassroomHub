@@ -1,6 +1,6 @@
 ---
-title: 'Self-host ClassroomIO on your Servers'
-description: 'On Day 3 of our launch week, we are excited to announce that you can now easily self-host ClassroomIO on your servers using our pre-built Railway template.'
+title: 'Self-host Classroom Hub on your Servers'
+description: 'On Day 3 of our launch week, we are excited to announce that you can now easily self-host Classroom Hub on your servers using our pre-built Railway template.'
 imageUrl: '/assets/assets/blog/self-host.png'
 date: '2024-10-09'
 author: Rotimi Best
@@ -11,7 +11,7 @@ published: true
 ---
 
 ![self-host-classroomio](/assets/assets/blog/self-host.png)
-_Selfhost ClassroomIO on your Servers_
+_Selfhost Classroom Hub on your Servers_
 
 Today we are happy to share that you can now easily self-host classroomio and use it for whatever purpose you want without paying us a dime. Our mission is to build the simplest yet customisable open source learning management system on the planet, and this is taking us 1 step closer to that goal.
 

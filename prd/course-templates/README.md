@@ -6,7 +6,7 @@ Enable instructors to create reusable course blueprints (templates) that can be 
 
 ## Problem Statement
 
-Currently, the only way to reuse course content in ClassroomIO is the clone feature, which creates a full copy of a specific course. This has limitations:
+Currently, the only way to reuse course content in Classroom Hub is the clone feature, which creates a full copy of a specific course. This has limitations:
 
 - **No discoverability**: There is no way to browse reusable starting points when creating a course. Instructors must know which existing course to clone.
 - **No separation of blueprint vs live course**: Cloned courses immediately become live courses with active status, mixing templates with real courses in the listing.
@@ -63,7 +63,7 @@ Currently, the only way to reuse course content in ClassroomIO is the clone feat
 ## Non-Goals (v1)
 
 - Platform-wide template marketplace (orgs sharing templates publicly).
-- ClassroomIO-provided starter templates (curated by the platform team).
+- Classroom Hub-provided starter templates (curated by the platform team).
 - AI-generated templates (e.g., "Generate a template for a 4-week React course").
 - Template versioning or change tracking.
 - Syncing updates from a template to courses already created from it.
@@ -546,7 +546,7 @@ pnpm --filter @cio/dashboard build
 
 ## Future Considerations
 
-- **Platform starter templates**: ClassroomIO-provided templates shown in a separate "ClassroomIO Templates" section of the picker.
+- **Platform starter templates**: Classroom Hub-provided templates shown in a separate "Classroom Hub Templates" section of the picker.
 - **AI-generated templates**: "Generate with AI" as a third option in the course creation flow alongside "Blank" and "From Template."
 - **Template marketplace**: Orgs opt-in to share templates publicly.
 - **Template versioning**: Track changes and allow courses to "pull updates" from the source template.

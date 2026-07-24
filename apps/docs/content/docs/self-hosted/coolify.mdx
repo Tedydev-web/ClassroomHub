@@ -1,12 +1,12 @@
 ---
 title: Coolify
-description: Deploy ClassroomIO on Coolify using the pull-based Docker Compose stack, with a video walkthrough.
+description: Deploy Classroom Hub on Coolify using the pull-based Docker Compose stack, with a video walkthrough.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-[Coolify](https://coolify.io) is a self-hosted PaaS (an open-source Heroku/Netlify alternative) you run on your own VPS. It runs ClassroomIO from the published `classroomio/*` images — your Coolify host **pulls** them and never builds anything.
+[Coolify](https://coolify.io) is a self-hosted PaaS (an open-source Heroku/Netlify alternative) you run on your own VPS. It runs Classroom Hub from the published `classroomio/*` images — your Coolify host **pulls** them and never builds anything.
 
 ## Watch the walkthrough
 
@@ -54,7 +54,7 @@ Log in to Coolify and **create a project**. When you add a resource, Coolify ask
 
 After saving, Coolify parses the compose file and lists the services: `postgres`, `redis`, `api`, `dashboard`, `jobs` (and `minio` once you enable its profile in the next step). Confirm they all appear before moving on.
 ![Select composer file type](/coolify-01-add-resource.webp)
-![Coolify showing the parsed ClassroomIO services](/coolify-02-services.webp)
+![Coolify showing the parsed Classroom Hub services](/coolify-02-services.webp)
 </Step>
 
 <Step>
@@ -73,7 +73,7 @@ SMTP_HOST=smtp.yourprovider.com
 SMTP_PORT=587
 SMTP_USER=<smtp username>
 SMTP_PASSWORD=<smtp password>
-SMTP_SENDER=ClassroomIO <you@yourdomain.com>
+SMTP_SENDER=Classroom Hub <you@yourdomain.com>
 # Object storage + domains: see the full reference below
 ```
 
@@ -128,7 +128,7 @@ Click **Deploy**. Coolify pulls `classroomio/{api,dashboard,jobs}:${CIO_VERSION}
 
 Once the logs show the stack is healthy, open your dashboard URL (`https://dash.yourdomain.com`) in a new browser tab and **sign up**. The **first** account becomes the organization **admin**. Every signup or sign-in after that joins as a student — unless you invite them with a specific role.
 
-![The running ClassroomIO dashboard sign-up page](/railway-12-signup.webp)
+![The running Classroom Hub dashboard sign-up page](/railway-12-signup.webp)
 </Step>
 
 </Steps>
@@ -184,7 +184,7 @@ SMTP_HOST=smtp.yourprovider.com
 SMTP_PORT=587
 SMTP_USER=<smtp username>
 SMTP_PASSWORD=<smtp password>
-SMTP_SENDER=ClassroomIO <you@yourdomain.com>
+SMTP_SENDER=Classroom Hub <you@yourdomain.com>
 
 # ── Optional — leave blank unless you need them ──
 CIO_VERSION=1.0.0           # pinned release; blank = latest (rolling main build)
@@ -230,7 +230,7 @@ SKIP_DB_SETUP=              # blank = run DB setup on first boot (leave blank)
 
 <Callout type="warn" title="If the stack won't start at all">
   Of the above, `BETTER_AUTH_SECRET` and `PRIVATE_SERVER_KEY` are the two the compose file
-  **fails fast** on: leave either empty and the containers refuse to boot (so ClassroomIO never runs
+  **fails fast** on: leave either empty and the containers refuse to boot (so Classroom Hub never runs
   with a predictable session-signing secret). The rest won't abort the boot, but the deployment
   won't work correctly without them — set them all.
 </Callout>

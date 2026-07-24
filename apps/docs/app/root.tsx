@@ -1,26 +1,26 @@
 import * as React from 'react';
 
+import { RootProvider } from 'fumadocs-ui/provider/react-router';
 import type { LinksFunction, MetaFunction } from 'react-router';
 import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useRouteError
+    isRouteErrorResponse,
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+    useRouteError
 } from 'react-router';
-import { RootProvider } from 'fumadocs-ui/provider/react-router';
 
 import { NotFound } from '@/components/not-found';
 import './app.css';
 
 const DEFAULT_META_TITLE =
-  'ClassroomIO Docs | Customer, Partner, and Employee Education';
+  'Classroom Hub Docs | Customer, Partner, and Employee Education';
 const DEFAULT_META_DESCRIPTION =
-  'Learn how to create customer academies, partner certification programs, and employee training workflows in ClassroomIO.';
+  'Learn how to create customer academies, partner certification programs, and employee training workflows in Classroom Hub.';
 const DEFAULT_OG_IMAGE_URL = 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.jpg';
-const DEFAULT_OG_IMAGE_ALT = 'ClassroomIO documentation for customer, partner, and employee education';
+const DEFAULT_OG_IMAGE_ALT = 'Classroom Hub documentation for customer, partner, and employee education';
 
 export const links: LinksFunction = () => [
   { rel: 'icon', href: '/docs/favicon.ico' }

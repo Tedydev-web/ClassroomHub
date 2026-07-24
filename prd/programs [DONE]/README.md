@@ -342,7 +342,7 @@ Enable instructors and org admins to group multiple courses — along with a sha
 
 ## Problem Statement
 
-Currently, ClassroomIO has no entity above the individual course. Every course has its own independent enrollment roster. This creates several pain points:
+Currently, Classroom Hub has no entity above the individual course. Every course has its own independent enrollment roster. This creates several pain points:
 
 - An instructor running a structured path (e.g., a bootcamp, onboarding track, or certification pathway) must enroll students in each constituent course one by one.
 - There is no shared space for program-wide announcements or discussions that span multiple courses.

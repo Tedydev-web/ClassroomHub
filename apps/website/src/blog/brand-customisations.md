@@ -11,7 +11,7 @@ published: true
 ---
 
 ![classroomio-brand-customisations](/assets/assets/blog/brand-customisations.png)
-_ClassroomIO Brand Customisations_
+_Classroom Hub Brand Customisations_
 
 We are excited to announce more customisations coming into our learning management system (LMS). In this blog post, we will like to share with you how we've made _YOUR_ _STUDENT DASHBOARD_ much more customisable than before.
 
@@ -40,7 +40,7 @@ However that is not the UI that your audience will see when they consume your co
 ![classroomio-lms-student-dashboard](/assets/brand/classroomio-lms-courses.png)
 _The LMS aka Student dashboard - yourorg.classroom.tedydev.io.vn_
 
-Typically this page can be found at _yourorg.classroom.tedydev.io.vn_, where _yourorg_ is a slug you set when you first set up your account. For example, we've built an internal bootcamp called ClassroomIO Developers, in this bootcamp we train other developers on some of the key tools we use internally. You can checkout our page here: [ciodevs.classroom.tedydev.io.vn](https://ciodevs.classroom.tedydev.io.vn), in this case you can see that our slug is _ciodevs_ and you should be able to easily see yours when you log into the dashboard `/org/{yourorg}`.
+Typically this page can be found at _yourorg.classroom.tedydev.io.vn_, where _yourorg_ is a slug you set when you first set up your account. For example, we've built an internal bootcamp called Classroom Hub Developers, in this bootcamp we train other developers on some of the key tools we use internally. You can checkout our page here: [ciodevs.classroom.tedydev.io.vn](https://ciodevs.classroom.tedydev.io.vn), in this case you can see that our slug is _ciodevs_ and you should be able to easily see yours when you log into the dashboard `/org/{yourorg}`.
 
 In your student dashboard, your audience can:
 

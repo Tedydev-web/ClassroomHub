@@ -1,16 +1,16 @@
 ---
 title: Docker
-description: Self-host ClassroomIO with Docker — pull pre-built images (recommended) or build from source.
+description: Self-host Classroom Hub with Docker — pull pre-built images (recommended) or build from source.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Docker is one way to self-host ClassroomIO. There are two paths:
+Docker is one way to self-host Classroom Hub. There are two paths:
 
 - **Run from pre-built images (recommended)** — pull the published `classroomio/{api,dashboard,jobs}` images. You only need one compose file and a `.env`; no repository clone and no heavy local build.
 - **Build from source** — clone the repo and build the images yourself (needs ~8 GB RAM for the dashboard build).
 
-![Selfhost ClassroomIO](/selfhost-classroomio.webp)
+![Selfhost Classroom Hub](/selfhost-classroomio.webp)
 
 ## Run from Pre-built Images (recommended)
 
@@ -110,7 +110,7 @@ The script builds and starts Postgres, Redis, MinIO (object storage), the API, t
 
 ## Upgrading to a New Version
 
-ClassroomIO publishes versioned images. `CIO_VERSION` controls which tag you run:
+Classroom Hub publishes versioned images. `CIO_VERSION` controls which tag you run:
 
 - Pin an exact release (e.g. `1.0.0`) in production so a merge to `main` never restarts you onto changed images unattended.
 - `latest` = the freshest `main` build — it moves on every merge (rolling; may include unreleased code). Version tags (`1.0.0`, `1.0`, `1`) are the immutable, pinned releases.
@@ -226,7 +226,7 @@ Set these in the root `.env` to raise or lower upload caps (values are in **mega
 
 <Callout type="warn" title="Reverse proxy limits">
   If you raise these values, also increase your reverse proxy body-size limit (e.g. nginx
-  `client_max_body_size`) so large uploads are not rejected before they reach ClassroomIO.
+  `client_max_body_size`) so large uploads are not rejected before they reach Classroom Hub.
 </Callout>
 
 ## Common Commands

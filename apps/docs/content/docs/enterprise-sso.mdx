@@ -7,13 +7,13 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Enterprise SSO
 
-ClassroomIO supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP).
+Classroom Hub supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP).
 
 <Callout type="info" title="Enterprise Feature">
   SSO requires an **Enterprise** plan.
-  
+
   **Cloud:** [Contact us](mailto:support@classroomio.com) to upgrade.
-  
+
   **Self-hosted:** Requires an Enterprise license key. If you are not using Enterprise-only features, you do not need a key.
   [Book a call](http://cal.com/classroomio/enterprise) to get your license.
 </Callout>
@@ -39,7 +39,7 @@ We support OIDC-based SSO with the following identity providers:
 When users visit your organization's custom domain (e.g., `yourorg.classroomio.com`), SSO is automatically detected and they can sign in directly with your IdP.
 
 ### Shared App Login
-On the main ClassroomIO app (`app.classroomio.com`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
+On the main Classroom Hub app (`app.classroomio.com`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
 
 ## Provider Setup Guides
 
@@ -52,10 +52,10 @@ On the main ClassroomIO app (`app.classroomio.com`), users enter their email add
    - Configure the OAuth consent screen (choose "External" for testing)
    - Create OAuth client ID:
      - Application type: **Web application**
-     - Name: `ClassroomIO SSO`
+     - Name: `Classroom Hub SSO`
      - Authorized redirect URIs: (leave empty for now, you'll add this after Step 2)
 
-2. **In ClassroomIO:**
+2. **In Classroom Hub:**
    - Go to **Settings** → **SSO**
    - Select **Google Workspace**
    - Fill in:
@@ -66,12 +66,12 @@ On the main ClassroomIO app (`app.classroomio.com`), users enter their email add
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** shown in ClassroomIO
+   - Copy the **Callback URL** shown in Classroom Hub
    - Go back to Google Cloud Console
    - Edit your OAuth client and add the Callback URL to **Authorized redirect URIs**
    - Save
 
-4. **Activate** the connection in ClassroomIO
+4. **Activate** the connection in Classroom Hub
 
 ### Okta
 
@@ -83,7 +83,7 @@ On the main ClassroomIO app (`app.classroomio.com`), users enter their email add
    - Sign-in redirect URIs: (leave empty, you'll add after Step 2)
    - Grant type: **Authorization Code**
 
-2. **In ClassroomIO:**
+2. **In Classroom Hub:**
    - Go to **Settings** → **SSO**
    - Select **Okta**
    - Fill in:
@@ -94,22 +94,22 @@ On the main ClassroomIO app (`app.classroomio.com`), users enter their email add
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** from ClassroomIO
+   - Copy the **Callback URL** from Classroom Hub
    - In Okta, edit your app and add the Callback URL to **Sign-in redirect URIs**
    - Ensure these scopes are allowed: `openid`, `email`, `profile`
 
-4. **Activate** the connection in ClassroomIO
+4. **Activate** the connection in Classroom Hub
 
 ### Auth0
 
 1. **Create Application in Auth0:**
    - Go to Auth0 Dashboard
    - Navigate to **Applications** → **Create Application**
-   - Name: `ClassroomIO SSO`
+   - Name: `Classroom Hub SSO`
    - Type: **Regular Web Application**
    - Allowed Callback URLs: (leave empty, add after Step 2)
 
-2. **In ClassroomIO:**
+2. **In Classroom Hub:**
    - Go to **Settings** → **SSO**
    - Select **Auth0**
    - Fill in:
@@ -120,11 +120,11 @@ On the main ClassroomIO app (`app.classroomio.com`), users enter their email add
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** from ClassroomIO
+   - Copy the **Callback URL** from Classroom Hub
    - In Auth0, add the Callback URL to **Allowed Callback URLs**
    - Ensure OIDC Conformant is enabled
 
-4. **Activate** the connection in ClassroomIO
+4. **Activate** the connection in Classroom Hub
 
 ## Configuration Summary
 
@@ -154,7 +154,7 @@ Users are automatically provisioned when they first sign in via SSO:
 3. If neither, they can join later via invitation
 
 ### Role Mapping
-Map IdP groups to ClassroomIO roles:
+Map IdP groups to Classroom Hub roles:
 
 - Admins → `ROLE.ADMIN` (1)
 - Tutors → `ROLE.TUTOR` (2)

@@ -1,9 +1,9 @@
 ---
 title: Cloudflare Setup
-description: Guide to setting up Cloudflare for ClassroomIO.
+description: Guide to setting up Cloudflare for Classroom Hub.
 ---
 
-In this guide, you will learn how to get your Cloudflare environment variables and configure R2 buckets. ClassroomIO supports Cloudflare R2 for video uploads, document uploads, and media (images and video thumbnails). For on-premise or data-residency deployments, you can use [MinIO](/docs/self-hosted/docker#optional--object-storage) instead.
+In this guide, you will learn how to get your Cloudflare environment variables and configure R2 buckets. Classroom Hub supports Cloudflare R2 for video uploads, document uploads, and media (images and video thumbnails). For on-premise or data-residency deployments, you can use [MinIO](/docs/self-hosted/docker#optional--object-storage) instead.
 
 ## R2 buckets overview
 
@@ -21,10 +21,10 @@ Create these buckets in the [Cloudflare Dashboard](https://dash.cloudflare.com/)
 
 Configure the following for the API (e.g. in `.env` or your deployment):
 
-- **R2 API (videos and documents):**  
+- **R2 API (videos and documents):**
   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_KEY`, `CLOUDFLARE_SECRET_ACCESS_KEY`, `CLOUDFLARE_BUCKET_DOMAIN` (or the API uses the account ID for the R2 endpoint).
 
-- **Media bucket (images and thumbnails):**  
+- **Media bucket (images and thumbnails):**
   `CLOUDFLARE_IMAGE_BUCKET_DOMAIN` — public URL for the **media** bucket (e.g. custom domain or R2 public bucket URL). Required for image uploads and video thumbnail display.
 
 ## R2 CORS configuration

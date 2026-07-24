@@ -1,6 +1,6 @@
 # Validation Schemas
 
-Shared validation schemas for ClassroomIO workspace using Zod with **convention-based translations**.
+Shared validation schemas for Classroom Hub workspace using Zod with **convention-based translations**.
 
 ## Structure
 
@@ -130,10 +130,10 @@ validations.{fieldName}.{errorCode}
 
 ### Benefits
 
-✅ **Single Source of Truth** - Schema defined once, used everywhere  
-✅ **No Duplication** - Don't reimplement schemas in frontend  
-✅ **Flexible** - Add specific translations or use generic fallbacks  
-✅ **Multilingual** - Easy to translate without touching schemas  
+✅ **Single Source of Truth** - Schema defined once, used everywhere
+✅ **No Duplication** - Don't reimplement schemas in frontend
+✅ **Flexible** - Add specific translations or use generic fallbacks
+✅ **Multilingual** - Easy to translate without touching schemas
 ✅ **Maintainable** - Change schema once, translations adapt automatically
 
 ### Common Error Codes

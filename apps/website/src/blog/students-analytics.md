@@ -1,6 +1,6 @@
 ---
 title: 'Introducing Student Analytics'
-description: 'As we end 2024, we are releasing students analytics to all organisation on ClassroomIO. You can now view analytics on your students, including their last login date, course completion status, and much more.'
+description: 'As we end 2024, we are releasing students analytics to all organisation on Classroom Hub. You can now view analytics on your students, including their last login date, course completion status, and much more.'
 imageUrl: '/assets/assets/blog/students-analytics.png'
 date: '2024-12-31'
 author: Rotimi Best
@@ -11,7 +11,7 @@ published: true
 ---
 
 ![classroomio-student-analytics](/assets/assets/blog/students-analytics.png)
-_ClassroomIO Students Analytics_
+_Classroom Hub Students Analytics_
 
 As we end the year, we are excited to announce that we have added student analytics to our platform. This is a feature that we have been working on for a while and we are happy to finally launch it. With this new feature, you can better understand the progress of specific students in your course or your organisation.
 

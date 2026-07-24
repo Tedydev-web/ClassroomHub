@@ -1,11 +1,11 @@
-import { Link } from 'react-router';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
+import { Link } from 'react-router';
 
 export function NotFound() {
   return (
     <HomeLayout
       nav={{
-        title: 'ClassroomIO'
+        title: 'Classroom Hubub'
       }}
       className="justify-center py-32 text-center"
     >

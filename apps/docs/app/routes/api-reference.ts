@@ -1,9 +1,9 @@
-import { getHtmlDocument } from '@scalar/core/libs/html-rendering';
 import {
-  enrichPublicApiOpenApiSpec,
-  PUBLIC_API_BEARER_SCHEME,
-  PUBLIC_API_OPENAPI_URL
+    enrichPublicApiOpenApiSpec,
+    PUBLIC_API_BEARER_SCHEME,
+    PUBLIC_API_OPENAPI_URL
 } from '@cio/utils/openapi/public-api';
+import { getHtmlDocument } from '@scalar/core/libs/html-rendering';
 
 export async function loader() {
   const response = await fetch(PUBLIC_API_OPENAPI_URL);
@@ -17,7 +17,7 @@ export async function loader() {
   return new Response(
     getHtmlDocument({
       content: JSON.stringify(spec),
-      pageTitle: 'ClassroomIO Public API Reference',
+      pageTitle: 'Classroom Hub Public API Reference',
       theme: 'none',
       authentication: {
         preferredSecurityScheme: PUBLIC_API_BEARER_SCHEME

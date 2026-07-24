@@ -1,6 +1,6 @@
 ---
 title: Token Auth
-description: Sign users in to ClassroomIO from your own app with a short-lived JWT.
+description: Sign users in to Classroom Hub from your own app with a short-lived JWT.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -8,9 +8,9 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Token Auth
 
-Token Auth lets an external app sign a user in to ClassroomIO without asking for a ClassroomIO password. Your backend signs a short-lived JWT with your organization's Token Auth secret, then redirects the user's browser to ClassroomIO's token exchange URL.
+Token Auth lets an external app sign a user in to Classroom Hub without asking for a Classroom Hub password. Your backend signs a short-lived JWT with your organization's Token Auth secret, then redirects the user's browser to Classroom Hub's token exchange URL.
 
-Use Token Auth when you already authenticate users in another product and want a trusted handoff into your ClassroomIO academy.
+Use Token Auth when you already authenticate users in another product and want a trusted handoff into your Classroom Hub academy.
 
 <Callout type="info" title="Enterprise Feature">
   Token Auth requires an **Enterprise** plan.
@@ -22,17 +22,17 @@ Use Token Auth when you already authenticate users in another product and want a
 
 ## How It Works
 
-1. An organization admin generates a Token Auth signing secret in ClassroomIO.
+1. An organization admin generates a Token Auth signing secret in Classroom Hub.
 2. Your backend authenticates the user in your own app.
-3. Your backend signs a short-lived `HS256` JWT with the ClassroomIO signing secret.
+3. Your backend signs a short-lived `HS256` JWT with the Classroom Hub signing secret.
 4. Your app redirects the browser to `/api/auth/token-exchange?token=...&redirect=...`.
-5. ClassroomIO verifies the token, finds or creates the user, adds them to the organization, creates a session, and redirects them to the requested path.
+5. Classroom Hub verifies the token, finds or creates the user, adds them to the organization, creates a session, and redirects them to the requested path.
 
 ## Set Up Token Auth
 
 <Steps>
   <Step>
-    Sign in to ClassroomIO as an organization admin.
+    Sign in to Classroom Hub as an organization admin.
   </Step>
   <Step>
     Open **Settings** → **Authentication** → **Token Auth**.
@@ -67,7 +67,7 @@ Query parameters:
 | Parameter | Required | Description |
 | --- | --- | --- |
 | `token` | Yes | The signed JWT. |
-| `redirect` | No | A ClassroomIO path to open after login. Must start with `/`. Invalid external URLs are ignored and users are sent to `/`. |
+| `redirect` | No | A Classroom Hub path to open after login. Must start with `/`. Invalid external URLs are ignored and users are sent to `/`. |
 
 Example:
 
@@ -84,7 +84,7 @@ Required claims:
 | Claim | Type | Description |
 | --- | --- | --- |
 | `sub` | string | Stable user identifier from your system. |
-| `email` | string | User email address. ClassroomIO lowercases it before lookup. |
+| `email` | string | User email address. Classroom Hub lowercases it before lookup. |
 | `iat` | number | Issued-at timestamp. |
 | `exp` | number | Expiration timestamp. |
 
@@ -92,10 +92,10 @@ Optional claims:
 
 | Claim | Type | Description |
 | --- | --- | --- |
-| `name` | string | Display name. If omitted, ClassroomIO uses the email username. |
+| `name` | string | Display name. If omitted, Classroom Hub uses the email username. |
 | `avatar` | string | Public image URL for the user's avatar. |
 
-Tokens must be fresh. ClassroomIO rejects tokens older than 5 minutes, so use a short expiration such as 2 minutes.
+Tokens must be fresh. Classroom Hub rejects tokens older than 5 minutes, so use a short expiration such as 2 minutes.
 
 ## Node Example
 
@@ -127,17 +127,17 @@ export async function buildClassroomioLoginUrl(user) {
 }
 ```
 
-Redirect the browser to the returned URL after the user clicks "Open ClassroomIO" or any equivalent action in your app.
+Redirect the browser to the returned URL after the user clicks "Open Classroom Hub" or any equivalent action in your app.
 
 ## User Provisioning
 
 When the token is valid:
 
-- If a ClassroomIO user already exists with the email address, that user is signed in.
-- If no user exists, ClassroomIO creates one with a random password.
-- ClassroomIO adds the user to the organization tied to the signing secret.
-- If the email has a pending invite or pre-created audience row, ClassroomIO links that record first. Otherwise, the user joins with the organization's default role.
-- If `avatar` is present, ClassroomIO updates the user's profile avatar.
+- If a Classroom Hub user already exists with the email address, that user is signed in.
+- If no user exists, Classroom Hub creates one with a random password.
+- Classroom Hub adds the user to the organization tied to the signing secret.
+- If the email has a pending invite or pre-created audience row, Classroom Hub links that record first. Otherwise, the user joins with the organization's default role.
+- If `avatar` is present, Classroom Hub updates the user's profile avatar.
 
 ## Rotating the Secret
 

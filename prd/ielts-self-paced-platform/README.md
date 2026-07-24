@@ -7,7 +7,7 @@
 - March 20, 2026
 
 ## Purpose
-Define the product requirements needed for ClassroomIO to support a serious self-paced IELTS preparation experience that can realistically help learners improve enough to pass the exam and reach target band scores.
+Define the product requirements needed for Classroom Hub to support a serious self-paced IELTS preparation experience that can realistically help learners improve enough to pass the exam and reach target band scores.
 
 ---
 
@@ -28,7 +28,7 @@ For a self-paced IELTS course to work, the platform must do more than host lesso
 Without these features, learners may complete many lessons and still remain underprepared for the actual test.
 
 ### Product Vision
-ClassroomIO becomes a serious IELTS preparation platform where a learner can:
+Classroom Hub becomes a serious IELTS preparation platform where a learner can:
 1. Diagnose their current level
 2. Follow a structured study path
 3. Practise each paper under realistic conditions
@@ -633,7 +633,7 @@ The IELTS domain depends heavily on repeatable task patterns. Good author toolin
 
 ---
 
-## 12. Technical/Product Notes for ClassroomIO
+## 12. Technical/Product Notes for Classroom Hub
 
 ### Current Platform Implications
 - Lesson notes alone are not enough for IELTS prep.
@@ -668,4 +668,4 @@ The platform should treat IELTS as a practice-and-feedback product, not a conten
 - mock tests
 - weakness-driven analytics
 
-If these areas are implemented well, ClassroomIO can support a self-paced IELTS course that is materially more useful than a traditional LMS course with notes and quizzes.
+If these areas are implemented well, Classroom Hub can support a self-paced IELTS course that is materially more useful than a traditional LMS course with notes and quizzes.

@@ -42,7 +42,7 @@ This shift would also open up new revenue streams for lecturers. Income wouldn�
 
 ### The Solution
 
-At ClassroomIO, these are the ideas driving us. We’re committed to building tools that break down these barriers and democratize access to quality education for every student and teacher across Nigeria. So far we’ve built an advanced course builder that allows any educator to create their own school, create courses and invite students. In each course you can upload videos, slides, notes, give assignments, grade and even assign certificates after successfully completing this course. All these have been built and can be used by any educator today. We are working on another platform that allows students to find the best educator for any given topic, this will be the game changer.
+At Classroom Hub, these are the ideas driving us. We’re committed to building tools that break down these barriers and democratize access to quality education for every student and teacher across Nigeria. So far we’ve built an advanced course builder that allows any educator to create their own school, create courses and invite students. In each course you can upload videos, slides, notes, give assignments, grade and even assign certificates after successfully completing this course. All these have been built and can be used by any educator today. We are working on another platform that allows students to find the best educator for any given topic, this will be the game changer.
 
 ### Conclusion
 

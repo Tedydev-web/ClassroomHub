@@ -5,7 +5,7 @@ description: Contributor reference for dynamic OG image generation, favicon fall
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-This document describes how ClassroomIO generates **Open Graph preview images** and **favicons** for public org-site routes (`*.myclassroomio.com`, BYOD custom domains, and self-hosted single-org mode). It covers caching layers, invalidation, and why crawlers such as Discord need a fast, stable image URL.
+This document describes how Classroom Hub generates **Open Graph preview images** and **favicons** for public org-site routes (`*.myclassroomio.com`, BYOD custom domains, and self-hosted single-org mode). It covers caching layers, invalidation, and why crawlers such as Discord need a fast, stable image URL.
 
 For admin-facing behavior, see [Sharing Your Academy (Open Graph & Favicon)](/docs/academy-sharing-and-branding).
 
@@ -87,7 +87,7 @@ The handler returns `image/png` with `ETag`, `Cache-Control: public, max-age=360
 
 - **Logo present:** image fills the logo container; no theme-color background behind the logo (avoids washing out light logos).
 - **No logo:** initials fallback on a theme-colored rounded square.
-- **Free plan:** no tagline on image; **Powered by ClassroomIO** watermark.
+- **Free plan:** no tagline on image; **Powered by Classroom Hub** watermark.
 - **Paid plan:** tagline under org name; no watermark.
 
 ## Caching
@@ -134,7 +134,7 @@ Meta tags in cloud production prefer the **CDN URL**, not `/proxy/…`, so crawl
 
 ### 5. Crawler / chat app caches
 
-Discord, Slack, iMessage, etc. cache **embed metadata** and **images** independently of ClassroomIO. Failed embeds may be cached for minutes. Users must often **re-post** a link to see updates even after R2 and CDN have fresh content.
+Discord, Slack, iMessage, etc. cache **embed metadata** and **images** independently of Classroom Hub. Failed embeds may be cached for minutes. Users must often **re-post** a link to see updates even after R2 and CDN have fresh content.
 
 ## Meta tag resolution
 
@@ -153,7 +153,7 @@ Title and description come from `org-site-meta.ts` (hero heading/subheading, org
 
 ### Scope
 
-Rendered from root `+layout.svelte` via `OrgSiteFavicon` when `data.isOrgSite` is true. Default ClassroomIO favicons in `app.html` are omitted for org sites; non-org routes inject `/favicon.ico` and `/logo-32.png` from the root layout.
+Rendered from root `+layout.svelte` via `OrgSiteFavicon` when `data.isOrgSite` is true. Default Classroom Hub favicons in `app.html` are omitted for org sites; non-org routes inject `/favicon.ico` and `/logo-32.png` from the root layout.
 
 ### Resolution (`getOrgFaviconHref`)
 

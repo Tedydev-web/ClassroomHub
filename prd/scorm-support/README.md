@@ -2,31 +2,31 @@
 
 ## Purpose
 
-Enable ClassroomIO to import, launch, track, and report on SCORM learning content in a way that is commercially credible for enterprise buyers without forcing the product to become a fully standards-maximal LMS on day one.
+Enable Classroom Hub to import, launch, track, and report on SCORM learning content in a way that is commercially credible for enterprise buyers without forcing the product to become a fully standards-maximal LMS on day one.
 
 This PRD defines a phased SCORM support strategy that starts with the most common customer need:
 
 1. Upload a SCORM ZIP package
-2. Launch it inside ClassroomIO
+2. Launch it inside Classroom Hub
 3. Persist learner progress, score, completion, and resume state
-4. Reflect that state in ClassroomIO progress, completion, certificates, and reporting
+4. Reflect that state in Classroom Hub progress, completion, certificates, and reporting
 
 It also defines what is explicitly out of scope for the first release so the team does not accidentally sign up for full SCORM 2004 sequencing compliance in v1.
 
 ## Problem Statement
 
-Today ClassroomIO supports native lessons, exercises, videos, documents, and public course delivery, but it does not support packaged e-learning content from external authoring tools like Articulate Storyline, Rise, Adobe Captivate, iSpring, or Lectora.
+Today Classroom Hub supports native lessons, exercises, videos, documents, and public course delivery, but it does not support packaged e-learning content from external authoring tools like Articulate Storyline, Rise, Adobe Captivate, iSpring, or Lectora.
 
 This creates four product gaps:
 
 1. Enterprise buyers often already own SCORM course libraries and expect LMS import compatibility.
-2. Migration into ClassroomIO is harder because packaged compliance or onboarding content cannot be brought over intact.
+2. Migration into Classroom Hub is harder because packaged compliance or onboarding content cannot be brought over intact.
 3. Course import work currently stops at manifest parsing and launch references rather than learner tracking parity.
-4. ClassroomIO cannot yet participate in procurement conversations where "Does it support SCORM?" is a gate question.
+4. Classroom Hub cannot yet participate in procurement conversations where "Does it support SCORM?" is a gate question.
 
 ## Why Now
 
-ClassroomIO already has adjacent foundations that make SCORM support realistic:
+Classroom Hub already has adjacent foundations that make SCORM support realistic:
 
 1. Existing course/lesson/exercise models and public delivery surfaces
 2. Existing file upload and asset storage patterns
@@ -90,17 +90,17 @@ Research was verified against primary or de facto primary technical references o
 
 ### Source List
 
-1. ADL SCORM 2004 4th Edition Testing Requirements  
+1. ADL SCORM 2004 4th Edition Testing Requirements
    `https://www.adlnet.gov/assets/uploads/SCORM_2004_4ED_v1_1_TR_20090814.pdf`
-2. SCORM.com SCORM 1.2 developer overview  
+2. SCORM.com SCORM 1.2 developer overview
    `https://scorm.com/scorm-explained/technical-scorm/scorm-12-overview-for-developers/`
-3. SCORM.com run-time environment overview  
+3. SCORM.com run-time environment overview
    `https://scorm.com/scorm-explained/technical-scorm/run-time/`
-4. SCORM.com run-time reference chart  
+4. SCORM.com run-time reference chart
    `https://scorm.com/scorm-explained/technical-scorm/run-time/run-time-reference/`
-5. SCORM.com API discovery algorithms  
+5. SCORM.com API discovery algorithms
    `https://scorm.com/scorm-explained/technical-scorm/run-time/api-discovery-algorithms/`
-6. SCORM.com comparison of SCORM 1.2 and SCORM 2004  
+6. SCORM.com comparison of SCORM 1.2 and SCORM 2004
    `https://scorm.com/scorm-explained/business-of-scorm/comparing-scorm-1-2-and-scorm-2004/`
 
 ### Research Findings
@@ -112,7 +112,7 @@ The standards distinguish between:
 1. Package import and manifest interpretation
 2. Browser run-time communication between launched content and the LMS
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - Parsing `imsmanifest.xml` is necessary but insufficient.
 - "We can upload the ZIP" is not market-equivalent to "we support SCORM."
@@ -124,7 +124,7 @@ The content does not push events to a webhook or polling endpoint by default. It
 - SCORM 1.2 expects `window.API`
 - SCORM 2004 expects `window.API_1484_11`
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - A backend-only implementation is impossible.
 - The launch shell must host and expose the runtime API within the learner browser session.
@@ -134,7 +134,7 @@ Implication for ClassroomIO:
 SCORM 1.2 centers on launch + data model persistence and is materially simpler.
 SCORM 2004 adds a richer runtime model and sequencing/navigation expectations.
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - A commercially useful v1 should target single-SCO and simple multi-SCO packages without full sequencing support.
 - Full SCORM 2004 sequencing should be explicitly deferred unless required by a concrete customer contract.
@@ -153,7 +153,7 @@ Typical SCORM packages rely on runtime elements for:
 - learner identifiers
 - bookmark/lesson location
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - Mapping everything to `lesson_completion.isComplete` would be insufficient.
 - A dedicated persistence model is required.
@@ -162,7 +162,7 @@ Implication for ClassroomIO:
 
 SCORM content often searches parent and opener windows to find the API object.
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - The launch shell and iframe strategy must be tested against real authoring-tool exports.
 - The browser integration is a compatibility surface, not just a UI wrapper.
@@ -171,7 +171,7 @@ Implication for ClassroomIO:
 
 The runtime references define explicit error codes and failure states.
 
-Implication for ClassroomIO:
+Implication for Classroom Hub:
 
 - Storing only the final completion state will make support painful.
 - We need runtime logs or at least event/error traces for debugging broken packages.
@@ -179,9 +179,9 @@ Implication for ClassroomIO:
 ## Product Goals
 
 1. Allow org admins to upload a valid SCORM package and attach it to a course in a predictable way.
-2. Launch SCORM content inside ClassroomIO with a compatible browser-side runtime API.
+2. Launch SCORM content inside Classroom Hub with a compatible browser-side runtime API.
 3. Persist learner progress, completion, score, and resume state in first-class tables.
-4. Map SCORM completion into existing ClassroomIO progress and certification rules.
+4. Map SCORM completion into existing Classroom Hub progress and certification rules.
 5. Provide enough reporting and debugging for support, implementation, and customer success teams.
 6. Keep v1 narrow enough to ship without committing to full SCORM 2004 sequencing compliance.
 
@@ -192,9 +192,9 @@ The following are explicitly out of scope for the first release:
 - Full SCORM 2004 sequencing and navigation conformance
 - AICC support
 - xAPI or cmi5 support
-- Editing SCORM package internals inside ClassroomIO
+- Editing SCORM package internals inside Classroom Hub
 - Per-slide authoring or SCO authoring tools
-- Deep transformation of SCORM interactions into native ClassroomIO exercises
+- Deep transformation of SCORM interactions into native Classroom Hub exercises
 - Multi-tenant public launch of SCORM content without authenticated learner context
 - Mobile app offline SCORM runtime
 
@@ -210,7 +210,7 @@ The following are explicitly out of scope for the first release:
 
 ### Learner
 
-- Opens a SCORM lesson from a ClassroomIO course
+- Opens a SCORM lesson from a Classroom Hub course
 - Consumes the content in a launch shell
 - Has progress, score, completion, and resume state persisted automatically
 
@@ -221,7 +221,7 @@ The following are explicitly out of scope for the first release:
 
 ## User Stories
 
-1. As an enterprise admin, I want to upload a SCORM ZIP exported from Storyline and have it run inside ClassroomIO without re-authoring it.
+1. As an enterprise admin, I want to upload a SCORM ZIP exported from Storyline and have it run inside Classroom Hub without re-authoring it.
 2. As a learner, I want to leave a SCORM lesson midway and resume where I stopped.
 3. As an admin, I want SCORM completion and score to count toward course completion and certificates.
 4. As support, I want to inspect runtime attempts and errors when a customer says a package "is not tracking."
@@ -245,7 +245,7 @@ The following are explicitly out of scope for the first release:
 - single-SCO and simple multi-SCO launch support
 - persistence for status, score, suspend data, location, session time
 
-#### Phase 3: ClassroomIO Integration
+#### Phase 3: Classroom Hub Integration
 
 - map SCORM results into lesson completion
 - reflect in course progress and certification rules
@@ -294,7 +294,7 @@ Minimum parsed fields:
 6. title hierarchy
 7. asset file inventory
 
-ClassroomIO v1 behavior:
+Classroom Hub v1 behavior:
 
 - Preserve hierarchy and order where feasible
 - Support one launchable lesson per SCO or per imported package node
@@ -302,7 +302,7 @@ ClassroomIO v1 behavior:
 
 ### 3. Lesson Attachment Model
 
-ClassroomIO needs a first-class way to represent SCORM-backed learning content.
+Classroom Hub needs a first-class way to represent SCORM-backed learning content.
 
 V1 recommendation:
 
@@ -315,7 +315,7 @@ This should not be modeled as a generic document or video attachment. It needs d
 
 ### 4. Launch Experience
 
-Learners open a SCORM lesson from the course player and see a ClassroomIO SCORM shell.
+Learners open a SCORM lesson from the course player and see a Classroom Hub SCORM shell.
 
 The shell must:
 
@@ -395,7 +395,7 @@ Recommended behavior:
 - Reuse active attempt for resume when package indicates suspend/resume flow
 - Preserve historical attempts for reporting and debugging
 
-### 7. Mapping Into ClassroomIO Progress
+### 7. Mapping Into Classroom Hub Progress
 
 SCORM outcomes must map into existing product concepts.
 
@@ -698,7 +698,7 @@ Deliverables:
 
 Exit criteria:
 
-- SCORM lesson completion affects ClassroomIO progress and reporting correctly
+- SCORM lesson completion affects Classroom Hub progress and reporting correctly
 
 ## Phase 4: Hardening
 
@@ -719,11 +719,11 @@ Exit criteria:
 1. Org admin can upload a valid SCORM 1.2 or 2004 ZIP package.
 2. System parses the manifest and exposes at least one launchable item.
 3. Admin can attach a parsed package item to a lesson.
-4. Learner can launch the lesson inside ClassroomIO.
-5. Package can initialize and commit runtime values through the ClassroomIO shell.
+4. Learner can launch the lesson inside Classroom Hub.
+5. Package can initialize and commit runtime values through the Classroom Hub shell.
 6. Resume state persists across relaunch for supported packages.
 7. Completion and score can be viewed in admin reporting.
-8. Lesson completion maps into ClassroomIO progress.
+8. Lesson completion maps into Classroom Hub progress.
 
 ### Explicit V1 Boundaries
 
@@ -750,7 +750,7 @@ Mitigation:
 - Maintain a compatibility suite with real exported packages
 - Start with common authoring tools customers already use
 
-### Risk 3: Mapping SCORM status into ClassroomIO completion is ambiguous
+### Risk 3: Mapping SCORM status into Classroom Hub completion is ambiguous
 
 Mitigation:
 

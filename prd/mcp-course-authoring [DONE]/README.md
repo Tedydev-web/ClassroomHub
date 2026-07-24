@@ -1,6 +1,6 @@
 ---
 name: MCP Course Authoring from Structured Payloads
-overview: Build an MCP-compatible authoring surface that lets external AI clients such as Claude send normalized course structures into ClassroomIO, save them as reviewable drafts, revise them, and publish them into real ClassroomIO courses.
+overview: Build an MCP-compatible authoring surface that lets external AI clients such as Claude send normalized course structures into Classroom Hub, save them as reviewable drafts, revise them, and publish them into real Classroom Hub courses.
 todos:
   - id: prd-review
     content: Finalize PRD scope, product policy, and success metrics with stakeholders
@@ -21,7 +21,7 @@ todos:
     content: Add organization-scoped draft and publish routes
     status: completed
   - id: mcp-package
-    content: Build MCP package with stdio transport and ClassroomIO tool adapters
+    content: Build MCP package with stdio transport and Classroom Hub tool adapters
     status: completed
   - id: publish-flow
     content: Implement draft-to-course publish orchestration using existing course, section, lesson, and language services
@@ -50,14 +50,14 @@ isProject: false
 
 ## Purpose
 
-Enable external AI clients such as Claude to create and edit ClassroomIO courses through MCP by sending normalized course structures into ClassroomIO.
+Enable external AI clients such as Claude to create and edit Classroom Hub courses through MCP by sending normalized course structures into Classroom Hub.
 
 The key product outcome is:
 
 1. Claude or another agent reads source material externally
 2. Claude turns that material into structured course JSON
-3. MCP sends that JSON to ClassroomIO
-4. ClassroomIO stores it as a draft
+3. MCP sends that JSON to Classroom Hub
+4. Classroom Hub stores it as a draft
 5. the user reviews and explicitly publishes it
 
 This supports prompts like:
@@ -67,11 +67,11 @@ This supports prompts like:
 
 with one important boundary:
 
-**In v1, ClassroomIO does not parse or extract PDFs itself.**
+**In v1, Classroom Hub does not parse or extract PDFs itself.**
 
 ## Problem Statement
 
-ClassroomIO already has the core CRUD primitives needed to create courses and content, but it does not yet expose a clean automation layer for external AI agents.
+Classroom Hub already has the core CRUD primitives needed to create courses and content, but it does not yet expose a clean automation layer for external AI agents.
 
 Current limitations:
 
@@ -81,28 +81,28 @@ Current limitations:
 - there is no explicit review/publish workflow for machine-generated content
 - there is no stable API contract for "here is a complete course structure, store it safely"
 
-This means agents can only create ClassroomIO content through brittle, record-by-record automation instead of a deliberate authoring pipeline.
+This means agents can only create Classroom Hub content through brittle, record-by-record automation instead of a deliberate authoring pipeline.
 
 ## Core Product Decision
 
-**Claude or the external agent is responsible for extraction. ClassroomIO is responsible for validation, persistence, review, authorization, and publish.**
+**Claude or the external agent is responsible for extraction. Classroom Hub is responsible for validation, persistence, review, authorization, and publish.**
 
 That means:
 
 - if the source is a PDF, Claude reads it
 - if the source is a website, Claude reads it
 - if the source is a prompt, Claude expands it
-- ClassroomIO only receives structured payloads
+- Classroom Hub only receives structured payloads
 
 ## Primary Use Cases
 
 ### Use Case 1: Prompt to Structured Draft
 
-A teacher asks Claude to create a course on a topic. Claude reasons about the content and sends a normalized course payload to ClassroomIO through MCP.
+A teacher asks Claude to create a course on a topic. Claude reasons about the content and sends a normalized course payload to Classroom Hub through MCP.
 
 ### Use Case 2: PDF to Structured Draft
 
-A teacher provides one or more PDFs to Claude. Claude extracts the material and converts it into a normalized course payload. MCP sends that payload to ClassroomIO.
+A teacher provides one or more PDFs to Claude. Claude extracts the material and converts it into a normalized course payload. MCP sends that payload to Classroom Hub.
 
 ### Use Case 3: Draft Revision
 
@@ -117,7 +117,7 @@ After initial creation, Claude updates the draft by:
 ## Goals
 
 1. Provide an MCP-compatible authoring surface for external AI clients.
-2. Keep ClassroomIO as the source of truth for auth, permissions, validation, persistence, and publishing.
+2. Keep Classroom Hub as the source of truth for auth, permissions, validation, persistence, and publishing.
 3. Standardize a normalized course payload that any external agent can submit.
 4. Make draft review mandatory before publish in v1.
 5. Ensure org-scoped, permission-safe authoring with no direct DB access from the MCP server.
@@ -129,7 +129,7 @@ After initial creation, Claude updates the draft by:
 - Student-facing AI workflows
 - Direct DB writes from the MCP server
 - Full autonomous publishing without a review step
-- ClassroomIO-side PDF extraction, OCR, or parsing
+- Classroom Hub-side PDF extraction, OCR, or parsing
 - Async PDF extraction workers
 - Cross-organization or cross-course content access
 - Full LMS migration parity with Teachable/Thinkific/SCORM in this PRD
@@ -138,9 +138,9 @@ After initial creation, Claude updates the draft by:
 ## Confirmed Product Decisions
 
 1. MCP is an orchestration layer, not the persistence layer.
-2. ClassroomIO API owns validation, authorization, draft storage, and publish.
+2. Classroom Hub API owns validation, authorization, draft storage, and publish.
 3. Draft-first is required; AI-generated content is not published immediately in v1.
-4. External agents submit structured payloads; ClassroomIO does not ingest raw PDFs in v1.
+4. External agents submit structured payloads; Classroom Hub does not ingest raw PDFs in v1.
 5. The MCP server should start as a thin tool adapter and not require its own model provider.
 6. Lesson long-form content should be stored in lesson language content, not only `lesson.note`.
 7. Publish remains an explicit second step.
@@ -202,7 +202,7 @@ Uses Claude as an operator to draft or refactor course structures programmatical
 1. Draft before publish.
 2. API-first, not DB-first.
 3. One normalized course payload regardless of how the agent derived it.
-4. External agents think; ClassroomIO validates and persists.
+4. External agents think; Classroom Hub validates and persists.
 5. Warnings are first-class output, not hidden logs.
 
 ## Proposed Architecture
@@ -215,9 +215,9 @@ flowchart TB
     end
     subgraph mcp [MCP Server]
         Tools["MCP tools"]
-        Adapter["ClassroomIO API adapter"]
+        Adapter["Classroom Hub API adapter"]
     end
-    subgraph api [ClassroomIO API]
+    subgraph api [Classroom Hub API]
         Auth["Org-scoped automation key auth"]
         DraftRoutes["Draft routes"]
         DraftService["Draft orchestration service"]
@@ -251,7 +251,7 @@ flowchart TB
 
 ### Out of Scope
 
-- raw PDF ingestion by ClassroomIO
+- raw PDF ingestion by Classroom Hub
 - OCR, parsing, or extraction jobs
 - rich in-dashboard chat UX
 - student preview or learner-side AI guidance
@@ -323,7 +323,7 @@ The API must not care whether the payload came from:
 
 ### FR-6 Publish Flow
 
-Publishing a draft must create or update real ClassroomIO content through the existing service layer.
+Publishing a draft must create or update real Classroom Hub content through the existing service layer.
 
 Publish orchestration should:
 
@@ -481,13 +481,13 @@ Start with stdio transport for Claude Desktop and local agent usage.
 
 - expose MCP tools
 - validate tool input
-- forward requests to ClassroomIO API
+- forward requests to Classroom Hub API
 - format structured responses for the AI client
 
 ### Non-Responsibilities
 
 - direct DB access
-- authorization decisions independent of ClassroomIO
+- authorization decisions independent of Classroom Hub
 - content extraction from source materials
 - PDF parsing or OCR
 
@@ -741,9 +741,9 @@ Ship:
 The correct v1 shape is:
 
 1. thin MCP server
-2. ClassroomIO-owned draft/publish API
+2. Classroom Hub-owned draft/publish API
 3. external agent owns source extraction
 4. explicit draft review before publish
 5. publish via existing content services, not custom DB writes
 
-That keeps the system small, matches your clarified boundary, and gives Claude a clean automation surface without forcing ClassroomIO to solve PDF extraction in v1.
+That keeps the system small, matches your clarified boundary, and gives Claude a clean automation surface without forcing Classroom Hub to solve PDF extraction in v1.

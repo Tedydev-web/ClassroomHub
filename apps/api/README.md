@@ -1,4 +1,4 @@
-# ClassroomIO Backend
+# Classroom Hub Backend
 
 ## Supported Features
 

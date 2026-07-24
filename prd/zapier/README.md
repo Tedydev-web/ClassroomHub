@@ -6,16 +6,16 @@
 
 ## Purpose
 
-Ship a Zapier integration that lets non-engineering teams connect ClassroomIO to the tools they already use (CRMs, HRIS, Slack, spreadsheets, email platforms, ticketing) without writing code. The integration must work today against the existing public API and silently upgrade to real-time delivery as the webhooks platform lands.
+Ship a Zapier integration that lets non-engineering teams connect Classroom Hub to the tools they already use (CRMs, HRIS, Slack, spreadsheets, email platforms, ticketing) without writing code. The integration must work today against the existing public API and silently upgrade to real-time delivery as the webhooks platform lands.
 
 ## Problem Statement
 
-ClassroomIO already exposes a versioned public REST API at `/public-api/v1/*` and ships an MCP server, but those surfaces only serve engineering teams. The customers who run training programs (HR, customer success, sales enablement) cannot:
+Classroom Hub already exposes a versioned public REST API at `/public-api/v1/*` and ships an MCP server, but those surfaces only serve engineering teams. The customers who run training programs (HR, customer success, sales enablement) cannot:
 
 - Enroll learners automatically when a contact reaches a CRM stage.
 - Sync course completions and certificates to HRIS, Drive, or BI warehouses.
 - Trigger Slack/email workflows on learner activity.
-- Connect ClassroomIO into the no-code stacks (Zapier, Make, n8n, Pipedream) that those teams already operate.
+- Connect Classroom Hub into the no-code stacks (Zapier, Make, n8n, Pipedream) that those teams already operate.
 
 The dashboard already advertises Zapier as an `Automation` tab (`/org/[slug]/automation/zapier`) and the automation-key system supports `type: 'zapier'`, but the page is a coming-soon callout and no Zapier app exists. We have customers who need this integration shipped now.
 
@@ -77,7 +77,7 @@ These are locked before implementation begins:
 
 ## Product Goals
 
-1. An org admin can connect ClassroomIO from inside Zapier in under 60 seconds without copying or pasting any token. The flow is: click Connect on Zapier → log into ClassroomIO → consent → done.
+1. An org admin can connect Classroom Hub from inside Zapier in under 60 seconds without copying or pasting any token. The flow is: click Connect on Zapier → log into Classroom Hub → consent → done.
 2. Non-engineering customers can build the three canonical Zaps without code:
    - CRM new customer → enroll in onboarding course.
    - Certificate issued → upload to HRIS / Drive.
@@ -94,7 +94,7 @@ These are locked before implementation begins:
 3. High-volume triggers (`exercise.submitted`, `lesson.completed`) that are impractical on polling.
 4. Make / n8n / Pipedream apps as separate packaged listings (the REST API + OAuth supports them; no curated app yet).
 5. Free / Basic plan access (gated to Early Adopter+).
-6. Inbound webhooks from Zapier to ClassroomIO (Zapier writes via REST actions, not webhooks).
+6. Inbound webhooks from Zapier to Classroom Hub (Zapier writes via REST actions, not webhooks).
 7. Monthly task credits or Zapier-specific credit budgets (Zapier is a binary plan feature; per-minute rate limits remain for abuse protection only).
 8. Custom triggers / dynamic events authored by the customer.
 9. PKCE / device-code / implicit OAuth grants (only authorization_code + refresh_token grants ship in v1).
@@ -150,7 +150,7 @@ Behavior:
 
 The Zapier app surface, as seen by a Zap author:
 
-- **App name**: ClassroomIO
+- **App name**: Classroom Hub
 - **Auth flow**: OAuth 2.0. User clicks `Connect` in Zapier → Zapier opens our `/oauth/authorize` URL → user logs in (if needed) and consents → redirected back to Zapier with a code → Zapier exchanges for tokens silently. No copy-paste.
 - **Test step**: after token exchange, Zapier calls `GET /public-api/v1/me` with the new access token. Shows `{org.name}` on Zapier's connections page.
 - **Trigger picker** lists the 5 triggers below with one-line descriptions matching the website's voice.
@@ -636,7 +636,7 @@ No CI auto-push. Promotion is a manual step gated on the on-call engineer.
 
 Manual verification:
 
-1. Install the Zapier app via the private invite URL while logged out — confirm Zapier prompts for ClassroomIO login during the OAuth handshake.
+1. Install the Zapier app via the private invite URL while logged out — confirm Zapier prompts for Classroom Hub login during the OAuth handshake.
 2. Complete the OAuth flow as an org admin on Early Adopter — confirm `Test Connection` in Zapier shows the org name returned by `GET /public-api/v1/me`.
 3. Try the OAuth flow as a non-admin of the same org — confirm `Authorize` is hidden or disabled and Deny redirects with `error=access_denied`.
 4. Try the OAuth flow on a Basic-plan org — confirm `/oauth/authorize` rejects with the upgrade CTA visible.

@@ -19,7 +19,7 @@ Build a standalone Forms product for schools and education teams to collect stru
 
 ## Executive Summary
 
-ClassroomIO already has a strong reusable question engine:
+Classroom Hub already has a strong reusable question engine:
 
 - `@cio/question-types` already centralizes question contracts, answer serialization, renderer contracts, and form-state helpers, and explicitly calls out reuse for future products such as forms/assessments.
 - `@cio/ui/custom/exercise-question` already supports question rendering in `edit`, `take`, `preview`, `review`, and `submission` modes across 12 question types.
@@ -60,16 +60,16 @@ The current exercise product does not map cleanly to these workflows because:
 
 ## Product Thesis
 
-If ClassroomIO turns the current exercise question engine into a standalone Forms product, the platform gets a second major content primitive:
+If Classroom Hub turns the current exercise question engine into a standalone Forms product, the platform gets a second major content primitive:
 
 - `Learning content` for teaching and assessment.
 - `Response collection` for school operations and feedback.
 
-This expands ClassroomIO from LMS-only workflows into school operations workflows without throwing away the investment already made in the exercise system.
+This expands Classroom Hub from LMS-only workflows into school operations workflows without throwing away the investment already made in the exercise system.
 
 ### Differentiation Thesis
 
-The goal is **not** to build another Google Forms. The value of ClassroomIO Forms is that the **trigger, the respondent identity, and the consequence of a form all live inside the platform**:
+The goal is **not** to build another Google Forms. The value of Classroom Hub Forms is that the **trigger, the respondent identity, and the consequence of a form all live inside the platform**:
 
 - **Trigger**: a lesson is completed, a course ends, a buyer clicks "Buy", a landing page is visited — the form appears at the right moment without anyone sending a link.
 - **Identity**: authenticated respondents are already known (`profile`, course membership); no re-typing who someone is, and responses attach to the person's record.

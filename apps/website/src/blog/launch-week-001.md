@@ -11,7 +11,7 @@ published: true
 ---
 
 ![classroomio-launch-week-001](/assets/assets/blog/launch-week-001.png)
-_ClassroomIO Launch Week 001_
+_Classroom Hub Launch Week 001_
 
 Welcome to our first launch week for Classroom.
 
@@ -34,7 +34,7 @@ Below are all the features for each day that we will be sharing. As the day goes
 
 1. Day 1 - [Brand Customisations](/blog/brand-customisations)
 2. Day 2 - [Multi-Language Support](/blog/multi-language)
-3. Day 3 - [Self-host ClassroomIO on your Servers](/blog/self-host)
+3. Day 3 - [Self-host Classroom Hub on your Servers](/blog/self-host)
 4. Day 4 - [Free Tools](/blog/free-tools)
 5. Day 5 - [Custom Domains](/blog/custom-domain)
 6. Extras - 😍😍😍😍

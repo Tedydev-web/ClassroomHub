@@ -1,6 +1,6 @@
 ---
 title: Set Up a Custom Domain
-description: Connect and verify a custom domain for your ClassroomIO academy and learn which links use your org URL.
+description: Connect and verify a custom domain for your Classroom Hub academy and learn which links use your org URL.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -8,9 +8,9 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Every organization gets a default site at `https://<siteName>.myclassroomio.com`. You can connect your own domain (for example `https://learn.yourcompany.com`) so students see your brand in the browser bar and in links.
 
-## How ClassroomIO picks a base URL
+## How Classroom Hub picks a base URL
 
-When ClassroomIO builds a link for your organization, it resolves the host in this order:
+When Classroom Hub builds a link for your organization, it resolves the host in this order:
 
 1. **Verified custom domain** → `https://<your-domain>`
 2. **Self-hosted override** (`DASHBOARD_ORIGIN` env var, if set)
@@ -32,7 +32,7 @@ From the admin dashboard, go to **Settings → Organization**, then click **Edit
 <Step>
 ### Enter your domain
 
-Add the hostname you want (for example `learn.yourcompany.com`). Follow the DNS instructions ClassroomIO shows to verify ownership.
+Add the hostname you want (for example `learn.yourcompany.com`). Follow the DNS instructions Classroom Hub shows to verify ownership.
 </Step>
 
 <Step>
@@ -49,7 +49,7 @@ Open your custom domain in a browser. Sign in, open a course landing page, and c
 </Steps>
 
 <Callout type="warn" title="Verification required">
-  An unverified custom domain is not used for generated links. Until verification succeeds, ClassroomIO keeps using `<siteName>.myclassroomio.com`.
+  An unverified custom domain is not used for generated links. Until verification succeeds, Classroom Hub keeps using `<siteName>.myclassroomio.com`.
 </Callout>
 
 ## Which links use your org URL
@@ -65,7 +65,7 @@ Course invites are documented in [How to Invite Students](/docs/invite-students)
 
 ## Email sender address
 
-Invite and notification emails may still send from the ClassroomIO platform mail address. Your **organization name** appears in the message body; the sender inbox is not fully white-labeled today.
+Invite and notification emails may still send from the Classroom Hub platform mail address. Your **organization name** appears in the message body; the sender inbox is not fully white-labeled today.
 
 ## Student login and redirects
 

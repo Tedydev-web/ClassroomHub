@@ -5,13 +5,13 @@ description: Learn how to invite students to your courses using email invitation
 
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Course invitations in ClassroomIO let you add students to a course by sending them a secure enrollment link by email. Each invite is unique and can have its own expiry and usage limits.
+Course invitations in Classroom Hub let you add students to a course by sending them a secure enrollment link by email. Each invite is unique and can have its own expiry and usage limits.
 
 For a full overview of enrollment paths (public enroll, invites, admin assignment, and paid access), see [How Course Enrollment Works](/docs/course-enrollment).
 
 ## How course invitations work
 
-- **Email-based invites:** You enter one or more email addresses (or paste a list). ClassroomIO creates a unique invite per recipient and can send the enrollment link by email.
+- **Email-based invites:** You enter one or more email addresses (or paste a list). Classroom Hub creates a unique invite per recipient and can send the enrollment link by email.
 - **Enrollment link:** Each invite link points to an **enrollment page** on your academy (not `app.classroomio.com`). The path is `/course/your-course-slug/enroll?invite_token=...` on either `https://<siteName>.myclassroomio.com` (e.g. `https://ciodevs.myclassroomio.com/...`) or your verified custom domain (e.g. `https://learn.yourcompany.com/...`). When a student opens the link, they see the course details and a **Join course** button.
 - **One link per invite:** Invite links are tied to the course and (for paid or restricted courses) to the invite's rules (expiry, max uses, allowed emails). Students sign in or sign up when they click **Join course**, then they're enrolled and redirected to the learning dashboard.
 
@@ -49,7 +49,7 @@ These apply to each generated invite when you send emails.
 <Step>
 ### Add recipients and send
 
-Enter one or more email addresses, or paste a list (comma-, space-, or newline-separated). Optionally enable **Send invite emails** so ClassroomIO emails the enrollment link to each recipient. Click the button to create the invites (and send the emails, if enabled).
+Enter one or more email addresses, or paste a list (comma-, space-, or newline-separated). Optionally enable **Send invite emails** so Classroom Hub emails the enrollment link to each recipient. Click the button to create the invites (and send the emails, if enabled).
 
 Each recipient gets a unique link to the course enrollment page with their invite token.
 </Step>

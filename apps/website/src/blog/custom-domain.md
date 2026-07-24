@@ -11,7 +11,7 @@ published: true
 ---
 
 ![classroomio-custom-domain](/assets/assets/blog/custom-domain.png)
-_ClassroomIO Custom Domains Banner_
+_Classroom Hub Custom Domains Banner_
 
 Today I am happy to announce that we've added support for custom domains into our admin dashboard. Companies and Training organisations can now take advantage of this feature to strengthen their brand using our learning management system.
 
