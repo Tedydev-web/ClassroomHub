@@ -3,7 +3,6 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { onMount } from 'svelte';
   import { afterNavigate } from '$app/navigation';
-  import { analytics } from '@cio/analytics/client';
   import { getRequestBaseUrl } from '$lib/utils/services/api';
   import type { Snippet } from 'svelte';
   import type { AccountOrg } from '$features/app/types';
@@ -17,23 +16,31 @@
   }
 
   let { children, data }: Props = $props();
+  let trackPageView: ((fields: { kind: 'landing' | 'course'; path?: string }) => void) | null = null;
 
   onMount(() => {
     const apiBaseUrl = getRequestBaseUrl();
     if (!apiBaseUrl) return;
 
-    analytics.init({
-      endpoint: `${apiBaseUrl.replace(/\/$/, '')}/dash/track`,
-      orgId: data.org?.id ?? undefined
-    });
-    analytics.pageView({ kind: 'landing' });
+    void import('@cio/analytics/client')
+      .then(({ analytics }) => {
+        analytics.init({
+          endpoint: `${apiBaseUrl.replace(/\/$/, '')}/dash/track`,
+          orgId: data.org?.id ?? undefined
+        });
+        trackPageView = analytics.pageView;
+        analytics.pageView({ kind: 'landing' });
+      })
+      .catch((error: unknown) => {
+        console.warn('Client analytics unavailable:', error);
+      });
   });
 
   afterNavigate(({ to }) => {
     if (!to) return;
 
     const isCoursePage = /\/course\//.test(to.url.pathname);
-    analytics.pageView({
+    trackPageView?.({
       kind: isCoursePage ? 'course' : 'landing',
       path: to.url.pathname
     });

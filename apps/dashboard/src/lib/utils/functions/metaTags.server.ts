@@ -91,7 +91,42 @@ function resolveOrgSiteMeta(orgSiteInfo: OrgSiteInfo): {
   };
 }
 
-export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promise<MetaTagsProps> {
+function getFirstForwardedValue(value: string | null): string {
+  return value?.split(',')[0]?.trim() ?? '';
+}
+
+export function resolvePublicRequestUrl(url: URL, headers: Headers): URL {
+  const resolvedUrl = new URL(url);
+  const forwardedHost = getFirstForwardedValue(headers.get('x-forwarded-host'));
+  const forwardedProtocol = getFirstForwardedValue(headers.get('x-forwarded-proto'));
+
+  if (!forwardedHost || (forwardedProtocol !== 'http' && forwardedProtocol !== 'https')) {
+    return resolvedUrl;
+  }
+
+  try {
+    const forwardedOrigin = new URL(`${forwardedProtocol}://${forwardedHost}`);
+    if (
+      forwardedOrigin.username ||
+      forwardedOrigin.password ||
+      forwardedOrigin.pathname !== '/' ||
+      forwardedOrigin.search ||
+      forwardedOrigin.hash
+    ) {
+      return resolvedUrl;
+    }
+
+    resolvedUrl.protocol = forwardedOrigin.protocol;
+    resolvedUrl.host = forwardedOrigin.host;
+  } catch (error) {
+    console.error('resolvePublicRequestUrl error:', error);
+  }
+
+  return resolvedUrl;
+}
+
+export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: OrgSiteInfo): Promise<MetaTagsProps> {
+  const publicRequestUrl = resolvePublicRequestUrl(url, headers);
   const orgMeta = resolveOrgSiteMeta(orgSiteInfo);
 
   const title =
@@ -107,7 +142,7 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
     (isSelfHosted && orgSiteInfo.org?.name ? orgSiteInfo.org.name : null) ||
     'Classroom';
 
-  const ogImageUrl = await resolveOgImageUrl(url, orgSiteInfo);
+  const ogImageUrl = await resolveOgImageUrl(publicRequestUrl, orgSiteInfo);
   const usesDynamicOrgOg =
     orgSiteInfo.isOrgSite && Boolean(orgSiteInfo.org?.siteName) && !publicEnv.PUBLIC_OG_IMAGE_URL?.trim();
 
@@ -139,10 +174,10 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
   return Object.freeze({
     title,
     description,
-    canonical: new URL(url.pathname, url.origin).href,
+    canonical: new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href,
     openGraph: {
       type: 'website',
-      url: new URL(url.pathname, url.origin).href,
+      url: new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href,
       locale: 'en_US',
       title,
       description,
