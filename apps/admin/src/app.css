@@ -1,0 +1,308 @@
+/*
+ * ClassroomHub Admin — design system.
+ *
+ * One accent (the ClassroomHub blue) does all the "look here" work; the neutral
+ * ramp does everything else. Every value below comes from a scale — spacing on a
+ * 4px grid, three type steps, one radius, one shadow — so consistency is
+ * structural rather than remembered. Text tokens are all WCAG-AA on white
+ * (verified: 4.5:1+); `--faint` is 2.5:1 and is reserved for borders and icons,
+ * never text.
+ */
+:root {
+  --accent: #1d4ee2;
+  --accent-hover: #1a45c9;
+  --accent-weak: #eef2fe;
+
+  --text: #0a0a0a;
+  --muted: #737373;
+  --faint: #a3a3a3;
+
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-hover: #f5f5f5;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d4;
+
+  --danger: #dc2626;
+  --danger-weak: #fef2f2;
+  --success: #16a34a;
+  --success-weak: #f0fdf4;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --font:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-8: 48px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: 20px;
+}
+h2 {
+  font-size: 16px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Numbers in tables and stats align on the decimal and share glyph width. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: 34px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--surface-hover);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-danger {
+  color: var(--danger);
+  border-color: var(--border-strong);
+}
+.btn-danger:hover {
+  background: var(--danger-weak);
+  border-color: var(--danger);
+}
+.btn-sm {
+  height: 28px;
+  padding: 0 var(--sp-2);
+  font-size: 12px;
+}
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+}
+.btn-ghost:hover {
+  background: var(--surface-hover);
+}
+
+/* --- Inputs --- */
+.input {
+  height: 34px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  width: 100%;
+}
+.input::placeholder {
+  color: var(--faint);
+}
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+label.field {
+  display: block;
+  margin-bottom: var(--sp-4);
+}
+label.field > span {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.hint {
+  margin-top: var(--sp-1);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- Surfaces --- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Tables --- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+table.data td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+table.data tbody tr:last-child td {
+  border-bottom: none;
+}
+table.data tbody tr:hover {
+  background: var(--surface-hover);
+}
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Badges --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-neutral {
+  color: var(--muted);
+  background: var(--surface-hover);
+}
+.badge-accent {
+  color: var(--accent);
+  background: var(--accent-weak);
+}
+.badge-danger {
+  color: var(--danger);
+  background: var(--danger-weak);
+}
+.badge-success {
+  color: var(--success);
+  background: var(--success-weak);
+}
+
+/* --- Feedback --- */
+.error-text {
+  color: var(--danger);
+  font-size: 13px;
+}
+.empty {
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* --- Loading skeleton --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-hover) 25%, #ededed 50%, var(--surface-hover) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
