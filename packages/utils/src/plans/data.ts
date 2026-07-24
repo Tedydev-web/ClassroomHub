@@ -1,3 +1,5 @@
+import { PRODUCT_NAME } from '../constants/product-identity';
+
 export default {
   BASIC: {
     NAME: 'Basic',
@@ -16,7 +18,7 @@ export default {
       'Advanced Course Builder (no video upload)',
       '500K AI credits / month',
       'MCP access with 20 automation credits / month',
-      'ClassroomIO branding'
+      `${PRODUCT_NAME} branding`
     ],
     CTA: {
       LABEL: 'Signup Now',

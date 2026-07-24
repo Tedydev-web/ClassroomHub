@@ -1,3 +1,4 @@
+import { OPERATOR_EMAIL, PRODUCT_NAME } from '@cio/utils/constants';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -8,7 +9,11 @@ import {
   sanitizeEmailSubject
 } from '../src/utils/functions/email-helpers';
 
-const DEFAULT_FROM = '"Classroom" <support@classroom.io.vn>';
+// The quoting and angle brackets are spelled out because that shape is what
+// these tests are about; the name and address inside come from the constants so
+// a rebrand does not break a test that is not checking the brand. Their values
+// are pinned by the product-identity tests.
+const DEFAULT_FROM = `"${PRODUCT_NAME}" <${OPERATOR_EMAIL}>`;
 
 describe('escapeHtml', () => {
   it('escapes HTML metacharacters', () => {
