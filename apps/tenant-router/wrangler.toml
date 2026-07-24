@@ -56,12 +56,13 @@ enabled = true
 # Routes are inheritable, so leaving this out would point production at the
 # development hostnames.
 routes = [
+  # Apex is its own route because the wildcard below only matches subdomains.
   { pattern = "classroom.io.vn/*", zone_name = "classroom.io.vn" },
-  { pattern = "learn.classroom.io.vn/*", zone_name = "classroom.io.vn" },
-  { pattern = "hub.classroom.io.vn/*", zone_name = "classroom.io.vn" },
-  { pattern = "play.classroom.io.vn/*", zone_name = "classroom.io.vn" },
-  { pattern = "embed.classroom.io.vn/*", zone_name = "classroom.io.vn" },
-  { pattern = "msna.classroom.io.vn/*", zone_name = "classroom.io.vn" }
+  # Every subdomain, so a newly created tenant `<siteName>.classroom.io.vn` is
+  # served without adding a route per org. The Worker hands `api` and `assets`
+  # (and the internal origins) straight to their origin via the passthrough
+  # branch in src/index.ts, so the wildcard does not disturb them.
+  { pattern = "*.classroom.io.vn/*", zone_name = "classroom.io.vn" }
 ]
 
 # Vars, bindings and secrets are not inherited by environments — each has to be
@@ -73,6 +74,10 @@ APEX_REDIRECT_HOST = "learn.classroom.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.io.vn"
 EMBED_HOST = "embed.classroom.io.vn"
 API_URL = "https://api.classroom.io.vn"
+# Service hosts the wildcard route catches but that must reach their origin
+# untouched: the public API (tunnel) and the R2 asset domain. The internal
+# origins are added in code from the upstream vars above.
+DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,assets.classroom.io.vn"
 
 [[env.production.r2_buckets]]
 binding = "VIDEOS_BUCKET"

@@ -1,0 +1,201 @@
+@import 'tailwindcss';
+
+/*
+ * ClassroomHub Admin — Tailwind v4, wired the same way as the dashboard:
+ * `@tailwindcss/postcss` + `@import 'tailwindcss'` + a `.dark` variant. The
+ * design tokens live in `@theme` so they are real Tailwind colors (`bg-surface`,
+ * `text-accent`, `border-border`); the reusable component classes below are
+ * `@apply`-composed from those utilities so the markup stays terse.
+ *
+ * Dark mode is a re-decision, not an inversion: the accent fails contrast on a
+ * dark surface (2.7:1) so it is re-tuned brighter for text/borders (#5B8CFF,
+ * 5.6:1) while the primary button keeps the vivid blue with white text (6.5:1).
+ * Shadows do nothing on dark, so a hairline border carries separation. Every
+ * dark text token is WCAG-AA, computed.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-accent: #1d4ee2;
+  --color-accent-hover: #1a45c9;
+  --color-accent-weak: #eef2fe;
+  --color-accent-btn: #1d4ee2;
+  --color-accent-btn-hover: #1a45c9;
+
+  --color-text: #0a0a0a;
+  --color-muted: #737373;
+  --color-faint: #a3a3a3;
+
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f5f5;
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+
+  --color-danger: #dc2626;
+  --color-danger-weak: #fef2f2;
+  --color-success: #16a34a;
+  --color-success-weak: #f0fdf4;
+
+  --color-skeleton-hi: #ededed;
+
+  --radius-DEFAULT: 6px;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+.dark {
+  --color-accent: #5b8cff;
+  --color-accent-hover: #7aa3ff;
+  --color-accent-weak: #182238;
+  --color-accent-btn: #1d4ee2;
+  --color-accent-btn-hover: #2f5be8;
+
+  --color-text: #f4f4f5;
+  --color-muted: #a1a1aa;
+  --color-faint: #71717a;
+
+  --color-bg: #0d0e10;
+  --color-surface: #17181b;
+  --color-surface-hover: #202126;
+  --color-border: #2a2b30;
+  --color-border-strong: #3a3b42;
+
+  --color-danger: #f87171;
+  --color-danger-weak: #2a1618;
+  --color-success: #4ade80;
+  --color-success-weak: #14251a;
+
+  --color-skeleton-hi: #26272c;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-text font-sans text-[14px] leading-normal antialiased;
+  }
+  h1 {
+    @apply text-[20px] font-semibold tracking-[-0.01em];
+  }
+  h2 {
+    @apply text-[16px] font-semibold tracking-[-0.01em];
+  }
+  a {
+    @apply text-accent no-underline hover:underline;
+  }
+}
+
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn {
+    @apply border-border-strong bg-surface text-text hover:bg-surface-hover inline-flex h-[34px] cursor-pointer items-center justify-center gap-2 rounded-[6px] border px-3 text-[13px] font-medium whitespace-nowrap transition-colors;
+  }
+  .btn:focus-visible {
+    @apply outline-accent outline outline-2 outline-offset-1;
+  }
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .btn-primary {
+    @apply border-accent-btn bg-accent-btn hover:bg-accent-btn-hover text-white;
+  }
+  .btn-danger {
+    @apply text-danger hover:border-danger hover:bg-danger-weak;
+  }
+  .btn-sm {
+    @apply h-[28px] px-2 text-[12px];
+  }
+  .btn-ghost {
+    @apply hover:bg-surface-hover border-transparent bg-transparent;
+  }
+
+  .input {
+    @apply border-border-strong bg-surface text-text h-[34px] w-full rounded-[6px] border px-3 text-[13px];
+  }
+  .input::placeholder {
+    @apply text-faint;
+  }
+  .input:focus {
+    @apply border-accent outline-accent outline outline-2 -outline-offset-1;
+  }
+
+  .card {
+    @apply border-border bg-surface rounded-[6px] border shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_0_0_1px_rgba(0,0,0,0.2)];
+  }
+
+  .badge {
+    @apply inline-flex h-[20px] items-center gap-1 rounded-full px-2 text-[11px] font-medium whitespace-nowrap;
+  }
+  .badge-neutral {
+    @apply bg-surface-hover text-muted;
+  }
+  .badge-accent {
+    @apply bg-accent-weak text-accent;
+  }
+  .badge-danger {
+    @apply bg-danger-weak text-danger;
+  }
+  .badge-success {
+    @apply bg-success-weak text-success;
+  }
+
+  .table-wrap {
+    @apply border-border bg-surface overflow-x-auto rounded-[6px] border;
+  }
+  table.data {
+    @apply w-full border-collapse text-[13px];
+  }
+  table.data th {
+    @apply border-border bg-surface text-muted sticky top-0 border-b px-3 py-2 text-left text-[11px] font-semibold tracking-[0.04em] whitespace-nowrap uppercase;
+  }
+  table.data td {
+    @apply border-border border-b px-3 py-2 align-middle;
+  }
+  table.data tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  table.data tbody tr:hover {
+    @apply bg-surface-hover;
+  }
+  td.num,
+  th.num {
+    @apply text-right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .error-text {
+    @apply text-danger text-[13px];
+  }
+  .empty {
+    @apply text-muted px-4 py-12 text-center text-[13px];
+  }
+
+  .skeleton {
+    @apply rounded-[4px];
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-hover) 25%,
+      var(--color-skeleton-hi) 50%,
+      var(--color-surface-hover) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.3s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
