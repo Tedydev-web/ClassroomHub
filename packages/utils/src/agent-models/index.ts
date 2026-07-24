@@ -19,6 +19,12 @@ export const AGENT_MODEL_IDS = [
   'gpt-5.6-luna',
   'gpt-5.6-terra',
   'gpt-5.6-sol',
+  // Claude — served through the gateway (subscription vendor). Offered in the
+  // picker only when present in the gateway allowlist (DB), never by the static
+  // `route` alone.
+  'claude-sonnet-5',
+  'claude-opus-4-8',
+  'claude-haiku-4-5-20251001',
   // Official API — fallback only.
   'gemini-2.5-flash-lite',
   // Retained for backward compatibility with stored ids; never offered.
@@ -99,6 +105,33 @@ export const AGENT_MODELS: Record<AgentModelId, AgentModelDescriptor> = {
     isFree: false,
     costTier: 'high',
     contextWindow: 400_000,
+    route: 'gateway'
+  },
+  'claude-sonnet-5': {
+    provider: 'anthropic',
+    label: 'Claude Sonnet 5',
+    backendModelId: 'claude-sonnet-5',
+    isFree: true,
+    costTier: 'low',
+    contextWindow: 1_000_000,
+    route: 'gateway'
+  },
+  'claude-opus-4-8': {
+    provider: 'anthropic',
+    label: 'Claude Opus 4.8',
+    backendModelId: 'claude-opus-4-8',
+    isFree: false,
+    costTier: 'high',
+    contextWindow: 1_000_000,
+    route: 'gateway'
+  },
+  'claude-haiku-4-5-20251001': {
+    provider: 'anthropic',
+    label: 'Claude Haiku 4.5',
+    backendModelId: 'claude-haiku-4-5-20251001',
+    isFree: true,
+    costTier: 'low',
+    contextWindow: 1_000_000,
     route: 'gateway'
   },
   'gemini-2.5-flash-lite': {
