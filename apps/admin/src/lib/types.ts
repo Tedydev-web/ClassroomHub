@@ -61,3 +61,52 @@ export type CreatedOrg = {
   org: { id: string; name: string; siteName: string | null };
   member: { id: number | string; roleId: number };
 };
+
+// --- AI gateway (operator control) ---
+
+export type GatewayHealth = {
+  configured: boolean;
+  enabled: boolean;
+  paused: boolean;
+  pauseReason: string | null;
+  circuitState: 'closed' | 'open' | 'half_open' | string;
+  circuitResumeAfter: string | null;
+  consecutiveFailures: number;
+  checks: {
+    reachable: { ok: boolean; detail: string };
+    canServe: { ok: boolean; detail: string; checkedAt: string } | null;
+  };
+  unrecognizedModels: string[];
+};
+
+export type GatewayQuota = {
+  windows: Array<{ id: string; durationMinutes: number; capUnits: number; usedUnits: number; percentUsed: number }>;
+  topOrgs: Array<{ orgId: string; units: number }>;
+};
+
+export type GatewayOrgPolicy = {
+  orgId: string;
+  priorityWeight: number;
+  maxActiveRuns: number | null;
+  maxQueuedRuns: number | null;
+  windowBudgetUnits: number | null;
+  isBlocked: boolean;
+  blockReason: string | null;
+  consumedUnits: number;
+};
+
+export type GatewayOrgs = {
+  policies: GatewayOrgPolicy[];
+  consumptionOnly: Array<{ orgId: string; units: number }>;
+};
+
+export type GatewayRun = {
+  id: string;
+  orgId: string;
+  courseId: string | null;
+  userId: string | null;
+  status: string;
+  phase: string | null;
+  updatedAt: string;
+  totalRounds: number;
+};
