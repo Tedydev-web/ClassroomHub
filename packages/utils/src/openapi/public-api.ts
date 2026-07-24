@@ -1,4 +1,4 @@
-import { PRODUCT_HOSTS } from '../constants/product-identity';
+import { PRODUCT_HOSTS, PRODUCT_NAME } from '../constants/product-identity';
 
 export const PUBLIC_API_BASE_URL = `https://${PRODUCT_HOSTS.api}/public-api/v1`;
 export const PUBLIC_API_OPENAPI_URL = `https://${PRODUCT_HOSTS.assets}/openapi/public-api/openapi-latest.json`;
@@ -70,7 +70,7 @@ export function enrichPublicApiOpenApiSpec<T extends OpenApiDocument>(spec: T): 
     ...spec,
     info: {
       ...info,
-      title: typeof info.title === 'string' ? info.title : 'Classroom Public API',
+      title: typeof info.title === 'string' ? info.title : `${PRODUCT_NAME} Public API`,
       version: typeof info.version === 'string' ? info.version : '1.0.0',
       description: PUBLIC_API_OPENAPI_DESCRIPTION
     },
