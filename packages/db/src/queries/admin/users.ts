@@ -38,13 +38,17 @@ export async function listUsers({
   const term = search?.trim();
   const where = term ? or(ilike(schema.user.name, `%${term}%`), ilike(schema.user.email, `%${term}%`)) : undefined;
 
+  // The outer user id must be table-qualified (`"user".id`). Rendered unqualified,
+  // a bare `id` inside the subquery binds to the subquery table's own `id` column
+  // (organizationmember.id / groupmember.id, both bigint) instead of user.id (uuid),
+  // and the plan fails with `operator does not exist: uuid = bigint`.
   const orgCount = sql<number>`(
     select count(*)::int from ${schema.organizationmember}
-    where ${schema.organizationmember.profileId} = ${schema.user.id}
+    where ${schema.organizationmember.profileId} = ${schema.user}.id
   )`;
   const courseCount = sql<number>`(
     select count(*)::int from ${schema.groupmember}
-    where ${schema.groupmember.profileId} = ${schema.user.id}
+    where ${schema.groupmember.profileId} = ${schema.user}.id
   )`;
 
   const rows = await db
@@ -120,7 +124,7 @@ export async function getUserWithStats(userId: string): Promise<AdminUserWithSta
       roleId: schema.organizationmember.roleId,
       creditBalance: sql<number>`coalesce((
         select ${schema.aiCreditBalance.balance} from ${schema.aiCreditBalance}
-        where ${schema.aiCreditBalance.orgId} = ${schema.organization.id}
+        where ${schema.aiCreditBalance.orgId} = ${schema.organization}.id
       ), 0)::int`
     })
     .from(schema.organizationmember)
