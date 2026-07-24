@@ -1,4 +1,13 @@
-export const PRODUCT_NAME = 'Classroom';
+/**
+ * Written as one word on purpose. The name has to survive being a domain, a
+ * package name, a container label and a social handle, and a two-word form
+ * picks a different shape in each of those — `classroom-hub`, `classroomhub`,
+ * `ClassroomHub` — giving four spellings to keep in sync instead of one.
+ *
+ * It also reads correctly: "Classroom Hub" parses as the hub belonging to some
+ * product called Classroom, when the hub is the product.
+ */
+export const PRODUCT_NAME = 'ClassroomHub';
 export const PRODUCT_ROOT_DOMAIN = 'classroom.io.vn';
 
 /**
