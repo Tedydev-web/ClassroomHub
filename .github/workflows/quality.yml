@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   static-and-unit:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 45
     env:
       NODE_OPTIONS: --max-old-space-size=6144
@@ -63,7 +63,7 @@ jobs:
           pnpm --filter @cio/dashboard lint
 
   selective-assignment-integration:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 30
     services:
       postgres:
