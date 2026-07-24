@@ -45,7 +45,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-classroom}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD to a generated production secret}
     volumes:
-      - ${CLASSROOM_DATA_DIR:-/data/classroomhub-production}/postgres:/var/lib/postgresql/data
+      - /data/classroomhub-production/postgres:/var/lib/postgresql/data
     healthcheck:
       # Require a real query: pg_isready can pass while the server is still in
       # recovery, which surfaces as 57P03 on the first sign-in after a restart.
@@ -80,7 +80,7 @@ services:
     # transcodes, transcriptions, and outbound email.
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ${CLASSROOM_DATA_DIR:-/data/classroomhub-production}/redis:/data
+      - /data/classroomhub-production/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
