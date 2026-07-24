@@ -1,11 +1,11 @@
 import type { GetTagGroupsSuccess } from '$features/tag/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 import type { InferResponseType } from '$lib/utils/services/api';
 
 import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
-type GetOrganizationCoursesRequest = typeof classroomio.organization.courses.$get;
+type GetOrganizationCoursesRequest = typeof classroomhub.organization.courses.$get;
 type GetOrganizationCoursesSuccess = Extract<InferResponseType<GetOrganizationCoursesRequest>, { success: true }>;
 
 export const load = async ({ parent, locals, cookies, url }) => {
@@ -29,7 +29,7 @@ export const load = async ({ parent, locals, cookies, url }) => {
   const apiStart = performance.now();
   const [coursesResult, tagsResult] = await Promise.all([
     safeServerApi<GetOrganizationCoursesSuccess>(() =>
-      classroomio.organization.courses.$get(
+      classroomhub.organization.courses.$get(
         normalizedTagsQuery
           ? {
               query: {
@@ -40,7 +40,7 @@ export const load = async ({ parent, locals, cookies, url }) => {
         getApiHeaders(cookies, orgId)
       )
     ),
-    safeServerApi<GetTagGroupsSuccess>(() => classroomio.organization.tags.$get({}, getApiHeaders(cookies, orgId)))
+    safeServerApi<GetTagGroupsSuccess>(() => classroomhub.organization.tags.$get({}, getApiHeaders(cookies, orgId)))
   ]);
 
   const apiMs = Math.round((performance.now() - apiStart) * 100) / 100;

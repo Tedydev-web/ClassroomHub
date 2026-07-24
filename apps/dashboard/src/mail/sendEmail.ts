@@ -1,4 +1,4 @@
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 
 const sendEmail = (sFetch: typeof fetch) => {
   return async (
@@ -12,7 +12,7 @@ const sendEmail = (sFetch: typeof fetch) => {
     }[]
   ) => {
     try {
-      const response = await classroomio.mail.$post({ json: emailDataArray }, { fetch: sFetch });
+      const response = await classroomhub.mail.$post({ json: emailDataArray }, { fetch: sFetch });
 
       if (!response.ok) {
         console.log('Failed to send emails');

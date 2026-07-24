@@ -10,7 +10,7 @@ tags: ['Launch Week', 'LMS']
 published: true
 ---
 
-![classroomio-brand-customisations](/assets/assets/blog/brand-customisations.png)
+![classroomhub-brand-customisations](/assets/assets/blog/brand-customisations.png)
 _Classroom Hub Brand Customisations_
 
 We are excited to announce more customisations coming into our learning management system (LMS). In this blog post, we will like to share with you how we've made _YOUR_ _STUDENT DASHBOARD_ much more customisable than before.
@@ -23,7 +23,7 @@ We are excited to announce more customisations coming into our learning manageme
 
 Firstly let me quickly break down what we mean when we say _YOUR STUDENT DASHBOARD._ As an organisation or educator when you sign up on [classroom.tedydev.io.vn](https://classroom.tedydev.io.vn), you'd have to first create your organisation and then create your first course. This whole process is done within the admin dashboard - [classroom-app.tedydev.io.vn](https://classroom-app.tedydev.io.vn).
 
-![classroomio-courses-page](/assets/brand/classroomio-courses.png)
+![classroomhub-courses-page](/assets/brand/classroomhub-courses.png)
 _The admin dashboard - classroom-app.tedydev.io.vn_
 
 Within your dashboard you can do the following:
@@ -37,7 +37,7 @@ Within your dashboard you can do the following:
 
 However that is not the UI that your audience will see when they consume your course. When a student signs up for your course, they get redirected to this UI
 
-![classroomio-lms-student-dashboard](/assets/brand/classroomio-lms-courses.png)
+![classroomhub-lms-student-dashboard](/assets/brand/classroomhub-lms-courses.png)
 _The LMS aka Student dashboard - yourorg.classroom.tedydev.io.vn_
 
 Typically this page can be found at _yourorg.classroom.tedydev.io.vn_, where _yourorg_ is a slug you set when you first set up your account. For example, we've built an internal bootcamp called ClassroomHub Developers, in this bootcamp we train other developers on some of the key tools we use internally. You can checkout our page here: [ciodevs.classroom.tedydev.io.vn](https://ciodevs.classroom.tedydev.io.vn), in this case you can see that our slug is _ciodevs_ and you should be able to easily see yours when you log into the dashboard `/org/{yourorg}`.
@@ -56,7 +56,7 @@ With the above foundation I already laid out, I will like to share some of the n
 
 ### Feature 1: Enable/Disable Features
 
-![classroomio-customise-lms-in-admin](/assets/brand/customise-lms.png)
+![classroomhub-customise-lms-in-admin](/assets/brand/customise-lms.png)
 _Customise LMS settings in admin dashboard_
 
 You can now go into your [settings page](https://classroom-app.tedydev.io.vn/org/*/settings/customize-lms) and now disable the features within the student dashboard you don't need. For example, if you run a certificate program and you don't want students talking to other students rather you only need the students to take the course and then take tests - thanks to this feature you can now achieve that.
@@ -65,7 +65,7 @@ Any setting you disable within your dashboard will be reflected in your student 
 
 ### Feature 2 - Brand Colour Customisation
 
-![classroomio-customise-brand-color](/assets/brand/customise-brand-color.png)
+![classroomhub-customise-brand-color](/assets/brand/customise-brand-color.png)
 _Select your brand color_
 
 This has been one of the most requested customisation so far. Users loved that we allowed them set the brand color that reflected across the student dashboard, however that was limiting. Most companies had specific brand primary color which we didn't have in the list, so we added - A COLOUR PICKER 😍.
@@ -74,4 +74,4 @@ Now within the dashboard, you can enter the hex code of your brand/company and i
 
 ## Conclusion
 
-Thank you very much for reading till the end, I know this was a lot 😅. Please give this update a try and let us know what you think in [GitHub Discussions](https://github.com/Tedydev-web/classroomio/discussions).
+Thank you very much for reading till the end, I know this was a lot 😅. Please give this update a try and let us know what you think in [GitHub Discussions](https://github.com/Tedydev-web/classroomhub/discussions).

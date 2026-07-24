@@ -1,7 +1,7 @@
 ---
 title: 'Sharing ClassroomHub with Educators at the University of Lagos'
 description: 'EduAI Hub invited us to talk about ClassroomHub to Edtech AI reserchers and educators at the University of Lagos, Nigeria'
-imageUrl: '/assets/assets/blog/classroomio-at-unilag-eduai-research.png'
+imageUrl: '/assets/assets/blog/classroomhub-at-unilag-eduai-research.png'
 date: '2024-09-25'
 author: Rotimi Best
 avatar: /blog/best.jpg
@@ -10,7 +10,7 @@ tags: ['Educators', 'University', 'AI']
 published: true
 ---
 
-![classroomio-at-unilag-eduai-event](/assets/assets/blog/classroomio-at-unilag-eduai-research.png)
+![classroomhub-at-unilag-eduai-event](/assets/assets/blog/classroomhub-at-unilag-eduai-research.png)
 _Rotimi Best at the 2 day EduAI Hub Summit held at the University of Lagos_
 
 I was invited by [EduAI Hub](https://eduaihub.org/) to their 2 day summit at the University of Lagos to talk about the progress we've made as a company and how we are using AI in education.

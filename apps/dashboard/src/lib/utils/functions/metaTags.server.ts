@@ -11,7 +11,7 @@ const isSelfHosted = PUBLIC_IS_SELFHOSTED === 'true';
 const DEFAULT_TITLE = `${PRODUCT_NAME} | One Platform for Customer, Partner, and Employee Training`;
 const DEFAULT_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
-const CLOUD_OG_IMAGE = '/classroomio-opengraph-image.png';
+const CLOUD_OG_IMAGE = '/classroomhub-opengraph.png';
 const ORG_OG_WIDTH = 1200;
 const ORG_OG_HEIGHT = 630;
 

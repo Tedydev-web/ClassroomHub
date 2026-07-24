@@ -7,7 +7,7 @@ import type {
   SearchResultItem,
   SearchScope
 } from '../utils/types';
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 
 const SEARCH_DEBOUNCE_MS = 200;
 
@@ -71,7 +71,7 @@ class SearchApi extends BaseApi {
     if (scope === 'lms') {
       await this.execute<SearchLmsRequest>({
         requestFn: () =>
-          classroomio.organization.search.lms.$get(
+          classroomhub.organization.search.lms.$get(
             {
               query: {
                 q: query,
@@ -99,7 +99,7 @@ class SearchApi extends BaseApi {
 
     await this.execute<SearchOrgRequest>({
       requestFn: () =>
-        classroomio.organization.search.$get(
+        classroomhub.organization.search.$get(
           {
             query: {
               q: query,

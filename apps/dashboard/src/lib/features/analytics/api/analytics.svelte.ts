@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 
 import type {
   CountryBreakdownData,
@@ -37,7 +37,7 @@ class AnalyticsApi extends BaseApi {
   async fetchLanding(orgId: string, bust = false) {
     this.loadingLanding = true;
     await this.execute<LandingStatsRequest>({
-      requestFn: () => classroomio.dash['landing-stats'].$get({ query: this.query(orgId, bust) }),
+      requestFn: () => classroomhub.dash['landing-stats'].$get({ query: this.query(orgId, bust) }),
       logContext: 'fetching analytics landing stats',
       onSuccess: (response) => {
         this.landing = response.data;
@@ -49,7 +49,7 @@ class AnalyticsApi extends BaseApi {
   async fetchCountry(orgId: string, bust = false) {
     this.loadingCountry = true;
     await this.execute<CountryBreakdownRequest>({
-      requestFn: () => classroomio.dash['country-breakdown'].$get({ query: this.query(orgId, bust) }),
+      requestFn: () => classroomhub.dash['country-breakdown'].$get({ query: this.query(orgId, bust) }),
       logContext: 'fetching analytics country breakdown',
       onSuccess: (response) => {
         this.country = response.data;
@@ -61,7 +61,7 @@ class AnalyticsApi extends BaseApi {
   async fetchFunnel(orgId: string, bust = false) {
     this.loadingFunnel = true;
     await this.execute<CourseFunnelRequest>({
-      requestFn: () => classroomio.dash['course-funnel'].$get({ query: this.query(orgId, bust) }),
+      requestFn: () => classroomhub.dash['course-funnel'].$get({ query: this.query(orgId, bust) }),
       logContext: 'fetching analytics course funnel',
       onSuccess: (response) => {
         this.funnel = response.data;
@@ -73,7 +73,7 @@ class AnalyticsApi extends BaseApi {
   async fetchPopularTypes(orgId: string, bust = false) {
     this.loadingPopularTypes = true;
     await this.execute<PopularTypesRequest>({
-      requestFn: () => classroomio.dash['popular-types'].$get({ query: this.query(orgId, bust) }),
+      requestFn: () => classroomhub.dash['popular-types'].$get({ query: this.query(orgId, bust) }),
       logContext: 'fetching analytics popular types',
       onSuccess: (response) => {
         this.popularTypes = response.data;

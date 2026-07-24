@@ -8,7 +8,7 @@ import type {
   ListAccountWorkspacesRequest,
   ViewAsStudentTokenRequest
 } from '../utils/types';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { ZCreateWorkspace, type TCreateWorkspace } from '@cio/utils/validation/account';
 
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
@@ -21,7 +21,7 @@ class AccountApi extends BaseApiWithErrors {
 
   async listWorkspaces() {
     return this.execute<ListAccountWorkspacesRequest>({
-      requestFn: () => classroomio.account.workspaces.$get(),
+      requestFn: () => classroomhub.account.workspaces.$get(),
       logContext: 'fetching account workspaces',
       onSuccess: (response) => {
         this.workspaces = response.data.workspaces;
@@ -37,7 +37,7 @@ class AccountApi extends BaseApiWithErrors {
    */
   async createViewAsStudentToken(): Promise<string | undefined> {
     const result = await this.execute<ViewAsStudentTokenRequest>({
-      requestFn: () => classroomio.account['view-as-student-token'].$post(),
+      requestFn: () => classroomhub.account['view-as-student-token'].$post(),
       logContext: 'creating view-as-student token'
     });
 
@@ -46,7 +46,7 @@ class AccountApi extends BaseApiWithErrors {
 
   async loadUsage() {
     return this.execute<GetAccountUsageRequest>({
-      requestFn: () => classroomio.account.usage.$get(),
+      requestFn: () => classroomhub.account.usage.$get(),
       logContext: 'fetching account usage',
       onSuccess: (response) => {
         this.usage = response.data;
@@ -62,7 +62,7 @@ class AccountApi extends BaseApiWithErrors {
     }
 
     return this.execute<CreateAccountWorkspaceRequest>({
-      requestFn: () => classroomio.account.workspaces.$post({ json: parsed.data }),
+      requestFn: () => classroomhub.account.workspaces.$post({ json: parsed.data }),
       logContext: 'creating workspace',
       onSuccess: async (response) => {
         this.workspaces = [...this.workspaces, response.data];
@@ -79,7 +79,7 @@ class AccountApi extends BaseApiWithErrors {
 
   async deleteWorkspace(workspaceId: string) {
     return this.execute<DeleteAccountWorkspaceRequest>({
-      requestFn: () => classroomio.account.workspaces[':workspaceId'].$delete({ param: { workspaceId } }),
+      requestFn: () => classroomhub.account.workspaces[':workspaceId'].$delete({ param: { workspaceId } }),
       logContext: 'deleting workspace',
       onSuccess: () => {
         this.workspaces = this.workspaces.filter((row) => row.id !== workspaceId);

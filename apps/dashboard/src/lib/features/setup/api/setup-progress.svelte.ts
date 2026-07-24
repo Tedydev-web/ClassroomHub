@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 
 export interface SetupItem {
   id: string;
@@ -183,9 +183,9 @@ class SetupProgressApi extends BaseApiWithErrors {
    * @param siteName Organization site name
    */
   async fetchSetupProgress(siteName: string) {
-    await this.execute<typeof classroomio.organization.setup.$get>({
+    await this.execute<typeof classroomhub.organization.setup.$get>({
       requestFn: () =>
-        classroomio.organization.setup.$get({
+        classroomhub.organization.setup.$get({
           query: { siteName }
         }),
       logContext: 'fetching setup progress',

@@ -18,7 +18,7 @@ services:
     image: postgres:16-alpine
     container_name: cio-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-classroomio}
+      POSTGRES_DB: ${POSTGRES_DB:-classroomhub}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
@@ -29,7 +29,7 @@ services:
       test:
         [
           'CMD-SHELL',
-          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-classroomio} && psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-classroomio} -tAc 'SELECT 1'"
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-classroomhub} && psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-classroomhub} -tAc 'SELECT 1'"
         ]
       interval: 5s
       timeout: 5s
@@ -115,7 +115,7 @@ services:
       PORT: 3081
       PUBLIC_SERVER_URL: ${PUBLIC_SERVER_URL:-http://localhost:8001}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomhub}
       REDIS_URL: redis://redis:6379
       PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-docker-local-client-id}
@@ -200,7 +200,7 @@ services:
     environment:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomio}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-classroomhub}
       PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
       WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set a strong WEBHOOK_ENCRYPTION_KEY in .env}
       # Object storage (workers stream object bytes). Mirrors the api service.

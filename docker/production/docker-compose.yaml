@@ -45,7 +45,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-classroom}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD to a generated production secret}
     volumes:
-      - ${CLASSROOM_DATA_DIR:-/data/classroomio-production}/postgres:/var/lib/postgresql/data
+      - ${CLASSROOM_DATA_DIR:-/data/classroomhub-production}/postgres:/var/lib/postgresql/data
     healthcheck:
       # Require a real query: pg_isready can pass while the server is still in
       # recovery, which surfaces as 57P03 on the first sign-in after a restart.
@@ -80,7 +80,7 @@ services:
     # transcodes, transcriptions, and outbound email.
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ${CLASSROOM_DATA_DIR:-/data/classroomio-production}/redis:/data
+      - ${CLASSROOM_DATA_DIR:-/data/classroomhub-production}/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -107,7 +107,7 @@ services:
   db-migrate:
     # Reuses the image the api service builds — same code, so the schema it
     # applies always matches the API that will serve it.
-    image: classroomio-production-api:local
+    image: classroomhub-production-api:local
     pull_policy: never
     labels:
       io.classroom.stack: production
@@ -133,7 +133,7 @@ services:
           memory: 1G
 
   api:
-    image: classroomio-production-api:local
+    image: classroomhub-production-api:local
     build:
       # Context is the repository root. Coolify's compose build pack resolves
       # build contexts relative to the repo root it clones into, not relative to
@@ -242,7 +242,7 @@ services:
           memory: 1536M
 
   dashboard:
-    image: classroomio-production-dashboard:local
+    image: classroomhub-production-dashboard:local
     build:
       # Root-relative for Coolify's build pack — see the api service note.
       context: .
@@ -324,7 +324,7 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: classroomio-production-jobs:local
+    image: classroomhub-production-jobs:local
     build:
       # Root-relative for Coolify's build pack — see the api service note.
       context: .

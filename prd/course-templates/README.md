@@ -352,13 +352,13 @@ pnpm --filter @cio/api build
 File: `apps/dashboard/src/lib/features/course/utils/types.ts`
 
 ```typescript
-export type ListTemplatesRequest = typeof classroomio.course.template.$get;
-export type CreateTemplateRequest = typeof classroomio.course.template.$post;
-export type GetTemplateRequest = typeof classroomio.course.template[':templateId']['$get'];
-export type UpdateTemplateRequest = typeof classroomio.course.template[':templateId']['$put'];
-export type DeleteTemplateRequest = typeof classroomio.course.template[':templateId']['$delete'];
-export type SaveAsTemplateRequest = typeof classroomio.course[':courseId']['save-as-template']['$post'];
-export type CreateFromTemplateRequest = typeof classroomio.course.template[':templateId']['create-course']['$post'];
+export type ListTemplatesRequest = typeof classroomhub.course.template.$get;
+export type CreateTemplateRequest = typeof classroomhub.course.template.$post;
+export type GetTemplateRequest = typeof classroomhub.course.template[':templateId']['$get'];
+export type UpdateTemplateRequest = typeof classroomhub.course.template[':templateId']['$put'];
+export type DeleteTemplateRequest = typeof classroomhub.course.template[':templateId']['$delete'];
+export type SaveAsTemplateRequest = typeof classroomhub.course[':courseId']['save-as-template']['$post'];
+export type CreateFromTemplateRequest = typeof classroomhub.course.template[':templateId']['create-course']['$post'];
 
 export type ListTemplatesSuccess = Extract<InferResponseType<ListTemplatesRequest>, { success: true }>;
 export type CourseTemplate = ListTemplatesSuccess['data'][number];

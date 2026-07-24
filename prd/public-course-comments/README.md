@@ -136,9 +136,9 @@ Add to the existing `publicCourseRouter` after the HLS cookie endpoint.
 
 Add:
 ```typescript
-export type GetPublicCommentsRequest = typeof classroomio['org-site'].course[':courseSlug'].item[':itemSlug'].comment.$get;
-export type CreatePublicCommentRequest = typeof classroomio['org-site'].course[':courseSlug'].item[':itemSlug'].comment.$post;
-export type DeletePublicCommentRequest = (typeof classroomio['org-site'].course[':courseSlug'].item[':itemSlug'].comment)[':commentId']['$delete'];
+export type GetPublicCommentsRequest = typeof classroomhub['org-site'].course[':courseSlug'].item[':itemSlug'].comment.$get;
+export type CreatePublicCommentRequest = typeof classroomhub['org-site'].course[':courseSlug'].item[':itemSlug'].comment.$post;
+export type DeletePublicCommentRequest = (typeof classroomhub['org-site'].course[':courseSlug'].item[':itemSlug'].comment)[':commentId']['$delete'];
 
 export type PublicCommentsSuccess = Extract<InferResponseType<GetPublicCommentsRequest>, { success: true }>;
 export type PublicCommentItem = PublicCommentsSuccess['data']['items'][number];

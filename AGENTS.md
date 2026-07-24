@@ -169,9 +169,9 @@ pnpm --filter @cio/api build
 ### Step 7: Frontend Types & API Class
 ```typescript
 // apps/dashboard/src/lib/features/account/utils/types.ts
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 
-export type UpdateProfileRequest = typeof classroomio.account.user.$put;
+export type UpdateProfileRequest = typeof classroomhub.account.user.$put;
 ```
 
 ```typescript
@@ -186,7 +186,7 @@ class AccountApi extends BaseApiWithErrors {
       return;
     }
     await this.execute<UpdateProfileRequest>({
-      requestFn: () => classroomio.account.user.$put({ json: result.data }),
+      requestFn: () => classroomhub.account.user.$put({ json: result.data }),
       logContext: 'updating profile',
       onSuccess: () => {
         snackbar.success('Profile updated');
@@ -207,13 +207,13 @@ Define all request and response-related types in the feature’s `utils/types.ts
 
 ```typescript
 // apps/dashboard/src/lib/features/org/utils/types.ts
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type GetTeamRequest = typeof classroomio.organization.team.$get;
-export type CreateOrgRequest = typeof classroomio.organization.$post;
-export type UpdateOrgRequest = typeof classroomio.organization.$put;
+export type GetTeamRequest = typeof classroomhub.organization.team.$get;
+export type CreateOrgRequest = typeof classroomhub.organization.$post;
+export type UpdateOrgRequest = typeof classroomhub.organization.$put;
 
-export type DeleteTeamRequest = (typeof classroomio.organization)['team'][':memberId']['$delete'];
+export type DeleteTeamRequest = (typeof classroomhub.organization)['team'][':memberId']['$delete'];
 
 export type GetTeamSuccess = Extract<InferResponseType<GetTeamRequest>, { success: true }>;
 export type OrganizationTeamMembers = GetTeamSuccess['data'];
@@ -226,7 +226,7 @@ export type OrganizationTeamMembers = GetTeamSuccess['data'];
 **Never define types in `.svelte.ts` files.** Put them in `{domain}/utils/types.ts` and infer from API return types.
 
 Pattern:
-1. Define request type: `typeof classroomio.{route}.$method`
+1. Define request type: `typeof classroomhub.{route}.$method`
 2. Infer response type: `InferResponseType<RequestType>`
 3. Extract success response: `Extract<ResponseType, { success: true }>`
 4. Extract data type: `SuccessType['data']`
@@ -582,7 +582,7 @@ A single flag, `PUBLIC_IS_SELFHOSTED`, switches the whole product between **self
 
 - **Self-hosted (`PUBLIC_IS_SELFHOSTED=true`)** — the README contributor default:
   - Single organization, single domain: creating a 2nd org is blocked (`onboarding.ts`), the "add org" UI is hidden, and the org is auto-assigned a `selfhosted` `ENTERPRISE` plan.
-  - Enterprise features `sso`, `token-auth`, `no-tracking` are gated behind `LICENSE_KEY`, verified against the external `https://enterprise-api.classroomio.dev`. Without a key, `requireLicense` returns 403.
+  - Enterprise features `sso`, `token-auth`, `no-tracking` are gated behind `LICENSE_KEY`, verified against the external `https://enterprise-api.classroomhub.dev`. Without a key, `requireLicense` returns 403.
   - Polar billing and PostHog/Umami analytics are off.
 - **Cloud (`PUBLIC_IS_SELFHOSTED` unset or `false`)**:
   - Multi-tenant: multiple orgs per user, "add org" shown; org is resolved from the **subdomain** (`acme.<PRIVATE_APP_HOST>`) or a custom domain. Locally there are no subdomains, so an org public site is simulated with the `?org=<siteName>` query param (sets the `_orgSiteName` cookie — see `layout-setup.ts`).

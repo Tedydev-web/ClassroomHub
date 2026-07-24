@@ -1,27 +1,27 @@
-import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 
-export type GetOrganizationRequest = typeof classroomio.organization.$get;
+export type GetOrganizationRequest = typeof classroomhub.organization.$get;
 export type GetOrganizationResponse = InferResponseType<GetOrganizationRequest> | null;
 export type GetOrganizationSuccess = Extract<InferResponseType<GetOrganizationRequest>, { success: true }>;
 export type OrganizationRecord = GetOrganizationSuccess['data'][number];
 
-export type QuizListRequest = (typeof classroomio.organization)[':orgId']['quiz']['$get'];
-export type QuizGetRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$get'];
-export type QuizCreateRequest = (typeof classroomio.organization)[':orgId']['quiz']['$post'];
-export type QuizUpdateRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$put'];
-export type QuizDeleteRequest = (typeof classroomio.organization)[':orgId']['quiz'][':quizId']['$delete'];
+export type QuizListRequest = (typeof classroomhub.organization)[':orgId']['quiz']['$get'];
+export type QuizGetRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$get'];
+export type QuizCreateRequest = (typeof classroomhub.organization)[':orgId']['quiz']['$post'];
+export type QuizUpdateRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$put'];
+export type QuizDeleteRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$delete'];
 export type QuizListSuccess = Extract<InferResponseType<QuizListRequest>, { success: true }>;
 export type Quiz = QuizListSuccess['data'][number];
 export type QuizCreateData = NonNullable<InferRequestType<QuizCreateRequest>['json']>;
 export type QuizUpdateData = NonNullable<InferRequestType<QuizUpdateRequest>['json']>;
 
-export type GetFirstOrganizationRequest = typeof classroomio.organization.first.$get;
+export type GetFirstOrganizationRequest = typeof classroomhub.organization.first.$get;
 export type GetFirstOrganizationResponse = InferResponseType<GetFirstOrganizationRequest> | null;
 export type GetFirstOrganizationSuccess = Extract<InferResponseType<GetFirstOrganizationRequest>, { success: true }>;
 export type FirstOrganizationRecord = GetFirstOrganizationSuccess['data'][number];
 
 // Team member types
-export type GetTeamRequest = (typeof classroomio.organization)['team']['$get'];
+export type GetTeamRequest = (typeof classroomhub.organization)['team']['$get'];
 export type OrganizationTeamResponse = InferResponseType<GetTeamRequest> | null;
 export type OrganizationTeamSuccess = Extract<InferResponseType<GetTeamRequest>, { success: true }>;
 
@@ -37,7 +37,7 @@ export type OrganizationTeamMembers = Array<
 >;
 
 // Audience types
-export type GetAudienceRequest = (typeof classroomio.organization)['audience']['$get'];
+export type GetAudienceRequest = (typeof classroomhub.organization)['audience']['$get'];
 export type OrganizationAudienceResponse = InferResponseType<GetAudienceRequest> | null;
 export type OrganizationAudienceSuccess = Extract<InferResponseType<GetAudienceRequest>, { success: true }>;
 export type OrganizationAudienceRequestQuery = NonNullable<InferRequestType<GetAudienceRequest>['query']>;
@@ -56,54 +56,54 @@ export type OrganizationAudiencePagination = OrganizationAudienceSuccess['pagina
 export type OrganizationAudienceMember = OrganizationAudience[number];
 
 // Org Public Courses  types
-export type GetOrgPublicCoursesRequest = typeof classroomio.organization.courses.public.$get;
+export type GetOrgPublicCoursesRequest = typeof classroomhub.organization.courses.public.$get;
 export type OrgPublicCoursesResponse = InferResponseType<GetOrgPublicCoursesRequest> | null;
 export type OrgPublicCoursesSuccess = Extract<InferResponseType<GetOrgPublicCoursesRequest>, { success: true }>;
 export type OrgPublicCoursesData = OrgPublicCoursesSuccess['data'];
 export type OrgPublicCourses = OrgPublicCoursesData['courses'];
 
 // dashboard analytics types
-export type GetDashStatsRequest = typeof classroomio.dash.stats.$get;
+export type GetDashStatsRequest = typeof classroomhub.dash.stats.$get;
 export type DashStatsResponse = InferResponseType<GetDashStatsRequest> | null;
 export type DashStatsSuccess = Extract<InferResponseType<GetDashStatsRequest>, { success: true }>;
 
-export type GetLoginActivityRequest = (typeof classroomio.dash)['login-activity']['$get'];
+export type GetLoginActivityRequest = (typeof classroomhub.dash)['login-activity']['$get'];
 export type LoginActivitySuccess = Extract<InferResponseType<GetLoginActivityRequest>, { success: true }>;
 export type LoginActivityData = LoginActivitySuccess['data'];
 
 // invite team types
-export type InviteTeamRequest = (typeof classroomio.organization)['team']['invite']['$post'];
+export type InviteTeamRequest = (typeof classroomhub.organization)['team']['invite']['$post'];
 export type InviteTeamSuccess = Extract<InferResponseType<InviteTeamRequest>, { success: true }>;
 export type InviteTeamData = InviteTeamSuccess['data'];
 
-export type DeleteTeamRequest = (typeof classroomio.organization)['team'][':memberId']['$delete'];
+export type DeleteTeamRequest = (typeof classroomhub.organization)['team'][':memberId']['$delete'];
 export type DeleteTeamSuccess = Extract<InferResponseType<DeleteTeamRequest>, { success: true }>;
-export type DeleteAudienceMemberRequest = (typeof classroomio.organization)['audience'][':memberId']['$delete'];
+export type DeleteAudienceMemberRequest = (typeof classroomhub.organization)['audience'][':memberId']['$delete'];
 export type DeleteAudienceMemberSuccess = Extract<InferResponseType<DeleteAudienceMemberRequest>, { success: true }>;
 
 // update organization types
-export type UpdateOrganizationRequest = (typeof classroomio.organization)['$put'];
+export type UpdateOrganizationRequest = (typeof classroomhub.organization)['$put'];
 export type UpdateOrganizationResponse = InferResponseType<UpdateOrganizationRequest>;
 export type UpdateOrganizationSuccess = Extract<UpdateOrganizationResponse, { success: true }>;
 
 // domain request types
-export type DomainRequestRequest = typeof classroomio.domain.$post;
+export type DomainRequestRequest = typeof classroomhub.domain.$post;
 export type DomainRequestResponse = InferResponseType<DomainRequestRequest>;
 export type DomainRequestSuccess = Extract<DomainRequestResponse, { success: true }>;
 export type DomainRequestData = DomainRequestSuccess['data'];
 export type DomainRequestStatus = DomainRequestData['status'];
 
 // SSO types
-export type GetSsoConfigRequest = (typeof classroomio.organization)['sso']['$get'];
-export type CreateSsoConnectionRequest = (typeof classroomio.organization)['sso']['$post'];
-export type UpdateSsoConnectionRequest = (typeof classroomio.organization)['sso']['$put'];
-export type DeleteSsoConnectionRequest = (typeof classroomio.organization)['sso']['$delete'];
-export type ActivateSsoConnectionRequest = (typeof classroomio.organization)['sso']['activate']['$post'];
-export type GetSsoPolicyRequest = (typeof classroomio.organization)['sso']['policy']['$get'];
-export type UpdateSsoPolicyRequest = (typeof classroomio.organization)['sso']['policy']['$put'];
+export type GetSsoConfigRequest = (typeof classroomhub.organization)['sso']['$get'];
+export type CreateSsoConnectionRequest = (typeof classroomhub.organization)['sso']['$post'];
+export type UpdateSsoConnectionRequest = (typeof classroomhub.organization)['sso']['$put'];
+export type DeleteSsoConnectionRequest = (typeof classroomhub.organization)['sso']['$delete'];
+export type ActivateSsoConnectionRequest = (typeof classroomhub.organization)['sso']['activate']['$post'];
+export type GetSsoPolicyRequest = (typeof classroomhub.organization)['sso']['policy']['$get'];
+export type UpdateSsoPolicyRequest = (typeof classroomhub.organization)['sso']['policy']['$put'];
 
-export type SsoDiscoveryRequest = typeof classroomio.sso.discover.$get;
-export type GetOrgSsoInfoRequest = (typeof classroomio.sso)['org'][':orgId']['$get'];
+export type SsoDiscoveryRequest = typeof classroomhub.sso.discover.$get;
+export type GetOrgSsoInfoRequest = (typeof classroomhub.sso)['org'][':orgId']['$get'];
 
 export type GetSsoConfigSuccess = Extract<InferResponseType<GetSsoConfigRequest>, { success: true }>;
 type SsoConfigData = NonNullable<GetSsoConfigSuccess['data']>;
@@ -125,30 +125,30 @@ export type GetOrgSsoInfoSuccess = Extract<InferResponseType<GetOrgSsoInfoReques
 export type OrgSsoInfo = GetOrgSsoInfoSuccess['data'];
 
 // Audience import types
-export type ImportAudienceRequest = (typeof classroomio.organization)['audience']['import']['$post'];
+export type ImportAudienceRequest = (typeof classroomhub.organization)['audience']['import']['$post'];
 export type ImportAudienceSuccess = Extract<InferResponseType<ImportAudienceRequest>, { success: true }>;
 export type ImportAudienceData = ImportAudienceSuccess['data'];
 
 // Audience assign courses types
-export type AssignAudienceCoursesRequest = (typeof classroomio.organization)['audience']['assign-courses']['$post'];
+export type AssignAudienceCoursesRequest = (typeof classroomhub.organization)['audience']['assign-courses']['$post'];
 export type AssignAudienceCoursesSuccess = Extract<InferResponseType<AssignAudienceCoursesRequest>, { success: true }>;
 export type AssignAudienceCoursesData = AssignAudienceCoursesSuccess['data'];
 
 // Audience invite actions
-export type ResendAudienceInviteRequest = (typeof classroomio.organization)['audience']['resend-invite']['$post'];
-export type RevokeAudienceInviteRequest = (typeof classroomio.organization)['audience']['revoke-invite']['$post'];
+export type ResendAudienceInviteRequest = (typeof classroomhub.organization)['audience']['resend-invite']['$post'];
+export type RevokeAudienceInviteRequest = (typeof classroomhub.organization)['audience']['revoke-invite']['$post'];
 
 // Link invite types
-export type GetLinkInviteRequest = (typeof classroomio.organization)['link-invite']['$get'];
-export type CreateLinkInviteRequest = (typeof classroomio.organization)['link-invite']['$post'];
-export type ToggleLinkInviteRequest = (typeof classroomio.organization)['link-invite']['$patch'];
+export type GetLinkInviteRequest = (typeof classroomhub.organization)['link-invite']['$get'];
+export type CreateLinkInviteRequest = (typeof classroomhub.organization)['link-invite']['$post'];
+export type ToggleLinkInviteRequest = (typeof classroomhub.organization)['link-invite']['$patch'];
 
 export type GetLinkInviteSuccess = Extract<InferResponseType<GetLinkInviteRequest>, { success: true }>;
 export type OrgLinkInvite = GetLinkInviteSuccess['data'];
 
 // Token auth types
-export type CreateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$post'];
-export type GetTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$get'];
-export type RotateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['rotate']['$post'];
-export type DeleteTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$delete'];
-export type ActivateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['activate']['$put'];
+export type CreateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$post'];
+export type GetTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$get'];
+export type RotateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['rotate']['$post'];
+export type DeleteTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$delete'];
+export type ActivateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['activate']['$put'];

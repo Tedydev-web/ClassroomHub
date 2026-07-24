@@ -1,16 +1,16 @@
 import { getOrgBySiteName } from '$features/org/api/org.server';
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { error } from '@sveltejs/kit';
 
-type PreviewLinkInviteRequest = (typeof classroomio.invite)['link'][':token']['preview']['$get'];
+type PreviewLinkInviteRequest = (typeof classroomhub.invite)['link'][':token']['preview']['$get'];
 type PreviewLinkInviteSuccess = Extract<InferResponseType<PreviewLinkInviteRequest>, { success: true }>;
 
 export const load = async ({ params = { hash: '' } }) => {
   try {
     const token = decodeURIComponent(params.hash);
     const result = await safeServerApi<PreviewLinkInviteSuccess>(() =>
-      classroomio.invite.link[':token'].preview.$get({ param: { token } }, getApiKeyHeaders())
+      classroomhub.invite.link[':token'].preview.$get({ param: { token } }, getApiKeyHeaders())
     );
 
     if (!result.ok || !result.body.data) {

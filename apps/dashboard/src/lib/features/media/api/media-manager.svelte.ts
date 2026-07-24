@@ -1,6 +1,6 @@
 import { presignApi } from '$features/course/api/presign.svelte';
 import { SvelteDate } from 'svelte/reactivity';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   AssetStorageSummary,
   AssetTranscriptPayload,
@@ -83,7 +83,7 @@ export class MediaApi extends BaseApiWithErrors {
     };
 
     await this.execute<ListAssetsRequest>({
-      requestFn: () => classroomio.organization.assets.$get({ query: rpcQuery }),
+      requestFn: () => classroomhub.organization.assets.$get({ query: rpcQuery }),
       logContext: 'listing organization assets',
       onSuccess: (response) => {
         this.assets = response.data;
@@ -107,8 +107,8 @@ export class MediaApi extends BaseApiWithErrors {
       includeExternal: String(parsed.data.includeExternal)
     };
 
-    await this.execute<typeof classroomio.organization.assets.storage.$get>({
-      requestFn: () => classroomio.organization.assets.storage.$get({ query: rpcQuery }),
+    await this.execute<typeof classroomhub.organization.assets.storage.$get>({
+      requestFn: () => classroomhub.organization.assets.storage.$get({ query: rpcQuery }),
       logContext: 'fetching media manager storage summary',
       onSuccess: (response) => {
         this.storageSummary = response.data;
@@ -130,7 +130,7 @@ export class MediaApi extends BaseApiWithErrors {
     let metadata: YouTubeMetadata | null = null;
     await this.execute<GetYouTubeMetadataRequest>({
       requestFn: () =>
-        classroomio.organization.assets['youtube-metadata'].$get({
+        classroomhub.organization.assets['youtube-metadata'].$get({
           query: result.data
         }),
       logContext: 'resolving YouTube metadata',
@@ -157,7 +157,7 @@ export class MediaApi extends BaseApiWithErrors {
     let asset: OrganizationAsset | null = null;
     await this.execute<CreateAssetRequest>({
       requestFn: () =>
-        classroomio.organization.assets.$post({
+        classroomhub.organization.assets.$post({
           json: result.data
         }),
       logContext: 'creating media asset',
@@ -187,7 +187,7 @@ export class MediaApi extends BaseApiWithErrors {
     let updated: UpdateAssetData | null = null;
     await this.execute<UpdateAssetRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].$put({
+        classroomhub.organization.assets[':assetId'].$put({
           param: { assetId },
           json: result.data
         }),
@@ -208,7 +208,7 @@ export class MediaApi extends BaseApiWithErrors {
     let usage: AssetUsageGraph | null = null;
     await this.execute<GetAssetUsageRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].usage.$get({
+        classroomhub.organization.assets[':assetId'].usage.$get({
           param: { assetId }
         }),
       logContext: 'fetching media asset usage',
@@ -233,7 +233,7 @@ export class MediaApi extends BaseApiWithErrors {
     let usage: AssetUsage | null = null;
     await this.execute<AttachAssetRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].attach.$post({
+        classroomhub.organization.assets[':assetId'].attach.$post({
           param: { assetId },
           json: result.data
         }),
@@ -259,7 +259,7 @@ export class MediaApi extends BaseApiWithErrors {
     let success = false;
     await this.execute<DetachAssetRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].detach.$post({
+        classroomhub.organization.assets[':assetId'].detach.$post({
           param: { assetId },
           json: result.data
         }),
@@ -283,7 +283,7 @@ export class MediaApi extends BaseApiWithErrors {
   async deleteAsset(assetId: string): Promise<boolean> {
     let deleted = false;
     await this.execute<DeleteAssetRequest>({
-      requestFn: () => classroomio.organization.assets[':assetId'].$delete({ param: { assetId } }),
+      requestFn: () => classroomhub.organization.assets[':assetId'].$delete({ param: { assetId } }),
       logContext: 'deleting media asset',
       onSuccess: () => {
         deleted = true;
@@ -438,7 +438,7 @@ export class MediaApi extends BaseApiWithErrors {
     let data: AssetTranscriptPayload | null = null;
 
     await this.execute<GetAssetTranscriptRequest>({
-      requestFn: () => classroomio.organization.assets[':assetId'].transcript.$get({ param: { assetId } }),
+      requestFn: () => classroomhub.organization.assets[':assetId'].transcript.$get({ param: { assetId } }),
       logContext: 'fetching asset transcript',
       onSuccess: (response) => {
         data = response.data;
@@ -457,7 +457,7 @@ export class MediaApi extends BaseApiWithErrors {
 
     await this.execute<UpdateAssetTranscriptRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].transcript.$put({
+        classroomhub.organization.assets[':assetId'].transcript.$put({
           param: { assetId },
           json: { segments }
         }),
@@ -479,7 +479,7 @@ export class MediaApi extends BaseApiWithErrors {
     let updated: OrganizationAsset | null = null;
     await this.execute<SelectAssetThumbnailRequest>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].thumbnail.$put({
+        classroomhub.organization.assets[':assetId'].thumbnail.$put({
           param: { assetId },
           json: { thumbnailUrl }
         }),
@@ -502,7 +502,7 @@ export class MediaApi extends BaseApiWithErrors {
     let jobId: string | null = null;
     await this.execute<RegenerateAssetThumbnailRequest>({
       requestFn: () =>
-        classroomio.jobs.media.asset[':assetId']['regenerate-thumbnail'].$post({
+        classroomhub.jobs.media.asset[':assetId']['regenerate-thumbnail'].$post({
           param: { assetId }
         }),
       logContext: 'regenerating asset thumbnail',
@@ -520,9 +520,9 @@ export class MediaApi extends BaseApiWithErrors {
 
   async refreshAsset(assetId: string): Promise<OrganizationAsset | null> {
     let updated: OrganizationAsset | null = null;
-    await this.execute<(typeof classroomio.organization.assets)[':assetId']['$get']>({
+    await this.execute<(typeof classroomhub.organization.assets)[':assetId']['$get']>({
       requestFn: () =>
-        classroomio.organization.assets[':assetId'].$get({
+        classroomhub.organization.assets[':assetId'].$get({
           param: { assetId }
         }),
       logContext: 'refreshing asset',
@@ -539,7 +539,7 @@ export class MediaApi extends BaseApiWithErrors {
   async generateTranscript(assetId: string): Promise<boolean> {
     let ok = false;
     await this.execute<StartAssetTranscriptionRequest>({
-      requestFn: () => classroomio.jobs.media.asset[':assetId'].transcribe.$post({ param: { assetId } }),
+      requestFn: () => classroomhub.jobs.media.asset[':assetId'].transcribe.$post({ param: { assetId } }),
       logContext: 'starting transcription job',
       onSuccess: () => {
         ok = true;

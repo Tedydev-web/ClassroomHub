@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
 import { ZAiTutorSettingsUpdate, ZCourseAiTutorOverride } from '@cio/utils/validation/agent';
 import { snackbar } from '$features/ui/snackbar/store';
@@ -24,7 +24,7 @@ class AiTutorApi extends BaseApiWithErrors {
 
     try {
       await this.execute<GetOrgAiTutorRequest>({
-        requestFn: () => classroomio.organization['ai-tutor'].$get(),
+        requestFn: () => classroomhub.organization['ai-tutor'].$get(),
         logContext: 'fetching org AI tutor settings',
         onSuccess: (response) => {
           this.orgSettings = response.data;
@@ -47,7 +47,7 @@ class AiTutorApi extends BaseApiWithErrors {
 
     try {
       await this.execute<UpdateOrgAiTutorRequest>({
-        requestFn: () => classroomio.organization['ai-tutor'].$put({ json: result.data }),
+        requestFn: () => classroomhub.organization['ai-tutor'].$put({ json: result.data }),
         logContext: 'updating org AI tutor settings',
         onSuccess: (response) => {
           this.orgSettings = response.data;
@@ -70,7 +70,7 @@ class AiTutorApi extends BaseApiWithErrors {
 
     try {
       await this.execute<GetCourseAiTutorRequest>({
-        requestFn: () => classroomio.course[':courseId']['ai-tutor'].$get({ param: { courseId } }),
+        requestFn: () => classroomhub.course[':courseId']['ai-tutor'].$get({ param: { courseId } }),
         logContext: 'fetching course AI tutor settings',
         onSuccess: (response) => {
           this.courseSettings = response.data;
@@ -94,7 +94,7 @@ class AiTutorApi extends BaseApiWithErrors {
     try {
       await this.execute<UpdateCourseAiTutorRequest>({
         requestFn: () =>
-          classroomio.course[':courseId']['ai-tutor'].$put({
+          classroomhub.course[':courseId']['ai-tutor'].$put({
             param: { courseId },
             json: result.data
           }),

@@ -21,7 +21,7 @@ import {
  * internal ASSESSMENT_ITEM question-type row). Creates its own fixture graph
  * and removes it afterwards. Run from the repository root:
  *
- *   DATABASE_URL="postgresql://postgres:postgres@localhost:15432/classroomio" \
+ *   DATABASE_URL="postgresql://postgres:postgres@localhost:15432/classroomhub" \
  *     npx tsx packages/core/src/services/assessment/question-revision.integration.check.ts
  */
 

@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CreateNewsfeedCommentRequest,
   CreateNewsfeedRequest,
@@ -66,7 +66,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
   async list(courseId: string) {
     await this.execute<ListNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed.$get({
+        classroomhub.course[':courseId'].newsfeed.$get({
           param: { courseId },
           query: {}
         }),
@@ -93,7 +93,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
   async get(courseId: string, feedId: string) {
     await this.execute<GetNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].$get({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].$get({
           param: { courseId, feedId }
         }),
       logContext: 'fetching newsfeed item',
@@ -125,7 +125,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<CreateNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed.$post({
+        classroomhub.course[':courseId'].newsfeed.$post({
           param: { courseId },
           json: result.data
         }),
@@ -186,7 +186,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<UpdateNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].$put({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].$put({
           param: { courseId, feedId },
           json: result.data
         }),
@@ -238,7 +238,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<ReactToNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].react.$put({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].react.$put({
           param: { courseId, feedId },
           json: result.data
         }),
@@ -283,7 +283,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
   async delete(courseId: string, feedId: string) {
     await this.execute<DeleteNewsfeedRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].$delete({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].$delete({
           param: { courseId, feedId }
         }),
       logContext: 'deleting newsfeed',
@@ -331,7 +331,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<GetNewsfeedCommentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].comments.$get({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].comments.$get({
           param: { courseId, feedId },
           query: { limit: String(limit) }
         }),
@@ -369,7 +369,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<GetNewsfeedCommentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].comments.$get({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].comments.$get({
           param: { courseId, feedId },
           query: { cursor: commentState.cursor!, limit: String(limit) }
         }),
@@ -412,7 +412,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<CreateNewsfeedCommentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed[':feedId'].comment.$post({
+        classroomhub.course[':courseId'].newsfeed[':feedId'].comment.$post({
           param: { courseId, feedId },
           json: result.data
         }),
@@ -460,7 +460,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<UpdateNewsfeedCommentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed.comment[':commentId'].$put({
+        classroomhub.course[':courseId'].newsfeed.comment[':commentId'].$put({
           param: { courseId, commentId },
           json: result.data
         }),
@@ -479,7 +479,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
   async deleteComment(courseId: string, feedId: string, commentId: string) {
     await this.execute<DeleteNewsfeedCommentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].newsfeed.comment[':commentId'].$delete({
+        classroomhub.course[':courseId'].newsfeed.comment[':commentId'].$delete({
           param: { courseId, commentId }
         }),
       logContext: 'deleting newsfeed comment',

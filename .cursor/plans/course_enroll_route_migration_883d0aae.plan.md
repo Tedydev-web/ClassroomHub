@@ -93,7 +93,7 @@ flowchart TB
 **Part 3b – Build Enroll URL for emails:** [apps/api/src/services/course/invite.ts](apps/api/src/services/course/invite.ts)
 
 - Add `buildEnrollLink(courseSlug: string, token: string, orgSiteName?: string): string`
-  - Construct: `https://${orgSiteName || 'app'}.classroomio.com/course/${courseSlug}/enroll?invite_token=${encodeURIComponent(token)}`
+  - Construct: `https://${orgSiteName || 'app'}.classroom.io.vn/course/${courseSlug}/enroll?invite_token=${encodeURIComponent(token)}`
   - Use same base-URL logic as elsewhere (dev vs prod; see [newsfeed](apps/api/src/services/newsfeed/newsfeed.ts) for org subdomain pattern)
 - Replace `buildInviteLink` with `buildEnrollLink` in createSingleInvite/email flow; remove buildInviteLink
 - Pass `courseSlug` and `orgSiteName` from course/org data in createStudentInvite and createEmailInviteAndSend

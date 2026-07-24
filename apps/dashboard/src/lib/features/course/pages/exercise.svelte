@@ -134,7 +134,7 @@
   });
   let acknowledgedPassedPolicyReviewSignature = $state<string | null>(null);
   let passedPolicyAttemptChoice = $state<PassedPolicyAttemptChoice>('retry');
-  const passedPolicyReviewStoragePrefix = 'classroomio:passed-policy-review';
+  const passedPolicyReviewStoragePrefix = 'classroomhub:passed-policy-review';
 
   function isTemporaryId(id: string | number | undefined) {
     return typeof id === 'string' && id.includes('-form');

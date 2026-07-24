@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   DocumentDownloadPresignRequest,
   DocumentUploadPresignRequest,
@@ -8,7 +8,7 @@ import type {
 
 /**
  * API class for presigned URL requests (upload and download).
- * All presign calls should go through this class instead of calling classroomio.course.presign directly.
+ * All presign calls should go through this class instead of calling classroomhub.course.presign directly.
  */
 export class PresignApi extends BaseApiWithErrors {
   /**
@@ -18,7 +18,7 @@ export class PresignApi extends BaseApiWithErrors {
   async getDocumentUploadUrl(fileName: string, fileType: string, fileSize?: number) {
     const result = await this.execute<DocumentUploadPresignRequest>({
       requestFn: () =>
-        classroomio.course.presign.document.upload.$post({
+        classroomhub.course.presign.document.upload.$post({
           json: { fileName, fileType, ...(fileSize != null && fileSize > 0 ? { fileSize } : {}) }
         }),
       logContext: 'getting document upload URL'
@@ -35,7 +35,7 @@ export class PresignApi extends BaseApiWithErrors {
     if (keys.length === 0) return {};
     const result = await this.execute<DocumentDownloadPresignRequest>({
       requestFn: () =>
-        classroomio.course.presign.document.download.$post({
+        classroomhub.course.presign.document.download.$post({
           json: { keys }
         }),
       logContext: 'getting document download URLs'
@@ -50,7 +50,7 @@ export class PresignApi extends BaseApiWithErrors {
   async getVideoUploadUrl(fileName: string, fileType: string, fileSize?: number) {
     const result = await this.execute<VideoUploadPresignRequest>({
       requestFn: () =>
-        classroomio.course.presign.video.upload.$post({
+        classroomhub.course.presign.video.upload.$post({
           json: { fileName, fileType, ...(fileSize != null && fileSize > 0 ? { fileSize } : {}) }
         }),
       logContext: 'getting video upload URL'
@@ -67,7 +67,7 @@ export class PresignApi extends BaseApiWithErrors {
     if (keys.length === 0) return {};
     const result = await this.execute<VideoDownloadPresignRequest>({
       requestFn: () =>
-        classroomio.course.presign.video.download.$post({
+        classroomhub.course.presign.video.download.$post({
           json: { keys }
         }),
       logContext: 'getting video download URLs'

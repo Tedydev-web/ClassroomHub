@@ -29,7 +29,7 @@ function generateWidgetPublicKey(): string {
 }
 
 function getWidgetEmbedCode(publicKey: string): string {
-  const scriptUrl = 'https://embed.classroomio.com/course-widget';
+  const scriptUrl = 'https://embed.classroom.io.vn/course-widget';
   return `<div data-cio-widget="course-widget" data-widget-key="${publicKey}"></div>\n<script async type="module" src="${scriptUrl}"></script>`;
 }
 
@@ -96,13 +96,13 @@ describe('getWidgetEmbedCode', () => {
 
   it('should reference the public embed script URL', () => {
     const embedCode = getWidgetEmbedCode('wgt_testkey123456');
-    expect(embedCode).toContain('embed.classroomio.com/course-widget');
+    expect(embedCode).toContain('embed.classroom.io.vn/course-widget');
   });
 
   it('should not include an API base URL in the embed snippet', () => {
     const embedCode = getWidgetEmbedCode('wgt_testkey123456');
     expect(embedCode).not.toContain('data-api-base-url');
-    expect(embedCode).not.toContain('api.classroomio.com');
+    expect(embedCode).not.toContain('api.classroom.io.vn');
   });
 
   it('should properly escape special characters in public key', () => {

@@ -1,7 +1,7 @@
-import { classroomio, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
-type GetAudienceAnalyticsRequest = (typeof classroomio.organization.audience)[':userId']['analytics']['$get'];
+type GetAudienceAnalyticsRequest = (typeof classroomhub.organization.audience)[':userId']['analytics']['$get'];
 type GetAudienceAnalyticsSuccess = Extract<InferResponseType<GetAudienceAnalyticsRequest>, { success: true }>;
 
 export const load = async ({ params, parent, cookies }) => {
@@ -19,7 +19,7 @@ export const load = async ({ params, parent, cookies }) => {
   }
 
   const result = await safeServerApi<GetAudienceAnalyticsSuccess>(() =>
-    classroomio.organization.audience[':userId'].analytics.$get({ param: { userId } }, getApiHeaders(cookies, orgId))
+    classroomhub.organization.audience[':userId'].analytics.$get({ param: { userId } }, getApiHeaders(cookies, orgId))
   );
   const analytics = result.ok ? result.body.data : null;
 

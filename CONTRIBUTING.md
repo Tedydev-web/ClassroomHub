@@ -4,7 +4,7 @@ First and foremost, we're absolutely thrilled that you're considering becoming a
 
 ## Issue Hunters
 
-Did you stumble upon a bug? Encountered a hiccup in deployment? Perhaps you have some user feedback to share? Your quickest route to help us out is by [raising an issue](https://github.com/Tedydev-web/classroomio/issues/new/choose).
+Did you stumble upon a bug? Encountered a hiccup in deployment? Perhaps you have some user feedback to share? Your quickest route to help us out is by [raising an issue](https://github.com/Tedydev-web/classroomhub/issues/new/choose).
 
 ## Feature Architects
 
@@ -20,7 +20,7 @@ Ready to dive into the code and make a real impact? Here's your path:
 
 3. **Pull Request:** If you're ready to go, create a new pull request following our PR template
 
-Would you prefer to discuss the change before you dive into a lot of work? Open a [GitHub issue](https://github.com/Tedydev-web/classroomio/issues) with the proposed scope so it can be reviewed first.
+Would you prefer to discuss the change before you dive into a lot of work? Open a [GitHub issue](https://github.com/Tedydev-web/classroomhub/issues) with the proposed scope so it can be reviewed first.
 
 ## Features
 

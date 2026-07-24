@@ -171,7 +171,7 @@ On submit: existing `updateUserOnboarding` runs, **then** the route invokes `see
 
 ### FR-8 — Frontend Type Hygiene
 - Per CLAUDE.md frontend conventions:
-  - All request/response types live in `apps/dashboard/src/lib/features/onboarding/utils/types.ts`, inferred from the API (`typeof classroomio.onboarding['select-theme'].$post`).
+  - All request/response types live in `apps/dashboard/src/lib/features/onboarding/utils/types.ts`, inferred from the API (`typeof classroomhub.onboarding['select-theme'].$post`).
   - **No** type definitions in `.svelte.ts` files.
   - All copy lives in `apps/dashboard/src/lib/utils/translations/en.json` under `onboarding.theme.*`.
 

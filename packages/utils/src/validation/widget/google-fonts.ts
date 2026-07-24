@@ -4,7 +4,7 @@ import type { TWidgetConfig, TWidgetThemePreset } from './widget';
  * Display / editorial serif stack per theme preset (pairs with sans in {@link WIDGET_THEME_GOOGLE_FONT_FAMILIES}).
  */
 export const WIDGET_THEME_SERIF_STACK: Record<TWidgetThemePreset, string> = {
-  classroomio: "'Lora', Georgia, 'Times New Roman', serif",
+  classroomhub: "'Lora', Georgia, 'Times New Roman', serif",
   graphite: "'IBM Plex Serif', Georgia, 'Times New Roman', serif",
   linen: "'Libre Baskerville', Georgia, 'Times New Roman', serif",
   spruce: "'Fraunces', Georgia, 'Times New Roman', serif"
@@ -12,7 +12,7 @@ export const WIDGET_THEME_SERIF_STACK: Record<TWidgetThemePreset, string> = {
 
 /** Google Font family names loaded for each widget theme (sans + serif used in layouts). */
 export const WIDGET_THEME_GOOGLE_FONT_FAMILIES: Record<TWidgetThemePreset, readonly string[]> = {
-  classroomio: ['DM Sans', 'Inter', 'Lora'],
+  classroomhub: ['DM Sans', 'Inter', 'Lora'],
   graphite: ['IBM Plex Sans', 'IBM Plex Serif', 'Inter'],
   linen: ['Source Sans 3', 'Libre Baskerville'],
   spruce: ['Plus Jakarta Sans', 'Fraunces']

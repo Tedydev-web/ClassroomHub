@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type { TLocale, TProfile } from '@cio/db/types';
 import { ZChangeEmail, ZProfileUpdateForm } from '@cio/utils/validation/account';
 
@@ -75,8 +75,8 @@ export class ProfileApi extends BaseApiWithErrors {
       return;
     }
 
-    await this.execute<typeof classroomio.account.profile.$put>({
-      requestFn: () => classroomio.account.profile.$put({ json: profileUpdates }),
+    await this.execute<typeof classroomhub.account.profile.$put>({
+      requestFn: () => classroomhub.account.profile.$put({ json: profileUpdates }),
       logContext: 'updating profile',
       onSuccess: (response) => {
         profileStore.update((_profile) => ({

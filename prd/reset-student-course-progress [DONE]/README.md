@@ -253,7 +253,7 @@ After `pnpm --filter @cio/api build`, add to
 
 ```ts
 export type ResetMemberCourseProgressRequest =
-  (typeof classroomio.course)[':courseId']['members'][':memberId']['reset-progress']['$post'];
+  (typeof classroomhub.course)[':courseId']['members'][':memberId']['reset-progress']['$post'];
 ```
 
 ### 7. Frontend API class
@@ -264,7 +264,7 @@ Add a method to `apps/dashboard/src/lib/features/course/api/people.svelte.ts`:
 async resetCourseProgress(courseId: string, memberId: string) {
   await this.execute<ResetMemberCourseProgressRequest>({
     requestFn: () =>
-      classroomio.course[':courseId']['members'][':memberId']['reset-progress'].$post({
+      classroomhub.course[':courseId']['members'][':memberId']['reset-progress'].$post({
         param: { courseId, memberId }
       }),
     logContext: 'resetting course member progress',

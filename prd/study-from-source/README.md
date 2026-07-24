@@ -54,7 +54,7 @@ Add **Study from Source** as both:
 
 The product should support uploaded documents, webpage links, and pasted text. The AI agent should analyze the source, break it into teachable units, generate testable checkpoints, and produce learner-facing content that can be reviewed before publish.
 
-Detailed engineering breakdown: [implementation-plan.md](/Users/rotimibest/_pros/classroomio/prd/study-from-source/implementation-plan.md).
+Detailed engineering breakdown: [implementation-plan.md](/Users/rotimibest/_pros/classroomhub/prd/study-from-source/implementation-plan.md).
 
 ## Problem Statement
 
@@ -174,12 +174,12 @@ The AI output is one learner activity:
 
 Data references:
 
-- [packages/db/src/schema.ts](/Users/rotimibest/_pros/classroomio/packages/db/src/schema.ts)
-- [packages/utils/src/validation/course-import/course-import.ts](/Users/rotimibest/_pros/classroomio/packages/utils/src/validation/course-import/course-import.ts)
-- [apps/api/src/services/agent/document.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/services/agent/document.ts)
-- [apps/api/src/routes/agent/upload.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/routes/agent/upload.ts)
-- [prd/ai-course-assistant [DONE]/README.md](/Users/rotimibest/_pros/classroomio/prd/ai-course-assistant%20[DONE]/README.md)
-- [prd/compliance-training-platform [DONE]/README.md](/Users/rotimibest/_pros/classroomio/prd/compliance-training-platform%20[DONE]/README.md)
+- [packages/db/src/schema.ts](/Users/rotimibest/_pros/classroomhub/packages/db/src/schema.ts)
+- [packages/utils/src/validation/course-import/course-import.ts](/Users/rotimibest/_pros/classroomhub/packages/utils/src/validation/course-import/course-import.ts)
+- [apps/api/src/services/agent/document.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/services/agent/document.ts)
+- [apps/api/src/routes/agent/upload.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/routes/agent/upload.ts)
+- [prd/ai-course-assistant [DONE]/README.md](/Users/rotimibest/_pros/classroomhub/prd/ai-course-assistant%20[DONE]/README.md)
+- [prd/compliance-training-platform [DONE]/README.md](/Users/rotimibest/_pros/classroomhub/prd/compliance-training-platform%20[DONE]/README.md)
 
 ## User Personas
 

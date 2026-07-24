@@ -1,4 +1,4 @@
-# PRD: ClassroomIO Labs
+# PRD: ClassroomHub Labs
 
 **Status:** Draft  
 **Author:** Rotimi Best  
@@ -11,7 +11,7 @@
 
 Labs is a new lesson content block type that allows teachers to embed interactive, sandboxed mini-applications directly inside a lesson. Unlike quizzes — which test recall through structured questions — Labs are experiential: students practice, simulate, explore, or make decisions inside a purpose-built interactive environment.
 
-Each Lab is a single compiled Svelte application hosted as a standalone HTML page and embedded via `<iframe>`. Labs communicate with ClassroomIO through a strict `postMessage` interface. They have no network access. They support two modes: **Teacher Mode** (configure the experience) and **Student Mode** (play the experience).
+Each Lab is a single compiled Svelte application hosted as a standalone HTML page and embedded via `<iframe>`. Labs communicate with ClassroomHub through a strict `postMessage` interface. They have no network access. They support two modes: **Teacher Mode** (configure the experience) and **Student Mode** (play the experience).
 
 Labs are contributed by developers to an open-source marketplace repository and discovered through an in-editor picker modal.
 
@@ -19,9 +19,9 @@ Labs are contributed by developers to an open-source marketplace repository and 
 
 ## 2. Problem Statement
 
-ClassroomIO is building for compliance training and certification programs. These programs need learners to not just understand content but to demonstrate judgment under realistic conditions — recognizing a phishing email, following an incident response playbook, correctly classifying sensitive data.
+ClassroomHub is building for compliance training and certification programs. These programs need learners to not just understand content but to demonstrate judgment under realistic conditions — recognizing a phishing email, following an incident response playbook, correctly classifying sensitive data.
 
-Today, the only interactive tool available to teachers is the quiz. Quizzes test recall but cannot simulate decision-making under pressure, multi-step scenarios, or contextual judgment. There is also no mechanism for the ClassroomIO ecosystem to grow through external developer contributions.
+Today, the only interactive tool available to teachers is the quiz. Quizzes test recall but cannot simulate decision-making under pressure, multi-step scenarios, or contextual judgment. There is also no mechanism for the ClassroomHub ecosystem to grow through external developer contributions.
 
 This leaves a critical pedagogical gap: compliance certifications require learners to practice realistic scenarios, and teachers have no way to deliver that inside a lesson.
 
@@ -32,7 +32,7 @@ This leaves a critical pedagogical gap: compliance certifications require learne
 1. **G1** — Give teachers a way to embed interactive, scenario-based activities directly in lessons alongside existing content blocks (video, notes, slides).
 2. **G2** — Make Labs completable and trackable — completion state and score feed into lesson progress and certification records.
 3. **G3** — Enable an open-source developer ecosystem where contributors can publish Labs to a public marketplace.
-4. **G4** — Keep Labs sandboxed and secure — no network access, no access to student PII, no access to ClassroomIO internals.
+4. **G4** — Keep Labs sandboxed and secure — no network access, no access to student PII, no access to ClassroomHub internals.
 5. **G5** — Support a teacher configuration model so a single Lab can be deployed differently across different courses or compliance contexts.
 
 ---
@@ -85,8 +85,8 @@ Monitors certification completion. Needs assurance that Lab completions are reco
 ### Lab Developer
 - As a developer, I can scaffold a new Lab using a CLI command so I can start building without boilerplate.
 - As a developer, I can run a local dev harness that simulates the `postMessage` init flow so I can develop the Lab in isolation.
-- As a developer, I can define a config schema in `manifest.json` so ClassroomIO auto-generates the teacher configuration form for my Lab.
-- As a developer, I can submit my Lab as a pull request to the `classroomio-labs` repository so it appears in the marketplace after review.
+- As a developer, I can define a config schema in `manifest.json` so ClassroomHub auto-generates the teacher configuration form for my Lab.
+- As a developer, I can submit my Lab as a pull request to the `classroomhub-labs` repository so it appears in the marketplace after review.
 
 ### Admin
 - As a compliance manager, I can view Lab completion records per student in the organization dashboard so I can audit certification evidence.
@@ -129,14 +129,14 @@ Monitors certification completion. Needs assurance that Lab completions are reco
 ### 7.3 Teacher Mode
 
 - When the iframe is loaded with `mode: 'teacher'`, the Lab renders its own configuration UI.
-- The Lab's config UI is entirely self-contained inside the iframe. ClassroomIO does not render config fields directly — it drives the form via the `configSchema` in the picker modal (see 7.2), but the Lab itself also renders a config preview.
-- When the teacher changes config in the modal form, ClassroomIO sends a fresh `init` message to the iframe so the Lab can update its preview in real time.
+- The Lab's config UI is entirely self-contained inside the iframe. ClassroomHub does not render config fields directly — it drives the form via the `configSchema` in the picker modal (see 7.2), but the Lab itself also renders a config preview.
+- When the teacher changes config in the modal form, ClassroomHub sends a fresh `init` message to the iframe so the Lab can update its preview in real time.
 - When the teacher switches to "Student Preview", the iframe reloads with `mode: 'student'` and the current config frozen in.
 
 ### 7.4 Student Mode
 
 - The Lab iframe is embedded inline in the lesson page with `mode: 'student'` and the teacher's saved config.
-- Before the Lab starts, an instruction overlay is shown (either from the Lab itself or from ClassroomIO wrapping the iframe) covering:
+- Before the Lab starts, an instruction overlay is shown (either from the Lab itself or from ClassroomHub wrapping the iframe) covering:
   - Lab name
   - Objective / what the student needs to do
   - Estimated time
@@ -144,7 +144,7 @@ Monitors certification completion. Needs assurance that Lab completions are reco
   - A **Start** button
 - The Lab is fullscreen-expandable via a button on the iframe wrapper.
 - While the student is in the Lab, a progress indicator (if the Lab emits `progress` events) shows on the iframe wrapper.
-- When the Lab emits `complete`, ClassroomIO:
+- When the Lab emits `complete`, ClassroomHub:
   - Records the result (score, passed, timestamp, labVersion, config hash).
   - Displays a result overlay on top of the iframe showing: score, pass/fail badge, and a brief summary from the Lab.
   - If the student passed (or no pass threshold was set): marks the Lab block as complete in lesson progress.
@@ -197,7 +197,7 @@ Monitors certification completion. Needs assurance that Lab completions are reco
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                   classroomio-labs (GitHub repo)           │
+│                   classroomhub-labs (GitHub repo)           │
 │                                                            │
 │  apps/                                                     │
 │    phishing-detector/                                      │
@@ -216,7 +216,7 @@ Monitors certification completion. Needs assurance that Lab completions are reco
                                    │ CI build + deploy
                                    ▼
 ┌─────────────────────────────────────────────────────────┐
-│         labs.classroomio.com (static CDN)               │
+│         labs.classroom.io.vn (static CDN)               │
 │                                                         │
 │   /phishing-detector/v1.2.0/index.html                  │
 │   /phishing-detector/latest/index.html                  │
@@ -226,12 +226,12 @@ Monitors certification completion. Needs assurance that Lab completions are reco
                           iframe src=
                                    │
 ┌─────────────────────────────────────────────────────────┐
-│         ClassroomIO Dashboard (lesson editor / viewer)  │
+│         ClassroomHub Dashboard (lesson editor / viewer)  │
 │                                                         │
 │   LabBlock.svelte  ─── postMessage ──► Lab iframe       │
 │       ▲                                                  │
 │       │ stores config, completion records               │
-│   ClassroomIO API / DB                                  │
+│   ClassroomHub API / DB                                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -239,7 +239,7 @@ Monitors certification completion. Needs assurance that Lab completions are reco
 
 All messages are JSON objects with a `type` discriminant.
 
-#### ClassroomIO → Lab iframe
+#### ClassroomHub → Lab iframe
 
 **`init`** — sent immediately after the iframe loads. The Lab must wait for this before rendering.
 
@@ -275,7 +275,7 @@ All messages are JSON objects with a `type` discriminant.
 }
 ```
 
-#### Lab iframe → ClassroomIO
+#### Lab iframe → ClassroomHub
 
 **`ready`** — emitted when the Lab has finished initializing and is ready for `init`.
 
@@ -323,14 +323,14 @@ All messages are JSON objects with a `type` discriminant.
 ```typescript
 {
   type: 'error';
-  message: string;   // human-readable, shown in ClassroomIO fallback UI
+  message: string;   // human-readable, shown in ClassroomHub fallback UI
 }
 ```
 
 #### Security constraints on postMessage
-- ClassroomIO only accepts messages from the iframe's known origin (`labs.classroomio.com`).
+- ClassroomHub only accepts messages from the iframe's known origin (`labs.classroom.io.vn`).
 - The iframe is served with the following headers:
-  - `Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'none'; frame-ancestors https://app.classroomio.com`
+  - `Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'none'; frame-ancestors https://app.classroom.io.vn`
   - `connect-src: 'none'` — no outbound network requests.
 - The iframe sandbox attribute: `sandbox="allow-scripts allow-same-origin"` — no form submissions, no top-navigation, no popups.
 
@@ -358,12 +358,12 @@ CI runs on every merged PR to `main`. Deployment is to a static CDN (Cloudflare 
       "name": "Phishing Detector",
       "description": "Students identify phishing vs legitimate emails in a realistic inbox simulation.",
       "tags": ["cybersecurity", "compliance", "security-awareness"],
-      "author": { "name": "ClassroomIO Team", "url": "https://classroomio.com" },
+      "author": { "name": "ClassroomHub Team", "url": "https://classroom.io.vn" },
       "version": "1.2.0",
       "estimatedMinutes": 5,
-      "previewImage": "https://labs.classroomio.com/phishing-detector/preview.png",
-      "url": "https://labs.classroomio.com/phishing-detector/v1.2.0/index.html",
-      "latestUrl": "https://labs.classroomio.com/phishing-detector/latest/index.html",
+      "previewImage": "https://labs.classroom.io.vn/phishing-detector/preview.png",
+      "url": "https://labs.classroom.io.vn/phishing-detector/v1.2.0/index.html",
+      "latestUrl": "https://labs.classroom.io.vn/phishing-detector/latest/index.html",
       "configSchema": {
         "difficulty": {
           "type": "select",
@@ -390,7 +390,7 @@ CI runs on every merged PR to `main`. Deployment is to a static CDN (Cloudflare 
 }
 ```
 
-ClassroomIO fetches `registry.json` at build time (SSG) or with a short TTL cache. The modal renders the list from this data.
+ClassroomHub fetches `registry.json` at build time (SSG) or with a short TTL cache. The modal renders the list from this data.
 
 ---
 
@@ -597,11 +597,11 @@ access-control        — Identity, permissions, least privilege
 ## 13. Marketplace / Contribution Model
 
 ### Repository
-`github.com/classroomio/classroomio-labs` — public, open source (MIT).
+`github.com/classroomhub/classroomhub-labs` — public, open source (MIT).
 
 ### Directory Structure
 ```
-classroomio-labs/
+classroomhub-labs/
   apps/
     {slug}/
       index.svelte
@@ -613,10 +613,10 @@ classroomio-labs/
     src/
       index.ts             (postMessage helpers, TypeScript types, constants)
     harness/
-      index.html           (local dev simulator — simulates ClassroomIO host)
+      index.html           (local dev simulator — simulates ClassroomHub host)
       harness.ts
   packages/
-    create-lab/            (CLI scaffolding tool — `npx create-classroomio-lab`)
+    create-lab/            (CLI scaffolding tool — `npx create-classroomhub-lab`)
   docs/
     contributing.md
     manifest-spec.md
@@ -629,7 +629,7 @@ classroomio-labs/
 ```
 
 ### Contribution Flow
-1. Developer runs `npx create-classroomio-lab` — scaffolds a new directory with a starter `index.svelte`, a `manifest.json` template, and links to the design guide.
+1. Developer runs `npx create-classroomhub-lab` — scaffolds a new directory with a starter `index.svelte`, a `manifest.json` template, and links to the design guide.
 2. Developer builds the Lab locally using `pnpm dev --lab={slug}` which opens the harness in the browser, simulating the `init` message flow.
 3. Developer submits a PR with the new `apps/{slug}/` directory.
 4. CI runs:
@@ -637,7 +637,7 @@ classroomio-labs/
    - Contract validation (does the compiled Lab respond to `init` and emit `ready` and `complete`?).
    - Lighthouse accessibility audit (must pass score ≥ 80).
    - Visual regression (snapshot of the compiled Lab at 1280px and 768px).
-5. ClassroomIO team reviews for pedagogical quality and content accuracy.
+5. ClassroomHub team reviews for pedagogical quality and content accuracy.
 6. Merged to `main` → CI builds and deploys to CDN → registry.json updated → appears in marketplace.
 
 ### SDK (`sdk/src/index.ts`)
@@ -645,7 +645,7 @@ classroomio-labs/
 The SDK is a tiny TypeScript module that Lab authors import to simplify the postMessage protocol:
 
 ```typescript
-import { LabSDK } from '@classroomio/lab-sdk';
+import { LabSDK } from '@classroomhub/lab-sdk';
 
 const lab = new LabSDK();
 
@@ -695,7 +695,7 @@ Labs must follow these design rules to maintain visual consistency and quality:
 | Lab reads student PII | Only opaque `studentId` token passed; no email, name, or org data |
 | Lab exfiltrates config data | `frame-ancestors` CSP restricts who can embed the Lab |
 | Malicious Lab code in marketplace | PR review process + CI contract validation + manifest schema validation |
-| postMessage spoofing (non-lab origin) | ClassroomIO checks `event.origin === 'https://labs.classroomio.com'` before processing |
+| postMessage spoofing (non-lab origin) | ClassroomHub checks `event.origin === 'https://labs.classroom.io.vn'` before processing |
 | Compromised CDN | Subresource integrity (SRI) hash stored per Lab version in registry.json; iframe src checked against it |
 | Config injection | Config is JSON-serialized and passed as a structured message, never eval'd |
 
@@ -707,8 +707,8 @@ Labs must follow these design rules to maintain visual consistency and quality:
 - Labs must be operable by keyboard alone.
 - Labs must provide appropriate ARIA labels on all interactive elements.
 - Labs must not rely solely on color to convey meaning.
-- ClassroomIO wrapper around the iframe must have `title` attribute describing the Lab.
-- The "Start" overlay and result overlay rendered by ClassroomIO (not the Lab) fully comply with WCAG AA.
+- ClassroomHub wrapper around the iframe must have `title` attribute describing the Lab.
+- The "Start" overlay and result overlay rendered by ClassroomHub (not the Lab) fully comply with WCAG AA.
 
 ---
 
@@ -726,7 +726,7 @@ Labs use **semver** (`MAJOR.MINOR.PATCH`).
 
 **Lesson blocks pin to the exact version used when the teacher configured the Lab.** The block continues to load that version even after newer versions are published. The editor shows an upgrade prompt for minor and major updates.
 
-**For major version upgrades:** ClassroomIO warns the teacher that the config schema has changed and may need to be reconfigured. It does not auto-migrate config. Students who already passed under an older major version are not required to redo it unless the teacher explicitly resets completions.
+**For major version upgrades:** ClassroomHub warns the teacher that the config schema has changed and may need to be reconfigured. It does not auto-migrate config. Students who already passed under an older major version are not required to redo it unless the teacher explicitly resets completions.
 
 ---
 
@@ -786,7 +786,7 @@ Lesson Page
     │
     ├─ Lab emits `complete`
     │
-    ├─ Result overlay appears (rendered by ClassroomIO):
+    ├─ Result overlay appears (rendered by ClassroomHub):
     │       ├─ Score: 84/100
     │       ├─ ✅ Passed (required: 80%)
     │       ├─ "You caught 4 out of 5 phishing emails"
@@ -799,7 +799,7 @@ Lesson Page
 
 ## 19. AI Assistant Integration
 
-The existing ClassroomIO AI assistant (used by teachers) can recommend Labs contextually.
+The existing ClassroomHub AI assistant (used by teachers) can recommend Labs contextually.
 
 - When a teacher is editing a lesson on a topic (e.g. "Identifying Phishing Attacks"), the AI assistant can suggest: *"Would you like to add a Phishing Detector lab to give students hands-on practice with this topic?"*
 - The AI assistant can call the existing lesson content tools to insert a Lab block with a pre-set config.
@@ -837,7 +837,7 @@ insert_lab_block({
 - Downloadable CSV of all `lab_completion` records for audit
 
 ### Lab-level analytics (for marketplace contributors — anonymized)
-- Total completions across all ClassroomIO instances
+- Total completions across all ClassroomHub instances
 - Average score by difficulty
 - Average time to complete
 - Most common failure points (from `metadata.details` aggregated anonymously)
@@ -853,16 +853,16 @@ insert_lab_block({
 | Student completion | ≥ 75% of started Labs reach the `complete` event |
 | Marketplace growth | ≥ 12 Labs published (8 internal + 4 community) |
 | Completion record accuracy | 0 data loss incidents on completion records |
-| Developer experience | Median time from `npx create-classroomio-lab` to first `complete` event in harness ≤ 30 min |
+| Developer experience | Median time from `npx create-classroomhub-lab` to first `complete` event in harness ≤ 30 min |
 
 ---
 
 ## 22. Phased Roadmap
 
 ### Phase 1: Foundation (Weeks 1–6)
-- [ ] `classroomio-labs` repository scaffold (SDK, harness, build pipeline, manifest spec)
-- [ ] `npx create-classroomio-lab` CLI scaffold
-- [ ] postMessage interface implemented in ClassroomIO lesson viewer
+- [ ] `classroomhub-labs` repository scaffold (SDK, harness, build pipeline, manifest spec)
+- [ ] `npx create-classroomhub-lab` CLI scaffold
+- [ ] postMessage interface implemented in ClassroomHub lesson viewer
 - [ ] Lab block type in lesson editor (add, configure, reorder, delete)
 - [ ] Lab Picker Modal (from local registry.json fixture)
 - [ ] Teacher Mode and Student Mode iframe wrappers
@@ -879,7 +879,7 @@ insert_lab_block({
 - [ ] Org-level Lab completion reporting in admin dashboard
 
 ### Phase 3: Ecosystem (Weeks 13–20)
-- [ ] Public marketplace website (`labs.classroomio.com`) with filtering, search, previews
+- [ ] Public marketplace website (`labs.classroom.io.vn`) with filtering, search, previews
 - [ ] Contribution documentation and design guidelines published
 - [ ] CI contract validation and accessibility checks live
 - [ ] AI assistant Lab recommendation integration
@@ -923,7 +923,7 @@ insert_lab_block({
 | Teacher Mode | The iframe mode where the Lab renders its configuration UI and preview |
 | Student Mode | The iframe mode where the Lab renders its interactive experience |
 | Complete Event | The `postMessage` event emitted by a Lab when the student finishes the activity |
-| Harness | A local browser simulator that mimics the ClassroomIO host for Lab development |
+| Harness | A local browser simulator that mimics the ClassroomHub host for Lab development |
 
 ---
 

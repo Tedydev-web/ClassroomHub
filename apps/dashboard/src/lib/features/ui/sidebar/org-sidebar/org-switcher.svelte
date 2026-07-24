@@ -40,7 +40,7 @@
   function onClick(org: AccountOrg) {
     if (org.id === $currentOrg.id) return;
 
-    localStorage.setItem('classroomio_org_sitename', org.siteName!);
+    localStorage.setItem('classroomhub_org_sitename', org.siteName!);
     currentOrg.set(mergeAccountOrgFromServer(org));
 
     setTheme(org.theme!);

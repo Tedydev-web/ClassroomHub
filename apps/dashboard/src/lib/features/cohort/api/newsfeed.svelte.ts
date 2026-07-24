@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CreateCohortNewsfeedCommentRequest,
   CreateCohortNewsfeedRequest,
@@ -55,7 +55,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
   async list(cohortId: string) {
     await this.execute<ListCohortNewsfeedRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed.$get({
+        classroomhub.cohort[':cohortId'].newsfeed.$get({
           param: { cohortId },
           query: {}
         }),
@@ -94,7 +94,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<CreateCohortNewsfeedRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed.$post({
+        classroomhub.cohort[':cohortId'].newsfeed.$post({
           param: { cohortId },
           json: fields
         }),
@@ -137,7 +137,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<UpdateCohortNewsfeedRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].$put({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].$put({
           param: { cohortId, feedId },
           json: fields
         }),
@@ -174,7 +174,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<ReactToCohortNewsfeedRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].react.$put({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].react.$put({
           param: { cohortId, feedId },
           json: validationResult.data
         }),
@@ -205,7 +205,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
   async delete(cohortId: string, feedId: string) {
     await this.execute<DeleteCohortNewsfeedRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].$delete({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].$delete({
           param: { cohortId, feedId }
         }),
       logContext: 'deleting cohort newsfeed',
@@ -244,7 +244,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<GetCohortNewsfeedCommentsRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].comments.$get({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].comments.$get({
           param: { cohortId, feedId }
         }),
       logContext: 'fetching cohort newsfeed comments',
@@ -280,7 +280,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
 
     await this.execute<CreateCohortNewsfeedCommentRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].comment.$post({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].comment.$post({
           param: { cohortId, feedId },
           json: { content }
         }),
@@ -321,7 +321,7 @@ export class CohortNewsfeedApi extends BaseApiWithErrors {
   async deleteComment(cohortId: string, feedId: string, commentId: string) {
     await this.execute<DeleteCohortNewsfeedCommentRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId'].newsfeed[':feedId'].comment[':commentId'].$delete({
+        classroomhub.cohort[':cohortId'].newsfeed[':feedId'].comment[':commentId'].$delete({
           param: { cohortId, feedId, commentId }
         }),
       logContext: 'deleting cohort newsfeed comment',

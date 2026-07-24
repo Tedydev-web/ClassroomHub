@@ -267,7 +267,7 @@ gated/limited or doc claims exceed code; **Stub/Planned** = PRD only, little/no 
   conversation/model context/documents (`3083`,`3106`,`3138`). **Disabled until a provider
   key is set**; `GET /agent/status` flips to `enabled:true` when any of OPENAI/GOOGLE/
   ANTHROPIC key is present. `README.md:223–238`. Selected model persisted in `localStorage`
-  (`classroomio-ai-chat-model`), provider resolved server‑side; missing key → 503
+  (`classroomhub-ai-chat-model`), provider resolved server‑side; missing key → 503
   `AI_NOT_CONFIGURED` (`README.md:236`).
 - **User flow:** Course → AI button (only shown when enabled) → chat to build/edit course.
 - **Edge cases:** no key → AI button hidden / 503; per‑model provider resolution; optional

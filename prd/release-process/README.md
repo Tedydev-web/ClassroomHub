@@ -35,8 +35,8 @@ release continuously and lets a maintainer cut it on a cadence with one merge.
 3. **Versioning: SemVer, single version for the whole app.** `feat` → minor,
    `fix` → patch, `feat!`/`BREAKING CHANGE` → major. One version tag `vX.Y.Z`
    covers the Dockerized app (api + dashboard + jobs + packages).
-4. **Side packages stay independently published.** `@classroomio/mcp`
-   (`publish-mcp.yml`) and `@classroomio/course-app` (`publish-course-app.yml`)
+4. **Side packages stay independently published.** `@classroomhub/mcp`
+   (`publish-mcp.yml`) and `@classroomhub/course-app` (`publish-course-app.yml`)
    keep their own manual `workflow_dispatch` publish flows. release-please does
    **not** version or publish them. (Not Changesets — that only pays off with
    many independently-versioned npm packages; we ship one app.)
@@ -65,7 +65,7 @@ Mon–Thu  merge work PRs → prod deploys continuously (unchanged)
          release-please keeps the "Release PR" (version + CHANGELOG) up to date
 Friday   maintainer skims the Release PR changelog → merges it
          → tag vX.Y.Z + GitHub Release + CHANGELOG.md committed
-         → docker-publish.yml builds classroomio:vX.Y.Z automatically
+         → docker-publish.yml builds classroomhub:vX.Y.Z automatically
 ```
 
 ## Backend / infra changes
@@ -120,7 +120,7 @@ Friday   maintainer skims the Release PR changelog → merges it
 - **Curated end-user changelog** (a cal.com/Supabase-style blog or docs "What's
   new in vX" page) written for humans, batched at a slower cadence. Track 1
   (GitHub Releases + `CHANGELOG.md`) ships first; this is Track 2.
-- Bringing `@classroomio/mcp` / `@classroomio/course-app` into release-please as
+- Bringing `@classroomhub/mcp` / `@classroomhub/course-app` into release-please as
   independently-versioned components (would move us toward a manifest with
   multiple packages).
 - Pre-release / release-candidate channel (e.g. `next` tag) before promoting to

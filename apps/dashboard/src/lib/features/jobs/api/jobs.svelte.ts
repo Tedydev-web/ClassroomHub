@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 
 import type {
   AssetMediaJobs,
@@ -19,7 +19,7 @@ class JobsApi extends BaseApi {
   async getMediaJob(jobId: string): Promise<MediaJobEnvelope | null> {
     let envelope: MediaJobEnvelope | null = null;
     await this.execute<GetMediaJobRequest>({
-      requestFn: () => classroomio.jobs.media[':jobId'].$get({ param: { jobId } }),
+      requestFn: () => classroomhub.jobs.media[':jobId'].$get({ param: { jobId } }),
       logContext: 'fetching media job',
       onSuccess: (response) => {
         envelope = response.data;
@@ -35,7 +35,7 @@ class JobsApi extends BaseApi {
 
     let envelopes: MediaJobsBatch = {};
     await this.execute<ListMediaJobsRequest>({
-      requestFn: () => classroomio.jobs.media.$get({ query: { ids: jobIds.join(',') } }),
+      requestFn: () => classroomhub.jobs.media.$get({ query: { ids: jobIds.join(',') } }),
       logContext: 'fetching media jobs (batch)',
       onSuccess: (response) => {
         envelopes = response.data;
@@ -49,7 +49,7 @@ class JobsApi extends BaseApi {
   async getMediaJobsForAsset(assetId: string): Promise<AssetMediaJobs> {
     let envelopes: AssetMediaJobs = [];
     await this.execute<ListAssetMediaJobsRequest>({
-      requestFn: () => classroomio.jobs.media.asset[':assetId'].$get({ param: { assetId } }),
+      requestFn: () => classroomhub.jobs.media.asset[':assetId'].$get({ param: { assetId } }),
       logContext: 'fetching media jobs for asset',
       onSuccess: (response) => {
         envelopes = response.data;
@@ -63,7 +63,7 @@ class JobsApi extends BaseApi {
   async cancelMediaJob(jobId: string): Promise<MediaJobEnvelope | null> {
     let envelope: MediaJobEnvelope | null = null;
     await this.execute<CancelMediaJobRequest>({
-      requestFn: () => classroomio.jobs.media[':jobId'].cancel.$post({ param: { jobId } }),
+      requestFn: () => classroomhub.jobs.media[':jobId'].cancel.$post({ param: { jobId } }),
       logContext: 'cancelling media job',
       onSuccess: (response) => {
         envelope = response.data;

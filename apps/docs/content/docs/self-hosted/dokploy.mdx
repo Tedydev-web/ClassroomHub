@@ -4,7 +4,7 @@ description: Deploy ClassroomHub on Dokploy using the pull-based Docker Compose 
 ---
 
 [Dokploy](https://dokploy.com) is an open-source, self-hosted PaaS — a Heroku/Vercel alternative you run
-on your own VPS. It deploys ClassroomHub from the published `classroomio/*` images using the **same
+on your own VPS. It deploys ClassroomHub from the published `classroomhub/*` images using the **same
 pull-based Docker Compose file** as the [Docker](/self-hosted/docker) and [Coolify](/self-hosted/coolify)
 guides — Dokploy **pulls** the images and never builds anything.
 
@@ -55,7 +55,7 @@ dashboard domain → sign up**.
 ### Create a project
 
 In the Dokploy dashboard, open **Projects** and click **Create Project**. Give it a name (e.g.
-`classroomio`) and open it.
+`classroomhub`) and open it.
 
 ![Creating a project in Dokploy](/docs/dokploy-01-create-project.webp)
 </Step>
@@ -74,7 +74,7 @@ prompted, **select the server** you connected to Dokploy — this is the VPS Cla
 
 Dokploy asks where the compose file comes from — GitHub, GitLab, Bitbucket, or **Raw**. Choose **Raw**
 (the manual option) and paste the contents of
-[`docker-compose.images.yaml`](https://github.com/Tedydev-web/classroomio/blob/main/docker-compose.images.yaml)
+[`docker-compose.images.yaml`](https://github.com/Tedydev-web/classroomhub/blob/main/docker-compose.images.yaml)
 — the same pull-based stack used for the [Docker](/self-hosted/docker) and [Coolify](/self-hosted/coolify)
 deployments.
 
@@ -119,7 +119,7 @@ as storage). DNS can take a few minutes to propagate.
 <Step>
 ### Deploy
 
-Click **Deploy**. Dokploy pulls `classroomio/{api,dashboard,jobs}` plus Postgres, Redis, and MinIO,
+Click **Deploy**. Dokploy pulls `classroomhub/{api,dashboard,jobs}` plus Postgres, Redis, and MinIO,
 then starts the stack. The API runs database setup on first boot. Watch the **logs** until every
 service is up — this is your first deploy.
 

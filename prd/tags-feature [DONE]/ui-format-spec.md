@@ -9,7 +9,7 @@ This spec focuses on layout, information hierarchy, and interaction design, not 
 1. Keep filters visible and understandable at a glance.
 2. Use grouped facets (not flat tag cloud) as the primary mental model.
 3. Make selected filters persistent and removable from a single “active filters” region.
-4. Preserve existing Classroomio page shell patterns (`Page.Root`, `Page.Header`, `Page.Body`).
+4. Preserve existing Classroomhub page shell patterns (`Page.Root`, `Page.Header`, `Page.Body`).
 5. Ensure mobile-first usability with drawer/sheet patterns for filters.
 
 ## Shared Component Formatting

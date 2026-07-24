@@ -411,7 +411,7 @@
         <div class="relative w-fit">
           <img
             alt="Course cover"
-            src={$settings.logo ? $settings.logo : '/images/classroomio-course-img-template.jpg'}
+            src={$settings.logo ? $settings.logo : '/images/classroomhub-course-img-template.jpg'}
             class="relative mt-2 h-[200px] w-[280px] rounded-md border object-cover md:mt-0"
           />
         </div>

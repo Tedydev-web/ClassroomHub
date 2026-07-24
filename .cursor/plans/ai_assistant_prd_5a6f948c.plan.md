@@ -201,7 +201,7 @@ The system prompt includes an explicit list of what the agent CANNOT do. When a 
 **System prompt template:**
 
 ```
-You are an AI assistant for ClassroomIO. You help teachers create and organize
+You are an AI assistant for ClassroomHub. You help teachers create and organize
 course content.
 
 You have access to specific tools listed below. If a user asks you to do something
@@ -324,7 +324,7 @@ Four layers of protection:
 
 ### Self-Hosted vs Cloud
 
-- **Cloud**: AI assistant enabled by default. ClassroomIO provides the LLM API key server-side. Teachers see the button, no setup needed. Usage may be metered per plan tier.
+- **Cloud**: AI assistant enabled by default. ClassroomHub provides the LLM API key server-side. Teachers see the button, no setup needed. Usage may be metered per plan tier.
 - **Self-hosted**: AI assistant **disabled by default**. To enable, the self-hosted admin sets `AI_API_KEY` and optionally `AI_PROVIDER` / `AI_MODEL` in their environment. When configured, the assistant becomes available. When not configured, the button is hidden (check via a server-side flag exposed to the client, e.g. a `GET /agent/status` endpoint or a field in the org config response).
 
 This is simpler than storing API keys in the database and avoids security concerns around key storage.

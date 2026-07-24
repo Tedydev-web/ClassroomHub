@@ -5,7 +5,7 @@
   import { currentOrgPath } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
 
   let query = new URLSearchParams(page.url.search);
@@ -19,7 +19,7 @@
 
     try {
       isLoading = true;
-      await classroomio.onboarding.complete.$post({});
+      await classroomhub.onboarding.complete.$post({});
 
       goto($currentOrgPath + '/courses?create=true');
     } catch (error) {

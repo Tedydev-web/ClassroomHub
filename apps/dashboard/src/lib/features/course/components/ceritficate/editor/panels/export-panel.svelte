@@ -4,7 +4,7 @@
   import ImageIcon from '@lucide/svelte/icons/image';
   import PrinterIcon from '@lucide/svelte/icons/printer';
   import { t } from '$lib/utils/functions/translations';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import { profile } from '$lib/utils/store/user';
 
@@ -37,7 +37,7 @@
 
     try {
       const body = await buildBody();
-      const response = await classroomio.course[':courseId']['download']['certificate']['$post']({
+      const response = await classroomhub.course[':courseId']['download']['certificate']['$post']({
         param: { courseId },
         json: body
       });
@@ -57,7 +57,7 @@
 
     try {
       const body = await buildBody();
-      const response = await classroomio.course[':courseId']['download']['certificate']['png']['$post']({
+      const response = await classroomhub.course[':courseId']['download']['certificate']['png']['$post']({
         param: { courseId },
         json: body
       });
@@ -77,7 +77,7 @@
 
     try {
       const body = await buildBody();
-      const response = await classroomio.course[':courseId']['download']['certificate']['png']['$post']({
+      const response = await classroomhub.course[':courseId']['download']['certificate']['png']['$post']({
         param: { courseId },
         json: body
       });

@@ -1,5 +1,5 @@
 ---
-description: Workflow for adding a new org landing-page template (editorial, vibrant, terminal, etc.) to the ClassroomIO monorepo. Activate when the user asks to add/create/build a new landing template or theme, or hands over a design reference for a new landing visual style.
+description: Workflow for adding a new org landing-page template (editorial, vibrant, terminal, etc.) to the ClassroomHub monorepo. Activate when the user asks to add/create/build a new landing template or theme, or hands over a design reference for a new landing visual style.
 globs:
   - prototypes/org-landing-page/**
   - packages/ui/src/custom/org-landing-page/**

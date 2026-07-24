@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CreateTagGroupRequest,
   CreateTagRequest,
@@ -28,7 +28,7 @@ class TagApi extends BaseApiWithErrors {
 
   async getTagGroups() {
     return this.execute<GetTagGroupsRequest>({
-      requestFn: () => classroomio.organization.tags.$get(),
+      requestFn: () => classroomhub.organization.tags.$get(),
       logContext: 'fetching organization tags',
       onSuccess: (response) => {
         this.tagGroups = response.data;
@@ -50,7 +50,7 @@ class TagApi extends BaseApiWithErrors {
 
     await this.execute<CreateTagGroupRequest>({
       requestFn: () =>
-        classroomio.organization.tags.groups.$post({
+        classroomhub.organization.tags.groups.$post({
           json: parsed.data
         }),
       logContext: 'creating tag group',
@@ -90,7 +90,7 @@ class TagApi extends BaseApiWithErrors {
 
     await this.execute<UpdateTagGroupRequest>({
       requestFn: () =>
-        classroomio.organization.tags.groups[':groupId'].$put({
+        classroomhub.organization.tags.groups[':groupId'].$put({
           param: { groupId },
           json: parsed.data
         }),
@@ -131,7 +131,7 @@ class TagApi extends BaseApiWithErrors {
 
     await this.execute<CreateTagRequest>({
       requestFn: () =>
-        classroomio.organization.tags.$post({
+        classroomhub.organization.tags.$post({
           json: parsed.data
         }),
       logContext: 'creating tag',
@@ -171,7 +171,7 @@ class TagApi extends BaseApiWithErrors {
 
     await this.execute<UpdateTagRequest>({
       requestFn: () =>
-        classroomio.organization.tags[':tagId'].$put({
+        classroomhub.organization.tags[':tagId'].$put({
           param: { tagId },
           json: parsed.data
         }),
@@ -204,7 +204,7 @@ class TagApi extends BaseApiWithErrors {
   async getCourseTags(courseId: string) {
     return this.execute<GetCourseTagsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].tags.$get({
+        classroomhub.course[':courseId'].tags.$get({
           param: { courseId }
         }),
       logContext: 'fetching course tags',
@@ -236,7 +236,7 @@ class TagApi extends BaseApiWithErrors {
 
     await this.execute<UpdateCourseTagsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].tags.$put({
+        classroomhub.course[':courseId'].tags.$put({
           param: { courseId },
           json: parsed.data
         }),

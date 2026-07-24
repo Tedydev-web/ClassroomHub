@@ -1,4 +1,4 @@
-import { BaseApi, classroomio } from '$lib/utils/services/api';
+import { BaseApi, classroomhub } from '$lib/utils/services/api';
 import {
   currentOrg,
   getAppOrigin,
@@ -151,7 +151,7 @@ class AppInitApi extends BaseApi {
 
   private async fetchAccountData(): Promise<AccountSuccess | undefined> {
     try {
-      const response = await classroomio.account.$get();
+      const response = await classroomhub.account.$get();
       const result = (await response.json()) as AccountResponse;
 
       if (!result?.success) {
@@ -198,7 +198,7 @@ class AppInitApi extends BaseApi {
 
   private async fetchPendingOrgInvite(orgId: string): Promise<PendingOrgInvite | null> {
     try {
-      const response = await classroomio.invite.organization.pending.$get({}, { headers: { 'cio-org-id': orgId } });
+      const response = await classroomhub.invite.organization.pending.$get({}, { headers: { 'cio-org-id': orgId } });
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -213,7 +213,7 @@ class AppInitApi extends BaseApi {
 
   private async autoJoinOnTenantSite(orgId: string): Promise<boolean> {
     try {
-      const response = await classroomio.organization['auto-join'].$post({}, { headers: { 'cio-org-id': orgId } });
+      const response = await classroomhub.organization['auto-join'].$post({}, { headers: { 'cio-org-id': orgId } });
 
       if (!response.ok) {
         // 403 is expected for invite-only / disabled-signup orgs — the user
@@ -315,7 +315,7 @@ class AppInitApi extends BaseApi {
     currentOrg.set(mergeAccountOrgFromServer(nextOrg));
 
     if (nextOrg.siteName) {
-      localStorage.setItem('classroomio_org_sitename', nextOrg.siteName);
+      localStorage.setItem('classroomhub_org_sitename', nextOrg.siteName);
     }
 
     const theme = get(currentOrg)?.theme;
@@ -358,7 +358,7 @@ class AppInitApi extends BaseApi {
     }
 
     const managedOrganizations = organizations.filter((org) => isOrgManagerRole(org.roleId));
-    const lastOrgSiteName = localStorage.getItem('classroomio_org_sitename');
+    const lastOrgSiteName = localStorage.getItem('classroomhub_org_sitename');
 
     return (
       managedOrganizations.find((org) => org.siteName === lastOrgSiteName) ??
@@ -481,7 +481,7 @@ class AppInitApi extends BaseApi {
 
     await authClient.getSession({ query: { disableCookieCache: true } });
 
-    const response = await classroomio.account.$get();
+    const response = await classroomhub.account.$get();
     const accountData = (await response.json()) as AccountResponse;
     if (accountData?.success) {
       this.data = accountData;

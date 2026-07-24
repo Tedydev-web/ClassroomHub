@@ -13,7 +13,7 @@ export async function load({ data, url }) {
 const DEFAULT_META_TITLE = 'ClassroomHub | One Platform for Customer, Partner, and Employee Training';
 const DEFAULT_META_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
-const DEFAULT_OG_IMAGE_URL = '/assets/brand/og/classroomio-opengraph.jpg';
+const DEFAULT_OG_IMAGE_URL = '/assets/brand/og/classroomhub-opengraph.jpg';
 const DEFAULT_OG_IMAGE_ALT = 'ClassroomHub platform for customer, partner, and employee education';
 
 function getBaseMetaTags(url: URL) {
@@ -32,19 +32,19 @@ function getBaseMetaTags(url: URL) {
       siteName: 'ClassroomHub',
       images: [
         {
-          url: '/assets/brand/og/classroomio-opengraph.jpg',
+          url: '/assets/brand/og/classroomhub-opengraph.jpg',
           alt: DEFAULT_OG_IMAGE_ALT,
-          width: 1920,
-          height: 1080,
-          secureUrl: '/assets/brand/og/classroomio-opengraph.jpg',
+          width: 1200,
+          height: 630,
+          secureUrl: '/assets/brand/og/classroomhub-opengraph.jpg',
           type: 'image/jpeg'
         },
         {
-          url: '/assets/brand/og/classroomio-opengraph.webp',
+          url: '/assets/brand/og/classroomhub-opengraph.webp',
           alt: DEFAULT_OG_IMAGE_ALT,
-          width: 1920,
-          height: 1080,
-          secureUrl: '/assets/brand/og/classroomio-opengraph.webp',
+          width: 1200,
+          height: 630,
+          secureUrl: '/assets/brand/og/classroomhub-opengraph.webp',
           type: 'image/webp'
         }
       ]
@@ -55,7 +55,7 @@ function getBaseMetaTags(url: URL) {
       cardType: 'summary_large_image' as const,
       title: DEFAULT_META_TITLE,
       description: DEFAULT_META_DESCRIPTION,
-      image: '/assets/brand/og/classroomio-opengraph.jpg',
+      image: '/assets/brand/og/classroomhub-opengraph.jpg',
       imageAlt: DEFAULT_OG_IMAGE_ALT
     }
   }) satisfies MetaTagsProps;

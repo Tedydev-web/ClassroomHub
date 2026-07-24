@@ -385,10 +385,10 @@ Reuse the existing Polar checkout pattern from [apps/dashboard/src/routes/api/po
 Add to [apps/dashboard/src/lib/features/course/utils/types.ts](apps/dashboard/src/lib/features/course/utils/types.ts):
 
 ```typescript
-export type SummarizeLessonRequest = typeof classroomio.course[':courseId'].lesson[':lessonId'].summarize.$post;
-export type GenerateLessonAudioRequest = typeof classroomio.course[':courseId'].lesson[':lessonId'].audio.$post;
-export type GetLessonAiStatusRequest = typeof classroomio.course[':courseId'].lesson[':lessonId']['ai-status']['$get'];
-export type GetLessonAiCostRequest = typeof classroomio.course[':courseId'].lesson[':lessonId']['ai-cost']['$get'];
+export type SummarizeLessonRequest = typeof classroomhub.course[':courseId'].lesson[':lessonId'].summarize.$post;
+export type GenerateLessonAudioRequest = typeof classroomhub.course[':courseId'].lesson[':lessonId'].audio.$post;
+export type GetLessonAiStatusRequest = typeof classroomhub.course[':courseId'].lesson[':lessonId']['ai-status']['$get'];
+export type GetLessonAiCostRequest = typeof classroomhub.course[':courseId'].lesson[':lessonId']['ai-cost']['$get'];
 ```
 
 ### 3b. LessonApi extensions

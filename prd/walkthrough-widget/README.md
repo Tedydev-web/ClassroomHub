@@ -341,7 +341,7 @@ Customers can install the widget with a script tag:
 Or with an npm package:
 
 ```typescript
-import { ClassroomHub HubWalkthrough } from "@classroomio/walkthrough";
+import { ClassroomHub HubWalkthrough } from "@classroomhub/walkthrough";
 
 ClassroomHub HubWalkthrough.init({
   organizationId: "org_123",

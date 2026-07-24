@@ -1,6 +1,6 @@
 ---
 name: JWT Token Exchange
-overview: Implement a JWT token exchange endpoint that lets customers automatically log their users into ClassroomIO from their own app -- no re-login required. This uses a per-org signing secret and Better Auth's `setSessionCookie` to create sessions from externally-signed JWTs.
+overview: Implement a JWT token exchange endpoint that lets customers automatically log their users into ClassroomHub from their own app -- no re-login required. This uses a per-org signing secret and Better Auth's `setSessionCookie` to create sessions from externally-signed JWTs.
 todos:
   - id: db-schema
     content: Add `organization_token_auth` table to schema.ts and create migration 0008
@@ -55,11 +55,11 @@ isProject: false
 sequenceDiagram
     participant CustomerApp as Customer App
     participant CustomerBackend as Customer Backend
-    participant CIO as ClassroomIO API
+    participant CIO as ClassroomHub API
     participant BetterAuth as Better Auth
     participant DB as Database
 
-    CustomerApp->>CustomerBackend: User wants to access ClassroomIO
+    CustomerApp->>CustomerBackend: User wants to access ClassroomHub
     CustomerBackend->>CustomerBackend: Sign JWT with org secret
     CustomerBackend->>CustomerApp: Return signed JWT
     CustomerApp->>CIO: GET /auth/token-exchange?token=xxx&redirect=/courses
@@ -217,11 +217,11 @@ Add to [apps/api/src/utils/errors.ts](apps/api/src/utils/errors.ts):
 Add request types for all token auth endpoints:
 
 ```typescript
-export type CreateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$post'];
-export type GetTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$get'];
-export type RotateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['rotate']['$post'];
-export type DeleteTokenAuthRequest = (typeof classroomio.organization)['token-auth']['$delete'];
-export type ActivateTokenAuthRequest = (typeof classroomio.organization)['token-auth']['activate']['$put'];
+export type CreateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$post'];
+export type GetTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$get'];
+export type RotateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['rotate']['$post'];
+export type DeleteTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['$delete'];
+export type ActivateTokenAuthRequest = (typeof classroomhub.organization)['token-auth']['activate']['$put'];
 ```
 
 Never import types from `@cio/db/queries` into dashboard code -- infer everything from the RPC client.

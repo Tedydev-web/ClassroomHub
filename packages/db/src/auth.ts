@@ -75,7 +75,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     return origins;
   },
   advanced: {
-    cookiePrefix: 'classroomio',
+    cookiePrefix: 'classroomhub',
     // Browser auth is first-party through tenant-router or the dashboard proxy,
     // so cookies should stay host-only on the dashboard/public-site origin.
     crossSubDomainCookies: { enabled: false },

@@ -161,19 +161,19 @@ After initial creation, Claude updates the draft by:
 
 ## Data Sources Checked
 
-- [apps/api/src/routes/course/course.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/routes/course/course.ts)
-- [apps/api/src/routes/course/section.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/routes/course/section.ts)
-- [apps/api/src/routes/course/lesson.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/routes/course/lesson.ts)
-- [apps/api/src/routes/course/lesson-language.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/routes/course/lesson-language.ts)
-- [apps/api/src/services/course/course.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/services/course/course.ts)
-- [apps/api/src/services/course/section.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/services/course/section.ts)
-- [apps/api/src/services/lesson/lesson.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/services/lesson/lesson.ts)
-- [apps/api/src/services/lesson-language.ts](/Users/rotimibest/_pros/classroomio/apps/api/src/services/lesson-language.ts)
-- [packages/utils/src/validation/course/course.ts](/Users/rotimibest/_pros/classroomio/packages/utils/src/validation/course/course.ts)
-- [packages/utils/src/validation/lesson/lesson.ts](/Users/rotimibest/_pros/classroomio/packages/utils/src/validation/lesson/lesson.ts)
-- [packages/utils/src/validation/lesson/language.ts](/Users/rotimibest/_pros/classroomio/packages/utils/src/validation/lesson/language.ts)
-- [prd/ai-course-assistant [DONE]/README.md](/Users/rotimibest/_pros/classroomio/prd/ai-course-assistant%20[DONE]/README.md)
-- [prd/public-api [DONE]/README.md](/Users/rotimibest/_pros/classroomio/prd/public-api%20[DONE]/README.md)
+- [apps/api/src/routes/course/course.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/routes/course/course.ts)
+- [apps/api/src/routes/course/section.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/routes/course/section.ts)
+- [apps/api/src/routes/course/lesson.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/routes/course/lesson.ts)
+- [apps/api/src/routes/course/lesson-language.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/routes/course/lesson-language.ts)
+- [apps/api/src/services/course/course.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/services/course/course.ts)
+- [apps/api/src/services/course/section.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/services/course/section.ts)
+- [apps/api/src/services/lesson/lesson.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/services/lesson/lesson.ts)
+- [apps/api/src/services/lesson-language.ts](/Users/rotimibest/_pros/classroomhub/apps/api/src/services/lesson-language.ts)
+- [packages/utils/src/validation/course/course.ts](/Users/rotimibest/_pros/classroomhub/packages/utils/src/validation/course/course.ts)
+- [packages/utils/src/validation/lesson/lesson.ts](/Users/rotimibest/_pros/classroomhub/packages/utils/src/validation/lesson/lesson.ts)
+- [packages/utils/src/validation/lesson/language.ts](/Users/rotimibest/_pros/classroomhub/packages/utils/src/validation/lesson/language.ts)
+- [prd/ai-course-assistant [DONE]/README.md](/Users/rotimibest/_pros/classroomhub/prd/ai-course-assistant%20[DONE]/README.md)
+- [prd/public-api [DONE]/README.md](/Users/rotimibest/_pros/classroomhub/prd/public-api%20[DONE]/README.md)
 
 ## User Personas
 

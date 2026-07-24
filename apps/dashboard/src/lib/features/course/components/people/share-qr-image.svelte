@@ -34,7 +34,7 @@
   {#if $isFreePlan}
     <div class="relative top-16 flex items-center gap-x-2 rounded-md bg-white px-4 py-2">
       <img src="/logo.svg" alt="logo" class="w-6" />
-      <span class="text-base">{$t('course.navItem.people.invite_modal.classroomio_brand')}</span>
+      <span class="text-base">{$t('course.navItem.people.invite_modal.classroomhub_brand')}</span>
     </div>
   {/if}
 </div>

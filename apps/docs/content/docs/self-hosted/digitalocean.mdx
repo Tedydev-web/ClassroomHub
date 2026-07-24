@@ -171,12 +171,12 @@ to the internet.
 ### Download the compose file
 
 ```zsh title="Terminal"
-mkdir -p ~/classroomio && cd ~/classroomio
-curl -O https://raw.githubusercontent.com/Tedydev-web/classroomio/dev/docker-compose.images.yaml
+mkdir -p ~/classroomhub && cd ~/classroomhub
+curl -O https://raw.githubusercontent.com/Tedydev-web/classroomhub/dev/docker-compose.images.yaml
 ```
 
 This is the same [pull-based stack](/self-hosted/docker#run-from-pre-built-images-recommended) used
-by the other guides — it pulls the published `classroomio/*` images and builds nothing.
+by the other guides — it pulls the published `classroomhub/*` images and builds nothing.
 </Step>
 
 <Step>
@@ -185,13 +185,13 @@ by the other guides — it pulls the published `classroomio/*` images and builds
 This generates every secret for you. Paste it whole:
 
 ```zsh title="Terminal"
-cd ~/classroomio
+cd ~/classroomhub
 MINIO_PASS=$(openssl rand -hex 24)
 
 cat > .env <<EOF
 CIO_VERSION=1.0.0
 
-POSTGRES_DB=classroomio
+POSTGRES_DB=classroomhub
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=$(openssl rand -hex 16)
 
@@ -271,7 +271,7 @@ The second half of this step closes the internal ports, so the only way in from 
 through Caddy.
 
 ```zsh title="Terminal"
-cat > ~/classroomio/docker-compose.caddy.yaml <<'EOF'
+cat > ~/classroomhub/docker-compose.caddy.yaml <<'EOF'
 services:
   caddy:
     image: caddy:2-alpine
@@ -308,7 +308,7 @@ EOF
 ```
 
 ```zsh title="Terminal"
-cat > ~/classroomio/Caddyfile <<EOF
+cat > ~/classroomhub/Caddyfile <<EOF
 app.$DOMAIN {
 	encode gzip
 	reverse_proxy dashboard:3082
@@ -344,7 +344,7 @@ the same internal Docker network. Step 9 proves it from outside the server.
 Save the long compose command as an alias first:
 
 ```zsh title="Terminal"
-echo "alias dc='docker compose -f ~/classroomio/docker-compose.images.yaml -f ~/classroomio/docker-compose.caddy.yaml --env-file ~/classroomio/.env -p classroomio --profile minio'" >> ~/.bashrc
+echo "alias dc='docker compose -f ~/classroomhub/docker-compose.images.yaml -f ~/classroomhub/docker-compose.caddy.yaml --env-file ~/classroomhub/.env -p classroomhub --profile minio'" >> ~/.bashrc
 source ~/.bashrc
 
 dc config --services
@@ -455,9 +455,9 @@ every upload. Plain `dc down` is always safe.
 ```zsh title="Terminal"
 mkdir -p ~/backups
 
-docker exec cio-postgres pg_dump -U postgres classroomio | gzip > ~/backups/cio-db-$(date +%F).sql.gz
+docker exec cio-postgres pg_dump -U postgres classroomhub | gzip > ~/backups/cio-db-$(date +%F).sql.gz
 
-docker run --rm -v classroomio_minio-data:/data -v ~/backups:/backup alpine \
+docker run --rm -v classroomhub_minio-data:/data -v ~/backups:/backup alpine \
   tar czf /backup/cio-minio-$(date +%F).tar.gz -C /data .
 ```
 
@@ -479,7 +479,7 @@ own. **For production, use your own domain.**
 
 1. Add the two **A records** from [Prerequisites](#prerequisites) and confirm with
    `dig +short app.yourdomain.com`.
-2. Update six lines in `~/classroomio/.env`:
+2. Update six lines in `~/classroomhub/.env`:
 
    ```zsh title=".env"
    DASHBOARD_ORIGIN=https://app.yourdomain.com
@@ -490,7 +490,7 @@ own. **For production, use your own domain.**
    CSP_CONNECT_SRC_DOMAINS=s3.yourdomain.com
    ```
 
-3. Change the two site addresses in `~/classroomio/Caddyfile`.
+3. Change the two site addresses in `~/classroomhub/Caddyfile`.
 4. Apply, then clear cached media URLs — presigned URLs are cached in Redis for 50 minutes, so
    without this the old hostname keeps being served:
 
@@ -546,10 +546,10 @@ Check which versions exist, then pin one — never guess a tag, as an unpublishe
 with `manifest unknown`:
 
 ```zsh title="Terminal"
-curl -s "https://hub.docker.com/v2/repositories/classroomio/dashboard/tags?page_size=20&ordering=last_updated" \
+curl -s "https://hub.docker.com/v2/repositories/classroomhub/dashboard/tags?page_size=20&ordering=last_updated" \
   | tr ',' '\n' | grep '"name"'
 
-sed -i 's/^CIO_VERSION=.*/CIO_VERSION=<exact version>/' ~/classroomio/.env
+sed -i 's/^CIO_VERSION=.*/CIO_VERSION=<exact version>/' ~/classroomhub/.env
 dc pull && dc up -d
 ```
 

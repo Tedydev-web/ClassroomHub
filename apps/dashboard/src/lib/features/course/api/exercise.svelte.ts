@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CreateExerciseFromTemplateRequest,
   CreateAssessmentItemRequest,
@@ -83,7 +83,7 @@ export class ExerciseApi extends BaseApiWithErrors {
   async get(courseId: string, exerciseId: string) {
     await this.execute<GetExerciseRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].$get({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].$get({
           param: { courseId, exerciseId }
         }),
       logContext: 'fetching exercise',
@@ -105,7 +105,7 @@ export class ExerciseApi extends BaseApiWithErrors {
   async getAssessmentItem(courseId: string, exerciseId: string, questionId: number) {
     return this.execute<GetAssessmentItemRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$get({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$get({
           param: { courseId, exerciseId, questionId: String(questionId) }
         }),
       logContext: 'fetching assessment question'
@@ -121,7 +121,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return this.execute<CreateAssessmentItemRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId']['assessment-item'].$post({
+        classroomhub.course[':courseId'].exercise[':exerciseId']['assessment-item'].$post({
           param: { courseId, exerciseId },
           json: result.data
         }),
@@ -144,7 +144,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return this.execute<PublishAssessmentItemRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$put({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId']['assessment-item'].$put({
           param: { courseId, exerciseId, questionId: String(questionId) },
           json: result.data
         }),
@@ -159,7 +159,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return this.execute<GetExerciseAssignmentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$get({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].assignment.$get({
           param: { courseId, exerciseId }
         }),
       logContext: 'fetching exercise assignments',
@@ -177,7 +177,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return this.execute<UpdateExerciseAssignmentsRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].assignment.$put({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].assignment.$put({
           param: { courseId, exerciseId },
           json: data
         }),
@@ -201,7 +201,7 @@ export class ExerciseApi extends BaseApiWithErrors {
     });
 
     try {
-      const res = await classroomio.course[':courseId'].exercise[':exerciseId'].notify.$post({
+      const res = await classroomhub.course[':courseId'].exercise[':exerciseId'].notify.$post({
         param: { courseId, exerciseId }
       });
       const body = await res.json();
@@ -214,7 +214,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       const maxPolls = 60;
 
       for (let pollCount = 0; pollCount < maxPolls; pollCount++) {
-        const statusRes = await classroomio.course[':courseId'].exercise[':exerciseId'].notify[':jobId'].$get({
+        const statusRes = await classroomhub.course[':courseId'].exercise[':exerciseId'].notify[':jobId'].$get({
           param: { courseId, exerciseId, jobId },
           query: { pollCount: String(pollCount) }
         });
@@ -271,7 +271,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     await this.execute<CreateExerciseRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise.$post({
+        classroomhub.course[':courseId'].exercise.$post({
           param: { courseId },
           json: result.data
         }),
@@ -313,7 +313,7 @@ export class ExerciseApi extends BaseApiWithErrors {
     this.errors = {};
     return this.execute<UpdateExerciseRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].$put({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].$put({
           param: { courseId, exerciseId },
           json: result.data
         }),
@@ -348,7 +348,7 @@ export class ExerciseApi extends BaseApiWithErrors {
   async delete(courseId: string, exerciseId: string) {
     await this.execute<DeleteExerciseRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].$delete({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].$delete({
           param: { courseId, exerciseId }
         }),
       logContext: 'deleting exercise',
@@ -384,7 +384,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return await this.execute<SubmitExerciseRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].submission.$post({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].submission.$post({
           param: { courseId, exerciseId },
           json: result.data
         }),
@@ -426,7 +426,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return await this.execute<VideoRecordingUploadInitRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId'][
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId'][
           'video-recording'
         ].upload.init.$post({
           param: { courseId, exerciseId, questionId: String(questionId) },
@@ -450,7 +450,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return await this.execute<ExerciseFileUploadInitRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].init.$post({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].init.$post({
           param: { courseId, exerciseId, questionId: String(questionId) },
           json: result.data
         }),
@@ -472,7 +472,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return await this.execute<ExerciseFileUploadCompleteRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].complete.$post({
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId']['file-upload'].complete.$post({
           param: { courseId, exerciseId, questionId: String(questionId) },
           json: result.data
         }),
@@ -494,7 +494,7 @@ export class ExerciseApi extends BaseApiWithErrors {
 
     return await this.execute<VideoRecordingUploadCompleteRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].question[':questionId'][
+        classroomhub.course[':courseId'].exercise[':exerciseId'].question[':questionId'][
           'video-recording'
         ].upload.complete.$post({
           param: { courseId, exerciseId, questionId: String(questionId) },
@@ -512,7 +512,7 @@ export class ExerciseApi extends BaseApiWithErrors {
   ) {
     return await this.execute<VideoRecordingPlaybackRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].exercise[':exerciseId'].submission[':submissionId'].question[':questionId'][
+        classroomhub.course[':courseId'].exercise[':exerciseId'].submission[':submissionId'].question[':questionId'][
           'video-recording'
         ].playback.$get({
           param: { courseId, exerciseId, submissionId, questionId: String(questionId) }
@@ -536,7 +536,7 @@ export class ExerciseApi extends BaseApiWithErrors {
     const templateIdValue = Number(templateId);
     await this.execute<CreateExerciseFromTemplateRequest>({
       requestFn: () =>
-        classroomio.course[':courseId']['exercise']['from-template'].$post({
+        classroomhub.course[':courseId']['exercise']['from-template'].$post({
           param: { courseId },
           json: {
             lessonId: options.lessonId,

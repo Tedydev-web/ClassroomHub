@@ -81,7 +81,7 @@ For your convenience, this Website may provide links or pointers to third-party 
 
 ## Software
 
-By downloading our software, you acknowledge and agree to the applicable open source or end user license terms published with that software (for example, our [LICENSE](https://github.com/Tedydev-web/classroomio/blob/main/LICENSE) for the ClassroomHub project where applicable). Those terms will govern your use of the software.
+By downloading our software, you acknowledge and agree to the applicable open source or end user license terms published with that software (for example, our [LICENSE](https://github.com/Tedydev-web/classroomhub/blob/main/LICENSE) for the ClassroomHub project where applicable). Those terms will govern your use of the software.
 
 ## Payment and Fees
 

@@ -1,5 +1,28 @@
-<svg width="512" height="512" viewBox="0 -4.5 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M26.153 12.5745C29.5145 12.5745 32.2395 9.84943 32.2395 6.48791C32.2395 3.1264 29.5145 0.401367 26.153 0.401367C22.7915 0.401367 20.0664 3.1264 20.0664 6.48791C20.0664 9.84943 22.7915 12.5745 26.153 12.5745Z" fill="#0542CC"/>
-<path d="M32.3048 14.9824V23.8112H18.9277V20.6008C18.9277 17.5241 21.4025 14.9824 24.5461 14.9824H32.3048Z" fill="#0542CC"/>
-<path d="M16.7213 0.401367V23.8112H11.7049C8.49443 23.8112 5.55148 22.4735 3.41115 20.4001C1.27082 18.2598 0 15.3168 0 12.1063C0 5.61842 5.21705 0.401367 11.7049 0.401367H16.7213Z" fill="#0542CC"/>
+<svg width="512" height="512" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="mark-left" x1="20" y1="54" x2="112" y2="226" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563FF" />
+      <stop offset="1" stop-color="#1739F2" />
+    </linearGradient>
+    <linearGradient id="mark-right" x1="148" y1="214" x2="232" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4058FF" />
+      <stop offset="1" stop-color="#6878FF" />
+    </linearGradient>
+    <linearGradient id="mark-head" x1="108" y1="24" x2="148" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563FF" />
+      <stop offset="1" stop-color="#3E55FF" />
+    </linearGradient>
+    <linearGradient id="hub-gradient" x1="11000" y1="0" x2="14262" y2="1800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563FF" />
+      <stop offset="1" stop-color="#3E55FF" />
+    </linearGradient>
+    <linearGradient id="tile-gradient" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1937F5" />
+      <stop offset="1" stop-color="#334CFF" />
+    </linearGradient>
+    <filter id="tile-shadow" x="-12%" y="-12%" width="124%" height="132%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0D1321" flood-opacity="0.14" />
+    </filter>
+  </defs><g fill="url(#mark-head)"><circle cx="128" cy="44" r="28" /></g><g fill="url(#mark-left)"><path d="M20 58C20 49 30 44 38 49L94 84C105 91 112 103 112 116V222C112 232 102 238 93 234L48 214C31 207 20 190 20 171Z" /></g><g fill="url(#mark-right)"><path d="M144 105C144 91 152 80 165 75L218 53C227 49 236 55 236 65V172C236 191 225 208 208 214L160 231C152 234 144 228 144 219Z" /></g>
 </svg>

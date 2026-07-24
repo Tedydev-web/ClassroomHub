@@ -25,7 +25,7 @@ It was a no-brainer for him, and long story short, Pranav is a happy customer wi
 
 Here is what he has to say:
 
-![pranav-experience-using-classroomio](/assets/assets/blog/review-by-pranav.jpeg)
+![pranav-experience-using-classroomhub](/assets/assets/blog/review-by-pranav.jpeg)
 _Pranav's experience using ClassroomHub Hub_
 
 > ClassroomHub really helped me [bootstrap my program](https://dblocked.io/).

@@ -1,5 +1,5 @@
 import type { DashStatsSuccess, LoginActivityData, LoginActivitySuccess } from '$features/org/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { type ServerApiResult, safeServerApi } from '$lib/utils/services/api/server';
 
 // TODO - Replace with actual cache
@@ -28,7 +28,7 @@ export const load = async ({ params, parent, cookies }) => {
 
   if (orgId in cache) {
     const loginActivityResult = await safeServerApi<LoginActivitySuccess>(() =>
-      classroomio.dash['login-activity'].$get({ query: { orgId } }, getApiHeaders(cookies, orgId))
+      classroomhub.dash['login-activity'].$get({ query: { orgId } }, getApiHeaders(cookies, orgId))
     );
 
     return {
@@ -40,10 +40,10 @@ export const load = async ({ params, parent, cookies }) => {
 
   const [statsResult, loginActivityResult] = await Promise.allSettled([
     safeServerApi<DashStatsSuccess>(() =>
-      classroomio.dash.stats.$get({ query: { siteName } }, getApiHeaders(cookies, orgId))
+      classroomhub.dash.stats.$get({ query: { siteName } }, getApiHeaders(cookies, orgId))
     ),
     safeServerApi<LoginActivitySuccess>(() =>
-      classroomio.dash['login-activity'].$get({ query: { orgId } }, getApiHeaders(cookies, orgId))
+      classroomhub.dash['login-activity'].$get({ query: { orgId } }, getApiHeaders(cookies, orgId))
     )
   ]);
 

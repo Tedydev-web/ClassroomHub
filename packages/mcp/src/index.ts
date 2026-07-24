@@ -1,4 +1,4 @@
-import { ClassroomIoApiClient, ClassroomIoApiError } from './api-client';
+import { ClassroomHubApiClient, ClassroomHubApiError } from './api-client';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -7,9 +7,9 @@ import { registerCourseDraftTools } from './tools/course-drafts';
 
 async function main() {
   const config = getConfig();
-  const apiClient = new ClassroomIoApiClient(config);
+  const apiClient = new ClassroomHubApiClient(config);
   const server = new McpServer({
-    name: 'classroomio-course-authoring',
+    name: 'classroomhub-course-authoring',
     version: '0.0.1'
   });
 
@@ -24,7 +24,7 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
-  if (error instanceof ClassroomIoApiError) {
+  if (error instanceof ClassroomHubApiError) {
     console.error(
       JSON.stringify({
         error: error.message,

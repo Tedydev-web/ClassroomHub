@@ -23,7 +23,7 @@ import {
   type InputVideoTrack
 } from 'mediabunny';
 
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 
 export type HlsEncodeStage = 'probing' | 'encoding' | 'uploading' | 'thumbnail' | 'finalizing' | 'done' | 'failed';
 
@@ -135,7 +135,7 @@ const CLEANUP_MAX_ATTEMPTS = 3;
 export async function cleanupAbortedHlsUpload(assetId: string, signal?: AbortSignal): Promise<void> {
   for (let attempt = 1; attempt <= CLEANUP_MAX_ATTEMPTS; attempt += 1) {
     try {
-      const response = await classroomio.organization.assets[':assetId'].hls.$delete({
+      const response = await classroomhub.organization.assets[':assetId'].hls.$delete({
         param: { assetId },
         signal
       });
@@ -158,7 +158,7 @@ export async function cleanupAbortedHlsUpload(assetId: string, signal?: AbortSig
 export async function cleanupAbortedHls1080Upload(assetId: string, signal?: AbortSignal): Promise<void> {
   for (let attempt = 1; attempt <= CLEANUP_MAX_ATTEMPTS; attempt += 1) {
     try {
-      const response = await classroomio.organization.assets[':assetId'].hls['1080'].$delete({
+      const response = await classroomhub.organization.assets[':assetId'].hls['1080'].$delete({
         param: { assetId },
         signal
       });
@@ -218,7 +218,7 @@ export async function encodeAndUploadHls(opts: EncodeAndUploadOptions): Promise<
     }
 
     // --- Reserve assetId ----------------------------------------------
-    const init = await classroomio.organization.assets.hls.init.$post({
+    const init = await classroomhub.organization.assets.hls.init.$post({
       json: {
         fileName: opts.file.name,
         byteSize: opts.file.size,
@@ -353,7 +353,7 @@ export async function encodeAndUploadHls(opts: EncodeAndUploadOptions): Promise<
 
     // --- Finalize -----------------------------------------------------
     emit({ stage: 'finalizing', percent: 96 });
-    const finalize = await classroomio.organization.assets[':assetId'].hls.finalize.$post({
+    const finalize = await classroomhub.organization.assets[':assetId'].hls.finalize.$post({
       param: { assetId },
       json: {
         manifestKey: `${assetId}/master.m3u8`,
@@ -515,7 +515,7 @@ export async function encodeAndUploadHls1080(opts: EncodeAndUpload1080Options): 
     await uploader.uploadSingle('master.m3u8', 'application/vnd.apple.mpegurl', mergedBytes, { force: true });
 
     emit({ stage: 'finalizing', percent: 96 });
-    const finalize = await classroomio.organization.assets[':assetId'].hls['1080'].finalize.$post({
+    const finalize = await classroomhub.organization.assets[':assetId'].hls['1080'].finalize.$post({
       param: { assetId: opts.assetId },
       json: {
         additionalByteSize: uploadedBytesBeforeMaster,
@@ -611,11 +611,11 @@ async function batchPresignPathChunks(
     const chunk = paths.slice(offset, offset + PRESIGN_BATCH_SIZE);
     const response =
       endpoint === '1080'
-        ? await classroomio.organization.assets[':assetId'].hls['1080'].presign.$post({
+        ? await classroomhub.organization.assets[':assetId'].hls['1080'].presign.$post({
             param: { assetId },
             json: { paths: chunk }
           })
-        : await classroomio.organization.assets[':assetId'].hls.presign.$post({
+        : await classroomhub.organization.assets[':assetId'].hls.presign.$post({
             param: { assetId },
             json: { paths: chunk }
           });
@@ -832,11 +832,11 @@ class HlsUploader {
   private async fallbackPresign(path: string): Promise<PresignedUrl> {
     const response =
       this.options.presignEndpoint === '1080'
-        ? await classroomio.organization.assets[':assetId'].hls['1080'].presign.$post({
+        ? await classroomhub.organization.assets[':assetId'].hls['1080'].presign.$post({
             param: { assetId: this.options.assetId },
             json: { paths: [path] }
           })
-        : await classroomio.organization.assets[':assetId'].hls.presign.$post({
+        : await classroomhub.organization.assets[':assetId'].hls.presign.$post({
             param: { assetId: this.options.assetId },
             json: { paths: [path] }
           });
@@ -895,7 +895,7 @@ async function extractAndUploadThumbnails(input: {
     const fileName = input.file.name.replace(/\.[^.]+$/, '') + `-thumb-${index}.jpg`;
     const file = new File([blob], fileName, { type: 'image/jpeg' });
     try {
-      const response = await classroomio.media.image.$post({ form: { file } });
+      const response = await classroomhub.media.image.$post({ form: { file } });
       const body = await response.json();
       if ('success' in body && body.success && body.url) {
         candidates.push({ url: body.url, score });
@@ -1000,7 +1000,7 @@ function estimateHlsUploadBytes(rungs: HlsRungConfig[], durationSeconds: number,
 }
 
 async function fetchExistingMasterManifest(assetId: string, signal?: AbortSignal): Promise<string> {
-  await classroomio.organization.assets[':assetId'].hls.cookie.$post({ param: { assetId } });
+  await classroomhub.organization.assets[':assetId'].hls.cookie.$post({ param: { assetId } });
   const response = await fetch(`/hls/${assetId}/master.m3u8`, { credentials: 'include', signal });
   if (!response.ok) {
     throw new HlsEncoderError('upload_failed', `Failed to fetch master manifest (${response.status})`);

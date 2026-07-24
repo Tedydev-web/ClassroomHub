@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$lib/utils/services/api', () => ({
-  classroomio: {}
+  classroomhub: {}
 }));
 
 import { ALL_HLS_RUNGS, selectRungsForSource } from './hls-encoder';

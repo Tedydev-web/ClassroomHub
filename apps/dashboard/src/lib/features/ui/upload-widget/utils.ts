@@ -1,8 +1,8 @@
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 
 export async function queryUnsplash(searchQuery: string) {
   try {
-    const response = await classroomio.unsplash.$post({
+    const response = await classroomhub.unsplash.$post({
       json: { searchQuery }
     });
 

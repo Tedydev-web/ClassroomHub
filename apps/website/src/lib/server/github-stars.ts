@@ -1,4 +1,4 @@
-const GITHUB_REPO_URL = 'https://api.github.com/repos/Tedydev-web/classroomio';
+const GITHUB_REPO_URL = 'https://api.github.com/repos/Tedydev-web/classroomhub';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 3;
 
 const starsCache = {
@@ -35,7 +35,7 @@ async function fetchGithubStars(now: number): Promise<number> {
     const response = await fetch(GITHUB_REPO_URL, {
       headers: {
         Accept: 'application/vnd.github+json',
-        'User-Agent': 'classroomio-website'
+        'User-Agent': 'classroomhub-website'
       }
     });
 

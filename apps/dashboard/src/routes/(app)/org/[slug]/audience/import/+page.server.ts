@@ -1,10 +1,10 @@
-import { classroomio, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders, type InferResponseType } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
-type GetOrganizationCoursesRequest = typeof classroomio.organization.courses.$get;
+type GetOrganizationCoursesRequest = typeof classroomhub.organization.courses.$get;
 type GetOrganizationCoursesSuccess = Extract<InferResponseType<GetOrganizationCoursesRequest>, { success: true }>;
 
-type GetCohortsRequest = typeof classroomio.cohort.$get;
+type GetCohortsRequest = typeof classroomhub.cohort.$get;
 type GetCohortsSuccess = Extract<InferResponseType<GetCohortsRequest>, { success: true }>;
 
 export const load = async ({ parent, cookies }) => {
@@ -19,10 +19,10 @@ export const load = async ({ parent, cookies }) => {
 
   const [coursesResult, cohortsResult] = await Promise.all([
     safeServerApi<GetOrganizationCoursesSuccess>(() =>
-      classroomio.organization.courses.$get({ query: {} }, getApiHeaders(cookies, orgId))
+      classroomhub.organization.courses.$get({ query: {} }, getApiHeaders(cookies, orgId))
     ),
     safeServerApi<GetCohortsSuccess>(() =>
-      classroomio.cohort.$get({ query: { organizationId: orgId } }, getApiHeaders(cookies, orgId))
+      classroomhub.cohort.$get({ query: { organizationId: orgId } }, getApiHeaders(cookies, orgId))
     )
   ]);
 

@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tedydev-web/classroomio.git"
+    "url": "git+https://github.com/Tedydev-web/classroomhub.git"
   },
   "bugs": {
-    "url": "https://github.com/Tedydev-web/classroomio/issues"
+    "url": "https://github.com/Tedydev-web/classroomhub/issues"
   },
-  "homepage": "https://github.com/Tedydev-web/classroomio/blob/main/packages/course-app#readme",
+  "homepage": "https://github.com/Tedydev-web/classroomhub/blob/main/packages/course-app#readme",
   "author": "ClassroomHub <support@classroom.io.vn>",
   "license": "MIT",
   "files": [

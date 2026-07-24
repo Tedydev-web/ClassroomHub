@@ -3,7 +3,7 @@ title: Coolify
 description: Deploy ClassroomHub on Coolify using the pull-based Docker Compose stack, with a video walkthrough.
 ---
 
-[Coolify](https://coolify.io) is a self-hosted PaaS (an open-source Heroku/Netlify alternative) you run on your own VPS. It runs ClassroomHub from the published `classroomio/*` images — your Coolify host **pulls** them and never builds anything.
+[Coolify](https://coolify.io) is a self-hosted PaaS (an open-source Heroku/Netlify alternative) you run on your own VPS. It runs ClassroomHub from the published `classroomhub/*` images — your Coolify host **pulls** them and never builds anything.
 
 ## Watch the walkthrough
 
@@ -40,7 +40,7 @@ This uses a **Docker Compose resource**: you paste the compose file and set ever
 <Step>
 ### Create a project and add a Docker Compose resource
 
-Log in to Coolify and **create a project**. When you add a resource, Coolify asks what type it is — GitHub, a Docker image, a service, or a **Docker Compose** file. Choose **Docker Compose**, then **paste the contents of [`docker-compose.images.yaml`](https://github.com/Tedydev-web/classroomio/blob/main/docker-compose.images.yaml)** into the editor.
+Log in to Coolify and **create a project**. When you add a resource, Coolify asks what type it is — GitHub, a Docker image, a service, or a **Docker Compose** file. Choose **Docker Compose**, then **paste the contents of [`docker-compose.images.yaml`](https://github.com/Tedydev-web/classroomhub/blob/main/docker-compose.images.yaml)** into the editor.
 
 ![Showing list of options to choose from](/docs/coolify-02-services.webp)
 
@@ -90,7 +90,7 @@ only if you use that integration. Leaving an optional one blank never causes a b
 <Step>
 ### Confirm the image tag
 
-`CIO_VERSION` chooses the tag pulled for `classroomio/{api,dashboard,jobs}`. **Confirm the tag you use actually exists** at [hub.docker.com/r/classroomio](https://hub.docker.com/r/classroomio/) before deploying.
+`CIO_VERSION` chooses the tag pulled for `classroomhub/{api,dashboard,jobs}`. **Confirm the tag you use actually exists** at [hub.docker.com/r/classroomhub](https://hub.docker.com/r/classroomhub/) before deploying.
 
 :::note[Pin a released version]
 Set `CIO_VERSION=1.0.0` to pin an exact release. `latest` is the freshest `main` build — it moves
@@ -99,7 +99,7 @@ are immutable, pinned releases. Pinning an exact release makes upgrades delibera
 reproducible.
 :::
 
-![Confirming the classroomio image tags on Docker Hub](/docs/coolify-04-image-tag.webp)
+![Confirming the classroomhub image tags on Docker Hub](/docs/coolify-04-image-tag.webp)
 </Step>
 
 <Step>
@@ -115,7 +115,7 @@ The dashboard proxies API calls server-side, so you normally only expose the das
 <Step>
 ### Deploy
 
-Click **Deploy**. Coolify pulls `classroomio/{api,dashboard,jobs}:${CIO_VERSION}`, starts Postgres + Redis, the API container runs database setup on first boot, then the dashboard and the **jobs worker** come up. Watch the **logs** — they tell you when every service is up.
+Click **Deploy**. Coolify pulls `classroomhub/{api,dashboard,jobs}:${CIO_VERSION}`, starts Postgres + Redis, the API container runs database setup on first boot, then the dashboard and the **jobs worker** come up. Watch the **logs** — they tell you when every service is up.
 
 ![Coolify deploy logs showing the stack coming up](/docs/coolify-06-deploy-logs.webp)
 </Step>
@@ -149,7 +149,7 @@ PRIVATE_SERVER_KEY=<openssl rand -hex 32>   # identical in the api and dashboard
 COMPOSE_PROFILES=minio                      # runs the bundled MinIO alongside the stack
 
 # ── Database ──
-POSTGRES_DB=classroomio
+POSTGRES_DB=classroomhub
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<strong password>
 

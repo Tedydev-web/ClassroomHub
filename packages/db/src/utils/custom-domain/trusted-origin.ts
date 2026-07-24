@@ -23,7 +23,7 @@ function originMatchesStaticEntry(origin: string, entry: string): boolean {
   return regex.test(origin);
 }
 
-function isClassroomioHost(hostname: string): boolean {
+function isClassroomhubHost(hostname: string): boolean {
   const host = hostname.toLowerCase();
 
   return FIRST_PARTY_ROOTS.some((root) => host === root || host.endsWith(`.${root}`));
@@ -83,7 +83,7 @@ export function resolveTrustedBrowserOrigin(
 
   const hostname = parsed.hostname;
 
-  if (isClassroomioHost(hostname)) {
+  if (isClassroomhubHost(hostname)) {
     return origin;
   }
 

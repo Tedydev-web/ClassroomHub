@@ -4,17 +4,17 @@ import type {
   PublicLessonViewData
 } from '@cio/ui/custom/public-course';
 import type { ExerciseQuestionModel, ExerciseQuestionTypeKey } from '@cio/question-types';
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
 type GetPublicCourseSuccess = Extract<
-  InferResponseType<(typeof classroomio)['org-site']['course'][':courseSlug']['$get']>,
+  InferResponseType<(typeof classroomhub)['org-site']['course'][':courseSlug']['$get']>,
   { success: true }
 >;
 
 type PublicCourseTree = GetPublicCourseSuccess['data'];
 
 type GetPublicCourseItemSuccess = Extract<
-  InferResponseType<(typeof classroomio)['org-site']['course'][':courseSlug']['item'][':itemSlug']['$get']>,
+  InferResponseType<(typeof classroomhub)['org-site']['course'][':courseSlug']['item'][':itemSlug']['$get']>,
   { success: true }
 >;
 

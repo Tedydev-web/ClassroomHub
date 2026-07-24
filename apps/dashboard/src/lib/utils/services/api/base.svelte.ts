@@ -31,7 +31,7 @@ export class BaseApi {
   }
   /**
    * Execute an API request with automatic loading and error state management
-   * Type is automatically inferred from the RPC call (e.g., classroomio.organization.plan.$post)
+   * Type is automatically inferred from the RPC call (e.g., classroomhub.organization.plan.$post)
    * @param options Configuration for the request
    * @returns The data from the response, or the default return value on error
    */

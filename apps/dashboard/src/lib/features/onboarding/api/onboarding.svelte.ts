@@ -2,7 +2,7 @@ import type { OnboardingField, OnboardingStep } from '../utils/types';
 import { currentOrg, mergeAccountOrgFromServer, orgs } from '$lib/utils/store/org';
 
 import { ONBOARDING_STEPS } from '../utils/constants';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { goto } from '$app/navigation';
 import { handleLocaleChange } from '$lib/utils/functions/translations';
 import { onboardingValidation } from '../utils/validations';
@@ -32,8 +32,8 @@ export class OnboardingApi extends BaseApiWithErrors {
       return false;
     }
 
-    await this.execute<(typeof classroomio.onboarding)['create-org']['$post']>({
-      requestFn: () => classroomio.onboarding['create-org'].$post({ json: data }),
+    await this.execute<(typeof classroomhub.onboarding)['create-org']['$post']>({
+      requestFn: () => classroomhub.onboarding['create-org'].$post({ json: data }),
       logContext: 'submitting organization setup',
       onSuccess: (result) => {
         const { organizations } = result.data;
@@ -70,8 +70,8 @@ export class OnboardingApi extends BaseApiWithErrors {
       return false;
     }
 
-    await this.execute<(typeof classroomio.onboarding)['update-metadata']['$post']>({
-      requestFn: () => classroomio.onboarding['update-metadata'].$post({ json: data }),
+    await this.execute<(typeof classroomhub.onboarding)['update-metadata']['$post']>({
+      requestFn: () => classroomhub.onboarding['update-metadata'].$post({ json: data }),
       logContext: 'submitting organization setup',
       onSuccess: (result) => {
         profile.set(result.data);

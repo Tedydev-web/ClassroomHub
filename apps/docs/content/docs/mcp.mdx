@@ -88,7 +88,7 @@ node packages/mcp/dist/index.js
 ### Claude Code
 
 ```bash
-claude mcp add-json classroomio '{
+claude mcp add-json classroomhub '{
   "command": "npx",
   "args": ["-y", "@tedydev/classroom-mcp"],
   "env": {
@@ -101,7 +101,7 @@ claude mcp add-json classroomio '{
 ### Codex
 
 ```bash
-codex mcp add classroomio \
+codex mcp add classroomhub \
   --env CLASSROOM_API_URL=https://api.classroom.io.vn \
   --env CLASSROOM_API_KEY=<cio_mcp_key> \
   -- npx -y @tedydev/classroom-mcp
@@ -113,7 +113,7 @@ codex mcp add classroomio \
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "classroomio": {
+    "classroomhub": {
       "type": "local",
       "command": ["npx", "-y", "@tedydev/classroom-mcp"],
       "enabled": true,
@@ -131,7 +131,7 @@ codex mcp add classroomio \
 ```json
 {
   "mcpServers": {
-    "classroomio": {
+    "classroomhub": {
       "command": "npx",
       "args": ["-y", "@tedydev/classroom-mcp"],
       "env": {

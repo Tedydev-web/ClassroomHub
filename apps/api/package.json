@@ -25,14 +25,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tedydev-web/classroomio.git"
+    "url": "git+https://github.com/Tedydev-web/classroomhub.git"
   },
   "author": "ClassroomHub <support@classroom.io.vn>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Tedydev-web/classroomio/issues"
+    "url": "https://github.com/Tedydev-web/classroomhub/issues"
   },
-  "homepage": "https://github.com/Tedydev-web/classroomio#readme",
+  "homepage": "https://github.com/Tedydev-web/classroomhub#readme",
   "exports": {
     "./rpc-types": {
       "types": "./dist/rpc-types.d.ts",

@@ -14,7 +14,7 @@ set -euo pipefail
 SERVICE="${1:?usage: smoke-test.sh <api|dashboard|jobs> <image-ref>}"
 IMAGE="${2:?missing image ref}"
 
-DB_URL="postgresql://postgres:postgres@localhost:5432/classroomio"
+DB_URL="postgresql://postgres:postgres@localhost:5432/classroomhub"
 REDIS_URL="redis://localhost:6379"
 NAME="cio-smoke-${SERVICE}"
 

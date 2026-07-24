@@ -5,10 +5,10 @@ description: Self-host ClassroomHub with Docker — pull pre-built images (recom
 
 Docker is one way to self-host ClassroomHub. There are two paths:
 
-- **Run from pre-built images (recommended)** — pull the published `classroomio/{api,dashboard,jobs}` images. You only need one compose file and a `.env`; no repository clone and no heavy local build.
+- **Run from pre-built images (recommended)** — pull the published `classroomhub/{api,dashboard,jobs}` images. You only need one compose file and a `.env`; no repository clone and no heavy local build.
 - **Build from source** — clone the repo and build the images yourself (needs ~8 GB RAM for the dashboard build).
 
-![Selfhost ClassroomHub](/docs/selfhost-classroomio.webp)
+![Selfhost ClassroomHub](/docs/selfhost-classroomhub.webp)
 
 ## Run from Pre-built Images (recommended)
 
@@ -21,8 +21,8 @@ Docker is one way to self-host ClassroomHub. There are two paths:
 1. Download the pull-based compose file and an env template:
 
 ```zsh title="Terminal"
-curl -O https://raw.githubusercontent.com/Tedydev-web/classroomio/dev/docker-compose.images.yaml
-curl -o .env https://raw.githubusercontent.com/Tedydev-web/classroomio/dev/.env.example
+curl -O https://raw.githubusercontent.com/Tedydev-web/classroomhub/dev/docker-compose.images.yaml
+curl -o .env https://raw.githubusercontent.com/Tedydev-web/classroomhub/dev/.env.example
 ```
 
 2. Edit `.env`. At minimum set `CIO_VERSION` (pin a release), `DASHBOARD_ORIGIN`, the auth secrets, and SMTP:
@@ -80,8 +80,8 @@ Use this if you want to build the images locally (e.g. to run code changes).
 1. Clone the repository:
 
 ```zsh title="Terminal"
-git clone https://github.com/Tedydev-web/classroomio.git
-cd classroomio
+git clone https://github.com/Tedydev-web/classroomhub.git
+cd classroomhub
 ```
 
 2. Copy the env template and edit it:
@@ -101,13 +101,13 @@ Open `.env` and set `DASHBOARD_ORIGIN` for your domain. For local development th
 The script builds and starts Postgres, Redis, MinIO (object storage), the API, the dashboard, and the background **jobs** worker.
 
 :::note[Default is pull, not build]
-Run without `--build` and the script **pulls** the published `classroomio/*` images at the
+Run without `--build` and the script **pulls** the published `classroomhub/*` images at the
 `CIO_VERSION` in your `.env` instead of building locally — that's the faster default path.
 :::
 
 ## One `.env`, One Command
 
-Docker self-hosting uses a single root `.env` file. Every `docker compose` command reads it via `--env-file .env` — you never need separate env files per service. See [`.env.example`](https://github.com/Tedydev-web/classroomio/blob/main/.env.example) for the full template.
+Docker self-hosting uses a single root `.env` file. Every `docker compose` command reads it via `--env-file .env` — you never need separate env files per service. See [`.env.example`](https://github.com/Tedydev-web/classroomhub/blob/main/.env.example) for the full template.
 
 ## Configuration
 
@@ -162,7 +162,7 @@ the pre-upgrade backup steps.
 ./run-docker-full-stack.sh --no-minio
 ```
 
-See [docker/docs/SELF_HOST.md](https://github.com/Tedydev-web/classroomio/blob/main/docker/docs/SELF_HOST.md) for the full Docker reference including troubleshooting.
+See [docker/docs/SELF_HOST.md](https://github.com/Tedydev-web/classroomhub/blob/main/docker/docs/SELF_HOST.md) for the full Docker reference including troubleshooting.
 
 ## Troubleshooting: "No space left on device"
 

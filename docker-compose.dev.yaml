@@ -1,22 +1,22 @@
-name: classroomio-dev
+name: classroomhub-dev
 
 services:
   postgres:
     image: postgres:16.14-alpine3.23
     restart: unless-stopped
     environment:
-      POSTGRES_DB: classroomio
+      POSTGRES_DB: classroomhub
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
     ports:
       - '127.0.0.1:${POSTGRES_PORT:-8002}:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d classroomio']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d classroomhub']
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
-      - classroomio-postgres:/var/lib/postgresql/data
+      - classroomhub-postgres:/var/lib/postgresql/data
 
   redis:
     image: redis:7.4.9-alpine3.21
@@ -30,15 +30,15 @@ services:
       timeout: 5s
       retries: 20
     volumes:
-      - classroomio-redis:/data
+      - classroomhub-redis:/data
 
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_PASSWORD: classroomio-dev-only
-      MINIO_ROOT_USER: classroomio
+      MINIO_ROOT_PASSWORD: classroomhub-dev-only
+      MINIO_ROOT_USER: classroomhub
     ports:
       - '127.0.0.1:${MINIO_API_PORT:-8004}:9000'
       - '127.0.0.1:${MINIO_CONSOLE_PORT:-8005}:9001'
@@ -48,7 +48,7 @@ services:
       timeout: 5s
       retries: 20
     volumes:
-      - classroomio-minio:/data
+      - classroomhub-minio:/data
 
   minio-init:
     image: minio/mc:RELEASE.2025-08-13T08-35-41Z
@@ -59,7 +59,7 @@ services:
       - /bin/sh
       - -c
       - >-
-        mc alias set local http://minio:9000 classroomio classroomio-dev-only &&
+        mc alias set local http://minio:9000 classroomhub classroomhub-dev-only &&
         mc mb --ignore-existing local/videos local/documents local/media &&
         mc anonymous set download local/media
     restart: 'no'
@@ -77,6 +77,6 @@ services:
       retries: 20
 
 volumes:
-  classroomio-minio:
-  classroomio-postgres:
-  classroomio-redis:
+  classroomhub-minio:
+  classroomhub-postgres:
+  classroomhub-redis:

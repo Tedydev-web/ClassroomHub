@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   CourseComplianceOverview,
   ExtendCourseComplianceRequest,
@@ -29,7 +29,7 @@ export class ComplianceApi extends BaseApiWithErrors {
   async getOverview(courseId: string) {
     const result = await this.execute<GetCourseComplianceOverviewRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].compliance.$get({
+        classroomhub.course[':courseId'].compliance.$get({
           param: { courseId }
         }),
       logContext: 'fetching course compliance overview',
@@ -60,7 +60,7 @@ export class ComplianceApi extends BaseApiWithErrors {
   async getLearnerHistory(courseId: string, profileId: string) {
     const result = await this.execute<GetLearnerComplianceHistoryRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].compliance.learners[':profileId'].$get({
+        classroomhub.course[':courseId'].compliance.learners[':profileId'].$get({
           param: { courseId, profileId }
         }),
       logContext: 'fetching learner compliance history',
@@ -98,7 +98,7 @@ export class ComplianceApi extends BaseApiWithErrors {
 
     const response = await this.execute<ResetCourseComplianceRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].compliance.reset.$post({
+        classroomhub.course[':courseId'].compliance.reset.$post({
           param: { courseId },
           json: result.data
         }),
@@ -137,7 +137,7 @@ export class ComplianceApi extends BaseApiWithErrors {
 
     const response = await this.execute<ExtendCourseComplianceRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].compliance.extend.$post({
+        classroomhub.course[':courseId'].compliance.extend.$post({
           param: { courseId },
           json: result.data
         }),
@@ -176,7 +176,7 @@ export class ComplianceApi extends BaseApiWithErrors {
 
     const response = await this.execute<WaiveCourseComplianceRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].compliance.waive.$post({
+        classroomhub.course[':courseId'].compliance.waive.$post({
           param: { courseId },
           json: result.data
         }),

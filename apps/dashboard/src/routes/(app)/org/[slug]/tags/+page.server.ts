@@ -1,5 +1,5 @@
 import type { GetTagGroupsSuccess } from '$features/tag/utils/types';
-import { classroomio, getApiHeaders } from '$lib/utils/services/api';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 import { redirect } from '@sveltejs/kit';
 
@@ -14,7 +14,7 @@ export const load = async ({ parent, cookies, params }) => {
   }
 
   const result = await safeServerApi<GetTagGroupsSuccess>(() =>
-    classroomio.organization.tags.$get({}, getApiHeaders(cookies, orgId))
+    classroomhub.organization.tags.$get({}, getApiHeaders(cookies, orgId))
   );
 
   if (!result.ok && (result.status === 401 || result.status === 403)) {

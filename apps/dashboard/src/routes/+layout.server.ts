@@ -54,7 +54,7 @@ export const load = async ({ url, cookies, request, locals }): Promise<LoadOutpu
     org: orgSiteInfo.org,
     baseMetaTags: await getBaseMetaTags(url, request.headers, orgSiteInfo),
     serverLang: request.headers?.get('accept-language') || '',
-    localeCookie: cookies.get('classroomio_locale') || '',
+    localeCookie: cookies.get('classroomhub_locale') || '',
     locals,
     uploadLimits: getUploadLimits()
   };

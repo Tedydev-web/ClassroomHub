@@ -220,8 +220,8 @@ The API page must follow the same structural pattern already used by MCP:
 
 2. Server load:
    - add `+page.server.ts`
-   - load key data with `classroomio.organization.automation.keys.$get({ query: { type: 'api' } })`
-   - load usage data with `classroomio.organization.automation.usage.$get({ query: { type: 'api' } })`
+   - load key data with `classroomhub.organization.automation.keys.$get({ query: { type: 'api' } })`
+   - load usage data with `classroomhub.organization.automation.usage.$get({ query: { type: 'api' } })`
    - hydrate the shared `automationApi` store the same way MCP currently does
 
 3. Feature page:

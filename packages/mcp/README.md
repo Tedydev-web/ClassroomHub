@@ -1,8 +1,8 @@
-# @classroomio/mcp
+# @classroomhub/mcp
 
 Thin stdio MCP server for ClassroomHub course authoring.
 
-The package does not parse PDFs or generate course structures. The agent does that work. `@classroomio/mcp` only exposes tools, validates tool input, and forwards requests to the ClassroomHub API.
+The package does not parse PDFs or generate course structures. The agent does that work. `@classroomhub/mcp` only exposes tools, validates tool input, and forwards requests to the ClassroomHub API.
 
 ## Architecture
 
@@ -15,7 +15,7 @@ Claude Code / Codex / Cursor / OpenCode / other MCP client
   | 1. Reads prompt, PDF, or existing course goal
   | 2. Produces or edits normalized course JSON
   v
-@classroomio/mcp (stdio)
+@classroomhub/mcp (stdio)
   |
   | 3. Sends authenticated tool calls
   |    Authorization: Bearer <cio_mcp_...>
@@ -76,27 +76,27 @@ The MCP package never decides permissions.
 
 ## Required Environment Variables
 
-- `CLASSROOMIO_API_URL`
-- `CLASSROOMIO_API_KEY`
-- `CLASSROOMIO_USER_AGENT` optional
+- `CLASSROOMHUB_API_URL`
+- `CLASSROOMHUB_API_KEY`
+- `CLASSROOMHUB_USER_AGENT` optional
 
 ## Run Locally
 
 From the repo root:
 
 ```bash
-pnpm build --filter=@classroomio/mcp
-CLASSROOMIO_API_URL=http://localhost:8001 \
-CLASSROOMIO_API_KEY=<cio_mcp_key> \
+pnpm build --filter=@classroomhub/mcp
+CLASSROOMHUB_API_URL=http://localhost:8001 \
+CLASSROOMHUB_API_KEY=<cio_mcp_key> \
 node packages/mcp/dist/index.js
 ```
 
 Published package:
 
 ```bash
-CLASSROOMIO_API_URL=https://classroom-api.tedydev.io.vn \
-CLASSROOMIO_API_KEY=<cio_mcp_key> \
-npx -y @classroomio/mcp
+CLASSROOMHUB_API_URL=https://classroom-api.tedydev.io.vn \
+CLASSROOMHUB_API_KEY=<cio_mcp_key> \
+npx -y @classroomhub/mcp
 ```
 
 ## Client Setup
@@ -104,12 +104,12 @@ npx -y @classroomio/mcp
 ### Claude Code
 
 ```bash
-claude mcp add-json classroomio '{
+claude mcp add-json classroomhub '{
   "command": "npx",
-  "args": ["-y", "@classroomio/mcp"],
+  "args": ["-y", "@classroomhub/mcp"],
   "env": {
-    "CLASSROOMIO_API_URL": "https://classroom-api.tedydev.io.vn",
-    "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
+    "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+    "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
   }
 }'
 ```
@@ -117,10 +117,10 @@ claude mcp add-json classroomio '{
 ### Codex
 
 ```bash
-codex mcp add classroomio \
-  --env CLASSROOMIO_API_URL=https://classroom-api.tedydev.io.vn \
-  --env CLASSROOMIO_API_KEY=<cio_mcp_key> \
-  -- npx -y @classroomio/mcp
+codex mcp add classroomhub \
+  --env CLASSROOMHUB_API_URL=https://classroom-api.tedydev.io.vn \
+  --env CLASSROOMHUB_API_KEY=<cio_mcp_key> \
+  -- npx -y @classroomhub/mcp
 ```
 
 ### OpenCode
@@ -129,13 +129,13 @@ codex mcp add classroomio \
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "classroomio": {
+    "classroomhub": {
       "type": "local",
-      "command": ["npx", "-y", "@classroomio/mcp"],
+      "command": ["npx", "-y", "@classroomhub/mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOMIO_API_URL": "https://classroom-api.tedydev.io.vn",
-        "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
+        "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+        "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
       }
     }
   }
@@ -147,12 +147,12 @@ codex mcp add classroomio \
 ```json
 {
   "mcpServers": {
-    "classroomio": {
+    "classroomhub": {
       "command": "npx",
-      "args": ["-y", "@classroomio/mcp"],
+      "args": ["-y", "@classroomhub/mcp"],
       "env": {
-        "CLASSROOMIO_API_URL": "https://classroom-api.tedydev.io.vn",
-        "CLASSROOMIO_API_KEY": "<cio_mcp_key>"
+        "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+        "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
       }
     }
   }

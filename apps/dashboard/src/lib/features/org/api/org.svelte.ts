@@ -19,7 +19,7 @@ import type {
   RevokeAudienceInviteRequest,
   ToggleLinkInviteRequest
 } from '../utils/types';
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import type {
   TAssignAudienceCourses,
   TAudienceInviteByEmail,
@@ -89,7 +89,7 @@ class OrgApi extends BaseApiWithErrors {
    */
   async getOrgTeam() {
     return this.execute<GetTeamRequest>({
-      requestFn: () => classroomio.organization.team.$get(),
+      requestFn: () => classroomhub.organization.team.$get(),
       logContext: 'fetching organization team',
       onSuccess: (response) => {
         // Map API response to include role and isAdmin directly in the API layer
@@ -135,7 +135,7 @@ class OrgApi extends BaseApiWithErrors {
 
     const response = await this.execute<GetAudienceRequest>({
       requestFn: () =>
-        classroomio.organization.audience.$get(
+        classroomhub.organization.audience.$get(
           {
             query: requestQuery!
           },
@@ -206,7 +206,7 @@ class OrgApi extends BaseApiWithErrors {
 
     const fetchPromise = this.execute<GetOrgPublicCoursesRequest>({
       requestFn: () =>
-        classroomio.organization.courses.public.$get({
+        classroomhub.organization.courses.public.$get({
           query: { siteName }
         }),
       logContext: 'fetching public courses',
@@ -251,9 +251,9 @@ class OrgApi extends BaseApiWithErrors {
       query.isCustomDomainVerified = true;
     }
 
-    const result = await this.execute<typeof classroomio.organization.$get>({
+    const result = await this.execute<typeof classroomhub.organization.$get>({
       requestFn: () =>
-        classroomio.organization.$get({
+        classroomhub.organization.$get({
           query
         }),
       logContext: 'fetching organization',
@@ -280,9 +280,9 @@ class OrgApi extends BaseApiWithErrors {
       return;
     }
 
-    await this.execute<typeof classroomio.organization.$post>({
+    await this.execute<typeof classroomhub.organization.$post>({
       requestFn: () =>
-        classroomio.organization.$post({
+        classroomhub.organization.$post({
           json: result.data
         }),
       logContext: 'creating organization',
@@ -377,7 +377,7 @@ class OrgApi extends BaseApiWithErrors {
 
     await this.execute<UpdateOrganizationRequest>({
       requestFn: () =>
-        classroomio.organization.$put({
+        classroomhub.organization.$put({
           json: updates
         }),
       logContext: 'updating organization',
@@ -440,7 +440,7 @@ class OrgApi extends BaseApiWithErrors {
   async inviteTeamMembers(emails: string[], roleId: number) {
     return this.execute<InviteTeamRequest>({
       requestFn: () =>
-        classroomio.organization.team.invite.$post({
+        classroomhub.organization.team.invite.$post({
           json: { emails, roleId }
         }),
       logContext: 'inviting team members',
@@ -467,7 +467,7 @@ class OrgApi extends BaseApiWithErrors {
   async removeTeamMember(memberId: number) {
     return this.execute<DeleteTeamRequest>({
       requestFn: () =>
-        classroomio.organization.team[':memberId'].$delete({
+        classroomhub.organization.team[':memberId'].$delete({
           param: { memberId: memberId.toString() }
         }),
       logContext: 'removing team member',
@@ -491,7 +491,7 @@ class OrgApi extends BaseApiWithErrors {
   async sendDomainRequest(action: 'connect' | 'refresh' | 'remove', domain: string) {
     return this.execute<DomainRequestRequest>({
       requestFn: () =>
-        classroomio.domain.$post({
+        classroomhub.domain.$post({
           json: {
             action,
             domain
@@ -516,7 +516,7 @@ class OrgApi extends BaseApiWithErrors {
   async importAudienceMembers(data: TImportAudienceMembers) {
     return this.execute<ImportAudienceRequest>({
       requestFn: () =>
-        classroomio.organization.audience.import.$post({
+        classroomhub.organization.audience.import.$post({
           json: data
         }),
       logContext: 'importing audience members',
@@ -550,7 +550,7 @@ class OrgApi extends BaseApiWithErrors {
   async assignAudienceToCourses(data: TAssignAudienceCourses) {
     return this.execute<AssignAudienceCoursesRequest>({
       requestFn: () =>
-        classroomio.organization.audience['assign-courses'].$post({
+        classroomhub.organization.audience['assign-courses'].$post({
           json: data
         }),
       logContext: 'assigning audience to courses',
@@ -580,7 +580,7 @@ class OrgApi extends BaseApiWithErrors {
   async resendAudienceInvite(data: TAudienceInviteByEmail) {
     return this.execute<ResendAudienceInviteRequest>({
       requestFn: () =>
-        classroomio.organization.audience['resend-invite'].$post({
+        classroomhub.organization.audience['resend-invite'].$post({
           json: data
         }),
       logContext: 'resending audience invite',
@@ -602,7 +602,7 @@ class OrgApi extends BaseApiWithErrors {
   async revokeAudienceInvite(data: TAudienceInviteByEmail) {
     return this.execute<RevokeAudienceInviteRequest>({
       requestFn: () =>
-        classroomio.organization.audience['revoke-invite'].$post({
+        classroomhub.organization.audience['revoke-invite'].$post({
           json: data
         }),
       logContext: 'revoking audience invite',
@@ -620,7 +620,7 @@ class OrgApi extends BaseApiWithErrors {
   async deleteAudienceMember(memberId: number) {
     return this.execute<DeleteAudienceMemberRequest>({
       requestFn: () =>
-        classroomio.organization.audience[':memberId'].$delete({
+        classroomhub.organization.audience[':memberId'].$delete({
           param: { memberId: memberId.toString() }
         }),
       logContext: 'removing audience member',
@@ -642,7 +642,7 @@ class OrgApi extends BaseApiWithErrors {
 
   async getLinkInvite() {
     return this.execute<GetLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$get(),
+      requestFn: () => classroomhub.organization['link-invite'].$get(),
       logContext: 'fetching link invite',
       onSuccess: (response) => {
         this.linkInvite = response.data;
@@ -652,7 +652,7 @@ class OrgApi extends BaseApiWithErrors {
 
   async generateLinkInvite(roleId: number) {
     return this.execute<CreateLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$post({ json: { roleId } }),
+      requestFn: () => classroomhub.organization['link-invite'].$post({ json: { roleId } }),
       logContext: 'generating link invite',
       onSuccess: (response) => {
         const wasNew = !this.linkInvite;
@@ -667,7 +667,7 @@ class OrgApi extends BaseApiWithErrors {
 
   async toggleLinkInvite(isRevoked: boolean) {
     return this.execute<ToggleLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$patch({ json: { isRevoked } }),
+      requestFn: () => classroomhub.organization['link-invite'].$patch({ json: { isRevoked } }),
       logContext: 'toggling link invite',
       onSuccess: (response) => {
         this.linkInvite = response.data;

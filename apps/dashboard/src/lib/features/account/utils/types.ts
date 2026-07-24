@@ -1,10 +1,10 @@
-import { classroomio, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 
-export type ListAccountWorkspacesRequest = typeof classroomio.account.workspaces.$get;
-export type CreateAccountWorkspaceRequest = typeof classroomio.account.workspaces.$post;
-export type DeleteAccountWorkspaceRequest = (typeof classroomio.account.workspaces)[':workspaceId']['$delete'];
-export type GetAccountUsageRequest = typeof classroomio.account.usage.$get;
-export type ViewAsStudentTokenRequest = (typeof classroomio.account)['view-as-student-token']['$post'];
+export type ListAccountWorkspacesRequest = typeof classroomhub.account.workspaces.$get;
+export type CreateAccountWorkspaceRequest = typeof classroomhub.account.workspaces.$post;
+export type DeleteAccountWorkspaceRequest = (typeof classroomhub.account.workspaces)[':workspaceId']['$delete'];
+export type GetAccountUsageRequest = typeof classroomhub.account.usage.$get;
+export type ViewAsStudentTokenRequest = (typeof classroomhub.account)['view-as-student-token']['$post'];
 
 type ListSuccess = Extract<InferResponseType<ListAccountWorkspacesRequest>, { success: true }>;
 type UsageSuccess = Extract<InferResponseType<GetAccountUsageRequest>, { success: true }>;

@@ -1,4 +1,4 @@
-import { classroomio } from '$lib/utils/services/api';
+import { classroomhub } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 import type { FirstOrganizationRecord, OrganizationRecord } from '../utils/types';
 
@@ -18,7 +18,7 @@ import type { FirstOrganizationRecord, OrganizationRecord } from '../utils/types
  */
 export async function getFirstOrg(apiKeyHeaders: { headers: Record<string, string> }) {
   const result = await safeServerApi<{ success: true; data: FirstOrganizationRecord[] }>(() =>
-    classroomio.organization.first.$get(undefined, apiKeyHeaders)
+    classroomhub.organization.first.$get(undefined, apiKeyHeaders)
   );
 
   if (!result.ok) {
@@ -37,7 +37,7 @@ export async function getFirstOrg(apiKeyHeaders: { headers: Record<string, strin
  */
 export async function getOrgBySiteName(siteName: string, apiKeyHeaders: { headers: Record<string, string> }) {
   const result = await safeServerApi<{ success: true; data: OrganizationRecord[] }>(() =>
-    classroomio.organization.$get(
+    classroomhub.organization.$get(
       {
         query: { siteName }
       },
@@ -66,7 +66,7 @@ export async function getOrgsByCustomDomain(
   apiKeyHeaders: { headers: Record<string, string> }
 ) {
   const result = await safeServerApi<{ success: true; data: OrganizationRecord[] }>(() =>
-    classroomio.organization.$get(
+    classroomhub.organization.$get(
       {
         query: {
           customDomain,

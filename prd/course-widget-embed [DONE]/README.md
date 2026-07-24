@@ -243,14 +243,14 @@ Design panel is grouped as:
 - top badge style for tag filter layout
 
 #### Branding
-- `Show Classroomio Powered By` toggle
+- `Show Classroomhub Powered By` toggle
 
 #### Advanced
 - custom CSS textarea (sanitized + size-limited)
 
 ### 6. Plan Gating
 - Free (`PLAN.BASIC`):
-  - **1 preset theme only** (default Classroomio theme)
+  - **1 preset theme only** (default Classroomhub theme)
   - branding forced on
   - custom CSS disabled
 - Paid (`PLAN.EARLY_ADOPTER`, `PLAN.ENTERPRISE`):
@@ -456,7 +456,7 @@ User's Website                    Cloudflare
   - Theme selector shows 1 option with "Upgrade to unlock more themes" on hover
   - Custom color picker disabled with "Upgrade to customize colors" tooltip
   - Custom CSS textarea shows lock icon with upgrade CTA
-  - "Powered by Classroomio" toggle is locked ON with tooltip
+  - "Powered by Classroomhub" toggle is locked ON with tooltip
 - **Paid users**: Full access to all controls, branding toggle available
 
 ## Open Questions (Resolved)

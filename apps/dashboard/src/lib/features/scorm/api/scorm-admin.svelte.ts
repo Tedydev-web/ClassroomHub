@@ -1,4 +1,4 @@
-import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
+import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { mediaApi } from '$features/media/api';
 import type {
   AttachScormPackageRequest,
@@ -20,7 +20,7 @@ class ScormAdminApi extends BaseApiWithErrors {
 
   listPackages() {
     return this.execute<ListScormPackagesRequest>({
-      requestFn: () => classroomio.organization.scorm.packages.$get(),
+      requestFn: () => classroomhub.organization.scorm.packages.$get(),
       logContext: 'fetching SCORM packages',
       onSuccess: (response) => {
         this.packages = response.data;
@@ -30,7 +30,7 @@ class ScormAdminApi extends BaseApiWithErrors {
 
   async getPackage(packageId: string): Promise<ScormPackageDetail | null> {
     const response = await this.execute<GetScormPackageRequest>({
-      requestFn: () => classroomio.organization.scorm.packages[':packageId'].$get({ param: { packageId } }),
+      requestFn: () => classroomhub.organization.scorm.packages[':packageId'].$get({ param: { packageId } }),
       logContext: 'fetching SCORM package'
     });
 
@@ -44,7 +44,7 @@ class ScormAdminApi extends BaseApiWithErrors {
         : 'application/octet-stream';
     const source = await this.execute<CreateScormSourceUploadRequest>({
       requestFn: () =>
-        classroomio.organization.scorm.packages['source-upload'].$post({
+        classroomhub.organization.scorm.packages['source-upload'].$post({
           json: { fileName: file.name, fileSize: file.size, fileType }
         }),
       logContext: 'creating SCORM source upload'
@@ -76,7 +76,7 @@ class ScormAdminApi extends BaseApiWithErrors {
     if (!asset) return null;
 
     const imported = await this.execute<ImportScormPackageRequest>({
-      requestFn: () => classroomio.organization.scorm.packages.$post({ json: { assetId: asset.id, title } }),
+      requestFn: () => classroomhub.organization.scorm.packages.$post({ json: { assetId: asset.id, title } }),
       logContext: 'importing SCORM package',
       onSuccess: (response) => {
         this.packages = [response.data.package, ...this.packages];
@@ -88,7 +88,7 @@ class ScormAdminApi extends BaseApiWithErrors {
 
   remove(packageId: string) {
     return this.execute<DeleteScormPackageRequest>({
-      requestFn: () => classroomio.organization.scorm.packages[':packageId'].$delete({ param: { packageId } }),
+      requestFn: () => classroomhub.organization.scorm.packages[':packageId'].$delete({ param: { packageId } }),
       logContext: 'deleting SCORM package',
       onSuccess: () => {
         this.packages = this.packages.filter((item) => item.id !== packageId);
@@ -99,7 +99,7 @@ class ScormAdminApi extends BaseApiWithErrors {
   attach(packageId: string, courseId: string, lessonId: string, packageItemId: string) {
     return this.execute<AttachScormPackageRequest>({
       requestFn: () =>
-        classroomio.organization.scorm.packages[':packageId'].attach.$post({
+        classroomhub.organization.scorm.packages[':packageId'].attach.$post({
           param: { packageId },
           json: { courseId, lessonId, packageItemId }
         }),
@@ -110,7 +110,7 @@ class ScormAdminApi extends BaseApiWithErrors {
   async listReports(page = 1) {
     this.reportsLoading = true;
     const response = await this.execute<ListScormReportsRequest>({
-      requestFn: () => classroomio.organization.scorm.reports.$get({ query: { page: String(page), limit: '20' } }),
+      requestFn: () => classroomhub.organization.scorm.reports.$get({ query: { page: String(page), limit: '20' } }),
       logContext: 'fetching SCORM reports',
       onSuccess: (response) => {
         this.reports = response.data;

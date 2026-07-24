@@ -13,18 +13,18 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { t } from '$lib/utils/functions/translations';
   import { uploadImage } from '$lib/utils/services/upload';
-  import { classroomio } from '$lib/utils/services/api';
+  import { classroomhub } from '$lib/utils/services/api';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
 
   function buildHlsUrl(asset: OrganizationAsset): string | null {
     if (!asset.hlsManifestKey) return null;
 
-    const built = classroomio.hls[':assetId']['*'].$url({ param: { assetId: asset.id } });
+    const built = classroomhub.hls[':assetId']['*'].$url({ param: { assetId: asset.id } });
     return built.toString().replace(/\/\*$/, '') + '/master.m3u8';
   }
 
   async function mintHlsCookie(assetId: string): Promise<void> {
-    await classroomio.organization.assets[':assetId'].hls.cookie.$post({ param: { assetId } });
+    await classroomhub.organization.assets[':assetId'].hls.cookie.$post({ param: { assetId } });
   }
 
   interface Props {

@@ -804,7 +804,7 @@ Per-provider API keys configure which models are available:
 - `TINYBIRD_TOKEN` — Tinybird API token for event ingestion (optional; events silently skipped when not set)
 - `TINYBIRD_BASE_URL` — Tinybird API base URL (default: `https://api.tinybird.co`)
 
-The dashboard model picker (above the chat input) is persisted per browser in `localStorage` under `classroomio-ai-chat-model`. Each chat request sends a `model` field; `apps/api/src/routes/agent/chat.ts` looks it up in `AGENT_MODELS` (`packages/utils/src/agent-models`) to resolve provider + backend model id, then 503s with `AI_NOT_CONFIGURED` if that provider's key is missing. Anthropic stays in `AGENT_MODELS` so backend code keeps working; it's gated out of the UI by the `UI_PICKER_MODEL_IDS` subset.
+The dashboard model picker (above the chat input) is persisted per browser in `localStorage` under `classroomhub-ai-chat-model`. Each chat request sends a `model` field; `apps/api/src/routes/agent/chat.ts` looks it up in `AGENT_MODELS` (`packages/utils/src/agent-models`) to resolve provider + backend model id, then 503s with `AI_NOT_CONFIGURED` if that provider's key is missing. Anthropic stays in `AGENT_MODELS` so backend code keeps working; it's gated out of the UI by the `UI_PICKER_MODEL_IDS` subset.
 
 Provider factory in `packages/ai-assistant` normalizes into a single `LanguageModel` instance for `streamText()`.
 

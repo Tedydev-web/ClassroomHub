@@ -63,7 +63,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: classroomio
+          POSTGRES_DB: classroomhub
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
