@@ -57,16 +57,39 @@ jobs:
         run: |
           set -euo pipefail
 
-          response=$(curl -sS --fail-with-body --max-time 60 \
-            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
-            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
-            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=false")
+          # A secret stored with a trailing newline puts that newline inside the
+          # header value, which terminates the header line with a bare LF instead
+          # of CRLF and gets the request rejected at the edge before it reaches
+          # Coolify. None of these values contain whitespace, so stripping it is
+          # safe and makes the job independent of how the secret was entered.
+          coolify_url=$(printf '%s' "${COOLIFY_URL}" | tr -d '[:space:]')
+          app_uuid=$(printf '%s' "${COOLIFY_APP_UUID}" | tr -d '[:space:]')
+          token=$(printf '%s' "${COOLIFY_TOKEN}" | tr -d '[:space:]')
+          cf_id=$(printf '%s' "${CF_ACCESS_CLIENT_ID}" | tr -d '[:space:]')
+          cf_secret=$(printf '%s' "${CF_ACCESS_CLIENT_SECRET}" | tr -d '[:space:]')
 
-          uuid=$(printf '%s' "$response" | jq -r '.deployments[0].deployment_uuid // empty')
+          # Capture the status separately: on a failure the body is the only
+          # thing that says whether the refusal came from Cloudflare Access or
+          # from Coolify, and command substitution would otherwise discard it.
+          response=$(curl -sS --max-time 60 -w '\n%{http_code}' \
+            -H "Authorization: Bearer ${token}" \
+            -H "CF-Access-Client-Id: ${cf_id}" \
+            -H "CF-Access-Client-Secret: ${cf_secret}" \
+            "${coolify_url}/api/v1/deploy?uuid=${app_uuid}&force=false")
+
+          status=$(printf '%s' "$response" | tail -n1)
+          body=$(printf '%s' "$response" | sed '$d')
+
+          if [ "$status" != "200" ]; then
+            echo "Coolify deploy request failed with HTTP ${status}:" >&2
+            printf '%s\n' "$body" >&2
+            exit 1
+          fi
+
+          uuid=$(printf '%s' "$body" | jq -r '.deployments[0].deployment_uuid // empty')
           if [ -z "$uuid" ]; then
-            echo "Coolify did not return a deployment uuid:" >&2
-            printf '%s\n' "$response" >&2
+            echo "Coolify accepted the request but returned no deployment uuid:" >&2
+            printf '%s\n' "$body" >&2
             exit 1
           fi
 
@@ -87,15 +110,20 @@ jobs:
           # Polling rather than a webhook: Coolify has no callback, and the job
           # has to fail loudly when a build breaks instead of reporting success
           # for a deployment that never came up.
+          coolify_url=$(printf '%s' "${COOLIFY_URL}" | tr -d '[:space:]')
+          token=$(printf '%s' "${COOLIFY_TOKEN}" | tr -d '[:space:]')
+          cf_id=$(printf '%s' "${CF_ACCESS_CLIENT_ID}" | tr -d '[:space:]')
+          cf_secret=$(printf '%s' "${CF_ACCESS_CLIENT_SECRET}" | tr -d '[:space:]')
+
           deadline=$(( SECONDS + 2400 ))
           last=""
 
           while [ "$SECONDS" -lt "$deadline" ]; do
             status=$(curl -sS --max-time 30 \
-              -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
-              -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-              -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
-              "${COOLIFY_URL}/api/v1/deployments/${DEPLOYMENT_UUID}" \
+              -H "Authorization: Bearer ${token}" \
+              -H "CF-Access-Client-Id: ${cf_id}" \
+              -H "CF-Access-Client-Secret: ${cf_secret}" \
+              "${coolify_url}/api/v1/deployments/${DEPLOYMENT_UUID}" \
               | jq -r '.status // "unknown"')
 
             if [ "$status" != "$last" ]; then
