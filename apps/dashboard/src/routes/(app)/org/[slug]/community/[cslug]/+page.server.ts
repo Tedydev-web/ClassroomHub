@@ -7,7 +7,7 @@ export const load = async ({ params, parent, cookies }) => {
   const slug = params.cslug || '';
 
   const questionResult = await safeServerApi<CommunityQuestionSuccess>(() =>
-    classroom.io.vnmunity[':slug'].$get({ param: { slug } }, getApiHeaders(cookies, orgId))
+    classroomhub.community[':slug'].$get({ param: { slug } }, getApiHeaders(cookies, orgId))
   );
   const question = questionResult.ok ? questionResult.body.data : null;
 
