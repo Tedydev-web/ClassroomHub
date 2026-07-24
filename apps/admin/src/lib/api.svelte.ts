@@ -7,6 +7,7 @@ import type {
   GatewayOrgs,
   GatewayQuota,
   GatewayRun,
+  GatewaySettings,
   ListUsersResult
 } from './types';
 
@@ -93,6 +94,13 @@ export class AdminApi {
     });
   }
 
+  setOrgTutorEnabled(orgId: string, enabled: boolean): Promise<{ orgId: string; enabled: boolean }> {
+    return this.call<{ orgId: string; enabled: boolean }>(`/orgs/${orgId}/ai-tutor`, {
+      method: 'PATCH',
+      body: JSON.stringify({ enabled })
+    });
+  }
+
   // --- AI gateway ---
 
   gatewayHealth(): Promise<GatewayHealth> {
@@ -113,6 +121,14 @@ export class AdminApi {
 
   gatewayResetBreaker(): Promise<unknown> {
     return this.call('/ai/breaker/reset', { method: 'POST' });
+  }
+
+  gatewaySettings(): Promise<GatewaySettings> {
+    return this.call<GatewaySettings>('/ai/settings');
+  }
+
+  updateGatewaySettings(values: Record<string, unknown>): Promise<GatewaySettings> {
+    return this.call<GatewaySettings>('/ai/settings', { method: 'PATCH', body: JSON.stringify(values) });
   }
 
   gatewayOrgs(): Promise<GatewayOrgs> {

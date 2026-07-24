@@ -24,12 +24,7 @@
   import { isFreePlan } from '$lib/utils/store/org';
   import { AI_CHAT_MODEL_STORAGE_KEY } from '$features/ai-assistant/utils/constants';
   import type { TCourseType } from '@cio/db/types';
-  import {
-    AGENT_MODELS,
-    DEFAULT_PICKER_MODEL_ID,
-    UI_PICKER_MODEL_IDS,
-    type AgentModelId
-  } from '@cio/utils/agent-models';
+  import { AGENT_MODEL_IDS, DEFAULT_PICKER_MODEL_ID, type AgentModelId } from '@cio/utils/agent-models';
 
   type CreatingStep = 'reading' | 'naming' | 'building';
 
@@ -46,11 +41,44 @@
   let pinnedTemplatePrompt: string | null = $state(null);
   let selectedTemplateId: CourseTemplateId | null = $state(null);
   let selectedModel: AgentModelId = $state(DEFAULT_PICKER_MODEL_ID);
-  const paidModelIds = UI_PICKER_MODEL_IDS.filter((id) => !AGENT_MODELS[id].isFree);
 
   function isAgentModelId(value: unknown): value is AgentModelId {
-    return typeof value === 'string' && (UI_PICKER_MODEL_IDS as readonly string[]).includes(value);
+    return typeof value === 'string' && (AGENT_MODEL_IDS as readonly string[]).includes(value);
   }
+
+  /** Narrows a picker-model entry's `id` to `AgentModelId` without an unsafe cast. */
+  function isKnownPickerModel<T extends { id: string }>(model: T): model is T & { id: AgentModelId } {
+    return isAgentModelId(model.id);
+  }
+
+  // The gateway model allowlist (DB, super-admin managed) is the single source
+  // of truth for which models the picker offers — same resolution the course
+  // chat panel uses, fetched here without a courseId since no course exists yet
+  // on this "create a course" surface.
+  const pickerModels = $derived((aiAssistantApi.status?.pickerModels ?? []).filter(isKnownPickerModel));
+  const pickerModelIds = $derived(pickerModels.map((model) => model.id));
+  const paidModelIds = $derived(pickerModels.filter((model) => !model.isFree).map((model) => model.id));
+  const defaultModelId = $derived.by((): AgentModelId => {
+    const candidate = aiAssistantApi.status?.defaultModelId;
+
+    return isAgentModelId(candidate) ? candidate : DEFAULT_PICKER_MODEL_ID;
+  });
+
+  // When the selected model falls out of the offered list — allowlist changed,
+  // or a stale localStorage value — move to the current default.
+  $effect(() => {
+    if (pickerModelIds.includes(selectedModel)) {
+      return;
+    }
+
+    selectedModel = defaultModelId;
+
+    try {
+      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, defaultModelId);
+    } catch {
+      // Storage is best-effort; the in-memory selection is what matters.
+    }
+  });
 
   function stepStatus(key: CreatingStep): 'done' | 'active' | 'pending' {
     const order: CreatingStep[] = ['reading', 'naming', 'building'];
@@ -89,10 +117,10 @@
       return;
     }
 
-    selectedModel = DEFAULT_PICKER_MODEL_ID;
+    selectedModel = defaultModelId;
 
     try {
-      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, DEFAULT_PICKER_MODEL_ID);
+      localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, defaultModelId);
     } catch {
       // localStorage unavailable
     }
@@ -163,13 +191,17 @@
   }
 
   onMount(() => {
+    // No courseId on this course-less "create a course" surface — the endpoint
+    // still resolves pickerModels/defaultModelId from the gateway allowlist.
+    void aiAssistantApi.fetchStatus();
+
     try {
       const storedModel = localStorage.getItem(AI_CHAT_MODEL_STORAGE_KEY);
 
       if (isAgentModelId(storedModel)) {
         if ($isFreePlan && paidModelIds.includes(storedModel)) {
-          selectedModel = DEFAULT_PICKER_MODEL_ID;
-          localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, DEFAULT_PICKER_MODEL_ID);
+          selectedModel = defaultModelId;
+          localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, defaultModelId);
           return;
         }
 
@@ -235,6 +267,7 @@
           { value: 'intermediate', label: $t('course.creator.level.intermediate') },
           { value: 'advanced', label: $t('course.creator.level.advanced') }
         ]}
+        modelIds={pickerModelIds}
         lockedModelIds={$isFreePlan ? paidModelIds : []}
         onModelChange={handleModelChange}
         onLockedModelSelect={handleLockedModelSelect}

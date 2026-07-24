@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { CANCELLABLE_STATUSES, RUN_FILTERS, RUN_STATUSES, gatewayStatus, quotaLevel, runStatusBadge } from './gateway';
+import {
+  CANCELLABLE_STATUSES,
+  RUN_FILTERS,
+  RUN_STATUSES,
+  gatewayStatus,
+  modelRoleBadge,
+  quotaLevel,
+  runStatusBadge,
+  toggleModelVisibility
+} from './gateway';
+import type { GatewayModelAllowlistEntry } from './types';
 
 const base = {
   configured: true,
@@ -59,5 +69,42 @@ describe('runs filter contract', () => {
     expect(CANCELLABLE_STATUSES.has('completed')).toBe(false);
     expect(CANCELLABLE_STATUSES.has('canceled')).toBe(false);
     expect(CANCELLABLE_STATUSES.has('active')).toBe(false);
+  });
+});
+
+describe('modelRoleBadge', () => {
+  it('badges default and light distinctly from optional', () => {
+    expect(modelRoleBadge('default')).toBe('badge-accent');
+    expect(modelRoleBadge('light')).toBe('badge-success');
+    expect(modelRoleBadge('optional')).toBe('badge-neutral');
+  });
+});
+
+describe('toggleModelVisibility', () => {
+  const allowlist: GatewayModelAllowlistEntry[] = [
+    { modelId: 'claude-sonnet-5', label: 'Claude Sonnet 5', quotaWeight: 1, role: 'default' },
+    { modelId: 'claude-opus-4-8', label: 'Claude Opus 4.8', quotaWeight: 3, role: 'optional', visible: false }
+  ];
+
+  it('hides a model that has no explicit visible flag (defaults to visible)', () => {
+    const next = toggleModelVisibility(allowlist, 'claude-sonnet-5');
+
+    expect(next.find((e) => e.modelId === 'claude-sonnet-5')?.visible).toBe(false);
+  });
+
+  it('shows a model that was explicitly hidden', () => {
+    const next = toggleModelVisibility(allowlist, 'claude-opus-4-8');
+
+    expect(next.find((e) => e.modelId === 'claude-opus-4-8')?.visible).toBe(true);
+  });
+
+  it('leaves every other entry untouched', () => {
+    const next = toggleModelVisibility(allowlist, 'claude-sonnet-5');
+
+    expect(next.find((e) => e.modelId === 'claude-opus-4-8')).toEqual(allowlist[1]);
+  });
+
+  it('is a no-op when the model id is not in the allowlist', () => {
+    expect(toggleModelVisibility(allowlist, 'unknown-model')).toEqual(allowlist);
   });
 });

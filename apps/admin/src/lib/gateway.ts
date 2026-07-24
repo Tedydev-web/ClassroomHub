@@ -1,3 +1,5 @@
+import type { GatewayModelAllowlistEntry } from './types';
+
 export type GatewayState = 'healthy' | 'cooling' | 'down' | 'paused';
 
 /**
@@ -64,4 +66,29 @@ export function runStatusBadge(status: string): string {
   if (status === 'completed') return 'badge-success';
   if (status === 'running') return 'badge-accent';
   return 'badge-neutral';
+}
+
+/** Badge class for a model allowlist entry's role. */
+export function modelRoleBadge(role: GatewayModelAllowlistEntry['role']): string {
+  if (role === 'default') return 'badge-accent';
+  if (role === 'light') return 'badge-success';
+  return 'badge-neutral';
+}
+
+/**
+ * Flips one allowlist entry's `visible` flag, leaving every other entry
+ * untouched. The settings PATCH replaces `modelAllowlist` wholesale (no
+ * per-element merge), so toggling one model must resend the full array with
+ * only that entry's flag changed.
+ */
+export function toggleModelVisibility(
+  allowlist: GatewayModelAllowlistEntry[],
+  modelId: string
+): GatewayModelAllowlistEntry[] {
+  return allowlist.map((entry) => {
+    if (entry.modelId !== modelId) return entry;
+
+    const isCurrentlyVisible = entry.visible !== false;
+    return { ...entry, visible: !isCurrentlyVisible };
+  });
 }

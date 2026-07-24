@@ -29,13 +29,6 @@
 
   function activate(key: string) {
     api = new AdminApi(key);
-    setAdminContext({
-      get api() {
-        if (!api) throw new Error('not authenticated');
-        return api;
-      },
-      signOut
-    });
     phase = 'unlocked';
   }
 
@@ -45,6 +38,18 @@
     password = '';
     phase = 'locked';
   }
+
+  // Register the admin context ONCE during component init. setContext is illegal
+  // in the async auth handlers (activate runs after an await), so it must live at
+  // init; the getter reads the reactive `api` state and returns the client the
+  // moment the gate authorizes.
+  setAdminContext({
+    get api() {
+      if (!api) throw new Error('not authenticated');
+      return api;
+    },
+    signOut
+  });
 
   async function validateAndEnter(key: string) {
     const client = new AdminApi(key);

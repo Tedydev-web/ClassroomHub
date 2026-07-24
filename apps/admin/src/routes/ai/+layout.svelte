@@ -5,6 +5,7 @@
 
   const tabs = [
     { href: '/ai', label: 'Overview' },
+    { href: '/ai/models', label: 'Models' },
     { href: '/ai/orgs', label: 'Organizations' },
     { href: '/ai/runs', label: 'Runs' }
   ];

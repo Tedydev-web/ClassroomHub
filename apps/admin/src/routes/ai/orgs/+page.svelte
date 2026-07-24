@@ -10,6 +10,8 @@
   let error = $state('');
   let saving = $state<string | null>(null);
   let weightInputs = $state<Record<string, string>>({});
+  /** orgId currently toggling its AI tutor, tracked separately from `saving` (policy save) so the two actions don't disable each other. */
+  let togglingTutor = $state<string | null>(null);
 
   async function refresh() {
     loading = true;
@@ -48,6 +50,19 @@
     if (!Number.isInteger(w) || w < 1 || w > 100) return;
     save(orgId, { priorityWeight: w });
   }
+
+  async function toggleTutor(orgId: string, currentlyEnabled: boolean) {
+    togglingTutor = orgId;
+    error = '';
+    try {
+      await api.setOrgTutorEnabled(orgId, !currentlyEnabled);
+      await refresh();
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to update AI tutor';
+    } finally {
+      togglingTutor = null;
+    }
+  }
 </script>
 
 <div class="mb-4 flex items-end justify-between gap-4">
@@ -72,6 +87,7 @@
         <th class="num">Active</th>
         <th class="num">Queued</th>
         <th>Status</th>
+        <th>AI Tutor</th>
         <th class="w-px"></th>
       </tr>
     </thead>
@@ -82,7 +98,7 @@
             <td><div class="skeleton h-3 w-40"></div></td>
             <td class="num"><div class="skeleton ml-auto h-3 w-12"></div></td>
             <td class="num"><div class="skeleton ml-auto h-3 w-8"></div></td>
-            <td class="num"></td><td class="num"></td><td></td><td></td>
+            <td class="num"></td><td class="num"></td><td></td><td></td><td></td>
           </tr>
         {/each}
       {:else if data && (data.policies.length > 0 || data.consumptionOnly.length > 0)}
@@ -108,6 +124,11 @@
             <td>
               {#if p.isBlocked}<span class="badge badge-danger">Blocked</span>
               {:else}<span class="badge badge-success">Active</span>{/if}
+            </td>
+            <td>
+              <span class="badge {p.tutorEnabled ? 'badge-success' : 'badge-neutral'}">
+                {p.tutorEnabled ? 'On' : 'Off'}
+              </span>
             </td>
             <td class="w-px">
               <div class="flex justify-end gap-2">
@@ -135,6 +156,13 @@
                     Block
                   </button>
                 {/if}
+                <button
+                  class="btn btn-sm"
+                  onclick={() => toggleTutor(p.orgId, p.tutorEnabled)}
+                  disabled={togglingTutor === p.orgId}
+                >
+                  {p.tutorEnabled ? 'Disable tutor' : 'Enable tutor'}
+                </button>
               </div>
             </td>
           </tr>
@@ -144,11 +172,24 @@
             <td class="tabular text-[12px]">{c.orgId}</td>
             <td class="num">{c.units.toLocaleString()}</td>
             <td class="num" colspan="4"><span class="text-[12px]">running on defaults</span></td>
-            <td></td>
+            <td>
+              <span class="badge {c.tutorEnabled ? 'badge-success' : 'badge-neutral'}">
+                {c.tutorEnabled ? 'On' : 'Off'}
+              </span>
+            </td>
+            <td class="w-px">
+              <button
+                class="btn btn-sm"
+                onclick={() => toggleTutor(c.orgId, c.tutorEnabled)}
+                disabled={togglingTutor === c.orgId}
+              >
+                {c.tutorEnabled ? 'Disable tutor' : 'Enable tutor'}
+              </button>
+            </td>
           </tr>
         {/each}
       {:else}
-        <tr><td colspan="7"><div class="empty">No org activity or policies.</div></td></tr>
+        <tr><td colspan="8"><div class="empty">No org activity or policies.</div></td></tr>
       {/if}
     </tbody>
   </table>

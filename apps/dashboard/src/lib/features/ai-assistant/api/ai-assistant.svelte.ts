@@ -21,11 +21,16 @@ class AiAssistantApi extends BaseApiWithErrors {
   runs: AgentRunSummary[] = $state([]);
   currentRun: AgentRunDetail | null = $state(null);
 
-  async fetchStatus(courseId: string) {
+  /**
+   * `courseId` is optional so course-less surfaces (the org home "create a
+   * course" composer) can still resolve `pickerModels`/`defaultModelId`
+   * before a course exists.
+   */
+  async fetchStatus(courseId?: string) {
     await this.execute<typeof classroomhub.agent.status.$get>({
       requestFn: () =>
         classroomhub.agent.status.$get({
-          query: { courseId }
+          query: courseId ? { courseId } : {}
         }),
       logContext: 'fetching agent status',
       onSuccess: (result) => {

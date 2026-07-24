@@ -26,6 +26,7 @@ export type {
   AgentStatus,
   AgentTutorStatus,
   GatewayUsageSummary,
+  PickerModelSummary,
   DocumentUploadResult
 } from './types';
 

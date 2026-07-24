@@ -7,6 +7,7 @@ import {
   listGatewayOrgPolicyRows,
   updateAgentRun
 } from '@cio/db/queries/agent';
+import { getOrgAiTutorEnabledMap } from '@cio/db/queries/admin';
 import type { TAiAgentRunStatus } from '@cio/db/types';
 import { AppError } from '@api/utils/errors';
 import {
@@ -260,6 +261,12 @@ export async function updateGatewaySettings(values: Record<string, unknown>): Pr
 export async function listOrgGatewayPolicies() {
   const [policies, quota] = await Promise.all([listGatewayOrgPolicyRows(), getGatewayQuota()]);
   const consumptionByOrg = new Map(quota.topOrgs.map((entry) => [entry.orgId, entry.units]));
+  const consumptionOnly = quota.topOrgs.filter((entry) => !policies.some((policy) => policy.orgId === entry.orgId));
+
+  // One bulk read for every org this response mentions, rather than N+1 queries
+  // per row — this panel's whole point is a fast operator overview.
+  const allOrgIds = [...policies.map((policy) => policy.orgId), ...consumptionOnly.map((entry) => entry.orgId)];
+  const tutorEnabledByOrg = await getOrgAiTutorEnabledMap(allOrgIds);
 
   return {
     policies: policies.map((policy) => ({
@@ -270,11 +277,18 @@ export async function listOrgGatewayPolicies() {
       windowBudgetUnits: policy.windowBudgetUnits,
       isBlocked: policy.isBlocked,
       blockReason: policy.blockReason,
-      consumedUnits: consumptionByOrg.get(policy.orgId) ?? 0
+      consumedUnits: consumptionByOrg.get(policy.orgId) ?? 0,
+      // Defaults true (the schema default) if the org row could not be found —
+      // e.g. deleted between the two reads — so a stale row never renders as
+      // silently disabled.
+      tutorEnabled: tutorEnabledByOrg[policy.orgId] ?? true
     })),
     // Orgs consuming capacity without a customised policy row still matter
     // operationally — they are the ones running on pure defaults.
-    consumptionOnly: quota.topOrgs.filter((entry) => !policies.some((policy) => policy.orgId === entry.orgId))
+    consumptionOnly: consumptionOnly.map((entry) => ({
+      ...entry,
+      tutorEnabled: tutorEnabledByOrg[entry.orgId] ?? true
+    }))
   };
 }
 
