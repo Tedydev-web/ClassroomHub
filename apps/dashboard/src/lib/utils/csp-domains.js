@@ -7,6 +7,7 @@ const saasDefaults = {
     'https://classroom-assets.tedydev.io.vn',
     'https://classroom-embed.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
+    'https://cdn.userjot.com',
     'https://*.posthog.com',
     'https://*.senja.io',
     // Optional analytics origins are appended from deployment environment variables.

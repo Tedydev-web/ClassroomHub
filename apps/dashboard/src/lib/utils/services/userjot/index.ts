@@ -1,4 +1,5 @@
 import { dev } from '$app/environment';
+import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 import { get } from 'svelte/store';
 import { globalStore } from '$lib/utils/store/app';
 import { isSelfOwnedDeployment } from '$lib/utils/deployment';
@@ -10,7 +11,7 @@ let isInitialized = false;
 
 function isWidgetAllowed(): boolean {
   if (dev) return false;
-  if (isSelfOwnedDeployment) return false;
+  if (PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment) return false;
   if (!USERJOT_APP_ID) return false;
   if (get(globalStore).isOrgSite) return false;
 
@@ -34,7 +35,9 @@ function ensureSdkLoaded(): void {
   script.type = 'module';
   script.async = true;
   script.src = 'https://cdn.userjot.com/sdk/v2/uj.js';
-  const nonce = document.querySelector('script[nonce]')?.getAttribute('nonce');
+  // Browsers hide the nonce attribute in the DOM; read via the IDL property.
+  const nonceSource = document.querySelector('script[nonce]') as HTMLScriptElement | null;
+  const nonce = nonceSource?.nonce || nonceSource?.getAttribute('nonce');
   if (nonce) script.setAttribute('nonce', nonce);
   document.head.appendChild(script);
 }

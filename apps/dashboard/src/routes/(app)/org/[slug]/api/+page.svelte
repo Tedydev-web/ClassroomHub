@@ -27,7 +27,7 @@
       <Page.Subtitle>{$t('automation.api.subtitle')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
-      <Button variant="outline" onclick={() => window.open(`https://${PRODUCT_HOSTS.marketing}`, '_blank')}>
+      <Button variant="outline" onclick={() => window.open(`https://${PRODUCT_HOSTS.marketing}/docs/api`, '_blank')}>
         <ArrowUpRightIcon size={16} />
         {$t('automation.api.view_docs')}
       </Button>

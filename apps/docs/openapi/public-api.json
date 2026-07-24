@@ -1,0 +1,2353 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Classroom API",
+    "description": "# Authentication\n\nAll public API endpoints require an **organization-scoped API key** sent as a Bearer token.\n\n## Get an API key\n\n1. Sign in to [Classroom](https://hub.classroom.io.vn) as an **organization admin**.\n2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://hub.classroom.io.vn/org/*/api) — `*` picks your current organization automatically).\n3. Click **Generate API key** and copy the secret immediately (it is shown only once).\n4. Keys look like `cio_api_...` and include the `public_api:*` scope.\n\n## Send requests\n\nAdd the key to every request:\n\n```\nAuthorization: Bearer cio_api_your_key_here\n```\n\nBase URL: `https://api.classroom.io.vn/public-api/v1`\n\n## Try requests in this reference\n\nUse the **Authorize** button (lock icon) on this page, choose **bearerAuth**, paste your full API key, then run **Try it** on any endpoint.\n\n## Plan access\n\nOn Classroom Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Classroom",
+      "url": "https://classroom.io.vn"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.classroom.io.vn",
+      "description": "Production environment"
+    },
+    {
+      "url": "http://localhost:8001",
+      "description": "Development environment"
+    }
+  ],
+  "paths": {
+    "/public-api/v1/audience": {
+      "get": {
+        "operationId": "getPublic-apiV1Audience",
+        "description": "List audience members for the authenticated organization",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience members returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object"
+                    },
+                    "query": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "pagination",
+                    "query"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "default": "createdAt",
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name",
+                "email"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "default": "desc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postPublic-apiV1Audience",
+        "description": "Create an audience member invitation for the authenticated organization",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "201": {
+            "description": "Audience member created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "courseIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "sendEmail": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/audience/assign-courses": {
+      "post": {
+        "operationId": "postPublic-apiV1AudienceAssign-courses",
+        "description": "Assign one or more audience members to one or more courses",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience members assigned to courses successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileIds": {
+                    "minItems": 1,
+                    "maxItems": 500,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "courseIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "cohortIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "sendEmail": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "profileIds"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/audience/{memberId}": {
+      "get": {
+        "operationId": "getPublic-apiV1Audience:memberId",
+        "description": "Get a single audience member by id",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience member returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Audience member not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePublic-apiV1Audience:memberId",
+        "description": "Remove an audience member by id",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience member removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Audience member not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putPublic-apiV1Audience:memberId",
+        "description": "Update a pending audience member email address",
+        "tags": [
+          "Public API Audience"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience member updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Audience member not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "sendEmail": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/courses": {
+      "get": {
+        "operationId": "getPublic-apiV1Courses",
+        "description": "List courses for the authenticated organization",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Courses returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postPublic-apiV1Courses",
+        "description": "Create a course for the authenticated organization",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "201": {
+            "description": "Course created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "SELF_PACED",
+                      "LIVE_CLASS",
+                      "COMPLIANCE",
+                      "PUBLIC"
+                    ]
+                  },
+                  "compliance": {
+                    "type": "object",
+                    "properties": {
+                      "retakeIntervalMonths": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 120
+                      },
+                      "gracePeriodDays": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 365
+                      },
+                      "reminderDaysBefore": {
+                        "default": [
+                          30,
+                          7,
+                          1
+                        ],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 365
+                        }
+                      },
+                      "isMandatory": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "framework": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "HIPAA",
+                              "OSHA",
+                              "SOX",
+                              "GDPR",
+                              "PCI_DSS",
+                              "FERPA",
+                              "ISO",
+                              "CUSTOM"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxRetakeAttempts": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "passingScore": {
+                        "default": 80,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "retakeIntervalMonths"
+                    ]
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/courses/{courseId}/students": {
+      "get": {
+        "operationId": "getPublic-apiV1Courses:courseIdStudents",
+        "description": "List enrolled students for a course",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course students returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/courses/{courseId}/export": {
+      "get": {
+        "operationId": "getPublic-apiV1Courses:courseIdExport",
+        "description": "Export a course structure snapshot",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course export returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/courses/{courseId}/structure": {
+      "get": {
+        "operationId": "getPublic-apiV1Courses:courseIdStructure",
+        "description": "Get a course structure snapshot",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course structure returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putPublic-apiV1Courses:courseIdStructure",
+        "description": "Synchronize a course structure using the draft payload shape",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course structure updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "default": "merge",
+                    "type": "string",
+                    "enum": [
+                      "merge",
+                      "replace"
+                    ]
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "summary": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  "sourceArtifacts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "draft": {
+                    "type": "object",
+                    "properties": {
+                      "course": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "SELF_PACED",
+                              "LIVE_CLASS",
+                              "COMPLIANCE",
+                              "PUBLIC"
+                            ]
+                          },
+                          "locale": {
+                            "default": "en",
+                            "type": "string",
+                            "enum": [
+                              "en",
+                              "hi",
+                              "fr",
+                              "pt",
+                              "de",
+                              "vi",
+                              "ru",
+                              "es",
+                              "pl",
+                              "da"
+                            ]
+                          },
+                          "metadata": {
+                            "type": "object",
+                            "properties": {
+                              "requirements": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "goals": {
+                                "type": "string"
+                              },
+                              "videoUrl": {
+                                "type": "string"
+                              },
+                              "showDiscount": {
+                                "type": "boolean"
+                              },
+                              "discount": {
+                                "type": "number"
+                              },
+                              "paymentLink": {
+                                "type": "string"
+                              },
+                              "reward": {
+                                "type": "object",
+                                "properties": {
+                                  "show": {
+                                    "type": "boolean"
+                                  },
+                                  "description": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "show"
+                                ]
+                              },
+                              "instructor": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "role": {
+                                    "type": "string"
+                                  },
+                                  "coursesNo": {
+                                    "type": "number"
+                                  },
+                                  "description": {
+                                    "type": "string"
+                                  },
+                                  "imgUrl": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "role",
+                                  "description",
+                                  "imgUrl"
+                                ]
+                              },
+                              "certificate": {
+                                "type": "object",
+                                "properties": {
+                                  "templateUrl": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "templateUrl"
+                                ]
+                              },
+                              "reviews": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "hide": {
+                                      "type": "boolean"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "avatar_url": {
+                                      "type": "string"
+                                    },
+                                    "rating": {
+                                      "type": "number"
+                                    },
+                                    "created_at": {
+                                      "type": "number"
+                                    },
+                                    "description": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "hide",
+                                    "name",
+                                    "avatar_url",
+                                    "rating",
+                                    "created_at",
+                                    "description"
+                                  ]
+                                }
+                              },
+                              "skills": {
+                                "maxItems": 60,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "tools": {
+                                "maxItems": 60,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "lessonTabsOrder": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "const": 1
+                                        },
+                                        {
+                                          "type": "number",
+                                          "const": 2
+                                        },
+                                        {
+                                          "type": "number",
+                                          "const": 3
+                                        },
+                                        {
+                                          "type": "number",
+                                          "const": 4
+                                        }
+                                      ]
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "name"
+                                  ]
+                                }
+                              },
+                              "grading": {
+                                "type": "boolean"
+                              },
+                              "lessonDownload": {
+                                "type": "boolean"
+                              },
+                              "allowNewStudent": {
+                                "default": true,
+                                "type": "boolean"
+                              },
+                              "welcomeEmailMessage": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 20000
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "sessionTimezone": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 64
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "sectionDisplay": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "isContentGroupingEnabled": {
+                                "type": "boolean"
+                              },
+                              "progressionMode": {
+                                "type": "string",
+                                "enum": [
+                                  "free",
+                                  "sequential"
+                                ]
+                              }
+                            }
+                          },
+                          "compliance": {
+                            "type": "object",
+                            "properties": {
+                              "retakeIntervalMonths": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 120
+                              },
+                              "gracePeriodDays": {
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 365
+                              },
+                              "reminderDaysBefore": {
+                                "default": [
+                                  30,
+                                  7,
+                                  1
+                                ],
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 365
+                                }
+                              },
+                              "isMandatory": {
+                                "default": true,
+                                "type": "boolean"
+                              },
+                              "framework": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "HIPAA",
+                                      "OSHA",
+                                      "SOX",
+                                      "GDPR",
+                                      "PCI_DSS",
+                                      "FERPA",
+                                      "ISO",
+                                      "CUSTOM"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "maxRetakeAttempts": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "passingScore": {
+                                "default": 80,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100
+                              }
+                            },
+                            "required": [
+                              "retakeIntervalMonths"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "description",
+                          "type"
+                        ]
+                      },
+                      "tags": {
+                        "default": [],
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        }
+                      },
+                      "sections": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "externalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "order": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "externalId",
+                            "title",
+                            "order"
+                          ]
+                        }
+                      },
+                      "lessons": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "externalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "sectionExternalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "order": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "isUnlocked": {
+                              "type": "boolean"
+                            },
+                            "public": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "externalId",
+                            "sectionExternalId",
+                            "title",
+                            "order"
+                          ]
+                        }
+                      },
+                      "lessonLanguages": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "lessonExternalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "locale": {
+                              "type": "string",
+                              "enum": [
+                                "en",
+                                "hi",
+                                "fr",
+                                "pt",
+                                "de",
+                                "vi",
+                                "ru",
+                                "es",
+                                "pl",
+                                "da"
+                              ]
+                            },
+                            "content": {
+                              "description": "Lesson body HTML only. Do not include the lesson title. Do not use h1 or h2 anywhere in lessonLanguages[].content. Start headings at h3 because that is the highest heading level allowed in lesson content.",
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": [
+                            "lessonExternalId",
+                            "locale",
+                            "content"
+                          ]
+                        }
+                      },
+                      "exercises": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "externalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "lessonExternalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "sectionExternalId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "dueBy": {
+                              "type": "string"
+                            },
+                            "questions": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "question": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "questionTypeId": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "points": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000
+                                  },
+                                  "order": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "settings": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                  },
+                                  "options": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "label": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "isCorrect": {
+                                          "type": "boolean"
+                                        },
+                                        "settings": {
+                                          "type": "object",
+                                          "propertyNames": {
+                                            "type": "string"
+                                          },
+                                          "additionalProperties": {}
+                                        }
+                                      },
+                                      "required": [
+                                        "label",
+                                        "isCorrect"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "question"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "externalId",
+                            "title"
+                          ]
+                        }
+                      },
+                      "sourceReferences": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "prompt",
+                                "pdf",
+                                "course"
+                              ]
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "pageStart": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "pageEnd": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "label"
+                          ]
+                        }
+                      },
+                      "warnings": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "message": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "severity": {
+                              "type": "string",
+                              "enum": [
+                                "info",
+                                "warning",
+                                "error"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "message",
+                            "severity"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "course",
+                      "sections",
+                      "lessons",
+                      "lessonLanguages"
+                    ]
+                  }
+                },
+                "required": [
+                  "draft"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/public-api/v1/courses/{courseId}": {
+      "get": {
+        "operationId": "getPublic-apiV1Courses:courseId",
+        "description": "Get a single course by id",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putPublic-apiV1Courses:courseId",
+        "description": "Update a course by id",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "SELF_PACED",
+                      "LIVE_CLASS",
+                      "COMPLIANCE",
+                      "PUBLIC"
+                    ]
+                  },
+                  "logo": {
+                    "type": "string"
+                  },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "isPublished": {
+                    "type": "boolean"
+                  },
+                  "orgOnly": {
+                    "type": "boolean"
+                  },
+                  "overview": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "properties": {
+                      "requirements": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "goals": {
+                        "type": "string"
+                      },
+                      "videoUrl": {
+                        "type": "string"
+                      },
+                      "showDiscount": {
+                        "type": "boolean"
+                      },
+                      "discount": {
+                        "type": "number"
+                      },
+                      "paymentLink": {
+                        "type": "string"
+                      },
+                      "reward": {
+                        "type": "object",
+                        "properties": {
+                          "show": {
+                            "type": "boolean"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "show"
+                        ]
+                      },
+                      "instructor": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "coursesNo": {
+                            "type": "number"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "imgUrl": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "role",
+                          "description",
+                          "imgUrl"
+                        ]
+                      },
+                      "certificate": {
+                        "type": "object",
+                        "properties": {
+                          "templateUrl": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "templateUrl"
+                        ]
+                      },
+                      "reviews": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "number"
+                            },
+                            "hide": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "avatar_url": {
+                              "type": "string"
+                            },
+                            "rating": {
+                              "type": "number"
+                            },
+                            "created_at": {
+                              "type": "number"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "hide",
+                            "name",
+                            "avatar_url",
+                            "rating",
+                            "created_at",
+                            "description"
+                          ]
+                        }
+                      },
+                      "skills": {
+                        "maxItems": 60,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        }
+                      },
+                      "tools": {
+                        "maxItems": 60,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        }
+                      },
+                      "lessonTabsOrder": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "anyOf": [
+                                {
+                                  "type": "number",
+                                  "const": 1
+                                },
+                                {
+                                  "type": "number",
+                                  "const": 2
+                                },
+                                {
+                                  "type": "number",
+                                  "const": 3
+                                },
+                                {
+                                  "type": "number",
+                                  "const": 4
+                                }
+                              ]
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name"
+                          ]
+                        }
+                      },
+                      "grading": {
+                        "type": "boolean"
+                      },
+                      "lessonDownload": {
+                        "type": "boolean"
+                      },
+                      "allowNewStudent": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "welcomeEmailMessage": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 20000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sessionTimezone": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 64
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sectionDisplay": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "boolean"
+                        }
+                      },
+                      "isContentGroupingEnabled": {
+                        "type": "boolean"
+                      },
+                      "progressionMode": {
+                        "type": "string",
+                        "enum": [
+                          "free",
+                          "sequential"
+                        ]
+                      }
+                    }
+                  },
+                  "cost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "NGN",
+                      "USD"
+                    ]
+                  },
+                  "certificate": {
+                    "type": "object",
+                    "properties": {
+                      "isDownloadable": {
+                        "type": "boolean"
+                      },
+                      "theme": {
+                        "type": "string"
+                      },
+                      "design": {
+                        "type": "object",
+                        "properties": {
+                          "templateId": {
+                            "type": "string",
+                            "enum": [
+                              "classique",
+                              "brutalist",
+                              "noir",
+                              "poster",
+                              "minimal"
+                            ]
+                          },
+                          "accentColor": {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          "subtitle": {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          "descriptionOverride": {
+                            "type": "string",
+                            "maxLength": 500
+                          },
+                          "signatories": {
+                            "type": "array",
+                            "prefixItems": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "default": "",
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "role": {
+                                    "default": "",
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "enabled": {
+                                    "default": true,
+                                    "type": "boolean"
+                                  },
+                                  "signatureUrl": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "default": "",
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "role": {
+                                    "default": "",
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "enabled": {
+                                    "default": true,
+                                    "type": "boolean"
+                                  },
+                                  "signatureUrl": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "idFormat": {
+                            "type": "string",
+                            "maxLength": 40
+                          }
+                        },
+                        "required": [
+                          "templateId",
+                          "accentColor",
+                          "signatories"
+                        ]
+                      },
+                      "deadline": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "threshold": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "requiredExerciseId": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "exerciseMinScorePercent": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "emailMessage": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 5000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "compliance": {
+                    "type": "object",
+                    "properties": {
+                      "retakeIntervalMonths": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 120
+                      },
+                      "gracePeriodDays": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 365
+                      },
+                      "reminderDaysBefore": {
+                        "default": [
+                          30,
+                          7,
+                          1
+                        ],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 365
+                        }
+                      },
+                      "isMandatory": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "framework": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "HIPAA",
+                              "OSHA",
+                              "SOX",
+                              "GDPR",
+                              "PCI_DSS",
+                              "FERPA",
+                              "ISO",
+                              "CUSTOM"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxRetakeAttempts": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "passingScore": {
+                        "default": 80,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "retakeIntervalMonths"
+                    ]
+                  },
+                  "callout": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "description": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "buttonLabel": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 40
+                          },
+                          "buttonUrl": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "animation": {
+                            "default": "waves",
+                            "type": "string",
+                            "enum": [
+                              "waves",
+                              "dotted",
+                              "none"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "description",
+                          "buttonLabel",
+                          "buttonUrl"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePublic-apiV1Courses:courseId",
+        "description": "Delete a course by id",
+        "tags": [
+          "Public API Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Course deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "courseId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "Organization API key from Automation → API in your org dashboard. Paste the full `cio_api_...` value as the Bearer token."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
