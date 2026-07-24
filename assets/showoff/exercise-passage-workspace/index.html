@@ -1,0 +1,1546 @@
+<!doctype html>
+<html lang="vi" data-theme="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exercise Workspace Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --font-ui: "Geist", "Segoe UI", sans-serif;
+        --bg: oklch(0.965 0.006 255);
+        --surface: oklch(0.995 0.002 255);
+        --surface-subtle: oklch(0.975 0.005 255);
+        --surface-raised: oklch(1 0 0);
+        --ink: oklch(0.24 0.018 255);
+        --ink-soft: oklch(0.48 0.018 255);
+        --ink-faint: oklch(0.62 0.014 255);
+        --line: oklch(0.89 0.009 255);
+        --line-strong: oklch(0.79 0.014 255);
+        --accent: oklch(0.56 0.19 257);
+        --accent-soft: oklch(0.95 0.027 257);
+        --accent-ink: oklch(0.43 0.17 257);
+        --success: oklch(0.54 0.13 155);
+        --danger: oklch(0.58 0.19 25);
+        --shadow: 0 1px 2px oklch(0.2 0.02 255 / 0.08), 0 16px 40px oklch(0.2 0.02 255 / 0.1);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-12: 48px;
+        --ease: cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: oklch(0.16 0.012 255);
+        --surface: oklch(0.19 0.014 255);
+        --surface-subtle: oklch(0.23 0.014 255);
+        --surface-raised: oklch(0.26 0.016 255);
+        --ink: oklch(0.94 0.008 255);
+        --ink-soft: oklch(0.73 0.012 255);
+        --ink-faint: oklch(0.61 0.012 255);
+        --line: oklch(0.31 0.014 255);
+        --line-strong: oklch(0.42 0.014 255);
+        --accent: oklch(0.7 0.16 257);
+        --accent-soft: oklch(0.27 0.06 257);
+        --accent-ink: oklch(0.83 0.11 257);
+        --success: oklch(0.72 0.13 155);
+        --shadow: 0 1px 2px oklch(0.05 0.01 255 / 0.3), 0 16px 40px oklch(0.05 0.01 255 / 0.35);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        html[data-theme="system"] {
+          color-scheme: dark;
+          --bg: oklch(0.16 0.012 255);
+          --surface: oklch(0.19 0.014 255);
+          --surface-subtle: oklch(0.23 0.014 255);
+          --surface-raised: oklch(0.26 0.016 255);
+          --ink: oklch(0.94 0.008 255);
+          --ink-soft: oklch(0.73 0.012 255);
+          --ink-faint: oklch(0.61 0.012 255);
+          --line: oklch(0.31 0.014 255);
+          --line-strong: oklch(0.42 0.014 255);
+          --accent: oklch(0.7 0.16 257);
+          --accent-soft: oklch(0.27 0.06 257);
+          --accent-ink: oklch(0.83 0.11 257);
+          --success: oklch(0.72 0.13 155);
+          --shadow: 0 1px 2px oklch(0.05 0.01 255 / 0.3), 0 16px 40px oklch(0.05 0.01 255 / 0.35);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 14px;
+        letter-spacing: 0;
+      }
+
+      button,
+      input,
+      textarea {
+        color: inherit;
+        font: inherit;
+        letter-spacing: 0;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      [contenteditable="true"]:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .showcase-section {
+        min-height: 100dvh;
+        padding: var(--space-4);
+        display: grid;
+        place-items: center;
+      }
+
+      .desktop-frame {
+        width: min(1880px, 100%);
+        height: calc(100dvh - 32px);
+        min-height: 720px;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 56px 76px minmax(0, 1fr);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow);
+      }
+
+      .topbar,
+      .contextbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .topbar {
+        background: var(--surface);
+      }
+
+      .contextbar {
+        background: var(--surface-subtle);
+      }
+
+      .topbar-left,
+      .topbar-right,
+      .context-left,
+      .context-right,
+      .inline,
+      .toolbar,
+      .question-nav,
+      .panel-title,
+      .mobile-topbar,
+      .mobile-segments {
+        display: flex;
+        align-items: center;
+      }
+
+      .topbar-left,
+      .context-left {
+        min-width: 0;
+        gap: var(--space-3);
+      }
+
+      .topbar-right,
+      .context-right,
+      .toolbar,
+      .question-nav {
+        gap: var(--space-2);
+      }
+
+      .back-button,
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        font-size: 22px;
+      }
+
+      .back-button:hover,
+      .icon-button:hover,
+      .tool-button:hover,
+      .segment-button:hover,
+      .question-index:hover {
+        background: var(--surface-subtle);
+      }
+
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        background: var(--ink);
+        color: var(--surface);
+        font-weight: 750;
+      }
+
+      .breadcrumb {
+        min-width: 0;
+        color: var(--ink-soft);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .breadcrumb strong {
+        color: var(--ink);
+        font-weight: 620;
+      }
+
+      .saved-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--success);
+        font-size: 13px;
+        min-width: 64px;
+      }
+
+      .saved-state::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .button {
+        min-height: 40px;
+        padding: 0 var(--space-4);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        font-weight: 620;
+        transition: transform 120ms var(--ease), background 180ms var(--ease);
+      }
+
+      .button:hover {
+        background: var(--surface-subtle);
+      }
+
+      .button:active {
+        transform: translateY(1px);
+      }
+
+      .button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: oklch(0.99 0 0);
+      }
+
+      .button.primary:hover {
+        background: var(--accent-ink);
+      }
+
+      .button.quiet {
+        border-color: transparent;
+        background: transparent;
+      }
+
+      .exercise-heading {
+        min-width: 0;
+      }
+
+      .exercise-heading h1 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.25;
+        font-weight: 680;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .exercise-heading p {
+        margin: 4px 0 0;
+        color: var(--ink-soft);
+        font-size: 13px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .segment-button {
+        min-height: 34px;
+        padding: 0 var(--space-3);
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--ink-soft);
+      }
+
+      .segment-button[aria-selected="true"] {
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-weight: 650;
+      }
+
+      .workspace {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(360px, 5fr) minmax(480px, 7fr);
+        background: var(--line);
+        gap: 1px;
+      }
+
+      .workspace-panel {
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 56px minmax(0, 1fr);
+        background: var(--surface);
+      }
+
+      .panel-header {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: 0 var(--space-4);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-title {
+        min-width: 0;
+        gap: var(--space-2);
+      }
+
+      .panel-title strong {
+        font-size: 14px;
+      }
+
+      .count {
+        min-width: 24px;
+        height: 22px;
+        display: inline-grid;
+        place-items: center;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--surface-subtle);
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tool-button {
+        min-height: 34px;
+        padding: 0 var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-weight: 580;
+      }
+
+      .panel-scroll {
+        min-height: 0;
+        overflow: auto;
+      }
+
+      .passage-scroll {
+        padding: var(--space-6);
+        background: var(--surface-subtle);
+      }
+
+      .editor-toolbar {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: 0 var(--space-2);
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        background: var(--surface);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      .format-button {
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        font-weight: 650;
+      }
+
+      .format-button:hover {
+        background: var(--surface-subtle);
+      }
+
+      .passage-document {
+        max-width: 760px;
+        min-height: calc(100% - 44px);
+        margin: 0 auto;
+        padding: var(--space-8);
+        border: 1px solid var(--line);
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+        background: var(--surface-raised);
+        line-height: 1.65;
+      }
+
+      .passage-document:focus-visible {
+        border-color: var(--accent);
+      }
+
+      .passage-document h2 {
+        margin: 0 0 var(--space-4);
+        color: var(--accent-ink);
+        font-size: 20px;
+        line-height: 1.3;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      .passage-document p {
+        margin: 0 0 var(--space-4);
+        font-size: 16px;
+        text-wrap: pretty;
+      }
+
+      .blank-token {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
+        color: var(--accent-ink);
+        font-weight: 680;
+        white-space: nowrap;
+      }
+
+      .blank-line {
+        display: inline-block;
+        width: 58px;
+        border-bottom: 1px solid currentColor;
+        transform: translateY(-2px);
+      }
+
+      .source-note {
+        color: var(--ink-soft);
+        text-align: right;
+        font-style: italic;
+      }
+
+      .questions-layout {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 232px;
+      }
+
+      .question-editor {
+        min-width: 0;
+        padding: var(--space-6);
+        overflow: auto;
+      }
+
+      .question-index {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .question-index[aria-current="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-weight: 700;
+      }
+
+      .question-index[data-complete="true"]::after {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 5px;
+        margin: -4px auto 0;
+        border-radius: 50%;
+        background: var(--success);
+      }
+
+      .question-label {
+        margin: 0 0 var(--space-2);
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 680;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .question-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding-bottom: var(--space-6);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .question-title-row h2 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.35;
+        font-weight: 660;
+        text-wrap: pretty;
+      }
+
+      .points-input {
+        width: 72px;
+        height: 40px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .choices {
+        display: grid;
+        gap: var(--space-2);
+        margin-top: var(--space-6);
+      }
+
+      .choice-row {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) 40px;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        transition: border-color 180ms var(--ease), background 180ms var(--ease);
+      }
+
+      .choice-row:focus-within,
+      .choice-row[data-correct="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .choice-key {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 50%;
+        color: var(--ink-soft);
+        font-weight: 650;
+      }
+
+      .choice-row[data-correct="true"] .choice-key {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: oklch(0.99 0 0);
+      }
+
+      .choice-input {
+        width: 100%;
+        min-height: 36px;
+        border: 0;
+        background: transparent;
+        outline: 0;
+        font-size: 15px;
+      }
+
+      .correct-button {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--ink-faint);
+        font-size: 17px;
+      }
+
+      .choice-row[data-correct="true"] .correct-button {
+        color: var(--accent-ink);
+      }
+
+      .add-choice {
+        justify-self: start;
+        margin-top: var(--space-3);
+      }
+
+      .question-summary-list {
+        margin-top: var(--space-8);
+        border-top: 1px solid var(--line);
+      }
+
+      .question-summary {
+        width: 100%;
+        min-height: 64px;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-3);
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        text-align: left;
+      }
+
+      .question-summary:hover {
+        background: var(--surface-subtle);
+      }
+
+      .summary-number {
+        color: var(--ink-soft);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .summary-copy {
+        min-width: 0;
+      }
+
+      .summary-copy strong,
+      .summary-copy span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .summary-copy strong {
+        font-weight: 600;
+      }
+
+      .summary-copy span {
+        margin-top: 3px;
+        color: var(--ink-soft);
+        font-size: 12px;
+      }
+
+      .summary-status {
+        color: var(--success);
+        font-size: 12px;
+      }
+
+      .inspector {
+        min-width: 0;
+        overflow: auto;
+        padding: var(--space-4);
+        border-left: 1px solid var(--line);
+        background: var(--surface-subtle);
+      }
+
+      .inspector h3 {
+        margin: 0 0 var(--space-6);
+        font-size: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+      }
+
+      .field label {
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 620;
+      }
+
+      .select-control {
+        width: 100%;
+        height: 40px;
+        padding: 0 var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      .toggle-row {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        border-top: 1px solid var(--line);
+      }
+
+      .toggle {
+        width: 36px;
+        height: 20px;
+        position: relative;
+        border: 0;
+        border-radius: 999px;
+        background: var(--line-strong);
+      }
+
+      .toggle::after {
+        content: "";
+        width: 16px;
+        height: 16px;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        border-radius: 50%;
+        background: var(--surface-raised);
+        transition: transform 180ms var(--ease);
+      }
+
+      .toggle[aria-pressed="true"] {
+        background: var(--accent);
+      }
+
+      .toggle[aria-pressed="true"]::after {
+        transform: translateX(16px);
+      }
+
+      .preview-surface {
+        display: none;
+        min-height: 0;
+        grid-column: 1 / -1;
+        grid-template-columns: 5fr 7fr;
+        background: var(--surface);
+      }
+
+      .desktop-frame[data-mode="preview"] .workspace-panel {
+        display: none;
+      }
+
+      .desktop-frame[data-mode="preview"] .preview-surface {
+        display: grid;
+      }
+
+      .delivery-passage,
+      .delivery-questions {
+        min-width: 0;
+        overflow: auto;
+        padding: var(--space-12);
+      }
+
+      .delivery-passage {
+        border-right: 1px solid var(--line);
+      }
+
+      .delivery-copy {
+        max-width: 700px;
+        margin: 0 auto;
+        font-size: 17px;
+        line-height: 1.7;
+      }
+
+      .delivery-copy h2 {
+        color: var(--accent-ink);
+        text-align: center;
+      }
+
+      .delivery-question {
+        max-width: 640px;
+        margin: 0 auto var(--space-8);
+      }
+
+      .delivery-question h3 {
+        margin: 0 0 var(--space-4);
+      }
+
+      .delivery-choice {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .delivery-choice span:first-child {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 50%;
+      }
+
+      .mobile-section {
+        align-content: center;
+        gap: var(--space-6);
+        padding-block: var(--space-8);
+      }
+
+      .mobile-showcase-heading {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 680;
+      }
+
+      .phone {
+        width: min(430px, calc(100vw - 32px));
+        height: min(820px, calc(100dvh - 112px));
+        min-height: 620px;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 56px 52px minmax(0, 1fr) 64px;
+        border: 1px solid var(--line-strong);
+        border-radius: 22px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .mobile-topbar {
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: 0 var(--space-3);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mobile-title {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .mobile-title strong,
+      .mobile-title span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mobile-title span {
+        margin-top: 2px;
+        color: var(--ink-soft);
+        font-size: 11px;
+      }
+
+      .mobile-segments {
+        gap: var(--space-1);
+        padding: var(--space-2);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mobile-segments button {
+        min-height: 36px;
+        flex: 1;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--ink-soft);
+      }
+
+      .mobile-segments button[aria-selected="true"] {
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-weight: 650;
+      }
+
+      .mobile-body {
+        min-height: 0;
+        overflow: auto;
+        background: var(--surface-subtle);
+      }
+
+      .mobile-pane {
+        display: none;
+        padding: var(--space-4);
+      }
+
+      .mobile-pane[data-active="true"] {
+        display: block;
+      }
+
+      .mobile-document,
+      .mobile-question-card {
+        padding: var(--space-4);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .mobile-document h3 {
+        margin: 0 0 var(--space-3);
+        color: var(--accent-ink);
+        font-size: 17px;
+        text-align: center;
+      }
+
+      .mobile-document p {
+        margin: 0 0 var(--space-3);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .mobile-question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-4);
+      }
+
+      .mobile-question-card h3 {
+        margin: 0 0 var(--space-4);
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      .mobile-choice {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: 0 var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .mobile-choice + .mobile-choice {
+        margin-top: var(--space-2);
+      }
+
+      .mobile-choice[data-correct="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .mobile-choice-key {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 50%;
+      }
+
+      .mobile-choice[data-correct="true"] .mobile-choice-key {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: oklch(0.99 0 0);
+      }
+
+      .mobile-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .references {
+        max-width: 430px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space-3);
+        font-size: 11px;
+      }
+
+      .references a {
+        color: var(--ink-soft);
+      }
+
+      .utility-dock {
+        position: fixed;
+        right: var(--space-4);
+        bottom: var(--space-4);
+        z-index: 10;
+        display: flex;
+        gap: var(--space-2);
+        padding: var(--space-1);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .utility-dock button {
+        min-height: 36px;
+        padding: 0 var(--space-3);
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--ink-soft);
+      }
+
+      .utility-dock button:hover {
+        background: var(--surface-subtle);
+        color: var(--ink);
+      }
+
+      body.capture-mobile .desktop-section {
+        display: none;
+      }
+
+      @media (max-width: 1280px) {
+        .questions-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .inspector {
+          display: none;
+        }
+
+        .context-right .segmented {
+          display: none;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .desktop-section {
+          display: none;
+        }
+
+        .mobile-section {
+          min-height: 100dvh;
+        }
+      }
+
+      @media (min-width: 901px) {
+        .mobile-section {
+          min-height: 100dvh;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section id="hero" class="showcase-section desktop-section" aria-label="Desktop prototype">
+      <div class="desktop-frame" id="desktop-frame" data-mode="author">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="back-button" type="button" aria-label="Back">‹</button>
+            <span class="brand-mark" aria-hidden="true">C</span>
+            <div class="breadcrumb">
+              <span data-copy="course">Modern Web Development</span>
+              <span aria-hidden="true"> / </span>
+              <strong data-copy="workspace">Exercise Workspace</strong>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <span class="saved-state" id="saved-state" data-copy="saved">Đã lưu</span>
+            <button class="button quiet" id="preview-button" type="button" data-copy="preview">Xem trước</button>
+            <button class="button primary" id="save-button" type="button" data-copy="save">Lưu</button>
+          </div>
+        </header>
+
+        <div class="contextbar">
+          <div class="context-left">
+            <div class="exercise-heading">
+              <h1 data-copy="exercise-title">Đọc hiểu: Help Vietnam Recover from Typhoon Bualoi</h1>
+              <p><span data-copy="question-count">6 câu hỏi</span> · 8 <span data-copy="points">điểm</span></p>
+            </div>
+          </div>
+          <div class="context-right">
+            <div class="segmented" aria-label="Layout">
+              <button class="segment-button" type="button" aria-selected="false" data-copy="standard">Standard flow</button>
+              <button class="segment-button" type="button" aria-selected="true" data-copy="passage-split">Passage + questions</button>
+            </div>
+          </div>
+        </div>
+
+        <main class="workspace">
+          <section class="workspace-panel" aria-label="Passage editor">
+            <header class="panel-header">
+              <div class="panel-title">
+                <strong data-copy="passage">Passage</strong>
+                <span class="count">1</span>
+              </div>
+              <div class="toolbar">
+                <button class="tool-button" type="button">+ <span data-copy="text">Text</span></button>
+                <button class="tool-button" type="button">+ <span data-copy="media">Media</span></button>
+              </div>
+            </header>
+            <div class="panel-scroll passage-scroll">
+              <div class="editor-toolbar" aria-label="Formatting">
+                <button class="format-button" type="button" aria-label="Bold">B</button>
+                <button class="format-button" type="button" aria-label="Italic"><i>I</i></button>
+                <button class="format-button" type="button" aria-label="Underline"><u>U</u></button>
+                <button class="format-button" type="button" aria-label="Link">↗</button>
+                <button class="format-button" type="button" aria-label="Align left">≡</button>
+              </div>
+              <article class="passage-document" contenteditable="true" spellcheck="false">
+                <h2>Help Vietnam Recover from Typhoon Bualoi!</h2>
+                <p>
+                  Northern and central Vietnam are still reeling from the devastating impact of Typhoon Bualoi,
+                  <span class="blank-token">(1)<span class="blank-line"></span></span>
+                  has claimed over 50 lives, left many missing or injured, and destroyed more than 230,000 homes,
+                  while flooding tens of thousands more.
+                </p>
+                <p>
+                  Entire communities are struggling without electricity, clean water, or food, and agricultural
+                  losses have threatened food security, leaving families
+                  <span class="blank-token">(2)<span class="blank-line"></span></span>.
+                  You can now
+                  <span class="blank-token">(3)<span class="blank-line"></span></span>
+                  a tangible difference.
+                </p>
+                <p>
+                  Donations to the Vietnam Fatherland Front, Vietnam Red Cross, and
+                  <span class="blank-token">(4)<span class="blank-line"></span></span>
+                  trusted organizations provide urgent relief, including temporary housing, medical aid, clean
+                  water, food, and support
+                  <span class="blank-token">(5)<span class="blank-line"></span></span>
+                  schools and local infrastructure.
+                </p>
+                <p>
+                  Major
+                  <span class="blank-token">(6)<span class="blank-line"></span></span>
+                  such as Vingroup have already pledged millions to aid recovery. Every donation, big or small,
+                  helps families survive, recover, and rebuild stronger communities.
+                </p>
+                <p class="source-note">(Adapted from vovworld.vn)</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="workspace-panel" aria-label="Question editor">
+            <header class="panel-header">
+              <div class="panel-title">
+                <strong data-copy="questions">Câu hỏi</strong>
+                <span class="count" id="question-count">6</span>
+              </div>
+              <nav class="question-nav" aria-label="Question navigation">
+                <button class="question-index" type="button" aria-current="true" data-complete="true">1</button>
+                <button class="question-index" type="button" aria-current="false" data-complete="true">2</button>
+                <button class="question-index" type="button" aria-current="false">3</button>
+                <button class="question-index" type="button" aria-current="false">4</button>
+                <button class="question-index" type="button" aria-current="false">5</button>
+                <button class="question-index" type="button" aria-current="false">6</button>
+                <button class="tool-button" type="button">+ <span data-copy="add-question">Thêm</span></button>
+              </nav>
+            </header>
+
+            <div class="questions-layout">
+              <div class="question-editor">
+                <div class="question-title-row">
+                  <div>
+                    <p class="question-label"><span data-copy="question">Câu hỏi</span> <span id="active-question-number">1</span></p>
+                    <h2 data-copy="question-prompt">Chọn đáp án phù hợp nhất cho chỗ trống (1).</h2>
+                  </div>
+                  <input class="points-input" type="text" value="1 pt" aria-label="Points" />
+                </div>
+
+                <div class="choices" id="choices">
+                  <div class="choice-row" data-correct="true">
+                    <span class="choice-key">A</span>
+                    <input class="choice-input" value="that" aria-label="Choice A" />
+                    <button class="correct-button" type="button" aria-label="Mark correct">✓</button>
+                  </div>
+                  <div class="choice-row" data-correct="false">
+                    <span class="choice-key">B</span>
+                    <input class="choice-input" value="when" aria-label="Choice B" />
+                    <button class="correct-button" type="button" aria-label="Mark correct">○</button>
+                  </div>
+                  <div class="choice-row" data-correct="false">
+                    <span class="choice-key">C</span>
+                    <input class="choice-input" value="which" aria-label="Choice C" />
+                    <button class="correct-button" type="button" aria-label="Mark correct">○</button>
+                  </div>
+                  <div class="choice-row" data-correct="false">
+                    <span class="choice-key">D</span>
+                    <input class="choice-input" value="where" aria-label="Choice D" />
+                    <button class="correct-button" type="button" aria-label="Mark correct">○</button>
+                  </div>
+                </div>
+                <button class="button quiet add-choice" type="button">+ <span data-copy="add-choice">Thêm lựa chọn</span></button>
+
+                <div class="question-summary-list">
+                  <button class="question-summary" type="button" data-question="2">
+                    <span class="summary-number">02</span>
+                    <span class="summary-copy">
+                      <strong>manageable · adaptable · vulnerable · unstoppable</strong>
+                      <span data-copy="single-choice">Chọn một đáp án</span>
+                    </span>
+                    <span class="summary-status" data-copy="ready">Sẵn sàng</span>
+                  </button>
+                  <button class="question-summary" type="button" data-question="3">
+                    <span class="summary-number">03</span>
+                    <span class="summary-copy">
+                      <strong>set · make · hit · take</strong>
+                      <span data-copy="single-choice">Chọn một đáp án</span>
+                    </span>
+                    <span class="summary-status" data-copy="ready">Sẵn sàng</span>
+                  </button>
+                  <button class="question-summary" type="button" data-question="4">
+                    <span class="summary-number">04</span>
+                    <span class="summary-copy">
+                      <strong>a little · every · another · other</strong>
+                      <span data-copy="single-choice">Chọn một đáp án</span>
+                    </span>
+                    <span class="summary-status" data-copy="ready">Sẵn sàng</span>
+                  </button>
+                </div>
+              </div>
+
+              <aside class="inspector" aria-label="Question properties">
+                <h3 data-copy="response-settings">Thiết lập câu trả lời</h3>
+                <div class="field">
+                  <label for="response-type" data-copy="response-type">Kiểu trả lời</label>
+                  <select id="response-type" class="select-control">
+                    <option data-copy="single-choice">Chọn một đáp án</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="score" data-copy="score">Điểm</label>
+                  <input id="score" class="select-control" type="number" value="1" min="0" />
+                </div>
+                <div class="toggle-row">
+                  <span data-copy="required">Bắt buộc</span>
+                  <button class="toggle" type="button" aria-pressed="true" aria-label="Required"></button>
+                </div>
+                <div class="toggle-row">
+                  <span data-copy="shuffle">Đảo đáp án</span>
+                  <button class="toggle" type="button" aria-pressed="false" aria-label="Shuffle"></button>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="preview-surface" aria-label="Preview">
+            <article class="delivery-passage">
+              <div class="delivery-copy">
+                <h2>Help Vietnam Recover from Typhoon Bualoi!</h2>
+                <p>
+                  Northern and central Vietnam are still reeling from the devastating impact of Typhoon Bualoi,
+                  <span class="blank-token">(1)<span class="blank-line"></span></span>
+                  has claimed over 50 lives, left many missing or injured, and destroyed more than 230,000 homes.
+                </p>
+                <p>
+                  Entire communities are struggling without electricity, clean water, or food, leaving families
+                  <span class="blank-token">(2)<span class="blank-line"></span></span>.
+                  You can now
+                  <span class="blank-token">(3)<span class="blank-line"></span></span>
+                  a tangible difference.
+                </p>
+              </div>
+            </article>
+            <div class="delivery-questions">
+              <div class="delivery-question">
+                <h3>1. Choose the best option for blank (1).</h3>
+                <div class="delivery-choice"><span>A</span><span>that</span></div>
+                <div class="delivery-choice"><span>B</span><span>when</span></div>
+                <div class="delivery-choice"><span>C</span><span>which</span></div>
+                <div class="delivery-choice"><span>D</span><span>where</span></div>
+              </div>
+              <div class="delivery-question">
+                <h3>2. Choose the best option for blank (2).</h3>
+                <div class="delivery-choice"><span>A</span><span>manageable</span></div>
+                <div class="delivery-choice"><span>B</span><span>adaptable</span></div>
+                <div class="delivery-choice"><span>C</span><span>vulnerable</span></div>
+                <div class="delivery-choice"><span>D</span><span>unstoppable</span></div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section id="mobile" class="showcase-section mobile-section" aria-label="Mobile prototype">
+      <h2 class="mobile-showcase-heading" data-copy="mobile-workspace">Mobile workspace</h2>
+      <div class="phone">
+        <header class="mobile-topbar">
+          <button class="icon-button" type="button" aria-label="Back">‹</button>
+          <div class="mobile-title">
+            <strong data-copy="workspace">Exercise Workspace</strong>
+            <span data-copy="exercise-title">Đọc hiểu: Help Vietnam Recover from Typhoon Bualoi</span>
+          </div>
+          <span class="saved-state" data-copy="saved">Đã lưu</span>
+        </header>
+
+        <nav class="mobile-segments" aria-label="Workspace modes">
+          <button type="button" aria-selected="true" data-mobile-tab="passage" data-copy="passage">Passage</button>
+          <button type="button" aria-selected="false" data-mobile-tab="questions" data-copy="questions">Câu hỏi</button>
+          <button type="button" aria-selected="false" data-mobile-tab="preview" data-copy="preview">Xem trước</button>
+        </nav>
+
+        <div class="mobile-body">
+          <section class="mobile-pane" data-mobile-pane="passage" data-active="true">
+            <div class="editor-toolbar">
+              <button class="format-button" type="button">B</button>
+              <button class="format-button" type="button"><i>I</i></button>
+              <button class="format-button" type="button"><u>U</u></button>
+              <button class="format-button" type="button">↗</button>
+            </div>
+            <article class="mobile-document" contenteditable="true">
+              <h3>Help Vietnam Recover from Typhoon Bualoi!</h3>
+              <p>
+                Northern and central Vietnam are still reeling from the devastating impact of Typhoon Bualoi,
+                <span class="blank-token">(1)<span class="blank-line"></span></span>
+                has claimed over 50 lives.
+              </p>
+              <p>
+                Entire communities are struggling without electricity, clean water, or food, leaving families
+                <span class="blank-token">(2)<span class="blank-line"></span></span>.
+              </p>
+              <p>
+                You can now
+                <span class="blank-token">(3)<span class="blank-line"></span></span>
+                a tangible difference.
+              </p>
+            </article>
+          </section>
+
+          <section class="mobile-pane" data-mobile-pane="questions" data-active="false">
+            <div class="mobile-question-header">
+              <strong><span data-copy="question">Câu hỏi</span> 1 / 6</strong>
+              <button class="tool-button" type="button">+ <span data-copy="add-question">Thêm</span></button>
+            </div>
+            <div class="mobile-question-card">
+              <h3 data-copy="question-prompt">Chọn đáp án phù hợp nhất cho chỗ trống (1).</h3>
+              <div class="mobile-choice" data-correct="true"><span class="mobile-choice-key">A</span><span>that</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">B</span><span>when</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">C</span><span>which</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">D</span><span>where</span></div>
+            </div>
+          </section>
+
+          <section class="mobile-pane" data-mobile-pane="preview" data-active="false">
+            <article class="mobile-document">
+              <h3>Help Vietnam Recover from Typhoon Bualoi!</h3>
+              <p>
+                Northern and central Vietnam are still reeling from the devastating impact of Typhoon Bualoi,
+                <span class="blank-token">(1)<span class="blank-line"></span></span>
+                has claimed over 50 lives.
+              </p>
+            </article>
+            <div class="mobile-question-card" style="margin-top: 12px">
+              <h3>1. Choose the best option for blank (1).</h3>
+              <div class="mobile-choice"><span class="mobile-choice-key">A</span><span>that</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">B</span><span>when</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">C</span><span>which</span></div>
+              <div class="mobile-choice"><span class="mobile-choice-key">D</span><span>where</span></div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="mobile-actions">
+          <button class="button" type="button" data-copy="preview">Xem trước</button>
+          <button class="button primary" type="button" data-copy="save">Lưu</button>
+        </footer>
+      </div>
+
+      <footer class="references">
+        <a href="https://userguide.taotesting.com/user-documentation/latest/public/creating-a-test-item">TAO Item authoring</a>
+        <a href="https://userguide.taotesting.com/user-documentation/latest/public/adding-interactions">TAO Interactions</a>
+        <a href="https://userguide.taotesting.com/user-documentation/latest/public/configuring-interactions">TAO Configuration</a>
+      </footer>
+    </section>
+
+    <div class="utility-dock" aria-label="Prototype controls">
+      <button id="language-toggle" type="button">VI / EN</button>
+      <button id="theme-toggle" type="button">Theme: system</button>
+    </div>
+
+    <script>
+      const copy = {
+        vi: {
+          course: "Modern Web Development",
+          workspace: "Exercise Workspace",
+          saved: "Đã lưu",
+          saving: "Đang lưu",
+          preview: "Xem trước",
+          author: "Chỉnh sửa",
+          save: "Lưu",
+          "exercise-title": "Đọc hiểu: Help Vietnam Recover from Typhoon Bualoi",
+          "question-count": "6 câu hỏi",
+          points: "điểm",
+          standard: "Standard flow",
+          "passage-split": "Passage + questions",
+          passage: "Passage",
+          text: "Văn bản",
+          media: "Media",
+          questions: "Câu hỏi",
+          "add-question": "Thêm",
+          question: "Câu hỏi",
+          "question-prompt": "Chọn đáp án phù hợp nhất cho chỗ trống (1).",
+          "add-choice": "Thêm lựa chọn",
+          "single-choice": "Chọn một đáp án",
+          ready: "Sẵn sàng",
+          "response-settings": "Thiết lập câu trả lời",
+          "response-type": "Kiểu trả lời",
+          score: "Điểm",
+          required: "Bắt buộc",
+          shuffle: "Đảo đáp án",
+          "mobile-workspace": "Mobile workspace"
+        },
+        en: {
+          course: "Modern Web Development",
+          workspace: "Exercise Workspace",
+          saved: "Saved",
+          saving: "Saving",
+          preview: "Preview",
+          author: "Edit",
+          save: "Save",
+          "exercise-title": "Reading comprehension: Help Vietnam Recover from Typhoon Bualoi",
+          "question-count": "6 questions",
+          points: "points",
+          standard: "Standard flow",
+          "passage-split": "Passage + questions",
+          passage: "Passage",
+          text: "Text",
+          media: "Media",
+          questions: "Questions",
+          "add-question": "Add",
+          question: "Question",
+          "question-prompt": "Choose the best option for blank (1).",
+          "add-choice": "Add choice",
+          "single-choice": "Single choice",
+          ready: "Ready",
+          "response-settings": "Response settings",
+          "response-type": "Response type",
+          score: "Score",
+          required: "Required",
+          shuffle: "Shuffle choices",
+          "mobile-workspace": "Mobile workspace"
+        }
+      };
+
+      let language = "vi";
+      let themeIndex = 0;
+      const themes = ["system", "light", "dark"];
+      const root = document.documentElement;
+      const desktopFrame = document.getElementById("desktop-frame");
+      const previewButton = document.getElementById("preview-button");
+      const saveButton = document.getElementById("save-button");
+      const savedState = document.getElementById("saved-state");
+
+      function applyLanguage() {
+        root.lang = language;
+        document.querySelectorAll("[data-copy]").forEach((element) => {
+          const key = element.dataset.copy;
+          const value = copy[language][key];
+          if (value) element.textContent = value;
+        });
+        previewButton.textContent =
+          desktopFrame.dataset.mode === "preview" ? copy[language].author : copy[language].preview;
+      }
+
+      document.getElementById("language-toggle").addEventListener("click", () => {
+        language = language === "vi" ? "en" : "vi";
+        applyLanguage();
+      });
+
+      document.getElementById("theme-toggle").addEventListener("click", (event) => {
+        themeIndex = (themeIndex + 1) % themes.length;
+        const theme = themes[themeIndex];
+        root.dataset.theme = theme;
+        event.currentTarget.textContent = `Theme: ${theme}`;
+      });
+
+      previewButton.addEventListener("click", () => {
+        const nextMode = desktopFrame.dataset.mode === "preview" ? "author" : "preview";
+        desktopFrame.dataset.mode = nextMode;
+        previewButton.textContent = nextMode === "preview" ? copy[language].author : copy[language].preview;
+      });
+
+      saveButton.addEventListener("click", () => {
+        savedState.textContent = copy[language].saving;
+        window.setTimeout(() => {
+          savedState.textContent = copy[language].saved;
+        }, 650);
+      });
+
+      document.querySelectorAll(".question-index").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".question-index").forEach((item) => item.setAttribute("aria-current", "false"));
+          button.setAttribute("aria-current", "true");
+          document.getElementById("active-question-number").textContent = button.textContent;
+        });
+      });
+
+      document.querySelectorAll(".question-summary").forEach((button) => {
+        button.addEventListener("click", () => {
+          const questionNumber = button.dataset.question;
+          const target = Array.from(document.querySelectorAll(".question-index")).find(
+            (item) => item.textContent === questionNumber
+          );
+          if (target) target.click();
+        });
+      });
+
+      document.querySelectorAll(".correct-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".choice-row").forEach((row) => {
+            row.dataset.correct = "false";
+            row.querySelector(".correct-button").textContent = "○";
+          });
+          const row = button.closest(".choice-row");
+          row.dataset.correct = "true";
+          button.textContent = "✓";
+        });
+      });
+
+      document.querySelectorAll(".toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+          button.setAttribute("aria-pressed", button.getAttribute("aria-pressed") === "true" ? "false" : "true");
+        });
+      });
+
+      document.querySelectorAll("[data-mobile-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const selectedTab = button.dataset.mobileTab;
+          document.querySelectorAll("[data-mobile-tab]").forEach((tab) => {
+            tab.setAttribute("aria-selected", String(tab === button));
+          });
+          document.querySelectorAll("[data-mobile-pane]").forEach((pane) => {
+            pane.dataset.active = String(pane.dataset.mobilePane === selectedTab);
+          });
+        });
+      });
+
+      applyLanguage();
+
+      const capturedSection = new URLSearchParams(window.location.search).get("section");
+      if (capturedSection) {
+        document.body.classList.add(`capture-${capturedSection}`);
+        window.requestAnimationFrame(() => {
+          document.getElementById(capturedSection)?.scrollIntoView({ behavior: "instant", block: "start" });
+        });
+      }
+    </script>
+  </body>
+</html>

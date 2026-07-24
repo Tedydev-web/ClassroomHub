@@ -108,7 +108,7 @@ Prove the complete native architecture with one advanced question containing ric
 
 ### Initial Slice
 
-Use content + single/multiple choice + extended text because these reuse mature ClassroomIO renderers and exercise automatic, manual, and hybrid grading in one item. Do not start with graphical interactions.
+Use content + single/multiple choice + extended text because these reuse mature Classroom Hub renderers and exercise automatic, manual, and hybrid grading in one item. Do not start with graphical interactions.
 
 ### Test-First Tickets
 
@@ -185,7 +185,7 @@ Graphical interactions are usable without precision-dependent pointer behavior, 
 
 ### Objective
 
-Add declared-profile QTI import/export and make all existing ClassroomIO ecosystem paths definition-aware.
+Add declared-profile QTI import/export and make all existing Classroom Hub ecosystem paths definition-aware.
 
 ### Test-First Tickets
 

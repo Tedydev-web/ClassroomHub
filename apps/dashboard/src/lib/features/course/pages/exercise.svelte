@@ -23,6 +23,7 @@
     hasSections,
     clearAssessmentComposerRegistry,
     dirtyAssessmentComposerIds,
+    wideAssessmentComposerIds,
     questionnaire,
     questionnaireOrder,
     reset,
@@ -644,7 +645,7 @@
   }
 </script>
 
-<Page.Header isSticky={true} class="z-app-bar! top-12! min-h-[36px]">
+<Page.Header isSticky={true} class="top-12! min-h-[36px]">
   <Page.HeaderContent>
     <Page.Title class="flex flex-col gap-2">
       <span>{exerciseDisplayTitle}</span>
@@ -798,7 +799,14 @@
               <Badge variant="outline">{submissions.length}</Badge>
             </UnderlineTabs.Trigger>
           </UnderlineTabs.List>
-          <UnderlineTabs.Content value="questions" class={preview ? 'w-full' : 'mx-auto w-full md:max-w-3xl'}>
+          <UnderlineTabs.Content
+            value="questions"
+            class={preview
+              ? 'w-full'
+              : $wideAssessmentComposerIds.size > 0
+                ? 'mx-auto w-full md:max-w-7xl'
+                : 'mx-auto w-full md:max-w-3xl'}
+          >
             <UpdateDescription {preview} />
             <div hidden={preview}>
               <EditMode
