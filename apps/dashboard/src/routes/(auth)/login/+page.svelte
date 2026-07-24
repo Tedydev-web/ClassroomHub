@@ -9,6 +9,7 @@
   import { resolve } from '$app/paths';
   import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { globalStore } from '$lib/utils/store/app';
+  import { isGoogleAuthConfigured } from '$lib/utils/deployment';
   import * as Field from '@cio/ui/base/field';
   import { Input } from '@cio/ui/base/input';
   import { Password } from '@cio/ui/custom/password';
@@ -31,7 +32,11 @@
 
   const redirectUrl = $derived(page.url.searchParams.get('redirect'));
 
-  const hideGoogleAuth = $derived(!!($globalStore.isOrgSite && $currentOrg.disableGoogleAuth));
+  // Hide the Google button when the platform has no Google OAuth configured, or
+  // when this org turned it off. Either way the button would otherwise dead-end.
+  const hideGoogleAuth = $derived(
+    !isGoogleAuthConfigured || !!($globalStore.isOrgSite && $currentOrg.disableGoogleAuth)
+  );
 
   const ssoState = $derived(discoveryState ?? $authSsoStore.ssoState);
   const orgSupportsSso = $derived($authSsoStore.orgSupportsSso);

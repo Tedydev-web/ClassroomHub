@@ -50,20 +50,25 @@ await send('forgotPassword', {
 
 Email templates receive fully-built URLs in their `fields` — templates do **not** choose the host. Callers in `apps/api` (or other services) must build links before calling `enqueueTransactionalEmail` or `send`.
 
+An org's people — learners **and** staff — all work on that org's own site
+(custom domain or `<siteName>.<root>`). The platform host (`hub.<root>`) is the
+operator's tenant-management console. Because the app serves every route on
+every host and sessions are host-only, the host a link opens on is where the
+recipient's session forms — so an org link on the platform host is a security
+bug, not a cosmetic one.
+
 Import helpers from `@cio/core/config/dashboard-url`:
 
-| Recipient | Helper | Use for |
+| Link scope | Helper | Use for |
 | --- | --- | --- |
-| Teacher, tutor, admin | `getAppBaseUrl()` | Course management, grading, team invites, auto-enroll |
-| Student, learner | `getDashboardBaseUrl(org)` | Course enroll, audience invites, login |
+| Anything scoped to one org (learner **or** staff) | `getDashboardBaseUrl(org)` | Invites, enroll, login, grading, team invites, course management, auto-enroll |
+| Platform / super-admin, no single org | `getAppBaseUrl()` | Operator-console links only |
 
 ```typescript
-import { getAppBaseUrl, getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
+import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 
-// Staff dashboard action (admin app — not org custom domain)
-const autoEnrollUrl = `${getAppBaseUrl()}/courses/${courseId}/people?grantAccess=${encodeURIComponent(email)}`;
-
-// Learner-facing invite (org public site)
+// Every org-scoped link — staff included — resolves to the org's own site.
+const autoEnrollUrl = `${getDashboardBaseUrl(org)}/courses/${courseId}/people?grantAccess=${encodeURIComponent(email)}`;
 const inviteUrl = `${getDashboardBaseUrl(org)}/invite/${encodeURIComponent(token)}`;
 ```
 

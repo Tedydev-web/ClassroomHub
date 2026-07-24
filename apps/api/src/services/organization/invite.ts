@@ -29,9 +29,9 @@ import type { TNewOrganizationInviteAudit } from '@db/types';
 import crypto from 'node:crypto';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { assertStudentCapacityOrThrow } from './student-limit';
-import { getAppBaseUrl } from '@cio/core/config/dashboard-url';
+import { getDashboardBaseUrl, type DashboardOrg } from '@cio/core/config/dashboard-url';
 import { parseCourseIdsFromInviteMetadata, parseCohortIdsFromInviteMetadata } from '@api/utils/org';
-import { getProfileById, markUserAndProfileEmailVerified } from '@cio/db/queries/auth/profile';
+import { getProfileByEmail, getProfileById, markUserAndProfileEmailVerified } from '@cio/db/queries/auth/profile';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { buildEmailBranding, buildEmailFromName, sanitizeEmailSubject } from '@cio/email';
 import { ensureComplianceEnrollmentRecordsForProfiles } from '../course/compliance';
@@ -63,8 +63,11 @@ function normalizeEmails(emails: string[]): string[] {
   return [...new Set(emails.map((email) => email.toLowerCase().trim()).filter(Boolean))];
 }
 
-function buildTeamInviteLink(token: string): string {
-  return `${getAppBaseUrl()}/invite/${encodeURIComponent(token)}`;
+// Team members join and then work on their org's own site, not the operator
+// console, so the invite link must resolve to the org host — the same as a
+// student invite.
+function buildTeamInviteLink(token: string, org: DashboardOrg): string {
+  return `${getDashboardBaseUrl(org)}/invite/${encodeURIComponent(token)}`;
 }
 
 function getRoleLabel(roleId: number): string {
@@ -100,6 +103,26 @@ function getExpiryLabel(expiresAtIso: string): string {
     timeStyle: 'short',
     timeZone: 'UTC'
   });
+}
+
+// Whether the invited email already has an account. Lets the invite page route
+// the visitor straight to login (existing) vs signup (new) — identifier-first,
+// so a new student is never sent to a login dead-end and an existing user is
+// never sent to a signup dead-end. Safe to expose: the invite token is a secret
+// bound to this one email (the recipient's own), so it is not email-enumeration.
+async function inviteEmailHasAccount(email: string | null | undefined): Promise<boolean> {
+  const normalized = email?.toLowerCase().trim();
+  if (!normalized) {
+    return false;
+  }
+
+  try {
+    const profile = await getProfileByEmail(normalized);
+    return !!profile;
+  } catch (error) {
+    console.error('previewOrganizationInvite getProfileByEmail error:', error);
+    return false;
+  }
 }
 
 async function syncOrgMemberForOrgInvite(
@@ -271,7 +294,11 @@ export async function inviteTeamMembers(orgId: string, emails: string[], roleId:
         console.error('Failed to emit organization invite created webhook:', error);
       });
 
-      const inviteLink = buildTeamInviteLink(token);
+      const inviteLink = buildTeamInviteLink(token, {
+        siteName: organization.siteName,
+        customDomain: organization.customDomain,
+        isCustomDomainVerified: organization.isCustomDomainVerified
+      });
 
       try {
         await enqueueTransactionalEmail('inviteTeacher', {
@@ -333,6 +360,8 @@ export async function previewOrganizationInvite(token: string, context: TInviteR
     userAgent: context.userAgent
   });
 
+  const emailHasAccount = await inviteEmailHasAccount(data.invite.email);
+
   return {
     invite: {
       id: data.invite.id,
@@ -340,7 +369,8 @@ export async function previewOrganizationInvite(token: string, context: TInviteR
       roleLabel: getRoleLabel(data.invite.roleId),
       email: data.invite.email,
       expiresAt: data.invite.expiresAt,
-      status: getInviteStatus(data.invite)
+      status: getInviteStatus(data.invite),
+      emailHasAccount
     },
     organization: data.organization
   };

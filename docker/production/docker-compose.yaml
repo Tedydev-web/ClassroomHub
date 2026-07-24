@@ -269,6 +269,10 @@ services:
       # same values; a mismatch here means the wrong image is deployed.
       PUBLIC_IS_SELFHOSTED: "false"
       PUBLIC_IS_SELF_OWNED: "true"
+      # Gates the Google social button — it shows only when this is set. Read at
+      # runtime via $env/dynamic/public, so no rebuild is needed to flip it. Not
+      # a secret: OAuth client ids are public, so it rides as plain runtime env.
+      PUBLIC_GOOGLE_CLIENT_ID: ${PUBLIC_GOOGLE_CLIENT_ID:-}
 
       # Server-to-server call stays on the stack network, never over the tunnel.
       PRIVATE_SERVER_URL: http://api:3081
@@ -278,6 +282,10 @@ services:
       # except the reserved app subdomains.
       PRIVATE_APP_HOST: ${PRIVATE_APP_HOST:?set PRIVATE_APP_HOST to the tenant root domain}
       PRIVATE_APP_SUBDOMAINS: ${PRIVATE_APP_SUBDOMAINS:-app}
+      # Host-authoritative tenancy (dark-launched). Off unless ENFORCE_TENANT_HOST=true.
+      # PLATFORM_ADMIN_EMAILS is the operator allowlist exempt from the bounce.
+      ENFORCE_TENANT_HOST: ${ENFORCE_TENANT_HOST:-}
+      PLATFORM_ADMIN_EMAILS: ${PLATFORM_ADMIN_EMAILS:-}
 
       ALLOWED_EXTERNAL_DOMAINS: ${ALLOWED_EXTERNAL_DOMAINS:-}
       CSP_SCRIPT_SRC_DOMAINS: ${CSP_SCRIPT_SRC_DOMAINS:-}
