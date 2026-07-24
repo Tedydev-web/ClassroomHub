@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@cio/utils/constants';
 import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { OrgSiteInfo } from '$features/app/layout-setup';
 import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
@@ -7,7 +8,7 @@ import { resolveOrgSiteOgImageUrl } from '$lib/utils/functions/org-site-og-url';
 
 const isSelfHosted = PUBLIC_IS_SELFHOSTED === 'true';
 
-const DEFAULT_TITLE = 'Classroom | One Platform for Customer, Partner, and Employee Training';
+const DEFAULT_TITLE = `${PRODUCT_NAME} | One Platform for Customer, Partner, and Employee Training`;
 const DEFAULT_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
 const CLOUD_OG_IMAGE = '/classroomio-opengraph-image.png';
@@ -140,7 +141,7 @@ export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: O
     orgMeta?.siteName ||
     publicEnv.PUBLIC_APP_TITLE?.trim() ||
     (isSelfHosted && orgSiteInfo.org?.name ? orgSiteInfo.org.name : null) ||
-    'Classroom';
+    PRODUCT_NAME;
 
   const ogImageUrl = await resolveOgImageUrl(publicRequestUrl, orgSiteInfo);
   const usesDynamicOrgOg =
