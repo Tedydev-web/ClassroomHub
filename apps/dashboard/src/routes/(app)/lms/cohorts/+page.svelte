@@ -28,7 +28,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('lms_navigation.cohorts') || 'Cohorts'} - Classroom</title>
+  <title>{$t('lms_navigation.cohorts') || 'Cohorts'} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

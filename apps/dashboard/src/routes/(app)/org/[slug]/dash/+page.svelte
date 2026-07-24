@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard - Classroom</title>
+  <title>Dashboard - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

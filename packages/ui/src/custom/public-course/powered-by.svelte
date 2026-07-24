@@ -66,7 +66,7 @@
       className
     )}
   >
-    <img src="/logo-192.png" class="ui:size-6" alt="Classroom" />
+    <img src="/logo-192.png" class="ui:size-6" alt="ClassroomHub" />
     {label}
     <a
       {href}

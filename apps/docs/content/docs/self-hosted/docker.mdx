@@ -1,14 +1,14 @@
 ---
 title: Docker
-description: Self-host Classroom with Docker — pull pre-built images (recommended) or build from source.
+description: Self-host ClassroomHub with Docker — pull pre-built images (recommended) or build from source.
 ---
 
-Docker is one way to self-host Classroom. There are two paths:
+Docker is one way to self-host ClassroomHub. There are two paths:
 
 - **Run from pre-built images (recommended)** — pull the published `classroomio/{api,dashboard,jobs}` images. You only need one compose file and a `.env`; no repository clone and no heavy local build.
 - **Build from source** — clone the repo and build the images yourself (needs ~8 GB RAM for the dashboard build).
 
-![Selfhost Classroom](/docs/selfhost-classroomio.webp)
+![Selfhost ClassroomHub](/docs/selfhost-classroomio.webp)
 
 ## Run from Pre-built Images (recommended)
 
@@ -137,7 +137,7 @@ Every variable the stack reads is documented once in the shared
 
 ## Upgrading
 
-Classroom publishes versioned images and `CIO_VERSION` controls which tag you run. To upgrade the
+ClassroomHub publishes versioned images and `CIO_VERSION` controls which tag you run. To upgrade the
 pre-built images path, bump `CIO_VERSION` and re-pull:
 
 ```zsh title="Terminal"

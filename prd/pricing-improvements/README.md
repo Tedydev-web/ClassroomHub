@@ -7,7 +7,7 @@
 - February 17, 2026
 
 ## Purpose
-Define a single, extensible pricing framework for Classroom Hub so current and future features can be clearly assigned to `BASIC`, `EARLY_ADOPTER`, or `ENTERPRISE` plans.
+Define a single, extensible pricing framework for ClassroomHub so current and future features can be clearly assigned to `BASIC`, `EARLY_ADOPTER`, or `ENTERPRISE` plans.
 
 ## Problem Statement
 Plan definitions currently exist in multiple places (marketing plan copy, app UI gates, and plan constants). Some gates are only `free vs paid`, while product pricing has three tiers. We need one source of truth for feature entitlements so we can add features later without ambiguity.
@@ -66,7 +66,7 @@ Plan definitions currently exist in multiple places (marketing plan copy, app UI
 | Lesson download toggle | No | Yes | Yes | Live (gated by `isFreePlan`) |
 | Course download action | No | Yes | Yes | Live (gated by `isFreePlan`) |
 | Powered-by branding visibility | Required | Hidden | Hidden | Live (free-only rendering) |
-| QR invite Classroom Hub branding | Required | Hidden | Hidden | Live (free-only rendering) |
+| QR invite ClassroomHub branding | Required | Hidden | Hidden | Live (free-only rendering) |
 | Custom domain management | No | Yes (current UI behavior) | Yes | Live (currently `isFreePlan` gate) |
 
 ## Enterprise-Only Features

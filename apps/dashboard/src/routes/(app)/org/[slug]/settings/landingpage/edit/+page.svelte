@@ -130,7 +130,7 @@
 </script>
 
 <svelte:head>
-  <title>Landing Page Editor - Classroom</title>
+  <title>Landing Page Editor - ClassroomHub</title>
 </svelte:head>
 
 <div

@@ -10,9 +10,9 @@ export const load = async ({ request }) => {
 
   return {
     pageMetaTags: {
-      title: 'Privacy Policy | Classroom',
+      title: 'Privacy Policy | ClassroomHub',
       description:
-        'How Classroom collects, uses, stores, and protects personal data when you use our websites and services.'
+        'How ClassroomHub collects, uses, stores, and protects personal data when you use our websites and services.'
     }
   };
 };

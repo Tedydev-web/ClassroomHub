@@ -1257,7 +1257,7 @@
           "audit_actor": "Người thực hiện",
           "audit_ip": "IP",
           "scan_qr": "Quét mã QR",
-          "classroomio_brand": "Classroom.com",
+          "classroomio_brand": "ClassroomHub.com",
           "snackbar_invite_link_copied": "Đã sao chép liên kết mời",
           "snackbar_invite_link_regenerated": "Một liên kết mời mới đã được tạo",
           "snackbar_failed_generate_link": "Không tạo được liên kết mời",
@@ -2536,7 +2536,7 @@
     },
     "creator": {
       "heading": "Bạn muốn tạo khóa học nào?",
-      "placeholder": "Hãy yêu cầu Classroom tạo một khóa học cho bạn...",
+      "placeholder": "Hãy yêu cầu ClassroomHub tạo một khóa học cho bạn...",
       "type": {
         "self_paced": "tự nhịp độ",
         "live_class": "Lớp học trực tiếp"
@@ -2889,7 +2889,7 @@
     "goto": "đi đến",
     "courses": "Khóa học",
     "home": "Trang chủ",
-    "classroomio_home": "Trang chủ Classroom",
+    "classroomio_home": "Trang chủ ClassroomHub",
     "dashboard": "Bảng điều khiển",
     "discussion": "Thảo luận",
     "people": "mọi người",
@@ -2998,7 +2998,7 @@
     "upgrade_left": "còn {count}"
   },
   "media_manager": {
-    "page_title": "Trình quản lý phương tiện - Classroom",
+    "page_title": "Trình quản lý phương tiện - ClassroomHub",
     "heading": "Trình quản lý phương tiện",
     "empty": "Không tìm thấy nội dung nào",
     "usage": {
@@ -3150,7 +3150,7 @@
       "provider": "Chúng tôi sử dụng Polar để giúp quản lý việc thanh toán của bạn",
       "open_billing": "Thanh toán mở",
       "error": "Đã xảy ra lỗi khi mở thanh toán",
-      "page_subtitle": "Gói dịch vụ, cổng thanh toán và cách bạn thanh toán cho Classroom.",
+      "page_subtitle": "Gói dịch vụ, cổng thanh toán và cách bạn thanh toán cho ClassroomHub.",
       "ai_credits": "AI credits",
       "ai_tokens_used": "AI credits đã dùng trong tháng này",
       "ai_bonus_credits": "AI credits thưởng có sẵn"
@@ -3158,7 +3158,7 @@
     "integrations": {
       "heading": "Telegram",
       "sub_heading": "Kết nối tài khoản của bạn với điện tín để nhận thông báo về bất kỳ thay đổi nào trong ứng dụng.",
-      "step_authenticate": "Bước 1: Xác thực tài khoản của bạn thông qua bot Classroom.",
+      "step_authenticate": "Bước 1: Xác thực tài khoản của bạn thông qua bot ClassroomHub.",
       "open_bot_button": "Mở Bot",
       "step_chatId": "Bước 2: Nhập ID trò chuyện được bot cung cấp cho bạn.",
       "connect_button": "Kết nối",
@@ -3478,7 +3478,7 @@
       "gallery": {
         "heading": "Chủ đề phổ biến",
         "description": "Được tạo bằng các tính năng cốt lõi, bạn có thể dễ dàng tùy chỉnh — không cần mã hóa.",
-        "by_classroomio": "bởi Classroom",
+        "by_classroomio": "bởi ClassroomHub",
         "add": "Thêm",
         "upgrade": "Nâng cấp",
         "apply_theme": "Áp dụng chủ đề",
@@ -3556,7 +3556,7 @@
         "accepted": "Đã chấp nhận:",
         "validation_error": "Kích thước tệp vượt quá giới hạn tối đa:"
       },
-      "page_subtitle": "Tên, email và cách bạn hiển thị ở mọi nơi bạn làm việc trong Classroom."
+      "page_subtitle": "Tên, email và cách bạn hiển thị ở mọi nơi bạn làm việc trong ClassroomHub."
     },
     "tabs": {
       "profile_tab": "Hồ sơ",
@@ -3817,7 +3817,7 @@
           "description": "Ghi danh, bài nộp, bài học, thông báo và hoàn thành trong các khóa học của bạn."
         }
       },
-      "personal_page_subtitle": "Chọn thông báo email bạn nhận từ Classroom."
+      "personal_page_subtitle": "Chọn thông báo email bạn nhận từ ClassroomHub."
     }
   },
   "profileMenu": {
@@ -3994,7 +3994,7 @@
     "snackbar_error": "lỗi khi gửi mã"
   },
   "public_courses": {
-    "page_title": "Khóa học - Classroom",
+    "page_title": "Khóa học - ClassroomHub",
     "heading": "Khóa học",
     "subtitle": "Duyệt tất cả các khóa học được xuất bản",
     "clear_filters": "Xóa bộ lọc",
@@ -4019,7 +4019,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Thẻ - Classroom",
+    "page_title": "Thẻ - ClassroomHub",
     "heading": "Thẻ",
     "create": "Tạo",
     "tag_modal": {
@@ -4071,7 +4071,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Tham gia cùng {orgName} trên Classroom",
+      "page_title": "Tham gia cùng {orgName} trên ClassroomHub",
       "invitation_student": "Bạn được mời vào {orgName} với vai trò học viên.",
       "invitation_teacher": "Bạn được mời vào {orgName} với vai trò giáo viên.",
       "invitation_admin": "Bạn được mời vào {orgName} với vai trò quản trị viên.",
@@ -4090,7 +4090,7 @@
       }
     },
     "link": {
-      "page_title": "Tham gia cùng {orgName} trên Classroom",
+      "page_title": "Tham gia cùng {orgName} trên ClassroomHub",
       "invitation_student": "Bạn đã được mời tham gia {orgName} với tư cách là sinh viên.",
       "invitation_teacher": "Bạn đã được mời tham gia {orgName} với tư cách là giáo viên.",
       "invitation_admin": "Bạn đã được mời tham gia {orgName} với tư cách quản trị viên.",
@@ -4111,20 +4111,20 @@
         "title": "Thiết lập máy khách",
         "description": "Sử dụng một khóa trong phạm vi tổ chức cho mỗi lần tích hợp. Nếu một khóa bị xoay hoặc bị thu hồi, máy khách sẽ ngừng hoạt động cho đến khi bí mật mới được định cấu hình.",
         "claude_code_description": "Đăng ký `@tedydev/classroom-mcp` với Mã Claude bằng cách sử dụng khóa trong phạm vi tổ chức được tạo.",
-        "codex_description": "Thêm máy chủ Classroom MCP vào Codex bằng cùng một khóa trong phạm vi tổ chức.",
+        "codex_description": "Thêm máy chủ ClassroomHub MCP vào Codex bằng cùng một khóa trong phạm vi tổ chức.",
         "cursor_description": "Dán cái này vào `~/.cursor/mcp.json` hoặc cấu hình MCP không gian làm việc của bạn.",
         "opencode_description": "Thêm nội dung này vào `opencode.json` ở thư mục gốc dự án hoặc `~/.config/opencode/opencode.json`."
       },
       "keys": {
         "title": "Khóa MCP",
-        "description": "Các khóa này xác thực tổ chức hiện tại khi máy khách MCP gọi Classroom thông qua `@tedydev/classroom-mcp`.",
+        "description": "Các khóa này xác thực tổ chức hiện tại khi máy khách MCP gọi ClassroomHub thông qua `@tedydev/classroom-mcp`.",
         "generate": "Tạo khóa MCP",
         "secret_once": "Bí mật này được hiển thị một lần. Sao chép nó vào ứng dụng khách MCP của bạn ngay bây giờ.",
         "modal": {
           "title": "Tạo khóa MCP",
           "description": "Chọn tên cho khóa MCP này trước khi nó được tạo.",
           "name_label": "Tên khóa",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Hủy",
           "save": "Tạo khóa"
         }
@@ -4140,17 +4140,17 @@
         "rate_limits_description": "Yêu cầu đọc/ghi/xuất bản được phép mỗi phút.",
         "used_label": "Đã sử dụng:"
       },
-      "page_subtitle": "Kết nối các công cụ AI với Classroom bằng khóa theo phạm vi tổ chức mà bạn có thể xoay vòng bất cứ lúc nào."
+      "page_subtitle": "Kết nối các công cụ AI với ClassroomHub bằng khóa theo phạm vi tổ chức mà bạn có thể xoay vòng bất cứ lúc nào."
     },
     "api": {
-      "subtitle": "Quản lý khóa API để tích hợp với API công khai của Classroom.",
+      "subtitle": "Quản lý khóa API để tích hợp với API công khai của ClassroomHub.",
       "keys": {
         "title": "Khóa API",
-        "description": "Các khóa này xác thực tổ chức hiện tại khi gọi API công khai của Classroom.",
+        "description": "Các khóa này xác thực tổ chức hiện tại khi gọi API công khai của ClassroomHub.",
         "generate": "Tạo khóa API",
         "secret_once": "Khóa bí mật này chỉ hiển thị một lần. Hãy sao chép và lưu trữ an toàn.",
         "empty_title": "Chưa có khóa API nào",
-        "empty_description": "Tạo khóa API đầu tiên theo phạm vi tổ chức để sử dụng API công khai của Classroom.",
+        "empty_description": "Tạo khóa API đầu tiên theo phạm vi tổ chức để sử dụng API công khai của ClassroomHub.",
         "modal": {
           "title": "Tạo khóa API",
           "description": "Chọn tên cho khóa API này trước khi nó được tạo.",
@@ -4205,10 +4205,10 @@
       "disabled_description": "Chỉ quản trị viên tổ chức mới có thể tạo, xoay hoặc thu hồi khóa tự động hóa. Thầy cô có thể xem lại hướng dẫn thiết lập tại đây."
     },
     "zapier": {
-      "page_subtitle": "Tự động hóa Classroom với hàng nghìn ứng dụng thông qua Zapier. Sắp ra mắt."
+      "page_subtitle": "Tự động hóa ClassroomHub với hàng nghìn ứng dụng thông qua Zapier. Sắp ra mắt."
     },
     "webhooks": {
-      "subtitle": "Gửi các sự kiện Classroom đã ký đến hệ thống bên ngoài của bạn.",
+      "subtitle": "Gửi các sự kiện ClassroomHub đã ký đến hệ thống bên ngoài của bạn.",
       "endpoints_title": "Điểm cuối webhook",
       "endpoints_description": "Quản lý đích đến, đăng ký sự kiện, gửi thử và lịch sử gửi.",
       "add": "Thêm webhook",
@@ -4228,11 +4228,11 @@
       "secret_unchanged": "Để trống để giữ khóa bí mật hiện tại.",
       "secret_once": "Khóa bí mật để ký này chỉ hiển thị một lần. Hãy lưu trữ an toàn.",
       "events_help": "Không chọn sự kiện nào để nhận mọi sự kiện được hỗ trợ.",
-      "form_description": "Classroom gửi các yêu cầu JSON được ký bằng HMAC-SHA256.",
+      "form_description": "ClassroomHub gửi các yêu cầu JSON được ký bằng HMAC-SHA256.",
       "save": "Lưu webhook",
       "cancel": "Hủy",
       "empty_title": "Chưa có điểm cuối webhook nào",
-      "empty_description": "Thêm một điểm cuối để kết nối các sự kiện Classroom với hệ thống khác.",
+      "empty_description": "Thêm một điểm cuối để kết nối các sự kiện ClassroomHub với hệ thống khác.",
       "event": "Sự kiện",
       "status": "Trạng thái",
       "attempt": "Lần thử",
@@ -4480,7 +4480,7 @@
       "border_radius": "Bán kính viền",
       "font_family": "Họ phông chữ",
       "font_scale": "Tỷ lệ cỡ chữ",
-      "show_powered_by": "Hiển thị nhãn hiệu Classroom",
+      "show_powered_by": "Hiển thị nhãn hiệu ClassroomHub",
       "custom_css": "CSS tùy chỉnh",
       "custom_css_locked": "Nâng cấp để kích hoạt CSS tùy chỉnh.",
       "embed_code": "Nhúng mã",

@@ -44,7 +44,7 @@
     <Button
       variant="ghost"
       data-cal-config="'layout':'month_view'"
-      href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+      href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
       class="relative z-10 mt-8 bg-white!"
     >
       {btnLabel}

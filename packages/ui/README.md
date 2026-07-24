@@ -1,6 +1,6 @@
 # @cio/ui
 
-UI component library for Classroom Hub, built with Svelte 5 and Tailwind CSS.
+UI component library for ClassroomHub, built with Svelte 5 and Tailwind CSS.
 
 ## Package Information
 

@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>My Learning - Classroom</title>
+  <title>My Learning - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

@@ -95,7 +95,7 @@
     {
       key: 'self-hosting',
       title: 'Self-hosting & Docs',
-      subtitle: 'Run Classroom in your own VPC.',
+      subtitle: 'Run ClassroomHub in your own VPC.',
       href: 'https://classroom.tedydev.io.vn/docs'
     },
     {
@@ -252,7 +252,7 @@
     <a href="/" class="w-[10%]">
       <div class="flex w-full items-center">
         <img loading="lazy" width="28" height="28" src="/logo-512.png" alt="classroomio logo" class="w-7" />
-        <h1 class="ml-2 text-base font-medium">Classroom</h1>
+        <h1 class="ml-2 text-base font-medium">ClassroomHub</h1>
       </div>
     </a>
 

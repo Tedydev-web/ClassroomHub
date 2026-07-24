@@ -24,7 +24,7 @@ The assistant has two modes:
 
 - Help teachers go from a source document to a fully structured course in minutes
 - Operate strictly within the current org/course context (no cross-org access)
-- Integrate natively with existing Classroom Hub services (sections, lessons, exercises, content)
+- Integrate natively with existing ClassroomHub services (sections, lessons, exercises, content)
 - Give teachers full control — always review before destructive or bulk actions
 
 ## Non-Goals (v1)
@@ -605,7 +605,7 @@ When not configured (self-hosted, or dev environments), events are silently skip
 
 ## Self-Hosted vs Cloud
 
-- **Cloud**: AI assistant enabled by default. Classroom Hub provides the LLM API key server-side. Usage metered per plan tier.
+- **Cloud**: AI assistant enabled by default. ClassroomHub provides the LLM API key server-side. Usage metered per plan tier.
 - **Self-hosted**: AI assistant **disabled by default**. To enable, admin sets at least one of `OPENAI_API_KEY`, `GOOGLE_API_KEY`, or `ANTHROPIC_API_KEY`. The dashboard model picker exposes Gemini 2.5 Flash (Google) and GPT-4o (OpenAI); each option requires its own provider key. Anthropic is supported in code but not exposed in the picker. The assistant button is hidden when no provider key is set. No token metering for self-hosted (user's own API key, their cost).
 
 ---

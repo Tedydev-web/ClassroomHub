@@ -53,7 +53,7 @@ function parseDisplayName(raw: string): string {
  *
  * A caller must never be handed an "address" that is really the whole header
  * string. That used to happen, and `buildEmailFromName` built
- * `"Org" <Classroom <noreply@host>>` from it: a header Mailpit tolerates but
+ * `"Org" <ClassroomHub <noreply@host>>` from it: a header Mailpit tolerates but
  * that real providers reject or spam-file.
  */
 export function extractNameAndEmail(str: string): FromData | undefined {

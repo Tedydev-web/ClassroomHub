@@ -1,6 +1,6 @@
 # Validation Schemas
 
-Shared validation schemas for Classroom Hub workspace using Zod with **convention-based translations**.
+Shared validation schemas for ClassroomHub workspace using Zod with **convention-based translations**.
 
 ## Structure
 

@@ -34,15 +34,15 @@ export async function processWebhookDelivery(rawPayload: unknown, attempt: numbe
     const timestamp = Math.floor(Date.now() / 1000);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Classroom-Webhooks/1.0',
-      'X-Classroom-Delivery': delivery.id,
-      'X-Classroom-Event': event.eventType,
-      'X-Classroom-Timestamp': `${timestamp}`,
-      'X-Classroom-Webhook': endpoint.id
+      'User-Agent': 'ClassroomHub-Webhooks/1.0',
+      'X-ClassroomHub-Delivery': delivery.id,
+      'X-ClassroomHub-Event': event.eventType,
+      'X-ClassroomHub-Timestamp': `${timestamp}`,
+      'X-ClassroomHub-Webhook': endpoint.id
     };
     if (endpoint.secretCiphertext) {
       const secret = decryptWebhookSecret(endpoint.secretCiphertext, env.WEBHOOK_ENCRYPTION_KEY ?? '');
-      headers['X-Classroom-Signature-256'] = signWebhookPayload(timestamp, body, secret);
+      headers['X-ClassroomHub-Signature-256'] = signWebhookPayload(timestamp, body, secret);
     }
 
     const response = await fetch(endpoint.payloadUrl, {

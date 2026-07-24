@@ -1,6 +1,6 @@
 # Guide: Adding a New Question Type
 
-This guide walks through adding a new question type to Classroom. Question types are defined in `@cio/question-types` (contracts), implemented as renderers in `@cio/ui`, and wired into the dashboard and API. Follow these steps in order.
+This guide walks through adding a new question type to ClassroomHub. Question types are defined in `@cio/question-types` (contracts), implemented as renderers in `@cio/ui`, and wired into the dashboard and API. Follow these steps in order.
 
 ---
 

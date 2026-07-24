@@ -38,7 +38,7 @@
       rel="noopener noreferrer"
       class="flex items-center gap-1 text-blue-600 hover:underline dark:text-white"
     >
-      <p class="text-base font-semibold">Built on Classroom</p>
+      <p class="text-base font-semibold">Built on ClassroomHub</p>
     </a>
   </nav>
 {/if}

@@ -47,7 +47,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('cohorts.goals.heading')} · Classroom</title>
+  <title>{$t('cohorts.goals.heading')} · ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="w-full">

@@ -40,7 +40,7 @@ However that is not the UI that your audience will see when they consume your co
 ![classroomio-lms-student-dashboard](/assets/brand/classroomio-lms-courses.png)
 _The LMS aka Student dashboard - yourorg.classroom.tedydev.io.vn_
 
-Typically this page can be found at _yourorg.classroom.tedydev.io.vn_, where _yourorg_ is a slug you set when you first set up your account. For example, we've built an internal bootcamp called Classroom Hub Developers, in this bootcamp we train other developers on some of the key tools we use internally. You can checkout our page here: [ciodevs.classroom.tedydev.io.vn](https://ciodevs.classroom.tedydev.io.vn), in this case you can see that our slug is _ciodevs_ and you should be able to easily see yours when you log into the dashboard `/org/{yourorg}`.
+Typically this page can be found at _yourorg.classroom.tedydev.io.vn_, where _yourorg_ is a slug you set when you first set up your account. For example, we've built an internal bootcamp called ClassroomHub Developers, in this bootcamp we train other developers on some of the key tools we use internally. You can checkout our page here: [ciodevs.classroom.tedydev.io.vn](https://ciodevs.classroom.tedydev.io.vn), in this case you can see that our slug is _ciodevs_ and you should be able to easily see yours when you log into the dashboard `/org/{yourorg}`.
 
 In your student dashboard, your audience can:
 

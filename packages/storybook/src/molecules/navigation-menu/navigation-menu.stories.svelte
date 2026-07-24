@@ -29,7 +29,7 @@
                   href="/"
                   class="ui:from-muted/50 ui:to-muted ui:flex ui:h-full ui:w-full ui:select-none ui:flex-col ui:justify-end ui:rounded-md ui:bg-gradient-to-b ui:p-6 ui:no-underline ui:outline-none ui:focus:shadow-md"
                 >
-                  <div class="ui:mb-2 ui:mt-4 ui:text-lg ui:font-medium">Classroom</div>
+                  <div class="ui:mb-2 ui:mt-4 ui:text-lg ui:font-medium">ClassroomHub</div>
                   <p class="ui:text-muted-foreground ui:text-sm ui:leading-tight">
                     A powerful learning management system for creating and managing online courses.
                   </p>
@@ -42,7 +42,7 @@
                 >
                   <div class="ui:text-sm ui:font-medium ui:leading-none">Introduction</div>
                   <p class="ui:text-muted-foreground ui:line-clamp-2 ui:text-sm ui:leading-snug">
-                    Learn how to get started with Classroom.
+                    Learn how to get started with ClassroomHub.
                   </p>
                 </NavigationMenu.Link>
               </li>

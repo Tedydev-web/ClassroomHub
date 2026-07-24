@@ -58,7 +58,7 @@
       header="Your Custom Academy – Up & Running in Minutes!"
       subText="Try before you buy. No credit card required."
       btnLabel="Book a demo"
-      link="mailto:{SALES_EMAIL}?subject=Classroom demo"
+      link="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
     />
   {/if}
 </div>

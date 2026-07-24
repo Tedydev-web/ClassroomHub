@@ -116,9 +116,9 @@
 </script>
 
 <svelte:head>
-  <title>Activity Stopwatch | Classroom</title>
+  <title>Activity Stopwatch | ClassroomHub</title>
   <meta property="og:image" itemprop="image" content="/assets/brand/og/free-tools.png" />
-  <meta property="og:title" content="Activity Stopwatch | Classroom" />
+  <meta property="og:title" content="Activity Stopwatch | ClassroomHub" />
   <meta
     property="og:description"
     content="Stay on track with a customizable stopwatch for timed tasks, quizzes, and study sessions"
@@ -126,7 +126,7 @@
 
   <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/free-tools.png" />
 
-  <meta name="twitter:title" content="Activity Stopwatch | Classroom" />
+  <meta name="twitter:title" content="Activity Stopwatch | ClassroomHub" />
   <meta
     name="twitter:description"
     content="Stay on track with a customizable stopwatch for timed tasks, quizzes, and study sessions"

@@ -139,7 +139,7 @@ export function buildStudentSystemPrompt(
     ? `\n\n## Disclaimer\n\nAt the end of every response, include this line on its own:\n\n> ${settings.disclaimerFooter.trim()}`
     : '';
 
-  return `You are an AI tutor for Classroom, helping a learner work through course material.
+  return `You are an AI tutor for ClassroomHub, helping a learner work through course material.
 
 ## Persona & Tone
 

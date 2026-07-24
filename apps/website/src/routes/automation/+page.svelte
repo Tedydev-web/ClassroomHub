@@ -53,8 +53,8 @@
         <em class="text-blue-700 not-italic">No integration tax.</em>
       </h1>
       <HeroSubtitle>
-        Classroom ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no "premium
-        connector" plans. Build the integration that fits your stack.
+        ClassroomHub ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no
+        "premium connector" plans. Build the integration that fits your stack.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <Button href="https://classroom.tedydev.io.vn/docs/api">Read the API docs</Button>
@@ -141,7 +141,7 @@
           Or run the whole thing in your own VPC.
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Classroom is open source on GitHub. You can self-host the dashboard, the API, the AI assistant, and the MCP
+          ClassroomHub is open source on GitHub. You can self-host the dashboard, the API, the AI assistant, and the MCP
           server, and bring your own AI keys. It's the same product with the same API surface.
         </p>
 

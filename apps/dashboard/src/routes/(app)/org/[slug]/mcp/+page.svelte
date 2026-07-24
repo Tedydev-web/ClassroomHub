@@ -15,7 +15,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.get('automation.tabs.mcp')} - Classroom</title>
+  <title>{t.get('automation.tabs.mcp')} - ClassroomHub</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-4xl">

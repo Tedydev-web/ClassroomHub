@@ -114,7 +114,7 @@ export function buildManagedEnvMaps({
     ['SMTP_REQUIRE_TLS', managedValue('false')],
     ['SMTP_USER', managedValue('')],
     ['SMTP_PASSWORD', managedValue('')],
-    ['SMTP_SENDER', managedValue('Classroom <noreply@localhost>')]
+    ['SMTP_SENDER', managedValue('ClassroomHub <noreply@localhost>')]
   ]);
 
   return new Map([
@@ -314,7 +314,7 @@ async function main() {
   }
 
   await runSetupDev({ args: process.argv.slice(3) });
-  console.log('Classroom local development environment is ready.');
+  console.log('ClassroomHub local development environment is ready.');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

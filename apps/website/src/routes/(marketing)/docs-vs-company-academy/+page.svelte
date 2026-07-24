@@ -159,7 +159,7 @@
 </script>
 
 <svelte:head>
-  <title>Docs vs Company Academy | Classroom</title>
+  <title>Docs vs Company Academy | ClassroomHub</title>
   <meta
     name="description"
     content="A practical guide to when your company needs documentation, when it needs a company academy, and how both work together for onboarding, enablement, and certification."
@@ -185,7 +185,7 @@
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
           >Book a Demo</Button
         >
         <Button href="/customer-education" variant="outline">Explore academies</Button>
@@ -379,7 +379,7 @@
   </section>
 
   <PageSignupCTA
-    header="Classroom can host your company academy."
+    header="ClassroomHub can host your company academy."
     subText="Turn your docs, videos, policies, and product knowledge into a branded academy with courses, assessments, certificates, analytics, and a custom domain."
     btnLabel="Book a Demo"
   />

@@ -43,7 +43,7 @@
             Every student learns differently.<br />We support <em class="text-blue-700 italic">all of them.</em>
           </h2>
           <p class="mb-10 max-w-[520px] text-base leading-relaxed text-gray-500 lg:text-lg">
-            Most LMS platforms are built for the person running them. We built Classroom for the person going through
+            Most LMS platforms are built for the person running them. We built ClassroomHub for the person going through
             them. Because a certification program only works if people actually retain what they learned.
           </p>
         </BlurFade>

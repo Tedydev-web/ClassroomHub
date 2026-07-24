@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GHCR Push Script for Classroom
+# GHCR Push Script for ClassroomHub
 # Builds and pushes the API, Dashboard, and Jobs worker images to GHCR.
 # Uses buildx for native multi-arch (linux/amd64 + linux/arm64).
 
@@ -24,7 +24,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}================================${NC}"
-echo -e "${BLUE}Classroom GHCR Publisher${NC}"
+echo -e "${BLUE}ClassroomHub GHCR Publisher${NC}"
 echo -e "${BLUE}================================${NC}"
 echo ""
 echo "Platforms: ${PLATFORMS}"

@@ -32,7 +32,7 @@
       '20 Students',
       'AI Course Builder (no video upload)',
       '50K AI credits / month',
-      'Classroom branding'
+      'ClassroomHub branding'
     ],
     CTA: {
       LABEL: 'Signup Now',
@@ -84,9 +84,9 @@
     FEATURES: ['Everything in Early Adopters plus:', 'Unlimited students', 'Custom Domain', '24/7 Support'],
     CTA: {
       LABEL: 'Contact Us',
-      LINK: `mailto:${SALES_EMAIL}?subject=Classroom enterprise`,
+      LINK: `mailto:${SALES_EMAIL}?subject=ClassroomHub enterprise`,
       DASHBOARD_LABEL: 'Contact Us',
-      DASHBOARD_LINK: `mailto:${SALES_EMAIL}?subject=Classroom enterprise`,
+      DASHBOARD_LINK: `mailto:${SALES_EMAIL}?subject=ClassroomHub enterprise`,
       IS_DISABLED: false
     }
   };

@@ -300,7 +300,7 @@ describe('createSubmissionService transaction guards', () => {
       hasAccess: true
     });
     mocks.buildEmailBranding.mockReturnValue({ name: 'Organization' });
-    mocks.buildEmailFromName.mockReturnValue('Organization (via Classroom)');
+    mocks.buildEmailFromName.mockReturnValue('Organization (via ClassroomHub)');
     mocks.enqueueTransactionalEmail.mockResolvedValue(undefined);
     mocks.evaluateCourseCertification.mockResolvedValue(undefined);
     mocks.getCourseById.mockResolvedValue(null);

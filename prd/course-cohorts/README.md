@@ -6,7 +6,7 @@ Enable instructors to run a single course with multiple independent groups of le
 
 ## Problem Statement
 
-Currently, Classroom Hub has a 1:1 relationship between a course and its membership group. If an instructor wants to run the same training for a new batch of students, they must clone the entire course. This leads to:
+Currently, ClassroomHub has a 1:1 relationship between a course and its membership group. If an instructor wants to run the same training for a new batch of students, they must clone the entire course. This leads to:
 - Content duplication and drift between copies
 - No unified view of all batches running under one course
 - No way to deactivate a past batch while keeping content accessible for new ones

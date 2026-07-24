@@ -1,6 +1,6 @@
 ---
 title: 'Introducing Student Analytics'
-description: 'As we end 2024, we are releasing students analytics to all organisation on Classroom Hub. You can now view analytics on your students, including their last login date, course completion status, and much more.'
+description: 'As we end 2024, we are releasing students analytics to all organisation on ClassroomHub. You can now view analytics on your students, including their last login date, course completion status, and much more.'
 imageUrl: '/assets/assets/blog/students-analytics.png'
 date: '2024-12-31'
 author: Rotimi Best

@@ -182,7 +182,7 @@
 </script>
 
 <svelte:head>
-  <title>Home - Classroom</title>
+  <title>Home - ClassroomHub</title>
 </svelte:head>
 
 {#if creatingState === 'creating'}

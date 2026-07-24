@@ -1,8 +1,8 @@
 {
   "background_color": "#ffffff",
   "theme_color": "#333333",
-  "name": "Classroom",
-  "short_name": "Classroom",
+  "name": "ClassroomHub",
+  "short_name": "ClassroomHub",
   "display": "minimal-ui",
   "start_url": "/",
   "icons": [

@@ -1,9 +1,9 @@
 ---
 title: DigitalOcean
-description: Deploy Classroom to a DigitalOcean droplet with Docker Compose and Caddy, including automatic HTTPS.
+description: Deploy ClassroomHub to a DigitalOcean droplet with Docker Compose and Caddy, including automatic HTTPS.
 ---
 
-Run Classroom on a plain **DigitalOcean droplet** — no PaaS in between. You get the
+Run ClassroomHub on a plain **DigitalOcean droplet** — no PaaS in between. You get the
 [pull-based Docker Compose stack](/self-hosted/docker) plus a [Caddy](https://caddyserver.com)
 reverse proxy that obtains and renews HTTPS certificates automatically.
 
@@ -222,7 +222,7 @@ SMTP_HOST=smtp.yourprovider.com
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASSWORD=
-SMTP_SENDER=Classroom <you@yourdomain.com>
+SMTP_SENDER=ClassroomHub <you@yourdomain.com>
 
 OPENAI_API_KEY=
 UNSPLASH_API_KEY=
@@ -254,7 +254,7 @@ Every remaining variable is documented in [Configuration](/self-hosted/configura
 <Step>
 ### Add Caddy and close the internal ports
 
-Right now each part of Classroom runs on its own port number — the dashboard on `3082`, file
+Right now each part of ClassroomHub runs on its own port number — the dashboard on `3082`, file
 storage on `9000`. That leaves two problems: nobody wants to visit `yoursite.com:3082`, and neither
 port is encrypted, so there would be no padlock in the browser.
 

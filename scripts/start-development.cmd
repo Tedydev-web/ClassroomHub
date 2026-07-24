@@ -13,7 +13,7 @@ popd >nul
 goto :end
 
 :start-development
-echo [%DATE% %TIME%] Starting Classroom Hub development environment.
+echo [%DATE% %TIME%] Starting ClassroomHub development environment.
 
 if not exist "%DOCKER_CLI%" (
   echo Docker CLI not found at "%DOCKER_CLI%".
@@ -39,18 +39,18 @@ powershell.exe -NoProfile -Command "if (Get-NetTCPConnection -State Listen -Loca
 if not errorlevel 1 (
   powershell.exe -NoProfile -Command "if (Get-NetTCPConnection -State Listen -LocalPort 8001 -ErrorAction SilentlyContinue) { exit 0 }; exit 1"
   if not errorlevel 1 (
-    echo Classroom Hub development services are already running.
+    echo ClassroomHub development services are already running.
     call pnpm.cmd dev:doctor
     exit /b %ERRORLEVEL%
   )
 
-  echo Port 8000 is already in use while Classroom Hub API is not running on port 8001.
+  echo Port 8000 is already in use while ClassroomHub API is not running on port 8001.
   exit /b 1
 )
 
 powershell.exe -NoProfile -Command "if (Get-NetTCPConnection -State Listen -LocalPort 8001 -ErrorAction SilentlyContinue) { exit 0 }; exit 1"
 if not errorlevel 1 (
-  echo Port 8001 is already in use while Classroom Hub dashboard is not running on port 8000.
+  echo Port 8001 is already in use while ClassroomHub dashboard is not running on port 8000.
   exit /b 1
 )
 

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { OPERATOR_EMAIL, PRODUCT_HOSTS, PRODUCT_NAME, PRODUCT_ROOT_DOMAIN } from '../src/constants/product-identity';
 
 test('defines the independently operated ClassroomHub identity and host topology', () => {
-  // One word, not "Classroom Hub": the name is reused as a domain, a package
+  // One word, not "ClassroomHub": the name is reused as a domain, a package
   // name and a container label, and a two-word form takes a different shape in
   // each of those.
   assert.equal(PRODUCT_NAME, 'ClassroomHub');

@@ -102,7 +102,7 @@
     </p>
 
     <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-      <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+      <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
         >Book a Demo</Button
       >
       <Button href="/signup" variant="outline">Start free</Button>

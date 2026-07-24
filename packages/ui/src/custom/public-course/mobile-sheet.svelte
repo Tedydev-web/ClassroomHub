@@ -31,7 +31,7 @@
     courseSlug = null,
     orgSlug = null,
     poweredByLabel = 'Powered by',
-    poweredByBrand = 'Classroom'
+    poweredByBrand = 'ClassroomHub'
   }: Props = $props();
 
   function handleOpenChange(next: boolean) {

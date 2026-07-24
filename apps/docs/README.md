@@ -1,6 +1,6 @@
 # docs
 
-The Classroom documentation site, built with [Blume](https://useblume.dev) (Astro + Vite). Served at
+The ClassroomHub documentation site, built with [Blume](https://useblume.dev) (Astro + Vite). Served at
 [classroom.tedydev.io.vn/docs](https://classroom.tedydev.io.vn/docs).
 
 ## Requirements

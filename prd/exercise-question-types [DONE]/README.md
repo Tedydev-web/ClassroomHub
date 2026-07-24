@@ -14,7 +14,7 @@
 
 ## Purpose
 
-Expand Classroom Hub exercise questions beyond `single answer`, `multiple answers`, and `paragraph`, so instructors can run stronger assessments, reduce manual grading where possible, and collect richer assignment submissions inside the LMS.
+Expand ClassroomHub exercise questions beyond `single answer`, `multiple answers`, and `paragraph`, so instructors can run stronger assessments, reduce manual grading where possible, and collect richer assignment submissions inside the LMS.
 
 ## Problem Statement
 

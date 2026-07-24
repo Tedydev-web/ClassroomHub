@@ -1257,7 +1257,7 @@
           "audit_actor": "अभिनेता",
           "audit_ip": "आईपी",
           "scan_qr": "QR स्कैन करें",
-          "classroomio_brand": "Classroom",
+          "classroomio_brand": "ClassroomHub",
           "snackbar_invite_link_copied": "आमंत्रण लिंक कॉपी किया गया",
           "snackbar_invite_link_regenerated": "एक नया आमंत्रण लिंक तैयार किया गया है",
           "snackbar_failed_generate_link": "आमंत्रण लिंक जनरेट करने में विफल",
@@ -2536,7 +2536,7 @@
     },
     "creator": {
       "heading": "आप कौन सा कोर्स बनाना चाहते हैं?",
-      "placeholder": "Classroom से आपके लिए एक पाठ्यक्रम बनाने के लिए कहें...",
+      "placeholder": "ClassroomHub से आपके लिए एक पाठ्यक्रम बनाने के लिए कहें...",
       "type": {
         "self_paced": "स्वयं गति",
         "live_class": "लाइव क्लास"
@@ -3150,7 +3150,7 @@
       "provider": "हम आपकी बिलिंग प्रबंधित करने में सहायता के लिए पोलर का उपयोग करते हैं",
       "open_billing": "बिलिंग खोलें",
       "error": "बिलिंग खोलते समय एक त्रुटि उत्पन्न हुई",
-      "page_subtitle": "आपकी योजना, बिलिंग पोर्टल और Classroom के लिए भुगतान का तरीका।",
+      "page_subtitle": "आपकी योजना, बिलिंग पोर्टल और ClassroomHub के लिए भुगतान का तरीका।",
       "ai_credits": "AI credits",
       "ai_tokens_used": "इस महीने उपयोग किए गए AI credits",
       "ai_bonus_credits": "bonus AI credits उपलब्ध"
@@ -3158,7 +3158,7 @@
     "integrations": {
       "heading": "टेलीग्राम",
       "sub_heading": "एप्लिकेशन में किसी भी बदलाव की सूचना पाने के लिए अपने खाते को टेलीग्राम से कनेक्ट करें।",
-      "step_authenticate": "चरण 1: Classroom बॉट के माध्यम से अपने खाते को प्रमाणित करें।",
+      "step_authenticate": "चरण 1: ClassroomHub बॉट के माध्यम से अपने खाते को प्रमाणित करें।",
       "open_bot_button": "बॉट खोलें",
       "step_chatId": "चरण 2: बॉट द्वारा आपको दी गई चैट आईडी दर्ज करें।",
       "connect_button": "कनेक्ट करें",
@@ -3556,7 +3556,7 @@
         "accepted": "स्वीकृत:",
         "validation_error": "फ़ाइल का आकार अधिकतम सीमा से अधिक है:"
       },
-      "page_subtitle": "आपका नाम, ईमेल और Classroom में कहीं भी काम करते समय आप कैसे दिखते हैं।"
+      "page_subtitle": "आपका नाम, ईमेल और ClassroomHub में कहीं भी काम करते समय आप कैसे दिखते हैं।"
     },
     "tabs": {
       "profile_tab": "प्रोफाइल",
@@ -3817,7 +3817,7 @@
           "description": "आपके पाठ्यक्रमों में नामांकन, सबमिशन, पाठ, घोषणाएँ और पूर्णता।"
         }
       },
-      "personal_page_subtitle": "चुनें कि आप Classroom से कौन सी ईमेल सूचनाएँ प्राप्त करते हैं।"
+      "personal_page_subtitle": "चुनें कि आप ClassroomHub से कौन सी ईमेल सूचनाएँ प्राप्त करते हैं।"
     }
   },
   "profileMenu": {
@@ -4071,7 +4071,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Classroom पर {orgName} से जुड़ें",
+      "page_title": "ClassroomHub पर {orgName} से जुड़ें",
       "invitation_student": "आपको {orgName} में छात्र के रूप में आमंत्रित किया गया है।",
       "invitation_teacher": "आपको {orgName} में शिक्षक के रूप में आमंत्रित किया गया है।",
       "invitation_admin": "आपको {orgName} में व्यवस्थापक के रूप में आमंत्रित किया गया है।",
@@ -4090,7 +4090,7 @@
       }
     },
     "link": {
-      "page_title": "Classroom पर {orgName} से जुड़ें",
+      "page_title": "ClassroomHub पर {orgName} से जुड़ें",
       "invitation_student": "आपको एक छात्र के रूप में {orgName} में शामिल होने के लिए आमंत्रित किया गया है।",
       "invitation_teacher": "आपको एक शिक्षक के रूप में {orgName} में शामिल होने के लिए आमंत्रित किया गया है।",
       "invitation_admin": "आपको एक व्यवस्थापक के रूप में {orgName} से जुड़ने के लिए आमंत्रित किया गया है।",
@@ -4117,14 +4117,14 @@
       },
       "keys": {
         "title": "एमसीपी कुंजी",
-        "description": "जब कोई MCP क्लाइंट `@tedydev/classroom-mcp` के माध्यम से Classroom को कॉल करता है तो ये कुंजियाँ वर्तमान संगठन को प्रमाणित करती हैं।",
+        "description": "जब कोई MCP क्लाइंट `@tedydev/classroom-mcp` के माध्यम से ClassroomHub को कॉल करता है तो ये कुंजियाँ वर्तमान संगठन को प्रमाणित करती हैं।",
         "generate": "MCP कुंजी जनरेट करें",
         "secret_once": "यह रहस्य एक बार दिखाया गया है। अब इसे अपने MCP क्लाइंट में कॉपी करें।",
         "modal": {
           "title": "MCP कुंजी बनाएं",
           "description": "इस MCP कुंजी को बनाने से पहले इसका नाम चुनें।",
           "name_label": "कुंजी का नाम",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "रद्द करें",
           "save": "कुंजी बनाएं"
         }
@@ -4140,17 +4140,17 @@
         "rate_limits_description": "प्रति मिनट पढ़ने/लिखने/प्रकाशित करने के अनुरोधों की अनुमति है।",
         "used_label": "प्रयुक्त:"
       },
-      "page_subtitle": "किसी भी समय घुमाने योग्य संगठन-स्तरीय कुंजियों के साथ AI टूल्स को Classroom से कनेक्ट करें।"
+      "page_subtitle": "किसी भी समय घुमाने योग्य संगठन-स्तरीय कुंजियों के साथ AI टूल्स को ClassroomHub से कनेक्ट करें।"
     },
     "api": {
-      "subtitle": "Classroom सार्वजनिक API के साथ एकीकृत करने के लिए API कुंजियाँ प्रबंधित करें।",
+      "subtitle": "ClassroomHub सार्वजनिक API के साथ एकीकृत करने के लिए API कुंजियाँ प्रबंधित करें।",
       "keys": {
         "title": "API कुंजियाँ",
-        "description": "ये कुंजियाँ Classroom सार्वजनिक API को कॉल करते समय वर्तमान संगठन को प्रमाणित करती हैं।",
+        "description": "ये कुंजियाँ ClassroomHub सार्वजनिक API को कॉल करते समय वर्तमान संगठन को प्रमाणित करती हैं।",
         "generate": "API कुंजी बनाएं",
         "secret_once": "यह गुप्त कुंजी केवल एक बार दिखाई जाती है। इसे कॉपी करें और सुरक्षित रूप से संग्रहीत करें।",
         "empty_title": "अभी तक कोई API कुंजी नहीं",
-        "empty_description": "Classroom सार्वजनिक API का उपयोग करने के लिए पहली संगठन-स्तरीय API कुंजी बनाएं।",
+        "empty_description": "ClassroomHub सार्वजनिक API का उपयोग करने के लिए पहली संगठन-स्तरीय API कुंजी बनाएं।",
         "modal": {
           "title": "API कुंजी बनाएं",
           "description": "इस API कुंजी को बनाने से पहले इसका नाम चुनें।",
@@ -4205,10 +4205,10 @@
       "disabled_description": "केवल संगठन व्यवस्थापक ही स्वचालन कुंजियाँ बना सकते हैं, घुमा सकते हैं या निरस्त कर सकते हैं। शिक्षक यहां सेटअप निर्देशों की समीक्षा कर सकते हैं।"
     },
     "zapier": {
-      "page_subtitle": "Zapier के माध्यम से हज़ारों ऐप्स के साथ Classroom को स्वचालित करें। जल्द आ रहा है।"
+      "page_subtitle": "Zapier के माध्यम से हज़ारों ऐप्स के साथ ClassroomHub को स्वचालित करें। जल्द आ रहा है।"
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
+      "subtitle": "Send signed ClassroomHub events to your external systems.",
       "endpoints_title": "Webhook endpoints",
       "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
       "add": "Add webhook",
@@ -4228,11 +4228,11 @@
       "secret_unchanged": "Leave blank to keep the current secret.",
       "secret_once": "This signing secret is shown once. Store it securely.",
       "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
       "save": "Save webhook",
       "cancel": "Cancel",
       "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
       "event": "Event",
       "status": "Status",
       "attempt": "Attempt",
@@ -4480,7 +4480,7 @@
       "border_radius": "सीमा त्रिज्या",
       "font_family": "फ़ॉन्ट परिवार",
       "font_scale": "फ़ॉन्ट आकार पैमाना",
-      "show_powered_by": "Classroom ब्रांडिंग दिखाएं",
+      "show_powered_by": "ClassroomHub ब्रांडिंग दिखाएं",
       "custom_css": "कस्टम सीएसएस",
       "custom_css_locked": "कस्टम सीएसएस सक्षम करने के लिए अपग्रेड करें।",
       "embed_code": "कोड एंबेड करें",

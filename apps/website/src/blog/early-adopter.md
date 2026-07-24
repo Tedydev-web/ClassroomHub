@@ -13,7 +13,7 @@ published: true
 ![early-adopter-plan](/assets/assets/blog/early-adopter.png)
 _Classroom Hub Early Adopter Plan_
 
-When we started Classroom Hub, our mission was simple: build the most powerful, customisable, and affordable learning management platform, one that puts brand and simplicity first.
+When we started ClassroomHub, our mission was simple: build the most powerful, customisable, and affordable learning management platform, one that puts brand and simplicity first.
 
 As we've grown, we've been listening closely to what our users need. And one thing became clear: the people who believed in us early deserve something special.
 

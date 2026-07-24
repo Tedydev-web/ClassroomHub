@@ -2,11 +2,11 @@ import * as z from 'zod';
 
 /**
  * Branding passed into org-scoped emails so the masthead, logo, and primary
- * button reflect the sending organization rather than Classroom defaults.
+ * button reflect the sending organization rather than ClassroomHub defaults.
  *
  * `themeColor` is always a resolved hex (e.g. `#1d4ed8`) — named org themes are
  * resolved to a hex by `buildEmailBranding` so the template never has to know
- * about Classroom's theme tokens.
+ * about ClassroomHub's theme tokens.
  */
 export const ZEmailBranding = z
   .object({

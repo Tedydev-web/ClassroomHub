@@ -97,7 +97,7 @@ export async function processSessionReminderScan(): Promise<ScanResult> {
               joinUrl: row.callUrl,
               branding
             },
-            from: buildEmailFromName(`${row.organizationName} (via Classroom)`),
+            from: buildEmailFromName(`${row.organizationName} (via ClassroomHub)`),
             ...(ics ? { ics } : {})
           },
           { idempotencyKey: `session-reminder:${row.lessonId}:${row.profileId}:${offset}` }

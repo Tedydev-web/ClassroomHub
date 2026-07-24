@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-  <title>Settings - Classroom</title>
+  <title>Settings - ClassroomHub</title>
 </svelte:head>
 
 <Page.Header isSticky>

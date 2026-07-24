@@ -168,9 +168,9 @@ function filterPublicApiSpec(spec) {
   return __assign(__assign({}, spec), {
     openapi: (_b = spec.openapi) !== null && _b !== void 0 ? _b : '3.1.0',
     info: {
-      title: 'Classroom Public API',
+      title: 'ClassroomHub Public API',
       version: '1.0.0',
-      description: 'Public API for managing organizations, audience members, and courses in Classroom.'
+      description: 'Public API for managing organizations, audience members, and courses in ClassroomHub.'
     },
     paths: publicApiPaths,
     tags: tags
@@ -209,11 +209,11 @@ var OpenAPISpecGenerator = /** @class */ (function () {
               (0, hono_openapi_1.generateSpecs)(app_1.app, {
                 documentation: {
                   info: {
-                    title: 'Classroom API',
+                    title: 'ClassroomHub API',
                     version: '1.0.0',
                     description: 'Manage your organization on classroomio via the API',
                     contact: {
-                      name: 'Classroom',
+                      name: 'ClassroomHub',
                       url: 'https://classroom.io.vn'
                     }
                   },

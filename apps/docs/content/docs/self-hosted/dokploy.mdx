@@ -1,10 +1,10 @@
 ---
 title: Dokploy
-description: Deploy Classroom on Dokploy using the pull-based Docker Compose stack.
+description: Deploy ClassroomHub on Dokploy using the pull-based Docker Compose stack.
 ---
 
 [Dokploy](https://dokploy.com) is an open-source, self-hosted PaaS — a Heroku/Vercel alternative you run
-on your own VPS. It deploys Classroom from the published `classroomio/*` images using the **same
+on your own VPS. It deploys ClassroomHub from the published `classroomio/*` images using the **same
 pull-based Docker Compose file** as the [Docker](/self-hosted/docker) and [Coolify](/self-hosted/coolify)
 guides — Dokploy **pulls** the images and never builds anything.
 
@@ -20,7 +20,7 @@ steps below mirror it.
 - A running **Dokploy instance** with a **server connected** to it. Dokploy runs on any VPS —
   DigitalOcean, Hetzner, AWS (Lightsail/EC2), or another provider. See Dokploy's
   [installation guide](https://docs.dokploy.com/docs/core/installation) to set this up.
-- A server sized for Classroom. Dokploy's own baseline stack needs ~2 GB RAM, and Classroom's
+- A server sized for ClassroomHub. Dokploy's own baseline stack needs ~2 GB RAM, and ClassroomHub's
   seven services need **8 GB for reliable operation** — provision for both. See
   [Server requirements](/self-hosted#server-requirements).
 - A **domain** with a DNS **A record pointing at your server's public IP**. Dokploy's built-in Traefik
@@ -64,7 +64,7 @@ In the Dokploy dashboard, open **Projects** and click **Create Project**. Give i
 ### Add a Compose service
 
 Inside the project, click **Create Service** and choose **Compose** from the service types. When
-prompted, **select the server** you connected to Dokploy — this is the VPS Classroom runs on.
+prompted, **select the server** you connected to Dokploy — this is the VPS ClassroomHub runs on.
 
 ![Adding a Compose service and selecting the server](/docs/dokploy-02-compose-service.webp)
 </Step>
@@ -98,7 +98,7 @@ SMTP_HOST=smtp.yourprovider.com
 SMTP_PORT=587
 SMTP_USER=<smtp username>
 SMTP_PASSWORD=<smtp password>
-SMTP_SENDER=Classroom <you@yourdomain.com>
+SMTP_SENDER=ClassroomHub <you@yourdomain.com>
 ```
 
 The full variable reference — object storage, CSP, integrations, licensing, versions — lives in the
@@ -148,7 +148,7 @@ Once the certificate is issued, open your dashboard URL (`https://dash.yourdomai
 tab and **sign up**. The **first** account becomes the organization **admin**; every signup after that
 joins as a student unless you invite them with a specific role.
 
-![The running Classroom dashboard sign-up page](/docs/dokploy-07-signup.webp)
+![The running ClassroomHub dashboard sign-up page](/docs/dokploy-07-signup.webp)
 </Step>
 
 </Steps>

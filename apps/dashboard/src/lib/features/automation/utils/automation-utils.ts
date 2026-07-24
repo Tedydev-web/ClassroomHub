@@ -157,11 +157,11 @@ export function getCursorSnippet(secret: string | null) {
 export function getDefaultAutomationKeyLabel(type: AutomationKeyType) {
   switch (type) {
     case 'mcp':
-      return 'Classroom MCP';
+      return 'ClassroomHub MCP';
     case 'api':
-      return 'Classroom API';
+      return 'ClassroomHub API';
     case 'zapier':
-      return 'Classroom Zapier';
+      return 'ClassroomHub Zapier';
   }
 }
 

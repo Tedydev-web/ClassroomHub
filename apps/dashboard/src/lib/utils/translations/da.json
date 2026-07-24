@@ -1257,7 +1257,7 @@
           "audit_actor": "Aktør",
           "audit_ip": "IP",
           "scan_qr": "Scan QR",
-          "classroomio_brand": "Classroom",
+          "classroomio_brand": "ClassroomHub",
           "snackbar_invite_link_copied": "Invitationslinket er kopieret",
           "snackbar_invite_link_regenerated": "Et nyt invitationslink er blevet genereret",
           "snackbar_failed_generate_link": "Kunne ikke generere invitationslink",
@@ -2536,7 +2536,7 @@
     },
     "creator": {
       "heading": "Hvilket kursus vil du lave?",
-      "placeholder": "Bed Classroom om at oprette et kursus til dig...",
+      "placeholder": "Bed ClassroomHub om at oprette et kursus til dig...",
       "type": {
         "self_paced": "Selv tempo",
         "live_class": "Live klasse"
@@ -2889,12 +2889,12 @@
     "goto": "Gå til",
     "courses": "Kurser",
     "home": "Hjem",
-    "classroomio_home": "Classroom Home",
+    "classroomio_home": "ClassroomHub Home",
     "dashboard": "Dashboard",
     "discussion": "Diskussion",
     "people": "Mennesker",
     "goto_lms": "Gå til LMS",
-    "goto_home": "Gå til Classroom Home",
+    "goto_home": "Gå til ClassroomHub Home",
     "login": "Log ind",
     "signup": "Tilmeld dig",
     "redirecting": "Omdirigerer",
@@ -2998,7 +2998,7 @@
     "upgrade_left": "{count} tilbage"
   },
   "media_manager": {
-    "page_title": "Medieadministrator - Classroom",
+    "page_title": "Medieadministrator - ClassroomHub",
     "heading": "Mediemanager",
     "empty": "Ingen aktiver fundet",
     "usage": {
@@ -3150,7 +3150,7 @@
       "provider": "Vi bruger Polar til at hjælpe med at administrere din fakturering",
       "open_billing": "Åben fakturering",
       "error": "Der opstod en fejl under åbning af fakturering",
-      "page_subtitle": "Din plan, faktureringsportal og hvordan du betaler for Classroom.",
+      "page_subtitle": "Din plan, faktureringsportal og hvordan du betaler for ClassroomHub.",
       "ai_credits": "AI credits",
       "ai_tokens_used": "AI credits brugt denne måned",
       "ai_bonus_credits": "bonus AI credits tilgængelige"
@@ -3158,7 +3158,7 @@
     "integrations": {
       "heading": "Telegram",
       "sub_heading": "Tilslut din konto til telegram for at få besked om enhver ændring i applikationen.",
-      "step_authenticate": "Trin 1: Godkend din konto via Classroom-bot.",
+      "step_authenticate": "Trin 1: Godkend din konto via ClassroomHub-bot.",
       "open_bot_button": "Åbn Bot",
       "step_chatId": "Trin 2: Indtast det chat-id, du har fået af botten.",
       "connect_button": "Forbind",
@@ -3478,7 +3478,7 @@
       "gallery": {
         "heading": "Populære temaer",
         "description": "Lavet med kernefunktioner, du nemt kan tilpasse - ingen kodning nødvendig.",
-        "by_classroomio": "af Classroom",
+        "by_classroomio": "af ClassroomHub",
         "add": "Tilføj",
         "upgrade": "Opgrader",
         "apply_theme": "Anvend tema",
@@ -3556,7 +3556,7 @@
         "accepted": "Accepteret:",
         "validation_error": "Filstørrelsen overstiger den maksimale grænse:"
       },
-      "page_subtitle": "Dit navn, din e-mail og hvordan du fremstår, uanset hvor du arbejder i Classroom."
+      "page_subtitle": "Dit navn, din e-mail og hvordan du fremstår, uanset hvor du arbejder i ClassroomHub."
     },
     "tabs": {
       "profile_tab": "Profil",
@@ -3817,7 +3817,7 @@
           "description": "Tilmeldinger, afleveringer, lektioner, meddelelser og gennemførelser i dine kurser."
         }
       },
-      "personal_page_subtitle": "Vælg hvilke e-mailnotifikationer du modtager fra Classroom."
+      "personal_page_subtitle": "Vælg hvilke e-mailnotifikationer du modtager fra ClassroomHub."
     }
   },
   "profileMenu": {
@@ -3994,7 +3994,7 @@
     "snackbar_error": "fejl under afsendelse af kode"
   },
   "public_courses": {
-    "page_title": "Kurser - Classroom",
+    "page_title": "Kurser - ClassroomHub",
     "heading": "Kurser",
     "subtitle": "Gennemse alle offentliggjorte kurser",
     "clear_filters": "Ryd filtre",
@@ -4019,7 +4019,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Mærker - Classroom",
+    "page_title": "Mærker - ClassroomHub",
     "heading": "Mærker",
     "create": "Opret",
     "tag_modal": {
@@ -4071,7 +4071,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Tilmeld dig {orgName} på Classroom",
+      "page_title": "Tilmeld dig {orgName} på ClassroomHub",
       "invitation_student": "Du er blevet inviteret til {orgName} som elev.",
       "invitation_teacher": "Du er blevet inviteret til {orgName} som lærer.",
       "invitation_admin": "Du er blevet inviteret til {orgName} som administrator.",
@@ -4090,7 +4090,7 @@
       }
     },
     "link": {
-      "page_title": "Tilmeld dig {orgName} på Classroom",
+      "page_title": "Tilmeld dig {orgName} på ClassroomHub",
       "invitation_student": "Du er blevet inviteret til at deltage i {orgName} som elev.",
       "invitation_teacher": "Du er blevet inviteret til at deltage i {orgName} som lærer.",
       "invitation_admin": "Du er blevet inviteret til at deltage i {orgName} som administrator.",
@@ -4111,20 +4111,20 @@
         "title": "Klient opsætning",
         "description": "Brug én nøgle med organisationsomfang pr. integration. Hvis en nøgle roteres eller tilbagekaldes, holder klienten op med at arbejde, indtil den nye hemmelighed er konfigureret.",
         "claude_code_description": "Registrerer `@tedydev/classroom-mcp` med Claude Code ved hjælp af den genererede org-omfangede nøgle.",
-        "codex_description": "Tilføjer Classroom MCP-serveren til Codex med den samme org-omfattede nøgle.",
+        "codex_description": "Tilføjer ClassroomHub MCP-serveren til Codex med den samme org-omfattede nøgle.",
         "cursor_description": "Indsæt dette i `~/.cursor/mcp.json` eller dit arbejdsområde MCP-konfiguration.",
         "opencode_description": "Tilføj dette til `opencode.json` i projektroden eller `~/.config/opencode/opencode.json`."
       },
       "keys": {
         "title": "MCP nøgler",
-        "description": "Disse nøgler autentificerer den aktuelle organisation, når en MCP-klient ringer til Classroom gennem `@tedydev/classroom-mcp`.",
+        "description": "Disse nøgler autentificerer den aktuelle organisation, når en MCP-klient ringer til ClassroomHub gennem `@tedydev/classroom-mcp`.",
         "generate": "Generer MCP-nøgle",
         "secret_once": "Denne hemmelighed vises én gang. Kopier det til din MCP-klient nu.",
         "modal": {
           "title": "Opret MCP-nøgle",
           "description": "Vælg et navn til denne MCP-nøgle, før den genereres.",
           "name_label": "Nøglenavn",
-          "name_placeholder": "Classroom OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Annuller",
           "save": "Opret nøgle"
         }
@@ -4140,7 +4140,7 @@
         "rate_limits_description": "Læs/skriv/publicér anmodninger tilladt pr. minut.",
         "used_label": "Brugt:"
       },
-      "page_subtitle": "Forbind AI-værktøjer til Classroom med organisationsnøgler, du kan rotere når som helst."
+      "page_subtitle": "Forbind AI-værktøjer til ClassroomHub med organisationsnøgler, du kan rotere når som helst."
     },
     "api": {
       "subtitle": "Administrer API-nøgler til integration med Classrooms offentlige API.",
@@ -4205,10 +4205,10 @@
       "disabled_description": "Kun organisationsadministratorer kan oprette, rotere eller tilbagekalde automatiseringsnøgler. Lærere kan gennemgå opsætningsinstruktionerne her."
     },
     "zapier": {
-      "page_subtitle": "Automatiser Classroom med tusindvis af apps via Zapier. Kommer snart."
+      "page_subtitle": "Automatiser ClassroomHub med tusindvis af apps via Zapier. Kommer snart."
     },
     "webhooks": {
-      "subtitle": "Send signed Classroom events to your external systems.",
+      "subtitle": "Send signed ClassroomHub events to your external systems.",
       "endpoints_title": "Webhook endpoints",
       "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
       "add": "Add webhook",
@@ -4228,11 +4228,11 @@
       "secret_unchanged": "Leave blank to keep the current secret.",
       "secret_once": "This signing secret is shown once. Store it securely.",
       "events_help": "Select no events to receive every supported event.",
-      "form_description": "Classroom sends JSON requests signed with HMAC-SHA256.",
+      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
       "save": "Save webhook",
       "cancel": "Cancel",
       "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect Classroom events to another system.",
+      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
       "event": "Event",
       "status": "Status",
       "attempt": "Attempt",
@@ -4480,7 +4480,7 @@
       "border_radius": "Grænseradius",
       "font_family": "Fontfamilie",
       "font_scale": "Skriftstørrelsesskala",
-      "show_powered_by": "Vis Classroom branding",
+      "show_powered_by": "Vis ClassroomHub branding",
       "custom_css": "Brugerdefineret CSS",
       "custom_css_locked": "Opgrader for at aktivere tilpasset CSS.",
       "embed_code": "Integrer kode",

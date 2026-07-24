@@ -170,7 +170,7 @@ test('runs the doctor CLI and returns a structured summary', () => {
 
   assert.equal(result.available, true);
   assert.ok(result.status === 0 || result.status === 1);
-  assert.match(result.output, /Classroom development doctor/);
+  assert.match(result.output, /ClassroomHub development doctor/);
   assert.equal(result.output.includes('super-secret-value'), false);
 });
 

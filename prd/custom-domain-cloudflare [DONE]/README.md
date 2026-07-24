@@ -74,7 +74,7 @@ We are not doing an in-place live migration of existing Vercel-managed domains. 
 - User-facing docs still say external custom domains are “coming soon”, which no longer matches the in-app paid feature.
 
 ## User Story
-As an organization admin, I want to connect a branded subdomain like `courses.example.com` to Classroom Hub through a clear Cloudflare-backed flow, so learners can access my organization site on my own domain.
+As an organization admin, I want to connect a branded subdomain like `courses.example.com` to ClassroomHub through a clear Cloudflare-backed flow, so learners can access my organization site on my own domain.
 
 As an existing organization admin with a previously configured domain, I want to understand that I must reconnect the domain through the new setup flow, and I want the product to show me the exact DNS record I need to add.
 
@@ -168,7 +168,7 @@ Use a Cloudflare-backed service layer for custom-domain operations and expose a 
 
 ### Backend Changes
 1. Replace Vercel-specific service functions in `apps/api/src/services/org/domain.ts`.
-2. Refactor `apps/api/src/routes/domain/domain.ts` so route responses are normalized around Classroom Hub product states, not Vercel response shapes.
+2. Refactor `apps/api/src/routes/domain/domain.ts` so route responses are normalized around ClassroomHub product states, not Vercel response shapes.
 3. Move organization-state persistence into backend orchestration rather than split frontend/backend sequencing.
 4. Add any required Cloudflare env configuration in API config.
 

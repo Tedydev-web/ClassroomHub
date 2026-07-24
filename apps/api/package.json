@@ -1,7 +1,7 @@
 {
   "name": "@cio/api",
   "version": "0.0.1",
-  "description": "Classroom API and background-process backend",
+  "description": "ClassroomHub API and background-process backend",
   "main": "dist/index.js",
   "type": "module",
   "files": [
@@ -27,7 +27,7 @@
     "type": "git",
     "url": "git+https://github.com/Tedydev-web/classroomio.git"
   },
-  "author": "Classroom <support@classroom.io.vn>",
+  "author": "ClassroomHub <support@classroom.io.vn>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Tedydev-web/classroomio/issues"

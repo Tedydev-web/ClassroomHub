@@ -12,7 +12,7 @@
 
 Add a new exercise question type that lets students record a short video response directly in the browser. The student clicks "Start recording", sees a circular selfie-style camera frame with a timer UI, records within the teacher's configured duration limit, can retake the recording multiple times, and submits the final recording as the answer.
 
-This is not a generic video upload question. Students must record inside Classroom Hub instead of choosing an existing video file from their device.
+This is not a generic video upload question. Students must record inside ClassroomHub instead of choosing an existing video file from their device.
 
 ## Problem Statement
 

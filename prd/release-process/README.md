@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Give Classroom Hub a real **release** mechanism — versioned, tagged, changelog'd
+Give ClassroomHub a real **release** mechanism — versioned, tagged, changelog'd
 snapshots that self-hosters can pin to and read about — on top of the existing
 continuous **deploy** to production.
 

@@ -10,11 +10,11 @@ export async function load({ data, url }) {
   };
 }
 
-const DEFAULT_META_TITLE = 'Classroom | One Platform for Customer, Partner, and Employee Training';
+const DEFAULT_META_TITLE = 'ClassroomHub | One Platform for Customer, Partner, and Employee Training';
 const DEFAULT_META_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
 const DEFAULT_OG_IMAGE_URL = '/assets/brand/og/classroomio-opengraph.jpg';
-const DEFAULT_OG_IMAGE_ALT = 'Classroom platform for customer, partner, and employee education';
+const DEFAULT_OG_IMAGE_ALT = 'ClassroomHub platform for customer, partner, and employee education';
 
 function getBaseMetaTags(url: URL) {
   const canonicalUrl = new URL(url.pathname, url.origin).href;
@@ -29,7 +29,7 @@ function getBaseMetaTags(url: URL) {
       locale: 'en_US',
       title: DEFAULT_META_TITLE,
       description: DEFAULT_META_DESCRIPTION,
-      siteName: 'Classroom',
+      siteName: 'ClassroomHub',
       images: [
         {
           url: '/assets/brand/og/classroomio-opengraph.jpg',

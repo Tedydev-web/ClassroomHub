@@ -1,4 +1,4 @@
-# Classroom — Local Dev Setup Guide
+# ClassroomHub — Local Dev Setup Guide
 
 A practical guide to running classroomio locally for development, plus a
 troubleshooting reference for the errors you're likely to hit. Use it to set up a
@@ -19,12 +19,12 @@ The development runtime is registered as one Windows scheduled task. It starts D
 Desktop, the local infrastructure, and all core source watchers after user logon:
 
 ```powershell
-Get-ScheduledTask -TaskName 'Classroom Hub Development' | Select-Object TaskName, State
+Get-ScheduledTask -TaskName 'ClassroomHub Development' | Select-Object TaskName, State
 ```
 
 Expected state: `Running`. The task runs `scripts/start-development.cmd`, which starts
 Docker Desktop, runs `pnpm infra:up`, then keeps `pnpm dev:core` active. Its log is
-`C:\ProgramData\Classroom Hub\logs\development.log`. The old API, dashboard, and jobs
+`C:\ProgramData\ClassroomHub\logs\development.log`. The old API, dashboard, and jobs
 production tasks remain disabled so they cannot duplicate processes or occupy ports.
 
 The `Cloudflared` Windows service uses automatic startup and normally needs no manual
@@ -40,7 +40,7 @@ scripts\start-development.cmd
 To stop the scheduled process before maintenance:
 
 ```powershell
-Stop-ScheduledTask -TaskName 'Classroom Hub Development'
+Stop-ScheduledTask -TaskName 'ClassroomHub Development'
 ```
 
 After the watchers are ready, verify the complete stack:
@@ -184,7 +184,7 @@ curl.exe http://localhost:8001/
 curl.exe -I https://classroom-app.tedydev.io.vn/
 curl.exe https://classroom-api.tedydev.io.vn/
 Get-Service Cloudflared
-Get-ScheduledTask -TaskName 'Classroom Hub Development' | Select-Object TaskName, State
+Get-ScheduledTask -TaskName 'ClassroomHub Development' | Select-Object TaskName, State
 ```
 
 Expected: dashboard responses are `200`, API roots return JSON, all four Docker
@@ -367,7 +367,7 @@ The optional accounts in `users.json` are inserted only with `--extended-demo`.
 |---------|-------|-----|
 | `no such service: db-init` | `db-init` was removed; the `api` container now runs DB setup | Don't reference `db-init`. For host dev use `db:setup:seed` (Step 4). |
 | `DATABASE_URL or PRIVATE_DATABASE_URL ... required` | `packages/db/.env` missing (db scripts read their own dir) | `cp packages/db/.env.example packages/db/.env` |
-| `password authentication failed for user "postgres"` | `localhost:8002` is not the Classroom Hub development Postgres or the local env is stale | Run `pnpm setup:env -- --apply-local-defaults`, then `pnpm infra:up` |
+| `password authentication failed for user "postgres"` | `localhost:8002` is not the ClassroomHub development Postgres or the local env is stale | Run `pnpm setup:env -- --apply-local-defaults`, then `pnpm infra:up` |
 | `Failed to resolve entry for package "@cio/*"` | shared packages not built (`dist/` missing) | `pnpm build`, then re-run the dev commands |
 | `'rm'/'cp' is not recognized` or `spawn EINVAL` (Windows) | Unix command / `.cmd` spawn in a script | Already fixed in-repo (rimraf, Node copy, `shell:true`). Run `pnpm i` to get latest. |
 | `invalid task configuration … N persistent tasks … concurrency` | `pnpm dev` starts the whole monorepo past Turbo's default concurrency | Use `pnpm dev:core` instead |

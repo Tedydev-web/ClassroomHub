@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Translate the SCORM Support PRD into an engineering-first execution order that fits current Classroom Hub conventions.
+Translate the SCORM Support PRD into an engineering-first execution order that fits current ClassroomHub conventions.
 
 ## Delivery Order
 
@@ -80,7 +80,7 @@ Responsibilities:
 1. create/resume learner registration
 2. commit runtime writes
 3. finalize attempts
-4. map SCORM state to Classroom Hub lesson completion
+4. map SCORM state to ClassroomHub lesson completion
 
 ## 5. Routes
 

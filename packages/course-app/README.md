@@ -1,6 +1,6 @@
 <a href="https://course-classroom-app.tedydev.io.vn/">
   <img alt="Create beautiful course websites to educate your customers" src="https://cdn.courseapp.oncws.com/courseapp-og.png" />
-  <h1 align="center">CourseApp by Classroom Hub</h1>
+  <h1 align="center">CourseApp by ClassroomHub</h1>
   <p align="center">
     Create beautiful course websites to educate your customers.
     <br />

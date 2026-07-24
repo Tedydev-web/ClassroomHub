@@ -201,7 +201,7 @@ export class ClassroomIoApiClient {
     if (!response.ok) {
       const errorPayload = json as ApiFailure | null;
       throw new ClassroomIoApiError(
-        errorPayload?.error ?? errorPayload?.message ?? `Classroom request failed with status ${response.status}`,
+        errorPayload?.error ?? errorPayload?.message ?? `ClassroomHub request failed with status ${response.status}`,
         response.status,
         errorPayload?.code,
         errorPayload?.field
@@ -209,7 +209,7 @@ export class ClassroomIoApiClient {
     }
 
     if (!json || typeof json !== 'object' || !('success' in json) || !json.success) {
-      throw new ClassroomIoApiError('Classroom returned an invalid response payload', response.status);
+      throw new ClassroomIoApiError('ClassroomHub returned an invalid response payload', response.status);
     }
 
     return json.data;

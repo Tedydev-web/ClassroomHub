@@ -28,7 +28,7 @@
         rel="noopener noreferrer"
         class="flex items-center gap-1 md:hidden"
       >
-        <p class="text-base font-semibold text-[#0233BD] underline">Built on Classroom</p>
+        <p class="text-base font-semibold text-[#0233BD] underline">Built on ClassroomHub</p>
       </a>
     </div>
     <ul
@@ -69,7 +69,7 @@
       rel="noopener noreferrer"
       class="hidden items-center gap-1 md:flex"
     >
-      <p class="text-base font-semibold text-[#0233BD] underline">Built on Classroom</p>
+      <p class="text-base font-semibold text-[#0233BD] underline">Built on ClassroomHub</p>
     </a>
   </nav>
 {/if}

@@ -133,7 +133,7 @@
 </script>
 
 <svelte:head>
-  <title>Compliance Training | Classroom</title>
+  <title>Compliance Training | ClassroomHub</title>
   <meta
     name="description"
     content="Keep your employees compliant and track who's falling behind. Turn policies and SOPs into certified training with renewals, grace periods, and audit evidence."
@@ -170,7 +170,7 @@
         completion evidence. Know exactly who is compliant — and prove it.
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=Classroom demo"
+        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
           >Book a Demo</Button
         >
         <Button href="/signup" variant="outline">Start free</Button>
@@ -233,7 +233,7 @@
     bgClass="bg-gray-50"
     eyebrow="Renewals on autopilot"
     title="Training that re-runs itself."
-    description="Set a retake interval once. Classroom automatically moves learners back into “expiring soon”, sends reminders, holds them in a grace period, and flags non-compliance — all without admin intervention."
+    description="Set a retake interval once. ClassroomHub automatically moves learners back into “expiring soon”, sends reminders, holds them in a grace period, and flags non-compliance — all without admin intervention."
     imageSrc="/assets/assets/www/compliance-training/course-compliance.jpeg"
     imageAlt="Compliance settings panel — retake interval, grace period, reminders, waiver rules"
   >

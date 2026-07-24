@@ -1,11 +1,11 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Classroom API",
-    "description": "# Authentication\n\nAll public API endpoints require an **organization-scoped API key** sent as a Bearer token.\n\n## Get an API key\n\n1. Sign in to [Classroom](https://hub.classroom.io.vn) as an **organization admin**.\n2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://hub.classroom.io.vn/org/*/api) — `*` picks your current organization automatically).\n3. Click **Generate API key** and copy the secret immediately (it is shown only once).\n4. Keys look like `cio_api_...` and include the `public_api:*` scope.\n\n## Send requests\n\nAdd the key to every request:\n\n```\nAuthorization: Bearer cio_api_your_key_here\n```\n\nBase URL: `https://api.classroom.io.vn/public-api/v1`\n\n## Try requests in this reference\n\nUse the **Authorize** button (lock icon) on this page, choose **bearerAuth**, paste your full API key, then run **Try it** on any endpoint.\n\n## Plan access\n\nOn Classroom Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.\n",
+    "title": "ClassroomHub API",
+    "description": "# Authentication\n\nAll public API endpoints require an **organization-scoped API key** sent as a Bearer token.\n\n## Get an API key\n\n1. Sign in to [ClassroomHub](https://hub.classroom.io.vn) as an **organization admin**.\n2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://hub.classroom.io.vn/org/*/api) — `*` picks your current organization automatically).\n3. Click **Generate API key** and copy the secret immediately (it is shown only once).\n4. Keys look like `cio_api_...` and include the `public_api:*` scope.\n\n## Send requests\n\nAdd the key to every request:\n\n```\nAuthorization: Bearer cio_api_your_key_here\n```\n\nBase URL: `https://api.classroom.io.vn/public-api/v1`\n\n## Try requests in this reference\n\nUse the **Authorize** button (lock icon) on this page, choose **bearerAuth**, paste your full API key, then run **Try it** on any endpoint.\n\n## Plan access\n\nOn ClassroomHub Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.\n",
     "version": "1.0.0",
     "contact": {
-      "name": "Classroom",
+      "name": "ClassroomHub",
       "url": "https://classroom.io.vn"
     }
   },

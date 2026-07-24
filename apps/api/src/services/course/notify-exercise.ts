@@ -52,7 +52,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
     quizUrl = `${baseUrl}/courses/${courseId}/exercises/${exerciseId}`;
   }
 
-  const orgName = orgData.orgName || 'Classroom';
+  const orgName = orgData.orgName || 'ClassroomHub';
   const assignments =
     exercise.assignmentMode === 'SELECTED_STUDENTS' ? await listExerciseAssignments(exerciseId) : undefined;
   const recipientGroupMemberIds = assignments?.map((assignment) => assignment.groupMemberId);
@@ -64,7 +64,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
     courseName: course.title,
     orgName,
     organizationId: orgData.orgId,
-    fromName: buildEmailFromName(`${orgName} (via Classroom)`),
+    fromName: buildEmailFromName(`${orgName} (via ClassroomHub)`),
     quizUrl,
     recipientGroupMemberIds,
     branding: buildEmailBranding({

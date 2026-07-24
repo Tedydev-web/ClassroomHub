@@ -6,7 +6,7 @@ export const PUBLIC_API_BEARER_SCHEME = 'bearerAuth';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const;
 
-export const PUBLIC_API_OPENAPI_DESCRIPTION = `Use the Classroom public API to manage audience members and courses with organization-scoped API keys.
+export const PUBLIC_API_OPENAPI_DESCRIPTION = `Use the ClassroomHub public API to manage audience members and courses with organization-scoped API keys.
 
 # Authentication
 
@@ -14,7 +14,7 @@ All public API endpoints require an **organization-scoped API key** sent as a Be
 
 ## Get an API key
 
-1. Sign in to [Classroom](https://${PRODUCT_HOSTS.dashboard}) as an **organization admin**.
+1. Sign in to [ClassroomHub](https://${PRODUCT_HOSTS.dashboard}) as an **organization admin**.
 2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://${PRODUCT_HOSTS.dashboard}/org/*/api) — \`*\` picks your current organization automatically).
 3. Click **Generate API key** and copy the secret immediately (it is shown only once).
 4. Keys look like \`cio_api_...\` and include the \`public_api:*\` scope.

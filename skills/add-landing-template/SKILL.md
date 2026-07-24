@@ -1,6 +1,6 @@
 ---
 name: add-landing-template
-description: Add a new org landing-page template to the Classroom Hub monorepo. Use when the user asks to "create/add a new landing template", "add a new template like X to the org landing pages", "build a new theme for the org landing page", or hands over a design reference (image, URL, prototype) for a new landing visual style.
+description: Add a new org landing-page template to the ClassroomHub monorepo. Use when the user asks to "create/add a new landing template", "add a new template like X to the org landing pages", "build a new theme for the org landing page", or hands over a design reference (image, URL, prototype) for a new landing visual style.
 ---
 
 # Add a new org landing-page template

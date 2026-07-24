@@ -1,65 +1,61 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Qwitcher+Grypen&family=Roboto:wght@300;400;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Certificate</title>
-    <style>
-      .student-name {
-        font-family: 'Qwitcher Grypen', cursive;
-      }
 
-      body {
-        position: relative;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Qwitcher+Grypen&family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Certificate</title>
+  <style>
+    .student-name {
+      font-family: 'Qwitcher Grypen', cursive;
+    }
 
-  <body>
-    <img
-      src="http://localhost:8001/blue-lined-background.png"
-      alt=""
-      class="absolute top-0 left-0 w-full h-[100vh] z-10"
-    />
-    <div class="absolute z-20 left-[5%] top-16 w-[90%]">
-      <header class="w-full flex justify-center items-center pt-10 gap-3 text-3xl font-bold">
-        <img src="${orgLogoUrl}" alt="" />
-        <h1>${orgName}</h1>
-      </header>
+    body {
+      position: relative;
+    }
+  </style>
+</head>
 
-      <div class="pl-10 text-lg font-bold mt-[10%]">
-        <h2>This certificate is awarded to</h2>
-        <h1 class="text-3xl text-blue-800">${studentName}</h1>
-      </div>
+<body>
+  <img src="http://localhost:8001/blue-lined-background.png" alt=""
+    class="absolute top-0 left-0 w-full h-[100vh] z-10" />
+  <div class="absolute z-20 left-[5%] top-16 w-[90%]">
+    <header class="w-full flex justify-center items-center pt-10 gap-3 text-3xl font-bold">
+      <img src="${orgLogoUrl}" alt="" />
+      <h1>${orgName}</h1>
+    </header>
 
-      <div class="pl-10 text-lg font-bold mt-10 w-[70%]">
-        <h1>has succesfully completed training on</h1>
-        <h2 class="text-4xl leading-[2.5rem]">${courseName}</h2>
-      </div>
-
-      <div class="flex border justify-between w-[70%] mx-auto text-center items-end my-14">
-        <div>
-          <p class="font-bold">${dateIssued}</p>
-          <h1 class="border-t border-black h-2/4 font-bold">Date Issued</h1>
-        </div>
-
-        <div class="w-[20%]">
-          <h1 class="h-2/4 border-b border-black"></h1>
-          <p class="font-bold">Signature</p>
-        </div>
-      </div>
-
-      <footer class="text-sm pl-10 w-[90%] pb-10">${courseDescription}</footer>
+    <div class="pl-10 text-lg font-bold mt-[10%]">
+      <h2>This certificate is awarded to</h2>
+      <h1 class="text-3xl text-blue-800">${studentName}</h1>
     </div>
-    <!-- plain blueProfessionalBadgePattern -->
-    <!-- <img
+
+    <div class="pl-10 text-lg font-bold mt-10 w-[70%]">
+      <h1>has succesfully completed training on</h1>
+      <h2 class="text-4xl leading-[2.5rem]">${courseName}</h2>
+    </div>
+
+    <div class="flex border justify-between w-[70%] mx-auto text-center items-end my-14">
+      <div>
+        <p class="font-bold">${dateIssued}</p>
+        <h1 class="border-t border-black h-2/4 font-bold">Date Issued</h1>
+      </div>
+
+      <div class="w-[20%]">
+        <h1 class="h-2/4 border-b border-black"></h1>
+        <p class="font-bold">Signature</p>
+      </div>
+    </div>
+
+    <footer class="text-sm pl-10 w-[90%] pb-10">${courseDescription}</footer>
+  </div>
+  <!-- plain blueProfessionalBadgePattern -->
+  <!-- <img
       src="http://localhost:8001/blue-professional-badge-background.png"
       alt=""
       class="absolute top-0 left-0 w-full z-10"
@@ -86,7 +82,7 @@
             fill="#0542CC"
           />
         </svg>
-        <h1 class="text-[#282828]">Classroom<span class="text-[#0233BD]">IO</span></h1>
+        <h1 class="text-[#282828]">ClassroomHub<span class="text-[#0233BD]">IO</span></h1>
       </header>
 
       <div class="text-lg font-bold mt-[9%]">
@@ -127,8 +123,8 @@
       </footer>
     </div> -->
 
-    <!-- plain purpleProfessionalBadgePattern -->
-    <!-- <img
+  <!-- plain purpleProfessionalBadgePattern -->
+  <!-- <img
       src="http://localhost:8001/purple-professional-badge-background.png"
       alt=""
       class="absolute top-0 left-0 w-full z-10"
@@ -155,7 +151,7 @@
             fill="#0542CC"
           />
         </svg>
-        <h1 class="text-[#282828]">Classroom<span class="text-[#0233BD]">IO</span></h1>
+        <h1 class="text-[#282828]">ClassroomHub<span class="text-[#0233BD]">IO</span></h1>
       </header>
 
       <div class="text-lg font-bold mt-[9%]">
@@ -196,11 +192,11 @@
       </footer>
     </div> -->
 
-    <!------------------------------------------------------- new secton ---------------------------------------------------- -->
+  <!------------------------------------------------------- new secton ---------------------------------------------------- -->
 
-    <!-- PurpleProfessionalBadge certificate -->
+  <!-- PurpleProfessionalBadge certificate -->
 
-    <!-- <img
+  <!-- <img
       src="http://localhost:8001/purple-lined-background.png"
       alt=""
       class="absolute -top-1 left-0 w-full z-10"
@@ -227,7 +223,7 @@
             fill="#0542CC"
           />
         </svg>
-        <h1 class="text-[#282828]">Classroom<span class="text-[#0233BD]">IO</span></h1>
+        <h1 class="text-[#282828]">ClassroomHub<span class="text-[#0233BD]">IO</span></h1>
       </header>
 
       <div class="pl-10 text-lg font-bold mt-[10%]">
@@ -268,9 +264,9 @@
       </footer>
     </div> -->
 
-    <!-- BlueProfessionalBadge certificate -->
+  <!-- BlueProfessionalBadge certificate -->
 
-    <!-- <img
+  <!-- <img
       src="http://localhost:8001/blue-lined-background.png"
       alt=""
       class="absolute -top-1 left-0 w-full z-10"
@@ -311,8 +307,8 @@
       <footer class="text-sm pl-10 w-[90%] pb-10">${courseDescription}</footer>
     </div> -->
 
-    <!-- --------------------- old certificates ------------------------- -->
-    <!-- <div
+  <!-- --------------------- old certificates ------------------------- -->
+  <!-- <div
       class="flex items-center justify-center border border-dashed border-blue-400 h-full w-full"
     >
       <div class="h-full flex border-l-8 border-blue-800">
@@ -372,7 +368,7 @@
         </div>
       </div>
     </div> -->
-    <!-- <div
+  <!-- <div
       class="flex flex-col items-center justify-center border-4 border-pink-700 py-3 w-full h-full"
     >
       <div class="flex items-center gap-1 my-2 mb-10">
@@ -427,5 +423,6 @@
           </div>
       </div>
     </div> -->
-  </body>
+</body>
+
 </html>

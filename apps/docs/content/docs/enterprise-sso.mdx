@@ -3,7 +3,7 @@ title: Enterprise SSO
 description: Configure Single Sign-On (SSO) with OIDC for your organization.
 ---
 
-Classroom supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP).
+ClassroomHub supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP).
 
 :::info[Built-in capability]
 SSO is enabled in this self-owned distribution. It does not call an external license service and
@@ -24,7 +24,7 @@ We support OIDC-based SSO with the following identity providers:
 When users visit your organization's custom domain (e.g., `yourorg.classroom.io.vn`), SSO is automatically detected and they can sign in directly with your IdP.
 
 ### Shared App Login
-On the main Classroom app (`hub.classroom.io.vn`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
+On the main ClassroomHub app (`hub.classroom.io.vn`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
 
 ## Provider Setup Guides
 
@@ -37,10 +37,10 @@ On the main Classroom app (`hub.classroom.io.vn`), users enter their email addre
    - Configure the OAuth consent screen (choose "External" for testing)
    - Create OAuth client ID:
      - Application type: **Web application**
-     - Name: `Classroom SSO`
+     - Name: `ClassroomHub SSO`
      - Authorized redirect URIs: (leave empty for now, you'll add this after Step 2)
 
-2. **In Classroom:**
+2. **In ClassroomHub:**
    - Go to **Settings** → **SSO**
    - Select **Google Workspace**
    - Fill in:
@@ -51,12 +51,12 @@ On the main Classroom app (`hub.classroom.io.vn`), users enter their email addre
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** shown in Classroom
+   - Copy the **Callback URL** shown in ClassroomHub
    - Go back to Google Cloud Console
    - Edit your OAuth client and add the Callback URL to **Authorized redirect URIs**
    - Save
 
-4. **Activate** the connection in Classroom
+4. **Activate** the connection in ClassroomHub
 
 ### Okta
 
@@ -68,7 +68,7 @@ On the main Classroom app (`hub.classroom.io.vn`), users enter their email addre
    - Sign-in redirect URIs: (leave empty, you'll add after Step 2)
    - Grant type: **Authorization Code**
 
-2. **In Classroom:**
+2. **In ClassroomHub:**
    - Go to **Settings** → **SSO**
    - Select **Okta**
    - Fill in:
@@ -79,22 +79,22 @@ On the main Classroom app (`hub.classroom.io.vn`), users enter their email addre
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** from Classroom
+   - Copy the **Callback URL** from ClassroomHub
    - In Okta, edit your app and add the Callback URL to **Sign-in redirect URIs**
    - Ensure these scopes are allowed: `openid`, `email`, `profile`
 
-4. **Activate** the connection in Classroom
+4. **Activate** the connection in ClassroomHub
 
 ### Auth0
 
 1. **Create Application in Auth0:**
    - Go to Auth0 Dashboard
    - Navigate to **Applications** → **Create Application**
-   - Name: `Classroom SSO`
+   - Name: `ClassroomHub SSO`
    - Type: **Regular Web Application**
    - Allowed Callback URLs: (leave empty, add after Step 2)
 
-2. **In Classroom:**
+2. **In ClassroomHub:**
    - Go to **Settings** → **SSO**
    - Select **Auth0**
    - Fill in:
@@ -105,11 +105,11 @@ On the main Classroom app (`hub.classroom.io.vn`), users enter their email addre
    - Click **Create Connection**
 
 3. **Complete IdP Configuration:**
-   - Copy the **Callback URL** from Classroom
+   - Copy the **Callback URL** from ClassroomHub
    - In Auth0, add the Callback URL to **Allowed Callback URLs**
    - Ensure OIDC Conformant is enabled
 
-4. **Activate** the connection in Classroom
+4. **Activate** the connection in ClassroomHub
 
 ## Configuration Summary
 
@@ -139,7 +139,7 @@ Users are automatically provisioned when they first sign in via SSO:
 3. If neither, they can join later via invitation
 
 ### Role Mapping
-Map IdP groups to Classroom roles:
+Map IdP groups to ClassroomHub roles:
 
 - Admins → `ROLE.ADMIN` (1)
 - Tutors → `ROLE.TUTOR` (2)

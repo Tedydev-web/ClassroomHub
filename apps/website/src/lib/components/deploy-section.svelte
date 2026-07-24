@@ -17,7 +17,7 @@
     {
       icon: '❄️',
       title: 'Coolify',
-      description: 'Self-hosted Heroku alternative. Deploy Classroom alongside your stack.',
+      description: 'Self-hosted Heroku alternative. Deploy ClassroomHub alongside your stack.',
       href: 'https://coolify.io'
     }
   ];
@@ -33,7 +33,7 @@
             Your data.<br />Your servers.<br />Your call.
           </h2>
           <p class="mb-8 max-w-[520px] text-base leading-relaxed text-gray-500 lg:text-lg">
-            No SaaS lock-in. No per-seat pricing surprises. Deploy Classroom wherever you run your infrastructure.
+            No SaaS lock-in. No per-seat pricing surprises. Deploy ClassroomHub wherever you run your infrastructure.
             Minutes, not days.
           </p>
 

@@ -151,9 +151,9 @@
 </script>
 
 <svelte:head>
-  <title>Pomodoro Timer | Classroom</title>
+  <title>Pomodoro Timer | ClassroomHub</title>
   <meta property="og:image" itemprop="image" content="" />
-  <meta property="og:title" content="Pomodoro Timer | Classroom" />
+  <meta property="og:title" content="Pomodoro Timer | ClassroomHub" />
   <meta
     property="og:description"
     content="Make your workday more engaging and effective with the Pomodoro timer, break work into 25-minute focused intervals called 'pomodoros', followed by 5-minute breaks"
@@ -161,7 +161,7 @@
 
   <meta property="og:image:secure_url" itemprop="image" content="" />
 
-  <meta name="twitter:title" content="Pomodoro Timer | Classroom" />
+  <meta name="twitter:title" content="Pomodoro Timer | ClassroomHub" />
   <meta
     name="twitter:description"
     content="Make your workday more engaging and effective with the Pomodoro timer, break work into 25-minute focused intervals called 'pomodoros', followed by 5-minute breaks"
@@ -340,8 +340,8 @@
                         ? 'border-none bg-[#00D06C] text-white'
                         : todo.isPaused
                           ? 'border-[#0D4CFF] bg-white text-[#0D4CFF]'
-                          : 'border-none bg-[#0D4CFF] text-white'} 
-                          
+                          : 'border-none bg-[#0D4CFF] text-white'}
+
                           flex items-center justify-center gap-2 rounded-[4px] border-2 px-4 py-1.5 text-xs font-bold uppercase"
                     >
                       {#if todo.isDone}

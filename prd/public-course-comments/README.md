@@ -6,7 +6,7 @@ Enable learners to leave comments on public course lessons. Comments are visible
 
 ## Problem Statement
 
-Public course lessons on Classroom Hub are currently one-way. Learners can read and watch content but have no way to engage with it publicly. Courses with enrollment already support comments, but public courses — which are primarily used as top-of-funnel and community content — have no equivalent. This creates a lower-quality experience for orgs who publish public courses as a lead-generation or thought-leadership surface: there is no social proof, no discussion, and no way to build a learner community around the content.
+Public course lessons on ClassroomHub are currently one-way. Learners can read and watch content but have no way to engage with it publicly. Courses with enrollment already support comments, but public courses — which are primarily used as top-of-funnel and community content — have no equivalent. This creates a lower-quality experience for orgs who publish public courses as a lead-generation or thought-leadership surface: there is no social proof, no discussion, and no way to build a learner community around the content.
 
 ## Confirmed Decisions
 

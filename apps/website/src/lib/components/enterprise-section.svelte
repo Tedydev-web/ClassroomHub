@@ -74,7 +74,7 @@
       </p>
 
       <a
-        href="mailto:{SALES_EMAIL}?subject=Classroom enterprise"
+        href="mailto:{SALES_EMAIL}?subject=ClassroomHub enterprise"
         data-cal-config="'layout':'month_view'"
         class="mb-14 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-800"
       >

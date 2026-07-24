@@ -1,6 +1,6 @@
 ---
 title: Railway
-description: Deploy Classroom on Railway with the one-click template.
+description: Deploy ClassroomHub on Railway with the one-click template.
 ---
 
 The quickest hosted deployment is the [Railway Template](https://railway.com/deploy/classroomio-1?referralCode=8OyIj5). It provisions the API, dashboard, and jobs worker services plus the Postgres and Redis plugins for you.
@@ -40,9 +40,9 @@ The one-click template provisions **all of the services** for you — Postgres, 
 <Step>
 ### Click "Deploy on Railway"
 
-Click the **Deploy on Railway** button above. Railway opens the template page where all of the Classroom services are listed and ready to configure.
+Click the **Deploy on Railway** button above. Railway opens the template page where all of the ClassroomHub services are listed and ready to configure.
 
-![Railway template page for Classroom after clicking Deploy](/docs/railway-01-deploy-template.webp)
+![Railway template page for ClassroomHub after clicking Deploy](/docs/railway-01-deploy-template.webp)
 
 </Step>
 
@@ -56,7 +56,7 @@ The template comes with every service preconfigured — most need nothing from y
 
 The next three steps cover the services that **do** need input: `cio-jobs`, `cio-minio`, and `cio-api`.
 
-![The Railway template listing all preconfigured Classroom services](/docs/railway-02-services-overview.webp)
+![The Railway template listing all preconfigured ClassroomHub services](/docs/railway-02-services-overview.webp)
 </Step>
 
 <Step>
@@ -99,7 +99,7 @@ On `cio-api`, set the SMTP host and any additional values you want. See the [Env
 
 Click **Deploy**. Railway begins building and bringing the services online — Redis, Postgres, and the rest come up first.
 
-![Railway deploying the Classroom services after clicking Deploy](/docs/railway-07-deploying.webp)
+![Railway deploying the ClassroomHub services after clicking Deploy](/docs/railway-07-deploying.webp)
 </Step>
 
 <Step>
@@ -134,7 +134,7 @@ Redeploy **cio-dashboard**, then **cio-api**, so both pick up the newly generate
 
 Open the generated dashboard URL in a **new browser tab** and **sign up** to create your first account.
 
-![The running Classroom dashboard sign-up page on the Railway domain](/docs/railway-12-signup.webp)
+![The running ClassroomHub dashboard sign-up page on the Railway domain](/docs/railway-12-signup.webp)
 </Step>
 
 </Steps>
@@ -232,7 +232,7 @@ configuration:
 ```zsh title="env"
 MINIO_ROOT_USER=<strong user>
 MINIO_ROOT_PASSWORD=<strong password>
-# Recommended (not required — Classroom reaches storage via OBJECT_STORAGE_* below;
+# Recommended (not required — ClassroomHub reaches storage via OBJECT_STORAGE_* below;
 # this only fixes MinIO's own console redirects behind the proxy). Template presets it.
 MINIO_SERVER_URL=https://${{cio-minio.RAILWAY_PUBLIC_DOMAIN}}
 ```
@@ -258,6 +258,6 @@ SSO is built in. See [Configuration → SSO & token authentication](/self-hosted
 
 ## Upgrades
 
-Set `CIO_VERSION` on the Classroom services to pin a release, then redeploy to upgrade. See
+Set `CIO_VERSION` on the ClassroomHub services to pin a release, then redeploy to upgrade. See
 [Configuration → Versions & upgrades](/self-hosted/configuration/versions) for pinning, rollback, and
 the pre-upgrade backup steps.

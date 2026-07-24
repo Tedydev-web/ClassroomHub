@@ -427,25 +427,25 @@ Use `.server.ts` files for server-side code to isolate API keys.
 
 Every transactional email in `packages/email/src/emails` is one of two kinds — decide deliberately, because it changes the branding, the schema, and the `from` address.
 
-- **System emails** — Classroom (the platform) addressing a user/account owner/admin about their *Classroom account*: auth (verify/reset password), billing, **plan limits & usage**, license, workspace. These are **Classroom-branded**:
+- **System emails** — ClassroomHub (the platform) addressing a user/account owner/admin about their *ClassroomHub account*: auth (verify/reset password), billing, **plan limits & usage**, license, workspace. These are **ClassroomHub-branded**:
   - No `branding` field in the schema.
-  - Render with `getDefaultTemplate(content)` (no branding arg) — falls back to the Classroom logo + default button color.
+  - Render with `getDefaultTemplate(content)` (no branding arg) — falls back to the ClassroomHub logo + default button color.
   - Send from the default `EMAIL_FROM`; do **not** override `from` with the org name.
   - Examples: `welcome`, `forgot-password`, `on-password-reset`, `studentLimitReached`.
 - **Org-branded emails** — an *organization* addressing its own members (students/tutors): course invites, welcome/completion, newsfeed, cohort, session reminders. These carry the org's identity:
   - Add a `branding: ZEmailBranding` field.
   - Render with `getDefaultTemplate(content, fields.branding)`.
-  - Callers build branding via `buildEmailBranding({ name, avatarUrl, theme })` and send with `from: buildEmailFromName('<Org> (via Classroom)')`.
+  - Callers build branding via `buildEmailBranding({ name, avatarUrl, theme })` and send with `from: buildEmailFromName('<Org> (via ClassroomHub)')`.
   - Examples: `teacherStudentJoined`, `studentCourseWelcome`, `studentCourseInvite`, `verifyEmail` (org-scoped signup).
 
-Rule of thumb: if the recipient is being addressed **as a Classroom customer** (account/billing/limits), it's a system email → Classroom branding. If they're addressed **as a member of a specific org**, it's org-branded.
+Rule of thumb: if the recipient is being addressed **as a ClassroomHub customer** (account/billing/limits), it's a system email → ClassroomHub branding. If they're addressed **as a member of a specific org**, it's org-branded.
 
 ### Email link URLs
 
 Links embedded in transactional emails must use the correct dashboard host. Templates only receive pre-built URLs — callers build them in API services before `enqueueTransactionalEmail`. See `packages/email/README.md` § Email link URLs.
 
 
-- **Teacher/tutor/admin dashboard actions** (course management, grading, team invites, auto-enroll): build URLs with `getAppBaseUrl()` from `@cio/core/config/dashboard-url`. This resolves to the configured Classroom admin app (`classroom-app.tedydev.io.vn` by default, or `DASHBOARD_ORIGIN` / localhost in dev). Do **not** pass org `customDomain` or tenant `siteName` — staff sign in on the admin app, not the org public site.
+- **Teacher/tutor/admin dashboard actions** (course management, grading, team invites, auto-enroll): build URLs with `getAppBaseUrl()` from `@cio/core/config/dashboard-url`. This resolves to the configured ClassroomHub admin app (`classroom-app.tedydev.io.vn` by default, or `DASHBOARD_ORIGIN` / localhost in dev). Do **not** pass org `customDomain` or tenant `siteName` — staff sign in on the admin app, not the org public site.
 - **Student/learner-facing links** (course enroll, org audience invites, login): build URLs with `getDashboardBaseUrl(org)` so links land on the org's public site (verified custom domain, tenant subdomain, or platform fallback).
 
 ## Best Practices Summary
