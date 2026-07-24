@@ -11,7 +11,7 @@
     rel="noopener noreferrer"
     class="ui:flex ui:items-center ui:justify-center"
   >
-    <img src="/wordmark.svg" class="ui:h-10 ui:w-auto" alt="ClassroomHub" />
+    <img src="/wordmark.svg" class="ui:h-12 ui:w-auto" alt="ClassroomHub" />
   </a>
 
   <p class="ui:text-muted-foreground ui:text-sm">One Platform for Customer, Partner, and Employee Training</p>
