@@ -32,6 +32,7 @@
   --radius-sm: 4px;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --skeleton-hi: #ededed;
 
   --font:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
@@ -45,6 +46,46 @@
   --sp-5: 24px;
   --sp-6: 32px;
   --sp-8: 48px;
+}
+
+/*
+ * Dark theme — a re-decision, not an inversion. The original accent fails
+ * contrast on a dark surface (2.7:1), so it is re-tuned brighter for text and
+ * borders (#5B8CFF, 5.6:1) while the primary button keeps the vivid blue with
+ * white text (6.5:1). Shadows do almost nothing on dark, so borders carry the
+ * separation instead. Set on <html> by an inline script before first paint, so
+ * an explicit choice always wins and there is no flash.
+ */
+:root[data-theme='dark'] {
+  --accent: #5b8cff;
+  --accent-hover: #7aa3ff;
+  --accent-btn: #1d4ee2;
+  --accent-btn-hover: #2f5be8;
+  --accent-weak: #182238;
+
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #71717a;
+
+  --bg: #0d0e10;
+  --surface: #17181b;
+  --surface-hover: #202126;
+  --border: #2a2b30;
+  --border-strong: #3a3b42;
+
+  --danger: #f87171;
+  --danger-weak: #2a1618;
+  --success: #4ade80;
+  --success-weak: #14251a;
+
+  --shadow-sm: 0 0 0 1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --skeleton-hi: #26272c;
+}
+/* Light default keeps the vivid blue as both accent and button. */
+:root {
+  --accent-btn: var(--accent);
+  --accent-btn-hover: var(--accent-hover);
 }
 
 *,
@@ -130,11 +171,11 @@ a:hover {
 }
 .btn-primary {
   color: #fff;
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-btn);
+  border-color: var(--accent-btn);
 }
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--accent-btn-hover);
 }
 .btn-danger {
   color: var(--danger);
@@ -288,7 +329,7 @@ th.num {
 
 /* --- Loading skeleton --- */
 .skeleton {
-  background: linear-gradient(90deg, var(--surface-hover) 25%, #ededed 50%, var(--surface-hover) 75%);
+  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--skeleton-hi) 50%, var(--surface-hover) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.3s ease-in-out infinite;
   border-radius: var(--radius-sm);

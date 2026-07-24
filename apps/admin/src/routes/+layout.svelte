@@ -2,10 +2,19 @@
   import '../app.css';
 
   import { AdminApi } from '$lib/api.svelte';
+  import { currentTheme, toggleTheme, type Theme } from '$lib/theme';
   import { page } from '$app/stores';
   import { setAdminContext } from '$lib/context';
 
   let { children } = $props();
+
+  let theme = $state<Theme>('light');
+  $effect(() => {
+    theme = currentTheme();
+  });
+  function flipTheme() {
+    theme = toggleTheme();
+  }
 
   const STORAGE_KEY = 'ch-admin-key';
 
@@ -82,6 +91,44 @@
   const path = $derived($page.url.pathname);
 </script>
 
+{#snippet themeToggle()}
+  <button
+    class="btn btn-ghost btn-sm theme-btn"
+    type="button"
+    onclick={flipTheme}
+    aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+    title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+  >
+    {#if theme === 'dark'}
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="4.5" /><path
+          d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+        />
+      </svg>
+    {:else}
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+      </svg>
+    {/if}
+  </button>
+{/snippet}
+
 {#if phase === 'checking'}
   <div class="center">
     <div class="brand-mark" aria-hidden="true">C</div>
@@ -92,6 +139,7 @@
       <div class="brand-mark" aria-hidden="true">C</div>
       <h1>ClassroomHub Admin</h1>
       <p class="gate-sub">Operator access. Enter the super-admin password.</p>
+      <div class="gate-toggle">{@render themeToggle()}</div>
       <!-- svelte-ignore a11y_autofocus -->
       <input
         class="input"
@@ -122,6 +170,7 @@
           </a>
         {/each}
       </nav>
+      {@render themeToggle()}
       <button class="btn btn-ghost btn-sm" type="button" onclick={signOut}>Sign out</button>
     </header>
     <main class="content">
@@ -178,6 +227,25 @@
   }
   .gate .input {
     text-align: left;
+  }
+  .gate {
+    position: relative;
+  }
+  .gate-toggle {
+    position: absolute;
+    top: var(--sp-3);
+    right: var(--sp-3);
+  }
+  .theme-btn {
+    width: 30px;
+    padding: 0;
+    color: var(--muted);
+  }
+  .theme-btn:hover {
+    color: var(--text);
+  }
+  .theme-btn svg {
+    display: block;
   }
 
   .shell {
