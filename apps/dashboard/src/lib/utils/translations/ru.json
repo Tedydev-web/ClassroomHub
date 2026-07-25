@@ -2885,6 +2885,13 @@
     "write": "Написать",
     "preview": "Предварительный просмотр"
   },
+  "rich_editor": {
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "paste_kept_formatting": "Форматирование сохранено",
+    "paste_as_plain_text": "Вставить как обычный текст",
+    "dismiss": "Закрыть"
+  },
   "navigation": {
     "goto": "Перейти к",
     "courses": "Курсы",

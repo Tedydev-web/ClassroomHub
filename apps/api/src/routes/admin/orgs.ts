@@ -1,7 +1,19 @@
-import { ZAddCredits, ZAdminOrgParam, ZCreateAdminOrg, ZUpdateOrgAiTutor } from '@cio/utils/validation/admin/admin';
+import {
+  ZAddCredits,
+  ZAdminOrgParam,
+  ZCreateAdminOrg,
+  ZUpdateOrgAiTutor,
+  ZUpdateOrgFeatures
+} from '@cio/utils/validation/admin/admin';
 
 import { Hono } from '@api/utils/hono';
-import { addOrgCredits, createOrgForUser, setOrgAiTutorEnabled } from '@api/services/admin/orgs';
+import {
+  addOrgCredits,
+  createOrgForUser,
+  listOrgFeatures,
+  setOrgAiTutorEnabled,
+  setOrgFeatures
+} from '@api/services/admin/orgs';
 import { handleError } from '@api/utils/errors';
 import { zValidator } from '@hono/zod-validator';
 
@@ -43,6 +55,32 @@ export const adminOrgsRouter = new Hono()
         return c.json({ success: true as const, data: result });
       } catch (error) {
         return handleError(c, error, 'Failed to update organization AI tutor');
+      }
+    }
+  )
+
+  .get('/orgs/features', async (c) => {
+    try {
+      const data = await listOrgFeatures();
+      return c.json({ success: true as const, data });
+    } catch (error) {
+      return handleError(c, error, 'Failed to list organization features');
+    }
+  })
+
+  .patch(
+    '/orgs/:orgId/features',
+    zValidator('param', ZAdminOrgParam),
+    zValidator('json', ZUpdateOrgFeatures),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid('param');
+        const { features } = c.req.valid('json');
+        const result = await setOrgFeatures(orgId, features);
+
+        return c.json({ success: true as const, data: result });
+      } catch (error) {
+        return handleError(c, error, 'Failed to update organization features');
       }
     }
   );

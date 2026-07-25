@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { ORG_FEATURE_KEYS, type OrgFeatureKey } from '../../constants/org-features';
 
 /**
  * Query for the paginated user table. `page`/`limit` arrive as strings and are
@@ -40,7 +41,22 @@ export const ZUpdateOrgAiTutor = z.object({
   enabled: z.boolean()
 });
 
+/**
+ * Patches an org's sidebar feature switches. Only the listed keys are accepted,
+ * and the patch is partial so a caller flips one switch without having to send
+ * the whole set back.
+ */
+export const ZUpdateOrgFeatures = z.object({
+  features: z
+    .object(
+      Object.fromEntries(ORG_FEATURE_KEYS.map((key) => [key, z.boolean()])) as Record<OrgFeatureKey, z.ZodBoolean>
+    )
+    .partial()
+    .refine((patch) => Object.keys(patch).length > 0, 'At least one feature must be supplied')
+});
+
 export type TListUsersQuery = z.infer<typeof ZListUsersQuery>;
 export type TAddCredits = z.infer<typeof ZAddCredits>;
 export type TCreateAdminOrg = z.infer<typeof ZCreateAdminOrg>;
 export type TUpdateOrgAiTutor = z.infer<typeof ZUpdateOrgAiTutor>;
+export type TUpdateOrgFeatures = z.infer<typeof ZUpdateOrgFeatures>;

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTION_TYPE_KEY, scoreAnswerForQuestion, scoreSubmissionAnswers, type ExerciseQuestionModel } from '../src';
+import {
+  getExpectedOrderingValues,
+  QUESTION_TYPE_KEY,
+  scoreAnswerForQuestion,
+  scoreSubmissionAnswers,
+  type ExerciseQuestionModel
+} from '../src';
 
 function buildQuestion(overrides: Partial<ExerciseQuestionModel> = {}): ExerciseQuestionModel {
   return {
@@ -124,5 +130,64 @@ describe('question scoring invariants', () => {
     );
 
     expect(result.total).toBe(6.66);
+  });
+});
+
+describe('ordering steps that read the same', () => {
+  // Two steps in a procedure can legitimately carry identical text — "Stir",
+  // "Bake", "Stir". Expected values were keyed by label, so duplicates
+  // collapsed onto one option and the answer key became unorderable.
+  const question: ExerciseQuestionModel = {
+    id: 1,
+    title: 'Arrange the steps',
+    questionType: QUESTION_TYPE_KEY.ORDERING,
+    points: 10,
+    options: [
+      { id: 31, label: 'Mix' },
+      { id: 32, label: 'Bake' },
+      { id: 33, label: 'Mix' }
+    ],
+    settings: { items: ['Mix', 'Bake', 'Mix'] }
+  };
+
+  it('maps each repeated label to a distinct option', () => {
+    expect(getExpectedOrderingValues(question)).toEqual(['31', '32', '33']);
+  });
+
+  it('awards full marks for the correct order', () => {
+    expect(scoreAnswerForQuestion(question, { type: 'ORDERING', orderedValues: ['31', '32', '33'] })).toBe(10);
+  });
+
+  it('still credits only the steps left in the right place', () => {
+    // Ordering scores partially by default: only "Mix" (33) is in position.
+    expect(scoreAnswerForQuestion(question, { type: 'ORDERING', orderedValues: ['32', '31', '33'] })).toBe(3.33);
+  });
+
+  it('awards nothing when no step is in the right place', () => {
+    expect(scoreAnswerForQuestion(question, { type: 'ORDERING', orderedValues: ['33', '31', '32'] })).toBe(0);
+  });
+
+  it('leaves questions with unique labels behaving exactly as before', () => {
+    const unique: ExerciseQuestionModel = {
+      ...question,
+      options: [
+        { id: 41, label: 'First' },
+        { id: 42, label: 'Second' }
+      ],
+      settings: { items: ['Second', 'First'] }
+    };
+
+    expect(getExpectedOrderingValues(unique)).toEqual(['42', '41']);
+    expect(scoreAnswerForQuestion(unique, { type: 'ORDERING', orderedValues: ['42', '41'] })).toBe(10);
+  });
+
+  it('falls back to the raw label when no option carries it', () => {
+    const mismatched: ExerciseQuestionModel = {
+      ...question,
+      options: [{ id: 51, label: 'Known' }],
+      settings: { items: ['Known', 'Absent'] }
+    };
+
+    expect(getExpectedOrderingValues(mismatched)).toEqual(['51', 'Absent']);
   });
 });

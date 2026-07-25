@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   createQuestions: vi.fn(),
   deleteExerciseSectionsByIds: vi.fn(),
   deleteExercise: vi.fn(),
+  deleteOptionsByIds: vi.fn(),
   deleteQuestionsByIds: vi.fn(),
   getAttemptedQuestionIds: vi.fn(),
   getExerciseById: vi.fn(),
@@ -34,7 +35,7 @@ vi.mock('@cio/db/queries/exercise', () => ({
   createQuestions: mocks.createQuestions,
   deleteExercise: mocks.deleteExercise,
   deleteExerciseSectionsByIds: mocks.deleteExerciseSectionsByIds,
-  deleteOptionsByIds: vi.fn(),
+  deleteOptionsByIds: mocks.deleteOptionsByIds,
   deleteQuestionsByIds: mocks.deleteQuestionsByIds,
   getAttemptedQuestionIds: mocks.getAttemptedQuestionIds,
   getExerciseById: mocks.getExerciseById,
@@ -452,7 +453,7 @@ describe('legacy submission-less answers (orphan answers) freeze the question gr
     });
 
     expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([1], txStub);
-    expect(mocks.deleteQuestionsByIds).toHaveBeenCalledWith([3], txStub);
+    expect(mocks.deleteQuestionsByIds).toHaveBeenCalledWith([3], 'exercise-a', txStub);
   });
 
   it('replaceExerciseService fails with a deliberate 409 instead of an FK-driven 500', async () => {
@@ -637,5 +638,70 @@ describe('getExercise active read hardening', () => {
     expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
     expect(canonicalQuestion?.authorDefinition).toEqual(authorDefinition);
     expect(JSON.stringify(canonicalQuestion?.definition)).not.toContain('correctOptionIds');
+  });
+});
+
+describe('question graph deletes stay inside the edited exercise', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getExerciseById.mockResolvedValue({ id: 'exercise-a', courseId: null, slug: null, title: 'Exercise' });
+    mocks.lockExerciseAssignmentState.mockResolvedValue(undefined);
+    mocks.getQuestionsByExerciseIds.mockResolvedValue([activeQuestionRow]);
+    mocks.getOptionsByQuestionIds.mockResolvedValue([
+      { id: 10, questionId: 1, label: 'A', value: 'A', isCorrect: true, settings: {} }
+    ]);
+    mocks.hasExerciseSubmissions.mockResolvedValue(false);
+    mocks.getAttemptedQuestionIds.mockResolvedValue([]);
+    mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(false);
+    mocks.deleteQuestionsByIds.mockResolvedValue([]);
+    mocks.deleteOptionsByIds.mockResolvedValue([]);
+    mocks.archiveQuestionsByIds.mockResolvedValue([]);
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: { id: 'exercise-a', courseId: null },
+      questions: []
+    });
+    mocks.getExerciseSectionsByExerciseId.mockResolvedValue([]);
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([]);
+  });
+
+  it('ignores a delete for a question id that belongs to another exercise', async () => {
+    await updateExerciseService('exercise-a', {
+      questions: [{ id: 999, question: 'Foreign question', deletedAt: '2026-07-25T00:00:00.000Z' }]
+    });
+
+    expect(mocks.deleteQuestionsByIds).not.toHaveBeenCalled();
+    expect(mocks.archiveQuestionsByIds).not.toHaveBeenCalled();
+    expect(mocks.createQuestions).not.toHaveBeenCalled();
+  });
+
+  it('ignores a delete for an option id that belongs to another question', async () => {
+    await updateExerciseService('exercise-a', {
+      questions: [
+        {
+          id: 1,
+          question: 'Active question',
+          options: [{ id: 888, label: 'Foreign option', isCorrect: false, deletedAt: '2026-07-25T00:00:00.000Z' }]
+        }
+      ]
+    });
+
+    // Option 10 is legitimately removed because the payload no longer carries
+    // it. The point of this test is that the foreign id never reaches a delete.
+    const deletedOptionIds = mocks.deleteOptionsByIds.mock.calls.flatMap((call) => call[0] as number[]);
+    expect(deletedOptionIds).not.toContain(888);
+  });
+
+  it('passes the owning exercise id to the delete queries', async () => {
+    await updateExerciseService('exercise-a', {
+      questions: [
+        {
+          id: 1,
+          question: 'Active question',
+          options: [{ id: 10, label: 'A', isCorrect: true, deletedAt: '2026-07-25T00:00:00.000Z' }]
+        }
+      ]
+    });
+
+    expect(mocks.deleteOptionsByIds).toHaveBeenCalledWith([10], 'exercise-a', txStub);
   });
 });

@@ -23,6 +23,7 @@ import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
 import type { PlanLimitResource } from '@cio/utils/plans';
 import { isSelfOwnedDeployment } from '$lib/utils/deployment';
+import { isOrgFeatureEnabled, type OrgFeatureFlags, type OrgFeatureKey } from '@cio/utils/constants/org-features';
 
 export interface NavItem {
   title: string;
@@ -59,6 +60,12 @@ export interface NavItemConfig {
   /** Plan-limited resource this item represents; when that resource is at its cap, `upgrade` is set. */
   upgradeResource?: PlanLimitResource;
   group?: string | null; // Group label key for sidebar grouping
+  /**
+   * Per-org switch that governs this item. Absent means the item is always
+   * present — `home` and `settings` deliberately have no key, since an org with
+   * neither would have no landing page and no way to reach its own settings.
+   */
+  featureKey?: OrgFeatureKey;
 }
 
 export interface NavGroup {
@@ -83,6 +90,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'home',
     titleKey: 'org_navigation.dashboard',
+    featureKey: 'dashboard',
     path: '/dash',
     icon: DashboardIcon,
     matchPattern: '^/org/[^/]+/dash(/.*)?$'
@@ -90,6 +98,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'home',
     titleKey: 'org_navigation.stats',
+    featureKey: 'stats',
     path: '/stats',
     icon: ChartColumnIcon,
     useHashUrl: true,
@@ -111,6 +120,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'home',
     titleKey: 'org_navigation.setup',
+    featureKey: 'setup',
     path: '/setup',
     icon: SetupIcon,
     requiresAdmin: true,
@@ -119,6 +129,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'org_navigation.courses',
+    featureKey: 'courses',
     path: '/courses',
     icon: CourseIcon,
     matchPattern: '^/org/[^/]+/courses(/.*)?$' // Matches nested routes
@@ -126,6 +137,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'org_navigation.cohorts',
+    featureKey: 'cohorts',
     path: '/cohorts',
     icon: GoalIcon,
     matchPattern: '^/org/[^/]+/cohorts(/.*)?$'
@@ -133,6 +145,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'org_navigation.media',
+    featureKey: 'media',
     path: '/media',
     icon: AttachmentIcon,
     matchPattern: '^/org/[^/]+/media(/.*)?$'
@@ -140,6 +153,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'scorm.title',
+    featureKey: 'scorm',
     path: '/scorm',
     icon: PackageOpenIcon,
     requiresAdmin: true,
@@ -148,6 +162,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'org_navigation.tags',
+    featureKey: 'tags',
     path: '/tags',
     icon: TagIcon,
     requiresAdmin: true,
@@ -156,6 +171,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'content',
     titleKey: 'org_navigation.widgets',
+    featureKey: 'widgets',
     path: '/widgets',
     icon: LandingPageIcon,
     matchPattern: '^(/org/[^/]+/widgets(/.*)?|/widgets/[^/]+(/.*)?)$'
@@ -163,6 +179,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'people',
     titleKey: 'org_navigation.community',
+    featureKey: 'community',
     path: '/community',
     icon: CommunityIcon,
     supportsDynamicSegment: true, // Supports /community/[slug]
@@ -177,6 +194,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'people',
     titleKey: 'org_navigation.audience',
+    featureKey: 'audience',
     path: '/audience',
     icon: PeopleIcon,
     upgradeResource: 'students',
@@ -185,6 +203,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'automation',
     titleKey: 'automation.tabs.mcp',
+    featureKey: 'mcp',
     path: '/mcp',
     icon: BotIcon,
     requiresAdmin: true,
@@ -194,6 +213,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'automation',
     titleKey: 'automation.tabs.api',
+    featureKey: 'api',
     path: '/api',
     icon: ApiIcon,
     requiresAdmin: true,
@@ -203,6 +223,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'automation',
     titleKey: 'automation.tabs.zapier',
+    featureKey: 'zapier',
     path: '/zapier',
     icon: ZapIcon,
     requiresAdmin: true,
@@ -212,6 +233,7 @@ export const baseNavConfig: NavItemConfig[] = [
   {
     group: 'automation',
     titleKey: 'automation.tabs.webhooks',
+    featureKey: 'webhooks',
     path: '/webhooks',
     icon: WebhookIcon,
     requiresAdmin: true,
@@ -403,6 +425,44 @@ const GROUP_ORDER: Array<{ key: string | null; labelKey: string | null }> = [
   { key: null, labelKey: null }
 ];
 
+/** Reads an org's feature switches out of its settings blob. */
+export function getOrgFeatureFlags(currentOrg: AccountOrg | null | undefined): OrgFeatureFlags {
+  return (currentOrg?.settings?.features ?? {}) as OrgFeatureFlags;
+}
+
+/**
+ * Names the switched-off feature that owns `pathname`, or null when the path is
+ * reachable. Drives the redirect in the org layout so a direct URL cannot land
+ * on a page whose sidebar entry the operator removed.
+ *
+ * Matching reuses each item's `matchPattern` — the same expression that decides
+ * whether the item renders as active — so navigation and access can never
+ * disagree about which routes an item covers.
+ */
+export function findDisabledOrgFeature(
+  currentOrg: AccountOrg | null | undefined,
+  pathname: string
+): OrgFeatureKey | null {
+  // Only dashboard org routes are governed. Some patterns (widgets) also match
+  // a public path outside `/org/`, which carries no org context to gate on.
+  if (!pathname.startsWith('/org/')) return null;
+
+  const features = getOrgFeatureFlags(currentOrg);
+  const siteName = currentOrg?.siteName ?? '';
+
+  for (const config of baseNavConfig) {
+    if (!config.featureKey) continue;
+    if (isOrgFeatureEnabled(features, config.featureKey)) continue;
+
+    const pattern = typeof config.matchPattern === 'function' ? config.matchPattern(siteName) : config.matchPattern;
+    if (!pattern) continue;
+
+    if (new RegExp(pattern).test(pathname)) return config.featureKey;
+  }
+
+  return null;
+}
+
 /**
  * Get navigation items grouped for the sidebar
  */
@@ -421,8 +481,14 @@ export function getOrgNavigationGroups(
     groupedMap.set(groupDef.key, []);
   }
 
+  const features = getOrgFeatureFlags(currentOrg);
+
   for (const config of baseNavConfig) {
     if (isSelfOwnedDeployment && config.path === '/settings/billing') {
+      continue;
+    }
+
+    if (config.featureKey && !isOrgFeatureEnabled(features, config.featureKey)) {
       continue;
     }
 

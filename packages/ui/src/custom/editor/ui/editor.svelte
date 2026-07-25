@@ -33,7 +33,7 @@
   import '../editor.css';
   import './style.css';
   import '../onedark.css';
-  import { Placeholder } from '@tiptap/extensions';
+  import { getEditorVariant } from '../variants';
 
   const lowlight = createLowlight(all);
 
@@ -48,43 +48,50 @@
     onUpdate,
     autofocus = false,
     class: className,
-    placeholder = ''
+    placeholder = '',
+    variant = 'full',
+    onExternalPaste
   }: EdraEditorProps = $props();
 
+  const config = $derived(getEditorVariant(variant));
+
   onMount(() => {
-    editor = initEditor(
+    // Node-view extensions live here because they need Svelte components; the
+    // variant decides which of them the schema should admit at all.
+    const richNodeExtensions = [
+      CodeBlockLowlight.configure({
+        lowlight
+      }).extend({
+        addNodeView() {
+          return SvelteNodeViewRenderer(CodeBlock);
+        }
+      }),
+      ImagePlaceholder(ImagePlaceholderComp),
+      ImageExtended(ImageExtendedComp),
+      VideoPlaceholder(VideoPlaceHolderComp),
+      VideoExtended(VideoExtendedComp),
+      AudioPlaceholder(AudioPlaceHolderComp),
+      AudioExtended(AudioExtendedComp),
+      IFramePlaceholder(IFramePlaceHolderComp),
+      IFrameExtended(IFrameExtendedComp)
+    ];
+
+    editor = initEditor({
       element,
       content,
-      [
-        CodeBlockLowlight.configure({
-          lowlight
-        }).extend({
-          addNodeView() {
-            return SvelteNodeViewRenderer(CodeBlock);
-          }
-        }),
-        ImagePlaceholder(ImagePlaceholderComp),
-        ImageExtended(ImageExtendedComp),
-        VideoPlaceholder(VideoPlaceHolderComp),
-        VideoExtended(VideoExtendedComp),
-        AudioPlaceholder(AudioPlaceHolderComp),
-        AudioExtended(AudioExtendedComp),
-        IFramePlaceholder(IFramePlaceHolderComp),
-        IFrameExtended(IFrameExtendedComp),
-        slashcommand(SlashCommandList)
+      variant,
+      placeholder,
+      onExternalPaste,
+      extensions: [
+        ...(config.allowsRichNodes ? richNodeExtensions : []),
+        ...(config.allowsBlockTools ? [slashcommand(SlashCommandList)] : [])
       ],
-      {
+      options: {
         onUpdate,
-        // onTransaction(props) {
-        //   console.log('on transaction', props);
-        //   editor = undefined;
-        //   editor = props.editor;
-        // },
         editable,
         autofocus
-      },
-      placeholder
-    );
+      }
+    });
   });
 
   onDestroy(() => {
@@ -94,8 +101,12 @@
 
 {#if editor && !editor.isDestroyed}
   <Link {editor} />
-  <TableCol {editor} />
-  <TableRow {editor} />
+  <!-- The row/column menus address table nodes, which only the rich variants
+       admit into the schema. -->
+  {#if config.allowsRichNodes}
+    <TableCol {editor} />
+    <TableRow {editor} />
+  {/if}
 {/if}
 <div
   bind:this={element}

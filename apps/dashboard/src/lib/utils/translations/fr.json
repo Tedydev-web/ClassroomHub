@@ -2885,6 +2885,13 @@
     "write": "Écrire",
     "preview": "Aperçu"
   },
+  "rich_editor": {
+    "expand": "Agrandir",
+    "collapse": "Réduire",
+    "paste_kept_formatting": "Mise en forme conservée",
+    "paste_as_plain_text": "Coller en texte brut",
+    "dismiss": "Ignorer"
+  },
   "navigation": {
     "goto": "Aller à",
     "courses": "Cours",

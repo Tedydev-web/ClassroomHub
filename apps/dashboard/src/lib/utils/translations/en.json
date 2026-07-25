@@ -1668,6 +1668,13 @@
     "write": "Write",
     "preview": "Preview"
   },
+  "rich_editor": {
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "paste_kept_formatting": "Formatting kept",
+    "paste_as_plain_text": "Paste as plain text",
+    "dismiss": "Dismiss"
+  },
   "components": {
     "quiz": {
       "title": "Quizzes",

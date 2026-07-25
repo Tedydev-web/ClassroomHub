@@ -269,11 +269,21 @@ function diffOption(
  * Computes diff between current exercise state and incoming update data
  * Returns only the changes that need to be applied
  */
+/**
+ * `deletableQuestionIds` is every question id owned by the exercise being
+ * edited, including archived ones — a re-delete of an already archived
+ * question is legitimate and must still reach the archive path. It is wider
+ * than the diff base, which is the active graph only. Callers that omit it get
+ * the active ids, which is correct for any caller whose exercise has no
+ * archived questions.
+ */
 export function computeExerciseDiff(
   currentQuestions: CurrentQuestion[],
-  incomingQuestions: NonNullable<TExerciseUpdate['questions']>
+  incomingQuestions: NonNullable<TExerciseUpdate['questions']>,
+  deletableQuestionIds?: ReadonlySet<number>
 ) {
   const questionMap = new Map(currentQuestions.map((q) => [q.id, q]));
+  const deletableIds = deletableQuestionIds ?? new Set(currentQuestions.map((q) => q.id));
   const normalizedIncomingQuestions = incomingQuestions.map((incoming) =>
     normalizeTrueFalseQuestion(incoming, incoming.id ? questionMap.get(incoming.id) : undefined)
   );
@@ -284,8 +294,14 @@ export function computeExerciseDiff(
 
   // Process incoming questions
   for (const incoming of normalizedIncomingQuestions) {
-    if (incoming.deletedAt && incoming.id) {
+    // Only a question that belongs to this exercise may be deleted. The id
+    // arrives from the client, and the delete runs by id alone, so an unchecked
+    // id here would remove another exercise's — or another organization's —
+    // question.
+    if (incoming.deletedAt && incoming.id && deletableIds.has(incoming.id)) {
       deletedQuestionIds.push(incoming.id);
+    } else if (incoming.deletedAt) {
+      continue;
     } else if (incoming.id) {
       const current = questionMap.get(incoming.id);
       if (current) {
@@ -318,8 +334,12 @@ export function computeExerciseDiff(
     const processedIncomingOptionIds = new Set<number>();
 
     for (const incomingOpt of incomingOptions) {
+      // Same rule as questions: only an option that currently belongs to this
+      // question may be deleted, because the delete runs by id alone.
       if (incomingOpt.deletedAt && incomingOpt.id) {
-        optionDeletes.push(incomingOpt.id);
+        if (currentOptionMap.has(incomingOpt.id)) {
+          optionDeletes.push(incomingOpt.id);
+        }
 
         processedIncomingOptionIds.add(incomingOpt.id);
       } else if (incomingOpt.id) {

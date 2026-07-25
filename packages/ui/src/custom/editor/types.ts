@@ -3,6 +3,8 @@ import type { EditorState, Transaction } from '@tiptap/pm/state';
 
 import type { EditorView } from '@tiptap/pm/view';
 import type { Snippet } from 'svelte';
+import type { SmartPastePreview } from './extensions/smart-paste/smart-paste';
+import type { EditorVariant } from './variants';
 
 export interface EdraEditorProps {
   placeholder?: string | ((node: any) => string);
@@ -12,6 +14,8 @@ export interface EdraEditorProps {
   autofocus?: boolean;
   onUpdate?: (args: { editor: Editor; transaction: Transaction }) => void;
   class?: string;
+  variant?: EditorVariant;
+  onExternalPaste?: (preview: SmartPastePreview | null) => void;
 }
 
 export interface EditorProps {
@@ -41,7 +45,10 @@ export interface EdraToolbarProps {
   editor: Editor;
   class?: string;
   excludedCommands?: string[];
+  /** Replaces the whole command set. */
   children?: Snippet<[]>;
+  /** Rendered after the commands, pinned to the end of the bar. */
+  trailing?: Snippet<[]>;
 }
 
 export interface ShouldShowProps {

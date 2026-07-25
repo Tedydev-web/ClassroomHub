@@ -251,15 +251,39 @@ export function getOrderingItems(question: ExerciseQuestionModel): OrderingItem[
   }));
 }
 
-/** Expected ordering answer values; reorders by `settings.items` labels when present. */
+/**
+ * Expected ordering answer values; reorders by `settings.items` labels when present.
+ *
+ * Step labels are not unique — a procedure may legitimately read "Stir",
+ * "Bake", "Stir". A label-keyed lookup collapses those onto one option, so the
+ * answer key repeats a value, no permutation of the real options can match it,
+ * and a perfect answer scores zero. The same repeated value also fails the
+ * uniqueness rule on `correctOrder` when the legacy adapter builds a canonical
+ * definition, which takes the whole exercise down rather than one question.
+ *
+ * Each settings entry therefore claims the first option carrying that label
+ * which no earlier entry has claimed. Questions with unique labels resolve
+ * exactly as before, since the first match is also the only one.
+ */
 export function getExpectedOrderingValues(question: ExerciseQuestionModel): string[] {
   const items = getOrderingItems(question);
   const settingsItems = Array.isArray(question.settings?.items) ? (question.settings!.items as string[]) : [];
-  if (settingsItems.length > 0) {
-    const byLabel = new Map(items.map((i) => [normalizeText(i.label), i.answerValue]));
-    return settingsItems.map((l) => byLabel.get(normalizeText(l)) ?? String(l));
+  if (settingsItems.length === 0) {
+    return items.map((i) => i.answerValue);
   }
-  return items.map((i) => i.answerValue);
+
+  const claimed = new Array<boolean>(items.length).fill(false);
+
+  return settingsItems.map((label) => {
+    const wanted = normalizeText(label);
+    const index = items.findIndex((item, position) => !claimed[position] && normalizeText(item.label) === wanted);
+    if (index === -1) {
+      return String(label);
+    }
+
+    claimed[index] = true;
+    return items[index]!.answerValue;
+  });
 }
 
 function scoreOrdering(

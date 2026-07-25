@@ -12,6 +12,7 @@
 
   import { OrgSidebar } from '$features/ui/sidebar/org-sidebar';
   import { AddOrgModal } from '$features/org';
+  import { findDisabledOrgFeature } from '$features/ui/navigation/org-navigation';
 
   let { data, children } = $props();
 
@@ -26,6 +27,24 @@
     if (data.orgName === '*') {
       void redirect($currentOrg.siteName);
     }
+  });
+
+  /**
+   * A feature the operator switched off has no sidebar entry, but its route is
+   * still typed into the address bar or reached from a stale link. Send those
+   * back to the org home rather than rendering a page the org is not meant to
+   * see. Waits for init so the redirect is decided against loaded settings and
+   * not against the store's empty initial value.
+   */
+  const disabledFeature = $derived(
+    appInitApi.isInitializedAndReady && $currentOrg.siteName
+      ? findDisabledOrgFeature($currentOrg, page.url.pathname)
+      : null
+  );
+
+  $effect(() => {
+    if (!disabledFeature) return;
+    goto(`/org/${$currentOrg.siteName}`, { replaceState: true });
   });
 
   $effect(() => {
@@ -48,7 +67,9 @@
     <AppHeader />
 
     <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4">
-      {#if data.orgName === '*'}
+      {#if data.orgName === '*' || disabledFeature}
+        <!-- Also covers the switched-off case: the redirect above is in flight,
+             and mounting the page would fire its data loads on the way out. -->
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
           <Skeleton class="aspect-video rounded-xl" />
           <Skeleton class="aspect-video rounded-xl" />

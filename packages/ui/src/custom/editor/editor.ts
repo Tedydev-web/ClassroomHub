@@ -1,6 +1,5 @@
 import { Editor, type Extensions, type EditorOptions, type Content } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import { getHandlePaste } from './utils';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import Typography from '@tiptap/extension-typography';
@@ -14,18 +13,43 @@ import { Table, TableCell, TableRow, TableHeader } from './extensions/table';
 import { Placeholder } from '@tiptap/extensions';
 import { Markdown } from '@tiptap/markdown';
 import MathMatics from '@tiptap/extension-mathematics';
+import { SmartPaste, type SmartPasteOptions } from './extensions/smart-paste/smart-paste';
+import { SingleLine, SingleLineDocument } from './extensions/single-line/single-line';
+import { getEditorVariant, type EditorVariant } from './variants';
 
 import AutoJoiner from 'tiptap-extension-auto-joiner';
 import 'katex/dist/katex.min.css';
 import { InlineMathReplacer } from './extensions/InlineMathReplacer';
 
-export default (
-  element?: HTMLElement,
-  content?: Content,
-  extensions?: Extensions,
-  options?: Partial<EditorOptions>,
-  placeholder?: string | ((node: any) => string)
-) => {
+export interface InitEditorArgs {
+  element?: HTMLElement;
+  content?: Content;
+  /** Node-view backed extensions supplied by the Svelte layer. */
+  extensions?: Extensions;
+  options?: Partial<EditorOptions>;
+  placeholder?: string | ((node: any) => string);
+  variant?: EditorVariant;
+  /** Notified when an external paste kept its formatting. */
+  onExternalPaste?: SmartPasteOptions['onExternalPaste'];
+}
+
+function defaultPlaceholder({ node }: { node: { type: { name: string } } }): string {
+  if (node.type.name === 'heading') return "What's the title?";
+  if (node.type.name === 'paragraph') return 'Press / or write something ...';
+  return '';
+}
+
+export default ({
+  element,
+  content,
+  extensions,
+  options,
+  placeholder,
+  variant = 'full',
+  onExternalPaste
+}: InitEditorArgs) => {
+  const config = getEditorVariant(variant);
+
   const editor = new Editor({
     element,
     content,
@@ -43,25 +67,18 @@ export default (
             rel: 'noopener noreferrer nofollow'
           }
         },
-        codeBlock: false
+        codeBlock: false,
+        // A single-line field swaps in a document that admits one paragraph, so
+        // the stock one must not also register under the `doc` name.
+        ...(config.singleLine ? { document: false as const } : {})
       }),
+      ...(config.singleLine ? [SingleLineDocument, SingleLine] : []),
       Highlight.configure({
         multicolor: true
       }),
       Placeholder.configure({
         emptyEditorClass: 'is-empty',
-        // Use a placeholder:
-        // Use different placeholders depending on the node type:
-        placeholder:
-          placeholder ||
-          (({ node }) => {
-            if (node.type.name === 'heading') {
-              return "What's the title?";
-            } else if (node.type.name === 'paragraph') {
-              return 'Press / or write something ...';
-            }
-            return '';
-          })
+        placeholder: placeholder || defaultPlaceholder
       }),
       Color,
       Subscript,
@@ -72,10 +89,6 @@ export default (
       FontSize,
       TextAlign.configure({
         types: ['heading', 'paragraph']
-      }),
-      TaskList,
-      TaskItem.configure({
-        nested: true
       }),
       SearchAndReplace,
       InlineMathReplacer,
@@ -97,22 +110,19 @@ export default (
           }
         }
       }),
+      SmartPaste.configure({ onExternalPaste }),
       AutoJoiner,
-      Table,
-      TableHeader,
-      TableRow,
-      TableCell,
       Markdown,
+
+      // Structure that only makes sense with room to lay it out.
+      ...(config.allowsRichNodes
+        ? [TaskList, TaskItem.configure({ nested: true }), Table, TableHeader, TableRow, TableCell]
+        : []),
 
       ...(extensions ?? [])
     ],
     ...options
   });
 
-  editor.setOptions({
-    editorProps: {
-      handlePaste: getHandlePaste(editor)
-    }
-  });
   return editor;
 };

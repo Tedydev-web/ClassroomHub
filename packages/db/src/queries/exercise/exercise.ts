@@ -386,12 +386,20 @@ export async function deleteOptionsByQuestionIds(questionIds: number[], dbClient
 }
 
 /**
- * Deletes questions by IDs in a single query
+ * Deletes questions by IDs, restricted to one exercise.
+ *
+ * The ids reach this function from a client-supplied update payload, so the
+ * owning exercise is part of the predicate rather than a caller-side
+ * precondition. Without it, a well-formed request against one exercise can
+ * delete a question belonging to another organization.
  */
-export async function deleteQuestionsByIds(questionIds: number[], dbClient: DbOrTxClient = db) {
+export async function deleteQuestionsByIds(questionIds: number[], exerciseId: string, dbClient: DbOrTxClient = db) {
   if (questionIds.length === 0) return [];
   try {
-    return dbClient.delete(schema.question).where(inArray(schema.question.id, questionIds)).returning();
+    return dbClient
+      .delete(schema.question)
+      .where(and(inArray(schema.question.id, questionIds), eq(schema.question.exerciseId, exerciseId)))
+      .returning();
   } catch (error) {
     console.error('deleteQuestionsByIds error:', error);
     throw new Error(`Failed to delete questions by IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -399,12 +407,22 @@ export async function deleteQuestionsByIds(questionIds: number[], dbClient: DbOr
 }
 
 /**
- * Deletes options by IDs in a single query
+ * Deletes options by IDs, restricted to options whose question belongs to the
+ * given exercise. See `deleteQuestionsByIds` for why the scope is enforced in
+ * the predicate.
  */
-export async function deleteOptionsByIds(optionIds: number[], dbClient: DbOrTxClient = db) {
+export async function deleteOptionsByIds(optionIds: number[], exerciseId: string, dbClient: DbOrTxClient = db) {
   if (optionIds.length === 0) return [];
   try {
-    return dbClient.delete(schema.option).where(inArray(schema.option.id, optionIds)).returning();
+    const questionsInExercise = dbClient
+      .select({ id: schema.question.id })
+      .from(schema.question)
+      .where(eq(schema.question.exerciseId, exerciseId));
+
+    return dbClient
+      .delete(schema.option)
+      .where(and(inArray(schema.option.id, optionIds), inArray(schema.option.questionId, questionsInExercise)))
+      .returning();
   } catch (error) {
     console.error('deleteOptionsByIds error:', error);
     throw new Error(`Failed to delete options by IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
