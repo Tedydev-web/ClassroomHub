@@ -62,6 +62,31 @@ export type CreatedOrg = {
   member: { id: number | string; roleId: number };
 };
 
+// --- Per-org sidebar features ---
+
+/**
+ * The catalog ships with the data rather than being declared here, so this app
+ * stays a renderer and the key list has exactly one home (`@cio/utils`).
+ */
+export type OrgFeatureCatalogEntry = {
+  key: string;
+  label: string;
+  group: string;
+};
+
+export type OrgFeatureOrg = {
+  orgId: string;
+  name: string;
+  siteName: string | null;
+  /** Resolved by the API, so every catalog key has a definite value. */
+  features: Record<string, boolean>;
+};
+
+export type OrgFeatures = {
+  catalog: OrgFeatureCatalogEntry[];
+  orgs: OrgFeatureOrg[];
+};
+
 // --- AI gateway (operator control) ---
 
 export type GatewayHealth = {

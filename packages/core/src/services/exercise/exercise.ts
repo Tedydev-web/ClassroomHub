@@ -820,7 +820,11 @@ export async function updateExerciseService(
         }));
 
         // Compute diff between current DB state and incoming data
-        const diff = computeExerciseDiff(currentQuestionsWithOptions, sanitizedData.questions);
+        const diff = computeExerciseDiff(
+          currentQuestionsWithOptions,
+          sanitizedData.questions,
+          new Set(allCurrentQuestionIds)
+        );
 
         const exerciseHasSubmissions = await hasExerciseSubmissions(exerciseId, txClient);
         if (exerciseHasSubmissions || attemptedQuestionIds.size > 0) {
@@ -851,12 +855,12 @@ export async function updateExerciseService(
           }
 
           if (questionIdsToDelete.length > 0) {
-            await deleteQuestionsByIds(questionIdsToDelete, txClient);
+            await deleteQuestionsByIds(questionIdsToDelete, exerciseId, txClient);
           }
         }
 
         if (diff.options.deletedIds.length > 0) {
-          await deleteOptionsByIds(diff.options.deletedIds, txClient);
+          await deleteOptionsByIds(diff.options.deletedIds, exerciseId, txClient);
         }
 
         if (diff.questions.updates.length > 0) {
@@ -1107,7 +1111,7 @@ export async function replaceExerciseService(exerciseId: string, data: TExercise
         .filter((id): id is number => id !== undefined);
 
       if (currentQuestionIds.length > 0) {
-        await deleteQuestionsByIds(currentQuestionIds, txClient);
+        await deleteQuestionsByIds(currentQuestionIds, exerciseId, txClient);
       }
 
       const replacementQuestions = sanitizedData.questions ?? [];

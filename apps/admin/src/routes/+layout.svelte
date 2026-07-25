@@ -91,6 +91,7 @@
 
   const nav = [
     { href: '/users', label: 'Users' },
+    { href: '/orgs', label: 'Organizations' },
     { href: '/orgs/new', label: 'Create org' },
     { href: '/ai', label: 'AI Gateway' }
   ];

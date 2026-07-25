@@ -1,7 +1,13 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 import { checkSiteNameExists } from '@cio/db/queries/organization';
-import { createOrgWithAdmin } from '@cio/db/queries/admin';
+import { createOrgWithAdmin, listOrgFeatureRows, updateOrgFeatures } from '@cio/db/queries/admin';
+import {
+  ORG_FEATURE_GROUPS,
+  ORG_FEATURE_LABELS,
+  resolveOrgFeatures,
+  type OrgFeatureFlags
+} from '@cio/utils/constants/org-features';
 import { getProfileById } from '@cio/db/queries/auth';
 import { updateOrgAiTutorSettings, upsertCreditBalance } from '@cio/db/queries/agent';
 
@@ -48,4 +54,42 @@ export async function setOrgAiTutorEnabled(
   }
 
   return { orgId, enabled: updated.enabled };
+}
+
+/**
+ * Every org with its sidebar features resolved to explicit booleans, plus the
+ * catalog describing what those keys mean.
+ *
+ * The catalog travels with the data on purpose: the admin panel is a standalone
+ * app with no workspace dependencies, so shipping the vocabulary in the response
+ * keeps it a thin renderer instead of a second copy of the key list that could
+ * drift from this one.
+ */
+export async function listOrgFeatures() {
+  const rows = await listOrgFeatureRows();
+
+  const catalog = ORG_FEATURE_GROUPS.flatMap((group) =>
+    group.keys.map((key) => ({ key, label: ORG_FEATURE_LABELS[key], group: group.label }))
+  );
+
+  return {
+    catalog,
+    orgs: rows.map((row) => ({
+      orgId: row.orgId,
+      name: row.name,
+      siteName: row.siteName,
+      features: resolveOrgFeatures(row.features)
+    }))
+  };
+}
+
+/** Applies a partial feature patch and returns the org's resolved switches. */
+export async function setOrgFeatures(orgId: string, patch: OrgFeatureFlags) {
+  const updated = await updateOrgFeatures(orgId, patch);
+
+  if (!updated) {
+    throw new AppError(`Organization '${orgId}' not found`, ErrorCodes.NOT_FOUND, 404);
+  }
+
+  return { orgId, features: resolveOrgFeatures(updated) };
 }

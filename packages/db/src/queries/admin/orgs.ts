@@ -1,8 +1,9 @@
-import { inArray } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 
 import * as schema from '@db/schema';
 import { createOrganization, createOrganizationMember } from '@db/queries/organization/organization';
 import { db } from '@db/drizzle';
+import { mergeOrgFeatures, type OrgFeatureFlags } from '@cio/utils/constants/org-features';
 
 const ADMIN_ROLE_ID = 1;
 
@@ -58,5 +59,75 @@ export async function getOrgAiTutorEnabledMap(orgIds: string[]): Promise<Record<
   } catch (error) {
     console.error('getOrgAiTutorEnabledMap error:', error);
     throw new Error('Failed to fetch org AI tutor enabled flags');
+  }
+}
+
+export interface AdminOrgFeatureRow {
+  orgId: string;
+  name: string;
+  siteName: string | null;
+  features: OrgFeatureFlags;
+}
+
+/**
+ * Lists every org with the sidebar features it has switched off, for the
+ * operator panel. Only the three columns the panel renders are selected — the
+ * organization row carries large JSON blobs (landing page, AI tutor settings)
+ * that this screen never reads.
+ */
+export async function listOrgFeatureRows(): Promise<AdminOrgFeatureRow[]> {
+  try {
+    const rows = await db
+      .select({
+        id: schema.organization.id,
+        name: schema.organization.name,
+        siteName: schema.organization.siteName,
+        settings: schema.organization.settings
+      })
+      .from(schema.organization)
+      .orderBy(asc(schema.organization.name));
+
+    return rows.map((row) => ({
+      orgId: row.id,
+      name: row.name,
+      siteName: row.siteName,
+      features: (row.settings?.features ?? {}) as OrgFeatureFlags
+    }));
+  } catch (error) {
+    console.error('listOrgFeatureRows error:', error);
+    throw new Error('Failed to list organization features');
+  }
+}
+
+/**
+ * Applies a partial feature patch to an org.
+ *
+ * Reads and writes the whole `settings` object because the column is a single
+ * JSONB value: writing only `features` would drop the signup, notification and
+ * enrollment settings that live beside it.
+ */
+export async function updateOrgFeatures(orgId: string, patch: OrgFeatureFlags): Promise<OrgFeatureFlags | null> {
+  try {
+    const [existing] = await db
+      .select({ settings: schema.organization.settings })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, orgId))
+      .limit(1);
+
+    if (!existing) return null;
+
+    const currentSettings = existing.settings ?? {};
+    const nextFeatures = mergeOrgFeatures(currentSettings.features as OrgFeatureFlags | undefined, patch);
+
+    const [updated] = await db
+      .update(schema.organization)
+      .set({ settings: { ...currentSettings, features: nextFeatures } })
+      .where(eq(schema.organization.id, orgId))
+      .returning({ settings: schema.organization.settings });
+
+    return (updated?.settings?.features ?? {}) as OrgFeatureFlags;
+  } catch (error) {
+    console.error('updateOrgFeatures error:', error);
+    throw new Error('Failed to update organization features');
   }
 }

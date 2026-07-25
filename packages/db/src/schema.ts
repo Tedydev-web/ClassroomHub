@@ -2444,6 +2444,13 @@ export const organization = pgTable(
         enrollmentWelcome?: boolean;
         courseCompletion?: boolean;
       };
+      /**
+       * Sidebar capabilities an operator has switched off for this org. Only
+       * deviations are stored — an absent key means enabled. Keys are the
+       * `OrgFeatureKey` union in `@cio/utils/constants`; typed loosely here so
+       * the schema keeps depending on nothing.
+       */
+      features?: Record<string, boolean>;
     }>(),
     landingpage: jsonb().default({}).$type<{
       header?: {

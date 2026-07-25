@@ -8,7 +8,8 @@ import type {
   GatewayQuota,
   GatewayRun,
   GatewaySettings,
-  ListUsersResult
+  ListUsersResult,
+  OrgFeatures
 } from './types';
 
 /**
@@ -98,6 +99,20 @@ export class AdminApi {
     return this.call<{ orgId: string; enabled: boolean }>(`/orgs/${orgId}/ai-tutor`, {
       method: 'PATCH',
       body: JSON.stringify({ enabled })
+    });
+  }
+
+  orgFeatures(): Promise<OrgFeatures> {
+    return this.call<OrgFeatures>('/orgs/features');
+  }
+
+  setOrgFeatures(
+    orgId: string,
+    features: Record<string, boolean>
+  ): Promise<{ orgId: string; features: Record<string, boolean> }> {
+    return this.call<{ orgId: string; features: Record<string, boolean> }>(`/orgs/${orgId}/features`, {
+      method: 'PATCH',
+      body: JSON.stringify({ features })
     });
   }
 
