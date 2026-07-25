@@ -260,9 +260,46 @@ export async function deleteCourseMember(courseId: string, memberId: string): Pr
       return null;
     }
 
-    const [deleted] = await db.delete(schema.groupmember).where(eq(schema.groupmember.id, memberId)).returning();
+    // Removing a course member hard-deletes their `groupmember` row, but several
+    // tables reference it without ON DELETE handling, so a member with any
+    // activity would otherwise trip a foreign-key violation (HTTP 500).
+    //
+    // Follows the standard LMS policy: keep course history and anonymize the
+    // removed member (submissions, discussion, newsfeed, polls, attendance are
+    // detached via SET NULL) rather than destroying it. Quiz answers cannot be
+    // detached (`group_member_id` is NOT NULL), so they are removed — matching
+    // the exercise-assignment and completion-record FKs that already cascade.
+    const deleted = await db.transaction(async (tx) => {
+      await tx.update(schema.submission).set({ submittedBy: null }).where(eq(schema.submission.submittedBy, memberId));
+      await tx
+        .update(schema.groupAttendance)
+        .set({ studentId: null })
+        .where(eq(schema.groupAttendance.studentId, memberId));
+      await tx
+        .update(schema.lessonComment)
+        .set({ groupmemberId: null })
+        .where(eq(schema.lessonComment.groupmemberId, memberId));
+      await tx
+        .update(schema.courseNewsfeed)
+        .set({ authorId: null })
+        .where(eq(schema.courseNewsfeed.authorId, memberId));
+      await tx
+        .update(schema.courseNewsfeedComment)
+        .set({ authorId: null })
+        .where(eq(schema.courseNewsfeedComment.authorId, memberId));
+      await tx.update(schema.appsPoll).set({ authorId: null }).where(eq(schema.appsPoll.authorId, memberId));
+      await tx
+        .update(schema.appsPollSubmission)
+        .set({ selectedById: null })
+        .where(eq(schema.appsPollSubmission.selectedById, memberId));
 
-    return deleted || null;
+      await tx.delete(schema.questionAnswer).where(eq(schema.questionAnswer.groupMemberId, memberId));
+
+      const [row] = await tx.delete(schema.groupmember).where(eq(schema.groupmember.id, memberId)).returning();
+      return row || null;
+    });
+
+    return deleted;
   } catch (error) {
     console.error('deleteCourseMember error:', error);
     throw new Error(`Failed to delete course member: ${error instanceof Error ? error.message : 'Unknown error'}`);
