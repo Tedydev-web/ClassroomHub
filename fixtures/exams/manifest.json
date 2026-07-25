@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "documents": [
+    {
+      "id": "2026-en-on-luyen-03-scan-converted",
+      "path": "2026-en-on-luyen-03-scan-converted.docx",
+      "committed": true,
+      "bytes": 82100,
+      "sha256": "0c8d0089c364e62d39a53d489918ee4a33c131391ebb0fe51850289e8e27ff77",
+      "format": "docx",
+      "subject": "english",
+      "note": "MOET 2025 format English paper, 40 questions. Converted from a scan, so it is a harder input than a natively authored file and exercises most failure modes at once.",
+      "traits": [
+        "scan-converted",
+        "damaged-vietnamese-diacritics",
+        "no-answer-key",
+        "auto-numbered-options-without-letters",
+        "lower-letter-numbering-starting-at-b",
+        "multiple-options-in-one-paragraph-without-separator",
+        "inverted-reading-order-across-question-boundary",
+        "emphasis-is-styling-not-marking",
+        "passage-shared-by-several-questions",
+        "passage-insertion-markers",
+        "inline-images",
+        "no-tables",
+        "no-office-math"
+      ],
+      "reference": "references/2026-en-on-luyen-03-scan-converted.reference.json"
+    },
+    {
+      "id": "2026-en-on-luyen-03-scan",
+      "path": "large/2026-en-on-luyen-03-scan.pdf",
+      "committed": false,
+      "bytes": 17550597,
+      "sha256": "90ee6917eb4f1f15ae62ef9518b6d9360a24f168d35a6d97c5f06a810816b485",
+      "format": "pdf",
+      "subject": "english",
+      "note": "The same exam as its DOCX twin, as five scanned A4 pages at 300 DPI. Zero extractable characters, so it exercises the image branch and nothing else.",
+      "traits": ["pure-scan", "no-text-layer", "five-pages", "same-exam-as-docx-twin"],
+      "reference": "references/2026-en-on-luyen-03-scan-converted.reference.json"
+    }
+  ]
+}

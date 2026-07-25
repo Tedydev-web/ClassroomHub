@@ -1,0 +1,6 @@
+{
+  "document": "2026-en-on-luyen-03-scan-converted.docx",
+  "note": "AWAITING HAND-LABELLING. The source is a 40-question MOET 2025 English paper: questions are marked 'Question N.', options are a mix of inline 'A. B. C. D.' and Word auto-numbered list items whose letters exist only in numbering.xml, several questions share reading passages, and the document states no answer key anywhere. Label every question by reading the document, then set verified to true. Do not pre-fill this file from extractor output: scoring a reader against its own output measures agreement, not accuracy.",
+  "verified": false,
+  "questions": []
+}

@@ -110,3 +110,9 @@ apps/docs/.source/
 
 # Keep the host-authoritative tenant-routing coverage even when a global ignore excludes test files.
 !apps/dashboard/src/lib/utils/functions/tenant-host-redirect.test.ts
+
+# Exam-import corpus: small source documents are committed so CI can score the
+# reader; large scans are not, because they never change and would bloat history
+# permanently. `fixtures/exams/manifest.json` records their checksums, and the
+# harness reports a missing document instead of silently scoring a smaller corpus.
+fixtures/exams/large/
