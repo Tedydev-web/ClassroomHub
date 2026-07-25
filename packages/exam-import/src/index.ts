@@ -11,10 +11,15 @@ export {
 
 export {
   assertReferenceIsScoreable,
+  LABEL_STATES,
+  pendingLayers,
   REFERENCE_QUESTION_KINDS,
+  referenceCoverageSchema,
   referenceExamSchema,
   UnscoreableReferenceError,
   type ExtractedExam,
+  type LabelState,
+  type ReferenceCoverage,
   type ReferenceExam,
   type ReferenceQuestion,
   type ReferenceQuestionKind

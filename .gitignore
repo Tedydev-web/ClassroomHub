@@ -90,6 +90,8 @@ apps/db-agent
 !apps/dashboard/src/lib/features/course/utils/exercise-autosave-utils.test.ts
 !packages/question-types/tests/
 !packages/question-types/tests/*.test.ts
+!packages/exam-import/tests/
+!packages/exam-import/tests/*.test.ts
 !packages/utils/scripts/exercise-question-type-validation.test.ts
 
 # Keep the gateway allowlist picker-model coverage even when a global ignore excludes test files.

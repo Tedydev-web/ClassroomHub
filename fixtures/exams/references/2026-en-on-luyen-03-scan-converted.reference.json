@@ -1,6 +1,372 @@
 {
   "document": "2026-en-on-luyen-03-scan-converted.docx",
-  "note": "AWAITING HAND-LABELLING. The source is a 40-question MOET 2025 English paper: questions are marked 'Question N.', options are a mix of inline 'A. B. C. D.' and Word auto-numbered list items whose letters exist only in numbering.xml, several questions share reading passages, and the document states no answer key anywhere. Label every question by reading the document, then set verified to true. Do not pre-fill this file from extractor output: scoring a reader against its own output measures agreement, not accuracy.",
-  "verified": false,
-  "questions": []
+  "note": "MOET 2025 English paper, 40 questions across six instruction blocks. Two paragraphs carry several question headers side by side because the original multi-column layout was flattened column-major during conversion: paragraph 89 holds Q11-Q15 and paragraph 147 holds Q24-Q27, with their B, C and D options split across the following paragraphs. That is the hardest case in this document and the reason option counts are worth checking.",
+  "coverage": {
+    "structure": "verified",
+    "answerKeys": "verified",
+    "optionText": "unlabelled"
+  },
+  "provenance": "Structure derived by regex over the raw word/document.xml (question headers, instruction lines) plus numbering.xml, independently of any reader under test and before one existed. Kind and option count are proposals from the paper's stated format ('mark the letter A, B, C or D'), not measurements. Answer keys are proposed as absent: the body ends at 'THE END' with no key table, no key string and no marked options. Verified against the source document by the repository owner on 2026-07-26, who confirmed all six load-bearing facts: forty questions numbered 1 to 40; passage groups Q1-10, Q11-16, Q17-21, Q22-27 and Q28-35; Q36-40 each carrying their own sentence set and therefore ungrouped; exactly four options A to D on every question; every question plain multiple choice; and no answer key stated anywhere in the document. The structure and answerKeys layers are verified on that basis. The optionText layer stays unlabelled by design: this document is OCR output with damaged Vietnamese diacritics, so a verbatim reference would encode the damage and exact-match fidelity would score a reader on reproducing corruption. Introduce that layer with the first cleanly authored corpus document instead.",
+  "questions": [
+    {
+      "number": "1",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "2",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "3",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "4",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "5",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "6",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "7",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "8",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "9",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "10",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "11",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "12",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "13",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "14",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "15",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "16",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "17",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "18",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "19",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "20",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "21",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "22",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "23",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "24",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "25",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "26",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "27",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "28",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "29",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "30",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "31",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "32",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "33",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "34",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "35",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "36",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "37",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "38",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "39",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    },
+    {
+      "number": "40",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null
+    }
+  ]
 }

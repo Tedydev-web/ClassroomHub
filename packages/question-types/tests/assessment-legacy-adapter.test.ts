@@ -197,3 +197,32 @@ describe('legacyQuestionToAssessmentItem — edge behavior', () => {
     }
   });
 });
+
+describe('ordering questions whose steps read the same', () => {
+  // The adapter feeds `correctOrder` from the expected ordering values, and the
+  // definition rejects repeated entries there. A label-keyed lookup produced
+  // exactly such a repeat, so this question could not be materialised at all —
+  // and because materialisation happens for the whole exercise, one such
+  // question made every question in it unsubmittable.
+  const overrides: Partial<ExerciseQuestionModel> = {
+    questionType: QUESTION_TYPE_KEY.ORDERING,
+    options: [
+      { id: 31, label: 'Mix' },
+      { id: 32, label: 'Bake' },
+      { id: 33, label: 'Mix' }
+    ],
+    settings: { items: ['Mix', 'Bake', 'Mix'] }
+  };
+
+  it('materialises into a definition that parses', () => {
+    expect(parseAssessmentItemDefinition(adapt(overrides)).success).toBe(true);
+  });
+
+  it('gives every repeated step its own entry in the answer key', () => {
+    const interaction = singleInteraction(adapt(overrides));
+    if (interaction.kind !== 'ordering') throw new Error('expected an ordering interaction');
+
+    expect(interaction.config.correctOrder).toEqual(['31', '32', '33']);
+    expect(new Set(interaction.config.correctOrder).size).toBe(3);
+  });
+});
