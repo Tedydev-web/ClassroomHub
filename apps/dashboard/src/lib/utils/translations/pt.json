@@ -2885,6 +2885,13 @@
     "write": "Escreva",
     "preview": "Visualização"
   },
+  "rich_editor": {
+    "expand": "Expandir",
+    "collapse": "Recolher",
+    "paste_kept_formatting": "Formatação mantida",
+    "paste_as_plain_text": "Colar como texto simples",
+    "dismiss": "Dispensar"
+  },
   "navigation": {
     "goto": "Vá para",
     "courses": "Cursos",

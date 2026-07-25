@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
-  import { TextEditor } from '$features/ui';
+  import { RichTextField, TextEditor } from '$features/ui';
   import { exerciseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -888,7 +888,9 @@
 
 {#snippet choiceInteractionEditor(block: AssessmentInteractionBlock, blockIndex: number)}
   {#if block.interaction.kind === 'choice'}
-    <InputField
+    <!-- `prompt.html` is HTML by contract and is delivered through `{@html}`,
+         so it is authored with the editor rather than a plain input. -->
+    <RichTextField
       bind:value={block.interaction.prompt.html}
       name={getBlockDomId(block.id, 'prompt')}
       label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
@@ -979,9 +981,10 @@
             onCheckedChange={(checked) =>
               updateComposer(setChoiceCorrectOption(composer, block.id, option.id, checked === true))}
           />
-          <InputField
+          <RichTextField
             bind:value={option.html}
             name={getBlockDomId(option.id, 'label')}
+            className="min-w-0 flex-1"
             label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.option', {
               index: optionIndex + 1
             })}
@@ -1105,7 +1108,7 @@
   <section class="ui:border-border ui:bg-background overflow-hidden rounded-md border">
     <div class="ui:border-border ui:bg-background space-y-4 border-b p-4">
       <div class="grid items-end gap-4 xl:grid-cols-[minmax(18rem,1fr)_minmax(15rem,20rem)_auto]">
-        <InputField
+        <RichTextField
           bind:value={title}
           name={`${getComposerDomId()}-title`}
           label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.title')}
@@ -1484,7 +1487,7 @@
   </section>
 {:else}
   <section class="space-y-4 rounded-md border p-4">
-    <InputField
+    <RichTextField
       bind:value={title}
       name={`${getComposerDomId()}-title`}
       label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.title')}

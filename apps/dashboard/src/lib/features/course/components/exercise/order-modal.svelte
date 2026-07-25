@@ -7,6 +7,7 @@
 
   import { flip } from 'svelte/animate';
   import * as Dialog from '@cio/ui/base/dialog';
+  import { richTextToPlainText } from '@cio/ui/tools';
 
   import { questionnaireOrder, questionnaire } from './store';
   import { filterOutDeleted } from './functions';
@@ -26,7 +27,9 @@
     untrack(() => {
       items = filterOutDeleted(questions).map((q) => ({
         id: q.id,
-        name: q.title,
+        // The reorder list is a plain row, so a formatted title is flattened
+        // rather than shown as markup.
+        name: richTextToPlainText(q.title),
         type: q.questionType.id
       }));
     });

@@ -38,6 +38,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
+  import { richTextToPlainText } from '@cio/ui/tools';
   import DeleteConfirmationModal from './delete-confirmation.svelte';
   import { QuestionContainer } from '$features/course/components';
   import { uploadImage } from '$lib/utils/services/upload';
@@ -589,7 +590,7 @@
     <span class="ui:text-muted-foreground w-6 text-sm font-medium tabular-nums">{index + 1}</span>
     <div class="min-w-0 flex-1">
       <p class="truncate text-sm font-semibold">
-        {question.title || getExerciseEditorQuestionTypeLabel(question?.questionType)}
+        {richTextToPlainText(question.title) || getExerciseEditorQuestionTypeLabel(question?.questionType)}
       </p>
       <p class="ui:text-muted-foreground text-xs">{getExerciseEditorQuestionTypeLabel(question?.questionType)}</p>
     </div>
@@ -600,7 +601,7 @@
   <div class="border-border flex items-center gap-3 rounded-md border bg-white px-4 py-3 dark:bg-black">
     <span class="ui:text-muted-foreground w-6 text-sm font-medium tabular-nums">{index + 1}</span>
     <div class="min-w-0 flex-1">
-      <p class="truncate text-sm font-semibold">{question.title}</p>
+      <p class="truncate text-sm font-semibold">{richTextToPlainText(question.title)}</p>
       <p class="ui:text-muted-foreground text-xs">
         {$t(
           question.gradingMode === 'auto'

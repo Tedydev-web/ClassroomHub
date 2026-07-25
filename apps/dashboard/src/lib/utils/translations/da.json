@@ -2885,6 +2885,13 @@
     "write": "Skriv",
     "preview": "Forhåndsvisning"
   },
+  "rich_editor": {
+    "expand": "Udvid",
+    "collapse": "Skjul",
+    "paste_kept_formatting": "Formatering bevaret",
+    "paste_as_plain_text": "Indsæt som almindelig tekst",
+    "dismiss": "Afvis"
+  },
   "navigation": {
     "goto": "Gå til",
     "courses": "Kurser",

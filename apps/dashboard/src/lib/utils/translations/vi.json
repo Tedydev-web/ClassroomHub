@@ -2885,6 +2885,13 @@
     "write": "Viết",
     "preview": "Xem trước"
   },
+  "rich_editor": {
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "paste_kept_formatting": "Đã giữ định dạng",
+    "paste_as_plain_text": "Dán dạng văn bản thuần",
+    "dismiss": "Bỏ qua"
+  },
   "navigation": {
     "goto": "đi đến",
     "courses": "Khóa học",

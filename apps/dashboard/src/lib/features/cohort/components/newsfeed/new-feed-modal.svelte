@@ -87,8 +87,11 @@
     </Dialog.Header>
     <section class="max-w-lg">
       {#key edit ? editFeed?.id : 'new'}
+        <!-- Expanding portals the editor to the body, which puts it outside the
+             dialog's focus trap and trips its interact-outside close. -->
         <TextEditor
           content={newPost}
+          expandable={false}
           onChange={(text) => {
             newPost = text;
           }}
