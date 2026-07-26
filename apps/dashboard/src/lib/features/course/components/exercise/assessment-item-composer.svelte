@@ -12,6 +12,7 @@
   import { InputField } from '@cio/ui/custom/input-field';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { Label } from '@cio/ui/base/label';
+  import * as RadioGroup from '@cio/ui/base/radio-group';
   import * as Select from '@cio/ui/base/select';
   import type { TiptapEditor } from '@cio/ui/custom/editor';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
@@ -26,6 +27,7 @@
   import Undo2Icon from '@lucide/svelte/icons/undo-2';
   import {
     MAX_ASSESSMENT_INTERACTIONS,
+    MAX_INTERACTION_OPTIONS,
     deriveItemCapabilities,
     groupAssessmentBlocksByPassage,
     getItemMaxScore,
@@ -43,6 +45,8 @@
     addChoiceInteractionBlock,
     addContentBlock,
     addTextInteractionBlock,
+    addTrueFalseGroupInteractionBlock,
+    addTrueFalseGroupStatement,
     createAssessmentComposerState,
     getAssessmentComposerSnapshot,
     initializeAssessmentPassageLayout,
@@ -50,11 +54,13 @@
     moveAssessmentPassageGroup,
     reconcileAssessmentComposerSave,
     removeAssessmentBlocks,
+    removeTrueFalseGroupStatement,
     reorderAssessmentBlock,
     restoreAssessmentBlocks,
     setAssessmentItemPresentationLayout,
     setChoiceCorrectOption,
     setChoiceInteractionCardinality,
+    setTrueFalseGroupScoringMode,
     type AssessmentComposerState
   } from '$features/course/utils/assessment-composer-state';
   import {
@@ -345,6 +351,20 @@
       }
     }
 
+    if (block.kind === 'interaction' && block.interaction.kind === 'true_false_group') {
+      const statementsPathIndex = issue.path.indexOf('statements');
+      const statementIndex = statementsPathIndex >= 0 ? issue.path[statementsPathIndex + 1] : null;
+      if (typeof statementIndex === 'number') {
+        const statement = block.interaction.config.statements[statementIndex];
+        if (statement) return getBlockDomId(statement.id, 'label');
+      }
+
+      const tiersPathIndex = issue.path.indexOf('tiers');
+      const tierIndex = tiersPathIndex >= 0 ? issue.path[tiersPathIndex + 1] : null;
+      if (typeof tierIndex === 'number') return getBlockDomId(block.id, `tier-${tierIndex}`);
+      if (tiersPathIndex >= 0) return getBlockDomId(block.id, 'tier-0');
+    }
+
     return getBlockDomId(block.id, 'block');
   }
 
@@ -602,6 +622,14 @@
     updateComposer(addTextInteractionBlock(composer, createId, activePassageGroup?.passage?.id));
   }
 
+  function addTrueFalseGroupQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addTrueFalseGroupInteractionBlock(composer, createId, activePassageGroup?.passage?.id));
+  }
+
   function selectPassage(groupId: string) {
     const passageGroup = passageGroupsWithContent.find((group) => group.id === groupId);
     if (!passageGroup) return;
@@ -652,6 +680,9 @@
     if (block.interaction.kind === 'text') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text');
     }
+    if (block.interaction.kind === 'true_false_group') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group');
+    }
 
     return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.question');
   }
@@ -665,6 +696,7 @@
   function addChoiceOption(blockId: string) {
     updateBlock(blockId, (block) => {
       if (block.kind !== 'interaction' || block.interaction.kind !== 'choice') return block;
+      if (block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS) return block;
 
       return {
         ...block,
@@ -697,6 +729,12 @@
         }
       };
     });
+  }
+
+  function updateTrueFalseGroupScoringMode(blockId: string, value: string) {
+    if (value !== 'tiered' && value !== 'proportional' && value !== 'all_or_nothing') return;
+
+    updateComposer(setTrueFalseGroupScoringMode(composer, blockId, value));
   }
 
   function removeBlock(blockId: string) {
@@ -757,9 +795,14 @@
         snackbar.error();
         return;
       }
+      if (!result.data.authorDefinition) {
+        console.error(`Assessment item "${questionId}" was loaded without author access`);
+        snackbar.error();
+        return;
+      }
 
       title = result.data.title;
-      composer = { definition: result.data.definition as AssessmentItemDefinition, selectedBlockId: null };
+      composer = { definition: result.data.authorDefinition, selectedBlockId: null };
       revision = result.data.revision;
       persistedSnapshot = getDraftSnapshot();
     } catch (error) {
@@ -1017,6 +1060,7 @@
       type="button"
       variant="secondary"
       size="sm"
+      disabled={block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS}
       aria-describedby={optionsError ? getBlockDomId(block.id, 'options-error') : undefined}
       onclick={() => addChoiceOption(block.id)}
     >
@@ -1099,9 +1143,173 @@
   {/if}
 {/snippet}
 
+{#snippet trueFalseGroupInteractionEditor(block: AssessmentInteractionBlock, blockIndex: number)}
+  {#if block.interaction.kind === 'true_false_group'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+
+    <Field.Set>
+      <Field.Legend>
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.response_settings')}
+      </Field.Legend>
+      <Field.Group>
+        <InputField
+          bind:value={block.interaction.maxScore}
+          name={getBlockDomId(block.id, 'points')}
+          label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+          type="number"
+          min="0"
+          step="0.01"
+          errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
+          oninput={clearValidationState}
+        />
+        <Field.Field>
+          <Field.Label for={getBlockDomId(block.id, 'scoring-mode')}>
+            {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_mode')}
+          </Field.Label>
+          <Select.Root
+            type="single"
+            value={block.interaction.config.scoring.mode}
+            onValueChange={(value) => updateTrueFalseGroupScoringMode(block.id, value)}
+          >
+            <Select.Trigger id={getBlockDomId(block.id, 'scoring-mode')} class="w-full">
+              {#if block.interaction.config.scoring.mode === 'tiered'}
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_tiered')}
+              {:else if block.interaction.config.scoring.mode === 'proportional'}
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_proportional')}
+              {:else}
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_all_or_nothing')}
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="tiered">
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_tiered')}
+              </Select.Item>
+              <Select.Item value="proportional">
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_proportional')}
+              </Select.Item>
+              <Select.Item value="all_or_nothing">
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_all_or_nothing')}
+              </Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Field.Field>
+      </Field.Group>
+    </Field.Set>
+
+    <Field.Set>
+      <Field.Legend>
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
+      </Field.Legend>
+      <Field.Group>
+        {#each block.interaction.config.statements as statement, statementIndex (statement.id)}
+          {@const correctValueLabelId = getBlockDomId(statement.id, 'correct-label')}
+          <Field.Field>
+            <div class="flex items-start gap-2">
+              <RichTextField
+                bind:value={statement.html}
+                name={getBlockDomId(statement.id, 'label')}
+                className="min-w-0 flex-1"
+                label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.statement', {
+                  index: statementIndex + 1
+                })}
+                errorMessage={getValidationError(
+                  ['blocks', blockIndex, 'interaction', 'config', 'statements', statementIndex, 'html'],
+                  true
+                )}
+                oninput={clearValidationState}
+              />
+              <IconButton
+                variant="secondary"
+                disabled={block.interaction.config.statements.length <= 2}
+                onclick={() => updateComposer(removeTrueFalseGroupStatement(composer, block.id, statement.id))}
+                tooltip={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.remove')}
+                aria-label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.remove')}
+              >
+                <TrashIcon class="h-4 w-4" />
+              </IconButton>
+            </div>
+            <div class="space-y-2">
+              <p id={correctValueLabelId} class="text-sm font-medium">
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.correct_value')}
+              </p>
+              <RadioGroup.Root
+                value={String(statement.correctValue)}
+                aria-labelledby={correctValueLabelId}
+                onValueChange={(value) => {
+                  statement.correctValue = value === 'true';
+                  clearValidationState();
+                }}
+              >
+                <div class="flex flex-wrap gap-4">
+                  <div class="flex items-center gap-2">
+                    <RadioGroup.Item id={getBlockDomId(statement.id, 'true')} value="true" />
+                    <Label for={getBlockDomId(statement.id, 'true')} class="cursor-pointer font-normal">
+                      {$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+                    </Label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <RadioGroup.Item id={getBlockDomId(statement.id, 'false')} value="false" />
+                    <Label for={getBlockDomId(statement.id, 'false')} class="cursor-pointer font-normal">
+                      {$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+                    </Label>
+                  </div>
+                </div>
+              </RadioGroup.Root>
+            </div>
+          </Field.Field>
+        {/each}
+      </Field.Group>
+      <Button
+        id={getBlockDomId(block.id, 'add-statement')}
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={block.interaction.config.statements.length >= MAX_INTERACTION_OPTIONS}
+        onclick={() => updateComposer(addTrueFalseGroupStatement(composer, block.id, createId))}
+      >
+        <PlusIcon class="h-4 w-4" />
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_statement')}
+      </Button>
+    </Field.Set>
+
+    {#if block.interaction.config.scoring.mode === 'tiered'}
+      <Field.Set>
+        <Field.Legend>
+          {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_tiered')}
+        </Field.Legend>
+        <Field.Group class="grid gap-4 sm:grid-cols-2">
+          {#each block.interaction.config.scoring.tiers as tier, correctCount}
+            <InputField
+              bind:value={block.interaction.config.scoring.tiers[correctCount]}
+              name={getBlockDomId(block.id, `tier-${correctCount}`)}
+              label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.tier_for_correct', {
+                correct: correctCount,
+                total: block.interaction.config.statements.length
+              })}
+              type="number"
+              min="0"
+              max="1"
+              step="0.01"
+              errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'scoring', 'tiers'])}
+              oninput={clearValidationState}
+            />
+          {/each}
+        </Field.Group>
+      </Field.Set>
+    {/if}
+  {/if}
+{/snippet}
+
 {#snippet interactionEditor(block: AssessmentInteractionBlock, blockIndex: number)}
   {@render choiceInteractionEditor(block, blockIndex)}
   {@render textInteractionEditor(block, blockIndex)}
+  {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
 {#if usesPassageLayout}
@@ -1364,6 +1572,17 @@
                 <PlusIcon class="h-4 w-4" />
                 {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
               </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="min-h-11"
+                disabled={interactionLimitReached}
+                onclick={addTrueFalseGroupQuestion}
+              >
+                <PlusIcon class="h-4 w-4" />
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
+              </Button>
             </div>
           </header>
 
@@ -1450,13 +1669,35 @@
                     </p>
                   </div>
                   <div class="flex flex-wrap justify-center gap-2">
-                    <Button type="button" variant="secondary" class="min-h-11" onclick={addChoiceQuestion}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
+                      onclick={addChoiceQuestion}
+                    >
                       <PlusIcon class="h-4 w-4" />
                       {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.choice')}
                     </Button>
-                    <Button type="button" variant="secondary" class="min-h-11" onclick={addTextQuestion}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
+                      onclick={addTextQuestion}
+                    >
                       <PlusIcon class="h-4 w-4" />
                       {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
+                      onclick={addTrueFalseGroupQuestion}
+                    >
+                      <PlusIcon class="h-4 w-4" />
+                      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
                     </Button>
                   </div>
                 </div>
@@ -1481,7 +1722,13 @@
             {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.return_to_editor')}
           </Button>
         </div>
-        <AssessmentItemRenderer {title} definition={toAssessmentDeliveryDefinition(composer.definition)} disabled />
+        <AssessmentItemRenderer
+          {title}
+          definition={toAssessmentDeliveryDefinition(composer.definition)}
+          disabled
+          trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+          falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+        />
       </section>
     {/if}
   </section>
@@ -1515,7 +1762,8 @@
           type="button"
           variant="secondary"
           size="sm"
-          onclick={() => updateComposer(addChoiceInteractionBlock(composer, createId))}
+          disabled={interactionLimitReached}
+          onclick={addChoiceQuestion}
         >
           <PlusIcon class="h-4 w-4" />
           {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_choice')}
@@ -1524,10 +1772,21 @@
           type="button"
           variant="secondary"
           size="sm"
-          onclick={() => updateComposer(addTextInteractionBlock(composer, createId))}
+          disabled={interactionLimitReached}
+          onclick={addTextQuestion}
         >
           <PlusIcon class="h-4 w-4" />
           {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_text')}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={interactionLimitReached}
+          onclick={addTrueFalseGroupQuestion}
+        >
+          <PlusIcon class="h-4 w-4" />
+          {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
         </Button>
       </div>
 
@@ -1552,7 +1811,12 @@
           <p class="ui:text-muted-foreground text-sm">
             {$t('course.navItem.lessons.exercises.all_exercises.preview')}
           </p>
-          <AssessmentItemRenderer definition={toAssessmentDeliveryDefinition(composer.definition)} disabled />
+          <AssessmentItemRenderer
+            definition={toAssessmentDeliveryDefinition(composer.definition)}
+            disabled
+            trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+            falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+          />
         </div>
       {/if}
     {/if}

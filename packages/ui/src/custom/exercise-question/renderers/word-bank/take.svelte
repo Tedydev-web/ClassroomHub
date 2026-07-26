@@ -34,10 +34,17 @@
     return Array.isArray(raw) ? (raw as string[]).map((s) => String(s ?? '')) : [];
   });
 
+  const bankTokens = $derived.by(() => {
+    const raw = question.settings?.bankTokens;
+    return Array.isArray(raw) ? raw.filter((token): token is string => typeof token === 'string') : [];
+  });
+
   const blankCount = $derived(countWordBankBlanks(template));
   const segments = $derived(parseWordBankTemplate(template));
 
-  const baseChips = $derived(buildWordBankChips(correctAnswers, distractors));
+  const baseChips = $derived(
+    bankTokens.length > 0 ? buildWordBankChips(bankTokens, []) : buildWordBankChips(correctAnswers, distractors)
+  );
   let shuffledChips = $state<WordBankChip[]>([]);
   let chipsSourceKey = $state('');
 
@@ -60,10 +67,10 @@
   }
 
   function syncChipsOrder() {
-    const key = JSON.stringify({ template, ca: correctAnswers, d: distractors });
+    const key = JSON.stringify({ template, bankTokens, correctAnswers, distractors });
     if (key === chipsSourceKey) return;
     chipsSourceKey = key;
-    shuffledChips = shuffleWordBankChips(baseChips);
+    shuffledChips = bankTokens.length > 0 ? baseChips : shuffleWordBankChips(baseChips);
   }
 
   function syncPlacementFromAnswer() {

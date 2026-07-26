@@ -39,6 +39,8 @@
     showContainer?: boolean;
     validationRequested?: boolean;
     validationMessage?: string;
+    trueLabel: string;
+    falseLabel: string;
     focusRequestKey?: number;
     passageWorkspaceLabels?: PassageWorkspaceLabels | null;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
@@ -68,6 +70,8 @@
     showContainer = false,
     validationRequested = false,
     validationMessage = '',
+    trueLabel,
+    falseLabel,
     focusRequestKey,
     passageWorkspaceLabels = null,
     onResponseChange = () => {}
@@ -330,6 +334,28 @@
     updateResponse(interactionId, { kind: 'choice', selectedOptionIds: nextSelectedOptionIds });
   }
 
+  function updateTrueFalseGroupResponse(
+    interactionId: string,
+    statementId: string,
+    value: boolean,
+    statementIds: string[]
+  ) {
+    const currentResponse = responsesByInteractionId.get(interactionId);
+    const answersByStatementId = new Map(
+      currentResponse?.kind === 'true_false_group'
+        ? currentResponse.answers.map((answer) => [answer.statementId, answer.value])
+        : []
+    );
+    answersByStatementId.set(statementId, value);
+    const answers = statementIds.flatMap((currentStatementId) => {
+      const currentValue = answersByStatementId.get(currentStatementId);
+
+      return currentValue === undefined ? [] : [{ statementId: currentStatementId, value: currentValue }];
+    });
+
+    updateResponse(interactionId, { kind: 'true_false_group', answers });
+  }
+
   function updateRichTextResponse(interactionId: string, answer: AnswerData | null) {
     if (answer === null) {
       updateResponse(interactionId, { kind: 'text', text: '' });
@@ -508,6 +534,72 @@
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
         </div>
+      {:else if block.interaction.kind === 'true_false_group'}
+        {@const interaction = block.interaction}
+        {@const invalid = isInteractionInvalid(block)}
+        {@const errorElementId = `${rendererId}-${block.id}-error`}
+        {@const statementIds = interaction.config.statements.map((statement) => statement.id)}
+        {@const currentResponse = responsesByInteractionId.get(block.id)}
+        {@const answersByStatementId = new Map(
+          currentResponse?.kind === 'true_false_group'
+            ? currentResponse.answers.map((answer) => [answer.statementId, answer.value])
+            : []
+        )}
+        {@const hasMissingStatements = statementIds.some((statementId) => !answersByStatementId.has(statementId))}
+        <fieldset
+          class="ui:space-y-4"
+          {disabled}
+          data-assessment-group-invalid={invalid ? 'true' : undefined}
+          aria-describedby={invalid ? errorElementId : undefined}
+          data-assessment-required={interaction.required ? 'true' : undefined}
+        >
+          <legend class="ui:font-medium">{@html renderAuthoredHtml(interaction.prompt.html)}</legend>
+          <div class="ui:divide-border ui:divide-y">
+            {#each interaction.config.statements as statement, statementIndex (statement.id)}
+              {@const statementElementId = `${rendererId}-${block.id}-${statement.id}`}
+              {@const currentValue = answersByStatementId.get(statement.id)}
+              {@const statementInvalid =
+                invalid && (currentValue === undefined || (!hasMissingStatements && statementIndex === 0))}
+              <div
+                class="ui:grid ui:gap-3 ui:py-4 ui:sm:grid-cols-[minmax(0,1fr)_auto] ui:sm:items-center"
+                data-assessment-invalid={statementInvalid ? 'true' : undefined}
+              >
+                <div id={`${statementElementId}-label`} class="ui:min-w-0 ui:text-sm">
+                  <span class="ui:mr-2 ui:font-medium ui:tabular-nums">{statementIndex + 1}.</span>
+                  {@html renderAuthoredHtml(statement.html)}
+                </div>
+                <RadioGroup.Root
+                  value={currentValue === undefined ? '' : String(currentValue)}
+                  {disabled}
+                  required={interaction.required}
+                  aria-labelledby={`${statementElementId}-label`}
+                  aria-invalid={statementInvalid}
+                  aria-describedby={statementInvalid ? errorElementId : undefined}
+                  onValueChange={(nextValue) =>
+                    updateTrueFalseGroupResponse(block.id, statement.id, nextValue === 'true', statementIds)}
+                >
+                  <div class="ui:flex ui:items-center ui:gap-4">
+                    <div class="ui:flex ui:items-center ui:gap-2">
+                      <RadioGroup.Item id={`${statementElementId}-true`} value="true" />
+                      <Label for={`${statementElementId}-true`} class="ui:cursor-pointer ui:font-normal">
+                        {trueLabel}
+                      </Label>
+                    </div>
+                    <div class="ui:flex ui:items-center ui:gap-2">
+                      <RadioGroup.Item id={`${statementElementId}-false`} value="false" />
+                      <Label for={`${statementElementId}-false`} class="ui:cursor-pointer ui:font-normal">
+                        {falseLabel}
+                      </Label>
+                    </div>
+                  </div>
+                </RadioGroup.Root>
+              </div>
+            {/each}
+          </div>
+          {#if invalid}
+            <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
+          {/if}
+        </fieldset>
       {/if}
     </div>
   </div>

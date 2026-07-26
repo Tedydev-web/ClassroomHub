@@ -54,14 +54,18 @@ import {
   computeExerciseDiff,
   createNewQuestionsWithOptions,
   fetchQuestionsAndOptions,
+  projectQuestionForLearner,
   transformQuestions,
+  type LearnerQuestionWithRelations,
   type QuestionWithRelations
 } from './utils';
 
-type ExerciseWithQuestions = TExercise & {
+type VisibleQuestionWithRelations = QuestionWithRelations | LearnerQuestionWithRelations;
+
+type ExerciseWithQuestions<TQuestion extends VisibleQuestionWithRelations = QuestionWithRelations> = TExercise & {
   isComplete: boolean;
-  questions?: QuestionWithRelations[];
-  sections?: ExerciseSectionWithQuestions[];
+  questions?: TQuestion[];
+  sections?: ExerciseSectionWithQuestions<TQuestion>[];
   canonicalQuestions?: Array<{
     id: number;
     title: string;
@@ -77,14 +81,14 @@ type ExerciseWithQuestions = TExercise & {
   assessmentItemMutationResults?: AssessmentItemMutationResult[];
 };
 
-type ExerciseSectionWithQuestions = {
+type ExerciseSectionWithQuestions<TQuestion extends VisibleQuestionWithRelations = QuestionWithRelations> = {
   id: string;
   title: string;
   description: string | null;
   order: number;
   colorTheme: string;
   afterBehavior: unknown;
-  questions: QuestionWithRelations[];
+  questions: TQuestion[];
 };
 
 type ExerciseWithCompletion = TExercise & {
@@ -190,12 +194,12 @@ function sanitizeExercisePayload(data: TExerciseCreate | TExerciseUpdate): TExer
   };
 }
 
-function groupQuestionsBySections(
+function groupQuestionsBySections<TQuestion extends VisibleQuestionWithRelations>(
   sections: Awaited<ReturnType<typeof getExerciseSectionsByExerciseId>>,
-  questions: QuestionWithRelations[]
+  questions: TQuestion[]
 ) {
-  const questionsBySectionId = new Map<string, QuestionWithRelations[]>();
-  const unsectionedQuestions: QuestionWithRelations[] = [];
+  const questionsBySectionId = new Map<string, TQuestion[]>();
+  const unsectionedQuestions: TQuestion[] = [];
 
   for (const question of questions) {
     if (question.exerciseSectionId) {
@@ -602,11 +606,21 @@ export async function createExerciseForCourseService(courseId: string, data: TEx
  * @param exerciseId Exercise ID
  * @returns Exercise with questions and options
  */
+export function getExercise(
+  exerciseId: string,
+  dbClient?: DbOrTxClient,
+  profileId?: undefined
+): Promise<ExerciseWithQuestions>;
+export function getExercise(
+  exerciseId: string,
+  dbClient: DbOrTxClient | undefined,
+  profileId: string
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>>;
 export async function getExercise(
   exerciseId: string,
   dbClient?: DbOrTxClient,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   try {
     // Optimized: Fetch exercise + questions + questionTypes + options in one JOIN query.
     // This is the editor/current-exercise read: archived questions are excluded at the
@@ -692,13 +706,17 @@ export async function getExercise(
     // Transform questions (strip questionType and options since they're handled in transform)
     const questionsForTransform = questions.map(({ questionType, options, ...q }) => q);
     const questionsWithOptions = transformQuestions(questionsForTransform, allOptions, questionTypeMap);
+    const visibleQuestions: VisibleQuestionWithRelations[] =
+      profileId !== undefined && !canViewAuthorDefinitions
+        ? questionsWithOptions.map((question) => projectQuestionForLearner(question, profileId))
+        : questionsWithOptions;
     const sections = await getExerciseSectionsByExerciseId(exerciseId, dbClient);
-    const sectionGroups = groupQuestionsBySections(sections, questionsWithOptions);
+    const sectionGroups = groupQuestionsBySections(sections, visibleQuestions);
 
     return {
       ...exercise,
       isComplete,
-      questions: questionsWithOptions,
+      questions: visibleQuestions,
       sections: sectionGroups.sections,
       canonicalQuestions
     };
@@ -715,6 +733,24 @@ export async function getExercise(
   }
 }
 
+export async function getExerciseForCourseService(
+  courseId: string,
+  exerciseId: string,
+  profileId?: string
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
+  const exercise = await getExerciseById(exerciseId);
+  if (!exercise) {
+    throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  const exerciseCourseId = await resolveExerciseCourseId(exercise);
+  if (exerciseCourseId !== courseId) {
+    throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  return profileId === undefined ? getExercise(exerciseId) : getExercise(exerciseId, undefined, profileId);
+}
+
 /**
  * Updates an exercise with questions and options.
  * Only updates what has changed by querying the current state first and computing a diff.
@@ -726,7 +762,7 @@ export async function updateExerciseService(
   exerciseId: string,
   data: TExerciseUpdate,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   try {
     const sanitizedData = sanitizeExercisePayload(data);
     validateSectionQuestionAssignments(sanitizedData);
@@ -898,7 +934,10 @@ export async function updateExerciseService(
         );
       }
 
-      const updatedExercise = await getExercise(exerciseId, txClient, profileId);
+      const updatedExercise =
+        profileId === undefined
+          ? await getExercise(exerciseId, txClient)
+          : await getExercise(exerciseId, txClient, profileId);
       if (assessmentItemMutationResults === undefined) return updatedExercise;
 
       return { ...updatedExercise, assessmentItemMutationResults };
@@ -925,7 +964,7 @@ export async function updateExerciseForCourseService(
   exerciseId: string,
   data: TExerciseUpdate,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   const exercise = await getExerciseById(exerciseId);
   if (!exercise) {
     throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);

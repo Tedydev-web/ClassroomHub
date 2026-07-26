@@ -231,6 +231,8 @@
         response={canonicalAnswers[item.id]}
         disabled
         title={item.question.title}
+        trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+        falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
         questionNumber={showMixedGradeControls ? undefined : questionNumber}
         interactionNumberStart={questionNumber}
         questionNumberActive={false}

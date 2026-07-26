@@ -300,11 +300,14 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           ids.exercise,
           createdItem.questionId
         );
-        expect(authorItem.definition).toEqual(definitionOne);
+        expect(Object.keys(authorItem).sort()).toEqual(Object.keys(learnerItem).sort());
+        expect(authorItem.authorDefinition).toEqual(definitionOne);
         expect(authorItem.title).toBe('Renamed composite lifecycle item');
+        expect(JSON.stringify(authorItem.definition)).not.toContain('correctOptionIds');
         expect(learnerItem.revision).toBe(1);
         expect(learnerItem.revisionId).toEqual(expect.any(String));
         expect(learnerItem.revisionId).toBe(createdItem.revisionId);
+        expect(learnerItem.authorDefinition).toBeNull();
         expect(JSON.stringify(learnerItem.definition)).toContain('Attempted revision content.');
         expect(JSON.stringify(learnerItem.definition)).not.toContain('correctOptionIds');
 

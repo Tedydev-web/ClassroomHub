@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_ASSESSMENT_BLOCKS, MAX_ASSESSMENT_INTERACTIONS, MAX_INTERACTION_OPTIONS } from '@cio/question-types';
 
 import {
   addChoiceInteractionBlock,
   addContentBlock,
   addTextInteractionBlock,
+  addTrueFalseGroupStatement,
+  addTrueFalseGroupInteractionBlock,
   createAssessmentComposerState,
   getAssessmentComposerSnapshot,
   initializeAssessmentPassageLayout,
@@ -13,12 +16,14 @@ import {
   reconcileAssessmentComposerSave,
   removeAssessmentBlock,
   removeAssessmentBlocks,
+  removeTrueFalseGroupStatement,
   reorderAssessmentBlock,
   restoreAssessmentBlock,
   restoreAssessmentBlocks,
   setAssessmentItemPresentationLayout,
   setChoiceCorrectOption,
-  setChoiceInteractionCardinality
+  setChoiceInteractionCardinality,
+  setTrueFalseGroupScoringMode
 } from './assessment-composer-state';
 
 function createIdFactory() {
@@ -59,6 +64,134 @@ describe('assessment composer state', () => {
     });
     expect(state.definition.blocks[2]).toMatchObject({ kind: 'interaction', interaction: { kind: 'text' } });
     expect(state.selectedBlockId).toBe('block-5');
+  });
+
+  it('creates a four-statement true-false group with the standard tiered scoring scale', () => {
+    const createId = createIdFactory();
+    const state = addTrueFalseGroupInteractionBlock(createAssessmentComposerState(), createId);
+
+    expect(state.definition.blocks).toMatchObject([
+      {
+        id: 'block-1',
+        kind: 'interaction',
+        interaction: {
+          kind: 'true_false_group',
+          required: true,
+          maxScore: 1,
+          config: {
+            statements: [
+              { id: 'block-2', html: '', correctValue: false },
+              { id: 'block-3', html: '', correctValue: false },
+              { id: 'block-4', html: '', correctValue: false },
+              { id: 'block-5', html: '', correctValue: false }
+            ],
+            scoring: { mode: 'tiered', tiers: [0, 0.1, 0.25, 0.5, 1] }
+          }
+        }
+      }
+    ]);
+    expect(state.selectedBlockId).toBe('block-1');
+  });
+
+  it('preserves customized true-false tiers when statements or scoring modes change', () => {
+    const createId = createIdFactory();
+    let state = addTrueFalseGroupInteractionBlock(createAssessmentComposerState(), createId);
+    const groupBlock = state.definition.blocks[0];
+    if (!groupBlock || groupBlock.kind !== 'interaction' || groupBlock.interaction.kind !== 'true_false_group') {
+      throw new Error('Expected a grouped true-false interaction');
+    }
+    groupBlock.interaction.config.scoring = { mode: 'tiered', tiers: [0, 0.05, 0.2, 0.7, 1] };
+
+    state = addTrueFalseGroupStatement(state, 'block-1', createId);
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: {
+        config: {
+          statements: [{}, {}, {}, {}, { id: 'block-6' }],
+          scoring: { mode: 'tiered', tiers: [0, 0.05, 0.2, 0.7, 0.7, 1] }
+        }
+      }
+    });
+
+    state = removeTrueFalseGroupStatement(state, 'block-1', 'block-2');
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: {
+        config: {
+          statements: [{ id: 'block-3' }, { id: 'block-4' }, { id: 'block-5' }, { id: 'block-6' }],
+          scoring: { mode: 'tiered', tiers: [0, 0.05, 0.2, 0.7, 1] }
+        }
+      }
+    });
+
+    state = setTrueFalseGroupScoringMode(state, 'block-1', 'all_or_nothing');
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { scoring: { mode: 'all_or_nothing' } } }
+    });
+
+    state = addContentBlock(state, createId);
+    const removedBlocks = state.definition.blocks.slice(0, 1);
+    state = removeAssessmentBlocks(
+      state,
+      removedBlocks.map((block) => block.id)
+    );
+    state = restoreAssessmentBlocks(state, removedBlocks, 0);
+
+    state = setTrueFalseGroupScoringMode(state, 'block-1', 'tiered');
+    expect(state.definition.blocks[0]).toMatchObject({
+      interaction: { config: { scoring: { mode: 'tiered', tiers: [0, 0.05, 0.2, 0.7, 1] } } }
+    });
+  });
+
+  it('enforces interaction and statement limits in the shared state helpers', () => {
+    const createId = createIdFactory();
+    let state = createAssessmentComposerState();
+
+    for (let interactionIndex = 0; interactionIndex < MAX_ASSESSMENT_INTERACTIONS; interactionIndex += 1) {
+      state = addTextInteractionBlock(state, createId);
+    }
+    const cappedInteractionState = addTextInteractionBlock(state, createId);
+    expect(cappedInteractionState).toBe(state);
+
+    let groupState = addTrueFalseGroupInteractionBlock(createAssessmentComposerState(), createId);
+    const groupBlock = groupState.definition.blocks[0];
+    if (!groupBlock || groupBlock.kind !== 'interaction' || groupBlock.interaction.kind !== 'true_false_group') {
+      throw new Error('Expected a grouped true-false interaction');
+    }
+    groupBlock.interaction.config.statements = Array.from({ length: MAX_INTERACTION_OPTIONS }, (_, index) => ({
+      id: `statement-${index}`,
+      html: '',
+      correctValue: false
+    }));
+    groupBlock.interaction.config.scoring = { mode: 'proportional' };
+
+    groupState = addTrueFalseGroupStatement(groupState, groupBlock.id, createId);
+    expect(groupBlock.interaction.config.statements).toHaveLength(MAX_INTERACTION_OPTIONS);
+  });
+
+  it('enforces block and interaction limits when restoring removed blocks', () => {
+    const createId = createIdFactory();
+    let interactionState = createAssessmentComposerState();
+
+    for (let interactionIndex = 0; interactionIndex < MAX_ASSESSMENT_INTERACTIONS; interactionIndex += 1) {
+      interactionState = addTextInteractionBlock(interactionState, createId);
+    }
+    const removedInteraction = interactionState.definition.blocks[0];
+    if (!removedInteraction) throw new Error('Expected an interaction block');
+
+    interactionState = removeAssessmentBlock(interactionState, removedInteraction.id);
+    interactionState = addTextInteractionBlock(interactionState, createId);
+    const cappedRestoreState = restoreAssessmentBlock(interactionState, removedInteraction, 0);
+
+    expect(cappedRestoreState).toBe(interactionState);
+    expect(cappedRestoreState.definition.blocks).toHaveLength(MAX_ASSESSMENT_INTERACTIONS);
+
+    let blockState = createAssessmentComposerState();
+    for (let blockIndex = 0; blockIndex < MAX_ASSESSMENT_BLOCKS; blockIndex += 1) {
+      blockState = addContentBlock(blockState, createId);
+    }
+    const cappedBlockState = addContentBlock(blockState, createId);
+
+    expect(cappedBlockState).toBe(blockState);
+    expect(cappedBlockState.definition.blocks).toHaveLength(MAX_ASSESSMENT_BLOCKS);
   });
 
   it('initializes passage and question lanes for an empty item', () => {

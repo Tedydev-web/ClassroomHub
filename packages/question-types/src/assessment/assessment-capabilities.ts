@@ -24,6 +24,7 @@ const INTERACTION_KIND_GRADING: Record<AssessmentInteractionKind, 'auto' | 'manu
   fill_blank: 'auto',
   word_bank: 'auto',
   ordering: 'auto',
+  true_false_group: 'auto',
   file_upload: 'manual',
   link: 'manual',
   star_rating: 'auto',
@@ -42,15 +43,56 @@ function interactionSupportsPartialCredit(interaction: AssessmentInteraction): b
     case 'word_bank':
     case 'ordering':
       return true;
-    default:
+    case 'true_false_group':
+      return interaction.config.scoring.mode !== 'all_or_nothing';
+    case 'text':
+    case 'file_upload':
+    case 'link':
+    case 'star_rating':
+    case 'video_recording':
       return false;
   }
+
+  interaction satisfies never;
+  return false;
 }
 
 export function roundToTwoDecimals(value: number): number {
   if (!Number.isFinite(value) || value <= 0) return 0;
 
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+  const [coefficient, exponentText = '0'] = value.toString().toLowerCase().split('e');
+  const [wholePart, fractionalPart = ''] = coefficient!.split('.');
+  const decimalPlaces = fractionalPart.length - Number.parseInt(exponentText, 10);
+  if (decimalPlaces <= 2) return value;
+
+  const unscaledValue = BigInt(`${wholePart}${fractionalPart}`);
+  const divisor = 10n ** BigInt(decimalPlaces - 2);
+  const roundedCents = (unscaledValue + divisor / 2n) / divisor;
+
+  return Number(roundedCents) / 100;
+}
+
+function toDecimalRatio(value: number): readonly [numerator: bigint, denominator: bigint] {
+  const [coefficient, exponentText = '0'] = value.toString().toLowerCase().split('e');
+  const [wholePart, fractionalPart = ''] = coefficient!.split('.');
+  const unscaledValue = BigInt(`${wholePart}${fractionalPart}`);
+  const decimalPlaces = fractionalPart.length - Number.parseInt(exponentText, 10);
+  if (decimalPlaces <= 0) return [unscaledValue * 10n ** BigInt(-decimalPlaces), 1n];
+
+  return [unscaledValue, 10n ** BigInt(decimalPlaces)];
+}
+
+export function scaleScoreByFraction(maxScore: number, scoreFraction: number): number {
+  if (!Number.isFinite(maxScore) || maxScore <= 0) return 0;
+  if (!Number.isFinite(scoreFraction) || scoreFraction <= 0) return 0;
+
+  const maxScoreCents = BigInt(Math.round(maxScore * 100));
+  const boundedScoreFraction = Math.min(scoreFraction, 1);
+  const [fractionNumerator, fractionDenominator] = toDecimalRatio(boundedScoreFraction);
+  const unroundedScoreCents = maxScoreCents * fractionNumerator;
+  const roundedScoreCents = (unroundedScoreCents + fractionDenominator / 2n) / fractionDenominator;
+
+  return Number(roundedScoreCents) / 100;
 }
 
 /** Item maximum = sum of interaction maxima, computed in integer cents to avoid float drift. */

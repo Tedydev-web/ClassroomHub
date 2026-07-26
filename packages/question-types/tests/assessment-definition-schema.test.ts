@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAssessmentItemDefinition } from '../src/assessment';
+import { parseAssessmentItemDefinition, validateAssessmentItemForPublish } from '../src/assessment';
 import type { AssessmentIssueCode } from '../src/assessment';
 import {
   buildChoiceInteraction,
@@ -17,6 +17,26 @@ function expectIssue(value: unknown, code: AssessmentIssueCode): void {
 
   expect(result.issues.length).toBeGreaterThan(0);
   expect(result.issues.map((issue) => issue.code)).toContain(code);
+}
+
+function groupedTrueFalseDefinition() {
+  return buildDefinition({
+    blocks: [
+      interactionBlock('i1', {
+        kind: 'true_false_group',
+        prompt: { format: 'html', html: 'Mark each statement' },
+        required: true,
+        maxScore: 1,
+        config: {
+          statements: [
+            { id: 's1', html: 'One', correctValue: true },
+            { id: 's2', html: 'Two', correctValue: false }
+          ],
+          scoring: { mode: 'tiered', tiers: [0, 0.5, 1] }
+        }
+      })
+    ]
+  });
 }
 
 describe('parseAssessmentItemDefinition — valid definitions', () => {
@@ -73,6 +93,30 @@ describe('parseAssessmentItemDefinition — valid definitions', () => {
 
     expect(parseAssessmentItemDefinition(zeroScore).success).toBe(true);
     expect(parseAssessmentItemDefinition(fractional).success).toBe(true);
+  });
+
+  it('accepts a grouped true/false interaction with the MOET tier table', () => {
+    const groupedTrueFalse = buildDefinition({
+      blocks: [
+        interactionBlock('i1', {
+          kind: 'true_false_group',
+          prompt: { format: 'html', html: 'Mark each statement' },
+          required: true,
+          maxScore: 1,
+          config: {
+            statements: [
+              { id: 's1', html: 'One', correctValue: true },
+              { id: 's2', html: 'Two', correctValue: false },
+              { id: 's3', html: 'Three', correctValue: true },
+              { id: 's4', html: 'Four', correctValue: false }
+            ],
+            scoring: { mode: 'tiered', tiers: [0, 0.1, 0.25, 0.5, 1] }
+          }
+        })
+      ]
+    });
+
+    expect(parseAssessmentItemDefinition(groupedTrueFalse).success).toBe(true);
   });
 
   it('accepts degenerate legacy shapes: zero options and empty correct set', () => {
@@ -216,6 +260,78 @@ describe('parseAssessmentItemDefinition — structural failures', () => {
     expectIssue(duplicated, 'MALFORMED_DEFINITION');
   });
 
+  it('rejects ordering keys that do not reference the declared options', () => {
+    const definition = buildDefinition({
+      blocks: [
+        interactionBlock('i1', {
+          kind: 'ordering',
+          prompt: { format: 'html', html: 'Order the steps' },
+          required: true,
+          maxScore: 1,
+          config: {
+            options: [
+              { id: 'a', html: 'A' },
+              { id: 'b', html: 'B' }
+            ],
+            correctOrder: ['a', 'ghost']
+          }
+        })
+      ]
+    });
+
+    expectIssue(definition, 'MALFORMED_DEFINITION');
+  });
+
+  it('rejects grouped true/false tiers with the wrong size or decreasing fractions', () => {
+    const baseInteraction = {
+      kind: 'true_false_group' as const,
+      prompt: { format: 'html' as const, html: 'Mark each statement' },
+      required: true,
+      maxScore: 1,
+      config: {
+        statements: [
+          { id: 's1', html: 'One', correctValue: true },
+          { id: 's2', html: 'Two', correctValue: false }
+        ],
+        scoring: { mode: 'tiered' as const, tiers: [0, 0.5, 1] }
+      }
+    };
+
+    expectIssue(
+      buildDefinition({
+        blocks: [
+          interactionBlock('i1', {
+            ...baseInteraction,
+            config: { ...baseInteraction.config, scoring: { mode: 'tiered', tiers: [0, 1] } }
+          })
+        ]
+      }),
+      'MALFORMED_DEFINITION'
+    );
+    expectIssue(
+      buildDefinition({
+        blocks: [
+          interactionBlock('i1', {
+            ...baseInteraction,
+            config: { ...baseInteraction.config, scoring: { mode: 'tiered', tiers: [0, 0.75, 0.5] } }
+          })
+        ]
+      }),
+      'MALFORMED_DEFINITION'
+    );
+  });
+
+  it('rejects duplicate grouped true/false statement ids', () => {
+    const definition = groupedTrueFalseDefinition();
+    const block = definition.blocks[0];
+    if (block.kind !== 'interaction' || block.interaction.kind !== 'true_false_group') {
+      throw new Error('expected grouped true-false');
+    }
+    block.interaction.config.statements[1]!.id = 's1';
+
+    expectIssue(definition, 'MALFORMED_DEFINITION');
+  });
+
   it('rejects star correct values above max stars and negative numeric tolerance', () => {
     const badStar = buildDefinition({
       blocks: [
@@ -269,5 +385,54 @@ describe('parseAssessmentItemDefinition — structural failures', () => {
     });
 
     expectIssue(definition, 'MALFORMED_DEFINITION');
+  });
+});
+
+describe('validateAssessmentItemForPublish — grouped true/false', () => {
+  it('rejects empty statement content', () => {
+    const definition = groupedTrueFalseDefinition();
+    const block = definition.blocks[0];
+    if (block.kind !== 'interaction' || block.interaction.kind !== 'true_false_group') {
+      throw new Error('expected grouped true-false');
+    }
+    block.interaction.config.statements[0]!.html = '<p> </p>';
+
+    const parsed = parseAssessmentItemDefinition(definition);
+    if (!parsed.success) throw new Error('expected a structurally valid definition');
+    const publishable = validateAssessmentItemForPublish(parsed.data);
+
+    expect(publishable.success).toBe(false);
+    if (publishable.success) return;
+    expect(publishable.issues.map((issue) => issue.path)).toContainEqual([
+      'blocks',
+      0,
+      'interaction',
+      'config',
+      'statements',
+      0,
+      'html'
+    ]);
+  });
+
+  it('requires tier endpoints to represent zero and full credit', () => {
+    for (const tiers of [
+      [0.1, 0.5, 1],
+      [0, 0.5, 0.9]
+    ]) {
+      const definition = groupedTrueFalseDefinition();
+      const block = definition.blocks[0];
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'true_false_group') {
+        throw new Error('expected grouped true-false');
+      }
+      block.interaction.config.scoring = { mode: 'tiered', tiers };
+
+      const parsed = parseAssessmentItemDefinition(definition);
+      if (!parsed.success) throw new Error('expected a structurally valid definition');
+      const publishable = validateAssessmentItemForPublish(parsed.data);
+
+      expect(publishable.success).toBe(false);
+      if (publishable.success) continue;
+      expect(publishable.issues.map((issue) => issue.code)).toContain('PUBLISH_RULE_VIOLATION');
+    }
   });
 });
