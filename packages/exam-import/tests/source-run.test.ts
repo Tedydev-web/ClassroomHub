@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { emptyFormatting, normalizeComparableText, sourceRunSchema } from '../src/source-run';
+import {
+  emptyFormatting,
+  MAX_SOURCE_RUN_TEXT_LENGTH,
+  normalizeComparableText,
+  sourceRunSchema
+} from '../src/source-run';
 
 function validRun() {
   return {
@@ -45,6 +50,7 @@ describe('source run contract', () => {
   it('accepts a resolved list label and a table reference', () => {
     const run = validRun();
     run.block = { kind: 'list_item', index: 4, listNumber: 'A.', tableRef: null };
+    run.location.blockIndex = 4;
     expect(sourceRunSchema.safeParse(run).success).toBe(true);
 
     const cell = validRun();
@@ -54,6 +60,7 @@ describe('source run contract', () => {
       listNumber: null,
       tableRef: { tableIndex: 0, row: 1, column: 2, originRow: 1, originColumn: 2 }
     };
+    cell.location.blockIndex = 9;
     expect(sourceRunSchema.safeParse(cell).success).toBe(true);
   });
 
@@ -70,6 +77,24 @@ describe('source run contract', () => {
     };
 
     expect(sourceRunSchema.safeParse(run).success).toBe(true);
+  });
+
+  it('rejects a source run whose text exceeds the normalized-stream limit', () => {
+    const run = validRun();
+    run.text = 'x'.repeat(MAX_SOURCE_RUN_TEXT_LENGTH + 1);
+
+    expect(sourceRunSchema.safeParse(run).success).toBe(false);
+  });
+
+  it('rejects oversized rich payloads and inconsistent block provenance', () => {
+    const oversizedMath = validRun();
+    oversizedMath.text = '';
+    oversizedMath.math = { latex: 'x'.repeat(MAX_SOURCE_RUN_TEXT_LENGTH + 1) };
+    expect(sourceRunSchema.safeParse(oversizedMath).success).toBe(false);
+
+    const mismatchedLocation = validRun();
+    mismatchedLocation.location.blockIndex = 1;
+    expect(sourceRunSchema.safeParse(mismatchedLocation).success).toBe(false);
   });
 });
 

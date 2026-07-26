@@ -1288,6 +1288,9 @@ importers:
 
   packages/exam-import:
     dependencies:
+      '@cio/question-types':
+        specifier: workspace:*
+        version: link:../question-types
       '@cio/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

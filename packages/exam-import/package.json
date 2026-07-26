@@ -22,6 +22,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@cio/question-types": "workspace:*",
     "@cio/tsconfig": "workspace:*",
     "fast-xml-parser": "5.2.5",
     "jszip": "3.10.1",

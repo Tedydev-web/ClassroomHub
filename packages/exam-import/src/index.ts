@@ -67,3 +67,44 @@ export {
   type CorpusDocument,
   type CorpusManifest
 } from './corpus/corpus-manifest';
+
+export {
+  EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS,
+  EXAM_IMPORT_SCHEMA_VERSION,
+  examImportAnswerSourceSchema,
+  examImportConfidenceSchema,
+  examImportDiagnosticSchema,
+  examImportDraftSchema,
+  examImportFieldTargetSchema,
+  examImportQuestionSchema,
+  examImportSourceSpanSchema,
+  type ExamImportAnswerSource,
+  type ExamImportConfidence,
+  type ExamImportDiagnostic,
+  type ExamImportDraft,
+  type ExamImportFieldState,
+  type ExamImportFieldTarget,
+  type ExamImportPublishableQuestionKind,
+  type ExamImportQuestion,
+  type ExamImportSourceSpan
+} from './draft/exam-import-draft';
+
+export { mapExamImportDraftHtml } from './draft/exam-import-authored-html';
+export { harvestExamImportAnswerCandidates } from './draft/exam-import-answer-harvesting';
+export { createExamImportDraftFromRuns, createValidatedExamImportDraftFromRuns } from './draft/exam-import-pipeline';
+export { reconcileExamImportDraftAnswers } from './draft/exam-import-reconciliation';
+export { segmentExamImportRuns } from './draft/exam-import-segmentation';
+
+export { examImportDraftToExtractedExam } from './metrics/exam-import-draft-metrics';
+
+export {
+  collectExamImportSemanticFindings,
+  validateExamImportAssistedFindings,
+  validateExamImportDraft,
+  validateExamImportDraftStructure,
+  type ExamImportSemanticValidationContext,
+  type ExamImportAssistedValidationResult,
+  type ExamImportStructuralValidationResult,
+  type ExamImportValidationContext,
+  type ExamImportValidationResult
+} from './draft/exam-import-validation';
