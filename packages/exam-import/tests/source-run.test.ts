@@ -56,6 +56,21 @@ describe('source run contract', () => {
     };
     expect(sourceRunSchema.safeParse(cell).success).toBe(true);
   });
+
+  it('accepts a reviewable OMML fallback without pretending it is LaTeX', () => {
+    const run = {
+      ...validRun(),
+      text: '',
+      math: {
+        latex: null,
+        omml: '<m:oMath><m:unknown/></m:oMath>',
+        sourceText: 'x',
+        reason: 'Unsupported Office Math element: m:unknown'
+      }
+    };
+
+    expect(sourceRunSchema.safeParse(run).success).toBe(true);
+  });
 });
 
 describe('comparable text normalization', () => {
