@@ -45,8 +45,17 @@ export type RunFormatting = z.infer<typeof runFormattingSchema>;
 
 const tableReferenceSchema = z.strictObject({
   tableIndex: z.number().int().min(0),
+  /** Physical position of this cell in the source table. */
   row: z.number().int().min(0),
-  column: z.number().int().min(0)
+  column: z.number().int().min(0),
+  /**
+   * Merged continuation cells point at the cell that owns their content.
+   * Ordinary cells point at themselves. Keeping both coordinates prevents an
+   * answer-table parser from treating a continuation as a second answer while
+   * still letting the review UI highlight the physical source cell.
+   */
+  originRow: z.number().int().min(0),
+  originColumn: z.number().int().min(0)
 });
 
 const blockContextSchema = z.strictObject({
@@ -70,7 +79,14 @@ const runImageSchema = z.strictObject({
   /** Identifier the reader assigns; resolved to a stored asset later. */
   assetRef: z.string().min(1),
   width: z.number().positive().nullable(),
-  height: z.number().positive().nullable()
+  height: z.number().positive().nullable(),
+  /**
+   * Inline images have a precise text position. Floating drawings are anchored
+   * to the paragraph but their visual coordinates live outside text flow; the
+   * distinction prevents downstream code from pretending it knows a position
+   * Word never expressed in characters.
+   */
+  placement: z.enum(['inline', 'floating'])
 });
 
 export const sourceRunSchema = z.strictObject({

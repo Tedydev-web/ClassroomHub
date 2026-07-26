@@ -28,6 +28,38 @@ export {
 export { formatMetrics, scoreExtraction, type ExtractionMetrics } from './metrics/exam-extraction-metrics';
 
 export {
+  DEFAULT_DOCX_LIMITS,
+  DOCX_PART,
+  DocxPackageError,
+  openDocxPackage,
+  type DocxPackage,
+  type DocxPackageLimits
+} from './docx/docx-package';
+
+export {
+  isListNumberFormat,
+  LIST_NUMBER_FORMATS,
+  renderListLabel,
+  renderListLabelForCounter,
+  type ListLevelDefinition,
+  type ListNumberFormat
+} from './docx/list-label';
+
+export {
+  findListLevel,
+  parseNumberingDefinitions,
+  type ListDefinition,
+  type ListDefinitions
+} from './docx/numbering-definitions';
+
+export {
+  readDocxRuns,
+  type DocxReadResult,
+  type DocxReadWarning,
+  type DocxReadWarningCode
+} from './docx/read-docx-runs';
+
+export {
   corpusManifestSchema,
   formatCorpusAvailability,
   resolveCorpusAvailability,
