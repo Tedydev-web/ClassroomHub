@@ -1,5 +1,7 @@
 <script lang="ts">
   import { Button } from '../../base/button';
+  import SafeHtmlContent from '../safe-html-content/safe-html-content.svelte';
+  import { isRichTextHtml, richTextToDisplayHtml } from '../../tools';
   import type { ExerciseSectionColorTheme } from '@cio/question-types';
 
   const ACCENT_CLASSES: Record<ExerciseSectionColorTheme, string> = {
@@ -71,7 +73,11 @@
     <span class={`ui:mt-8 ui:h-1 ui:w-14 ui:rounded-full ${ACCENT_CLASSES[colorTheme]}`}></span>
 
     <h2 class="ui:mt-10 ui:font-serif ui:text-5xl ui:font-bold ui:tracking-tight ui:text-foreground ui:md:text-6xl">
-      {sectionTitle}
+      {#if isRichTextHtml(sectionTitle)}
+        <span class="ui:[&_p]:m-0 ui:[&_p]:inline">{@html richTextToDisplayHtml(sectionTitle)}</span>
+      {:else}
+        {sectionTitle}
+      {/if}
     </h2>
 
     <div class="ui:mt-9 ui:flex ui:items-center ui:gap-3 ui:text-lg ui:text-muted-foreground">
@@ -80,7 +86,9 @@
     </div>
 
     {#if sectionDescription}
-      <p class="ui:mt-8 ui:max-w-3xl ui:text-xl ui:leading-8 ui:text-muted-foreground">{sectionDescription}</p>
+      <div class="ui:prose ui:mt-8 ui:max-w-3xl ui:text-xl ui:leading-8 ui:text-muted-foreground">
+        <SafeHtmlContent content={sectionDescription} />
+      </div>
     {/if}
 
     <div class="ui:mt-auto ui:border-t ui:pt-8">

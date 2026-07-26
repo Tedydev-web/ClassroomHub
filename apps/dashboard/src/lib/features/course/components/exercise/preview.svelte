@@ -14,7 +14,7 @@
   import { NumberBadge } from '@cio/ui/base/number-badge';
   import type { ExerciseSectionState, QuestionnaireMetaData } from './store';
   import { t } from '$lib/utils/functions/translations';
-  import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
+  import { getExerciseSectionDisplayHtml } from '$features/course/utils/exercise-section-utils';
   import { orderExerciseItemsBySections } from '$features/course/utils/exercise-progression-utils';
 
   type CanonicalPreviewQuestion = {
@@ -247,7 +247,7 @@
         {@const sectionItems = getMixedItemsForSection(section.id)}
         <section class="space-y-4 pt-4">
           <ExerciseQuestion.SectionHeader
-            title={getExerciseSectionDisplayTitle({
+            title={getExerciseSectionDisplayHtml({
               title: section.title,
               sectionNumber: sectionIndex + 1,
               sectionLabel: sectionFallbackTitle
@@ -291,7 +291,7 @@
       {@const sectionQuestionModels = sectionQuestions.map((question) => toExerciseQuestionModel(question))}
       <section class="space-y-4 pt-4">
         <ExerciseQuestion.SectionHeader
-          title={getExerciseSectionDisplayTitle({
+          title={getExerciseSectionDisplayHtml({
             title: section.title,
             sectionNumber: sectionIndex + 1,
             sectionLabel: sectionFallbackTitle

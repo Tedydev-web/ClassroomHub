@@ -11,7 +11,7 @@
   import { getAssessmentVerticalSliceResponseProgress, type AnswerData } from '@cio/question-types';
   import { toExerciseQuestionModel } from '../question-type-utils';
   import { getExerciseQuestionLabels } from '../question-labels';
-  import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
+  import { getExerciseSectionDisplayHtml } from '$features/course/utils/exercise-section-utils';
   import {
     formatExercisePoints,
     getActiveExerciseQuestions,
@@ -361,7 +361,7 @@
           )}
           <section class="space-y-4">
             <ExerciseQuestion.SectionHeader
-              title={getExerciseSectionDisplayTitle({
+              title={getExerciseSectionDisplayHtml({
                 title: section.title,
                 sectionNumber: sectionIndex + 1,
                 sectionLabel: sectionFallbackTitle

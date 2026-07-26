@@ -11,6 +11,9 @@ export default defineConfig({
     alias: [
       { find: '$lib', replacement: path.resolve(__dirname, 'src/lib') },
       { find: '$features', replacement: path.resolve(__dirname, 'src/lib/features') },
+      // Workspace packages normally resolve to their built dist. The UI package
+      // has no TypeScript build, so unit tests address the source barrel directly.
+      { find: '@cio/ui/tools', replacement: path.resolve(__dirname, '../../packages/ui/src/tools/index.ts') },
       // Icon packages are Svelte source, which this node-environment runner
       // cannot compile. The logic suites only need them to resolve, never to
       // render, so both icon sources point at one inert stub rather than
