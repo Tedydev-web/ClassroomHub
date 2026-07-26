@@ -1,4 +1,11 @@
+import { MAX_AUTHORED_HTML_LENGTH, MAX_FILE_KEY_LENGTH } from '@cio/question-types';
 import * as z from 'zod';
+
+export const MAX_SOURCE_RUNS = 100_000;
+export const MAX_SOURCE_RUN_TEXT_LENGTH = MAX_AUTHORED_HTML_LENGTH;
+export const MAX_SOURCE_STREAM_TEXT_LENGTH = 100 * 1024 * 1024;
+const MAX_SOURCE_LIST_LABEL_LENGTH = 64;
+const MAX_SOURCE_REASON_LENGTH = 2_000;
 
 /**
  * The single seam every document reader produces and every downstream stage
@@ -67,26 +74,26 @@ const blockContextSchema = z.strictObject({
    * `numbering.xml` rather than in the text, so a reader that skips numbering
    * resolution loses every option label on an auto-numbered question.
    */
-  listNumber: z.string().nullable(),
+  listNumber: z.string().max(MAX_SOURCE_LIST_LABEL_LENGTH).nullable(),
   tableRef: tableReferenceSchema.nullable()
 });
 
 export type BlockContext = z.infer<typeof blockContextSchema>;
 
 const runMathSchema = z.union([
-  z.strictObject({ latex: z.string().min(1) }),
+  z.strictObject({ latex: z.string().min(1).max(MAX_SOURCE_RUN_TEXT_LENGTH) }),
   z.strictObject({
     latex: z.null(),
     /** Canonicalized source retained for review and the later image/AI branch. */
-    omml: z.string().min(1),
-    sourceText: z.string(),
-    reason: z.string().min(1)
+    omml: z.string().min(1).max(MAX_SOURCE_RUN_TEXT_LENGTH),
+    sourceText: z.string().max(MAX_SOURCE_RUN_TEXT_LENGTH),
+    reason: z.string().min(1).max(MAX_SOURCE_REASON_LENGTH)
   })
 ]);
 
 const runImageSchema = z.strictObject({
   /** Identifier the reader assigns; resolved to a stored asset later. */
-  assetRef: z.string().min(1),
+  assetRef: z.string().min(1).max(MAX_FILE_KEY_LENGTH),
   width: z.number().positive().nullable(),
   height: z.number().positive().nullable(),
   /**
@@ -98,18 +105,54 @@ const runImageSchema = z.strictObject({
   placement: z.enum(['inline', 'floating'])
 });
 
-export const sourceRunSchema = z.strictObject({
-  text: z.string(),
-  formatting: runFormattingSchema,
-  block: blockContextSchema,
-  math: runMathSchema.nullable(),
-  image: runImageSchema.nullable(),
-  location: sourceLocationSchema
-});
+export const sourceRunSchema = z
+  .strictObject({
+    text: z.string().max(MAX_SOURCE_RUN_TEXT_LENGTH),
+    formatting: runFormattingSchema,
+    block: blockContextSchema,
+    math: runMathSchema.nullable(),
+    image: runImageSchema.nullable(),
+    location: sourceLocationSchema
+  })
+  .superRefine((run, context) => {
+    if (run.block.index !== run.location.blockIndex) {
+      context.addIssue({
+        code: 'custom',
+        path: ['location', 'blockIndex'],
+        message: 'Source location block index must match its block context'
+      });
+    }
+  });
 
 export type SourceRun = z.infer<typeof sourceRunSchema>;
 
-export const sourceRunStreamSchema = z.array(sourceRunSchema);
+function sourceRunPayloadLength(run: SourceRun): number {
+  const mathLength =
+    run.math === null
+      ? 0
+      : run.math.latex === null
+        ? run.math.omml.length + run.math.sourceText.length + run.math.reason.length
+        : run.math.latex.length;
+
+  return run.text.length + (run.block.listNumber?.length ?? 0) + mathLength + (run.image?.assetRef.length ?? 0);
+}
+
+export const sourceRunStreamSchema = z
+  .array(sourceRunSchema)
+  .max(MAX_SOURCE_RUNS)
+  .superRefine((runs, context) => {
+    let payloadLength = 0;
+    for (const run of runs) {
+      payloadLength += sourceRunPayloadLength(run);
+      if (payloadLength > MAX_SOURCE_STREAM_TEXT_LENGTH) {
+        context.addIssue({
+          code: 'custom',
+          message: `Source run payload exceeds ${MAX_SOURCE_STREAM_TEXT_LENGTH} characters`
+        });
+        return;
+      }
+    }
+  });
 
 /** Formatting with every mark off and no colour. Readers start here and set what they find. */
 export function emptyFormatting(): RunFormatting {
