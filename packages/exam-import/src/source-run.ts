@@ -73,7 +73,16 @@ const blockContextSchema = z.strictObject({
 
 export type BlockContext = z.infer<typeof blockContextSchema>;
 
-const runMathSchema = z.strictObject({ latex: z.string().min(1) });
+const runMathSchema = z.union([
+  z.strictObject({ latex: z.string().min(1) }),
+  z.strictObject({
+    latex: z.null(),
+    /** Canonicalized source retained for review and the later image/AI branch. */
+    omml: z.string().min(1),
+    sourceText: z.string(),
+    reason: z.string().min(1)
+  })
+]);
 
 const runImageSchema = z.strictObject({
   /** Identifier the reader assigns; resolved to a stored asset later. */
