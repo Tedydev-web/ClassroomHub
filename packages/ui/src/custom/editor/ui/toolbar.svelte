@@ -23,37 +23,41 @@
   );
 </script>
 
-<div class={cn('edra-toolbar', className)}>
-  {#if children}
-    {@render children()}
-  {:else}
-    {#each toolbarCommands as cmd (cmd)}
-      {#if cmd === 'headings'}
-        <Headings {editor} />
-      {:else if cmd === 'alignment'}
-        <Alignment {editor} />
-      {:else}
-        {@const commandGroup = commands[cmd].filter((command) => !isExcluded(command.name))}
-        <!-- Keyed by identity, not name: the maths group registers two entries
-             under the same `mathematics` name (inline and block). -->
-        {#each commandGroup as command (command)}
-          <ToolBarIcon {editor} {command} />
-        {/each}
+<div class={cn('edra-toolbar ui:flex ui:min-w-0 ui:items-center', className)}>
+  <!-- Only the command strip scrolls. Persistent actions such as fullscreen
+       remain visible at the right edge even when the toolbar overflows. -->
+  <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:overflow-x-auto">
+    {#if children}
+      {@render children()}
+    {:else}
+      {#each toolbarCommands as cmd (cmd)}
+        {#if cmd === 'headings'}
+          <Headings {editor} />
+        {:else if cmd === 'alignment'}
+          <Alignment {editor} />
+        {:else}
+          {@const commandGroup = commands[cmd].filter((command) => !isExcluded(command.name))}
+          <!-- Keyed by identity, not name: the maths group registers two entries
+               under the same `mathematics` name (inline and block). -->
+          {#each commandGroup as command (command)}
+            <ToolBarIcon {editor} {command} />
+          {/each}
+        {/if}
+      {/each}
+      {#if !isExcluded('font-size')}
+        <FontSize {editor} />
       {/if}
-    {/each}
-    {#if !isExcluded('font-size')}
-      <FontSize {editor} />
+      {#if !isExcluded('quick-colors')}
+        <QuickColors {editor} />
+      {/if}
+      {#if !isExcluded('search-replace')}
+        <SearchAndReplace {editor} />
+      {/if}
     {/if}
-    {#if !isExcluded('quick-colors')}
-      <QuickColors {editor} />
-    {/if}
-    {#if !isExcluded('search-replace')}
-      <SearchAndReplace {editor} />
-    {/if}
-  {/if}
+  </div>
 
   {#if trailing}
-    <div class="ui:ml-auto ui:flex ui:shrink-0 ui:items-center ui:pl-1">
+    <div class="ui:bg-secondary/95 ui:flex ui:shrink-0 ui:items-center ui:border-l ui:border-dashed ui:pl-1">
       {@render trailing()}
     </div>
   {/if}

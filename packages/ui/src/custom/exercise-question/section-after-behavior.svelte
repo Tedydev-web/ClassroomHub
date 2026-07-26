@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Select from '../../base/select';
+  import { richTextToPlainText } from '../../tools';
   import type { ExerciseSectionAfterBehavior } from '@cio/question-types';
 
   interface SectionOption {
@@ -34,7 +35,7 @@
 
     const targetSectionId = value.replace('go_to_section:', '');
     const targetSection = allSections.find((section) => section.id === targetSectionId);
-    return targetSection ? `${labels.goToSection}: ${targetSection.title}` : labels.goToSection;
+    return targetSection ? `${labels.goToSection}: ${richTextToPlainText(targetSection.title)}` : labels.goToSection;
   }
 
   function handleValueChange(value: string) {
@@ -60,8 +61,11 @@
       <Select.Item value="continue" label={labels.continue}>{labels.continue}</Select.Item>
       {#each allSections as section (section.id)}
         {#if section.id !== currentSectionId}
-          <Select.Item value={`go_to_section:${section.id}`} label={`${labels.goToSection}: ${section.title}`}>
-            {labels.goToSection}: {section.title}
+          <Select.Item
+            value={`go_to_section:${section.id}`}
+            label={`${labels.goToSection}: ${richTextToPlainText(section.title)}`}
+          >
+            {labels.goToSection}: {richTextToPlainText(section.title)}
           </Select.Item>
         {/if}
       {/each}

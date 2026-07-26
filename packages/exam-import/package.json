@@ -23,6 +23,9 @@
   },
   "dependencies": {
     "@cio/tsconfig": "workspace:*",
+    "fast-xml-parser": "5.2.5",
+    "jszip": "3.10.1",
+    "officeparser": "^7.4.0",
     "zod": "^4.1.8"
   },
   "devDependencies": {

@@ -211,7 +211,7 @@
       {#if showToolBar}
         <div transition:slide>
           <EdraToolBar
-            class="ui:bg-secondary/50 ui:flex ui:w-full ui:items-center ui:overflow-x-auto ui:border-b ui:border-dashed ui:p-0.5"
+            class="ui:bg-secondary/50 ui:w-full ui:border-b ui:border-dashed ui:p-0.5"
             {editor}
             excludedCommands={config.excludedCommands}
           >

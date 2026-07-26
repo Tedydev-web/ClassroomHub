@@ -48,7 +48,12 @@ describe('source run contract', () => {
     expect(sourceRunSchema.safeParse(run).success).toBe(true);
 
     const cell = validRun();
-    cell.block = { kind: 'table_cell', index: 9, listNumber: null, tableRef: { tableIndex: 0, row: 1, column: 2 } };
+    cell.block = {
+      kind: 'table_cell',
+      index: 9,
+      listNumber: null,
+      tableRef: { tableIndex: 0, row: 1, column: 2, originRow: 1, originColumn: 2 }
+    };
     expect(sourceRunSchema.safeParse(cell).success).toBe(true);
   });
 });

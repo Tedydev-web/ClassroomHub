@@ -1,5 +1,7 @@
 <script lang="ts">
   import Separator from '$src/base/separator/separator.svelte';
+  import SafeHtmlContent from '../safe-html-content/safe-html-content.svelte';
+  import { isRichTextHtml, richTextToDisplayHtml } from '../../tools';
   import type { ExerciseSectionColorTheme } from '@cio/question-types';
 
   const COLOR_CLASSES: Record<ExerciseSectionColorTheme, string> = {
@@ -54,7 +56,11 @@
     <span class={`ui:h-2 ui:w-2 ui:rounded-full ui:inline-block ${COLOR_CLASSES[colorTheme]}`}> </span>
 
     <p class="ui:text-sm ui:font-medium ui:uppercase">
-      {title}
+      {#if isRichTextHtml(title)}
+        <span class="ui:[&_p]:m-0 ui:[&_p]:inline">{@html richTextToDisplayHtml(title)}</span>
+      {:else}
+        {title}
+      {/if}
     </p>
     {#if questionCount !== undefined || totalPoints !== undefined}
       <p class="ui:text-xs ui:text-muted-foreground">({sectionMetaSummary})</p>
@@ -63,7 +69,9 @@
     <Separator orientation="horizontal" class="ui:flex-1 ui:h-0.5! {COLOR_CLASSES[colorTheme]}" />
   </div>
 
-  <p class="ui:text-sm ui:text-muted-foreground">
-    {description}
-  </p>
+  {#if description}
+    <div class="ui:prose ui:prose-sm ui:max-w-none ui:text-muted-foreground">
+      <SafeHtmlContent content={description} />
+    </div>
+  {/if}
 </header>

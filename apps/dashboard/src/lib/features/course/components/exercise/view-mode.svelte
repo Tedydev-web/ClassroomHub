@@ -64,7 +64,10 @@
   import { isSelfPacedLikeCourse } from '$features/course/utils/compliance-utils';
   import { toExerciseQuestionModel } from './question-type-utils';
   import { getAssessmentPassageWorkspaceLabels, getExerciseQuestionLabels } from './question-labels';
-  import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
+  import {
+    getExerciseSectionDisplayHtml,
+    getExerciseSectionDisplayTitle
+  } from '$features/course/utils/exercise-section-utils';
   import {
     formatExercisePoints,
     orderExerciseItemsBySections,
@@ -1029,9 +1032,9 @@
     currentSection ? allTakeItems.filter((item) => item.question.exerciseSectionId === currentSection.id) : []
   );
   const currentSectionQuestionCount = $derived(getExerciseQuestionProgress(currentSectionTakeItems).total);
-  const currentSectionDisplayTitle = $derived(
+  const currentSectionDisplayHtml = $derived(
     currentSection
-      ? getExerciseSectionDisplayTitle({
+      ? getExerciseSectionDisplayHtml({
           title: currentSection.title,
           sectionNumber: $questionnaireMetaData.currentSectionIndex + 1,
           sectionLabel: sectionFallbackTitle
@@ -1517,7 +1520,7 @@
   {/if}
 {:else if hasSectionedExercise && currentSection && $questionnaireMetaData.sectionPhase === 'overview'}
   <ExerciseQuestion.SectionOverview
-    sectionTitle={currentSectionDisplayTitle}
+    sectionTitle={currentSectionDisplayHtml}
     sectionDescription={currentSection.description}
     sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
     totalSections={activeSections.length}
@@ -1539,7 +1542,7 @@
     <ExerciseQuestion.SectionNavigationSidebar sections={sectionNavigationGroups} />
     <section class="space-y-4">
       <ExerciseQuestion.SectionHeader
-        title={currentSectionDisplayTitle}
+        title={currentSectionDisplayHtml}
         description={currentSection.description}
         sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
         totalSections={activeSections.length}
@@ -1611,7 +1614,7 @@
     <div class="flex min-w-0 flex-col gap-4">
       {#if hasSectionedExercise && currentSection}
         <ExerciseQuestion.SectionHeader
-          title={currentSectionDisplayTitle}
+          title={currentSectionDisplayHtml}
           description={currentSection.description}
           sectionNumber={$questionnaireMetaData.currentSectionIndex + 1}
           totalSections={activeSections.length}

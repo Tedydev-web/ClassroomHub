@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { richTextToPlainText } from '../../tools';
+
   interface SectionNavQuestion {
     key: string;
     label: string;
@@ -25,7 +27,7 @@
     {#each sections as section (section.id)}
       <div class="ui:space-y-2">
         <p class={`ui:text-xs ui:font-semibold ${section.isCurrent ? 'ui:text-primary' : 'ui:text-muted-foreground'}`}>
-          {section.title}
+          {richTextToPlainText(section.title)}
         </p>
         <div class="ui:flex ui:flex-wrap ui:gap-1.5">
           {#each section.questions as question (question.key)}

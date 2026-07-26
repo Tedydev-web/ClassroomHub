@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { ExerciseSectionColorTheme } from '@cio/question-types';
-  import * as Field from '@cio/ui/base/field';
   import { Button } from '@cio/ui/base/button';
-  import { Input } from '@cio/ui/base/input';
   import { IconButton } from '@cio/ui/custom/icon-button';
-  import { TextareaField } from '@cio/ui/custom/textarea-field';
+  import { RichTextField } from '$features/ui';
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
   import XIcon from '@lucide/svelte/icons/x';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
@@ -141,13 +139,17 @@
         </div>
       {/if}
     </div>
-    <Input
+    <RichTextField
       bind:value={localTitle}
+      name={`exercise-section-${exerciseSectionId}-title`}
+      variant="inline"
+      aria-label={labels.title ?? 'Section title'}
       oninput={handleTitleInput}
-      aria-invalid={titleError ? 'true' : undefined}
-      class={`min-w-0 flex-1 border-transparent bg-transparent px-1 font-semibold shadow-none focus-visible:ring-1 ${titleError ? 'ui:border-destructive' : ''}`}
+      errorMessage={titleError}
+      className="min-w-0 flex-1"
+      editorClass="ui:min-h-9 ui:py-1 ui:px-1 ui:font-semibold"
     />
-    <div class="flex shrink-0 items-center gap-2">
+    <div class="hidden shrink-0 items-center gap-2 sm:flex">
       {#each COLOR_THEMES as theme (theme)}
         <button
           type="button"
@@ -172,22 +174,19 @@
     </IconButton>
   </div>
 
-  {#if titleError}
-    <div class="bg-white px-4 pt-2 dark:bg-zinc-950">
-      <Field.Error>{titleError}</Field.Error>
-    </div>
-  {/if}
-
   {#if !sectionCollapsed}
     <div class="border-b bg-white px-4 py-3 dark:bg-zinc-950">
-      <TextareaField
+      <!-- Imported section passages are HTML, and hand-authored passages need
+           the same formatting capabilities. `full` preserves existing tables,
+           lists and inline marks instead of narrowing the document schema. -->
+      <RichTextField
         bind:value={localDescription}
-        rows={2}
+        variant="full"
         oninput={handleDescriptionInput}
         placeholder={labels.descriptionPlaceholder ?? 'Describe this section'}
         errorMessage={descriptionError}
         className="m-0"
-        bgColor="resize-none border-dashed bg-transparent text-sm"
+        editorClass="ui:min-h-64 ui:h-auto"
       />
     </div>
 

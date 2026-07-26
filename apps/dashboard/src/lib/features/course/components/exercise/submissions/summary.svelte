@@ -10,7 +10,7 @@
   import type { ExerciseSubmissions } from './types';
   import type { AnswerData, ExerciseQuestionLabels, ExerciseSubmissionModel } from '@cio/question-types';
   import { toExerciseQuestionModel } from '../question-type-utils';
-  import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
+  import { getExerciseSectionDisplayHtml } from '$features/course/utils/exercise-section-utils';
 
   interface Props {
     isLoading?: boolean;
@@ -80,7 +80,7 @@
           {@const sectionQuestions = getQuestionsForSection($questionnaire.questions, section.id)}
           <section class="space-y-4">
             <ExerciseQuestion.SectionHeader
-              title={getExerciseSectionDisplayTitle({
+              title={getExerciseSectionDisplayHtml({
                 title: section.title,
                 sectionNumber: sectionIndex + 1,
                 sectionLabel: sectionFallbackTitle
