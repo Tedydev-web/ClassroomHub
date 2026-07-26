@@ -1564,6 +1564,8 @@
               response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
               disabled={isSubmitting}
               title={sectionTakeItem.question.title}
+              trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+              falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
               questionNumber={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               interactionNumberStart={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               questionNumberActive={false}
@@ -1643,6 +1645,10 @@
                   response={$questionnaireMetaData.canonicalAnswers[currentTakeItem.id]}
                   disabled={isSubmitting}
                   title={currentTakeItem.question.title}
+                  trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+                  falseLabel={$t(
+                    'course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label'
+                  )}
                   questionNumber={interactionNumberStartByItemId[currentTakeItem.id] ??
                     $questionnaireMetaData.currentQuestionIndex}
                   interactionNumberStart={interactionNumberStartByItemId[currentTakeItem.id] ??

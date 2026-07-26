@@ -124,6 +124,52 @@ function collectConsistencyIssues(definition: AssessmentItemDefinition): Assessm
           assessmentIssue('MALFORMED_DEFINITION', [...configPath, 'correctOrder'], 'Order entries must be unique')
         );
       }
+      if (
+        interaction.config.options.length > 0 &&
+        !isExactStringPermutation(
+          interaction.config.correctOrder,
+          interaction.config.options.map((option) => option.id)
+        )
+      ) {
+        issues.push(
+          assessmentIssue(
+            'MALFORMED_DEFINITION',
+            [...configPath, 'correctOrder'],
+            'Order entries must reference every declared option exactly once'
+          )
+        );
+      }
+    }
+
+    if (interaction.kind === 'true_false_group') {
+      const statementIds = interaction.config.statements.map((statement) => statement.id);
+      if (!isUnique(statementIds)) {
+        issues.push(
+          assessmentIssue('MALFORMED_DEFINITION', [...configPath, 'statements'], 'Statement ids must be unique')
+        );
+      }
+
+      if (interaction.config.scoring.mode === 'tiered') {
+        const { tiers } = interaction.config.scoring;
+        if (tiers.length !== interaction.config.statements.length + 1) {
+          issues.push(
+            assessmentIssue(
+              'MALFORMED_DEFINITION',
+              [...configPath, 'scoring', 'tiers'],
+              'Tier count must equal statement count plus one'
+            )
+          );
+        }
+        if (tiers.some((tier, index) => index > 0 && tier < tiers[index - 1]!)) {
+          issues.push(
+            assessmentIssue(
+              'MALFORMED_DEFINITION',
+              [...configPath, 'scoring', 'tiers'],
+              'Tier fractions must be non-decreasing'
+            )
+          );
+        }
+      }
     }
 
     if (
@@ -255,10 +301,33 @@ function collectPublishIssues(
       }
       break;
     }
+    case 'true_false_group': {
+      interaction.config.statements.forEach((statement, statementIndex) => {
+        if (!hasMeaningfulAuthoredContent(statement.html)) {
+          violation([...configPath, 'statements', statementIndex, 'html'], 'Statement content cannot be empty');
+        }
+      });
+      if (interaction.config.scoring.mode === 'tiered') {
+        const { tiers } = interaction.config.scoring;
+        if (tiers[0] !== 0) {
+          violation([...configPath, 'scoring', 'tiers', 0], 'The zero-correct tier must award zero');
+        }
+        if (tiers[tiers.length - 1] !== 1) {
+          violation(
+            [...configPath, 'scoring', 'tiers', tiers.length - 1],
+            'The all-correct tier must award the full interaction score'
+          );
+        }
+      }
+      break;
+    }
     case 'text':
     case 'file_upload':
     case 'link':
     case 'video_recording':
+      break;
+    default:
+      interaction satisfies never;
       break;
   }
 

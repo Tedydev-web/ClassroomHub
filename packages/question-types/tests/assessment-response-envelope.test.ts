@@ -210,6 +210,89 @@ describe('validateAssessmentResponseEnvelope — per-kind constraints', () => {
     }
   });
 
+  it('rejects duplicate and unknown grouped true/false statement ids', () => {
+    const groupedTrueFalse = buildDefinition({
+      blocks: [
+        interactionBlock('i1', {
+          kind: 'true_false_group',
+          prompt: { format: 'html', html: 'Mark each statement' },
+          required: true,
+          maxScore: 1,
+          config: {
+            statements: [
+              { id: 's1', html: 'One', correctValue: true },
+              { id: 's2', html: 'Two', correctValue: false }
+            ],
+            scoring: { mode: 'proportional' }
+          }
+        })
+      ]
+    });
+
+    for (const answers of [
+      [
+        { statementId: 's1', value: true },
+        { statementId: 's1', value: false }
+      ],
+      [{ statementId: 'ghost', value: true }]
+    ]) {
+      expectEnvelopeIssue(
+        groupedTrueFalse,
+        envelope([{ interactionId: 'i1', response: { kind: 'true_false_group', answers } }]),
+        'RESPONSE_CONSTRAINT'
+      );
+    }
+
+    const partialResponse = envelope([
+      {
+        interactionId: 'i1',
+        response: { kind: 'true_false_group', answers: [{ statementId: 's1', value: false }] }
+      }
+    ]);
+
+    expect(validateAssessmentResponseEnvelope(groupedTrueFalse, partialResponse).success).toBe(true);
+    expect(
+      validateAssessmentResponseEnvelope(groupedTrueFalse, partialResponse, {
+        requireCompleteTrueFalseGroups: true
+      }).success
+    ).toBe(false);
+
+    const optionalGroupedTrueFalse: AssessmentItemDefinition = {
+      ...groupedTrueFalse,
+      blocks: groupedTrueFalse.blocks.map((block) =>
+        block.kind === 'interaction' ? { ...block, interaction: { ...block.interaction, required: false } } : block
+      )
+    };
+    const completeOptionalResponse = envelope([
+      {
+        interactionId: 'i1',
+        response: {
+          kind: 'true_false_group',
+          answers: [
+            { statementId: 's1', value: true },
+            { statementId: 's2', value: false }
+          ]
+        }
+      }
+    ]);
+
+    expect(
+      validateAssessmentResponseEnvelope(optionalGroupedTrueFalse, envelope([]), {
+        requireCompleteTrueFalseGroups: true
+      }).success
+    ).toBe(true);
+    expect(
+      validateAssessmentResponseEnvelope(optionalGroupedTrueFalse, partialResponse, {
+        requireCompleteTrueFalseGroups: true
+      }).success
+    ).toBe(false);
+    expect(
+      validateAssessmentResponseEnvelope(optionalGroupedTrueFalse, completeOptionalResponse, {
+        requireCompleteTrueFalseGroups: true
+      }).success
+    ).toBe(true);
+  });
+
   it('enforces fill_blank and word_bank counts plus bank membership', () => {
     const fillBlank = buildDefinition({
       blocks: [

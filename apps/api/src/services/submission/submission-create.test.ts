@@ -240,6 +240,32 @@ const hybridCompositeDefinition = {
   blocks: [autoChoiceDefinition.blocks[0], { ...manualTextDefinition.blocks[0], id: 'block-2' }]
 };
 
+const trueFalseGroupDefinition = {
+  schemaVersion: 1,
+  blocks: [
+    {
+      id: 'block-1',
+      kind: 'interaction',
+      interaction: {
+        kind: 'true_false_group',
+        prompt: { format: 'html', html: 'Mark each statement' },
+        required: true,
+        maxScore: 4,
+        config: {
+          statements: [
+            { id: 'statement-1', html: 'First', correctValue: true },
+            { id: 'statement-2', html: 'Second', correctValue: false },
+            { id: 'statement-3', html: 'Third', correctValue: true },
+            { id: 'statement-4', html: 'Fourth', correctValue: false }
+          ],
+          scoring: { mode: 'tiered', tiers: [0, 0.1, 0.25, 0.5, 1] }
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
 const unsupportedHybridDefinition = {
   schemaVersion: 1,
   blocks: [
@@ -734,6 +760,99 @@ describe('createSubmissionService transaction guards', () => {
         answers: [{ questionId: compositeQuestion.id, points: 3 }],
         gradingState: 'awaiting_manual',
         total: 3
+      }),
+      expect.any(Object)
+    );
+  });
+
+  it('auto-scores a tiered true-false group against its attempted revision', async () => {
+    const createdSubmission = {
+      id: 'submission-true-false-group',
+      courseId,
+      exerciseId,
+      submittedBy,
+      overallStatus: 'auto_graded',
+      gradingState: 'completed',
+      statusId: 3,
+      score: 0,
+      total: 0
+    };
+    const response = {
+      schemaVersion: 1,
+      responses: [
+        {
+          interactionId: 'block-1',
+          response: {
+            kind: 'true_false_group',
+            answers: [
+              { statementId: 'statement-1', value: true },
+              { statementId: 'statement-2', value: false },
+              { statementId: 'statement-3', value: true },
+              { statementId: 'statement-4', value: true }
+            ]
+          }
+        }
+      ]
+    };
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: {
+        id: exerciseId,
+        courseId,
+        allowMultipleAttempts: true,
+        assignmentMode: 'ALL_STUDENTS'
+      },
+      questions: [compositeQuestion]
+    });
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: `revision-${compositeQuestion.id}`,
+      questionId: compositeQuestion.id,
+      revision: 1,
+      definition: trueFalseGroupDefinition
+    });
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: `revision-${compositeQuestion.id}`,
+        questionId: compositeQuestion.id,
+        definition: trueFalseGroupDefinition
+      }
+    ]);
+    mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
+    mocks.createSubmission.mockResolvedValue(createdSubmission);
+    mocks.insertQuestionAnswersBatch.mockResolvedValue([
+      {
+        id: 1,
+        submissionId: createdSubmission.id,
+        questionId: compositeQuestion.id,
+        groupMemberId: submittedBy,
+        answerData: { type: 'ASSESSMENT_ITEM', response },
+        score: 0,
+        point: 0
+      }
+    ]);
+    mocks.updateSubmissionGrades.mockResolvedValue({ ...createdSubmission, score: 2, total: 2 });
+
+    await expect(
+      createSubmissionService(
+        courseId,
+        exerciseId,
+        submittedBy,
+        [
+          {
+            questionId: compositeQuestion.id,
+            questionRevisionId: `revision-${compositeQuestion.id}`,
+            response
+          }
+        ],
+        '019cdef0-1234-7abc-8def-1234567890b2'
+      )
+    ).resolves.toMatchObject({ overallStatus: 'auto_graded', gradingState: 'completed', score: 2, total: 2 });
+    expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
+      courseId,
+      createdSubmission.id,
+      expect.objectContaining({
+        answers: [{ questionId: compositeQuestion.id, points: 2 }],
+        gradingState: 'completed',
+        total: 2
       }),
       expect.any(Object)
     );

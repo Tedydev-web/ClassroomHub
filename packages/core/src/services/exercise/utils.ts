@@ -1,4 +1,5 @@
 import { AppError, ErrorCodes } from '@cio/utils/errors';
+import { createHash } from 'node:crypto';
 import type { TExercise, TNewOption, TNewQuestion, TQuestionAnswer, TQuestionType } from '@cio/db/types';
 import {
   createOptions,
@@ -73,12 +74,120 @@ export type QuestionWithRelations = {
   }[];
 };
 
+const LEARNER_SHARED_SETTING_KEYS = ['description', 'imageUrl', 'imageUrls', 'videoUrl', 'videoUrls'] as const;
+
 function normalizeSettings(value: unknown): Record<string, unknown> {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
 
   return {};
+}
+
+function pickSettings(settings: Record<string, unknown>, keys: readonly string[]): Record<string, unknown> {
+  const picked: Record<string, unknown> = {};
+
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(settings, key)) {
+      picked[key] = settings[key];
+    }
+  }
+
+  return picked;
+}
+
+function stableLearnerOrder<T>(items: readonly T[], seed: string, itemKey: (item: T) => string): T[] {
+  if (items.length < 2) return [...items];
+
+  return [...items].sort((left, right) => {
+    const leftKey = itemKey(left);
+    const rightKey = itemKey(right);
+    const leftHash = createHash('sha256').update(`${seed}\0${leftKey}`).digest('hex');
+    const rightHash = createHash('sha256').update(`${seed}\0${rightKey}`).digest('hex');
+
+    return leftHash.localeCompare(rightHash) || leftKey.localeCompare(rightKey);
+  });
+}
+
+function learnerQuestionSettings(question: QuestionWithRelations, viewerId: string): Record<string, unknown> {
+  const settings = normalizeSettings(question.settings);
+  const safeSettings = pickSettings(settings, LEARNER_SHARED_SETTING_KEYS);
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.TEXTAREA]) {
+    return { ...safeSettings, ...pickSettings(settings, ['minCharacters', 'maxCharacters']) };
+  }
+
+  if (
+    question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.SHORT_ANSWER] ||
+    question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.LINK]
+  ) {
+    return { ...safeSettings, ...pickSettings(settings, ['instructions']) };
+  }
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.FILE_UPLOAD]) {
+    return { ...safeSettings, ...pickSettings(settings, ['acceptedTypes', 'maxSizeMb']) };
+  }
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.ORDERING] && question.options.length === 0) {
+    const items = Array.isArray(settings.items)
+      ? settings.items.filter((value): value is string => typeof value === 'string')
+      : [];
+
+    return {
+      ...safeSettings,
+      items: stableLearnerOrder(items, `${viewerId}:${question.id}:ordering-items`, (item) => item)
+    };
+  }
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.WORD_BANK]) {
+    const correctAnswers = Array.isArray(settings.correctAnswers)
+      ? settings.correctAnswers.filter((value): value is string => typeof value === 'string')
+      : [];
+    const distractors = Array.isArray(settings.distractors)
+      ? settings.distractors.filter((value): value is string => typeof value === 'string')
+      : [];
+    const bankTokens = stableLearnerOrder(
+      [...correctAnswers, ...distractors],
+      `${viewerId}:${question.id}:word-bank`,
+      (token) => token
+    );
+
+    return { ...safeSettings, ...pickSettings(settings, ['template']), bankTokens };
+  }
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.STAR]) {
+    return { ...safeSettings, ...pickSettings(settings, ['maxStars']) };
+  }
+
+  if (question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.VIDEO_RECORDING]) {
+    return { ...safeSettings, ...pickSettings(settings, ['maxDurationSeconds', 'allowRetakes']) };
+  }
+
+  return safeSettings;
+}
+
+export type LearnerQuestionWithRelations = Omit<QuestionWithRelations, 'options'> & {
+  options: Array<Omit<QuestionWithRelations['options'][number], 'isCorrect'> & { isCorrect?: never }>;
+};
+
+export function projectQuestionForLearner(
+  question: QuestionWithRelations,
+  viewerId: string
+): LearnerQuestionWithRelations {
+  const options = question.options.map(({ isCorrect: _isCorrect, settings, ...option }) => ({
+    ...option,
+    settings: pickSettings(normalizeSettings(settings), ['imageUrl'])
+  }));
+  const projectedOptions =
+    question.questionTypeId === QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.ORDERING]
+      ? stableLearnerOrder(options, `${viewerId}:${question.id}:ordering`, (option) => String(option.id))
+      : options;
+
+  return {
+    ...question,
+    settings: learnerQuestionSettings(question, viewerId),
+    options: projectedOptions
+  };
 }
 
 function areSettingsEqual(left: unknown, right: unknown): boolean {

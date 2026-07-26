@@ -24,7 +24,7 @@ import {
   createExerciseForCourseService,
   createExerciseFromTemplate,
   deleteExerciseForCourseService,
-  getExercise,
+  getExerciseForCourseService,
   listExercises,
   updateExerciseForCourseService
 } from '@cio/core/services/exercise/exercise';
@@ -237,18 +237,19 @@ export const exerciseRouter = new Hono()
         const courseId = c.req.param('courseId')!;
         const { exerciseId, questionId } = c.req.valid('param');
         const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
-        if (isTeamMember) {
-          const item = await getAssessmentItemForAuthorService(courseId, exerciseId, questionId);
-          return c.json({ success: true, data: item }, 200);
+        if (!isTeamMember) {
+          await assertEnrolledStudentContentAccess({
+            courseId,
+            profileId: user.id,
+            contentId: exerciseId,
+            type: ContentType.Exercise
+          });
         }
 
-        await assertEnrolledStudentContentAccess({
-          courseId,
-          profileId: user.id,
-          contentId: exerciseId,
-          type: ContentType.Exercise
-        });
-        const item = await getAssessmentItemForLearnerService(courseId, exerciseId, questionId);
+        const item = isTeamMember
+          ? await getAssessmentItemForAuthorService(courseId, exerciseId, questionId)
+          : await getAssessmentItemForLearnerService(courseId, exerciseId, questionId);
+
         return c.json({ success: true, data: item }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to fetch assessment question');
@@ -262,6 +263,7 @@ export const exerciseRouter = new Hono()
     zValidator('param', ZExerciseGetParam),
     async (c) => {
       try {
+        const courseId = c.req.param('courseId')!;
         const { exerciseId } = c.req.valid('param');
         const user = c.get('user');
         const automationKey = c.get('automationKey');
@@ -272,18 +274,18 @@ export const exerciseRouter = new Hono()
 
         if (user?.id && !automationKey) {
           await assertEnrolledStudentContentAccess({
-            courseId: c.req.param('courseId')!,
+            courseId,
             profileId: user.id,
             contentId: exerciseId,
             type: ContentType.Exercise
           });
         }
 
-        const exercise = await getExercise(exerciseId, undefined, user?.id);
+        const exercise = await getExerciseForCourseService(courseId, exerciseId, user?.id);
 
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'get_course_exercise', {
-            courseId: c.req.param('courseId')!,
+            courseId,
             exerciseId
           });
         }

@@ -40,6 +40,8 @@ vi.mock('@cio/core/services/assessment/question-revision', () => ({
 import {
   applyAssessmentItemMutationsForExercise,
   createAssessmentItemForCourseService,
+  getAssessmentItemForAuthorService,
+  getAssessmentItemForLearnerService,
   publishAssessmentItemForCourseService
 } from '@cio/core/services/exercise/assessment-item';
 
@@ -79,6 +81,32 @@ const supportedDefinition: AssessmentItemDefinition = {
   feedback: []
 };
 
+const answerKeyDefinition: AssessmentItemDefinition = {
+  schemaVersion: 1,
+  blocks: [
+    {
+      id: 'choice-1',
+      kind: 'interaction',
+      interaction: {
+        kind: 'choice',
+        prompt: { format: 'html', html: '<p>Pick one.</p>' },
+        required: true,
+        maxScore: 1,
+        config: {
+          cardinality: 'single',
+          presentation: 'list',
+          options: [
+            { id: 'option-a', html: '<p>A</p>' },
+            { id: 'option-b', html: '<p>B</p>' }
+          ],
+          correctOptionIds: ['option-b']
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
 describe('assessment item Phase 3 interaction boundary', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -97,6 +125,47 @@ describe('assessment item Phase 3 interaction boundary', () => {
       publishAssessmentItemForCourseService('course-a', 'exercise-a', 1, 'Unsupported item', 1, unsupportedDefinition)
     ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
     expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe('assessment item access projection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getExerciseById.mockResolvedValue({ id: 'exercise-a', courseId: 'course-a' });
+    mocks.getQuestionWithOptionsForRevision.mockResolvedValue({
+      id: 16,
+      exerciseId: 'exercise-a',
+      exerciseSectionId: null,
+      questionTypeId: 16,
+      title: 'Choice item',
+      order: 0
+    });
+    mocks.getCurrentQuestionRevision.mockResolvedValue({
+      id: 'revision-1',
+      revision: 1,
+      definition: answerKeyDefinition
+    });
+  });
+
+  it('returns one response shape while exposing authored data only to authors', async () => {
+    const authorItem = await getAssessmentItemForAuthorService('course-a', 'exercise-a', 16);
+    const learnerItem = await getAssessmentItemForLearnerService('course-a', 'exercise-a', 16);
+
+    expect(Object.keys(authorItem).sort()).toEqual(Object.keys(learnerItem).sort());
+    expect(authorItem.authorDefinition).toEqual(answerKeyDefinition);
+    expect(learnerItem.authorDefinition).toBeNull();
+    expect(JSON.stringify(authorItem.definition)).not.toContain('correctOptionIds');
+    expect(JSON.stringify(learnerItem.definition)).not.toContain('correctOptionIds');
+  });
+
+  it('rejects a question when the exercise belongs to another course', async () => {
+    mocks.getExerciseById.mockResolvedValue({ id: 'exercise-a', courseId: 'course-b' });
+
+    await expect(getAssessmentItemForLearnerService('course-a', 'exercise-a', 16)).rejects.toMatchObject({
+      code: ErrorCodes.EXERCISE_NOT_FOUND,
+      statusCode: 404
+    });
+    expect(mocks.getQuestionWithOptionsForRevision).not.toHaveBeenCalled();
   });
 });
 

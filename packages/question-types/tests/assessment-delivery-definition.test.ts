@@ -140,4 +140,137 @@ describe('toAssessmentDeliveryDefinition', () => {
       ['blocks', 0, 'interaction', 'config', 'correctOptionIds']
     ]);
   });
+
+  it('preserves fill-blank cardinality and a complete word bank without exposing answer partitions', () => {
+    const definition = {
+      schemaVersion: 1 as const,
+      blocks: [
+        {
+          id: 'fill-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'fill_blank' as const,
+            prompt: { format: 'html' as const, html: '<p>Complete both.</p>' },
+            required: true,
+            maxScore: 2,
+            config: { acceptedAnswers: ['first', 'second'] }
+          }
+        },
+        {
+          id: 'bank-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'word_bank' as const,
+            prompt: { format: 'html' as const, html: '<p>Use the bank.</p>' },
+            required: true,
+            maxScore: 2,
+            config: {
+              template: 'The ___ is above the ___.',
+              correctAnswers: ['sky', 'sea'],
+              distractors: ['grass']
+            }
+          }
+        }
+      ],
+      feedback: []
+    };
+
+    const delivery = toAssessmentDeliveryDefinition(definition);
+    const serialized = JSON.stringify(delivery);
+    const fillBlankBlock = delivery.blocks[0];
+    const wordBankBlock = delivery.blocks[1];
+
+    expect(fillBlankBlock.kind).toBe('interaction');
+    if (fillBlankBlock.kind !== 'interaction' || fillBlankBlock.interaction.kind !== 'fill_blank') return;
+    expect(fillBlankBlock.interaction.config).toEqual({ blankCount: 2 });
+
+    expect(wordBankBlock.kind).toBe('interaction');
+    if (wordBankBlock.kind !== 'interaction' || wordBankBlock.interaction.kind !== 'word_bank') return;
+    expect(wordBankBlock.interaction.config).toEqual({
+      template: 'The ___ is above the ___.',
+      bankTokens: ['grass', 'sea', 'sky']
+    });
+    expect(serialized).not.toContain('acceptedAnswers');
+    expect(serialized).not.toContain('correctAnswers');
+    expect(serialized).not.toContain('distractors');
+    expect(parseAssessmentDeliveryDefinition(delivery)).toEqual({ success: true, data: delivery });
+  });
+
+  it('keeps grouped true/false statements renderable without their boolean answer keys', () => {
+    const definition = {
+      schemaVersion: 1 as const,
+      blocks: [
+        {
+          id: 'group-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'true_false_group' as const,
+            prompt: { format: 'html' as const, html: '<p>Mark each statement.</p>' },
+            required: true,
+            maxScore: 1,
+            config: {
+              statements: [
+                { id: 's1', html: '<p>One</p>', correctValue: true },
+                { id: 's2', html: '<p>Two</p>', correctValue: false }
+              ],
+              scoring: { mode: 'proportional' as const }
+            }
+          }
+        }
+      ],
+      feedback: []
+    };
+
+    const delivery = toAssessmentDeliveryDefinition(definition);
+    const serialized = JSON.stringify(delivery);
+    const block = delivery.blocks[0];
+
+    expect(serialized).not.toContain('correctValue');
+    expect(block.kind).toBe('interaction');
+    if (block.kind !== 'interaction' || block.interaction.kind !== 'true_false_group') return;
+    expect(block.interaction.config.statements).toEqual([
+      { id: 's1', html: '<p>One</p>' },
+      { id: 's2', html: '<p>Two</p>' }
+    ]);
+    expect(parseAssessmentDeliveryDefinition(delivery)).toEqual({ success: true, data: delivery });
+  });
+
+  it('projects ordering options independently from the answer key and round-trips the delivery DTO', () => {
+    const definition = {
+      schemaVersion: 1 as const,
+      blocks: [
+        {
+          id: 'ordering-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'ordering' as const,
+            prompt: { format: 'html' as const, html: '<p>Order the steps.</p>' },
+            required: true,
+            maxScore: 1,
+            config: {
+              options: [
+                { id: 'step-a', html: '<p>First</p>' },
+                { id: 'step-b', html: '<p>Second</p>' },
+                { id: 'step-c', html: '<p>Third</p>' }
+              ],
+              correctOrder: ['step-a', 'step-b', 'step-c']
+            }
+          }
+        }
+      ],
+      feedback: []
+    };
+
+    const delivery = toAssessmentDeliveryDefinition(definition);
+    const block = delivery.blocks[0];
+    if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') {
+      throw new Error('expected ordering');
+    }
+
+    expect(block.interaction.config.options.map((option) => option.id)).not.toEqual(
+      definition.blocks[0].interaction.config.correctOrder
+    );
+    expect(JSON.stringify(delivery)).not.toContain('correctOrder');
+    expect(parseAssessmentDeliveryDefinition(delivery)).toEqual({ success: true, data: delivery });
+  });
 });

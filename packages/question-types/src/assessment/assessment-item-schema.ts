@@ -123,6 +123,34 @@ const orderingInteractionSchema = z.strictObject({
   })
 });
 
+export const DEFAULT_TRUE_FALSE_GROUP_TIERS = [0, 0.1, 0.25, 0.5, 1] as const;
+
+const trueFalseGroupStatementSchema = z.strictObject({
+  id: assessmentIdSchema,
+  html: z.string().max(MAX_AUTHORED_HTML_LENGTH),
+  correctValue: z.boolean()
+});
+
+const scoreFractionSchema = z.number().min(0).max(1);
+
+const trueFalseGroupScoringSchema = z.discriminatedUnion('mode', [
+  z.strictObject({
+    mode: z.literal('tiered'),
+    tiers: z.array(scoreFractionSchema).max(MAX_INTERACTION_OPTIONS + 1)
+  }),
+  z.strictObject({ mode: z.literal('proportional') }),
+  z.strictObject({ mode: z.literal('all_or_nothing') })
+]);
+
+const trueFalseGroupInteractionSchema = z.strictObject({
+  kind: z.literal('true_false_group'),
+  ...interactionBaseShape,
+  config: z.strictObject({
+    statements: z.array(trueFalseGroupStatementSchema).min(2).max(MAX_INTERACTION_OPTIONS),
+    scoring: trueFalseGroupScoringSchema
+  })
+});
+
 const fileUploadInteractionSchema = z.strictObject({
   kind: z.literal('file_upload'),
   ...interactionBaseShape,
@@ -165,6 +193,7 @@ export const ASSESSMENT_INTERACTION_SCHEMAS = [
   fillBlankInteractionSchema,
   wordBankInteractionSchema,
   orderingInteractionSchema,
+  trueFalseGroupInteractionSchema,
   fileUploadInteractionSchema,
   linkInteractionSchema,
   starRatingInteractionSchema,
@@ -180,6 +209,7 @@ export const ASSESSMENT_INTERACTION_KINDS = [
   'fill_blank',
   'word_bank',
   'ordering',
+  'true_false_group',
   'file_upload',
   'link',
   'star_rating',
