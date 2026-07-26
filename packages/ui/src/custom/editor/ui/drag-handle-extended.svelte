@@ -24,6 +24,7 @@
   let currentNode: Node | null = $state(null);
   let currentNodePos: number = $state(-1);
   let open = $state(false);
+  let handleElement: HTMLElement;
   const turnIntoCommand = Object.values(commands)
     .flat()
     .filter((c) => c.turnInto !== undefined);
@@ -31,11 +32,14 @@
   const pluginKey = 'globalDragHandle';
 
   onMount(() => {
+    // Bind this plugin to this component's element. A global selector makes all
+    // editors on a section page compete for the first `.drag-handle`, leaving a
+    // six-dot icon stranded when another editor moves or unmounts it.
     const plugin = DragHandlePlugin({
       pluginKey: pluginKey,
       dragHandleWidth: 20,
       scrollTreshold: 1000,
-      dragHandleSelector: '.drag-handle',
+      dragHandleElement: handleElement,
       excludedTags: ['pre', 'code', 'table p'],
       customNodes: [],
       onMouseMove: onMouseMove
@@ -104,7 +108,7 @@
   };
 </script>
 
-<div class="drag-handle">
+<div bind:this={handleElement} class="drag-handle hide">
   <Button variant="ghost" class="ui:!size-6 ui:rounded-sm ui:p-0" onclick={() => (open = true)}>
     <GripVertical />
   </Button>
