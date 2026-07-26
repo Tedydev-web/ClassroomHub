@@ -45,23 +45,21 @@
 </script>
 
 <AnalyticsPanelCard title={$t('analytics.trend.heading')} description={$t('analytics.trend.description')}>
-  {#snippet children()}
-    {#if loading && !data}
-      <div class="flex h-[280px] items-center justify-center">
-        <Spinner class="ui:text-muted-foreground size-6" />
-      </div>
-    {:else if browser && hasData && data}
-      {#await loadChart() then C}
-        <C.ChartContainer class="h-[280px] w-full" config={chartConfig}>
-          <C.AreaChart data={data.sparkline} x="date" axis="x" {series} />
-        </C.ChartContainer>
-      {/await}
-    {:else if hasData && data}
-      <div class="flex h-[280px] items-center justify-center">
-        <Spinner class="ui:text-muted-foreground size-6" />
-      </div>
-    {:else}
-      <Empty icon={TrendingUpIcon} title={$t('analytics.trend.empty')} class="h-[280px]" />
-    {/if}
-  {/snippet}
+  {#if loading && !data}
+    <div class="flex h-[280px] items-center justify-center">
+      <Spinner class="ui:text-muted-foreground size-6" />
+    </div>
+  {:else if browser && hasData && data}
+    {#await loadChart() then C}
+      <C.ChartContainer class="h-[280px] w-full" config={chartConfig}>
+        <C.AreaChart data={data.sparkline} x="date" axis="x" {series} />
+      </C.ChartContainer>
+    {/await}
+  {:else if hasData && data}
+    <div class="flex h-[280px] items-center justify-center">
+      <Spinner class="ui:text-muted-foreground size-6" />
+    </div>
+  {:else}
+    <Empty icon={TrendingUpIcon} title={$t('analytics.trend.empty')} class="h-[280px]" />
+  {/if}
 </AnalyticsPanelCard>
