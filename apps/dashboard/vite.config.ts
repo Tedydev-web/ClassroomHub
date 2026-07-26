@@ -30,7 +30,11 @@ export default ({ mode }) => {
       }
     },
     build: {
-      sourcemap: true,
+      // Sentry is not wired here (no PUBLIC_SENTRY_DSN, no upload step), so
+      // source maps were never consumed. Emitting them for the merged chart
+      // modules blew past the V8 heap in rollup's render phase (SIGSEGV at 8GB
+      // and 12GB), so they stay off until sourcemap upload is actually set up.
+      sourcemap: false,
       target: 'es2020'
     },
     ssr: {
