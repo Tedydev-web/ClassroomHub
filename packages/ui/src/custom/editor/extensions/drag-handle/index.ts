@@ -23,6 +23,13 @@ export interface GlobalDragHandleOptions {
   dragHandleSelector?: string;
 
   /**
+   * A handle owned by this editor instance. Prefer this over a selector when
+   * several editors can be mounted at once: `document.querySelector()` would
+   * otherwise bind every plugin to the first matching handle on the page.
+   */
+  dragHandleElement?: HTMLElement;
+
+  /**
    * Tags to be excluded for drag handle
    */
   excludedTags: string[];
@@ -197,9 +204,9 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
     key: new PluginKey(options.pluginKey),
     view: (view) => {
       const handleBySelector = options.dragHandleSelector
-        ? document.querySelector<HTMLElement>(options.dragHandleSelector)
+        ? view.dom.parentElement?.querySelector<HTMLElement>(options.dragHandleSelector)
         : null;
-      dragHandleElement = handleBySelector ?? document.createElement('div');
+      dragHandleElement = options.dragHandleElement ?? handleBySelector ?? document.createElement('div');
       dragHandleElement.draggable = true;
       dragHandleElement.dataset.dragHandle = '';
       dragHandleElement.classList.add('drag-handle');
@@ -224,14 +231,14 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 
       hideDragHandle();
 
-      if (!handleBySelector) {
+      if (!options.dragHandleElement && !handleBySelector) {
         view?.dom?.parentElement?.appendChild(dragHandleElement);
       }
       view?.dom?.parentElement?.addEventListener('mouseout', hideHandleOnEditorOut);
 
       return {
         destroy: () => {
-          if (!handleBySelector) {
+          if (!options.dragHandleElement && !handleBySelector) {
             dragHandleElement?.remove?.();
           }
           dragHandleElement?.removeEventListener('drag', onDragHandleDrag);

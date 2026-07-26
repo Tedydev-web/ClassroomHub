@@ -137,55 +137,45 @@
     title={$t('analytics.student_progress_distribution')}
     description={$t('analytics.course_metrics.progress_distribution_card_description')}
   >
-    {#snippet children()}
-      {#if chartsLoading}
-        <div class="flex h-[280px] items-center justify-center">
-          <Spinner class="ui:text-muted-foreground size-6" />
-        </div>
-      {:else if browser && hasStudentData}
-        {#await loadChart() then C}
-          <C.ChartContainer class="h-[280px] w-full" config={progressChartConfig}>
-            <C.BarChart
-              data={progressChartData}
-              x="group"
-              axis="x"
-              props={progressChartProps}
-              series={progressSeries}
-            />
-          </C.ChartContainer>
-        {/await}
-      {:else if hasStudentData}
-        <div class="flex h-[280px] items-center justify-center">
-          <Spinner class="ui:text-muted-foreground size-6" />
-        </div>
-      {:else}
-        <Empty icon={BarChartIcon} title={$t('analytics.no_progress_data')} class="h-[280px]" />
-      {/if}
-    {/snippet}
+    {#if chartsLoading}
+      <div class="flex h-[280px] items-center justify-center">
+        <Spinner class="ui:text-muted-foreground size-6" />
+      </div>
+    {:else if browser && hasStudentData}
+      {#await loadChart() then C}
+        <C.ChartContainer class="h-[280px] w-full" config={progressChartConfig}>
+          <C.BarChart data={progressChartData} x="group" axis="x" props={progressChartProps} series={progressSeries} />
+        </C.ChartContainer>
+      {/await}
+    {:else if hasStudentData}
+      <div class="flex h-[280px] items-center justify-center">
+        <Spinner class="ui:text-muted-foreground size-6" />
+      </div>
+    {:else}
+      <Empty icon={BarChartIcon} title={$t('analytics.no_progress_data')} class="h-[280px]" />
+    {/if}
   </AnalyticsPanelCard>
 
   <AnalyticsPanelCard
     title={$t('analytics.grade_distribution')}
     description={$t('analytics.course_metrics.grade_distribution_card_description')}
   >
-    {#snippet children()}
-      {#if chartsLoading}
-        <div class="flex h-[280px] items-center justify-center">
-          <Spinner class="ui:text-muted-foreground size-6" />
-        </div>
-      {:else if browser && hasStudentData}
-        {#await loadChart() then C}
-          <C.ChartContainer class="h-[280px] w-full" config={gradeChartConfig}>
-            <C.BarChart data={gradeChartData} x="group" axis="x" props={gradeChartProps} series={gradeSeries} />
-          </C.ChartContainer>
-        {/await}
-      {:else if hasStudentData}
-        <div class="flex h-[280px] items-center justify-center">
-          <Spinner class="ui:text-muted-foreground size-6" />
-        </div>
-      {:else}
-        <Empty icon={BarChartIcon} title={$t('analytics.no_grade_data')} class="h-[280px]" />
-      {/if}
-    {/snippet}
+    {#if chartsLoading}
+      <div class="flex h-[280px] items-center justify-center">
+        <Spinner class="ui:text-muted-foreground size-6" />
+      </div>
+    {:else if browser && hasStudentData}
+      {#await loadChart() then C}
+        <C.ChartContainer class="h-[280px] w-full" config={gradeChartConfig}>
+          <C.BarChart data={gradeChartData} x="group" axis="x" props={gradeChartProps} series={gradeSeries} />
+        </C.ChartContainer>
+      {/await}
+    {:else if hasStudentData}
+      <div class="flex h-[280px] items-center justify-center">
+        <Spinner class="ui:text-muted-foreground size-6" />
+      </div>
+    {:else}
+      <Empty icon={BarChartIcon} title={$t('analytics.no_grade_data')} class="h-[280px]" />
+    {/if}
   </AnalyticsPanelCard>
 </div>
