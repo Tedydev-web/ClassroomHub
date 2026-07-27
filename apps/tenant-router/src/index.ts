@@ -99,6 +99,18 @@ const HLS_PREFIX = '/hls/';
 const PROXY_HLS_PREFIX = '/proxy/hls/';
 const HLS_COOKIE_NAME = 'cio_hls';
 
+function withMarketingSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Content-Security-Policy', "base-uri 'self'; frame-ancestors 'none'; object-src 'none'");
+  headers.set('Permissions-Policy', 'camera=(), geolocation=(), microphone=()');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Strict-Transport-Security', 'max-age=31536000');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
+
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 const HLS_CONTENT_TYPES: Record<string, string> = {
   m3u8: 'application/vnd.apple.mpegurl',
   ts: 'video/mp2t',
@@ -380,10 +392,10 @@ export default {
       if (env.MARKETING_CANONICAL_HOST && originalHost !== env.MARKETING_CANONICAL_HOST) {
         const canonicalUrl = new URL(request.url);
         canonicalUrl.hostname = env.MARKETING_CANONICAL_HOST;
-        return Response.redirect(canonicalUrl.toString(), 301);
+        return withMarketingSecurityHeaders(Response.redirect(canonicalUrl.toString(), 301));
       }
 
-      return env.MARKETING.fetch(request);
+      return withMarketingSecurityHeaders(await env.MARKETING.fetch(request));
     }
 
     // Legacy learning apex → permanent redirect to marketing apex.
