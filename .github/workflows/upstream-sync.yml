@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   propose:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, workstation]
     steps:
       - name: Check out fork main
         uses: actions/checkout@v4

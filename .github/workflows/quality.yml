@@ -2,9 +2,31 @@ name: Quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
   push:
     branches:
       - main
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
 
 permissions:
   contents: read
@@ -15,7 +37,10 @@ concurrency:
 
 jobs:
   static-and-unit:
-    runs-on: self-hosted
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 45
     env:
       NODE_OPTIONS: --max-old-space-size=6144
@@ -52,8 +77,11 @@ jobs:
       - name: Run focused unit suites
         run: |
           pnpm --filter @cio/question-types test
+          pnpm --filter @cio/exam-import test
+          pnpm --filter @cio/exam-import test:corpus
           pnpm --filter @cio/utils test
           pnpm --filter @cio/jobs test
+          pnpm --filter @cio/jobs-worker test
           pnpm --filter @cio/api test
           pnpm --filter @cio/dashboard test
 
@@ -63,22 +91,11 @@ jobs:
           pnpm --filter @cio/dashboard lint
 
   selective-assignment-integration:
-    runs-on: self-hosted
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: classroomhub
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d classroomhub"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/classroomhub
     steps:
@@ -101,6 +118,35 @@ jobs:
 
       - name: Generate secret-free build environment
         run: pnpm setup:env
+
+      - name: Start ephemeral PostgreSQL
+        env:
+          CI_POSTGRES_CONTAINER: classroomhub-ci-postgres-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          runner_container=$(docker ps \
+            --filter 'label=com.docker.compose.service=runner' \
+            --format '{{.Names}}' \
+            | head -n 1)
+          test -n "$runner_container"
+
+          docker run --detach --rm \
+            --name "$CI_POSTGRES_CONTAINER" \
+            --network "container:${runner_container}" \
+            --env POSTGRES_DB=classroomhub \
+            --env POSTGRES_USER=postgres \
+            --env POSTGRES_PASSWORD=postgres \
+            postgres:16-alpine
+
+          for attempt in $(seq 1 30); do
+            if docker exec "$CI_POSTGRES_CONTAINER" pg_isready -U postgres -d classroomhub >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs "$CI_POSTGRES_CONTAINER" >&2
+          exit 1
 
       - name: Build API dependency graph
         run: pnpm turbo run build --filter=@cio/api...
@@ -127,6 +173,13 @@ jobs:
           pnpm --filter @cio/api exec vitest run --testTimeout 120000
           src/services/exercise/question-revision-db.integration.test.ts
           src/services/submission/submission-db.integration.test.ts
+          src/services/exam-import/exam-import-db.integration.test.ts
 
       - name: Rehearse assessment migration chain
         run: pnpm --filter @cio/db db:rehearse-assessment-migration
+
+      - name: Stop ephemeral PostgreSQL
+        if: always()
+        env:
+          CI_POSTGRES_CONTAINER: classroomhub-ci-postgres-${{ github.run_id }}
+        run: docker rm --force "$CI_POSTGRES_CONTAINER" >/dev/null 2>&1 || true

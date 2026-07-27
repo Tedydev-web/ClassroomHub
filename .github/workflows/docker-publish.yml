@@ -2,18 +2,8 @@ name: Publish Docker Images
 
 on:
   push:
-    branches:
-      - main
-    # Only rebuild images when something that affects them changes (not docs-only
-    # commits). Tag pushes and manual dispatch always run.
-    paths:
-      - "apps/api/**"
-      - "apps/dashboard/**"
-      - "apps/jobs/**"
-      - "packages/**"
-      - "docker/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/docker-publish.yml"
+    # Only run on version tags to avoid rebuilding images on every main push.
+    # Keep manual dispatch for hotfixes/rebuilds from the operator.
     tags:
       - "v*"
   workflow_dispatch:
@@ -40,7 +30,7 @@ jobs:
   # actually starts BEFORE we publish anything. A broken image never reaches users.
   smoke:
     name: Smoke test (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, workstation]
     strategy:
       fail-fast: true
       matrix:
@@ -99,7 +89,7 @@ jobs:
 
   build-and-push:
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, workstation]
     strategy:
       matrix:
         include:

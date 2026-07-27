@@ -8,9 +8,16 @@ on:
       - 'packages/utils/src/openapi/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-openapi-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-and-upload-openapi:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, workstation]
     environment: production
     
     steps:
