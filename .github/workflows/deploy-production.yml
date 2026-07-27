@@ -10,9 +10,6 @@ on:
     types: [completed]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   # One deploy at a time. The dashboard image needs ~8 GB to build and the host
   # is also a workstation; overlapping builds exhaust memory.
