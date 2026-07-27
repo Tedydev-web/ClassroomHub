@@ -1,26 +1,27 @@
 import type { Handle } from '@sveltejs/kit';
 
-const DOCS_ORIGIN = 'https://docs.classroom.tedydev.io.vn';
+const CANONICAL_HOST = 'classroom.io.vn';
+const WWW_HOST = `www.${CANONICAL_HOST}`;
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
 
+  if (event.url.hostname === WWW_HOST) {
+    const canonicalUrl = new URL(event.url);
+    canonicalUrl.hostname = CANONICAL_HOST;
+    return Response.redirect(canonicalUrl.toString(), 301);
+  }
+
   if (pathname === '/docs' || pathname.startsWith('/docs/')) {
-    const upstream = new URL(pathname + event.url.search, DOCS_ORIGIN);
+    const docs = event.platform?.['env'].DOCS;
+    if (!docs) return new Response('Documentation service unavailable', { status: 503 });
 
-    const headers = new Headers(event.request.headers);
-    headers.delete('host');
-    headers.set('x-forwarded-host', event.url.host);
-    headers.set('x-forwarded-proto', 'https');
-
-    const hasBody = event.request.method !== 'GET' && event.request.method !== 'HEAD';
-
-    return fetch(upstream, {
-      method: event.request.method,
-      headers,
-      body: hasBody ? event.request.body : undefined,
-      redirect: 'manual'
-    });
+    try {
+      return await docs.fetch(event.request);
+    } catch (error) {
+      console.error('Documentation service binding request failed', error);
+      return new Response('Documentation service unavailable', { status: 503 });
+    }
   }
 
   return resolve(event);
