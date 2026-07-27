@@ -218,6 +218,36 @@ describe('ExamImportDraft validation', () => {
     expect(result.publishable).toBe(false);
   });
 
+  it('allows a keyless short-answer question because the published interaction is manually graded', () => {
+    const draft = buildValidExamImportDraft();
+    const question = draft.sections[0]!.questions[0]!;
+    draft.sections[0]!.questions = [
+      {
+        id: question.id,
+        kind: 'short_answer',
+        order: question.order,
+        sourceNumber: question.sourceNumber,
+        promptHtml: question.promptHtml,
+        points: question.points,
+        cognitiveLevel: question.cognitiveLevel,
+        passageId: question.passageId,
+        answerCandidates: [],
+        answerKey: null,
+        confidence: 'medium',
+        review: 'clean',
+        provenance: question.provenance
+      }
+    ];
+    draft.fieldStates = draft.fieldStates.filter(
+      (fieldState) => !(fieldState.target.kind === 'question_field' && fieldState.target.field === 'answerKey')
+    );
+
+    const result = validateExamImportDraft(draft, validationContext);
+
+    expect(findingCodes(result)).not.toContain('MISSING_ANSWER_KEY');
+    expect(result.publishable).toBe(true);
+  });
+
   it('requires teacher confirmation before an AI-selected answer can publish', () => {
     const draft = buildValidExamImportDraft();
     const question = draft.sections[0]!.questions[0]!;

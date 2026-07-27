@@ -2,5 +2,6 @@ export * from './media';
 export * from './emails';
 export * from './maintenance';
 export * from './agent-course-generation';
+export * from './exam-import';
 export * from './notifications';
 export * from './webhooks';

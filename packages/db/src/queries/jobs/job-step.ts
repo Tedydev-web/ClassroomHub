@@ -1,6 +1,6 @@
 import * as schema from '@db/schema';
 
-import { and, eq } from '@db/drizzle';
+import { and, eq, ne } from '@db/drizzle';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import type { TJobStatus, TJobStep, TNewJobStep } from '@db/types';
 
@@ -62,6 +62,27 @@ export async function listJobStepsByRun(
   }
 }
 
+export async function deleteJobStep(
+  domain: string,
+  runId: string,
+  stepKey: string,
+  dbClient: DbOrTxClient = db
+): Promise<boolean> {
+  try {
+    const deleted = await dbClient
+      .delete(schema.jobStep)
+      .where(
+        and(eq(schema.jobStep.domain, domain), eq(schema.jobStep.runId, runId), eq(schema.jobStep.stepKey, stepKey))
+      )
+      .returning({ id: schema.jobStep.id });
+
+    return deleted.length > 0;
+  } catch (error) {
+    console.error('deleteJobStep error:', error);
+    throw new Error('Failed to delete job step');
+  }
+}
+
 export async function upsertJobStep(input: UpsertJobStepInput, dbClient: DbOrTxClient = db): Promise<TJobStep> {
   try {
     const values: TNewJobStep = {
@@ -83,6 +104,7 @@ export async function upsertJobStep(input: UpsertJobStepInput, dbClient: DbOrTxC
       .values(values)
       .onConflictDoUpdate({
         target: [schema.jobStep.domain, schema.jobStep.runId, schema.jobStep.stepKey],
+        setWhere: ne(schema.jobStep.status, 'completed'),
         set: {
           status: input.status,
           inputHash: input.inputHash ?? null,
@@ -98,6 +120,11 @@ export async function upsertJobStep(input: UpsertJobStepInput, dbClient: DbOrTxC
       .returning();
 
     if (!row) {
+      const completed = await getJobStep(input.domain, input.runId, input.stepKey, dbClient);
+      if (completed?.status === 'completed') {
+        return completed;
+      }
+
       throw new Error('Upsert returned no row');
     }
 

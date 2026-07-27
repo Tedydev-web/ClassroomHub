@@ -68,7 +68,8 @@ function extractedQuestion(question: ExamImportQuestion): ReferenceQuestion {
     number: question.sourceNumber ?? String(question.order + 1),
     groupId: question.passageId,
     answerKey: answerLabels(question),
-    prompt: authoredHtmlToText(question.promptHtml)
+    prompt: authoredHtmlToText(question.promptHtml),
+    reviewRequired: question.review !== 'clean'
   };
 
   switch (question.kind) {

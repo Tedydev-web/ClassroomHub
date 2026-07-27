@@ -255,6 +255,22 @@ describe('exam import segmentation', () => {
     expect(html).toContain('src="cid:docx%3Aword%2Fmedia%2Fchart.png"');
   });
 
+  it('uses a resolved public URL for an embedded image after worker persistence', () => {
+    const image = block(0, '');
+    image.location.runIndex = 1;
+    image.image = {
+      assetRef: 'https://media.example.test/exam-import/org/import/image.png',
+      width: 320,
+      height: 180,
+      placement: 'inline'
+    };
+    const draft = segment([block(0, 'Question 1. Choose.'), image, block(1, 'A. One B. Two C. Three D. Four')]);
+    const question = draft.sections[0]?.questions[0];
+
+    expect(question?.promptHtml).toContain('src="https://media.example.test/exam-import/org/import/image.png"');
+    expect(question?.promptHtml).not.toContain('cid:');
+  });
+
   it('preserves run formatting inside question prompts and option bodies', () => {
     const promptStart = block(0, 'Question 1. The ');
     const promptEmphasis = block(0, 'term', { formatting: { underline: true } });

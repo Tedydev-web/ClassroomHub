@@ -245,6 +245,10 @@
                 closeModal();
                 goto(resolve(`/courses/${courseApi.course?.id}/exercises/${exerciseId}`, {}));
               }}
+              onImportCreated={(importId) => {
+                closeModal();
+                goto(resolve(`/courses/${courseApi.course?.id}/exam-imports/${importId}`, {}));
+              }}
             />
           {/if}
 

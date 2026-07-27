@@ -18,6 +18,7 @@
     "dev:webhooks": "tsx watch --include '../../packages/*/dist/index.js' src/workers/webhooks.ts",
     "dev:maintenance": "tsx watch --include '../../packages/*/dist/index.js' src/workers/maintenance.ts",
     "dev:agent-course-generation": "tsx watch --include '../../packages/*/dist/index.js' src/workers/agent-course-generation.ts",
+    "dev:exam-import": "tsx watch --include '../../packages/*/dist/index.js' src/workers/exam-import.ts",
     "start": "node dist/index.js",
     "start:media": "node dist/workers/media.js",
     "start:media-transcribe": "node dist/workers/media-transcribe.js",
@@ -26,6 +27,8 @@
     "start:webhooks": "node dist/workers/webhooks.js",
     "start:maintenance": "node dist/workers/maintenance.js",
     "start:agent-course-generation": "node dist/workers/agent-course-generation.js",
+    "start:exam-import": "node dist/workers/exam-import.js",
+    "test": "vitest run",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },
@@ -36,22 +39,27 @@
     "@cio/core": "workspace:*",
     "@cio/db": "workspace:*",
     "@cio/email": "workspace:*",
+    "@cio/exam-import": "workspace:*",
     "@cio/jobs": "workspace:*",
     "@cio/utils": "workspace:*",
     "bullmq": "^5.34.0",
     "dotenv": "^16.3.1",
     "ioredis": "^5.4.1",
-    "openai": "^6.36.0"
+    "isomorphic-dompurify": "^3.7.1",
+    "openai": "^6.36.0",
+    "pngjs": "5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/node": "^22.15.0",
+    "@types/pngjs": "^6.0.5",
     "eslint": "^9.31.0",
     "globals": "^16.4.0",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.3",
     "typescript": "^5.5.2",
     "typescript-eslint": "^8.44.1",
+    "vitest": "^1.2.2",
     "zod": "^4.1.8"
   }
 }

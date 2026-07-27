@@ -41,6 +41,10 @@ export const JOB_NAMES = {
   webhooks: {
     deliver: 'deliver'
   },
+  courseImports: {
+    runExamImport: 'run-exam-import',
+    suggestExamImportRegion: 'suggest-exam-import-region'
+  },
   agentCourseGeneration: {
     run: 'run'
   },
@@ -48,6 +52,7 @@ export const JOB_NAMES = {
     retentionCompact: 'retention-compact',
     deadLetterCleanup: 'dead-letter-cleanup',
     mediaJobReap: 'media-job-reap',
+    examImportReconcile: 'exam-import-reconcile',
     analyticsDailyRollup: 'analytics-daily-rollup',
     assetStorageCleanup: 'asset-storage-cleanup'
   }

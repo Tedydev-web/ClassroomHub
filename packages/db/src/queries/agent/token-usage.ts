@@ -64,6 +64,10 @@ export interface InsertTokenUsageParams {
   completionTokens: number;
   costUnits: number;
   model: string;
+  transport?: 'gateway' | 'official';
+  workloadDomain?: 'interactive' | 'course_generation' | 'exam_import';
+  workloadId?: string;
+  idempotencyKey?: string;
   planAllowance: number;
   since: Date;
 }
@@ -71,15 +75,25 @@ export interface InsertTokenUsageParams {
 export async function insertTokenUsageAndDrainCredits(params: InsertTokenUsageParams): Promise<void> {
   try {
     await db.transaction(async (tx) => {
-      await tx.insert(schema.aiTokenUsage).values({
-        orgId: params.orgId,
-        userId: params.userId,
-        courseId: params.courseId,
-        promptTokens: params.promptTokens,
-        completionTokens: params.completionTokens,
-        costUnits: params.costUnits,
-        model: params.model
-      });
+      const inserted = await tx
+        .insert(schema.aiTokenUsage)
+        .values({
+          orgId: params.orgId,
+          userId: params.userId,
+          courseId: params.courseId,
+          promptTokens: params.promptTokens,
+          completionTokens: params.completionTokens,
+          costUnits: params.costUnits,
+          model: params.model,
+          transport: params.transport ?? 'official',
+          workloadDomain: params.workloadDomain ?? 'interactive',
+          workloadId: params.workloadId,
+          idempotencyKey: params.idempotencyKey
+        })
+        .onConflictDoNothing()
+        .returning({ id: schema.aiTokenUsage.id });
+
+      if (inserted.length === 0) return;
 
       const [usageRow] = await tx
         .select({

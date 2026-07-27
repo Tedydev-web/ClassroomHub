@@ -34,6 +34,10 @@ export type ExtractionMetrics = {
   /** Options recovered at the right position, over all reference options. */
   optionFidelity: number | null;
 
+  // -- from the review routing layer --
+  /** Flagged extracted questions that genuinely require teacher review. */
+  reviewPrecision: number | null;
+
   counts: {
     referenceQuestions: number;
     extractedQuestions: number;
@@ -109,6 +113,7 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
   const scoresStructure = reference.coverage.structure === 'verified';
   const scoresKeys = reference.coverage.answerKeys === 'verified';
   const scoresText = reference.coverage.optionText === 'verified';
+  const scoresReviewRouting = reference.coverage.reviewRouting === 'verified';
 
   let matchedQuestions = 0;
   let matchedKinds = 0;
@@ -174,6 +179,10 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
   const spuriousQuestions = extracted.questions.filter(
     (question) => !referenceQuestions.some((expected) => expected.number === question.number)
   ).length;
+  const flaggedQuestions = extracted.questions.filter((question) => question.reviewRequired === true);
+  const correctlyFlaggedQuestions = flaggedQuestions.filter(
+    (question) => referenceQuestions.find((expected) => expected.number === question.number)?.reviewRequired === true
+  ).length;
 
   return {
     questionRecall: scoresStructure ? rate(matchedQuestions, referenceQuestions.length) : null,
@@ -182,6 +191,7 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
     optionCountAccuracy: scoresStructure ? rate(matchedOptionCounts, comparableOptionCounts) : null,
     answerKeyAccuracy: scoresKeys ? rate(correctKeys, keyedQuestions) : null,
     optionFidelity: scoresText ? rate(matchedOptions, totalReferenceOptions) : null,
+    reviewPrecision: scoresReviewRouting ? rate(correctlyFlaggedQuestions, flaggedQuestions.length) : null,
     counts: {
       referenceQuestions: referenceQuestions.length,
       extractedQuestions: extracted.questions.length,
@@ -215,6 +225,7 @@ export function formatMetrics(reference: ReferenceExam, metrics: ExtractionMetri
     `option count acc.   : ${formatRate(metrics.optionCountAccuracy)}`,
     `answer-key accuracy : ${formatRate(metrics.answerKeyAccuracy)}`,
     `option fidelity     : ${formatRate(metrics.optionFidelity)}`,
+    `review precision    : ${formatRate(metrics.reviewPrecision)}`,
     `spurious questions  : ${metrics.counts.spuriousQuestions}`,
     `missing             : ${metrics.missingQuestionNumbers.join(', ') || 'none'}`,
     `option count misses : ${

@@ -232,7 +232,9 @@ function sourceRunHtml(run: SourceRun, text = run.text): string {
       run.image.width === null ? '' : ` width="${run.image.width}"`,
       run.image.height === null ? '' : ` height="${run.image.height}"`
     ].join('');
-    const assetUrl = `cid:${encodeURIComponent(run.image.assetRef)}`;
+    const assetUrl = /^https?:\/\//i.test(run.image.assetRef)
+      ? run.image.assetRef
+      : `cid:${encodeURIComponent(run.image.assetRef)}`;
 
     return `<img src="${escapeHtml(assetUrl)}" alt=""${dimensions}>`;
   }

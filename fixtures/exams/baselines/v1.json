@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "documents": {
+    "2026-en-on-luyen-03-scan-converted": {
+      "questionRecall": 1,
+      "kindAccuracy": 1,
+      "groupingAccuracy": 1,
+      "optionCountAccuracy": 1,
+      "answerKeyAccuracy": null,
+      "optionFidelity": null,
+      "reviewPrecision": 1,
+      "counts": {
+        "referenceQuestions": 40,
+        "extractedQuestions": 40,
+        "matchedQuestions": 40,
+        "spuriousQuestions": 0
+      },
+      "missingQuestionNumbers": [],
+      "optionCountMismatches": []
+    }
+  }
+}

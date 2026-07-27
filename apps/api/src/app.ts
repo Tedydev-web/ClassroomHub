@@ -13,6 +13,8 @@ import {
   shouldRewriteOAuthProxyCallbackLocation
 } from '@api/utils/oauth-proxy-redirect';
 import { Hono } from '@api/utils/hono';
+import type { AuthSession } from '@api/types/auth';
+import type { Hono as HonoBase } from 'hono';
 import { ErrorCodes } from '@api/utils/errors';
 import { accountRouter } from '@api/routes/account';
 import { agentRouter } from '@api/routes/agent';
@@ -51,7 +53,7 @@ import { unsplashRouter } from '@api/routes/unsplash/unsplash';
 import { v1Router } from '@api/routes/v1';
 
 // Create Hono app with chaining for RPC support
-export const app = new Hono()
+export const app: HonoBase<AuthSession> = new Hono()
   // Middleware
   .use('*', logger())
   .use('*', prettyJSON())
