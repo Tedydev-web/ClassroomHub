@@ -5,6 +5,7 @@ import {
   MAX_EXAM_IMPORT_TOTAL_QUESTIONS,
   examImportDiagnosticSchema,
   examImportDraftSchema,
+  requiresExamImportAnswerKey,
   type ExamImportDiagnostic,
   type ExamImportDraft,
   type ExamImportFieldTarget,
@@ -419,6 +420,29 @@ function collectAnswerKeyFindings(question: ExamImportQuestion): ExamImportDiagn
         diagnostic('INVALID_CHOICE_CARDINALITY', 'Single-choice questions require exactly one correct option', question)
       );
     }
+    if (question.scoreWeights) {
+      const weightedOptionIds = Object.keys(question.scoreWeights);
+      if (
+        weightedOptionIds.length !== optionIds.size ||
+        weightedOptionIds.some((weightedOptionId) => !optionIds.has(weightedOptionId))
+      ) {
+        findings.push(
+          diagnostic('INVALID_CHOICE_SCORE_WEIGHTS', 'Choice score weights must define every option', question)
+        );
+      }
+      if (question.answerKey.correctOptionIds.some((optionId) => question.scoreWeights?.[optionId]! <= 0)) {
+        findings.push(
+          diagnostic(
+            'INVALID_CHOICE_SCORE_WEIGHTS',
+            'Correct choice options must have positive score weights',
+            question
+          )
+        );
+      }
+    }
+    if (question.feedback?.some((feedback) => feedback.optionId !== null && !optionIds.has(feedback.optionId))) {
+      findings.push(diagnostic('ANSWER_OPTION_NOT_FOUND', 'Choice feedback must reference declared options', question));
+    }
 
     const keyIdentity = sortedIdentity(question.answerKey.correctOptionIds);
     for (const candidate of question.answerCandidates) {
@@ -505,10 +529,6 @@ function collectAnswerKeyFindings(question: ExamImportQuestion): ExamImportDiagn
   return findings;
 }
 
-function questionNeedsAnswerKey(question: ExamImportQuestion): boolean {
-  return question.kind !== 'essay' && question.kind !== 'unresolved';
-}
-
 function hasTeacherConfirmedAnswerKey(draft: ExamImportDraft, questionId: string): boolean {
   return draft.fieldStates.some(
     (fieldState) =>
@@ -518,6 +538,29 @@ function hasTeacherConfirmedAnswerKey(draft: ExamImportDraft, questionId: string
       fieldState.origin === 'teacher' &&
       fieldState.confidence === 'teacher_confirmed'
   );
+}
+
+function expectedQuestionReview(
+  draft: ExamImportDraft,
+  question: ExamImportQuestion,
+  findings: readonly ExamImportDiagnostic[]
+): ExamImportQuestion['review'] {
+  const existingQuestionDiagnostics = draft.diagnostics.filter((candidate) => candidate.questionId === question.id);
+
+  if (
+    question.kind === 'unresolved' ||
+    question.confidence === 'none' ||
+    (requiresExamImportAnswerKey(question) && question.answerKey === null)
+  ) {
+    return 'unresolved';
+  }
+
+  const hasAiField = draft.fieldStates.some(
+    (fieldState) => targetQuestionId(fieldState.target) === question.id && fieldState.origin === 'ai'
+  );
+  return question.confidence === 'low' || findings.length > 0 || existingQuestionDiagnostics.length > 0 || hasAiField
+    ? 'needs_attention'
+    : 'clean';
 }
 
 function collectQuestionFindings(
@@ -624,7 +667,7 @@ function collectQuestionFindings(
 
   findings.push(...collectAnswerKeyFindings(question));
 
-  if (questionNeedsAnswerKey(question) && question.answerKey === null) {
+  if (requiresExamImportAnswerKey(question) && question.answerKey === null) {
     findings.push(diagnostic('MISSING_ANSWER_KEY', 'Question requires an answer key before publishing', question));
   }
 
@@ -650,25 +693,31 @@ function collectQuestionFindings(
     }
   }
 
-  const existingQuestionDiagnostics = draft.diagnostics.filter((candidate) => candidate.questionId === question.id);
-  const expectedReview =
-    question.kind === 'unresolved' ||
-    question.confidence === 'none' ||
-    (questionNeedsAnswerKey(question) && question.answerKey === null)
-      ? 'unresolved'
-      : question.confidence === 'low' ||
-          findings.length > 0 ||
-          existingQuestionDiagnostics.length > 0 ||
-          draft.fieldStates.some(
-            (fieldState) => targetQuestionId(fieldState.target) === question.id && fieldState.origin === 'ai'
-          )
-        ? 'needs_attention'
-        : 'clean';
+  const expectedReview = expectedQuestionReview(draft, question, findings);
   if (question.review !== expectedReview) {
     findings.push(diagnostic('STALE_REVIEW_STATE', `Question review state must be "${expectedReview}"`, question));
   }
 
   return findings;
+}
+
+export function synchronizeExamImportDraftReviewStates(
+  draft: ExamImportDraft,
+  context: ExamImportSemanticValidationContext
+): ExamImportDraft {
+  const next = examImportDraftSchema.parse(structuredClone(draft));
+  const index = buildDraftIndex(next);
+
+  for (const section of next.sections) {
+    for (const question of section.questions) {
+      const findings = collectQuestionFindings(next, question, context, index).filter(
+        (finding) => finding.code !== 'STALE_REVIEW_STATE'
+      );
+      question.review = expectedQuestionReview(next, question, findings);
+    }
+  }
+
+  return examImportDraftSchema.parse(next);
 }
 
 export function collectExamImportSemanticFindings(

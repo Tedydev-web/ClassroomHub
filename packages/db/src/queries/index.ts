@@ -15,6 +15,7 @@ export * from './newsfeed';
 export * from './submission';
 export * from './tag';
 export * from './course-import';
+export * from './exam-import';
 export * from './cohort';
 export * from './widget';
 export * from './jobs';

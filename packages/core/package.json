@@ -20,6 +20,42 @@
       "types": "./dist/services/*/*.d.ts",
       "default": "./dist/services/*/*.js"
     },
+    "./services/agent/usage": {
+      "types": "./dist/services/agent/usage.d.ts",
+      "default": "./dist/services/agent/usage.js"
+    },
+    "./services/agent/*": {
+      "types": "./dist/services/agent/*.d.ts",
+      "default": "./dist/services/agent/*.js"
+    },
+    "./services/lesson-language": {
+      "types": "./dist/services/lesson-language.d.ts",
+      "default": "./dist/services/lesson-language.js"
+    },
+    "./services/course/*": {
+      "types": "./dist/services/course/*.d.ts",
+      "default": "./dist/services/course/*.js"
+    },
+    "./services/assessment/*": {
+      "types": "./dist/services/assessment/*.d.ts",
+      "default": "./dist/services/assessment/*.js"
+    },
+    "./services/assets/*": {
+      "types": "./dist/services/assets/*.d.ts",
+      "default": "./dist/services/assets/*.js"
+    },
+    "./services/exercise/*": {
+      "types": "./dist/services/exercise/*.d.ts",
+      "default": "./dist/services/exercise/*.js"
+    },
+    "./services/lesson/*": {
+      "types": "./dist/services/lesson/*.d.ts",
+      "default": "./dist/services/lesson/*.js"
+    },
+    "./services/course-import/*": {
+      "types": "./dist/services/course-import/*.d.ts",
+      "default": "./dist/services/course-import/*.js"
+    },
     "./utils/*": {
       "types": "./dist/utils/*.d.ts",
       "default": "./dist/utils/*.js"

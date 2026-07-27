@@ -93,6 +93,8 @@ apps/db-agent
 !packages/exam-import/tests/
 !packages/exam-import/tests/*.test.ts
 !packages/utils/scripts/exercise-question-type-validation.test.ts
+!apps/api/src/services/exam-import/*.test.ts
+!apps/jobs/src/**/*.test.ts
 
 # Keep the gateway allowlist picker-model coverage even when a global ignore excludes test files.
 !apps/api/src/__tests__/

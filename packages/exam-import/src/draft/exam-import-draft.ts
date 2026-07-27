@@ -26,6 +26,23 @@ export const EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS = [
 
 export type ExamImportPublishableQuestionKind = (typeof EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS)[number];
 
+/**
+ * Import kinds map to the assessment interactions emitted by the publish plan.
+ * Only interactions the assessment kernel grades automatically require a key.
+ */
+export function requiresExamImportAnswerKey(question: ExamImportQuestion): boolean {
+  switch (question.kind) {
+    case 'choice':
+    case 'true_false_group':
+    case 'numeric':
+      return true;
+    case 'short_answer':
+    case 'essay':
+    case 'unresolved':
+      return false;
+  }
+}
+
 const idSchema = z.string().min(1).max(MAX_ASSESSMENT_ID_LENGTH).regex(ASSESSMENT_ID_PATTERN);
 const htmlSchema = z.string().min(1).max(MAX_AUTHORED_HTML_LENGTH);
 const nullablePointsSchema = z.number().min(0).max(MAX_INTERACTION_MAX_SCORE).multipleOf(0.01).nullable();
@@ -134,12 +151,22 @@ export type ExamImportFieldTarget = z.infer<typeof examImportFieldTargetSchema>;
 export const examImportConfidenceSchema = z.enum(['high', 'medium', 'low', 'none', 'teacher_confirmed']);
 export type ExamImportConfidence = z.infer<typeof examImportConfidenceSchema>;
 
-const fieldStateSchema = z.strictObject({
-  target: examImportFieldTargetSchema,
-  confidence: examImportConfidenceSchema,
-  origin: z.enum(['deterministic', 'ai', 'teacher']),
-  provenance: provenanceSchema
-});
+const fieldStateSchema = z
+  .strictObject({
+    target: examImportFieldTargetSchema,
+    confidence: examImportConfidenceSchema,
+    origin: z.enum(['deterministic', 'ai', 'teacher']),
+    provenance: z.array(examImportSourceSpanSchema).max(MAX_EXAM_IMPORT_PROVENANCE_SPANS)
+  })
+  .superRefine((fieldState, context) => {
+    if (fieldState.origin !== 'teacher' && fieldState.provenance.length === 0) {
+      context.addIssue({
+        code: 'custom',
+        path: ['provenance'],
+        message: 'Non-teacher field states require source provenance'
+      });
+    }
+  });
 
 export type ExamImportFieldState = z.infer<typeof fieldStateSchema>;
 
@@ -242,11 +269,21 @@ const optionSchema = z.strictObject({
   order: z.number().int().min(0)
 });
 
+const choiceFeedbackSchema = z.strictObject({
+  optionId: idSchema.nullable(),
+  html: htmlSchema
+});
+
 const choiceQuestionSchema = z.strictObject({
   ...commonQuestionShape,
   kind: z.literal('choice'),
   cardinality: z.enum(['single', 'multiple']),
   options: z.array(optionSchema).min(2).max(MAX_INTERACTION_OPTIONS),
+  scoreWeights: z.record(idSchema, z.number().min(-100).max(100)).optional(),
+  feedback: z
+    .array(choiceFeedbackSchema)
+    .max(MAX_INTERACTION_OPTIONS + 1)
+    .optional(),
   answerCandidates: z.array(choiceAnswerCandidateSchema).max(MAX_INTERACTION_OPTIONS),
   answerKey: choiceAnswerKeySchema.nullable()
 });
@@ -296,7 +333,7 @@ const numericQuestionSchema = z.strictObject({
 const essayQuestionSchema = z.strictObject({
   ...commonQuestionShape,
   kind: z.literal('essay'),
-  answerCandidates: z.tuple([]),
+  answerCandidates: z.array(z.never()).max(0),
   answerKey: z.null()
 });
 
@@ -304,7 +341,7 @@ const unresolvedQuestionSchema = z.strictObject({
   ...commonQuestionShape,
   kind: z.literal('unresolved'),
   rawHtml: htmlSchema,
-  answerCandidates: z.tuple([]),
+  answerCandidates: z.array(z.never()).max(0),
   answerKey: z.null(),
   confidence: z.literal('none'),
   review: z.literal('unresolved')

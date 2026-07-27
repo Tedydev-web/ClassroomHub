@@ -19,6 +19,8 @@ import * as z from 'zod';
  *   scan-converted document it measures the wrong thing: the source text is
  *   already damaged, so exact match rewards reproducing the damage. Worth doing
  *   on cleanly authored documents, not on OCR output.
+ * - `reviewRouting` — whether the extracted question genuinely requires a
+ *   teacher correction or confirmation.
  *
  * A layer that is not `verified` is not scored. The harness reports `null` for
  * its metrics rather than a number, so partial ground truth produces partial
@@ -57,7 +59,8 @@ const labelStateSchema = z.enum(LABEL_STATES);
 export const referenceCoverageSchema = z.strictObject({
   structure: labelStateSchema,
   answerKeys: labelStateSchema,
-  optionText: labelStateSchema
+  optionText: labelStateSchema,
+  reviewRouting: labelStateSchema
 });
 
 export type ReferenceCoverage = z.infer<typeof referenceCoverageSchema>;
@@ -88,7 +91,10 @@ const referenceQuestionSchema = z.strictObject({
 
   // -- option text layer --
   prompt: z.string().nullable(),
-  options: z.array(z.string()).nullable()
+  options: z.array(z.string()).nullable(),
+
+  // -- review routing layer --
+  reviewRequired: z.boolean().nullable()
 });
 
 export type ReferenceQuestion = z.infer<typeof referenceQuestionSchema>;

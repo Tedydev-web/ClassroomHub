@@ -59,7 +59,11 @@ export interface TOrgUpdateForm {
   disableSignupMessage?: string;
   disableEmailPassword?: boolean;
   disableGoogleAuth?: boolean;
-  settings?: { signup?: { inviteOnly?: boolean }; emailNotifications?: Record<string, boolean> };
+  settings?: {
+    signup?: { inviteOnly?: boolean };
+    emailNotifications?: Record<string, boolean>;
+    examImport?: { aiEnabled?: boolean; scanVisionEnabled?: boolean };
+  };
 }
 
 /**

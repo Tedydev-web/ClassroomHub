@@ -12,7 +12,8 @@ export const ALLOWED_CONTENT_TYPES = ['video/mp4', 'video/quicktime', 'video/x-m
 export const ALLOWED_DOCUMENT_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-  'application/msword' // .doc
+  'application/msword', // .doc
+  'text/plain' // .aiken, .gift
 ] as const;
 
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'] as const;

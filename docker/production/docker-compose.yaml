@@ -215,6 +215,12 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-}
+      AI_GATEWAY_AUTH_TOKEN: ${AI_GATEWAY_AUTH_TOKEN:-}
+
+      EXAM_IMPORT_ENABLED: ${EXAM_IMPORT_ENABLED:-false}
+      EXAM_IMPORT_PDF_ENABLED: ${EXAM_IMPORT_PDF_ENABLED:-false}
+      EXAM_IMPORT_AI_ENABLED: ${EXAM_IMPORT_AI_ENABLED:-false}
     healthcheck:
       # node:slim ships no curl/wget; use the runtime's own fetch.
       test:
@@ -269,6 +275,8 @@ services:
       # same values; a mismatch here means the wrong image is deployed.
       PUBLIC_IS_SELFHOSTED: "false"
       PUBLIC_IS_SELF_OWNED: "true"
+      PUBLIC_EXAM_IMPORT_ENABLED: ${PUBLIC_EXAM_IMPORT_ENABLED:-false}
+      PUBLIC_EXAM_IMPORT_PDF_ENABLED: ${PUBLIC_EXAM_IMPORT_PDF_ENABLED:-false}
       # Gates the Google social button — it shows only when this is set. Read at
       # runtime via $env/dynamic/public, so no rebuild is needed to flip it. Not
       # a secret: OAuth client ids are public, so it rides as plain runtime env.
@@ -390,6 +398,12 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-}
+      AI_GATEWAY_AUTH_TOKEN: ${AI_GATEWAY_AUTH_TOKEN:-}
+      EXAM_IMPORT_AI_ENABLED: ${EXAM_IMPORT_AI_ENABLED:-false}
+      EXAM_IMPORT_AI_MODEL: ${EXAM_IMPORT_AI_MODEL:-}
+      EXAM_IMPORT_VISION_ENABLED: ${EXAM_IMPORT_VISION_ENABLED:-false}
+      EXAM_IMPORT_VISION_MODEL: ${EXAM_IMPORT_VISION_MODEL:-}
     # Long grace period so an in-flight transcode or upload can finish instead of
     # being killed and retried from scratch.
     stop_grace_period: 90s
