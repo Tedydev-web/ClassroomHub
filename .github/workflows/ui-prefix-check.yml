@@ -12,9 +12,16 @@ on:
       - 'packages/ui/**'
       - '.github/workflows/ui-prefix-check.yml'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-prefix-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ui-prefix:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

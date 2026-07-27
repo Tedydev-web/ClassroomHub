@@ -5,10 +5,19 @@ on:
     types:
       - created
       - edited
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: issue-take-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   take-issue:
     name: Disable take issue
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 10
     steps:
       - name: Disable take an issue

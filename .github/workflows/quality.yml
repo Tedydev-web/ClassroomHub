@@ -40,7 +40,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 45
     env:
       NODE_OPTIONS: --max-old-space-size=6144
@@ -94,7 +94,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 30
     services:
       postgres:

@@ -3,16 +3,19 @@ name: Automatic Comment
 on:
   issues:
     types: [opened]
+
 permissions:
   contents: read
+  issues: write
+
+concurrency:
+  group: issues-auto-comment-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
 
 jobs:
   comment:
-    permissions:
-      issues: write
-      pull-requests: write
     name: Comment
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     steps:
       - name: Automatic Comment
         uses: peter-evans/create-or-update-comment@v2

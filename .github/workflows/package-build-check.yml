@@ -11,22 +11,18 @@ on:
       - 'turbo.json'
       - '.nvmrc'
       - '.github/workflows/package-build-check.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/dashboard/**'
-      - 'apps/api/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - 'package.json'
-      - 'turbo.json'
-      - '.nvmrc'
-      - '.github/workflows/package-build-check.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-build-check-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: self-hosted
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, workstation]
     env:
       NODE_OPTIONS: --max-old-space-size=6144
     steps:
@@ -39,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: 'pnpm'
 
       - name: Install dependencies
