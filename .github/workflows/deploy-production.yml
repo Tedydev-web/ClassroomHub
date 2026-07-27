@@ -22,12 +22,9 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
-    # Deliberately not the self-hosted runner, even though it sits on the machine
-    # being deployed to. This job spends almost all of its time asleep waiting for
-    # Coolify, and there is one local runner: parking it here for forty minutes
-    # would block every build behind a job that is doing nothing. It costs a few
-    # hosted minutes per release, which is the cheaper side of that trade.
-    runs-on: ubuntu-latest
+    # Deployed via the self-hosted runner to keep hosted minutes at 0 for deployments.
+    # Polling remains in-band to keep post-deploy status deterministic.
+    runs-on: self-hosted
     timeout-minutes: 45
 
     steps:

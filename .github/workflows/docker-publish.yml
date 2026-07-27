@@ -40,7 +40,7 @@ jobs:
   # actually starts BEFORE we publish anything. A broken image never reaches users.
   smoke:
     name: Smoke test (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       fail-fast: true
       matrix:
@@ -99,7 +99,7 @@ jobs:
 
   build-and-push:
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         include:
