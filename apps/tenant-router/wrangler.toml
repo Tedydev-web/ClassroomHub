@@ -79,6 +79,7 @@ API_URL = "https://api.classroom.io.vn"
 # origins are added in code from the upstream vars above.
 DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,assets.classroom.io.vn"
 MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn"
+MARKETING_CANONICAL_HOST = "classroom.io.vn"
 
 [[env.production.r2_buckets]]
 binding = "VIDEOS_BUCKET"

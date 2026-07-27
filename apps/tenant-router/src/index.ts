@@ -55,6 +55,8 @@ interface Env {
   };
   /** Comma-separated hosts routed to the marketing Worker. */
   MARKETING_HOSTS?: string;
+  /** Canonical host used when redirecting alternate marketing hosts. */
+  MARKETING_CANONICAL_HOST?: string;
   /** HMAC-SHA256 secret shared with the API to sign cio_hls tokens. */
   HLS_SIGNING_SECRET: string;
   /** Optional analytics upstream. Unset disables the first-party PostHog proxy. */
@@ -333,6 +335,12 @@ export default {
         .filter(Boolean)
     );
     if (env.MARKETING && marketingHosts.has(originalHost)) {
+      if (env.MARKETING_CANONICAL_HOST && originalHost !== env.MARKETING_CANONICAL_HOST) {
+        const canonicalUrl = new URL(request.url);
+        canonicalUrl.hostname = env.MARKETING_CANONICAL_HOST;
+        return Response.redirect(canonicalUrl.toString(), 301);
+      }
+
       return env.MARKETING.fetch(request);
     }
 
