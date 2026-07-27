@@ -37,7 +37,7 @@ const MANAGED_ASSET_KINDS: ReadonlySet<AssessmentInteractionKind> = new Set(['fi
 function interactionSupportsPartialCredit(interaction: AssessmentInteraction): boolean {
   switch (interaction.kind) {
     case 'choice':
-      return interaction.config.cardinality === 'multiple';
+      return interaction.config.scoreWeights !== undefined;
     case 'numeric':
     case 'fill_blank':
     case 'word_bank':

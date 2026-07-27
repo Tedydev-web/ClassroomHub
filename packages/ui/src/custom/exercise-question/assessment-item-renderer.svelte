@@ -8,7 +8,8 @@
     type AnswerData,
     type AssessmentDeliveryBlock,
     type AssessmentDeliveryDefinition,
-    type AssessmentResponseEnvelope
+    type AssessmentResponseEnvelope,
+    type ReleasedAssessmentFeedback
   } from '@cio/question-types';
   import NumberBadge from '$src/base/number-badge/number-badge.svelte';
   import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
@@ -30,6 +31,8 @@
   interface Props {
     definition: AssessmentDeliveryDefinition;
     response?: AssessmentResponseEnvelope | null;
+    feedback?: ReleasedAssessmentFeedback[];
+    feedbackLabel?: string;
     disabled?: boolean;
     title?: string | null;
     questionNumber?: number;
@@ -61,6 +64,8 @@
   let {
     definition,
     response = null,
+    feedback = [],
+    feedbackLabel,
     disabled = false,
     title = '',
     questionNumber,
@@ -94,6 +99,8 @@
   const responsesByInteractionId = $derived(
     new Map((response?.responses ?? []).map((entry) => [entry.interactionId, entry.response]))
   );
+  const itemFeedback = $derived(feedback.filter((entry) => entry.scope === 'item'));
+  const optionFeedback = $derived(feedback.filter((entry) => entry.scope === 'choice_option'));
   let handledFocusRequestKey = $state<number | undefined>(undefined);
   let focusTargetInteractionId = $state<string | null>(null);
   let mobileWorkspacePanel = $state<'passage' | 'questions'>('questions');
@@ -375,6 +382,10 @@
     return sanitizeHtml(html);
   }
 
+  function getOptionFeedback(interactionId: string, optionId: string) {
+    return optionFeedback.filter((entry) => entry.interactionId === interactionId && entry.optionId === optionId);
+  }
+
   function isInteractionInvalid(block: Extract<AssessmentDeliveryBlock, { kind: 'interaction' }>): boolean {
     if (!validationRequested) return false;
 
@@ -448,16 +459,37 @@
               <div class="ui:space-y-2">
                 {#each interaction.config.options as option}
                   {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
-                  <div class="ui:flex ui:items-start ui:gap-2">
-                    <RadioGroup.Item
-                      id={optionElementId}
-                      value={option.id}
-                      aria-invalid={invalid}
-                      aria-describedby={invalid ? errorElementId : undefined}
-                    />
-                    <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
-                      >{@html renderAuthoredHtml(option.html)}</Label
-                    >
+                  {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
+                  {@const feedbackElementId = `${optionElementId}-feedback`}
+                  <div class="ui:space-y-1">
+                    <div class="ui:flex ui:items-start ui:gap-2">
+                      <RadioGroup.Item
+                        id={optionElementId}
+                        value={option.id}
+                        aria-invalid={invalid}
+                        aria-describedby={[
+                          invalid ? errorElementId : '',
+                          feedbackEntries.length > 0 ? feedbackElementId : ''
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || undefined}
+                      />
+                      <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
+                        >{@html renderAuthoredHtml(option.html)}</Label
+                      >
+                    </div>
+                    {#if feedbackEntries.length > 0}
+                      <div
+                        id={feedbackElementId}
+                        class="ui:border-border ui:bg-muted/30 ui:ml-6 ui:space-y-2 ui:border-l-2 ui:px-3 ui:py-2"
+                        role="note"
+                        aria-label={feedbackLabel}
+                      >
+                        {#each feedbackEntries as entry (entry.id)}
+                          <div class="ui:prose ui:max-w-none">{@html renderAuthoredHtml(entry.html)}</div>
+                        {/each}
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
@@ -466,19 +498,40 @@
             <div class="ui:space-y-2">
               {#each interaction.config.options as option}
                 {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
-                <div class="ui:flex ui:items-start ui:gap-2">
-                  <Checkbox
-                    id={optionElementId}
-                    checked={selectedOptionIds.includes(option.id)}
-                    {disabled}
-                    aria-required={interaction.required}
-                    aria-invalid={invalid}
-                    aria-describedby={invalid ? errorElementId : undefined}
-                    onCheckedChange={() => toggleChoiceOption(block.id, selectedOptionIds, option.id)}
-                  />
-                  <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
-                    >{@html renderAuthoredHtml(option.html)}</Label
-                  >
+                {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
+                {@const feedbackElementId = `${optionElementId}-feedback`}
+                <div class="ui:space-y-1">
+                  <div class="ui:flex ui:items-start ui:gap-2">
+                    <Checkbox
+                      id={optionElementId}
+                      checked={selectedOptionIds.includes(option.id)}
+                      {disabled}
+                      aria-required={interaction.required}
+                      aria-invalid={invalid}
+                      aria-describedby={[
+                        invalid ? errorElementId : '',
+                        feedbackEntries.length > 0 ? feedbackElementId : ''
+                      ]
+                        .filter(Boolean)
+                        .join(' ') || undefined}
+                      onCheckedChange={() => toggleChoiceOption(block.id, selectedOptionIds, option.id)}
+                    />
+                    <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
+                      >{@html renderAuthoredHtml(option.html)}</Label
+                    >
+                  </div>
+                  {#if feedbackEntries.length > 0}
+                    <div
+                      id={feedbackElementId}
+                      class="ui:border-border ui:bg-muted/30 ui:ml-6 ui:space-y-2 ui:border-l-2 ui:px-3 ui:py-2"
+                      role="note"
+                      aria-label={feedbackLabel}
+                    >
+                      {#each feedbackEntries as entry (entry.id)}
+                        <div class="ui:prose ui:max-w-none">{@html renderAuthoredHtml(entry.html)}</div>
+                      {/each}
+                    </div>
+                  {/if}
                 </div>
               {/each}
             </div>
@@ -822,6 +875,18 @@
           )}
           {@render renderInteractionBlock(block, interactionIndex)}
         {/if}
+      {/each}
+    </div>
+  {/if}
+
+  {#if itemFeedback.length > 0}
+    <div
+      class="ui:border-border ui:bg-muted/30 ui:mt-4 ui:space-y-3 ui:border-l-2 ui:px-4 ui:py-3"
+      role="note"
+      aria-label={feedbackLabel}
+    >
+      {#each itemFeedback as entry (entry.id)}
+        <div class="ui:prose ui:max-w-none">{@html renderAuthoredHtml(entry.html)}</div>
       {/each}
     </div>
   {/if}

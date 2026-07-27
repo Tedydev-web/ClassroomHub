@@ -4,7 +4,13 @@ import {
   getCourseTypeById,
   hasSelectivelyAssignedExercises
 } from '@cio/db/queries/course';
-import { AUTO_GRADABLE_QUESTION_TYPE_IDS, isAutoGradableQuestionTypeId } from '@cio/question-types';
+import type { DbOrTxClient } from '@cio/db/drizzle';
+import {
+  AUTO_GRADABLE_QUESTION_TYPE_IDS,
+  deriveItemCapabilities,
+  isAutoGradableQuestionTypeId,
+  type AssessmentItemDefinition
+} from '@cio/question-types';
 
 /**
  * Throws `QUESTION_TYPE_NOT_ALLOWED_IN_PUBLIC_COURSE` when a non-auto-gradable question
@@ -15,14 +21,18 @@ import { AUTO_GRADABLE_QUESTION_TYPE_IDS, isAutoGradableQuestionTypeId } from '@
 export async function guardNonAutoGradableQuestionsForCourseType(params: {
   courseId: string;
   questionTypeIds: Array<number | null | undefined>;
+  assessmentDefinitions?: AssessmentItemDefinition[];
+  dbClient?: DbOrTxClient;
 }): Promise<void> {
   const typeIds = params.questionTypeIds.filter((id): id is number => typeof id === 'number');
-  if (typeIds.length === 0) return;
-
-  const hasDisallowed = typeIds.some((id) => !isAutoGradableQuestionTypeId(id));
+  const hasDisallowedLegacyQuestion = typeIds.some((id) => !isAutoGradableQuestionTypeId(id));
+  const hasDisallowedAssessmentItem = (params.assessmentDefinitions ?? []).some(
+    (definition) => !deriveItemCapabilities(definition).autoGradable
+  );
+  const hasDisallowed = hasDisallowedLegacyQuestion || hasDisallowedAssessmentItem;
   if (!hasDisallowed) return;
 
-  const rowType = await getCourseTypeById(params.courseId);
+  const rowType = await getCourseTypeById(params.courseId, params.dbClient);
 
   if (!rowType) return;
 

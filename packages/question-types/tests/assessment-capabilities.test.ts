@@ -67,6 +67,53 @@ describe('deriveItemCapabilities', () => {
     expect(deriveItemCapabilities(definition).supportsPartialCredit).toBe(false);
   });
 
+  it('advertises partial credit for a weighted single-choice interaction', () => {
+    const definition = buildDefinition({
+      blocks: [
+        interactionBlock(
+          'i1',
+          buildChoiceInteraction({
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [
+                { id: 'a', html: 'A' },
+                { id: 'b', html: 'B' }
+              ],
+              correctOptionIds: ['b'],
+              scoreWeights: { a: 25, b: 100 }
+            }
+          })
+        )
+      ]
+    });
+
+    expect(deriveItemCapabilities(definition).supportsPartialCredit).toBe(true);
+  });
+
+  it('does not advertise partial credit for an exact-match multiple-choice interaction', () => {
+    const definition = buildDefinition({
+      blocks: [
+        interactionBlock(
+          'i1',
+          buildChoiceInteraction({
+            config: {
+              cardinality: 'multiple',
+              presentation: 'list',
+              options: [
+                { id: 'a', html: 'A' },
+                { id: 'b', html: 'B' }
+              ],
+              correctOptionIds: ['a', 'b']
+            }
+          })
+        )
+      ]
+    });
+
+    expect(deriveItemCapabilities(definition).supportsPartialCredit).toBe(false);
+  });
+
   it('flags managed asset requirements for file and video interactions', () => {
     const withVideo = buildDefinition({
       blocks: [

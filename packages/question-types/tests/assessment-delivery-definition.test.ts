@@ -28,7 +28,8 @@ describe('toAssessmentDeliveryDefinition', () => {
                 { id: 'option-a', html: '<p>A</p>' },
                 { id: 'option-b', html: '<p>B</p>' }
               ],
-              correctOptionIds: ['option-b']
+              correctOptionIds: ['option-b'],
+              scoreWeights: { 'option-a': -25, 'option-b': 100 }
             }
           }
         },
@@ -98,6 +99,7 @@ describe('toAssessmentDeliveryDefinition', () => {
       ]
     });
     expect(serialized).not.toContain('correctOptionIds');
+    expect(serialized).not.toContain('scoreWeights');
     expect(serialized).not.toContain('correctValue');
     expect(serialized).not.toContain('feedback-1');
     expect(parseAssessmentDeliveryDefinition(delivery)).toEqual({ success: true, data: delivery });
@@ -122,7 +124,8 @@ describe('toAssessmentDeliveryDefinition', () => {
                 { id: 'option-a', html: '<p>A</p>' },
                 { id: 'option-b', html: '<p>B</p>' }
               ],
-              correctOptionIds: ['option-a']
+              correctOptionIds: ['option-a'],
+              scoreWeights: { 'option-a': 100, 'option-b': 0 }
             }
           }
         }
@@ -137,7 +140,8 @@ describe('toAssessmentDeliveryDefinition', () => {
 
     expect(result.issues.map((issue) => issue.path)).toEqual([
       ['feedback'],
-      ['blocks', 0, 'interaction', 'config', 'correctOptionIds']
+      ['blocks', 0, 'interaction', 'config', 'correctOptionIds'],
+      ['blocks', 0, 'interaction', 'config', 'scoreWeights']
     ]);
   });
 

@@ -85,7 +85,8 @@ export const LEGACY_GOLDEN_CASES: LegacyGoldenCase[] = [
                 { id: '22', html: 'B' },
                 { id: '23', html: 'C' }
               ],
-              correctOptionIds: ['21', '23']
+              correctOptionIds: ['21', '23'],
+              scoreWeights: { '21': 50, '22': -100, '23': 50 }
             }
           }
         }

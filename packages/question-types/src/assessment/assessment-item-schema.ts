@@ -71,7 +71,8 @@ const choiceInteractionSchema = z.strictObject({
     cardinality: z.enum(['single', 'multiple']),
     presentation: z.enum(['list', 'true_false']),
     options: z.array(choiceOptionSchema).max(MAX_INTERACTION_OPTIONS),
-    correctOptionIds: z.array(assessmentIdSchema).max(MAX_INTERACTION_OPTIONS)
+    correctOptionIds: z.array(assessmentIdSchema).max(MAX_INTERACTION_OPTIONS),
+    scoreWeights: z.record(assessmentIdSchema, z.number().min(-100).max(100)).optional()
   })
 });
 
@@ -232,12 +233,24 @@ const interactionBlockSchema = z.strictObject({
 
 const assessmentBlockSchema = z.discriminatedUnion('kind', [contentBlockSchema, interactionBlockSchema]);
 
-const itemFeedbackSchema = z.strictObject({
+const feedbackBaseShape = {
   id: assessmentIdSchema,
-  scope: z.literal('item'),
   html: z.string().max(MAX_AUTHORED_HTML_LENGTH),
   visibility: z.enum(['after_submit', 'after_grading'])
-});
+};
+
+const itemFeedbackSchema = z.discriminatedUnion('scope', [
+  z.strictObject({
+    ...feedbackBaseShape,
+    scope: z.literal('item')
+  }),
+  z.strictObject({
+    ...feedbackBaseShape,
+    scope: z.literal('choice_option'),
+    interactionId: assessmentIdSchema,
+    optionId: assessmentIdSchema
+  })
+]);
 
 const itemPresentationSchema = z.strictObject({
   layout: z.enum(['flow', 'passage_split'])

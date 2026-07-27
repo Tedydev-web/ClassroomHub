@@ -766,6 +766,17 @@ describe('createSubmissionService transaction guards', () => {
   });
 
   it('auto-scores a tiered true-false group against its attempted revision', async () => {
+    const attemptedDefinition = {
+      ...trueFalseGroupDefinition,
+      feedback: [
+        {
+          id: 'feedback-after-grading',
+          scope: 'item' as const,
+          html: '<p>Review this result.</p>',
+          visibility: 'after_grading' as const
+        }
+      ]
+    };
     const createdSubmission = {
       id: 'submission-true-false-group',
       courseId,
@@ -807,13 +818,13 @@ describe('createSubmissionService transaction guards', () => {
       id: `revision-${compositeQuestion.id}`,
       questionId: compositeQuestion.id,
       revision: 1,
-      definition: trueFalseGroupDefinition
+      definition: attemptedDefinition
     });
     mocks.getQuestionRevisionsByIds.mockResolvedValue([
       {
         id: `revision-${compositeQuestion.id}`,
         questionId: compositeQuestion.id,
-        definition: trueFalseGroupDefinition
+        definition: attemptedDefinition
       }
     ]);
     mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
@@ -825,6 +836,7 @@ describe('createSubmissionService transaction guards', () => {
         questionId: compositeQuestion.id,
         groupMemberId: submittedBy,
         answerData: { type: 'ASSESSMENT_ITEM', response },
+        questionRevisionId: `revision-${compositeQuestion.id}`,
         score: 0,
         point: 0
       }

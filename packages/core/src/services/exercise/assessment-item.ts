@@ -182,7 +182,7 @@ export async function applyAssessmentItemMutationsForExercise(
       id: mutation.questionId,
       data: { title: mutation.title }
     }));
-    await updateQuestions(titleUpdates, txClient);
+    await updateQuestions(titleUpdates, exerciseId, txClient);
   }
 
   const createMutations = mutations.filter(
@@ -363,7 +363,7 @@ export async function publishAssessmentItemForCourseService(
     const txClient = tx as DbOrTxClient;
     await getAssessmentItemForCourse(courseId, exerciseId, questionId, txClient);
     await publishQuestionRevision({ questionId, expectedRevision, definition }, txClient);
-    const updatedQuestion = await updateQuestion(questionId, { title }, txClient);
+    const updatedQuestion = await updateQuestion(questionId, exerciseId, { title }, txClient);
     if (!updatedQuestion) {
       throw new AppError('Assessment question not found while updating its title', ErrorCodes.NOT_FOUND, 404);
     }

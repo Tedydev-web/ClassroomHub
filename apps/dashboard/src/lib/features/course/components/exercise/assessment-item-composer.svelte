@@ -1284,7 +1284,7 @@
           {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.scoring_tiered')}
         </Field.Legend>
         <Field.Group class="grid gap-4 sm:grid-cols-2">
-          {#each block.interaction.config.scoring.tiers as tier, correctCount}
+          {#each block.interaction.config.scoring.tiers as _tier, correctCount (correctCount)}
             <InputField
               bind:value={block.interaction.config.scoring.tiers[correctCount]}
               name={getBlockDomId(block.id, `tier-${correctCount}`)}

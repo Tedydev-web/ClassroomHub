@@ -12,7 +12,7 @@ import type {
 
 type AssessmentDeliveryInteraction =
   | (Omit<Extract<AssessmentInteraction, { kind: 'choice' }>, 'config'> & {
-      config: Omit<Extract<AssessmentInteraction, { kind: 'choice' }>['config'], 'correctOptionIds'>;
+      config: Omit<Extract<AssessmentInteraction, { kind: 'choice' }>['config'], 'correctOptionIds' | 'scoreWeights'>;
     })
   | (Omit<Extract<AssessmentInteraction, { kind: 'numeric' }>, 'config'> & {
       config: Omit<Extract<AssessmentInteraction, { kind: 'numeric' }>['config'], 'correctValue'>;
@@ -61,7 +61,7 @@ export type AssessmentDeliveryDefinition = {
 function toDeliveryInteraction(interaction: AssessmentInteraction): AssessmentDeliveryInteraction {
   switch (interaction.kind) {
     case 'choice': {
-      const { correctOptionIds: _correctOptionIds, ...config } = interaction.config;
+      const { correctOptionIds: _correctOptionIds, scoreWeights: _scoreWeights, ...config } = interaction.config;
       return { ...interaction, config };
     }
     case 'numeric': {
@@ -124,7 +124,7 @@ export function toAssessmentDeliveryDefinition(definition: AssessmentItemDefinit
 }
 
 const ANSWER_KEY_FIELDS_BY_KIND = {
-  choice: ['correctOptionIds'],
+  choice: ['correctOptionIds', 'scoreWeights'],
   text: [],
   numeric: ['correctValue'],
   fill_blank: ['acceptedAnswers'],

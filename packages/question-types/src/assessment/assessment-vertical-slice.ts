@@ -219,11 +219,18 @@ export function scoreAssessmentVerticalSlice(
 
     if (interaction.kind === 'choice') {
       const response = validated.responsesByInteractionId.get(block.id);
-      const score =
-        response?.kind === 'choice' &&
-        hasExactChoiceResponse(interaction.config.correctOptionIds, response.selectedOptionIds)
-          ? interaction.maxScore
-          : 0;
+      let score = 0;
+      if (response?.kind === 'choice') {
+        if (interaction.config.scoreWeights) {
+          const percentage = response.selectedOptionIds.reduce(
+            (total, optionId) => total + (interaction.config.scoreWeights?.[optionId] ?? 0),
+            0
+          );
+          score = scaleScoreByFraction(interaction.maxScore, Math.min(1, Math.max(0, percentage / 100)));
+        } else if (hasExactChoiceResponse(interaction.config.correctOptionIds, response.selectedOptionIds)) {
+          score = interaction.maxScore;
+        }
+      }
       autoScoreCents += Math.round(score * 100);
       interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
       continue;

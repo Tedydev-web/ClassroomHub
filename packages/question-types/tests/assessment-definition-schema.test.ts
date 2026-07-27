@@ -60,6 +60,25 @@ describe('parseAssessmentItemDefinition — valid definitions', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts choice-option feedback and rejects dangling option references', () => {
+    const valid = buildDefinition();
+    valid.feedback = [
+      {
+        id: 'f1',
+        scope: 'choice_option',
+        interactionId: 'i1',
+        optionId: 'a',
+        html: '<p>Review this option.</p>',
+        visibility: 'after_submit'
+      }
+    ];
+    const invalid = structuredClone(valid);
+    invalid.feedback[0]!.optionId = 'missing';
+
+    expect(parseAssessmentItemDefinition(valid).success).toBe(true);
+    expectIssue(invalid, 'MALFORMED_DEFINITION');
+  });
+
   it('accepts an explicit passage split presentation without changing the default flow contract', () => {
     const defaultResult = parseAssessmentItemDefinition(buildHybridDefinition());
     const splitResult = parseAssessmentItemDefinition({
