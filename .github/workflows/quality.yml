@@ -2,9 +2,31 @@ name: Quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
   push:
     branches:
       - main
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
 
 permissions:
   contents: read
@@ -52,8 +74,11 @@ jobs:
       - name: Run focused unit suites
         run: |
           pnpm --filter @cio/question-types test
+          pnpm --filter @cio/exam-import test
+          pnpm --filter @cio/exam-import test:corpus
           pnpm --filter @cio/utils test
           pnpm --filter @cio/jobs test
+          pnpm --filter @cio/jobs-worker test
           pnpm --filter @cio/api test
           pnpm --filter @cio/dashboard test
 
@@ -127,6 +152,7 @@ jobs:
           pnpm --filter @cio/api exec vitest run --testTimeout 120000
           src/services/exercise/question-revision-db.integration.test.ts
           src/services/submission/submission-db.integration.test.ts
+          src/services/exam-import/exam-import-db.integration.test.ts
 
       - name: Rehearse assessment migration chain
         run: pnpm --filter @cio/db db:rehearse-assessment-migration

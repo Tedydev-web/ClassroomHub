@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docs:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: self-hosted
     environment: production
 
     steps:
