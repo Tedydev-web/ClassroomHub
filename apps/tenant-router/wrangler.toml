@@ -78,6 +78,7 @@ API_URL = "https://api.classroom.io.vn"
 # untouched: the public API (tunnel) and the R2 asset domain. The internal
 # origins are added in code from the upstream vars above.
 DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,assets.classroom.io.vn"
+MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn"
 
 [[env.production.r2_buckets]]
 binding = "VIDEOS_BUCKET"
@@ -86,6 +87,10 @@ bucket_name = "videos"
 [[env.production.r2_buckets]]
 binding = "ASSETS_BUCKET"
 bucket_name = "assets"
+
+[[env.production.services]]
+binding = "MARKETING"
+service = "cio-web"
 
 [env.production.observability]
 enabled = true

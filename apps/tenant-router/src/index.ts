@@ -49,6 +49,12 @@ interface Env {
   EMBED_HOST: string;
   /** Public API origin injected into embed scripts. */
   API_URL: string;
+  /** Marketing site Worker for the product apex and www host. */
+  MARKETING?: {
+    fetch(request: Request): Promise<Response>;
+  };
+  /** Comma-separated hosts routed to the marketing Worker. */
+  MARKETING_HOSTS?: string;
   /** HMAC-SHA256 secret shared with the API to sign cio_hls tokens. */
   HLS_SIGNING_SECRET: string;
   /** Optional analytics upstream. Unset disables the first-party PostHog proxy. */
@@ -318,6 +324,16 @@ export default {
     );
     if (passthroughHosts.has(originalHost)) {
       return fetch(request);
+    }
+
+    const marketingHosts = new Set(
+      (env.MARKETING_HOSTS ?? '')
+        .split(',')
+        .map((host) => host.trim())
+        .filter(Boolean)
+    );
+    if (env.MARKETING && marketingHosts.has(originalHost)) {
+      return env.MARKETING.fetch(request);
     }
 
     // Legacy learning apex → permanent redirect to marketing apex.
