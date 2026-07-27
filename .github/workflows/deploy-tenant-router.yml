@@ -32,7 +32,7 @@ jobs:
         run: pnpm --filter @cio/tenant-router typecheck
 
       - name: Deploy tenant router
-        run: pnpm --filter @cio/tenant-router deploy
+        run: pnpm --filter @cio/tenant-router exec wrangler deploy --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
