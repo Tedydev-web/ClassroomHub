@@ -12,9 +12,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: tenant-router-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     environment: production
     steps:
       - uses: actions/checkout@v4

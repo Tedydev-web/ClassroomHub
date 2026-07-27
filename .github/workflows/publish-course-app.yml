@@ -2,12 +2,13 @@ name: Publish @tedydev/classroom-course-app to NPM
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   publish:
-    runs-on: self-hosted
-    permissions:
-      packages: write
-      contents: read
+    runs-on: [self-hosted, Linux, workstation]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

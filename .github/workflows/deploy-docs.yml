@@ -11,9 +11,16 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     environment: production
 
     steps:

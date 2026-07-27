@@ -9,9 +9,16 @@ on:
       - "apps/embeds/**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-embeds-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy-embeds:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, workstation]
     environment: production
 
     steps:
@@ -32,7 +39,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
