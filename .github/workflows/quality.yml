@@ -124,9 +124,15 @@ jobs:
           CI_POSTGRES_CONTAINER: classroomhub-ci-postgres-${{ github.run_id }}
         run: |
           set -euo pipefail
+          runner_container=$(docker ps \
+            --filter 'label=com.docker.compose.service=runner' \
+            --format '{{.Names}}' \
+            | head -n 1)
+          test -n "$runner_container"
+
           docker run --detach --rm \
             --name "$CI_POSTGRES_CONTAINER" \
-            --network host \
+            --network "container:${runner_container}" \
             --env POSTGRES_DB=classroomhub \
             --env POSTGRES_USER=postgres \
             --env POSTGRES_PASSWORD=postgres \
