@@ -96,20 +96,6 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Linux, workstation]
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: classroomhub
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d classroomhub"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/classroomhub
     steps:
@@ -132,6 +118,29 @@ jobs:
 
       - name: Generate secret-free build environment
         run: pnpm setup:env
+
+      - name: Start ephemeral PostgreSQL
+        env:
+          CI_POSTGRES_CONTAINER: classroomhub-ci-postgres-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          docker run --detach --rm \
+            --name "$CI_POSTGRES_CONTAINER" \
+            --network host \
+            --env POSTGRES_DB=classroomhub \
+            --env POSTGRES_USER=postgres \
+            --env POSTGRES_PASSWORD=postgres \
+            postgres:16-alpine
+
+          for attempt in $(seq 1 30); do
+            if docker exec "$CI_POSTGRES_CONTAINER" pg_isready -U postgres -d classroomhub >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs "$CI_POSTGRES_CONTAINER" >&2
+          exit 1
 
       - name: Build API dependency graph
         run: pnpm turbo run build --filter=@cio/api...
@@ -162,3 +171,9 @@ jobs:
 
       - name: Rehearse assessment migration chain
         run: pnpm --filter @cio/db db:rehearse-assessment-migration
+
+      - name: Stop ephemeral PostgreSQL
+        if: always()
+        env:
+          CI_POSTGRES_CONTAINER: classroomhub-ci-postgres-${{ github.run_id }}
+        run: docker rm --force "$CI_POSTGRES_CONTAINER" >/dev/null 2>&1 || true
