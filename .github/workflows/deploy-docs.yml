@@ -101,6 +101,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Publish oversized marketing assets to R2
+        run: >-
+          pnpm --filter @cio/website exec wrangler r2 object put
+          assets/marketing/language-editor-demo.mov
+          --file=marketing-assets/language-editor-demo.mov
+          --content-type=video/quicktime
+          --cache-control='public, max-age=31536000, immutable'
+          --remote
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Build workspace dependencies
         run: pnpm turbo run build --filter=@cio/website^...
 
