@@ -116,6 +116,59 @@ describe('assessment vertical slice', () => {
     expect(scoreAssessmentVerticalSlice(multipleChoiceDefinition, validation.data).autoScore).toBe(0);
   });
 
+  it('scores weighted choices by selected percentages and clamps penalties at zero', () => {
+    const weightedDefinition = {
+      ...definition,
+      blocks: [
+        {
+          ...definition.blocks[0],
+          interaction: {
+            ...definition.blocks[0].interaction,
+            maxScore: 4,
+            config: {
+              ...definition.blocks[0].interaction.config,
+              cardinality: 'multiple' as const,
+              correctOptionIds: ['a', 'b'],
+              scoreWeights: { a: 40, b: 60 }
+            }
+          }
+        }
+      ]
+    };
+    const partial = validateAssessmentResponseEnvelope(weightedDefinition, {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['a'] } }]
+    });
+    const penalizedDefinition = {
+      ...weightedDefinition,
+      blocks: [
+        {
+          ...weightedDefinition.blocks[0],
+          interaction: {
+            ...weightedDefinition.blocks[0].interaction,
+            config: {
+              ...weightedDefinition.blocks[0].interaction.config,
+              correctOptionIds: ['b'],
+              scoreWeights: { a: -50, b: 100 }
+            }
+          }
+        }
+      ]
+    };
+    const penalized = validateAssessmentResponseEnvelope(penalizedDefinition, {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'choice-1', response: { kind: 'choice', selectedOptionIds: ['a'] } }]
+    });
+
+    expect(partial.success).toBe(true);
+    if (!partial.success) return;
+    expect(scoreAssessmentVerticalSlice(weightedDefinition, partial.data).autoScore).toBe(1.6);
+
+    expect(penalized.success).toBe(true);
+    if (!penalized.success) return;
+    expect(scoreAssessmentVerticalSlice(penalizedDefinition, penalized.data).autoScore).toBe(0);
+  });
+
   it('requires every required choice and extended-text response before navigation', () => {
     const deliveryDefinition = toAssessmentDeliveryDefinition(definition);
     const choiceOnlyResponse = {

@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   isCourseTeamMemberOrOrgAdmin: vi.fn(),
   lockExerciseAssignmentState: vi.fn(),
   updateExerciseSection: vi.fn(),
+  updateOptions: vi.fn(),
   updateQuestions: vi.fn()
 }));
 
@@ -55,7 +56,7 @@ vi.mock('@cio/db/queries/exercise', () => ({
   syncQuestionIdSequence: vi.fn(),
   updateExercise: vi.fn(),
   updateExerciseSection: mocks.updateExerciseSection,
-  updateOptions: vi.fn(),
+  updateOptions: mocks.updateOptions,
   updateQuestions: mocks.updateQuestions
 }));
 vi.mock('@cio/db/queries/lesson', () => ({ getLessonById: vi.fn() }));
@@ -141,7 +142,7 @@ describe('updateExerciseService archived question hardening', () => {
       questions: [{ id: 2, question: 'Archived question', deletedAt: '2026-07-16T01:00:00.000Z' }]
     });
 
-    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([2], txStub);
+    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([2], 'exercise-a', txStub);
     expect(mocks.deleteQuestionsByIds).not.toHaveBeenCalled();
     // The update response is the active-delivery read.
     expect(mocks.getExerciseWithRelationsOptimized).toHaveBeenCalledWith('exercise-a', txStub, {
@@ -216,6 +217,7 @@ describe('updateExerciseService canonical question placement', () => {
           data: { exerciseSectionId: sectionTwoId, order: 2 }
         }
       ],
+      'exercise-a',
       txStub
     );
   });
@@ -339,10 +341,12 @@ describe('updateExerciseService canonical question placement', () => {
 
     expect(mocks.updateQuestions).toHaveBeenCalledWith(
       [{ id: sectionedCanonicalQuestion.id, data: { exerciseSectionId: sectionTwoId, order: 0 } }],
+      'exercise-a',
       txStub
     );
     expect(mocks.updateQuestions).toHaveBeenCalledWith(
       [{ id: sectionedLegacyQuestion.id, data: { order: 1 } }],
+      'exercise-a',
       txStub
     );
   });
@@ -453,7 +457,7 @@ describe('legacy submission-less answers (orphan answers) freeze the question gr
       ]
     });
 
-    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([1], txStub);
+    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([1], 'exercise-a', txStub);
     expect(mocks.deleteQuestionsByIds).toHaveBeenCalledWith([3], 'exercise-a', txStub);
   });
 
@@ -832,31 +836,58 @@ describe('question graph deletes stay inside the edited exercise', () => {
     mocks.getQuestionRevisionsByIds.mockResolvedValue([]);
   });
 
-  it('ignores a delete for a question id that belongs to another exercise', async () => {
-    await updateExerciseService('exercise-a', {
-      questions: [{ id: 999, question: 'Foreign question', deletedAt: '2026-07-25T00:00:00.000Z' }]
-    });
+  it('rejects a delete for a question id that belongs to another exercise', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [{ id: 999, question: 'Foreign question', deletedAt: '2026-07-25T00:00:00.000Z' }]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
 
     expect(mocks.deleteQuestionsByIds).not.toHaveBeenCalled();
     expect(mocks.archiveQuestionsByIds).not.toHaveBeenCalled();
     expect(mocks.createQuestions).not.toHaveBeenCalled();
   });
 
-  it('ignores a delete for an option id that belongs to another question', async () => {
+  it('rejects an update for a question id that belongs to another exercise', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [{ id: 999, question: 'Foreign question', points: 1 }]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
+
+    expect(mocks.updateQuestions).not.toHaveBeenCalled();
+    expect(mocks.createQuestions).not.toHaveBeenCalled();
+  });
+
+  it('rejects a delete for an option id that belongs to another question', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [
+          {
+            id: 1,
+            question: 'Active question',
+            options: [{ id: 888, label: 'Foreign option', isCorrect: false, deletedAt: '2026-07-25T00:00:00.000Z' }]
+          }
+        ]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
+
+    expect(mocks.deleteOptionsByIds).not.toHaveBeenCalled();
+  });
+
+  it('passes the owning exercise id to update queries', async () => {
     await updateExerciseService('exercise-a', {
       questions: [
         {
           id: 1,
-          question: 'Active question',
-          options: [{ id: 888, label: 'Foreign option', isCorrect: false, deletedAt: '2026-07-25T00:00:00.000Z' }]
+          question: 'Updated question',
+          options: [{ id: 10, label: 'Updated option', isCorrect: true, settings: {} }]
         }
       ]
     });
 
-    // Option 10 is legitimately removed because the payload no longer carries
-    // it. The point of this test is that the foreign id never reaches a delete.
-    const deletedOptionIds = mocks.deleteOptionsByIds.mock.calls.flatMap((call) => call[0] as number[]);
-    expect(deletedOptionIds).not.toContain(888);
+    expect(mocks.updateQuestions).toHaveBeenCalledWith(expect.any(Array), 'exercise-a', txStub);
+    expect(mocks.updateOptions).toHaveBeenCalledWith(expect.any(Array), 'exercise-a', txStub);
   });
 
   it('passes the owning exercise id to the delete queries', async () => {

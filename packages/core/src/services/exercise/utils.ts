@@ -403,24 +403,23 @@ export function computeExerciseDiff(
 
   // Process incoming questions
   for (const incoming of normalizedIncomingQuestions) {
-    // Only a question that belongs to this exercise may be deleted. The id
-    // arrives from the client, and the delete runs by id alone, so an unchecked
-    // id here would remove another exercise's — or another organization's —
-    // question.
-    if (incoming.deletedAt && incoming.id && deletableIds.has(incoming.id)) {
+    if (incoming.id && incoming.deletedAt) {
+      if (!deletableIds.has(incoming.id)) {
+        throw new AppError('Question does not belong to this exercise', ErrorCodes.VALIDATION_ERROR, 400);
+      }
+
       deletedQuestionIds.push(incoming.id);
     } else if (incoming.deletedAt) {
       continue;
     } else if (incoming.id) {
       const current = questionMap.get(incoming.id);
-      if (current) {
-        const changes = diffQuestion(current, incoming);
-        if (changes) {
-          questionUpdates.push({ id: incoming.id, data: changes });
-        }
-      } else {
-        // Question ID exists but not in current state - treat as new
-        newQuestions.push(incoming);
+      if (!current) {
+        throw new AppError('Question does not belong to this exercise', ErrorCodes.VALIDATION_ERROR, 400);
+      }
+
+      const changes = diffQuestion(current, incoming);
+      if (changes) {
+        questionUpdates.push({ id: incoming.id, data: changes });
       }
     } else {
       newQuestions.push(incoming);
@@ -443,32 +442,24 @@ export function computeExerciseDiff(
     const processedIncomingOptionIds = new Set<number>();
 
     for (const incomingOpt of incomingOptions) {
-      // Same rule as questions: only an option that currently belongs to this
-      // question may be deleted, because the delete runs by id alone.
       if (incomingOpt.deletedAt && incomingOpt.id) {
-        if (currentOptionMap.has(incomingOpt.id)) {
-          optionDeletes.push(incomingOpt.id);
+        if (!currentOptionMap.has(incomingOpt.id)) {
+          throw new AppError('Option does not belong to this question', ErrorCodes.VALIDATION_ERROR, 400);
         }
 
+        optionDeletes.push(incomingOpt.id);
         processedIncomingOptionIds.add(incomingOpt.id);
       } else if (incomingOpt.id) {
         processedIncomingOptionIds.add(incomingOpt.id);
 
         const currentOpt = currentOptionMap.get(incomingOpt.id);
-        if (currentOpt) {
-          const changes = diffOption(currentOpt, incomingOpt);
-          if (changes) {
-            optionUpdates.push({ id: incomingOpt.id, data: changes });
-          }
-        } else {
-          // Option ID exists in incoming but not in current - treat as create
-          optionCreates.push({
-            questionId: incoming.id,
-            label: incomingOpt.label,
-            isCorrect: incomingOpt.isCorrect,
-            settings: normalizeSettings(incomingOpt.settings),
-            value: crypto.randomUUID()
-          });
+        if (!currentOpt) {
+          throw new AppError('Option does not belong to this question', ErrorCodes.VALIDATION_ERROR, 400);
+        }
+
+        const changes = diffOption(currentOpt, incomingOpt);
+        if (changes) {
+          optionUpdates.push({ id: incomingOpt.id, data: changes });
         }
       } else {
         // New option without ID
@@ -525,6 +516,9 @@ export async function createNewQuestionsWithOptions(
     })),
     txClient
   );
+  if (createdQuestions.length !== normalizedQuestions.length) {
+    throw new AppError('Failed to create every exercise question', ErrorCodes.INTERNAL_ERROR, 500);
+  }
 
   const newOptions: TNewOption[] = [];
   createdQuestions.forEach((newQuestion, index) => {

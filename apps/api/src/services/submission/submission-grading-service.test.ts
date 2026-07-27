@@ -417,7 +417,21 @@ describe('submission grading transaction locks', () => {
         ...submission,
         id: 'submission-second',
         createdAt: '2026-07-22T00:01:00.000Z',
-        answers: [{ ...canonicalAnswer, questionRevisionId: 'revision-canonical-second' }],
+        answers: [
+          {
+            ...canonicalAnswer,
+            answerData: {
+              type: 'ASSESSMENT_ITEM' as const,
+              response: {
+                schemaVersion: 1,
+                responses: [
+                  { interactionId: 'choice-2', response: { kind: 'choice', selectedOptionIds: ['option-b'] } }
+                ]
+              }
+            },
+            questionRevisionId: 'revision-canonical-second'
+          }
+        ],
         groupmember: null
       }
     ]);
@@ -438,13 +452,45 @@ describe('submission grading transaction locks', () => {
                 config: {
                   cardinality: 'single',
                   presentation: 'list',
-                  options: [{ id: 'option-a', html: '<p>A</p>' }],
+                  options: [
+                    { id: 'option-a', html: '<p>A</p>' },
+                    { id: 'option-b', html: '<p>B</p>' }
+                  ],
                   correctOptionIds: ['option-a']
                 }
               }
             }
           ],
-          feedback: [{ id: 'feedback-1', scope: 'item', html: '<p>Feedback</p>', visibility: 'after_grading' }]
+          feedback: [
+            {
+              id: 'feedback-after-submit',
+              scope: 'item',
+              html: '<p>General feedback</p>',
+              visibility: 'after_submit'
+            },
+            {
+              id: 'feedback-after-grading',
+              scope: 'item',
+              html: '<p>Grading feedback</p>',
+              visibility: 'after_grading'
+            },
+            {
+              id: 'feedback-selected',
+              scope: 'choice_option',
+              interactionId: 'choice-1',
+              optionId: 'option-a',
+              html: '<p>Selected option feedback</p>',
+              visibility: 'after_submit'
+            },
+            {
+              id: 'feedback-unselected',
+              scope: 'choice_option',
+              interactionId: 'choice-1',
+              optionId: 'option-b',
+              html: '<p>Unselected option feedback</p>',
+              visibility: 'after_submit'
+            }
+          ]
         }
       },
       {
@@ -476,6 +522,7 @@ describe('submission grading transaction locks', () => {
 
     const [listedSubmission] = await listSubmissionsByExercise(courseId, exerciseId, 'member-a');
     const assessmentDefinition = listedSubmission?.answers[0]?.assessmentDefinition;
+    const assessmentFeedback = listedSubmission?.answers[0]?.assessmentFeedback;
 
     expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledOnce();
     expect(mocks.getQuestionRevisionsByIds).toHaveBeenCalledWith(['revision-canonical', 'revision-canonical-second']);
@@ -493,7 +540,10 @@ describe('submission grading transaction locks', () => {
             config: {
               cardinality: 'single',
               presentation: 'list',
-              options: [{ id: 'option-a', html: '<p>A</p>' }]
+              options: [
+                { id: 'option-a', html: '<p>A</p>' },
+                { id: 'option-b', html: '<p>B</p>' }
+              ]
             }
           }
         }
@@ -501,6 +551,82 @@ describe('submission grading transaction locks', () => {
     });
     expect(JSON.stringify(assessmentDefinition)).not.toContain('correctOptionIds');
     expect(JSON.stringify(assessmentDefinition)).not.toContain('Feedback');
+    expect(assessmentFeedback).toEqual([
+      {
+        id: 'feedback-after-submit',
+        scope: 'item',
+        html: '<p>General feedback</p>'
+      },
+      {
+        id: 'feedback-selected',
+        scope: 'choice_option',
+        interactionId: 'choice-1',
+        optionId: 'option-a',
+        html: '<p>Selected option feedback</p>'
+      }
+    ]);
+    expect(JSON.stringify(assessmentFeedback)).not.toContain('Grading feedback');
+    expect(JSON.stringify(assessmentFeedback)).not.toContain('Unselected option feedback');
+  });
+
+  it('fails closed when a persisted canonical response does not match its attempted revision', async () => {
+    mocks.getSubmissionsByCourseIdWithDetails.mockResolvedValue([
+      {
+        ...submission,
+        createdAt: '2026-07-22T00:00:00.000Z',
+        groupmember: null,
+        answers: [
+          {
+            ...storedAnswer,
+            answerData: {
+              type: 'ASSESSMENT_ITEM' as const,
+              response: {
+                schemaVersion: 1,
+                responses: [
+                  {
+                    interactionId: 'unknown-choice',
+                    response: { kind: 'choice', selectedOptionIds: ['option-a'] }
+                  }
+                ]
+              }
+            },
+            questionRevisionId: 'revision-canonical'
+          }
+        ]
+      }
+    ]);
+    mocks.getQuestionRevisionsByIds.mockResolvedValue([
+      {
+        id: 'revision-canonical',
+        definition: {
+          schemaVersion: 1,
+          blocks: [
+            {
+              id: 'choice-1',
+              kind: 'interaction',
+              interaction: {
+                kind: 'choice',
+                prompt: { format: 'html', html: '<p>Choose.</p>' },
+                required: true,
+                maxScore: 1,
+                config: {
+                  cardinality: 'single',
+                  presentation: 'list',
+                  options: [{ id: 'option-a', html: '<p>A</p>' }],
+                  correctOptionIds: ['option-a']
+                }
+              }
+            }
+          ],
+          feedback: []
+        }
+      }
+    ]);
+
+    await expect(listSubmissionsByExercise(courseId, exerciseId, 'member-a')).rejects.toMatchObject({
+      code: 'INTERNAL_ERROR',
+      message: 'The attempted assessment response is invalid'
+    });
   });
 
   it('provides attempted canonical questions to the manual grading modal without answer keys', async () => {

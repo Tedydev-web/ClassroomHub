@@ -13,7 +13,8 @@ import {
   assessmentResponseEnvelopeSchema,
   getItemMaxScore,
   type AssessmentDeliveryDefinition,
-  type AssessmentResponseEnvelope
+  type AssessmentResponseEnvelope,
+  type ReleasedAssessmentFeedback
 } from '@cio/question-types';
 
 /** Minimal question shape shared by the exercise store and review components. */
@@ -38,6 +39,7 @@ export interface ScoredSubmissionAnswer {
 export interface CanonicalSubmissionAnswer extends ScoredSubmissionAnswer {
   answerData?: { type: string; response?: unknown } | null;
   assessmentDefinition?: AssessmentDeliveryDefinition | null;
+  assessmentFeedback?: ReleasedAssessmentFeedback[] | null;
   attemptedQuestion?: CanonicalReviewQuestionRef | null;
 }
 
@@ -45,6 +47,7 @@ export interface CanonicalAssessmentReviewItem {
   question: CanonicalReviewQuestionRef;
   definition: AssessmentDeliveryDefinition;
   response: AssessmentResponseEnvelope;
+  feedback: ReleasedAssessmentFeedback[];
   score: number;
   maxScore: number;
 }
@@ -113,6 +116,7 @@ export function getCanonicalAssessmentReviewItems(
         question,
         definition: answer.assessmentDefinition,
         response: parsedResponse.data,
+        feedback: answer.assessmentFeedback ?? [],
         score: numericScore,
         maxScore: getItemMaxScore(answer.assessmentDefinition)
       }
