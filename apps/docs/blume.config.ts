@@ -62,7 +62,7 @@ export default defineConfig({
           {
             label: 'Introduction',
             items: [
-              '/what-is-classroomhub',
+              '/what-is-classroomio',
               '/terminology',
               {
                 label: 'Quickstart',

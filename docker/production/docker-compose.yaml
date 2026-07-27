@@ -390,6 +390,14 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+    healthcheck:
+      # A fresh heartbeat proves both the worker process and its Redis dependency
+      # are usable. A PID-only check would report healthy while queues are stuck.
+      test: ["CMD", "node", "-e", "const fs=require('node:fs');const age=Date.now()-fs.statSync('/tmp/classroomhub-jobs-health').mtimeMs;if(age>45000)process.exit(1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 45s
     # Long grace period so an in-flight transcode or upload can finish instead of
     # being killed and retried from scratch.
     stop_grace_period: 90s

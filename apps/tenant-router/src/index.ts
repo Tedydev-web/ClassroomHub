@@ -47,6 +47,8 @@ interface Env {
   APEX_REDIRECT_HOST: string;
   /** Hostname that serves embed widget assets from R2. */
   EMBED_HOST: string;
+  /** Hostname that serves public static assets from the R2 assets bucket. */
+  ASSET_HOST: string;
   /** Public API origin injected into embed scripts. */
   API_URL: string;
   /** Marketing site Worker for the product apex and www host. */
@@ -63,7 +65,7 @@ interface Env {
   POSTHOG_UPSTREAM_HOST?: string;
   /**
    * Comma-separated hosts that the wildcard route catches but that must reach
-   * their origin unchanged — the public API and the R2 asset domain. The two
+   * their origin unchanged — the public API. The two
    * internal origins (API/DASHBOARD upstreams) are always added, so this only
    * needs the browser-facing service hosts that are not tenants.
    */
@@ -256,6 +258,46 @@ async function handleEmbedAssetRequest(request: Request, env: Env): Promise<Resp
   return new Response((object as R2ObjectBody).body, { status: 200, headers });
 }
 
+async function handlePublicAssetRequest(request: Request, env: Env): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Max-Age': '86400'
+      }
+    });
+  }
+
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
+
+  const objectKey = new URL(request.url).pathname.replace(/^\/+/, '');
+  if (!objectKey || objectKey.includes('..')) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const object =
+    request.method === 'HEAD' ? await env.ASSETS_BUCKET.head(objectKey) : await env.ASSETS_BUCKET.get(objectKey);
+  if (!object) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const headers = embedResponseHeaders(objectKey);
+  if ('writeHttpMetadata' in object) {
+    object.writeHttpMetadata(headers);
+  }
+  if (object.size != null) {
+    headers.set('Content-Length', String(object.size));
+  }
+
+  return request.method === 'HEAD'
+    ? new Response(null, { status: 200, headers })
+    : new Response((object as R2ObjectBody).body, { status: 200, headers });
+}
+
 async function handleHlsRequest(request: Request, env: Env): Promise<Response> {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method Not Allowed', { status: 405 });
@@ -313,7 +355,7 @@ export default {
     // The wildcard route binds this Worker to every *.classroom.io.vn host so a
     // newly created tenant resolves without touching Cloudflare. The cost is that
     // the Worker now also intercepts hosts that must reach their origin untouched:
-    // the public API, the R2 asset domain, and the two internal origins the Worker
+    // the public API and the two internal origins the Worker
     // itself forwards to. Hand those straight back to the origin.
     //
     // `fetch(request)` does not loop: Cloudflare does not re-invoke a Worker on a
@@ -350,6 +392,11 @@ export default {
       target.pathname = url.pathname;
       target.search = url.search;
       return Response.redirect(target.toString(), 301);
+    }
+
+    // Public static assets — served from the R2 `assets` bucket (no Render hop).
+    if (originalHost === env.ASSET_HOST) {
+      return handlePublicAssetRequest(request, env);
     }
 
     // Public embed scripts — served from the R2 `assets` bucket (no Render hop).
