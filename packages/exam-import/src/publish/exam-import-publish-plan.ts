@@ -66,10 +66,27 @@ function questionPoints(question: PublishableQuestion): number {
   return question.points ?? DEFAULT_EXAM_IMPORT_QUESTION_POINTS;
 }
 
+function containsHtmlMarkup(value: string): boolean {
+  return /<\/?[a-z][^>]*>/i.test(value);
+}
+
+function hasRichHtml(question: PublishableQuestion): boolean {
+  if (containsHtmlMarkup(question.promptHtml)) {
+    return true;
+  }
+
+  if (question.kind === 'choice') {
+    return question.options.some((option) => containsHtmlMarkup(option.html));
+  }
+
+  return false;
+}
+
 function isLegacyCompatible(question: PublishableQuestion): boolean {
   if (
     question.kind === 'true_false_group' ||
     question.passageId !== null ||
+    hasRichHtml(question) ||
     (question.kind === 'choice' && (question.scoreWeights !== undefined || (question.feedback?.length ?? 0) > 0))
   ) {
     return false;

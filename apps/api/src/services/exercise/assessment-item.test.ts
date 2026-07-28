@@ -246,7 +246,11 @@ describe('assessment item exercise-transaction mutations', () => {
       txStub
     );
     expect(mocks.publishQuestionRevision).toHaveBeenCalledTimes(2);
-    expect(mocks.updateQuestions).toHaveBeenCalledWith([{ id: 16, data: { title: 'Renamed item' } }], txStub);
+    expect(mocks.updateQuestions).toHaveBeenCalledWith(
+      [{ id: 16, data: { title: 'Renamed item' } }],
+      'exercise-a',
+      txStub
+    );
     expect(results).toEqual([
       { clientMutationId: 'existing-composer', questionId: 16 },
       { clientMutationId: 'new-composer', questionId: 17 }

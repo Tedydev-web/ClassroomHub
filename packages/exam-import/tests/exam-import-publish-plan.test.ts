@@ -24,11 +24,45 @@ function withoutPassage(draft: ExamImportDraft): ExamImportDraft {
 }
 
 describe('createExamImportPublishPlan', () => {
-  it('maps a simple integer-point choice to the existing legacy authoring shape', () => {
+  it('maps an HTML-authored integer-point choice to a canonical item', () => {
     const draft = withoutPassage(buildValidExamImportDraft());
     const question = draft.sections[0]!.questions[0]!;
     if (question.kind !== 'choice') throw new Error('Expected choice fixture');
     question.points = 1;
+
+    const plan = createExamImportPublishPlan(draft, validationContext);
+
+    const entry = plan.sections[0]?.entries[0];
+
+    expect(entry?.kind).toBe('assessment_item');
+    if (entry?.kind !== 'assessment_item') throw new Error('Expected a canonical item');
+    expect(entry.definition.blocks[0]).toMatchObject({
+      kind: 'interaction',
+      interaction: {
+        kind: 'choice',
+        maxScore: 1,
+        prompt: { format: 'html', html: '<p>Choose the correct answer.</p>' },
+        config: {
+          options: [
+            { id: 'option-a', html: '<p>First</p>' },
+            { id: 'option-b', html: '<p>Second</p>' }
+          ],
+          correctOptionIds: ['option-b']
+        }
+      }
+    });
+  });
+
+  it('keeps an integer-point choice with flat text on the legacy authoring path', () => {
+    const draft = withoutPassage(buildValidExamImportDraft());
+    const question = draft.sections[0]!.questions[0]!;
+    if (question.kind !== 'choice') throw new Error('Expected choice fixture');
+    question.points = 1;
+    question.promptHtml = 'Choose the correct answer.';
+    question.options = question.options.map((option) => ({
+      ...option,
+      html: option.id === 'option-a' ? 'First' : 'Second'
+    }));
 
     const plan = createExamImportPublishPlan(draft, validationContext);
 
@@ -37,13 +71,13 @@ describe('createExamImportPublishPlan', () => {
         kind: 'legacy_question',
         sourceQuestionId: 'question-1',
         order: 0,
-        question: '<p>Choose the correct answer.</p>',
+        question: 'Choose the correct answer.',
         questionTypeId: QUESTION_TYPE_IDS.RADIO,
         points: 1,
         settings: {},
         options: [
-          { label: '<p>First</p>', isCorrect: false, settings: {} },
-          { label: '<p>Second</p>', isCorrect: true, settings: {} }
+          { label: 'First', isCorrect: false, settings: {} },
+          { label: 'Second', isCorrect: true, settings: {} }
         ]
       }
     ]);
