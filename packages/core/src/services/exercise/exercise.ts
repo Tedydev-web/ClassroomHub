@@ -1,7 +1,7 @@
 import { AppError, ErrorCodes } from '@cio/utils/errors';
 import { sanitizeHtml, sanitizeOptionalHtml, sanitizeUnknownStrings } from '../../utils/sanitize-html';
 import type { TExercise, TExerciseTemplate, TNewOption, TNewQuestion } from '@cio/db/types';
-import type { TExerciseCreate, TExerciseUpdate } from '@cio/utils/validation/exercise';
+import type { TAssessmentItemMutation, TExerciseCreate, TExerciseUpdate } from '@cio/utils/validation/exercise';
 import { getLessonById } from '@cio/db/queries/lesson';
 import {
   createExercises,
@@ -54,14 +54,18 @@ import {
   computeExerciseDiff,
   createNewQuestionsWithOptions,
   fetchQuestionsAndOptions,
+  projectQuestionForLearner,
   transformQuestions,
+  type LearnerQuestionWithRelations,
   type QuestionWithRelations
 } from './utils';
 
-type ExerciseWithQuestions = TExercise & {
+type VisibleQuestionWithRelations = QuestionWithRelations | LearnerQuestionWithRelations;
+
+type ExerciseWithQuestions<TQuestion extends VisibleQuestionWithRelations = QuestionWithRelations> = TExercise & {
   isComplete: boolean;
-  questions?: QuestionWithRelations[];
-  sections?: ExerciseSectionWithQuestions[];
+  questions?: TQuestion[];
+  sections?: ExerciseSectionWithQuestions<TQuestion>[];
   canonicalQuestions?: Array<{
     id: number;
     title: string;
@@ -77,14 +81,45 @@ type ExerciseWithQuestions = TExercise & {
   assessmentItemMutationResults?: AssessmentItemMutationResult[];
 };
 
-type ExerciseSectionWithQuestions = {
+export type ExerciseAuthoringLegacyQuestion = {
+  kind: 'legacy_question';
+  order: number;
+  question: string;
+  questionTypeId: number;
+  points: number;
+  settings: Record<string, unknown>;
+  options: Array<{
+    label: string;
+    isCorrect: boolean;
+    settings: Record<string, unknown>;
+  }>;
+};
+
+export type ExerciseAuthoringAssessmentItem = {
+  kind: 'assessment_item';
+  clientMutationId: string;
+  order: number;
+  title: string;
+  definition: AssessmentItemDefinition;
+};
+
+export type ExerciseAuthoringPlan = {
+  exercise: Omit<TExerciseCreate, 'questions'>;
+  sections: Array<{
+    title: string;
+    order: number;
+    entries: Array<ExerciseAuthoringLegacyQuestion | ExerciseAuthoringAssessmentItem>;
+  }>;
+};
+
+type ExerciseSectionWithQuestions<TQuestion extends VisibleQuestionWithRelations = QuestionWithRelations> = {
   id: string;
   title: string;
   description: string | null;
   order: number;
   colorTheme: string;
   afterBehavior: unknown;
-  questions: QuestionWithRelations[];
+  questions: TQuestion[];
 };
 
 type ExerciseWithCompletion = TExercise & {
@@ -190,12 +225,12 @@ function sanitizeExercisePayload(data: TExerciseCreate | TExerciseUpdate): TExer
   };
 }
 
-function groupQuestionsBySections(
+function groupQuestionsBySections<TQuestion extends VisibleQuestionWithRelations>(
   sections: Awaited<ReturnType<typeof getExerciseSectionsByExerciseId>>,
-  questions: QuestionWithRelations[]
+  questions: TQuestion[]
 ) {
-  const questionsBySectionId = new Map<string, QuestionWithRelations[]>();
-  const unsectionedQuestions: QuestionWithRelations[] = [];
+  const questionsBySectionId = new Map<string, TQuestion[]>();
+  const unsectionedQuestions: TQuestion[] = [];
 
   for (const question of questions) {
     if (question.exerciseSectionId) {
@@ -459,7 +494,7 @@ async function syncCanonicalQuestionPlacements(
       order: placement.order
     }
   }));
-  await updateQuestions(placementUpdates, txClient);
+  await updateQuestions(placementUpdates, exerciseId, txClient);
 }
 
 async function resolveExerciseCourseId(exercise: TExercise): Promise<string | null> {
@@ -497,82 +532,91 @@ async function assertExercisePlacementBelongsToCourse(
  * @param data Exercise creation data
  * @returns Created exercise
  */
-export async function createExercise(data: TExerciseCreate): Promise<TExercise> {
+async function createExerciseWithClient(data: TExerciseCreate, txClient: DbOrTxClient): Promise<TExercise> {
+  const sanitizedData = sanitizeExercisePayload(data);
+
+  await guardNonAutoGradableQuestionsForCourseType({
+    courseId: sanitizedData.courseId,
+    questionTypeIds: (sanitizedData.questions ?? []).map((question) => question.questionTypeId),
+    dbClient: txClient
+  });
+
+  const slug = await resolveItemSlug({
+    courseId: sanitizedData.courseId,
+    title: sanitizedData.title,
+    requestedSlug: sanitizedData.slug,
+    dbClient: txClient
+  });
+
+  const exerciseData = {
+    title: sanitizedData.title,
+    description: sanitizedData.description ?? null,
+    lessonId: sanitizedData.lessonId || null,
+    courseId: sanitizedData.courseId,
+    sectionId: sanitizedData.sectionId || null,
+    order: sanitizedData.order ?? null,
+    dueBy: sanitizedData.dueBy || null,
+    slug
+  };
+
+  const [exercise] = await createExercises([exerciseData], txClient);
+  if (!exercise) {
+    throw new AppError('Failed to create exercise', ErrorCodes.INTERNAL_ERROR, 500);
+  }
+
+  // Create questions and options if provided
+  if (sanitizedData.questions && sanitizedData.questions.length > 0) {
+    await syncQuestionIdSequence(txClient);
+    const questionsData: TNewQuestion[] = sanitizedData.questions.map((question) => ({
+      exerciseId: exercise.id,
+      title: question.question,
+      questionTypeId: question.questionTypeId || 1,
+      points: question.points ?? 0,
+      order: typeof question.order === 'number' ? question.order : undefined,
+      settings: question.settings ?? {}
+    }));
+
+    const questions = await createQuestions(questionsData, txClient);
+    if (questions.length !== sanitizedData.questions.length) {
+      throw new AppError('Failed to create every exercise question', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    const hasOptions = sanitizedData.questions.some((question) => (question.options?.length ?? 0) > 0);
+    if (hasOptions) {
+      await syncOptionIdSequence(txClient);
+    }
+
+    // Create options for each question
+    for (const [index, questionData] of sanitizedData.questions.entries()) {
+      const question = questions[index]!;
+      const optionsData: TNewOption[] = (questionData.options ?? []).map((option) => ({
+        questionId: question.id,
+        label: option.label,
+        isCorrect: option.isCorrect,
+        settings: option.settings ?? {}
+      }));
+
+      await createOptions(optionsData, txClient);
+    }
+  }
+
+  // Fetch the complete exercise with questions and options
+  const result = await getExercise(exercise.id, txClient);
+  await touchCourseUpdatedAt(sanitizedData.courseId, txClient);
+
+  return result;
+}
+
+export async function createExercise(data: TExerciseCreate, dbClient?: DbOrTxClient): Promise<TExercise> {
   try {
-    const sanitizedData = sanitizeExercisePayload(data);
+    if (dbClient) {
+      return await createExerciseWithClient(data, dbClient);
+    }
 
-    await guardNonAutoGradableQuestionsForCourseType({
-      courseId: sanitizedData.courseId,
-      questionTypeIds: (sanitizedData.questions ?? []).map((question) => question.questionTypeId)
+    return await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      return createExerciseWithClient(data, txClient);
     });
-
-    const slug = await resolveItemSlug({
-      courseId: sanitizedData.courseId,
-      title: sanitizedData.title,
-      requestedSlug: sanitizedData.slug
-    });
-
-    const exerciseData = {
-      title: sanitizedData.title,
-      description: sanitizedData.description ?? null,
-      lessonId: sanitizedData.lessonId || null,
-      courseId: sanitizedData.courseId,
-      sectionId: sanitizedData.sectionId || null,
-      order: sanitizedData.order ?? null,
-      dueBy: sanitizedData.dueBy || null,
-      slug
-    };
-
-    const [exercise] = await createExercises([exerciseData]);
-    if (!exercise) {
-      throw new AppError('Failed to create exercise', ErrorCodes.INTERNAL_ERROR, 500);
-    }
-
-    // Create questions and options if provided
-    if (sanitizedData.questions && sanitizedData.questions.length > 0) {
-      await db.transaction(async (tx) => {
-        const txClient = tx as DbOrTxClient;
-        const questionsData: TNewQuestion[] = sanitizedData.questions!.map((q) => ({
-          exerciseId: exercise.id,
-          title: q.question,
-          questionTypeId: q.questionTypeId || 1,
-          points: q.points || 0,
-          order: typeof q.order === 'number' ? q.order : undefined,
-          settings: q.settings ?? {}
-        }));
-
-        const questions = await createQuestions(questionsData, txClient);
-        const hasOptions = sanitizedData.questions!.some((question) => (question.options?.length ?? 0) > 0);
-
-        if (hasOptions) {
-          await syncOptionIdSequence(txClient);
-        }
-
-        // Create options for each question
-        for (const [index, questionData] of sanitizedData.questions!.entries()) {
-          const question = questions[index];
-          if (!question) continue;
-
-          const optionsData: TNewOption[] = (questionData.options ?? []).map((opt) => ({
-            questionId: question.id,
-            label: opt.label,
-            isCorrect: opt.isCorrect,
-            settings: opt.settings ?? {}
-          }));
-
-          await createOptions(optionsData, txClient);
-        }
-      });
-    }
-
-    // Fetch the complete exercise with questions and options
-    const result = await getExercise(exercise.id);
-
-    if (sanitizedData.courseId) {
-      await touchCourseUpdatedAt(sanitizedData.courseId);
-    }
-
-    return result;
   } catch (error) {
     console.error('createExercise error:', error);
     if (error instanceof AppError) {
@@ -597,16 +641,168 @@ export async function createExerciseForCourseService(courseId: string, data: TEx
   return createExercise({ ...data, courseId });
 }
 
+async function createExerciseFromAuthoringPlanWithClient(
+  plan: ExerciseAuthoringPlan,
+  txClient: DbOrTxClient
+): Promise<ExerciseWithQuestions> {
+  const sectionOrders = new Set<number>();
+  for (const section of plan.sections) {
+    if (sectionOrders.has(section.order)) {
+      throw new AppError('Exercise section orders must be unique', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+    sectionOrders.add(section.order);
+
+    const entryOrders = new Set<number>();
+    for (const entry of section.entries) {
+      if (entryOrders.has(entry.order)) {
+        throw new AppError(
+          'Question orders must be unique within each exercise section',
+          ErrorCodes.VALIDATION_ERROR,
+          400
+        );
+      }
+      entryOrders.add(entry.order);
+    }
+  }
+
+  const legacyQuestionTypeIds = plan.sections.flatMap((section) =>
+    section.entries
+      .filter((entry): entry is ExerciseAuthoringLegacyQuestion => entry.kind === 'legacy_question')
+      .map((entry) => entry.questionTypeId)
+  );
+  const assessmentDefinitions = plan.sections.flatMap((section) =>
+    section.entries
+      .filter((entry): entry is ExerciseAuthoringAssessmentItem => entry.kind === 'assessment_item')
+      .map((entry) => entry.definition)
+  );
+  await guardNonAutoGradableQuestionsForCourseType({
+    courseId: plan.exercise.courseId,
+    questionTypeIds: legacyQuestionTypeIds,
+    assessmentDefinitions,
+    dbClient: txClient
+  });
+
+  const exercise = await createExercise({ ...plan.exercise, questions: [] }, txClient);
+  const createdSections = await createExerciseSections(
+    plan.sections.map((section) => ({
+      exerciseId: exercise.id,
+      title: sanitizeHtml(section.title),
+      order: section.order
+    })),
+    txClient
+  );
+  if (createdSections.length !== plan.sections.length) {
+    throw new AppError('Failed to create every exercise section', ErrorCodes.INTERNAL_ERROR, 500);
+  }
+
+  const sectionIdsByOrder = new Map(createdSections.map((section) => [section.order, section.id]));
+  const legacyQuestions: NonNullable<TExerciseUpdate['questions']> = [];
+  const assessmentItemMutations: TAssessmentItemMutation[] = [];
+  for (const section of plan.sections) {
+    const exerciseSectionId = sectionIdsByOrder.get(section.order);
+    if (!exerciseSectionId) {
+      throw new AppError('Created exercise section could not be resolved', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    for (const entry of section.entries) {
+      if (entry.kind === 'legacy_question') {
+        legacyQuestions.push({
+          exerciseSectionId,
+          question: entry.question,
+          questionTypeId: entry.questionTypeId,
+          points: entry.points,
+          order: entry.order,
+          settings: entry.settings,
+          options: entry.options
+        });
+        continue;
+      }
+
+      assessmentItemMutations.push({
+        action: 'create',
+        clientMutationId: entry.clientMutationId,
+        title: entry.title,
+        definition: entry.definition,
+        exerciseSectionId,
+        order: entry.order
+      });
+    }
+  }
+
+  if (legacyQuestions.length > 0 || assessmentItemMutations.length > 0) {
+    await syncQuestionIdSequence(txClient);
+  }
+  if (legacyQuestions.some((question) => (question.options?.length ?? 0) > 0)) {
+    await syncOptionIdSequence(txClient);
+  }
+
+  if (legacyQuestions.length > 0) {
+    const updatePayload: TExerciseUpdate = { questions: legacyQuestions };
+    const sanitizedQuestions = sanitizeExercisePayload(updatePayload).questions;
+    if (!sanitizedQuestions) {
+      throw new AppError('Failed to sanitize exercise questions', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+    await createNewQuestionsWithOptions(exercise.id, sanitizedQuestions, txClient);
+  }
+
+  if (assessmentItemMutations.length > 0) {
+    await applyAssessmentItemMutationsForExercise(
+      plan.exercise.courseId,
+      exercise.id,
+      assessmentItemMutations,
+      txClient
+    );
+  }
+
+  await touchCourseUpdatedAt(plan.exercise.courseId, txClient);
+  return getExercise(exercise.id, txClient);
+}
+
+export async function createExerciseFromAuthoringPlan(
+  plan: ExerciseAuthoringPlan,
+  dbClient?: DbOrTxClient
+): Promise<ExerciseWithQuestions> {
+  try {
+    if (dbClient) {
+      return await createExerciseFromAuthoringPlanWithClient(plan, dbClient);
+    }
+
+    return await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      return createExerciseFromAuthoringPlanWithClient(plan, txClient);
+    });
+  } catch (error) {
+    console.error('createExerciseFromAuthoringPlan error:', error);
+    if (error instanceof AppError) throw error;
+
+    throw new AppError(
+      error instanceof Error ? error.message : 'Failed to create authored exercise',
+      ErrorCodes.INTERNAL_ERROR,
+      500
+    );
+  }
+}
+
 /**
  * Gets an exercise by ID with questions and options
  * @param exerciseId Exercise ID
  * @returns Exercise with questions and options
  */
+export function getExercise(
+  exerciseId: string,
+  dbClient?: DbOrTxClient,
+  profileId?: undefined
+): Promise<ExerciseWithQuestions>;
+export function getExercise(
+  exerciseId: string,
+  dbClient: DbOrTxClient | undefined,
+  profileId: string
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>>;
 export async function getExercise(
   exerciseId: string,
   dbClient?: DbOrTxClient,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   try {
     // Optimized: Fetch exercise + questions + questionTypes + options in one JOIN query.
     // This is the editor/current-exercise read: archived questions are excluded at the
@@ -692,13 +888,17 @@ export async function getExercise(
     // Transform questions (strip questionType and options since they're handled in transform)
     const questionsForTransform = questions.map(({ questionType, options, ...q }) => q);
     const questionsWithOptions = transformQuestions(questionsForTransform, allOptions, questionTypeMap);
+    const visibleQuestions: VisibleQuestionWithRelations[] =
+      profileId !== undefined && !canViewAuthorDefinitions
+        ? questionsWithOptions.map((question) => projectQuestionForLearner(question, profileId))
+        : questionsWithOptions;
     const sections = await getExerciseSectionsByExerciseId(exerciseId, dbClient);
-    const sectionGroups = groupQuestionsBySections(sections, questionsWithOptions);
+    const sectionGroups = groupQuestionsBySections(sections, visibleQuestions);
 
     return {
       ...exercise,
       isComplete,
-      questions: questionsWithOptions,
+      questions: visibleQuestions,
       sections: sectionGroups.sections,
       canonicalQuestions
     };
@@ -715,6 +915,24 @@ export async function getExercise(
   }
 }
 
+export async function getExerciseForCourseService(
+  courseId: string,
+  exerciseId: string,
+  profileId?: string
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
+  const exercise = await getExerciseById(exerciseId);
+  if (!exercise) {
+    throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  const exerciseCourseId = await resolveExerciseCourseId(exercise);
+  if (exerciseCourseId !== courseId) {
+    throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
+  }
+
+  return profileId === undefined ? getExercise(exerciseId) : getExercise(exerciseId, undefined, profileId);
+}
+
 /**
  * Updates an exercise with questions and options.
  * Only updates what has changed by querying the current state first and computing a diff.
@@ -726,7 +944,7 @@ export async function updateExerciseService(
   exerciseId: string,
   data: TExerciseUpdate,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   try {
     const sanitizedData = sanitizeExercisePayload(data);
     validateSectionQuestionAssignments(sanitizedData);
@@ -851,7 +1069,7 @@ export async function updateExerciseService(
           const questionIdsToDelete = diff.questions.deletedIds.filter((id) => !attemptedQuestionIds.has(id));
 
           if (questionIdsToArchive.length > 0) {
-            await archiveQuestionsByIds(questionIdsToArchive, txClient);
+            await archiveQuestionsByIds(questionIdsToArchive, exerciseId, txClient);
           }
 
           if (questionIdsToDelete.length > 0) {
@@ -864,11 +1082,11 @@ export async function updateExerciseService(
         }
 
         if (diff.questions.updates.length > 0) {
-          await updateQuestions(diff.questions.updates, txClient);
+          await updateQuestions(diff.questions.updates, exerciseId, txClient);
         }
 
         if (diff.options.updates.length > 0) {
-          await updateOptions(diff.options.updates, txClient);
+          await updateOptions(diff.options.updates, exerciseId, txClient);
         }
 
         if (diff.options.creates.length > 0) {
@@ -898,7 +1116,10 @@ export async function updateExerciseService(
         );
       }
 
-      const updatedExercise = await getExercise(exerciseId, txClient, profileId);
+      const updatedExercise =
+        profileId === undefined
+          ? await getExercise(exerciseId, txClient)
+          : await getExercise(exerciseId, txClient, profileId);
       if (assessmentItemMutationResults === undefined) return updatedExercise;
 
       return { ...updatedExercise, assessmentItemMutationResults };
@@ -925,7 +1146,7 @@ export async function updateExerciseForCourseService(
   exerciseId: string,
   data: TExerciseUpdate,
   profileId?: string
-): Promise<ExerciseWithQuestions> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   const exercise = await getExerciseById(exerciseId);
   if (!exercise) {
     throw new AppError('Exercise not found', ErrorCodes.EXERCISE_NOT_FOUND, 404);

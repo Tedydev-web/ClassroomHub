@@ -52,8 +52,17 @@ const MODEL_COST_MULTIPLIER: Record<string, number> = {
   'kimi-k2.6': 4
 };
 
-function computeCostUnits(promptTokens: number, completionTokens: number, model: string): number {
-  const multiplier = MODEL_COST_MULTIPLIER[model] ?? 1;
+function computeCostUnits(
+  promptTokens: number,
+  completionTokens: number,
+  model: string,
+  quotaMultiplier?: number
+): number {
+  const configuredMultiplier =
+    typeof quotaMultiplier === 'number' && Number.isFinite(quotaMultiplier) && quotaMultiplier > 0
+      ? quotaMultiplier
+      : null;
+  const multiplier = configuredMultiplier ?? MODEL_COST_MULTIPLIER[model] ?? 1;
   return Math.round((promptTokens + completionTokens) * multiplier);
 }
 
@@ -137,9 +146,19 @@ export async function recordTokenUsage(
   userId: string,
   courseId: string,
   usage: TokenUsage,
-  model: string
+  model: string,
+  attribution: {
+    transport: 'gateway' | 'official';
+    workloadDomain: 'interactive' | 'course_generation' | 'exam_import';
+    workloadId?: string;
+    idempotencyKey?: string;
+    quotaMultiplier?: number;
+  } = {
+    transport: 'official',
+    workloadDomain: 'interactive'
+  }
 ): Promise<void> {
-  const costUnits = computeCostUnits(usage.promptTokens, usage.completionTokens, model);
+  const costUnits = computeCostUnits(usage.promptTokens, usage.completionTokens, model, attribution.quotaMultiplier);
   const { allowance } = await getPlanAllowance(orgId);
 
   await insertTokenUsageAndDrainCredits({
@@ -150,6 +169,10 @@ export async function recordTokenUsage(
     completionTokens: usage.completionTokens,
     costUnits,
     model,
+    transport: attribution.transport,
+    workloadDomain: attribution.workloadDomain,
+    workloadId: attribution.workloadId,
+    idempotencyKey: attribution.idempotencyKey,
     planAllowance: allowance,
     since: startOfCurrentMonth()
   });

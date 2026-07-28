@@ -247,8 +247,12 @@
       <ExerciseQuestion.AssessmentItemRenderer
         definition={item.reviewItem.definition}
         response={item.reviewItem.response}
+        feedback={item.reviewItem.feedback}
+        feedbackLabel={$t('profileMenu.feedback')}
         disabled
         title={item.question.title}
+        trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+        falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
         {questionNumber}
         interactionNumberStart={questionNumber}
         questionNumberActive={false}

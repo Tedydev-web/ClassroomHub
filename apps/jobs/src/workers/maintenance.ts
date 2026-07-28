@@ -11,11 +11,13 @@ import {
   ZAnalyticsDailyRollupPayload,
   ZAssetStorageCleanupPayload,
   ZDeadLetterCleanupPayload,
+  ZExamImportReconcilePayload,
   ZMediaJobReapPayload,
   ZRetentionCompactPayload,
   createRedisConnection
 } from '@cio/jobs';
 
+import { reconcileExamImports } from '../processors/exam-import';
 import { errorMessage } from '../utils/cancel';
 import { log } from '../utils/logger';
 
@@ -57,6 +59,18 @@ const worker = new Worker(
       return { reaped: reaped.length };
     }
 
+    if (job.name === JOB_NAMES.maintenance.examImportReconcile) {
+      const data = ZExamImportReconcilePayload.parse(job.data ?? {});
+      const staleBeforeIso = new Date(Date.now() - data.staleAfterMinutes * 60 * 1_000).toISOString();
+      const result = await reconcileExamImports(data.limit, staleBeforeIso);
+
+      log.info('exam-import-reconcile-done', {
+        ...result
+      });
+
+      return result;
+    }
+
     if (job.name === JOB_NAMES.maintenance.assetStorageCleanup) {
       const data = ZAssetStorageCleanupPayload.parse(job.data ?? {});
       await purgeAssetStorage(data);
@@ -86,6 +100,7 @@ const worker = new Worker(
  * boot. Without this, stuck `media_job` rows would never get cleaned up.
  */
 const MEDIA_JOB_REAP_INTERVAL_MS = 5 * 60 * 1_000;
+const EXAM_IMPORT_RECONCILE_INTERVAL_MS = 5 * 1_000;
 // BullMQ requires a dedicated connection per Worker; give the Queue its own
 // so the scheduler upsert doesn't piggyback on the worker's blocking client.
 const schedulerConnection = createRedisConnection();
@@ -101,6 +116,16 @@ async function registerSchedulers(): Promise<void> {
     log.info('maintenance-scheduler-registered', {
       name: JOB_NAMES.maintenance.mediaJobReap,
       everyMs: MEDIA_JOB_REAP_INTERVAL_MS
+    });
+
+    await maintenanceQueue.upsertJobScheduler(
+      'exam-import-reconcile-scheduler',
+      { every: EXAM_IMPORT_RECONCILE_INTERVAL_MS },
+      { name: JOB_NAMES.maintenance.examImportReconcile, data: {} }
+    );
+    log.info('maintenance-scheduler-registered', {
+      name: JOB_NAMES.maintenance.examImportReconcile,
+      everyMs: EXAM_IMPORT_RECONCILE_INTERVAL_MS
     });
 
     await maintenanceQueue.upsertJobScheduler(

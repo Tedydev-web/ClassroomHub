@@ -8,6 +8,7 @@ export * from './assets';
 export * from './course';
 export * from './course-import';
 export * from './exercise';
+export * from './exam-import';
 export * from './lesson';
 export * from './mail';
 export * from './media';

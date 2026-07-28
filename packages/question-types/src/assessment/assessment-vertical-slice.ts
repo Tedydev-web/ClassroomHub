@@ -1,13 +1,24 @@
 import { getTextareaAnswerCharacterCount } from '../textarea-validation';
 import type { AssessmentDeliveryDefinition } from './assessment-delivery-definition';
-import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from './assessment-item-schema';
+import { scaleScoreByFraction } from './assessment-capabilities';
+import {
+  getAssessmentInteractionBlocks,
+  type AssessmentInteraction,
+  type AssessmentInteractionKind,
+  type AssessmentItemDefinition
+} from './assessment-item-schema';
 import {
   assessmentResponseEnvelopeSchema,
+  type AssessmentInteractionResponse,
   type AssessmentResponseEnvelope,
   type ValidatedAssessmentResponses
 } from './assessment-response-envelope';
 
-const SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS = new Set(['choice', 'text']);
+const SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS: ReadonlySet<AssessmentInteractionKind> = new Set([
+  'choice',
+  'text',
+  'true_false_group'
+]);
 
 export type AssessmentVerticalSliceInteractionScore = {
   interactionId: string;
@@ -80,6 +91,17 @@ export function isAssessmentVerticalSliceResponseComplete(
       if (interaction.config.maxCharacters !== undefined && characterCount > interaction.config.maxCharacters) {
         return false;
       }
+    } else if (interaction.kind === 'true_false_group' && entry.response.kind === 'true_false_group') {
+      const statementIds = new Set(interaction.config.statements.map((statement) => statement.id));
+      const responseStatementIds = entry.response.answers.map((answer) => answer.statementId);
+      if (new Set(responseStatementIds).size !== responseStatementIds.length) return false;
+      if (!responseStatementIds.every((statementId) => statementIds.has(statementId))) return false;
+      if (
+        responseStatementIds.length !== statementIds.size &&
+        (interaction.required || responseStatementIds.length > 0)
+      ) {
+        return false;
+      }
     } else {
       return false;
     }
@@ -110,6 +132,9 @@ export function getAssessmentVerticalSliceResponseProgress(
           : matchingResponse.response.text.trim().length;
       if (characterCount === 0) return false;
     }
+    if (matchingResponse.response.kind === 'true_false_group' && matchingResponse.response.answers.length === 0) {
+      return false;
+    }
 
     return isAssessmentVerticalSliceResponseComplete(
       { schemaVersion: definition.schemaVersion, blocks: [block] },
@@ -120,8 +145,38 @@ export function getAssessmentVerticalSliceResponseProgress(
   return { answered, total: interactionBlocks.length };
 }
 
+export function scoreTrueFalseGroupInteraction(
+  interaction: Extract<AssessmentInteraction, { kind: 'true_false_group' }>,
+  response: Extract<AssessmentInteractionResponse, { kind: 'true_false_group' }> | undefined
+): number {
+  if (!response) return 0;
+
+  const answersByStatementId = new Map(response.answers.map((answer) => [answer.statementId, answer.value]));
+  const correctCount = interaction.config.statements.reduce(
+    (count, statement) => (answersByStatementId.get(statement.id) === statement.correctValue ? count + 1 : count),
+    0
+  );
+  const statementCount = interaction.config.statements.length;
+  let scoreFraction = 0;
+
+  switch (interaction.config.scoring.mode) {
+    case 'tiered':
+      scoreFraction = interaction.config.scoring.tiers[correctCount] ?? 0;
+      break;
+    case 'proportional':
+      scoreFraction = statementCount > 0 ? correctCount / statementCount : 0;
+      break;
+    case 'all_or_nothing':
+      scoreFraction = correctCount === statementCount && response.answers.length === statementCount ? 1 : 0;
+      break;
+  }
+
+  return scaleScoreByFraction(interaction.maxScore, scoreFraction);
+}
+
 /**
- * Phase 3 only supports deterministic choice scoring and manual extended text.
+ * Phase 3 supports deterministic choice and grouped true/false scoring plus
+ * manual extended text.
  * Multiple-choice uses exact matching until a separately authored response
  * mapping is introduced, so this scorer never invents a partial-credit rule.
  */
@@ -134,14 +189,14 @@ export function scoreAssessmentVerticalSlice(
     throw new Error(`Unsupported assessment vertical slice interactions: ${unsupportedKinds.join(', ')}`);
   }
 
-  let autoScore = 0;
-  let manualMaxScore = 0;
+  let autoScoreCents = 0;
+  let manualMaxScoreCents = 0;
   const interactionScores: AssessmentVerticalSliceInteractionScore[] = [];
 
   for (const block of getAssessmentInteractionBlocks(definition)) {
     const { interaction } = block;
     if (interaction.kind === 'text') {
-      manualMaxScore += interaction.maxScore;
+      manualMaxScoreCents += Math.round(interaction.maxScore * 100);
       interactionScores.push({
         interactionId: block.id,
         score: null,
@@ -151,19 +206,42 @@ export function scoreAssessmentVerticalSlice(
       continue;
     }
 
-    if (interaction.kind !== 'choice') {
-      throw new Error(`Unsupported assessment vertical slice interaction: ${interaction.kind}`);
+    if (interaction.kind === 'true_false_group') {
+      const response = validated.responsesByInteractionId.get(block.id);
+      const score = scoreTrueFalseGroupInteraction(
+        interaction,
+        response?.kind === 'true_false_group' ? response : undefined
+      );
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+      continue;
     }
 
-    const response = validated.responsesByInteractionId.get(block.id);
-    const score =
-      response?.kind === 'choice' &&
-      hasExactChoiceResponse(interaction.config.correctOptionIds, response.selectedOptionIds)
-        ? interaction.maxScore
-        : 0;
-    autoScore += score;
-    interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+    if (interaction.kind === 'choice') {
+      const response = validated.responsesByInteractionId.get(block.id);
+      let score = 0;
+      if (response?.kind === 'choice') {
+        if (interaction.config.scoreWeights) {
+          const percentage = response.selectedOptionIds.reduce(
+            (total, optionId) => total + (interaction.config.scoreWeights?.[optionId] ?? 0),
+            0
+          );
+          score = scaleScoreByFraction(interaction.maxScore, Math.min(1, Math.max(0, percentage / 100)));
+        } else if (hasExactChoiceResponse(interaction.config.correctOptionIds, response.selectedOptionIds)) {
+          score = interaction.maxScore;
+        }
+      }
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+      continue;
+    }
+
+    throw new Error(`Unsupported assessment vertical slice interaction: ${interaction.kind}`);
   }
 
-  return { autoScore, manualMaxScore, interactionScores };
+  return {
+    autoScore: autoScoreCents / 100,
+    manualMaxScore: manualMaxScoreCents / 100,
+    interactionScores
+  };
 }

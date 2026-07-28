@@ -1,7 +1,7 @@
 <script module lang="ts">
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import { ExerciseQuestion } from '@cio/ui';
-  import type { AssessmentDeliveryDefinition } from '@cio/question-types';
+  import type { AssessmentDeliveryDefinition, AssessmentResponseEnvelope } from '@cio/question-types';
   import QuestionTypeModes from './question-type-modes.svelte';
   import {
     CHECKBOX_FIXTURE,
@@ -110,6 +110,45 @@
       start === end ? `Question ${start}` : `Questions ${start}-${end}`,
     formatProgress: (answered: number, total: number) => `${answered}/${total} answered`
   };
+  const trueFalseGroupDefinition = {
+    schemaVersion: 1,
+    blocks: [
+      {
+        id: 'true-false-group',
+        kind: 'interaction',
+        interaction: {
+          kind: 'true_false_group',
+          prompt: { format: 'html', html: '<p>Mark each statement as true or false.</p>' },
+          required: true,
+          maxScore: 4,
+          config: {
+            statements: [
+              { id: 'statement-one', html: '<p>Water freezes at 0°C.</p>' },
+              { id: 'statement-two', html: '<p>The Sun orbits Earth.</p>' },
+              { id: 'statement-three', html: '<p>Sound needs a medium to travel.</p>' },
+              { id: 'statement-four', html: '<p>All metals are magnetic.</p>' }
+            ],
+            scoring: { mode: 'tiered', tiers: [0, 0.1, 0.25, 0.5, 1] }
+          }
+        }
+      }
+    ]
+  } satisfies AssessmentDeliveryDefinition;
+  let trueFalseGroupResponse = $state<AssessmentResponseEnvelope>({
+    schemaVersion: 1,
+    responses: [
+      {
+        interactionId: 'true-false-group',
+        response: {
+          kind: 'true_false_group',
+          answers: [
+            { statementId: 'statement-one', value: true },
+            { statementId: 'statement-two', value: false }
+          ]
+        }
+      }
+    ]
+  });
 </script>
 
 <Story name="Checkbox">
@@ -207,8 +246,27 @@
     <div class="ui:max-w-6xl">
       <ExerciseQuestion.AssessmentItemRenderer
         definition={passageWorkspaceDefinition}
-        mode="take"
+        disabled={false}
+        trueLabel="True"
+        falseLabel="False"
         {passageWorkspaceLabels}
+      />
+    </div>
+  {/snippet}
+</Story>
+
+<Story name="Assessment - True/False Group">
+  {#snippet template()}
+    <div class="ui:max-w-4xl">
+      <ExerciseQuestion.AssessmentItemRenderer
+        definition={trueFalseGroupDefinition}
+        response={trueFalseGroupResponse}
+        disabled={false}
+        trueLabel="True"
+        falseLabel="False"
+        validationRequested={true}
+        validationMessage="Answer every statement."
+        onResponseChange={(response) => (trueFalseGroupResponse = response)}
       />
     </div>
   {/snippet}

@@ -110,6 +110,7 @@ describe('getCanonicalAssessmentReviewItems', () => {
         question: canonicalQuestions[0],
         definition: attemptedDefinition,
         response: attemptedResponse,
+        feedback: [],
         score: 1.5,
         maxScore: 2
       }
@@ -139,6 +140,7 @@ describe('getCanonicalAssessmentReviewItems', () => {
         question: attemptedQuestion,
         definition: attemptedDefinition,
         response: attemptedResponse,
+        feedback: [],
         score: 1.5,
         maxScore: 2
       }

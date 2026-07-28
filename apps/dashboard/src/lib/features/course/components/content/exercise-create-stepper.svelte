@@ -3,19 +3,27 @@
   import { Skeleton } from '@cio/ui/base/skeleton';
   import { InputField } from '@cio/ui/custom/input-field';
   import { Label } from '@cio/ui/base/label';
+  import * as FileDropZone from '@cio/ui/custom/file-drop-zone';
+  import type { FileRejectedReason } from '@cio/ui/custom/file-drop-zone';
   import { RadioOptionCardGroup } from '@cio/ui/custom/radio-option-card';
   import { t } from '$lib/utils/functions/translations';
   import { exerciseTemplateApi } from '$features/course/api/exercise-template.svelte';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { Confetti, ComingSoon } from '$features/ui';
+  import { CloseButton, Confetti, ComingSoon } from '$features/ui';
   import { EXERCISE_TEMPLATE_TAGS } from '$features/course/utils/constants';
-  import { courseApi, exerciseApi } from '$features/course/api';
+  import { courseApi, examImportApi, exerciseApi } from '$features/course/api';
   import { profile } from '$lib/utils/store/user';
+  import { lessonDocUpload } from '$features/course/components/lesson/store';
+  import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import { env } from '$env/dynamic/public';
+  import FileTextIcon from '@lucide/svelte/icons/file-text';
+  import { Progress } from '@cio/ui/base/progress';
   import type { StepperState, StepperActions, BaseStepperProps } from './types';
   import { EXERCISE_STEPPER_DEFAULT_STATE, EXERCISE_CREATE_TYPE } from './constants';
 
   interface Props extends BaseStepperProps {
     stepperState: StepperState;
+    onImportCreated: (importId: string) => void;
   }
 
   let {
@@ -23,10 +31,16 @@
     sectionId,
     order,
     onCreated,
+    onImportCreated,
     canCreate,
     stepperState = $bindable(EXERCISE_STEPPER_DEFAULT_STATE)
   }: Props = $props();
 
+  const examImportEnabled = env.PUBLIC_EXAM_IMPORT_ENABLED === 'true';
+  const examImportPdfEnabled = env.PUBLIC_EXAM_IMPORT_PDF_ENABLED === 'true';
+  const examImportAccept = examImportPdfEnabled
+    ? '.docx,.pdf,.aiken,.gift,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf'
+    : '.docx,.aiken,.gift,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   const options = [
     {
       id: 'exercise-from-scratch',
@@ -42,6 +56,17 @@
       type: EXERCISE_CREATE_TYPE.TEMPLATE,
       isDisabled: false
     },
+    ...(examImportEnabled
+      ? [
+          {
+            id: 'exercise-import-document',
+            title: $t('course.navItem.lessons.exercises.new_exercise_modal.options.import_document'),
+            description: $t('course.navItem.lessons.exercises.new_exercise_modal.options.import_document_subtitle'),
+            type: EXERCISE_CREATE_TYPE.IMPORT,
+            isDisabled: false
+          }
+        ]
+      : []),
     {
       id: 'exercise-ai',
       title: $t('course.navItem.lessons.exercises.new_exercise_modal.options.use_ai'),
@@ -70,10 +95,12 @@
   let isLoading = $state(false);
   let isAIStarted = $state(false);
   let title = $state('');
+  let selectedImportFile = $state<File | null>(null);
 
   let selectedTag = $state(tags[0]);
   let selectedTemplateId = $state('');
   let isTemplateFinishedLoading = $state(false);
+  const maxDocumentBytes = getResolvedUploadLimits().documentBytes;
 
   const templateRadioOptions = $derived(
     (exerciseTemplateApi.templates ?? []).map((t) => ({
@@ -149,27 +176,66 @@
     }
   }
 
+  async function handleImport() {
+    if (!selectedImportFile || !canCreate || examImportApi.isUploading) return;
+
+    const importId = await examImportApi.uploadAndCreate(courseId, selectedImportFile, maxDocumentBytes);
+    if (importId) onImportCreated(importId);
+  }
+
+  async function handleImportFiles(files: File[]) {
+    selectedImportFile = files[0] ?? null;
+    examImportApi.errors.file = '';
+  }
+
+  function handleImportFileRejected({ reason }: { reason: FileRejectedReason; file: File }) {
+    const key =
+      reason === 'Maximum file size exceeded'
+        ? 'exam_import.upload.invalid_size'
+        : reason === 'File type not allowed'
+          ? examImportPdfEnabled
+            ? 'exam_import.upload.document_only'
+            : 'exam_import.upload.docx_only'
+          : 'exam_import.upload.failed';
+    snackbar.error(key);
+  }
+
+  function removeImportFile() {
+    selectedImportFile = null;
+    examImportApi.errors.file = '';
+  }
+
   // ============================================
   // COMPUTED VALUES FOR PARENT
   // ============================================
 
   const canProceedStep0 = $derived(canCreate);
   const canProceedStep1 = $derived(
-    type === EXERCISE_CREATE_TYPE.SCRATCH ? title.trim().length > 0 && canCreate : !!selectedTemplateId && canCreate
+    type === EXERCISE_CREATE_TYPE.SCRATCH
+      ? title.trim().length > 0 && canCreate
+      : type === EXERCISE_CREATE_TYPE.TEMPLATE
+        ? !!selectedTemplateId && canCreate
+        : type === EXERCISE_CREATE_TYPE.IMPORT
+          ? selectedImportFile !== null && canCreate
+          : false
   );
   const canProceed = $derived(step === 0 ? canProceedStep0 : canProceedStep1);
 
   const primaryActionLabel = $derived(
     step === 0
       ? $t('course.navItem.lessons.exercises.new_exercise_modal.next')
-      : $t('course.navItem.lessons.exercises.new_exercise_modal.finish')
+      : type === EXERCISE_CREATE_TYPE.IMPORT
+        ? $t('course.navItem.lessons.exercises.new_exercise_modal.import.start')
+        : $t('course.navItem.lessons.exercises.new_exercise_modal.finish')
   );
 
   // ============================================
   // SYNC STATE TO BINDABLE (parent has bind:stepperState)
   // Only assign when values change to avoid infinite re-renders.
   // ============================================
-  const isSubmitting = $derived(isLoading || isTemplateFinishedLoading);
+  const isSubmitting = $derived(
+    isLoading || isTemplateFinishedLoading || examImportApi.isUploading || examImportApi.isLoading
+  );
   $effect(() => {
     const next = {
       currentStep: step,
@@ -193,7 +259,7 @@
   // ============================================
   export const actions: StepperActions = {
     async next() {
-      if (isLoading || isTemplateFinishedLoading) return;
+      if (isSubmitting) return;
 
       if (step === 0) {
         if (type === EXERCISE_CREATE_TYPE.TEMPLATE) {
@@ -206,6 +272,8 @@
           await handleAddExercise();
         } else if (type === EXERCISE_CREATE_TYPE.TEMPLATE) {
           await handleTemplateSelection();
+        } else if (type === EXERCISE_CREATE_TYPE.IMPORT) {
+          await handleImport();
         }
       }
     },
@@ -220,11 +288,13 @@
       title = '';
       selectedTag = tags[0];
       selectedTemplateId = '';
+      selectedImportFile = null;
       isLoading = false;
       isAIStarted = false;
       isTemplateFinishedLoading = false;
       stepperState = { ...EXERCISE_STEPPER_DEFAULT_STATE };
       exerciseTemplateApi.reset();
+      examImportApi.reset();
     }
   };
 </script>
@@ -302,6 +372,61 @@
           {/if}
         </div>
       </div>
+    </div>
+  {:else if type === EXERCISE_CREATE_TYPE.IMPORT}
+    <div class="space-y-4">
+      <div>
+        <Label class="text-md mb-1 font-bold">
+          {$t('course.navItem.lessons.exercises.new_exercise_modal.import.heading')}
+        </Label>
+        <p class="ui:text-muted-foreground text-sm">
+          {$t('course.navItem.lessons.exercises.new_exercise_modal.import.description')}
+        </p>
+      </div>
+
+      {#if selectedImportFile}
+        <div class="ui:border-border flex items-center gap-3 rounded-md border p-4">
+          <FileTextIcon class="ui:text-muted-foreground size-5 shrink-0" />
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-medium">{selectedImportFile.name}</p>
+            <p class="ui:text-muted-foreground text-xs">{FileDropZone.displaySize(selectedImportFile.size)}</p>
+          </div>
+          <CloseButton onClick={removeImportFile} />
+        </div>
+      {:else}
+        <FileDropZone.Root
+          accept={examImportAccept}
+          maxFiles={1}
+          fileCount={0}
+          maxFileSize={maxDocumentBytes}
+          onUpload={handleImportFiles}
+          onFileRejected={handleImportFileRejected}
+        >
+          <FileDropZone.Trigger
+            label={$t('course.navItem.lessons.exercises.new_exercise_modal.import.drop_label')}
+            formatMaxFiles={(_count) =>
+              $t('course.navItem.lessons.exercises.new_exercise_modal.import.drop_description')}
+            formatMaxFilesAndSize={(size) =>
+              $t('course.navItem.lessons.exercises.new_exercise_modal.import.max_size', { size })}
+            formatMaxSize={(size) =>
+              $t('course.navItem.lessons.exercises.new_exercise_modal.import.max_size', { size })}
+          />
+        </FileDropZone.Root>
+      {/if}
+
+      {#if examImportApi.errors.file}
+        <p class="ui:text-destructive text-sm" role="alert">{$t(examImportApi.errors.file)}</p>
+      {/if}
+
+      {#if $lessonDocUpload.isUploading}
+        <div class="space-y-2" aria-live="polite">
+          <div class="flex items-center justify-between text-sm">
+            <span>{$t('course.navItem.lessons.exercises.new_exercise_modal.import.uploading')}</span>
+            <span>{$lessonDocUpload.uploadProgress}%</span>
+          </div>
+          <Progress value={$lessonDocUpload.uploadProgress} />
+        </div>
+      {/if}
     </div>
   {/if}
 {/if}

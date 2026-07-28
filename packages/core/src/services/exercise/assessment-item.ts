@@ -14,12 +14,13 @@ import {
   updateQuestions
 } from '@cio/db/queries/exercise';
 import {
+  getItemMaxScore,
   getUnsupportedAssessmentVerticalSliceInteractionKinds,
   QUESTION_TYPE_IDS,
   parseAssessmentItemDefinition,
   toAssessmentDeliveryDefinition
 } from '@cio/question-types';
-import type { AssessmentItemDefinition } from '@cio/question-types';
+import type { AssessmentDeliveryDefinition, AssessmentItemDefinition } from '@cio/question-types';
 import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
 import { publishQuestionRevision } from '../assessment/question-revision';
 
@@ -33,11 +34,13 @@ type AssessmentItemRead = {
   definition: AssessmentItemDefinition;
 };
 
+type AssessmentItemAccessRead = Omit<AssessmentItemRead, 'definition'> & {
+  definition: AssessmentDeliveryDefinition;
+  authorDefinition: AssessmentItemDefinition | null;
+};
+
 function getAssessmentItemMaxScore(definition: AssessmentItemDefinition): number {
-  return definition.blocks.reduce(
-    (total, block) => total + (block.kind === 'interaction' ? block.interaction.maxScore : 0),
-    0
-  );
+  return getItemMaxScore(definition);
 }
 
 function assertSupportedAssessmentInteractions(definition: AssessmentItemDefinition): void {
@@ -179,7 +182,7 @@ export async function applyAssessmentItemMutationsForExercise(
       id: mutation.questionId,
       data: { title: mutation.title }
     }));
-    await updateQuestions(titleUpdates, txClient);
+    await updateQuestions(titleUpdates, exerciseId, txClient);
   }
 
   const createMutations = mutations.filter(
@@ -336,8 +339,14 @@ export async function getAssessmentItemForAuthorService(
   courseId: string,
   exerciseId: string,
   questionId: number
-): Promise<AssessmentItemRead> {
-  return getAssessmentItemForCourse(courseId, exerciseId, questionId, db);
+): Promise<AssessmentItemAccessRead> {
+  const item = await getAssessmentItemForCourse(courseId, exerciseId, questionId, db);
+
+  return {
+    ...item,
+    definition: toAssessmentDeliveryDefinition(item.definition),
+    authorDefinition: item.definition
+  };
 }
 
 export async function publishAssessmentItemForCourseService(
@@ -354,7 +363,7 @@ export async function publishAssessmentItemForCourseService(
     const txClient = tx as DbOrTxClient;
     await getAssessmentItemForCourse(courseId, exerciseId, questionId, txClient);
     await publishQuestionRevision({ questionId, expectedRevision, definition }, txClient);
-    const updatedQuestion = await updateQuestion(questionId, { title }, txClient);
+    const updatedQuestion = await updateQuestion(questionId, exerciseId, { title }, txClient);
     if (!updatedQuestion) {
       throw new AppError('Assessment question not found while updating its title', ErrorCodes.NOT_FOUND, 404);
     }
@@ -363,13 +372,16 @@ export async function publishAssessmentItemForCourseService(
   });
 }
 
-export async function getAssessmentItemForLearnerService(courseId: string, exerciseId: string, questionId: number) {
+export async function getAssessmentItemForLearnerService(
+  courseId: string,
+  exerciseId: string,
+  questionId: number
+): Promise<AssessmentItemAccessRead> {
   const item = await getAssessmentItemForCourse(courseId, exerciseId, questionId, db);
 
   return {
-    questionId: item.questionId,
-    revisionId: item.revisionId,
-    revision: item.revision,
-    definition: toAssessmentDeliveryDefinition(item.definition)
+    ...item,
+    definition: toAssessmentDeliveryDefinition(item.definition),
+    authorDefinition: null
   };
 }

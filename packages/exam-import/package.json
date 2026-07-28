@@ -18,14 +18,17 @@
     "build": "rimraf dist tsconfig.tsbuildinfo && tsc && tsc-alias",
     "dev": "tsc --watch",
     "test": "vitest run",
+    "test:corpus": "vitest run tests/corpus-metrics.test.ts",
     "test:watch": "vitest",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@cio/question-types": "workspace:*",
     "@cio/tsconfig": "workspace:*",
     "fast-xml-parser": "5.2.5",
     "jszip": "3.10.1",
     "officeparser": "^7.4.0",
+    "pdfjs-dist": "6.1.200",
     "zod": "^4.1.8"
   },
   "devDependencies": {

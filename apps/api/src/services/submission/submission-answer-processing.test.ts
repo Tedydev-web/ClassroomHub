@@ -29,6 +29,30 @@ const assessmentDefinition = {
   feedback: []
 };
 
+const trueFalseGroupAssessmentDefinition = {
+  schemaVersion: 1 as const,
+  blocks: [
+    {
+      id: 'group-1',
+      kind: 'interaction' as const,
+      interaction: {
+        kind: 'true_false_group' as const,
+        prompt: { format: 'html' as const, html: '<p>Mark every statement.</p>' },
+        required: true,
+        maxScore: 1,
+        config: {
+          statements: [
+            { id: 'statement-1', html: '<p>First</p>', correctValue: true },
+            { id: 'statement-2', html: '<p>Second</p>', correctValue: false }
+          ],
+          scoring: { mode: 'tiered' as const, tiers: [0, 0.5, 1] }
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
 const questions: SubmissionQuestionDefinition[] = [
   {
     id: 1,
@@ -272,5 +296,103 @@ describe('prepareSubmissionAnswers', () => {
     );
 
     expect(result.answers).toEqual([{ questionId: 16, answerData: { type: 'ASSESSMENT_ITEM', response } }]);
+  });
+
+  it('rejects an incomplete required true-false group at the submission boundary', () => {
+    const assessmentQuestion: SubmissionQuestionDefinition = {
+      id: 16,
+      title: 'Grouped true or false',
+      questionTypeId: 16,
+      points: 1,
+      settings: {},
+      options: []
+    };
+    const response = {
+      schemaVersion: 1 as const,
+      responses: [
+        {
+          interactionId: 'group-1',
+          response: {
+            kind: 'true_false_group' as const,
+            answers: [{ statementId: 'statement-1', value: true }]
+          }
+        }
+      ]
+    };
+
+    expect(() =>
+      prepareSubmissionAnswers(
+        [assessmentQuestion],
+        [{ questionId: 16, questionRevisionId: '00000000-0000-4000-8000-000000000016', response }],
+        new Map([[16, trueFalseGroupAssessmentDefinition]])
+      )
+    ).toThrowError(expect.objectContaining({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 }));
+  });
+
+  it('allows an optional true-false group to be skipped but rejects a partial answer at final submission', () => {
+    const assessmentQuestion: SubmissionQuestionDefinition = {
+      id: 16,
+      title: 'Optional grouped true or false',
+      questionTypeId: 16,
+      points: 1,
+      settings: {},
+      options: []
+    };
+    const optionalDefinition = {
+      ...trueFalseGroupAssessmentDefinition,
+      blocks: trueFalseGroupAssessmentDefinition.blocks.map((block) => ({
+        ...block,
+        interaction: { ...block.interaction, required: false }
+      }))
+    };
+    const partialResponse = {
+      schemaVersion: 1 as const,
+      responses: [
+        {
+          interactionId: 'group-1',
+          response: {
+            kind: 'true_false_group' as const,
+            answers: [{ statementId: 'statement-1', value: true }]
+          }
+        }
+      ]
+    };
+    const completeResponse = {
+      schemaVersion: 1 as const,
+      responses: [
+        {
+          interactionId: 'group-1',
+          response: {
+            kind: 'true_false_group' as const,
+            answers: [
+              { statementId: 'statement-1', value: true },
+              { statementId: 'statement-2', value: false }
+            ]
+          }
+        }
+      ]
+    };
+
+    expect(prepareSubmissionAnswers([assessmentQuestion], [], new Map([[16, optionalDefinition]])).answers).toEqual([]);
+    expect(() =>
+      prepareSubmissionAnswers(
+        [assessmentQuestion],
+        [{ questionId: 16, questionRevisionId: '00000000-0000-4000-8000-000000000016', response: partialResponse }],
+        new Map([[16, optionalDefinition]])
+      )
+    ).toThrowError(expect.objectContaining({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 }));
+    expect(
+      prepareSubmissionAnswers(
+        [assessmentQuestion],
+        [
+          {
+            questionId: 16,
+            questionRevisionId: '00000000-0000-4000-8000-000000000016',
+            response: completeResponse
+          }
+        ],
+        new Map([[16, optionalDefinition]])
+      ).answers
+    ).toHaveLength(1);
   });
 });

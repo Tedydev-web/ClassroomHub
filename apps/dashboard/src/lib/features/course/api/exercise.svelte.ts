@@ -10,6 +10,7 @@ import type {
   ExerciseFileUploadInitRequest,
   GetExerciseAssignmentsRequest,
   GetExerciseRequest,
+  GetExerciseSubmissionsRequest,
   GetAssessmentItemRequest,
   PublishAssessmentItemRequest,
   SubmitExerciseRequest,
@@ -409,6 +410,16 @@ export class ExerciseApi extends BaseApiWithErrors {
           snackbar.error(result.error);
         }
       }
+    });
+  }
+
+  async getSubmissions(courseId: string, exerciseId: string) {
+    return await this.execute<GetExerciseSubmissionsRequest>({
+      requestFn: () =>
+        classroomhub.course[':courseId'].exercise[':exerciseId'].submissions.$get({
+          param: { courseId, exerciseId }
+        }),
+      logContext: 'fetching exercise submissions'
     });
   }
 

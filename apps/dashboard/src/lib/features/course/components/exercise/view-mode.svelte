@@ -1,6 +1,7 @@
 <script lang="ts">
   import { get } from 'svelte/store';
   import { onDestroy, tick, untrack } from 'svelte';
+  import { invalidateAll } from '$app/navigation';
   import { fly } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
   import { courseApi } from '$features/course/api';
@@ -86,7 +87,8 @@
   } from '$features/course/utils/exercise-autosave-utils';
   import {
     getCanonicalAssessmentReviewItems,
-    sumAnswerScoresForRenderedQuestions
+    sumAnswerScoresForRenderedQuestions,
+    type CanonicalAssessmentReviewItem
   } from '$features/course/utils/submission-review-score-utils';
   import { VIDEO_RECORDING_MIME_TYPES, type TExerciseVideoRecordingUploadInit } from '@cio/utils/validation/exercise';
   import type { TExerciseSubmissionCreate } from '@cio/utils/validation/exercise';
@@ -99,6 +101,7 @@
         id: string;
         question: CanonicalQuestion;
         definition: AssessmentDeliveryDefinition;
+        feedback?: CanonicalAssessmentReviewItem['feedback'];
         revisionId: string | null;
       };
 
@@ -323,11 +326,25 @@
         skipHydrateFromSubmissions = false;
         hasRestoredUnfinishedDraft = false;
         const sub = submitResult.data;
-        localSubmissions = [...localSubmissions, sub];
-        selectedTryIndex = submissionList.length - 1;
         if (sub.gradingState === 'completed' && sub.statusId === STATUS.GRADED && Array.isArray(sub.answers)) {
-          applyMySubmission(sub);
+          const overviewResult = await exerciseApi.getSubmissions(courseApi.course.id, exerciseId);
+          const reviewedSubmission = overviewResult?.data?.mySubmission.find((submission) => submission.id === sub.id);
+          if (!reviewedSubmission) {
+            console.error('Submitted exercise review projection could not be loaded', {
+              exerciseId,
+              submissionId: sub.id
+            });
+            snackbar.error();
+            await invalidateAll();
+            return;
+          }
+
+          localSubmissions = [...localSubmissions, reviewedSubmission];
+          selectedTryIndex = submissionList.length - 1;
+          applyMySubmission(reviewedSubmission);
         } else {
+          localSubmissions = [...localSubmissions, sub];
+          selectedTryIndex = submissionList.length - 1;
           questionnaireMetaData.update((m) => ({
             ...m,
             status: 1,
@@ -1260,7 +1277,9 @@
           order: item.question.order ?? null,
           exerciseSectionId: item.question.exerciseSectionId ?? null
         },
-        definition: item.definition
+        definition: item.definition,
+        feedback: item.feedback,
+        revisionId: null
       })
     );
 
@@ -1503,7 +1522,8 @@
         title: item.question.title,
         order: item.question.order,
         exerciseSectionId: item.question.exerciseSectionId,
-        definition: item.definition
+        definition: item.definition,
+        feedback: item.feedback
       }))}
       canonicalAnswers={$questionnaireMetaData.canonicalAnswers}
     />
@@ -1564,6 +1584,8 @@
               response={$questionnaireMetaData.canonicalAnswers[sectionTakeItem.id]}
               disabled={isSubmitting}
               title={sectionTakeItem.question.title}
+              trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+              falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
               questionNumber={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               interactionNumberStart={interactionNumberStartByItemId[sectionTakeItem.id] ?? sectionQuestionIndex + 1}
               questionNumberActive={false}
@@ -1643,6 +1665,10 @@
                   response={$questionnaireMetaData.canonicalAnswers[currentTakeItem.id]}
                   disabled={isSubmitting}
                   title={currentTakeItem.question.title}
+                  trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+                  falseLabel={$t(
+                    'course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label'
+                  )}
                   questionNumber={interactionNumberStartByItemId[currentTakeItem.id] ??
                     $questionnaireMetaData.currentQuestionIndex}
                   interactionNumberStart={interactionNumberStartByItemId[currentTakeItem.id] ??

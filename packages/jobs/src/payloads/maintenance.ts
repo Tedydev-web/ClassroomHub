@@ -37,6 +37,17 @@ export const ZMediaJobReapPayload = z.object({
 });
 export type TMediaJobReapPayload = z.infer<typeof ZMediaJobReapPayload>;
 
+export const ZExamImportReconcilePayload = z.object({
+  limit: z.number().int().min(1).max(500).default(100),
+  staleAfterMinutes: z
+    .number()
+    .int()
+    .min(5)
+    .max(24 * 60)
+    .default(30)
+});
+export type TExamImportReconcilePayload = z.infer<typeof ZExamImportReconcilePayload>;
+
 const ZBucketKey = z.object({ bucket: z.string().min(1), key: z.string().min(1) });
 const ZBucketPrefix = z.object({ bucket: z.string().min(1), prefix: z.string().min(1) });
 

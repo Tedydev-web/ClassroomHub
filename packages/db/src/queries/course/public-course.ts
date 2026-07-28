@@ -1,7 +1,7 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 
 import * as schema from '@db/schema';
-import { db } from '@db/drizzle';
+import { db, type DbOrTxClient } from '@db/drizzle';
 
 /**
  * Queries backing the anonymous public-course surface under
@@ -486,14 +486,14 @@ export async function getPublicCourseItem(
  * slugs already in use for the given course across both lesson and exercise
  * tables.
  */
-export async function getTakenItemSlugs(courseId: string): Promise<Set<string>> {
+export async function getTakenItemSlugs(courseId: string, dbClient: DbOrTxClient = db): Promise<Set<string>> {
   try {
-    const lessonSlugs = await db
+    const lessonSlugs = await dbClient
       .select({ slug: schema.lesson.slug })
       .from(schema.lesson)
       .where(eq(schema.lesson.courseId, courseId));
 
-    const exerciseSlugs = await db
+    const exerciseSlugs = await dbClient
       .select({ slug: schema.exercise.slug })
       .from(schema.exercise)
       .where(eq(schema.exercise.courseId, courseId));

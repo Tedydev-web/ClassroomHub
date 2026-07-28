@@ -12,7 +12,8 @@ import {
 const ALL_VERIFIED: ReferenceCoverage = {
   structure: 'verified',
   answerKeys: 'verified',
-  optionText: 'verified'
+  optionText: 'verified',
+  reviewRouting: 'verified'
 };
 
 function buildReference(coverage: ReferenceCoverage = ALL_VERIFIED): ReferenceExam {
@@ -29,7 +30,8 @@ function buildReference(coverage: ReferenceCoverage = ALL_VERIFIED): ReferenceEx
         optionCount: 4,
         answerKey: ['C'],
         prompt: 'The word impeccable is OPPOSITE in meaning to',
-        options: ['messy', 'ordinary', 'imperfect', 'reliable']
+        options: ['messy', 'ordinary', 'imperfect', 'reliable'],
+        reviewRequired: false
       },
       {
         number: '2',
@@ -38,7 +40,8 @@ function buildReference(coverage: ReferenceCoverage = ALL_VERIFIED): ReferenceEx
         optionCount: 4,
         answerKey: ['B'],
         prompt: 'The word they refers to',
-        options: ['teenagers', 'parents', 'routines', 'study plans']
+        options: ['teenagers', 'parents', 'routines', 'study plans'],
+        reviewRequired: false
       },
       {
         number: '3',
@@ -47,7 +50,8 @@ function buildReference(coverage: ReferenceCoverage = ALL_VERIFIED): ReferenceEx
         optionCount: 0,
         answerKey: null,
         prompt: 'Name one habit the writer recommends',
-        options: []
+        options: [],
+        reviewRequired: true
       }
     ]
   };
@@ -59,7 +63,12 @@ function copyOf(reference: ReferenceExam): ExtractedExam {
 
 describe('layer gating', () => {
   it('measures nothing when no layer is verified', () => {
-    const reference = buildReference({ structure: 'proposed', answerKeys: 'proposed', optionText: 'unlabelled' });
+    const reference = buildReference({
+      structure: 'proposed',
+      answerKeys: 'proposed',
+      optionText: 'unlabelled',
+      reviewRouting: 'unlabelled'
+    });
     const metrics = scoreExtraction(reference, copyOf(reference));
 
     expect(metrics.questionRecall).toBeNull();
@@ -68,10 +77,16 @@ describe('layer gating', () => {
     expect(metrics.optionCountAccuracy).toBeNull();
     expect(metrics.answerKeyAccuracy).toBeNull();
     expect(metrics.optionFidelity).toBeNull();
+    expect(metrics.reviewPrecision).toBeNull();
   });
 
   it('measures only the structure layer when only structure is verified', () => {
-    const reference = buildReference({ structure: 'verified', answerKeys: 'proposed', optionText: 'unlabelled' });
+    const reference = buildReference({
+      structure: 'verified',
+      answerKeys: 'proposed',
+      optionText: 'unlabelled',
+      reviewRouting: 'unlabelled'
+    });
     const metrics = scoreExtraction(reference, copyOf(reference));
 
     expect(metrics.questionRecall).toBe(1);
@@ -82,7 +97,12 @@ describe('layer gating', () => {
   });
 
   it('a proposed layer is never silently treated as verified', () => {
-    const proposed = buildReference({ structure: 'proposed', answerKeys: 'verified', optionText: 'verified' });
+    const proposed = buildReference({
+      structure: 'proposed',
+      answerKeys: 'verified',
+      optionText: 'verified',
+      reviewRouting: 'verified'
+    });
 
     expect(scoreExtraction(proposed, copyOf(proposed)).questionRecall).toBeNull();
     expect(pendingLayers(proposed)).toEqual(['structure']);
@@ -101,7 +121,16 @@ describe('extraction scoring', () => {
     expect(metrics.groupingAccuracy).toBe(1);
     expect(metrics.kindAccuracy).toBe(1);
     expect(metrics.optionCountAccuracy).toBe(1);
+    expect(metrics.reviewPrecision).toBe(1);
     expect(metrics.counts.spuriousQuestions).toBe(0);
+  });
+
+  it('penalises review flags on questions that do not require correction', () => {
+    const extracted = copyOf(reference);
+    extracted.questions[0]!.reviewRequired = true;
+    extracted.questions[2]!.reviewRequired = true;
+
+    expect(scoreExtraction(reference, extracted).reviewPrecision).toBe(0.5);
   });
 
   it('scores an extractor that finds nothing as zero, not as unmeasurable', () => {
@@ -129,7 +158,8 @@ describe('extraction scoring', () => {
       optionCount: 4,
       answerKey: null,
       prompt: 'Invented',
-      options: []
+      options: [],
+      reviewRequired: false
     });
 
     expect(scoreExtraction(reference, extracted).counts.spuriousQuestions).toBe(1);
@@ -192,13 +222,23 @@ describe('option count as a mis-assignment detector', () => {
 
 describe('scoreability', () => {
   it('accepts a reference with at least one verified layer', () => {
-    const partial = buildReference({ structure: 'verified', answerKeys: 'unlabelled', optionText: 'unlabelled' });
+    const partial = buildReference({
+      structure: 'verified',
+      answerKeys: 'unlabelled',
+      optionText: 'unlabelled',
+      reviewRouting: 'unlabelled'
+    });
 
     expect(() => assertReferenceIsScoreable(partial)).not.toThrow();
   });
 
   it('refuses a reference where nothing has been verified', () => {
-    const proposed = buildReference({ structure: 'proposed', answerKeys: 'proposed', optionText: 'proposed' });
+    const proposed = buildReference({
+      structure: 'proposed',
+      answerKeys: 'proposed',
+      optionText: 'proposed',
+      reviewRouting: 'proposed'
+    });
 
     expect(() => assertReferenceIsScoreable(proposed)).toThrow(UnscoreableReferenceError);
   });
@@ -210,8 +250,13 @@ describe('scoreability', () => {
   });
 
   it('names the layers still awaiting a human', () => {
-    const partial = buildReference({ structure: 'verified', answerKeys: 'proposed', optionText: 'unlabelled' });
+    const partial = buildReference({
+      structure: 'verified',
+      answerKeys: 'proposed',
+      optionText: 'unlabelled',
+      reviewRouting: 'unlabelled'
+    });
 
-    expect(pendingLayers(partial)).toEqual(['answerKeys', 'optionText']);
+    expect(pendingLayers(partial)).toEqual(['answerKeys', 'optionText', 'reviewRouting']);
   });
 });

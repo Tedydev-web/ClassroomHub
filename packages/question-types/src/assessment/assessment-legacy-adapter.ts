@@ -66,6 +66,20 @@ function correctChoiceOptionIds(options: readonly ExerciseQuestionOption[]): str
     .map((option) => option.id);
 }
 
+function checkboxScoreWeights(options: readonly ExerciseQuestionOption[]): Record<string, number> | undefined {
+  const correctCount = options.filter((option) => option.isCorrect === true).length;
+  if (correctCount === 0) return undefined;
+
+  const incorrectCount = options.length - correctCount;
+
+  return Object.fromEntries(
+    options.map((option) => [
+      String(option.id),
+      option.isCorrect === true ? 100 / correctCount : -100 / Math.max(1, incorrectCount)
+    ])
+  );
+}
+
 function trueFalseOptionLabel(
   options: readonly ExerciseQuestionOption[] | undefined,
   target: boolean,
@@ -91,7 +105,9 @@ function buildInteraction(question: ExerciseQuestionModel): AssessmentInteractio
           correctOptionIds: correctChoiceOptionIds(options)
         }
       };
-    case QUESTION_TYPE_KEY.CHECKBOX:
+    case QUESTION_TYPE_KEY.CHECKBOX: {
+      const scoreWeights = checkboxScoreWeights(options);
+
       return {
         kind: 'choice',
         ...baseFields(question),
@@ -99,9 +115,11 @@ function buildInteraction(question: ExerciseQuestionModel): AssessmentInteractio
           cardinality: 'multiple',
           presentation: 'list',
           options: choiceOptions(options),
-          correctOptionIds: correctChoiceOptionIds(options)
+          correctOptionIds: correctChoiceOptionIds(options),
+          ...(scoreWeights ? { scoreWeights } : {})
         }
       };
+    }
     case QUESTION_TYPE_KEY.TRUE_FALSE: {
       const correctValue = resolveTrueFalseCorrectValue(settings, options);
       return {

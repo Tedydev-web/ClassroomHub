@@ -49,7 +49,29 @@ function mapInteractionHtml(
           options: interaction.config.options.map((option) => ({ ...option, html: transform(option.html) }))
         }
       };
-    default:
+    case 'true_false_group':
+      return {
+        ...interaction,
+        prompt,
+        config: {
+          ...interaction.config,
+          statements: interaction.config.statements.map((statement) => ({
+            ...statement,
+            html: transform(statement.html)
+          }))
+        }
+      };
+    case 'text':
+    case 'numeric':
+    case 'fill_blank':
+    case 'word_bank':
+    case 'file_upload':
+    case 'link':
+    case 'star_rating':
+    case 'video_recording':
       return { ...interaction, prompt };
   }
+
+  interaction satisfies never;
+  throw new Error('Unsupported assessment interaction kind');
 }

@@ -1,5 +1,13 @@
-import { GetObjectCommand, HeadObjectCommand, NotFound, PutObjectCommand } from '@aws-sdk/client-s3';
-import { Readable } from 'node:stream';
+import {
+  DeleteObjectsCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  NotFound,
+  PutObjectCommand
+} from '@aws-sdk/client-s3';
+import { Readable, Transform } from 'node:stream';
 import { createWriteStream } from 'node:fs';
 import { mkdir, readFile, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -7,6 +15,13 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
 import { getS3Client, getStorageConfig } from '../config/storage';
+
+export class ObjectSizeLimitExceededError extends Error {
+  constructor(readonly maxBytes: number) {
+    super(`Object exceeds the ${maxBytes}-byte download limit`);
+    this.name = 'ObjectSizeLimitExceededError';
+  }
+}
 
 /**
  * Streams an S3 object to a temp file on disk and returns the absolute path.
@@ -31,7 +46,12 @@ export async function objectExists(bucket: string, key: string): Promise<boolean
   }
 }
 
-export async function downloadObjectToTempFile(bucket: string, key: string, fileNameHint?: string): Promise<string> {
+export async function downloadObjectToTempFile(
+  bucket: string,
+  key: string,
+  fileNameHint?: string,
+  maxBytes?: number
+): Promise<string> {
   const dir = path.join(tmpdir(), 'cio-jobs');
   await mkdir(dir, { recursive: true });
 
@@ -44,7 +64,28 @@ export async function downloadObjectToTempFile(bucket: string, key: string, file
   }
 
   const body = response.Body as Readable;
-  await pipeline(body, createWriteStream(localPath));
+  try {
+    if (maxBytes === undefined) {
+      await pipeline(body, createWriteStream(localPath));
+    } else {
+      let downloadedBytes = 0;
+      const byteLimiter = new Transform({
+        transform(chunk: Buffer, _encoding, callback) {
+          downloadedBytes += chunk.byteLength;
+          if (downloadedBytes > maxBytes) {
+            callback(new ObjectSizeLimitExceededError(maxBytes));
+            return;
+          }
+
+          callback(null, chunk);
+        }
+      });
+      await pipeline(body, byteLimiter, createWriteStream(localPath));
+    }
+  } catch (error) {
+    await safeUnlink(localPath);
+    throw error;
+  }
 
   return localPath;
 }
@@ -84,6 +125,40 @@ export async function uploadBufferToBucket(
       CacheControl: cacheControl
     })
   );
+}
+
+export async function deleteObjectFromBucket(bucket: string, key: string): Promise<void> {
+  await getS3Client().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+}
+
+export async function deleteObjectsByPrefix(bucket: string, prefix: string): Promise<void> {
+  let continuationToken: string | undefined;
+
+  do {
+    const listed = await getS3Client().send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken
+      })
+    );
+    const objects = (listed.Contents ?? []).flatMap(({ Key }) => (Key ? [{ Key }] : []));
+    if (objects.length > 0) {
+      const deleted = await getS3Client().send(
+        new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: { Objects: objects, Quiet: true }
+        })
+      );
+      if ((deleted.Errors?.length ?? 0) > 0) {
+        throw new Error(`Failed to delete ${deleted.Errors?.length ?? 0} objects under prefix`);
+      }
+    }
+    if (listed.IsTruncated && !listed.NextContinuationToken) {
+      throw new Error('Truncated object listing returned no continuation token');
+    }
+    continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+  } while (continuationToken);
 }
 
 export async function safeUnlink(filePath: string | undefined | null): Promise<void> {

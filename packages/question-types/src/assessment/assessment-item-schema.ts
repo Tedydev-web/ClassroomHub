@@ -71,7 +71,8 @@ const choiceInteractionSchema = z.strictObject({
     cardinality: z.enum(['single', 'multiple']),
     presentation: z.enum(['list', 'true_false']),
     options: z.array(choiceOptionSchema).max(MAX_INTERACTION_OPTIONS),
-    correctOptionIds: z.array(assessmentIdSchema).max(MAX_INTERACTION_OPTIONS)
+    correctOptionIds: z.array(assessmentIdSchema).max(MAX_INTERACTION_OPTIONS),
+    scoreWeights: z.record(assessmentIdSchema, z.number().min(-100).max(100)).optional()
   })
 });
 
@@ -123,6 +124,34 @@ const orderingInteractionSchema = z.strictObject({
   })
 });
 
+export const DEFAULT_TRUE_FALSE_GROUP_TIERS = [0, 0.1, 0.25, 0.5, 1] as const;
+
+const trueFalseGroupStatementSchema = z.strictObject({
+  id: assessmentIdSchema,
+  html: z.string().max(MAX_AUTHORED_HTML_LENGTH),
+  correctValue: z.boolean()
+});
+
+const scoreFractionSchema = z.number().min(0).max(1);
+
+const trueFalseGroupScoringSchema = z.discriminatedUnion('mode', [
+  z.strictObject({
+    mode: z.literal('tiered'),
+    tiers: z.array(scoreFractionSchema).max(MAX_INTERACTION_OPTIONS + 1)
+  }),
+  z.strictObject({ mode: z.literal('proportional') }),
+  z.strictObject({ mode: z.literal('all_or_nothing') })
+]);
+
+const trueFalseGroupInteractionSchema = z.strictObject({
+  kind: z.literal('true_false_group'),
+  ...interactionBaseShape,
+  config: z.strictObject({
+    statements: z.array(trueFalseGroupStatementSchema).min(2).max(MAX_INTERACTION_OPTIONS),
+    scoring: trueFalseGroupScoringSchema
+  })
+});
+
 const fileUploadInteractionSchema = z.strictObject({
   kind: z.literal('file_upload'),
   ...interactionBaseShape,
@@ -165,6 +194,7 @@ export const ASSESSMENT_INTERACTION_SCHEMAS = [
   fillBlankInteractionSchema,
   wordBankInteractionSchema,
   orderingInteractionSchema,
+  trueFalseGroupInteractionSchema,
   fileUploadInteractionSchema,
   linkInteractionSchema,
   starRatingInteractionSchema,
@@ -180,6 +210,7 @@ export const ASSESSMENT_INTERACTION_KINDS = [
   'fill_blank',
   'word_bank',
   'ordering',
+  'true_false_group',
   'file_upload',
   'link',
   'star_rating',
@@ -202,12 +233,24 @@ const interactionBlockSchema = z.strictObject({
 
 const assessmentBlockSchema = z.discriminatedUnion('kind', [contentBlockSchema, interactionBlockSchema]);
 
-const itemFeedbackSchema = z.strictObject({
+const feedbackBaseShape = {
   id: assessmentIdSchema,
-  scope: z.literal('item'),
   html: z.string().max(MAX_AUTHORED_HTML_LENGTH),
   visibility: z.enum(['after_submit', 'after_grading'])
-});
+};
+
+const itemFeedbackSchema = z.discriminatedUnion('scope', [
+  z.strictObject({
+    ...feedbackBaseShape,
+    scope: z.literal('item')
+  }),
+  z.strictObject({
+    ...feedbackBaseShape,
+    scope: z.literal('choice_option'),
+    interactionId: assessmentIdSchema,
+    optionId: assessmentIdSchema
+  })
+]);
 
 const itemPresentationSchema = z.strictObject({
   layout: z.enum(['flow', 'passage_split'])

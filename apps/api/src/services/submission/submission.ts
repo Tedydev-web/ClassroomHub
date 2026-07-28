@@ -4,14 +4,17 @@ import type {
   AssessmentDeliveryDefinition,
   AssessmentItemDefinition,
   FileUploadAnswerData,
+  ReleasedAssessmentFeedback,
   VideoRecordingAnswerData
 } from '@cio/question-types';
 import {
   deriveItemCapabilities,
+  assessmentResponseEnvelopeSchema,
   getUnsupportedAssessmentVerticalSliceInteractionKinds,
   parseAssessmentItemDefinition,
   QUESTION_TYPE_IDS,
   roundToTwoDecimals,
+  resolveReleasedAssessmentFeedback,
   scoreAssessmentVerticalSlice,
   scoreSubmissionAnswers,
   toAssessmentDeliveryDefinition,
@@ -463,13 +466,52 @@ export async function getSubmission(
 
 /** Submission with answers + groupmember (when listing by exercise). Used for route typing. */
 type SubmissionWithDetails = Awaited<ReturnType<typeof getSubmissionsByCourseIdWithDetails>>[number];
-type SubmissionAnswerWithAssessmentDefinition = NonNullable<SubmissionWithDetails['answers']>[number] & {
-  assessmentDefinition?: ReturnType<typeof toAssessmentDeliveryDefinition>;
+type AssessmentAnswerProjection = {
+  assessmentDefinition?: AssessmentDeliveryDefinition;
+  assessmentFeedback?: ReleasedAssessmentFeedback[];
 };
+type SubmissionAnswerWithAssessmentDefinition = NonNullable<SubmissionWithDetails['answers']>[number] &
+  AssessmentAnswerProjection;
 type SubmissionWithAssessmentDefinitions = Omit<SubmissionWithDetails, 'answers'> & {
   answers: SubmissionAnswerWithAssessmentDefinition[];
 };
 type AttemptedQuestionRevision = Awaited<ReturnType<typeof getQuestionRevisionsByIds>>[number];
+
+function attachAttemptedAssessmentAnswers<TAnswer extends TQuestionAnswer>(
+  answers: TAnswer[],
+  gradingState: SubmissionGradingState,
+  revisionById: ReadonlyMap<string, AttemptedQuestionRevision>
+): Array<TAnswer & AssessmentAnswerProjection> {
+  return answers.map((answer) => {
+    if (answer.answerData?.type !== 'ASSESSMENT_ITEM') return answer;
+
+    const revision = answer.questionRevisionId ? revisionById.get(answer.questionRevisionId) : null;
+    if (!revision) {
+      throw new AppError('The attempted assessment revision was not found', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
+    if (!parsedDefinition.success) {
+      throw new AppError('The attempted assessment revision is invalid', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    const parsedResponse = assessmentResponseEnvelopeSchema.safeParse(answer.answerData.response);
+    const responseValidation = validateAssessmentResponseEnvelope(parsedDefinition.data, answer.answerData.response);
+    if (!parsedResponse.success || !responseValidation.success) {
+      throw new AppError('The attempted assessment response is invalid', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    return {
+      ...answer,
+      assessmentDefinition: toAssessmentDeliveryDefinition(parsedDefinition.data),
+      assessmentFeedback: resolveReleasedAssessmentFeedback(
+        parsedDefinition.data,
+        parsedResponse.data,
+        gradingState === 'completed' ? 'after_grading' : 'after_submit'
+      )
+    };
+  });
+}
 
 /**
  * Attaches a delivery-safe definition to canonical answers using the exact
@@ -497,24 +539,7 @@ function attachAttemptedAssessmentDefinitions(
 
   return {
     ...submission,
-    answers: answers.map((answer) => {
-      if (answer.answerData?.type !== 'ASSESSMENT_ITEM') return answer;
-
-      const revision = revisionById.get(answer.questionRevisionId!);
-      if (!revision) {
-        throw new AppError('The attempted assessment revision was not found', ErrorCodes.INTERNAL_ERROR, 500);
-      }
-
-      const parsedDefinition = parseAssessmentItemDefinition(revision.definition);
-      if (!parsedDefinition.success) {
-        throw new AppError('The attempted assessment revision is invalid', ErrorCodes.INTERNAL_ERROR, 500);
-      }
-
-      return {
-        ...answer,
-        assessmentDefinition: toAssessmentDeliveryDefinition(parsedDefinition.data)
-      };
-    })
+    answers: attachAttemptedAssessmentAnswers(answers, resolveSubmissionGradingState(submission), revisionById)
   };
 }
 

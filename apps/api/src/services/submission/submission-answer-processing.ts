@@ -4,6 +4,7 @@ import {
   QUESTION_TYPE_KEY,
   assessmentResponseEnvelopeSchema,
   decodeApiPayload,
+  getAssessmentInteractionBlocks,
   getVideoRecordingMaxDurationSeconds,
   hasMeaningfulAnswerData,
   validateAssessmentResponseEnvelope,
@@ -136,6 +137,23 @@ function validateAnswerConstraints(answerData: AnswerData, question: ExerciseQue
   }
 }
 
+function questionRequiresAnswer(
+  questionId: number,
+  question: ExerciseQuestionModel,
+  assessmentDefinitionsByQuestionId: ReadonlyMap<number, AssessmentItemDefinition>
+): boolean {
+  if (question.questionType !== QUESTION_TYPE_KEY.ASSESSMENT_ITEM) {
+    return toSettings(question.settings).required !== false;
+  }
+
+  const definition = assessmentDefinitionsByQuestionId.get(questionId);
+  if (!definition) {
+    throw new AppError(`Question ${questionId} has no canonical assessment definition`, ErrorCodes.INTERNAL_ERROR, 500);
+  }
+
+  return getAssessmentInteractionBlocks(definition).some((block) => block.interaction.required);
+}
+
 export function prepareSubmissionAnswers(
   questions: readonly SubmissionQuestionDefinition[],
   payloads: readonly SubmissionAnswerPayload[],
@@ -185,7 +203,9 @@ export function prepareSubmissionAnswers(
         );
       }
 
-      const validation = validateAssessmentResponseEnvelope(definition, parsedResponse.data);
+      const validation = validateAssessmentResponseEnvelope(definition, parsedResponse.data, {
+        requireCompleteTrueFalseGroups: true
+      });
       if (!validation.success) {
         throw new AppError(
           `Invalid assessment response for question ${payload.questionId}: ${validation.issues[0]?.message ?? 'unknown error'}`,
@@ -216,8 +236,16 @@ export function prepareSubmissionAnswers(
   }
 
   for (const question of questions) {
-    const settings = toSettings(question.settings);
-    if (settings.required === false || answerByQuestionId.has(question.id)) continue;
+    const questionModel = questionById.get(question.id);
+    if (!questionModel) {
+      throw new AppError(`Question ${question.id} could not be resolved`, ErrorCodes.INTERNAL_ERROR, 500);
+    }
+    if (
+      answerByQuestionId.has(question.id) ||
+      !questionRequiresAnswer(question.id, questionModel, assessmentDefinitionsByQuestionId)
+    ) {
+      continue;
+    }
 
     throw new AppError(`Question ${question.id} requires an answer`, ErrorCodes.VALIDATION_ERROR, 400);
   }

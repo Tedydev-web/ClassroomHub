@@ -191,8 +191,12 @@ export const getUserCourseRole = async (courseId: string, profileId: string): Pr
  *
  * This is designed for middleware use to avoid doing multiple DB queries.
  */
-export const isCourseTeamMemberOrOrgAdmin = async (courseId: string, profileId: string): Promise<boolean> => {
-  const result = await db
+export const isCourseTeamMemberOrOrgAdmin = async (
+  courseId: string,
+  profileId: string,
+  dbClient: DbOrTxClient = db
+): Promise<boolean> => {
+  const result = await dbClient
     .select({
       groupMemberId: schema.groupmember.id,
       orgMemberId: schema.organizationmember.id

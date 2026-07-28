@@ -31,6 +31,16 @@ export const locale = pgEnum('LOCALE', ['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru'
 export const plan = pgEnum('PLAN', ['EARLY_ADOPTER', 'ENTERPRISE', 'BASIC']);
 export const courseImportSourceType = pgEnum('COURSE_IMPORT_SOURCE_TYPE', ['prompt', 'pdf', 'course']);
 export const courseImportDraftStatus = pgEnum('COURSE_IMPORT_DRAFT_STATUS', ['DRAFT', 'PUBLISHED', 'ARCHIVED']);
+export const examImportStatus = pgEnum('EXAM_IMPORT_STATUS', [
+  'queued',
+  'running',
+  'waiting_for_ai',
+  'draft_ready',
+  'failed',
+  'published',
+  'canceled'
+]);
+export const examImportExtractor = pgEnum('EXAM_IMPORT_EXTRACTOR', ['docx', 'pdf', 'aiken', 'gift']);
 export const organizationApiKeyType = pgEnum('ORGANIZATION_API_KEY_TYPE', ['mcp', 'api', 'zapier']);
 export const automationUsageCategory = pgEnum('AUTOMATION_USAGE_CATEGORY', ['read', 'write', 'publish']);
 export const aiAgentRunStatus = pgEnum('AI_AGENT_RUN_STATUS', [
@@ -2444,6 +2454,9 @@ export const organization = pgTable(
         enrollmentWelcome?: boolean;
         courseCompletion?: boolean;
       };
+      examImport?: {
+        aiEnabled?: boolean;
+      };
       /**
        * Sidebar capabilities an operator has switched off for this org. Only
        * deviations are stored — an absent key means enabled. Keys are the
@@ -3274,6 +3287,145 @@ export const courseImportDraft = pgTable(
   ]
 );
 
+export const examImport = pgTable(
+  'exam_import',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    actorProfileId: uuid('actor_profile_id'),
+    sourceAssetId: uuid('source_asset_id'),
+    status: examImportStatus().default('queued').notNull(),
+    extractor: examImportExtractor().notNull(),
+    sectionCount: integer('section_count').default(0).notNull(),
+    questionCount: integer('question_count').default(0).notNull(),
+    reviewRequiredCount: integer('review_required_count').default(0).notNull(),
+    blockingIssueCount: integer('blocking_issue_count').default(0).notNull(),
+    warningCount: integer('warning_count').default(0).notNull(),
+    aiRegionAudit: jsonb('ai_region_audit')
+      .$type<
+        Array<{
+          questionId: string;
+          reasons: string[];
+          requestHash: string;
+          sentAt: string;
+        }>
+      >()
+      .default(sql`'[]'::jsonb`)
+      .notNull(),
+    aiCursor: integer('ai_cursor').default(0).notNull(),
+    aiAttempt: integer('ai_attempt').default(0).notNull(),
+    aiModel: text('ai_model'),
+    failure: jsonb().$type<{ code: string; message: string; details?: unknown } | null>(),
+    publishedExerciseId: uuid('published_exercise_id'),
+    /** Null when canceled before work starts; retained when cancellation follows running. */
+    startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }),
+    draftReadyAt: timestamp('draft_ready_at', { withTimezone: true, mode: 'string' }),
+    publishedAt: timestamp('published_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'exam_import_organization_id_fkey'
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+    foreignKey({
+      columns: [table.courseId],
+      foreignColumns: [course.id],
+      name: 'exam_import_course_id_fkey'
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+    foreignKey({
+      columns: [table.actorProfileId],
+      foreignColumns: [profile.id],
+      name: 'exam_import_actor_profile_id_fkey'
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.sourceAssetId],
+      foreignColumns: [asset.id],
+      name: 'exam_import_source_asset_id_fkey'
+    })
+      .onUpdate('cascade')
+      .onDelete('set null'),
+    foreignKey({
+      columns: [table.publishedExerciseId],
+      foreignColumns: [exercise.id],
+      name: 'exam_import_published_exercise_id_fkey'
+    }).onDelete('set null'),
+    check('exam_import_section_count_nonnegative_check', sql`${table.sectionCount} >= 0`),
+    check('exam_import_question_count_nonnegative_check', sql`${table.questionCount} >= 0`),
+    check('exam_import_review_required_count_nonnegative_check', sql`${table.reviewRequiredCount} >= 0`),
+    check('exam_import_blocking_issue_count_nonnegative_check', sql`${table.blockingIssueCount} >= 0`),
+    check('exam_import_warning_count_nonnegative_check', sql`${table.warningCount} >= 0`),
+    check('exam_import_ai_cursor_nonnegative_check', sql`${table.aiCursor} >= 0`),
+    check('exam_import_ai_attempt_nonnegative_check', sql`${table.aiAttempt} >= 0`),
+    check(
+      'exam_import_review_required_count_within_question_count_check',
+      sql`${table.reviewRequiredCount} <= ${table.questionCount}`
+    ),
+    check(
+      'exam_import_failure_status_check',
+      sql`(${table.status} = 'failed' AND ${table.failure} IS NOT NULL) OR (${table.status} <> 'failed' AND ${table.failure} IS NULL)`
+    ),
+    check(
+      'exam_import_published_exercise_status_check',
+      sql`${table.status} = 'published' OR ${table.publishedExerciseId} IS NULL`
+    ),
+    check(
+      'exam_import_published_at_status_check',
+      sql`(${table.status} = 'published' AND ${table.publishedAt} IS NOT NULL) OR (${table.status} <> 'published' AND ${table.publishedAt} IS NULL)`
+    ),
+    check(
+      'exam_import_draft_ready_at_status_check',
+      sql`(${table.status} IN ('draft_ready', 'published') AND ${table.draftReadyAt} IS NOT NULL) OR (${table.status} NOT IN ('draft_ready', 'published') AND ${table.draftReadyAt} IS NULL)`
+    ),
+    check(
+      'exam_import_started_at_status_check',
+      sql`(${table.status}::text = 'queued' AND ${table.startedAt} IS NULL) OR (${table.status}::text IN ('running', 'waiting_for_ai', 'draft_ready', 'failed', 'published') AND ${table.startedAt} IS NOT NULL) OR ${table.status}::text = 'canceled'`
+    ),
+    index('idx_exam_import_org_course_created').on(table.organizationId, table.courseId, table.createdAt),
+    index('idx_exam_import_org_course_status').on(table.organizationId, table.courseId, table.status),
+    index('idx_exam_import_source_asset').on(table.sourceAssetId),
+    uniqueIndex('exam_import_published_exercise_unique')
+      .on(table.publishedExerciseId)
+      .where(sql`${table.publishedExerciseId} IS NOT NULL`)
+  ]
+);
+
+export const examImportDraft = pgTable(
+  'exam_import_draft',
+  {
+    importId: uuid('import_id').primaryKey().notNull(),
+    draft: jsonb().notNull().$type<Record<string, unknown>>(),
+    embeddedAssets: jsonb('embedded_assets')
+      .$type<Array<{ storageKey: string }>>()
+      .default(sql`'[]'::jsonb`)
+      .notNull(),
+    schemaVersion: integer('schema_version').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }).notNull(),
+    cleanupCompletedAt: timestamp('cleanup_completed_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.importId],
+      foreignColumns: [examImport.id],
+      name: 'exam_import_draft_import_id_fkey'
+    }).onDelete('cascade'),
+    check('exam_import_draft_schema_version_min_check', sql`${table.schemaVersion} >= 1`),
+    index('idx_exam_import_draft_expires_at').on(table.expiresAt)
+  ]
+);
+
 // ─── Programs ────────────────────────────────────────────────────────────────
 
 export const programStatus = pgEnum('PROGRAM_STATUS', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
@@ -3819,6 +3971,10 @@ export const aiTokenUsage = pgTable(
     completionTokens: integer('completion_tokens').notNull(),
     costUnits: integer('cost_units'),
     model: text().notNull(),
+    transport: text().default('official').notNull(),
+    workloadDomain: text('workload_domain').default('interactive').notNull(),
+    workloadId: uuid('workload_id'),
+    idempotencyKey: text('idempotency_key'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
   },
   (table) => [
@@ -3827,7 +3983,10 @@ export const aiTokenUsage = pgTable(
       foreignColumns: [organization.id],
       name: 'ai_token_usage_org_id_fkey'
     }),
-    index('idx_ai_token_usage_org_month').on(table.orgId, table.createdAt)
+    index('idx_ai_token_usage_org_month').on(table.orgId, table.createdAt),
+    uniqueIndex('ai_token_usage_idempotency_key_unique')
+      .on(table.idempotencyKey)
+      .where(sql`${table.idempotencyKey} IS NOT NULL`)
   ]
 );
 
