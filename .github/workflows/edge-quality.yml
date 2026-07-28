@@ -10,8 +10,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: edge-quality-${{ github.ref }}
-  cancel-in-progress: true
+  # Main shares the physical host with production builds; serialize heavy
+  # validation and deployment there while retaining PR cancellation.
+  group: >-
+    ${{ github.ref == 'refs/heads/main' && 'classroomhub-host-heavy-main' || format('edge-quality-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   docs-validation:

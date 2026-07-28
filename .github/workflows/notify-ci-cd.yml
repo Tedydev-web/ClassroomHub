@@ -97,7 +97,7 @@ jobs:
           trap 'rm -f "$response_file"' EXIT
 
           http_status="$(curl --silent --show-error --max-time 30 \
-            --retry 2 --retry-all-errors \
+            --retry 2 --retry-delay 1 \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
             --data-urlencode "text=${message}" \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
