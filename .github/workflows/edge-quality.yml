@@ -1,0 +1,92 @@
+name: Edge and docs quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: edge-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs-validation:
+    name: docs-validation
+    runs-on: [self-hosted, Linux, workstation]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: apps/docs/.nvmrc
+          package-manager-cache: false
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs dependencies
+        run: pnpm turbo run build --filter=@cio/docs^...
+
+      - name: Validate docs links and anchors
+        run: pnpm --filter @cio/docs validate
+
+      - name: Build docs
+        run: pnpm --filter @cio/docs build
+
+  website-validation:
+    name: website-validation
+    runs-on: [self-hosted, Linux, workstation]
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: --max-old-space-size=12288
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build website dependencies
+        run: pnpm turbo run build --filter=@cio/website^...
+
+      - name: Check website
+        run: pnpm --filter @cio/website check
+
+      - name: Build website
+        run: pnpm --filter @cio/website build
+
+  tenant-router-validation:
+    name: tenant-router-validation
+    runs-on: [self-hosted, Linux, workstation]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck tenant router
+        run: pnpm --filter @cio/tenant-router typecheck
+
+      - name: Validate production Worker bundle
+        run: pnpm --filter @cio/tenant-router exec wrangler deploy --env production --dry-run

@@ -76,6 +76,11 @@ jobs:
     needs: deploy
     runs-on: [self-hosted, Linux, workstation]
     environment: production
+    env:
+      # Vite's production bundle can exceed the default Node heap on the
+      # workstation runner. Keep the deploy deterministic instead of letting
+      # the process die with an opaque EPIPE.
+      NODE_OPTIONS: --max-old-space-size=12288
 
     steps:
       - name: Checkout code

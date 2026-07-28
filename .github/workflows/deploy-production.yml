@@ -30,21 +30,27 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      # The Access service token is created by hand in Cloudflare Zero Trust.
-      # Until it exists this job would fail on every push to main, so it skips
-      # instead — a red X on unrelated commits trains people to ignore CI.
+      # A successful Quality run must not be reported as a successful release
+      # when the production deploy contract is incomplete.
       - name: Check deploy credentials
         id: creds
         env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          if [ -z "${COOLIFY_TOKEN}" ] || [ -z "${CF_ACCESS_CLIENT_ID}" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Deploy skipped — set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to enable it."
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          fi
+          set -euo pipefail
+          missing=0
+          for variable_name in COOLIFY_URL COOLIFY_TOKEN COOLIFY_APP_UUID CF_ACCESS_CLIENT_ID CF_ACCESS_CLIENT_SECRET; do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Missing required production deploy secret: ${variable_name}"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+          echo "ready=true" >> "$GITHUB_OUTPUT"
 
       - name: Trigger Coolify deployment
         id: trigger
