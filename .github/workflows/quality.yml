@@ -41,7 +41,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, ci]
     timeout-minutes: 45
     env:
       NODE_OPTIONS: --max-old-space-size=6144
@@ -95,7 +95,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, ci]
     timeout-minutes: 30
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/classroomhub

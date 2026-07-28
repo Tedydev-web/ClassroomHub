@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   propose:
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, ci]
     steps:
       - name: Check out fork main
         uses: actions/checkout@v4

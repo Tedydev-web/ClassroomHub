@@ -76,17 +76,15 @@ jobs:
               ;;
           esac
 
-          message=$(cat <<EOF
-ClassroomHub CI/CD
-Status: ${status}
-Workflow: ${WORKFLOW_NAME}
-Run: #${RUN_NUMBER}
-Branch: ${BRANCH_NAME}
-Commit: ${COMMIT_SHA:0:12}
-Conclusion: ${conclusion}
-Details: ${RUN_URL}
-EOF
-          )
+          message=$(printf '%s\n' \
+            'ClassroomHub CI/CD' \
+            "Status: ${status}" \
+            "Workflow: ${WORKFLOW_NAME}" \
+            "Run: #${RUN_NUMBER}" \
+            "Branch: ${BRANCH_NAME}" \
+            "Commit: ${COMMIT_SHA:0:12}" \
+            "Conclusion: ${conclusion}" \
+            "Details: ${RUN_URL}")
 
           curl --fail-with-body --silent --show-error --max-time 30 \
             --retry 2 --retry-all-errors \

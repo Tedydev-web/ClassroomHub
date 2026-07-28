@@ -22,7 +22,7 @@ concurrency:
 jobs:
   build:
     if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, ci]
     env:
       NODE_OPTIONS: --max-old-space-size=6144
     steps:
