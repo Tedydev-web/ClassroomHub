@@ -31,7 +31,7 @@
     importId: string;
   }
 
-  const QUESTION_PAGE_SIZE = 50;
+  const QUESTION_PAGE_SIZE = 10;
 
   let { courseId, importId }: Props = $props();
 
@@ -298,7 +298,7 @@
 
     <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
       <main class="min-w-0 space-y-8">
-        {#key draftView.updatedAt}
+        {#key importId}
           <ExamImportDraftSettings {courseId} {importId} draft={draftView.draft} />
         {/key}
 
@@ -344,8 +344,8 @@
           </div>
 
           <div class="space-y-4">
-            {#each visibleQuestionViews as view, index (view.question.id)}
-              {#key `${view.question.id}:${draftView.updatedAt}`}
+            {#each visibleQuestionViews as view (view.question.id)}
+              {#key view.question.id}
                 <ExamImportQuestionCard
                   {courseId}
                   {importId}
