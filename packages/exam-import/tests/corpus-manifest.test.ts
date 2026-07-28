@@ -128,6 +128,14 @@ describe('corpus manifest', () => {
 
     expect(corpusManifestSchema.safeParse(tampered).success).toBe(false);
   });
+
+  it('requires provenance and usage rights for every benchmark document', () => {
+    const manifest = loadManifest();
+    const documentWithoutSource = { ...manifest.documents[0]!, source: undefined };
+    const tampered = { ...manifest, documents: [documentWithoutSource] };
+
+    expect(corpusManifestSchema.safeParse(tampered).success).toBe(false);
+  });
 });
 
 describe('corpus availability', () => {
@@ -142,6 +150,7 @@ describe('corpus availability', () => {
         sha256: 'a'.repeat(64),
         format: 'docx',
         subject: 'maths',
+        source: { locator: 'internal:small.docx', usageRights: 'test fixture' },
         note: '',
         traits: ['answer-table'],
         reference: 'references/small.reference.json'
@@ -154,6 +163,7 @@ describe('corpus availability', () => {
         sha256: 'b'.repeat(64),
         format: 'pdf',
         subject: 'maths',
+        source: { locator: 'internal:big.pdf', usageRights: 'test fixture' },
         note: '',
         traits: ['pure-scan'],
         reference: 'references/big.reference.json'

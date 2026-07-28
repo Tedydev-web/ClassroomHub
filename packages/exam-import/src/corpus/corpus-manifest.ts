@@ -11,6 +11,13 @@ import * as z from 'zod';
  * a number that looks like the previous number and means something different.
  */
 
+const corpusDocumentSourceSchema = z.strictObject({
+  /** A public URL or a stable internal identifier for a consented source. */
+  locator: z.string().min(1),
+  /** Public licence, or the approval record for a private benchmark document. */
+  usageRights: z.string().min(1)
+});
+
 const corpusDocumentSchema = z.strictObject({
   id: z.string().min(1),
   /** Path relative to the corpus root. */
@@ -21,6 +28,8 @@ const corpusDocumentSchema = z.strictObject({
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
   format: z.enum(['docx', 'pdf', 'gift', 'aiken']),
   subject: z.string().min(1),
+  /** Provenance and usage rights must be explicit before a document can inform a release decision. */
+  source: corpusDocumentSourceSchema,
   note: z.string(),
   /** Why this document earns its place: the failure modes it exercises. */
   traits: z.array(z.string().min(1)),

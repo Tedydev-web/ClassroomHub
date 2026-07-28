@@ -9,6 +9,7 @@
       "answerKeyAccuracy": null,
       "optionFidelity": null,
       "reviewPrecision": 1,
+      "reviewRecall": 1,
       "counts": {
         "referenceQuestions": 40,
         "extractedQuestions": 40,
