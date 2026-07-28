@@ -314,7 +314,7 @@
 
   {#if findings.length > 0}
     <ul class="space-y-2" aria-label={$t('exam_import.review.question_findings')}>
-      {#each findings as finding (finding.code + JSON.stringify(finding.target))}
+      {#each findings as finding, findingIndex (finding.code + JSON.stringify(finding.target) + findingIndex)}
         <li
           class={finding.blocking
             ? 'ui:border-destructive/40 ui:bg-destructive/5 rounded-md border px-3 py-2 text-sm'
