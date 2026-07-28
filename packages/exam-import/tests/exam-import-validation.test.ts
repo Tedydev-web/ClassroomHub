@@ -218,6 +218,39 @@ describe('ExamImportDraft validation', () => {
     expect(result.publishable).toBe(false);
   });
 
+  it('does not duplicate a reconciled missing-answer diagnostic during validation', () => {
+    const draft = buildValidExamImportDraft();
+    const question = draft.sections[0]!.questions[0]!;
+    if (question.kind !== 'choice') throw new Error('Expected choice fixture');
+    question.answerKey = null;
+    question.answerCandidates = [];
+    question.confidence = 'none';
+    question.review = 'unresolved';
+    draft.fieldStates = draft.fieldStates.filter(
+      (fieldState) => !(fieldState.target.kind === 'question_field' && fieldState.target.field === 'answerKey')
+    );
+    draft.diagnostics.push({
+      tier: 'semantic',
+      severity: 'error',
+      blocking: true,
+      code: 'ANSWER_KEY_MISSING',
+      message: 'No answer-key source was found',
+      messageKey: 'exam_import.diagnostics.answer_key_missing',
+      questionId: question.id,
+      target: { kind: 'question_field', questionId: question.id, field: 'answerKey' },
+      provenance: question.provenance
+    });
+
+    const result = validateExamImportDraft(draft, validationContext);
+    const missingAnswerFindings = result.findings.filter(
+      (finding) => finding.code === 'ANSWER_KEY_MISSING' || finding.code === 'MISSING_ANSWER_KEY'
+    );
+
+    expect(missingAnswerFindings).toHaveLength(1);
+    expect(missingAnswerFindings[0]?.code).toBe('ANSWER_KEY_MISSING');
+    expect(result.publishable).toBe(false);
+  });
+
   it('allows a keyless short-answer question because the published interaction is manually graded', () => {
     const draft = buildValidExamImportDraft();
     const question = draft.sections[0]!.questions[0]!;
