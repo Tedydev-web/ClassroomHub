@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -108,14 +109,24 @@ async function writeBenchmarkArtifacts(): Promise<{
   manifestPath: string;
   firstRunPath: string;
   secondRunPath: string;
+  firstDocumentPath: string;
 }> {
   const manifest = createManifest();
   const directory = await mkdtemp(join(tmpdir(), 'exam-import-benchmark-'));
+  const largeDirectory = join(directory, 'large');
   const referencesDirectory = join(directory, 'references');
   const manifestPath = join(directory, 'manifest.json');
   const firstRunPath = join(directory, 'first-run.json');
   const secondRunPath = join(directory, 'second-run.json');
-  await mkdir(referencesDirectory);
+  await Promise.all([mkdir(largeDirectory), mkdir(referencesDirectory)]);
+  await Promise.all(
+    manifest.documents.map(async (document) => {
+      const sourceBytes = Buffer.from(`source:${document.id}`);
+      document.bytes = sourceBytes.byteLength;
+      document.sha256 = createHash('sha256').update(sourceBytes).digest('hex');
+      await writeFile(join(directory, document.path), sourceBytes);
+    })
+  );
   await writeFile(manifestPath, JSON.stringify(manifest));
   await writeFile(firstRunPath, JSON.stringify(createRun('run-one', manifest)));
   await writeFile(secondRunPath, JSON.stringify(createRun('run-two', manifest)));
@@ -126,7 +137,14 @@ async function writeBenchmarkArtifacts(): Promise<{
     })
   );
 
-  return { manifest, directory, manifestPath, firstRunPath, secondRunPath };
+  return {
+    manifest,
+    directory,
+    manifestPath,
+    firstRunPath,
+    secondRunPath,
+    firstDocumentPath: join(directory, manifest.documents[0]!.path)
+  };
 }
 
 describe('scanned-PDF benchmark gate', () => {
@@ -167,7 +185,25 @@ describe('scanned-PDF benchmark gate', () => {
           firstRunPath: artifacts.firstRunPath,
           secondRunPath: artifacts.secondRunPath
         })
-      ).rejects.toThrow('reference path must stay within the corpus directory');
+      ).rejects.toThrow('artifact path must stay within the corpus directory');
+    } finally {
+      await rm(artifacts.directory, { force: true, recursive: true });
+    }
+  });
+
+  it('rejects a held-out scan whose bytes do not match the manifest checksum', async () => {
+    const artifacts = await writeBenchmarkArtifacts();
+
+    try {
+      await writeFile(artifacts.firstDocumentPath, 'tampered-data');
+
+      await expect(
+        verifyScannedPdfBenchmarkArtifacts({
+          manifestPath: artifacts.manifestPath,
+          firstRunPath: artifacts.firstRunPath,
+          secondRunPath: artifacts.secondRunPath
+        })
+      ).rejects.toThrow('SHA-256 does not match the manifest');
     } finally {
       await rm(artifacts.directory, { force: true, recursive: true });
     }
