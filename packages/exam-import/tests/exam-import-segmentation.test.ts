@@ -384,6 +384,59 @@ describe('exam import segmentation', () => {
     expect(questions[1]?.passageId).toBeNull();
   });
 
+  it('recognizes row-wise choice options split across table cells', () => {
+    const draft = segment([
+      block(0, 'Read the following passage and choose the best option.'),
+      block(1, 'The first blank is (1), and the second blank is (2).'),
+      block(2, 'Question 1: A. Alpha', { table: { tableIndex: 0, row: 0, column: 0 } }),
+      block(3, 'B. Beta', { table: { tableIndex: 0, row: 0, column: 1 } }),
+      block(4, 'C. Gamma', { table: { tableIndex: 0, row: 0, column: 2 } }),
+      block(5, 'D. Delta', { table: { tableIndex: 0, row: 0, column: 3 } }),
+      block(6, 'Question 2: A. One', { table: { tableIndex: 0, row: 1, column: 0 } }),
+      block(7, 'B. Two', { table: { tableIndex: 0, row: 1, column: 1 } }),
+      block(8, 'C. Three', { table: { tableIndex: 0, row: 1, column: 2 } }),
+      block(9, 'D. Four', { table: { tableIndex: 0, row: 1, column: 3 } })
+    ]);
+    const questions = draft.sections[0]?.questions ?? [];
+
+    expect(questions).toHaveLength(2);
+    expect(draft.sharedContents).toHaveLength(1);
+    expect(questions.every((question) => question.passageId === draft.sharedContents[0]?.id)).toBe(true);
+    expect(questions.map((question) => question.kind)).toEqual(['choice', 'choice']);
+    expect(
+      questions.map((question) =>
+        question.kind === 'choice' ? question.options.map((option) => option.sourceLabel) : []
+      )
+    ).toEqual([
+      ['A', 'B', 'C', 'D'],
+      ['A', 'B', 'C', 'D']
+    ]);
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('QUESTION_STRUCTURE_UNRESOLVED');
+  });
+
+  it('starts a new shared passage for a leaflet and ignores a decorated end marker', () => {
+    const draft = segment([
+      block(0, 'Read the following advertisement and choose the best option.'),
+      block(1, 'First shared passage.'),
+      block(2, 'Question 1. Choose.'),
+      block(3, 'A. OneB. TwoC. ThreeD. Four'),
+      block(4, 'Read the following leaflet and choose the best option.'),
+      block(5, 'Second shared passage.'),
+      block(6, 'Question 2. Choose.'),
+      block(7, 'A. AlphaB. BetaC. GammaD. Delta'),
+      block(8, '----- The end -----'),
+      block(9, 'Question 3. Must not be imported.')
+    ]);
+    const questions = draft.sections[0]?.questions ?? [];
+
+    expect(draft.sharedContents).toHaveLength(2);
+    expect(questions).toHaveLength(2);
+    expect(questions[0]?.passageId).toBe(draft.sharedContents[0]?.id);
+    expect(questions[1]?.passageId).toBe(draft.sharedContents[1]?.id);
+    expect(draft.sharedContents[1]?.html).toContain('Second shared passage.');
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('OPTION_CONTINUATION_ATTACHED');
+  });
+
   it('does not invent a passage from preamble text and preserves option continuation text', () => {
     const draft = segment([
       block(0, 'Midterm instructions'),
