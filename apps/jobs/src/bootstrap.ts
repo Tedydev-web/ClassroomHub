@@ -1,17 +1,45 @@
 import 'dotenv/config';
 
+import { writeFile } from 'node:fs/promises';
+
 import { env } from './config/env';
 import { warnIfFfmpegMissing } from './utils/ffmpeg';
 import { log } from './utils/logger';
-import { connectRedis } from '@cio/core/utils/redis/redis';
+import { connectRedis, redis } from '@cio/core/utils/redis/redis';
+
+const healthcheckFile = '/tmp/classroomhub-jobs-health';
+
+async function refreshHealthcheck(): Promise<void> {
+  await connectRedis();
+  const pong = await redis.ping();
+  if (pong !== 'PONG') {
+    throw new Error(`Unexpected Redis healthcheck response: ${pong}`);
+  }
+
+  await writeFile(healthcheckFile, `${Date.now()}\n`);
+}
+
+void refreshHealthcheck()
+  .then(() => {
+    const interval = setInterval(() => {
+      void refreshHealthcheck().catch((error: unknown) => {
+        log.error('worker-healthcheck-failed', { message: error instanceof Error ? error.message : String(error) });
+      });
+    }, 15_000);
+
+    interval.unref();
+  })
+  .catch((error: unknown) => {
+    log.error('worker-healthcheck-initialization-failed', {
+      message: error instanceof Error ? error.message : String(error)
+    });
+  });
 
 void warnIfFfmpegMissing();
 
 if (!env.REDIS_URL) {
   throw new Error('REDIS_URL is required to start a worker process.');
 }
-
-void connectRedis();
 
 log.info('worker-bootstrap', {
   nodeEnv: env.NODE_ENV,

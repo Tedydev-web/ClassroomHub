@@ -42,7 +42,7 @@ Oh we even hooked up our AI content generator with it as well, you can switch to
 ### Quick demo
 
 <video class="embed mb-5" controls poster="/assets/assets/blog/multi-language-support.png">
-  <source src="/assets/assets/blog/language-editor-demo.mov" type="video/mp4">
+  <source src="https://embed.classroom.io.vn/marketing/language-editor-demo.mov" type="video/quicktime">
   Your browser does not support the video tag.
 </video>
 

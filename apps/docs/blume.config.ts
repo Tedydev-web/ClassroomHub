@@ -1,8 +1,8 @@
 import { defineConfig } from 'blume';
 
 /**
- * The site is served at classroom.tedydev.io.vn/docs, proxied to this worker by the
- * marketing site (apps/website/src/hooks.server.ts). `deployment.base` only
+ * The site is served at classroom.io.vn/docs through the marketing Worker's
+ * service binding. `deployment.base` only
  * rewrites URLs in the emitted HTML — it does not nest the build output, so
  * scripts/package-assets.mjs moves dist/ under docs/ to match the served path.
  *
@@ -24,7 +24,7 @@ export default defineConfig({
   },
   deployment: {
     output: 'static',
-    site: 'https://classroom.tedydev.io.vn',
+    site: 'https://classroom.io.vn',
     base: '/docs'
   },
   github: {
@@ -62,7 +62,7 @@ export default defineConfig({
           {
             label: 'Introduction',
             items: [
-              '/what-is-classroomhub',
+              '/what-is-classroomio',
               '/terminology',
               {
                 label: 'Quickstart',

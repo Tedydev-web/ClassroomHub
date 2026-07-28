@@ -1,0 +1,119 @@
+name: Notify CI/CD
+
+on:
+  workflow_run:
+    workflows:
+      - Quality
+      - Edge and docs quality
+      - Deploy production
+      - Deploy marketing site and docs
+      - Deploy tenant router
+      - Deploy embeds to R2
+    types:
+      - in_progress
+      - completed
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: notify-ci-cd-${{ github.event.workflow_run.id }}-${{ github.event.action }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    name: Send Telegram notification
+    # Keep notification delivery independent from the single build runner.
+    # These short jobs avoid waiting behind a long production build.
+    runs-on: [self-hosted, Linux, workstation, ci]
+    timeout-minutes: 5
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main') ||
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Validate notification configuration
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for variable_name in TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID; do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Missing required notification secret: ${variable_name}"
+              missing=1
+            fi
+          done
+
+          test "$missing" -eq 0
+
+      - name: Send workflow notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVENT_ACTION: ${{ github.event_name == 'workflow_dispatch' && 'manual' || github.event.action }}
+          WORKFLOW_NAME: ${{ github.event_name == 'workflow_dispatch' && 'Manual notification smoke test' || github.event.workflow_run.name }}
+          RUN_NUMBER: ${{ github.event_name == 'workflow_dispatch' && github.run_number || github.event.workflow_run.run_number }}
+          BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event.workflow_run.head_branch }}
+          COMMIT_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event_name == 'workflow_dispatch' && github.server_url || github.event.workflow_run.html_url }}
+          CONCLUSION: ${{ github.event_name == 'workflow_dispatch' && 'success' || github.event.workflow_run.conclusion }}
+        run: |
+          set -euo pipefail
+
+          case "$EVENT_ACTION" in
+            in_progress)
+              status="STARTED"
+              conclusion=""
+              ;;
+            completed)
+              status="COMPLETED"
+              conclusion="${CONCLUSION:-unknown}"
+              ;;
+            manual)
+              status="TEST"
+              conclusion="success"
+              ;;
+            *)
+              echo "::error::Unsupported workflow_run action: ${EVENT_ACTION}"
+              exit 1
+              ;;
+          esac
+
+          message=$(printf '%s\n' \
+            'ClassroomHub CI/CD' \
+            "Status: ${status}" \
+            "Workflow: ${WORKFLOW_NAME}" \
+            "Run: #${RUN_NUMBER}" \
+            "Branch: ${BRANCH_NAME}" \
+            "Commit: ${COMMIT_SHA:0:12}" \
+            "Conclusion: ${conclusion}" \
+            "Details: ${RUN_URL}")
+
+          response_file="$(mktemp)"
+          trap 'rm -f "$response_file"' EXIT
+
+          http_status="$(curl --silent --show-error --max-time 30 \
+            --retry 2 --retry-all-errors \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --output "$response_file" \
+            --write-out '%{http_code}')"
+
+          if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
+            description="$(jq -r '.description // "No API error description"' "$response_file" 2>/dev/null || true)"
+            echo "::error::Telegram API request failed (HTTP ${http_status}): ${description}"
+            exit 1
+          fi
+
+          if ! jq -e '.ok == true' "$response_file" >/dev/null 2>&1; then
+            description="$(jq -r '.description // "Invalid Telegram API response"' "$response_file" 2>/dev/null || true)"
+            echo "::error::Telegram API rejected the notification: ${description}"
+            exit 1
+          fi
+
+          echo "Telegram notification delivered."

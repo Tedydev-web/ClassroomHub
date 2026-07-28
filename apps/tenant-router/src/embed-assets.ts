@@ -16,6 +16,8 @@ const EMBED_WIDGET_ROUTES: Record<string, EmbedWidgetRoute> = {
   }
 };
 
+const MARKETING_VIDEO_KEY = 'marketing/language-editor-demo.mov';
+
 const EMBED_CONTENT_TYPES: Record<string, string> = {
   html: 'text/html',
   js: 'application/javascript',
@@ -23,7 +25,8 @@ const EMBED_CONTENT_TYPES: Record<string, string> = {
   json: 'application/json',
   css: 'text/css',
   map: 'application/json',
-  txt: 'text/plain'
+  txt: 'text/plain',
+  mov: 'video/quicktime'
 };
 
 function contentTypeForObjectKey(objectKey: string): string {
@@ -39,6 +42,10 @@ function isBootstrapScriptKey(objectKey: string): boolean {
 }
 
 function cacheControlForObjectKey(objectKey: string): string {
+  if (objectKey === MARKETING_VIDEO_KEY) {
+    return 'public, max-age=31536000, immutable';
+  }
+
   if (objectKey.endsWith('.html')) {
     return 'public, max-age=300';
   }
@@ -82,6 +89,10 @@ export async function resolveEmbedObjectKey(url: URL, assetsBucket: R2Bucket): P
 
   // Internal paths for lazy chunks (browser-loaded, not customer-facing).
   if (pathname.startsWith('embeds/')) {
+    return pathname;
+  }
+
+  if (pathname === MARKETING_VIDEO_KEY) {
     return pathname;
   }
 

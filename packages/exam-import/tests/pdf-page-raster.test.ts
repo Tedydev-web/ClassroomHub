@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -119,7 +119,7 @@ describe('scanned PDF page raster extraction', () => {
     expect(peakVisitors).toBe(1);
   });
 
-  it('streams all five full-resolution pages from the reference scan', async () => {
+  it.runIf(existsSync(SCANNED_PDF))('streams all five full-resolution pages from the reference scan', async () => {
     const bytes = new Uint8Array(readFileSync(SCANNED_PDF));
     const pages: Array<{ pageIndex: number; width: number; height: number }> = [];
 

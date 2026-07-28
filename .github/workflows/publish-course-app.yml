@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   publish:
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, deploy]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

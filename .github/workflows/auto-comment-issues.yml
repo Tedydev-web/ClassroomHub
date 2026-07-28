@@ -15,7 +15,7 @@ concurrency:
 jobs:
   comment:
     name: Comment
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, ci]
     steps:
       - name: Automatic Comment
         uses: peter-evans/create-or-update-comment@v2
