@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PdfReadError, readPdfRuns } from '../src/pdf/read-pdf-runs';
+import { createExamImportDraftFromRuns } from '../src/draft/exam-import-pipeline';
 import { sourceRunSchema } from '../src/source-run';
 
 const SCANNED_PDF = join(__dirname, '..', '..', '..', 'Template', 'S6nBtwX0locnFWABbn6vp-e-on-luyen-so-03.pdf');
@@ -46,6 +47,49 @@ function textPdf(): Uint8Array {
 }
 
 describe('text PDF reader', () => {
+  it('extracts a text PDF into a publishable question without AI', async () => {
+    const content = [
+      'BT /F1 12 Tf 72 720 Td (Question 1. Which value is prime?) Tj ET',
+      'BT /F1 12 Tf 72 700 Td (A. 4) Tj ET',
+      'BT /F1 12 Tf 72 680 Td (B. 7) Tj ET',
+      'BT /F1 12 Tf 72 660 Td (C. 8) Tj ET',
+      'BT /F1 12 Tf 72 640 Td (D. 9) Tj ET',
+      'BT /F1 12 Tf 72 620 Td (Answer: B) Tj ET'
+    ].join('\n');
+    const bytes = createPdf([
+      '<< /Type /Catalog /Pages 2 0 R >>',
+      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ' +
+        '/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+      `<< /Length ${content.length} >>\nstream\n${content}\nendstream`
+    ]);
+
+    const read = await readPdfRuns(bytes);
+    const draft = createExamImportDraftFromRuns(read.runs, {
+      assetId: 'text-pdf',
+      fileName: 'prime.pdf',
+      mimeType: 'application/pdf',
+      extractor: 'pdf'
+    });
+
+    expect(draft.sections[0]?.questions).toHaveLength(1);
+    const question = draft.sections[0]?.questions[0];
+    expect(question).toMatchObject({
+      kind: 'choice',
+      sourceNumber: '1',
+      answerKey: { kind: 'choice', correctOptionIds: [expect.any(String)] },
+      review: 'clean'
+    });
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+    expect(question.options.map((option) => option.html)).toEqual([
+      '<p><span style="color:#000000">4</span></p>',
+      '<p><span style="color:#000000">7</span></p>',
+      '<p><span style="color:#000000">8</span></p>',
+      '<p><span style="color:#000000">9</span></p>'
+    ]);
+  });
+
   it('emits deterministic SourceRuns with font, color, weak underline and positioned image data', async () => {
     const bytes = textPdf();
     const first = await readPdfRuns(bytes);

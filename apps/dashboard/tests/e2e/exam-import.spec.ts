@@ -11,9 +11,11 @@ const studentPassword = environment.E2E_STUDENT_PASSWORD;
 const courseId = environment.E2E_EXAM_IMPORT_COURSE_ID;
 const docxPath = environment.E2E_EXAM_IMPORT_DOCX_PATH;
 const pdfPath = environment.E2E_EXAM_IMPORT_PDF_PATH;
+const textPdfEnabled = environment.E2E_EXAM_IMPORT_TEXT_PDF_ENABLED === 'true';
 const scannedPdfEnabled = environment.E2E_EXAM_IMPORT_SCANNED_PDF_ENABLED === 'true';
 const hasBaseConfiguration = Boolean(baseURL && email && password && courseId);
 const hasDocxConfiguration = Boolean(hasBaseConfiguration && docxPath);
+const hasTextPdfConfiguration = Boolean(hasBaseConfiguration && textPdfEnabled);
 const hasPdfConfiguration = Boolean(hasBaseConfiguration && pdfPath && scannedPdfEnabled);
 const hasDistinctStudentAccount =
   Boolean(studentEmail) && studentEmail.trim().toLowerCase() !== email?.trim().toLowerCase();
@@ -25,6 +27,31 @@ type Credentials = {
   email: string;
   password: string;
 };
+
+function createTextPdf(content: string): Buffer {
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ' +
+      '/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`
+  ];
+  let source = '%PDF-1.7\n';
+  const offsets: number[] = [];
+
+  objects.forEach((object, index) => {
+    offsets.push(source.length);
+    source += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const crossReferenceOffset = source.length;
+  source += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (const offset of offsets) source += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  source += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${crossReferenceOffset}\n%%EOF\n`;
+
+  return Buffer.from(source, 'utf8');
+}
 
 async function signIn(page: Page, credentials: Credentials) {
   const initialSessionResponse = page.waitForResponse(
@@ -169,6 +196,32 @@ test.describe('exam import', () => {
     const publishButton = page.getByRole('button', { name: 'Publish exercise' }).first();
     await expect(page.getByText('Applied answers to 40 questions', { exact: true })).toBeVisible();
     await expect(publishButton).toBeDisabled();
+  });
+
+  test('publishes a text-layer PDF without AI', async ({ page }) => {
+    test.setTimeout(120_000);
+    test.skip(
+      !hasTextPdfConfiguration,
+      'Set E2E_EXAM_IMPORT_TEXT_PDF_ENABLED=true with API and dashboard PDF import enabled.'
+    );
+
+    const content = [
+      'BT /F1 12 Tf 72 720 Td (Question 1. Which value is prime?) Tj ET',
+      'BT /F1 12 Tf 72 700 Td (A. 4) Tj ET',
+      'BT /F1 12 Tf 72 680 Td (B. 7) Tj ET',
+      'BT /F1 12 Tf 72 660 Td (C. 8) Tj ET',
+      'BT /F1 12 Tf 72 640 Td (D. 9) Tj ET',
+      'BT /F1 12 Tf 72 620 Td (Answer: B) Tj ET'
+    ].join('\n');
+    await startImport(page, {
+      name: 'exam-import-text-layer.pdf',
+      mimeType: 'application/pdf',
+      buffer: createTextPdf(content)
+    });
+    await expectReviewDraft(page, 1, 60_000);
+
+    await page.getByRole('button', { name: 'Publish exercise' }).first().click();
+    await page.waitForURL(new RegExp(`/courses/${courseId}/exercises/[^/]+$`), { timeout: 30_000 });
   });
 
   test('imports the provided scanned PDF as a review draft', async ({ page }) => {
