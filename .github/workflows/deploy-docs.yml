@@ -91,8 +91,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          dependency_volume="classroomhub-ci-deps-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+          docker volume create "$dependency_volume" >/dev/null
+          trap 'docker volume rm "$dependency_volume" >/dev/null 2>&1 || true' EXIT
           docker run --rm \
-            --user "$(id -u):$(id -g)" \
+            --user 0:0 \
             --env HOME=/tmp \
             --env CI=true \
             --env NODE_OPTIONS=--max-old-space-size=12288 \
@@ -101,8 +104,9 @@ jobs:
             --env R2_SECRET_ACCESS_KEY \
             --env CLOUDFLARE_ACCOUNT_ID \
             --env CLOUDFLARE_API_TOKEN \
-            --volume "$GITHUB_WORKSPACE:/workspace" \
-            --workdir /workspace \
+            --volumes-from "$HOSTNAME" \
+            --volume "$dependency_volume:$GITHUB_WORKSPACE/node_modules" \
+            --workdir "$GITHUB_WORKSPACE" \
             node:22-bookworm-slim \
             bash -euc '
               mkdir -p /tmp/bin
