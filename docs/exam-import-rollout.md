@@ -94,10 +94,10 @@ Scanned-PDF vision remains an internal opt-in until all of the following are tru
 - The corpus covers clean scans, degraded scans, multi-page papers, shared passages, and layouts
   that can split or merge options. Synthetic rasterization may add regression coverage, but never
   substitutes for independently acquired scans.
-- Two complete runs use the same pinned model and transcription contract. Every held-out document
-  has 100% question recall, kind accuracy, grouping accuracy, option-count accuracy, and review
-  recall, with no spurious question. A metric layer that is not human-verified is reported as `not
-  measured` and cannot be counted as a pass.
+- Two distinct complete runs use the same pinned model and transcription contract. Every held-out
+  document has 100% question recall, kind accuracy, grouping accuracy, option-count accuracy,
+  review precision, and review recall, with no spurious question. A metric layer that is not
+  human-verified is reported as `not measured` and cannot be counted as a pass.
 - Where the source states answers, answer-key accuracy and review routing are also human-verified.
   AI-derived answers remain proposed and publish stays blocked until the teacher confirms them,
   regardless of benchmark results.

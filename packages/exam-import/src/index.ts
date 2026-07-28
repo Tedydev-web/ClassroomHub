@@ -73,6 +73,15 @@ export {
 } from './corpus/corpus-manifest';
 
 export {
+  assessScannedPdfBenchmarkRuns,
+  type ScannedPdfBenchmarkAssessment,
+  type ScannedPdfBenchmarkIssue,
+  type ScannedPdfBenchmarkIssueCode,
+  type ScannedPdfBenchmarkResult,
+  type ScannedPdfBenchmarkRun
+} from './corpus/scanned-pdf-benchmark';
+
+export {
   EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS,
   EXAM_IMPORT_SCHEMA_VERSION,
   examImportAnswerSourceSchema,
