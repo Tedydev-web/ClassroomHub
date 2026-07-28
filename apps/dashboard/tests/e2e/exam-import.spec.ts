@@ -13,6 +13,13 @@ const docxPath = environment.E2E_EXAM_IMPORT_DOCX_PATH;
 const pdfPath = environment.E2E_EXAM_IMPORT_PDF_PATH;
 const textPdfEnabled = environment.E2E_EXAM_IMPORT_TEXT_PDF_ENABLED === 'true';
 const scannedPdfEnabled = environment.E2E_EXAM_IMPORT_SCANNED_PDF_ENABLED === 'true';
+const scannedPdfQuestionCountValue = environment.E2E_EXAM_IMPORT_SCANNED_PDF_QUESTION_COUNT ?? '40';
+const scannedPdfQuestionCount = Number(scannedPdfQuestionCountValue);
+
+if (!/^[1-9]\d*$/.test(scannedPdfQuestionCountValue) || !Number.isSafeInteger(scannedPdfQuestionCount)) {
+  throw new Error('E2E_EXAM_IMPORT_SCANNED_PDF_QUESTION_COUNT must be a positive integer');
+}
+
 const hasBaseConfiguration = Boolean(baseURL && email && password && courseId);
 const hasDocxConfiguration = Boolean(hasBaseConfiguration && docxPath);
 const hasTextPdfConfiguration = Boolean(hasBaseConfiguration && textPdfEnabled);
@@ -232,7 +239,7 @@ test.describe('exam import', () => {
     );
 
     await startImport(page, pdfPath!);
-    await expectReviewDraft(page, 40, 15 * 60_000);
+    await expectReviewDraft(page, scannedPdfQuestionCount, 15 * 60_000);
     await expect(page.getByRole('button', { name: 'Publish exercise' }).first()).toBeDisabled();
   });
 });
