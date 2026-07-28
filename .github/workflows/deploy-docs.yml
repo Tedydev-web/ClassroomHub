@@ -76,53 +76,48 @@ jobs:
     needs: deploy
     runs-on: [self-hosted, Linux, workstation]
     environment: production
-
     steps:
       - name: Checkout code
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
 
-      - name: Setup Node.js
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
-        with:
-          node-version-file: '.nvmrc'
-          package-manager-cache: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Publish oversized marketing assets to R2
-        run: pnpm --filter @cio/embeds exec tsx scripts/upload-marketing-video.ts
+      # Cloudflare's workerd binary needs newer glibc than the runner host
+      # provides. Pin the full toolchain to Debian Bookworm so build and deploy
+      # do not depend on the host operating system.
+      - name: Build and deploy website in compatible container
         env:
           R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           R2_ACCESS_KEY: ${{ secrets.CLOUDFLARE_ACCESS_KEY }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_SECRET_ACCESS_KEY }}
-
-      - name: Build workspace dependencies
-        run: pnpm turbo run build --filter=@cio/website^...
-
-      - name: Check website
-        run: pnpm --filter @cio/website check
-
-      - name: Build website
-        run: pnpm --filter @cio/website build
-
-      - name: Deploy to Cloudflare
-        run: pnpm --filter @cio/website exec wrangler deploy
-        env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          dependency_volume="classroomhub-ci-deps-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+          docker volume create "$dependency_volume" >/dev/null
+          trap 'docker volume rm "$dependency_volume" >/dev/null 2>&1 || true' EXIT
+          docker run --rm \
+            --user 0:0 \
+            --env HOME=/tmp \
+            --env CI=true \
+            --env NODE_OPTIONS=--max-old-space-size=12288 \
+            --env R2_ACCOUNT_ID \
+            --env R2_ACCESS_KEY \
+            --env R2_SECRET_ACCESS_KEY \
+            --env CLOUDFLARE_ACCOUNT_ID \
+            --env CLOUDFLARE_API_TOKEN \
+            --volumes-from "$HOSTNAME" \
+            --volume "$dependency_volume:$GITHUB_WORKSPACE/node_modules" \
+            --workdir "$GITHUB_WORKSPACE" \
+            node:22-bookworm-slim \
+            bash -euc '
+              mkdir -p /tmp/bin
+              corepack prepare pnpm@10.19.0 --activate
+              corepack enable --install-directory /tmp/bin
+              export PATH=/tmp/bin:$PATH
+              pnpm --version
+              pnpm install --frozen-lockfile
+              pnpm --filter @cio/embeds exec tsx scripts/upload-marketing-video.ts
+              pnpm turbo run build --filter=@cio/website^...
+              pnpm --filter @cio/website check
+              pnpm --filter @cio/website build
+              pnpm --filter @cio/website exec wrangler deploy
+            '
