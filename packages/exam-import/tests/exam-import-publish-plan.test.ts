@@ -24,11 +24,119 @@ function withoutPassage(draft: ExamImportDraft): ExamImportDraft {
 }
 
 describe('createExamImportPublishPlan', () => {
-  it('maps a simple integer-point choice to the existing legacy authoring shape', () => {
+  it('publishes an answerless short answer as a manual legacy question', () => {
+    const draft = withoutPassage(buildValidExamImportDraft());
+    draft.sections[0]!.questions = [
+      {
+        id: 'question-short-answer',
+        kind: 'short_answer',
+        order: 0,
+        sourceNumber: '1',
+        promptHtml: 'Explain your reasoning.',
+        points: 1,
+        cognitiveLevel: null,
+        passageId: null,
+        answerCandidates: [],
+        answerKey: null,
+        confidence: 'high',
+        review: 'clean',
+        provenance: [sourceSpan]
+      }
+    ];
+    draft.fieldStates = [];
+
+    const plan = createExamImportPublishPlan(draft, validationContext);
+
+    expect(plan.sections[0]?.entries).toEqual([
+      {
+        kind: 'legacy_question',
+        sourceQuestionId: 'question-short-answer',
+        order: 0,
+        question: 'Explain your reasoning.',
+        questionTypeId: QUESTION_TYPE_IDS.SHORT_ANSWER,
+        points: 1,
+        settings: {},
+        options: []
+      }
+    ]);
+  });
+
+  it('publishes an answerless short answer through the canonical manual-grading path', () => {
+    const draft = withoutPassage(buildValidExamImportDraft());
+    draft.sections[0]!.questions = [
+      {
+        id: 'question-short-answer',
+        kind: 'short_answer',
+        order: 0,
+        sourceNumber: '1',
+        promptHtml: '<p>Explain your reasoning.</p>',
+        points: 1,
+        cognitiveLevel: null,
+        passageId: null,
+        answerCandidates: [],
+        answerKey: null,
+        confidence: 'high',
+        review: 'clean',
+        provenance: [sourceSpan]
+      }
+    ];
+    draft.fieldStates = [];
+
+    const entry = createExamImportPublishPlan(draft, validationContext).sections[0]?.entries[0];
+
+    expect(entry?.kind).toBe('assessment_item');
+    if (entry?.kind !== 'assessment_item') throw new Error('Expected a canonical item');
+    expect(entry.definition).toMatchObject({
+      blocks: [
+        {
+          id: 'question-short-answer',
+          kind: 'interaction',
+          interaction: { kind: 'text', config: { format: 'plain' } }
+        }
+      ],
+      feedback: []
+    });
+  });
+
+  it('maps an HTML-authored integer-point choice to a canonical item', () => {
     const draft = withoutPassage(buildValidExamImportDraft());
     const question = draft.sections[0]!.questions[0]!;
     if (question.kind !== 'choice') throw new Error('Expected choice fixture');
     question.points = 1;
+
+    const plan = createExamImportPublishPlan(draft, validationContext);
+
+    const entry = plan.sections[0]?.entries[0];
+
+    expect(entry?.kind).toBe('assessment_item');
+    if (entry?.kind !== 'assessment_item') throw new Error('Expected a canonical item');
+    expect(entry.definition.blocks[0]).toMatchObject({
+      kind: 'interaction',
+      interaction: {
+        kind: 'choice',
+        maxScore: 1,
+        prompt: { format: 'html', html: '<p>Choose the correct answer.</p>' },
+        config: {
+          options: [
+            { id: 'option-a', html: '<p>First</p>' },
+            { id: 'option-b', html: '<p>Second</p>' }
+          ],
+          correctOptionIds: ['option-b']
+        }
+      }
+    });
+  });
+
+  it('keeps an integer-point choice with flat text on the legacy authoring path', () => {
+    const draft = withoutPassage(buildValidExamImportDraft());
+    const question = draft.sections[0]!.questions[0]!;
+    if (question.kind !== 'choice') throw new Error('Expected choice fixture');
+    question.points = 1;
+    question.promptHtml = 'Choose the correct answer.';
+    question.options = question.options.map((option) => ({
+      ...option,
+      html: option.id === 'option-a' ? 'First' : 'Second'
+    }));
 
     const plan = createExamImportPublishPlan(draft, validationContext);
 
@@ -37,13 +145,13 @@ describe('createExamImportPublishPlan', () => {
         kind: 'legacy_question',
         sourceQuestionId: 'question-1',
         order: 0,
-        question: '<p>Choose the correct answer.</p>',
+        question: 'Choose the correct answer.',
         questionTypeId: QUESTION_TYPE_IDS.RADIO,
         points: 1,
         settings: {},
         options: [
-          { label: '<p>First</p>', isCorrect: false, settings: {} },
-          { label: '<p>Second</p>', isCorrect: true, settings: {} }
+          { label: 'First', isCorrect: false, settings: {} },
+          { label: 'Second', isCorrect: true, settings: {} }
         ]
       }
     ]);

@@ -79,6 +79,34 @@ AI calls send one unresolved region, persist only the region audit metadata, and
 usage with an idempotency key. Raw model output is never persisted. Turning off either AI gate
 causes waiting imports to complete deterministically on their next resume.
 
+## Product release gates
+
+Deterministic formats (DOCX, Aiken, GIFT, and text-layer PDF) may be released only when their
+format-specific regression fixtures pass and browser E2E covers import, review, publish, learner
+submission, and scoring. A missing or conflicting answer key must still create an editable draft,
+but publish must remain blocked for an automatically graded interaction.
+
+Scanned-PDF vision remains an internal opt-in until all of the following are true:
+
+- The held-out corpus contains at least ten independently sourced scanned documents, at least one
+  hundred pages, and representative Vietnamese and Latin-script papers. Each document records its
+  source, usage rights, checksum, and a human-verified reference.
+- The corpus covers clean scans, degraded scans, multi-page papers, shared passages, and layouts
+  that can split or merge options. Synthetic rasterization may add regression coverage, but never
+  substitutes for independently acquired scans.
+- Two distinct complete runs use the same pinned model and transcription contract. Every held-out
+  document has 100% question recall, kind accuracy, grouping accuracy, option-count accuracy,
+  review precision, and review recall, with no spurious question. A metric layer that is not
+  human-verified is reported as `not measured` and cannot be counted as a pass.
+- Where the source states answers, answer-key accuracy and review routing are also human-verified.
+  AI-derived answers remain proposed and publish stays blocked until the teacher confirms them,
+  regardless of benchmark results.
+
+Run the gate from the repository root with `pnpm --filter @cio/exam-import verify:scanned-pdf <manifest.json> <first-run.json> <second-run.json>`. The manifest owns every qualifying source and reference path; the verifier rejects malformed artifacts, paths outside the corpus directory, and source bytes that do not match their declared SHA-256 and size.
+
+These are safety gates, not a claim that arbitrary scans are error-free. The product guarantee is
+that unconfirmed or structurally suspect content does not become a machine-graded published exam.
+
 ## Operational checks
 
 - Queue `course-imports` has an active worker.

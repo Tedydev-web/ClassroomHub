@@ -9,6 +9,14 @@
       "sha256": "0c8d0089c364e62d39a53d489918ee4a33c131391ebb0fe51850289e8e27ff77",
       "format": "docx",
       "subject": "english",
+      "languages": ["vi", "en"],
+      "pageCount": null,
+      "captureKind": "scan_converted",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:Template/VTt4j1VVhd8Opdi0qPHoN-e-on-luyen-so-03.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-07-26."
+      },
       "note": "MOET 2025 format English paper, 40 questions. Converted from a scan, so it is a harder input than a natively authored file and exercises most failure modes at once.",
       "traits": [
         "scan-converted",
@@ -35,9 +43,44 @@
       "sha256": "90ee6917eb4f1f15ae62ef9518b6d9360a24f168d35a6d97c5f06a810816b485",
       "format": "pdf",
       "subject": "english",
+      "languages": ["vi", "en"],
+      "pageCount": 5,
+      "captureKind": "physical_scan",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:Template/S6nBtwX0locnFWABbn6vp-e-on-luyen-so-03.pdf",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-07-26."
+      },
       "note": "The same exam as its DOCX twin, as five scanned A4 pages at 300 DPI. Zero extractable characters, so it exercises the image branch and nothing else.",
       "traits": ["pure-scan", "no-text-layer", "five-pages", "same-exam-as-docx-twin"],
       "reference": "references/2026-en-on-luyen-03-scan-converted.reference.json"
+    },
+    {
+      "id": "oisc-level-1-feb-2021-synthetic-scan",
+      "path": "large/oisc-level-1-feb-2021-synthetic-scan.pdf",
+      "committed": false,
+      "bytes": 1463693,
+      "sha256": "66aea41e50217c2a21a008571242c9690cc0e96dc8ec85948d93330f8f460ab7",
+      "format": "pdf",
+      "subject": "immigration-law",
+      "languages": ["en"],
+      "pageCount": 5,
+      "captureKind": "synthetic_rasterization",
+      "evaluationSplit": "held_out",
+      "source": {
+        "locator": "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1005932/OISC_Sample_Competence_Assessment_Paper-February_2021.pdf",
+        "usageRights": "Open Government Licence v3.0; source publication inspected on 2026-07-28."
+      },
+      "note": "Pages 1 to 5 of the public OISC sample paper, rendered to image-only PDF at 200 DPI. This is an independent content/layout fixture, but synthetic rasterization and therefore not evidence for real scanner-acquisition coverage.",
+      "traits": [
+        "synthetic-rasterization",
+        "no-text-layer",
+        "five-pages",
+        "twenty-choice-questions",
+        "long-option-wrapping",
+        "page-boundary-question"
+      ],
+      "reference": "references/oisc-level-1-feb-2021-synthetic-scan.reference.json"
     }
   ]
 }

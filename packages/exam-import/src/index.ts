@@ -60,13 +60,34 @@ export {
 } from './docx/read-docx-runs';
 
 export {
+  assessScannedPdfCorpusCoverage,
   corpusManifestSchema,
   formatCorpusAvailability,
   resolveCorpusAvailability,
+  SCANNED_PDF_CORPUS_REQUIREMENTS,
   type CorpusAvailability,
   type CorpusDocument,
-  type CorpusManifest
+  type CorpusManifest,
+  type ScannedPdfCorpusCoverage,
+  type ScannedPdfCorpusCoverageIssue
 } from './corpus/corpus-manifest';
+
+export {
+  assessScannedPdfBenchmarkRuns,
+  scannedPdfBenchmarkResultSchema,
+  scannedPdfBenchmarkRunSchema,
+  type ScannedPdfBenchmarkAssessment,
+  type ScannedPdfBenchmarkIssue,
+  type ScannedPdfBenchmarkIssueCode,
+  type ScannedPdfBenchmarkResult,
+  type ScannedPdfBenchmarkRun
+} from './corpus/scanned-pdf-benchmark';
+
+export {
+  ScannedPdfBenchmarkArtifactError,
+  verifyScannedPdfBenchmarkArtifacts,
+  type ScannedPdfBenchmarkArtifactPaths
+} from './corpus/verify-scanned-pdf-benchmark';
 
 export {
   EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS,

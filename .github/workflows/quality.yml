@@ -2,9 +2,31 @@ name: Quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
   push:
     branches:
       - main
+    paths:
+      - 'apps/api/**'
+      - 'apps/dashboard/**'
+      - 'apps/jobs/**'
+      - 'packages/**'
+      - 'docker/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - '.github/workflows/quality.yml'
   workflow_dispatch:
 
 permissions:

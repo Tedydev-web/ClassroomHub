@@ -226,56 +226,61 @@ with open(summary_file, "w", encoding="utf-8") as f:
 with open(events_file, "w", encoding="utf-8") as f:
   json.dump(rows, f, indent=2, ensure_ascii=False)
 
-
-def fmt_bool(value: bool) -> str:
-  return "yes" if value else "no"
-
-lines = [
+out = [
   f"# GitHub Actions Minutes Audit ({repo})",
   "",
   f"Window: last {since_days} days",
   "",
   f"- Workflow runs: {len(run_ids)}",
   f"- Job samples: {len(rows)}",
-  f"- Job-level estimated minutes: **{round(job_level_minutes, 1)}**",
-  f"- Estimated hosted job minutes: **{round(hosted_job_minutes, 1)}**",
-  f"- Host minute guard: {hosted_minute_limit}",
-  "",
+  f"- Job-level estimated minutes: **{job_level_minutes:.1f}**",
+  f"- Estimated hosted job minutes: **{hosted_job_minutes:.1f}**",
 ]
+if hosted_minute_limit > 0:
+  out.append(f"- Host minute guard: {hosted_minute_limit:.1f}")
 
-lines.append("## Top long jobs\n")
-lines.append("| Workflow | Event | Job | Duration (m) | Hosted runner | Runner |")
-lines.append("|---|---|---|---:|---|---|")
+out.extend([
+  "",
+  "## Top long jobs",
+  "",
+  "| Workflow | Event | Job | Duration (m) | Hosted runner | Runner |",
+  "|---|---|---|---:|---|---|",
+])
 for row in rows[:top_count]:
-  lines.append(
-    f"| {row['workflow']} | {row['event']} | {row['job_name'][:120]} | {row['duration_min']:.1f} | {fmt_bool(row['hosted'])} | {row['runner_name']} |"
+  out.append(
+    f"| {row['workflow']} | {row['event']} | {row['job_name']} | {row['duration_min']:.1f} | "
+    f"{'yes' if row['hosted'] else 'no'} | {row['runner_name']} |"
   )
 
-lines.append("")
-
-lines.append("## Workflows with hosted job minutes\n")
-lines.append("| Workflow | Hosted job minutes | Hosted jobs | Total jobs |")
-lines.append("|---|---:|---:|---:")
-for workflow_name in sorted(workflow_hosted.keys(), key=workflow_hosted.get, reverse=True):
-  lines.append(
-    f"| {workflow_name} | {workflow_hosted[workflow_name]:.1f} | {workflow_hosted_jobs[workflow_name]} | {workflow_total_jobs[workflow_name]} |"
+out.extend([
+  "",
+  "## Workflows with hosted job minutes",
+  "",
+  "| Workflow | Hosted job minutes | Hosted jobs | Total jobs |",
+  "|---|---:|---:|---:|",
+])
+for workflow_name, mins in sorted(workflow_hosted.items(), key=lambda kv: kv[1], reverse=True):
+  out.append(
+    f"| {workflow_name} | {mins:.1f} | {workflow_hosted_jobs[workflow_name]} | {workflow_total_jobs[workflow_name]} |"
   )
 
-lines.append("")
-lines.append("## Workflows with total job minutes\n")
-lines.append("| Workflow | Total job minutes |")
-lines.append("|---|---:")
-for workflow_name, minutes in sorted(workflow_total.items(), key=lambda x: x[1], reverse=True):
-  lines.append(f"| {workflow_name} | {minutes:.1f} |")
+out.extend([
+  "",
+  "## Workflows with total job minutes",
+  "",
+  "| Workflow | Total job minutes |",
+  "|---|---:|",
+])
+for workflow_name, mins in sorted(workflow_total.items(), key=lambda kv: kv[1], reverse=True)[:top_count]:
+  out.append(f"| {workflow_name} | {mins:.1f} |")
 
 with open(report_file, "w", encoding="utf-8") as f:
-  f.write("\n".join(lines) + "\n")
+  f.write("\n".join(out) + "\n")
 
-if hosted_job_minutes > hosted_minute_limit:
-  print("\n".join(lines))
-  raise SystemExit(
-    f"ERROR: hosted estimated minutes {round(hosted_job_minutes, 1)} exceeds limit {hosted_minute_limit}"
-  )
+print("\n".join(out))
+print(f"hosted_minutes_estimate={hosted_job_minutes:.3f}")
 
-print(f"hosted_minutes_estimate={round(hosted_job_minutes, 3)}")
+if hosted_minute_limit > 0 and hosted_job_minutes > hosted_minute_limit:
+  print(f"ERROR: hosted estimated minutes {hosted_job_minutes:.1f} exceeds limit {hosted_minute_limit:.1f}")
+  raise SystemExit(2)
 PY

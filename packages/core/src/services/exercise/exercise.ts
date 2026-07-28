@@ -918,7 +918,7 @@ export async function getExercise(
 export async function getExerciseForCourseService(
   courseId: string,
   exerciseId: string,
-  profileId?: string
+  profileId: string
 ): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
   const exercise = await getExerciseById(exerciseId);
   if (!exercise) {
@@ -930,7 +930,7 @@ export async function getExerciseForCourseService(
     throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
   }
 
-  return profileId === undefined ? getExercise(exerciseId) : getExercise(exerciseId, undefined, profileId);
+  return getExercise(exerciseId, undefined, profileId);
 }
 
 /**

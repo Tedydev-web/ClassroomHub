@@ -168,24 +168,42 @@ export function collectExamImportSourceBlocks(runs: SourceRun[]): ExamImportSour
 
   return [...grouped.entries()]
     .sort(([left], [right]) => left - right)
-    .map(([index, blockRuns]) => {
+    .flatMap(([index, blockRuns]) => {
       const orderedRuns = [...blockRuns].sort((left, right) => left.location.runIndex - right.location.runIndex);
-      const firstRun = orderedRuns[0]!;
-      const lastRun = orderedRuns.at(-1)!;
+      const logicalBlocks: SourceRun[][] = [];
+      let currentBlock: SourceRun[] = [];
 
-      return {
-        index,
-        kind: firstRun.block.kind,
-        listNumber: firstRun.block.listNumber,
-        runs: orderedRuns,
-        text: orderedRuns.map((run) => run.text).join(''),
-        span: {
-          start: firstRun.location,
-          end: lastRun.location,
-          pageStart: null,
-          pageEnd: null
+      for (const run of orderedRuns) {
+        const startsAnswerLine = run.block.kind !== 'table_cell' && ANSWER_LINE_PATTERN.test(run.text.trim());
+        if (startsAnswerLine && currentBlock.length > 0) {
+          logicalBlocks.push(currentBlock);
+          currentBlock = [];
         }
-      };
+
+        currentBlock.push(run);
+      }
+      if (currentBlock.length > 0) logicalBlocks.push(currentBlock);
+
+      return logicalBlocks.map((logicalRuns, logicalIndex) => {
+        const firstRun = logicalRuns[0]!;
+        const lastRun = logicalRuns.at(-1)!;
+        // Preserve source locations while keeping split answer lines ordered after their question content.
+        const orderedIndex = index + logicalIndex / (logicalBlocks.length + 1);
+
+        return {
+          index: orderedIndex,
+          kind: firstRun.block.kind,
+          listNumber: firstRun.block.listNumber,
+          runs: logicalRuns,
+          text: logicalRuns.map((run) => run.text).join(''),
+          span: {
+            start: firstRun.location,
+            end: lastRun.location,
+            pageStart: null,
+            pageEnd: null
+          }
+        };
+      });
     });
 }
 

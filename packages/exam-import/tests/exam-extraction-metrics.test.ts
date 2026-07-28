@@ -78,6 +78,7 @@ describe('layer gating', () => {
     expect(metrics.answerKeyAccuracy).toBeNull();
     expect(metrics.optionFidelity).toBeNull();
     expect(metrics.reviewPrecision).toBeNull();
+    expect(metrics.reviewRecall).toBeNull();
   });
 
   it('measures only the structure layer when only structure is verified', () => {
@@ -122,6 +123,7 @@ describe('extraction scoring', () => {
     expect(metrics.kindAccuracy).toBe(1);
     expect(metrics.optionCountAccuracy).toBe(1);
     expect(metrics.reviewPrecision).toBe(1);
+    expect(metrics.reviewRecall).toBe(1);
     expect(metrics.counts.spuriousQuestions).toBe(0);
   });
 
@@ -131,6 +133,13 @@ describe('extraction scoring', () => {
     extracted.questions[2]!.reviewRequired = true;
 
     expect(scoreExtraction(reference, extracted).reviewPrecision).toBe(0.5);
+  });
+
+  it('penalises a question that needs review but was left unflagged', () => {
+    const extracted = copyOf(reference);
+    extracted.questions[2]!.reviewRequired = false;
+
+    expect(scoreExtraction(reference, extracted).reviewRecall).toBe(0);
   });
 
   it('scores an extractor that finds nothing as zero, not as unmeasurable', () => {

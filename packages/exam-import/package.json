@@ -19,6 +19,7 @@
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:corpus": "vitest run tests/corpus-metrics.test.ts",
+    "verify:scanned-pdf": "pnpm build && node dist/corpus/verify-scanned-pdf-benchmark-cli.js",
     "test:watch": "vitest",
     "format": "prettier --write ."
   },

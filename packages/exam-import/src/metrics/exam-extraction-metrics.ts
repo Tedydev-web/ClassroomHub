@@ -37,6 +37,8 @@ export type ExtractionMetrics = {
   // -- from the review routing layer --
   /** Flagged extracted questions that genuinely require teacher review. */
   reviewPrecision: number | null;
+  /** Questions requiring teacher review that the extractor actually flagged. */
+  reviewRecall: number | null;
 
   counts: {
     referenceQuestions: number;
@@ -125,12 +127,15 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
   let keyedQuestions = 0;
   let correctKeys = 0;
   let correctGroupings = 0;
+  let reviewRequiredQuestions = 0;
+  let correctlyFlaggedQuestions = 0;
   const missingQuestionNumbers: string[] = [];
   const optionCountMismatches: ExtractionMetrics['optionCountMismatches'] = [];
 
   for (const expected of referenceQuestions) {
     if (expected.options !== null) totalReferenceOptions += expected.options.length;
     if (expected.answerKey !== null) keyedQuestions++;
+    if (expected.reviewRequired === true) reviewRequiredQuestions++;
 
     const actual = extractedByNumber.get(expected.number);
     if (!actual) {
@@ -140,6 +145,10 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
         optionCountMismatches.push({ number: expected.number, expected: expected.optionCount, actual: null });
       }
       continue;
+    }
+
+    if (expected.reviewRequired === true && actual.reviewRequired === true) {
+      correctlyFlaggedQuestions++;
     }
 
     matchedQuestions++;
@@ -180,7 +189,7 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
     (question) => !referenceQuestions.some((expected) => expected.number === question.number)
   ).length;
   const flaggedQuestions = extracted.questions.filter((question) => question.reviewRequired === true);
-  const correctlyFlaggedQuestions = flaggedQuestions.filter(
+  const correctlyFlaggedQuestionsForPrecision = flaggedQuestions.filter(
     (question) => referenceQuestions.find((expected) => expected.number === question.number)?.reviewRequired === true
   ).length;
 
@@ -191,7 +200,8 @@ export function scoreExtraction(reference: ReferenceExam, extracted: ExtractedEx
     optionCountAccuracy: scoresStructure ? rate(matchedOptionCounts, comparableOptionCounts) : null,
     answerKeyAccuracy: scoresKeys ? rate(correctKeys, keyedQuestions) : null,
     optionFidelity: scoresText ? rate(matchedOptions, totalReferenceOptions) : null,
-    reviewPrecision: scoresReviewRouting ? rate(correctlyFlaggedQuestions, flaggedQuestions.length) : null,
+    reviewPrecision: scoresReviewRouting ? rate(correctlyFlaggedQuestionsForPrecision, flaggedQuestions.length) : null,
+    reviewRecall: scoresReviewRouting ? rate(correctlyFlaggedQuestions, reviewRequiredQuestions) : null,
     counts: {
       referenceQuestions: referenceQuestions.length,
       extractedQuestions: extracted.questions.length,
@@ -226,6 +236,7 @@ export function formatMetrics(reference: ReferenceExam, metrics: ExtractionMetri
     `answer-key accuracy : ${formatRate(metrics.answerKeyAccuracy)}`,
     `option fidelity     : ${formatRate(metrics.optionFidelity)}`,
     `review precision    : ${formatRate(metrics.reviewPrecision)}`,
+    `review recall       : ${formatRate(metrics.reviewRecall)}`,
     `spurious questions  : ${metrics.counts.spuriousQuestions}`,
     `missing             : ${metrics.missingQuestionNumbers.join(', ') || 'none'}`,
     `option count misses : ${

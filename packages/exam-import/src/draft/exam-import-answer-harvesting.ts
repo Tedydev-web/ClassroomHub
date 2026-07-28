@@ -452,7 +452,7 @@ function applyExplicitAnswers(
       question,
       match[1]!.trim(),
       'explicit_line',
-      `harvest-explicit-${block.index}`,
+      `harvest-explicit-${block.span.start.blockIndex}-${block.span.start.runIndex}`,
       [block.span],
       diagnostics
     );

@@ -647,6 +647,7 @@ describe('getExercise active read hardening', () => {
   });
 
   it('projects legacy questions without answer keys for an enrolled learner', async () => {
+    mocks.getExerciseById.mockResolvedValue({ id: 'exercise-a', courseId: 'course-a', slug: null, title: 'Exercise' });
     const orderingOptions = [
       { id: 91, questionId: 9, label: 'First', value: 'First', isCorrect: false, settings: {} },
       { id: 92, questionId: 9, label: 'Second', value: 'Second', isCorrect: false, settings: {} },
@@ -735,8 +736,8 @@ describe('getExercise active read hardening', () => {
       ]
     });
 
-    const firstRead = await getExercise('exercise-a', undefined, 'profile-learner');
-    const secondRead = await getExercise('exercise-a', undefined, 'profile-learner');
+    const firstRead = await getExerciseForCourseService('course-a', 'exercise-a', 'profile-learner');
+    const secondRead = await getExerciseForCourseService('course-a', 'exercise-a', 'profile-learner');
     const learnerPayload = JSON.stringify(firstRead.questions);
     const radioQuestion = firstRead.questions?.find((question) => question.id === 1);
     const orderingQuestion = firstRead.questions?.find((question) => question.id === 9);
@@ -805,7 +806,7 @@ describe('getExercise active read hardening', () => {
       title: 'Foreign exercise'
     });
 
-    await expect(getExerciseForCourseService('course-a', 'exercise-b')).rejects.toMatchObject({
+    await expect(getExerciseForCourseService('course-a', 'exercise-b', 'profile-learner')).rejects.toMatchObject({
       code: ErrorCodes.EXERCISE_NOT_FOUND,
       statusCode: 404
     });

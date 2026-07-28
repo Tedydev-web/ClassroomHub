@@ -66,10 +66,27 @@ function questionPoints(question: PublishableQuestion): number {
   return question.points ?? DEFAULT_EXAM_IMPORT_QUESTION_POINTS;
 }
 
+function containsHtmlMarkup(value: string): boolean {
+  return /<\/?[a-z][^>]*>/i.test(value);
+}
+
+function hasRichHtml(question: PublishableQuestion): boolean {
+  if (containsHtmlMarkup(question.promptHtml)) {
+    return true;
+  }
+
+  if (question.kind === 'choice') {
+    return question.options.some((option) => containsHtmlMarkup(option.html));
+  }
+
+  return false;
+}
+
 function isLegacyCompatible(question: PublishableQuestion): boolean {
   if (
     question.kind === 'true_false_group' ||
     question.passageId !== null ||
+    hasRichHtml(question) ||
     (question.kind === 'choice' && (question.scoreWeights !== undefined || (question.feedback?.length ?? 0) > 0))
   ) {
     return false;
@@ -90,7 +107,11 @@ function toLegacyQuestion(question: Exclude<PublishableQuestion, { kind: 'true_f
 
   switch (question.kind) {
     case 'choice': {
-      const correctOptionIds = new Set(question.answerKey!.correctOptionIds);
+      if (question.answerKey === null) {
+        throw new ExamImportPublishPlanError('DRAFT_NOT_PUBLISHABLE', 'Choice question requires an answer key');
+      }
+
+      const correctOptionIds = new Set(question.answerKey.correctOptionIds);
 
       return {
         ...base,
@@ -109,17 +130,22 @@ function toLegacyQuestion(question: Exclude<PublishableQuestion, { kind: 'true_f
       return {
         ...base,
         questionTypeId: QUESTION_TYPE_IDS.SHORT_ANSWER,
-        settings: { acceptedAnswers: question.answerKey!.acceptedAnswers.join(',') }
+        settings: question.answerKey === null ? {} : { acceptedAnswers: question.answerKey.acceptedAnswers.join(',') }
       };
-    case 'numeric':
+    case 'numeric': {
+      if (question.answerKey === null) {
+        throw new ExamImportPublishPlanError('DRAFT_NOT_PUBLISHABLE', 'Numeric question requires an answer key');
+      }
+
       return {
         ...base,
         questionTypeId: QUESTION_TYPE_IDS.NUMERIC,
         settings: {
-          correctValue: question.answerKey!.value,
-          tolerance: question.answerKey!.tolerance ?? 0
+          correctValue: question.answerKey.value,
+          tolerance: question.answerKey.tolerance ?? 0
         }
       };
+    }
     case 'essay':
       return {
         ...base,
@@ -225,10 +251,10 @@ function toFeedback(questions: readonly PublishableQuestion[]): ItemFeedback[] {
             }
       );
     }
-    if (question.kind !== 'short_answer') return [];
+    if (question.kind !== 'short_answer' || question.answerKey === null) return [];
 
     const sourceNumber = question.sourceNumber ? `<strong>${escapeHtml(question.sourceNumber)}:</strong> ` : '';
-    const acceptedAnswers = question.answerKey!.acceptedAnswers.map(escapeHtml).join(' / ');
+    const acceptedAnswers = question.answerKey.acceptedAnswers.map(escapeHtml).join(' / ');
 
     return [
       {

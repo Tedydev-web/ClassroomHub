@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  assessScannedPdfCorpusCoverage,
   corpusManifestSchema,
   formatCorpusAvailability,
   resolveCorpusAvailability,
@@ -128,6 +129,22 @@ describe('corpus manifest', () => {
 
     expect(corpusManifestSchema.safeParse(tampered).success).toBe(false);
   });
+
+  it('requires provenance and usage rights for every benchmark document', () => {
+    const manifest = loadManifest();
+    const documentWithoutSource = { ...manifest.documents[0]!, source: undefined };
+    const tampered = { ...manifest, documents: [documentWithoutSource] };
+
+    expect(corpusManifestSchema.safeParse(tampered).success).toBe(false);
+  });
+
+  it('requires acquisition and evaluation metadata for every benchmark document', () => {
+    const manifest = loadManifest();
+    const documentWithoutSplit = { ...manifest.documents[0]!, evaluationSplit: undefined };
+    const tampered = { ...manifest, documents: [documentWithoutSplit] };
+
+    expect(corpusManifestSchema.safeParse(tampered).success).toBe(false);
+  });
 });
 
 describe('corpus availability', () => {
@@ -142,6 +159,11 @@ describe('corpus availability', () => {
         sha256: 'a'.repeat(64),
         format: 'docx',
         subject: 'maths',
+        languages: ['en'],
+        pageCount: null,
+        captureKind: 'native_digital',
+        evaluationSplit: 'regression',
+        source: { locator: 'internal:small.docx', usageRights: 'test fixture' },
         note: '',
         traits: ['answer-table'],
         reference: 'references/small.reference.json'
@@ -154,6 +176,11 @@ describe('corpus availability', () => {
         sha256: 'b'.repeat(64),
         format: 'pdf',
         subject: 'maths',
+        languages: ['en'],
+        pageCount: 5,
+        captureKind: 'physical_scan',
+        evaluationSplit: 'held_out',
+        source: { locator: 'internal:big.pdf', usageRights: 'test fixture' },
         note: '',
         traits: ['pure-scan'],
         reference: 'references/big.reference.json'
@@ -187,5 +214,69 @@ describe('corpus availability', () => {
     expect(report).toContain('checkout is incomplete');
     expect(report).toContain('large-one');
     expect(report).toContain('not committed by design');
+  });
+});
+
+describe('scanned-PDF corpus coverage', () => {
+  function physicalScan(id: string, language: string, traits: string[]): CorpusManifest['documents'][number] {
+    return {
+      id,
+      path: `large/${id}.pdf`,
+      committed: false,
+      bytes: 1_000_000,
+      sha256: 'a'.repeat(64),
+      format: 'pdf',
+      subject: 'assessment',
+      languages: [language],
+      pageCount: 10,
+      captureKind: 'physical_scan',
+      evaluationSplit: 'held_out',
+      source: { locator: `internal:${id}.pdf`, usageRights: 'test fixture' },
+      note: '',
+      traits,
+      reference: `references/${id}.reference.json`
+    };
+  }
+
+  it('excludes synthetic and regression documents from the release corpus', () => {
+    const manifest = loadManifest();
+    const coverage = assessScannedPdfCorpusCoverage(manifest);
+
+    expect(coverage.qualifiedDocuments).toEqual([]);
+    expect(coverage.issues.map((issue) => issue.code)).toContain('INSUFFICIENT_HELD_OUT_PHYSICAL_SCANS');
+    expect(coverage.issues.map((issue) => issue.code)).toContain('INSUFFICIENT_HELD_OUT_SCAN_PAGES');
+  });
+
+  it('accepts a held-out physical scan corpus only when every coverage dimension is present', () => {
+    const traits = ['clean-scan', 'degraded-scan', 'multi-page', 'shared-passage', 'option-boundary-risk'];
+    const documents = Array.from({ length: 10 }, (_, index) =>
+      physicalScan(`scan-${index + 1}`, index === 0 ? 'vi' : 'en', index === 0 ? traits : ['multi-page'])
+    );
+    const coverage = assessScannedPdfCorpusCoverage({ version: 1, documents });
+
+    expect(coverage.qualifiedDocuments).toHaveLength(10);
+    expect(coverage.qualifiedPageCount).toBe(100);
+    expect(coverage.ready).toBe(true);
+    expect(coverage.issues).toEqual([]);
+  });
+
+  it('reports the exact missing dimensions instead of accepting an aggregate-only score', () => {
+    const coverage = assessScannedPdfCorpusCoverage({
+      version: 1,
+      documents: [physicalScan('only-scan', 'en', ['clean-scan'])]
+    });
+
+    expect(coverage.ready).toBe(false);
+    expect(coverage.issues).toEqual(
+      expect.arrayContaining([
+        { code: 'INSUFFICIENT_HELD_OUT_PHYSICAL_SCANS', value: '1/10' },
+        { code: 'INSUFFICIENT_HELD_OUT_SCAN_PAGES', value: '10/100' },
+        { code: 'MISSING_REQUIRED_LANGUAGE', value: 'vi' },
+        { code: 'MISSING_REQUIRED_TRAIT', value: 'degraded-scan' },
+        { code: 'MISSING_REQUIRED_TRAIT', value: 'multi-page' },
+        { code: 'MISSING_REQUIRED_TRAIT', value: 'shared-passage' },
+        { code: 'MISSING_REQUIRED_TRAIT', value: 'option-boundary-risk' }
+      ])
+    );
   });
 });
