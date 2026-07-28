@@ -74,6 +74,8 @@ export {
 
 export {
   assessScannedPdfBenchmarkRuns,
+  scannedPdfBenchmarkResultSchema,
+  scannedPdfBenchmarkRunSchema,
   type ScannedPdfBenchmarkAssessment,
   type ScannedPdfBenchmarkIssue,
   type ScannedPdfBenchmarkIssueCode,

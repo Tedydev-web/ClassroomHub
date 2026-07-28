@@ -1,20 +1,27 @@
-import type { ExtractionMetrics } from '../metrics/exam-extraction-metrics';
+import * as z from 'zod';
+import { examImportDraftSchema } from '../draft/exam-import-draft';
+import { examImportDraftToExtractedExam } from '../metrics/exam-import-draft-metrics';
+import { scoreExtraction } from '../metrics/exam-extraction-metrics';
 import type { ReferenceExam } from '../metrics/reference-exam';
 import { assessScannedPdfCorpusCoverage, type CorpusManifest, type ScannedPdfCorpusCoverage } from './corpus-manifest';
 
-export type ScannedPdfBenchmarkResult = {
-  documentId: string;
-  reference: ReferenceExam;
-  metrics: ExtractionMetrics;
-};
+export const scannedPdfBenchmarkResultSchema = z.strictObject({
+  documentId: z.string().min(1),
+  /** The stored import draft produced by this exact model run. */
+  draft: examImportDraftSchema
+});
+
+export type ScannedPdfBenchmarkResult = z.infer<typeof scannedPdfBenchmarkResultSchema>;
 
 /** One complete, reproducible run over the held-out physical-scan corpus. */
-export type ScannedPdfBenchmarkRun = {
-  runId: string;
-  model: string;
-  transcriptionContract: string;
-  results: ScannedPdfBenchmarkResult[];
-};
+export const scannedPdfBenchmarkRunSchema = z.strictObject({
+  runId: z.string().min(1),
+  model: z.string().min(1),
+  transcriptionContract: z.string().min(1),
+  results: z.array(scannedPdfBenchmarkResultSchema).min(1)
+});
+
+export type ScannedPdfBenchmarkRun = z.infer<typeof scannedPdfBenchmarkRunSchema>;
 
 export type ScannedPdfBenchmarkIssueCode =
   | 'CORPUS_NOT_READY'
@@ -24,6 +31,7 @@ export type ScannedPdfBenchmarkIssueCode =
   | 'DUPLICATE_DOCUMENT_RESULT'
   | 'MISSING_DOCUMENT_RESULT'
   | 'UNEXPECTED_DOCUMENT_RESULT'
+  | 'MISSING_REFERENCE'
   | 'REFERENCE_DOCUMENT_MISMATCH'
   | 'UNVERIFIED_STRUCTURE'
   | 'UNVERIFIED_ANSWER_KEYS'
@@ -60,47 +68,49 @@ function sourceStatesAnswers(reference: ReferenceExam): boolean {
 function assessBenchmarkResult(
   result: ScannedPdfBenchmarkResult,
   expectedDocumentPath: string,
+  reference: ReferenceExam,
   issues: ScannedPdfBenchmarkIssue[],
   runId: string
 ): void {
   const prefix = `${runId}:${result.documentId}`;
 
-  if (result.reference.document !== expectedDocumentPath) {
+  if (reference.document !== expectedDocumentPath || result.draft.source.fileName !== expectedDocumentPath) {
     issues.push({
       code: 'REFERENCE_DOCUMENT_MISMATCH',
-      value: `${prefix}:${result.reference.document}`
+      value: `${prefix}:${expectedDocumentPath}|${reference.document}|${result.draft.source.fileName}`
     });
   }
 
-  if (result.reference.coverage.structure !== 'verified') {
+  if (reference.coverage.structure !== 'verified') {
     issues.push({ code: 'UNVERIFIED_STRUCTURE', value: prefix });
   }
 
-  if (result.reference.coverage.reviewRouting !== 'verified') {
+  if (reference.coverage.reviewRouting !== 'verified') {
     issues.push({ code: 'UNVERIFIED_REVIEW_ROUTING', value: prefix });
   }
 
-  if (sourceStatesAnswers(result.reference) && result.reference.coverage.answerKeys !== 'verified') {
+  if (sourceStatesAnswers(reference) && reference.coverage.answerKeys !== 'verified') {
     issues.push({ code: 'UNVERIFIED_ANSWER_KEYS', value: prefix });
   }
 
+  const metrics = scoreExtraction(reference, examImportDraftToExtractedExam(result.draft));
   for (const metric of REQUIRED_PERFECT_METRICS) {
-    if (result.metrics[metric] === 1) continue;
+    if (metrics[metric] === 1) continue;
 
-    issues.push({ code: 'IMPERFECT_METRIC', value: `${prefix}:${metric}=${result.metrics[metric]}` });
+    issues.push({ code: 'IMPERFECT_METRIC', value: `${prefix}:${metric}=${metrics[metric]}` });
   }
 
-  if (sourceStatesAnswers(result.reference) && result.metrics.answerKeyAccuracy !== 1) {
+  if (sourceStatesAnswers(reference) && metrics.answerKeyAccuracy !== 1) {
     issues.push({
       code: 'IMPERFECT_METRIC',
-      value: `${prefix}:answerKeyAccuracy=${result.metrics.answerKeyAccuracy}`
+      value: `${prefix}:answerKeyAccuracy=${metrics.answerKeyAccuracy}`
     });
   }
 
-  if (result.metrics.counts.spuriousQuestions !== 0) {
+  if (metrics.counts.spuriousQuestions !== 0) {
     issues.push({
       code: 'SPURIOUS_QUESTIONS',
-      value: `${prefix}:${result.metrics.counts.spuriousQuestions}`
+      value: `${prefix}:${metrics.counts.spuriousQuestions}`
     });
   }
 }
@@ -108,6 +118,7 @@ function assessBenchmarkResult(
 function assessBenchmarkRun(
   run: ScannedPdfBenchmarkRun,
   qualifiedDocuments: ScannedPdfCorpusCoverage['qualifiedDocuments'],
+  references: ReadonlyMap<string, ReferenceExam>,
   issues: ScannedPdfBenchmarkIssue[]
 ): void {
   const expectedById = new Map(qualifiedDocuments.map((document) => [document.id, document]));
@@ -126,7 +137,10 @@ function assessBenchmarkRun(
       continue;
     }
 
-    assessBenchmarkResult(result, document.path, issues, run.runId);
+    const reference = references.get(document.id);
+    if (!reference) continue;
+
+    assessBenchmarkResult(result, document.path, reference, issues, run.runId);
   }
 
   for (const document of qualifiedDocuments) {
@@ -146,6 +160,7 @@ function assessBenchmarkRun(
  */
 export function assessScannedPdfBenchmarkRuns(
   manifest: CorpusManifest,
+  references: ReadonlyMap<string, ReferenceExam>,
   runs: readonly [ScannedPdfBenchmarkRun, ScannedPdfBenchmarkRun]
 ): ScannedPdfBenchmarkAssessment {
   const corpus = assessScannedPdfCorpusCoverage(manifest);
@@ -155,6 +170,12 @@ export function assessScannedPdfBenchmarkRuns(
     for (const issue of corpus.issues) {
       issues.push({ code: 'CORPUS_NOT_READY', value: `${issue.code}:${issue.value}` });
     }
+  }
+
+  for (const document of corpus.qualifiedDocuments) {
+    if (references.has(document.id)) continue;
+
+    issues.push({ code: 'MISSING_REFERENCE', value: document.id });
   }
 
   const [firstRun, secondRun] = runs;
@@ -173,8 +194,8 @@ export function assessScannedPdfBenchmarkRuns(
     });
   }
 
-  assessBenchmarkRun(firstRun, corpus.qualifiedDocuments, issues);
-  assessBenchmarkRun(secondRun, corpus.qualifiedDocuments, issues);
+  assessBenchmarkRun(firstRun, corpus.qualifiedDocuments, references, issues);
+  assessBenchmarkRun(secondRun, corpus.qualifiedDocuments, references, issues);
 
   return { corpus, issues, ready: issues.length === 0 };
 }
