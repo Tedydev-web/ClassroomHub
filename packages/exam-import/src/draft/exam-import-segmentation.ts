@@ -119,7 +119,12 @@ const COGNITIVE_LEVEL_PATTERN = /\[\s*[0-3]\s*,\s*(NB|TH|VD|VDC)\s*\]/iu;
 const END_MARKER_PATTERN = /^(?:[-–—_=*]\s*)*(?:HẾT|THE END)\b/iu;
 const PASSAGE_MARKER_PATTERN =
   /^Read the (?:following|foilowing) (?:passage|announcement|advertisement|leaflet|letter|text|notice|article|dialogue)\b/iu;
-const ARRANGEMENT_INSTRUCTION_PATTERN = /^Mark the letter .*?\barrangement\b/iu;
+const RANGED_QUESTION_INSTRUCTION_PATTERN =
+  /^(?:(?:Choose|Select|Complete|Read|Mark)\b.*?\b(?:numbered\s+blanks?|questions?)\s+(?:from\s+)?\d+\s*(?:to|through|[-–—])\s*\d+|(?:For\s+)?Questions?\s+\d+\s*(?:to|through|[-–—])\s*\d+)\b/iu;
+const ARRANGEMENT_INSTRUCTION_PATTERN =
+  /^(?:Mark the letter .*?\barrangement\b|Choose the (?:best|correct) arrangement\b)/iu;
+const FORM_FIELD_LABEL_PATTERN =
+  /^(?:candidate(?:\s+name)?|student\s+name|full\s+name|name|class|họ\s*(?:và\s*)?tên|ho\s*(?:va\s*)?ten|tên|ten|lớp|lop|số\s+báo\s+danh|so\s+bao\s+danh|mã\s+học\s+sinh|ma\s+hoc\s+sinh)\s*:?\s*$/iu;
 const SOLUTION_MARKER_PATTERN = /^(?:Lời giải|Giải thích|Hướng dẫn giải)\b/iu;
 const ANSWER_LINE_PATTERN = /^(?:Đáp án|Dap an|Answer)\s*:/iu;
 const COMPACT_KEY_PAIR_PATTERN = /(\d+)\s*[.)-]?\s*([A-D])(?=\s|$|\d)/giu;
@@ -1111,7 +1116,17 @@ function buildQuestion(
 }
 
 function inferTitle(blocks: ExamImportSourceBlock[], fileName: string): string {
-  const firstText = blocks.map((block) => block.text.trim()).find((text) => text.length > 0);
+  const firstBlock = blocks.find((block) => block.text.trim().length > 0);
+  const boldTitle = firstBlock?.runs
+    .map((run) => run.text.trim())
+    .filter(
+      (text, index) =>
+        firstBlock.runs[index]?.formatting.bold && text.length >= 4 && !FORM_FIELD_LABEL_PATTERN.test(text)
+    )
+    .sort((left, right) => right.length - left.length)[0];
+  if (boldTitle) return boldTitle;
+
+  const firstText = firstBlock?.text.trim();
   if (firstText && firstText.length <= 500) return firstText;
 
   return fileName.replace(/\.[^.]+$/u, '') || fileName;
@@ -1124,6 +1139,7 @@ function inferTitle(blocks: ExamImportSourceBlock[], fileName: string): string {
  */
 export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft['source']): ExamImportDraft {
   const blocks = collectExamImportSourceBlocks(runs);
+  const titleBlockIndex = blocks.find((block) => block.text.trim().length > 0)?.index ?? null;
   const tableLayouts = tablePassageLayouts(blocks);
   const answerBlocks = answerSourceBlockIndexes(blocks);
   const ordinaryTables = ordinaryTableLayouts(blocks, answerBlocks, tableLayouts.contentBlockIndexes);
@@ -1150,6 +1166,44 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     currentSection = newSection('Questions', sections.length);
     sections.push(currentSection);
     return currentSection;
+  };
+
+  const reportUnassignedSourceContent = (unassignedBlocks: ExamImportSourceBlock[]): void => {
+    if (unassignedBlocks.length === 0) return;
+
+    diagnostics.push({
+      tier: 'structural',
+      severity: 'error',
+      blocking: true,
+      code: 'UNASSIGNED_SOURCE_CONTENT',
+      message: 'Source content could not be assigned to an exam section, passage, or question',
+      messageKey: 'exam_import.diagnostics.unassigned_source_content',
+      questionId: null,
+      target: null,
+      provenance: mergeProvenance(unassignedBlocks.map((block) => block.span))
+    });
+  };
+
+  const reportPendingPassageAsUnassigned = (): void => {
+    reportUnassignedSourceContent(pendingPassageBlocks);
+    pendingPassageBlocks = [];
+    collectingPassage = false;
+  };
+
+  const startInstructionSection = (title: string, collectsPassage: boolean): void => {
+    if (sections.length >= MAX_EXAM_IMPORT_SECTIONS) {
+      throw new Error(`Exam import cannot contain more than ${MAX_EXAM_IMPORT_SECTIONS} sections`);
+    }
+
+    reportPendingPassageAsUnassigned();
+    currentSection = newSection(title, sections.length);
+    sections.push(currentSection);
+    currentQuestion = null;
+    activePassageId = null;
+    activeTablePassageEndIndex = null;
+    pendingPassageBlocks = [];
+    collectingPassage = collectsPassage;
+    inSolution = false;
   };
 
   const finalizePendingPassage = (): void => {
@@ -1246,6 +1300,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
 
     const tableLayout = tableLayouts.byQuestionStart.get(block.index);
     if (tableLayout) {
+      reportPendingPassageAsUnassigned();
       pendingPassageBlocks = tableLayout.contentBlocks;
       activePassageId = null;
       currentQuestion = null;
@@ -1264,7 +1319,10 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
     if (ordinaryTables.blockIndexes.has(block.index)) continue;
     if (!text && !hasRichContent) continue;
-    if (END_MARKER_PATTERN.test(text)) break;
+    if (END_MARKER_PATTERN.test(text)) {
+      reportPendingPassageAsUnassigned();
+      break;
+    }
 
     if (isSectionMarker(text)) {
       if (sections.length >= MAX_EXAM_IMPORT_SECTIONS) {
@@ -1285,6 +1343,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
           provenance: [block.span]
         });
       }
+      reportPendingPassageAsUnassigned();
       currentSection = section;
       currentQuestion = null;
       activePassageId = null;
@@ -1295,7 +1354,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (PASSAGE_MARKER_PATTERN.test(text)) {
-      pendingPassageBlocks = [];
+      reportPendingPassageAsUnassigned();
       activePassageId = null;
       currentQuestion = null;
       collectingPassage = true;
@@ -1304,13 +1363,13 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       continue;
     }
 
+    if (RANGED_QUESTION_INSTRUCTION_PATTERN.test(text)) {
+      startInstructionSection(text, true);
+      continue;
+    }
+
     if (ARRANGEMENT_INSTRUCTION_PATTERN.test(text)) {
-      pendingPassageBlocks = [];
-      activePassageId = null;
-      currentQuestion = null;
-      collectingPassage = false;
-      inSolution = false;
-      ensureSection();
+      startInstructionSection(text, false);
       continue;
     }
 
@@ -1353,8 +1412,17 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       continue;
     }
 
+    if (currentQuestion === null) {
+      if (block.index !== titleBlockIndex) {
+        reportUnassignedSourceContent([block]);
+      }
+      continue;
+    }
+
     appendRegularBlock(ensureSection(), currentQuestion, block);
   }
+
+  reportPendingPassageAsUnassigned();
 
   const outputSections = sections
     .filter((section) => section.questions.length > 0)

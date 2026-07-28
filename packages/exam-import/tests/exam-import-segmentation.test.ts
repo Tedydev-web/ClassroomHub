@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { readDocxRuns } from '../src/docx/read-docx-runs';
 import { examImportDraftSchema } from '../src/draft/exam-import-draft';
 import { segmentExamImportRuns } from '../src/draft/exam-import-segmentation';
+import { validateExamImportDraft } from '../src/draft/exam-import-validation';
 import { emptyFormatting, type RunFormatting, type SourceRun } from '../src/source-run';
 
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -435,6 +436,165 @@ describe('exam import segmentation', () => {
     expect(questions[1]?.passageId).toBe(draft.sharedContents[1]?.id);
     expect(draft.sharedContents[1]?.html).toContain('Second shared passage.');
     expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('OPTION_CONTINUATION_ATTACHED');
+  });
+
+  it('uses ranged instructions as section and shared-passage boundaries without contaminating options', () => {
+    const draft = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, 'Choose the correct option that best fits each of the numbered blanks from 1 to 2.'),
+      block(2, 'First passage contains blanks (1) ______ and (2) ______.'),
+      block(3, 'Question 1. A. OneB. TwoC. ThreeD. Four'),
+      block(4, 'Question 2. A. AlphaB. BetaC. GammaD. Delta'),
+      block(5, 'Choose the best arrangement of utterances or sentences'),
+      block(6, 'Question 3.'),
+      block(7, 'a. First sentence'),
+      block(8, 'b. Second sentence'),
+      block(9, 'A. a – bB. b – aC. a – aD. b – b'),
+      block(10, 'Choose the correct option that best fits each of the numbered blanks from 4 to 5.'),
+      block(11, 'Second passage contains blanks (4) ______ and (5) ______.'),
+      block(12, 'Question 4. A. RedB. BlueC. GreenD. Black'),
+      block(13, 'Question 5. A. NorthB. SouthC. EastD. West'),
+      block(14, 'Choose the correct answer to each of the questions from 6 to 7.'),
+      block(15, 'Reading passage shared by questions six and seven.'),
+      block(16, 'Question 6. First reading question? A. OneB. TwoC. ThreeD. Four'),
+      block(17, 'Question 7. Second reading question? A. OneB. TwoC. ThreeD. Four')
+    ]);
+    const questions = draft.sections.flatMap((section) => section.questions);
+
+    expect(draft.sections.map((section) => section.title)).toEqual([
+      'Choose the correct option that best fits each of the numbered blanks from 1 to 2.',
+      'Choose the best arrangement of utterances or sentences',
+      'Choose the correct option that best fits each of the numbered blanks from 4 to 5.',
+      'Choose the correct answer to each of the questions from 6 to 7.'
+    ]);
+    expect(draft.sharedContents).toHaveLength(3);
+    expect(questions.map((question) => question.passageId)).toEqual([
+      draft.sharedContents[0]?.id,
+      draft.sharedContents[0]?.id,
+      null,
+      draft.sharedContents[1]?.id,
+      draft.sharedContents[1]?.id,
+      draft.sharedContents[2]?.id,
+      draft.sharedContents[2]?.id
+    ]);
+    expect(draft.sharedContents[0]?.html).toContain('First passage');
+    expect(draft.sharedContents[1]?.html).toContain('Second passage');
+    expect(draft.sharedContents[2]?.html).toContain('Reading passage');
+    expect(
+      questions.flatMap((question) => (question.kind === 'choice' ? question.options : [])).map((option) => option.html)
+    ).not.toEqual(expect.arrayContaining([expect.stringMatching(/Choose the|passage contains|Reading passage/u)]));
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('OPTION_CONTINUATION_ATTACHED');
+  });
+
+  it('prefers the substantive bold title over name and class form fields in the first block', () => {
+    const firstBlockRuns = [
+      block(0, 'Name: ', { formatting: { bold: true } }),
+      block(0, '________________'),
+      block(0, 'Class: ', { formatting: { bold: true } }),
+      block(0, '12___'),
+      block(0, 'PRACTICE TEST – TOPIC 2', { formatting: { bold: true } })
+    ].map((run, runIndex) => ({ ...run, location: { ...run.location, runIndex } }));
+    const draft = segment([
+      ...firstBlockRuns,
+      block(1, 'Question 1. Choose.'),
+      block(2, 'A. OneB. TwoC. ThreeD. Four')
+    ]);
+
+    expect(draft.title).toBe('PRACTICE TEST – TOPIC 2');
+  });
+
+  it('blocks publishing when source content has no structural owner', () => {
+    const draft = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, 'Unrecognized source content that must not be discarded.'),
+      block(2, 'SECTION I. Essay'),
+      block(3, 'Question 1. Explain your answer.')
+    ]);
+    const validation = validateExamImportDraft(draft, {
+      enabledQuestionKinds: new Set(['essay']),
+      sanitizeHtml: (html) => html
+    });
+
+    expect(draft.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'UNASSIGNED_SOURCE_CONTENT',
+          blocking: true,
+          provenance: expect.arrayContaining([
+            expect.objectContaining({
+              start: { blockIndex: 1, runIndex: 0 }
+            })
+          ])
+        })
+      ])
+    );
+    expect(validation.publishable).toBe(false);
+    expect(validation.findings.map((finding) => finding.code)).toContain('UNASSIGNED_SOURCE_CONTENT');
+  });
+
+  it('does not discard a pending passage when a section starts or the document ends', () => {
+    const beforeSection = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, 'Choose the correct answer to each of the questions from 1 to 2.'),
+      block(2, 'Passage without any owning question.'),
+      block(3, 'SECTION II. Essay'),
+      block(4, 'Question 1. Explain your answer.')
+    ]);
+    const beforeEnd = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, 'Choose the correct answer to each of the questions from 1 to 2.'),
+      block(2, 'Passage without any owning question.'),
+      block(3, 'THE END')
+    ]);
+
+    expect(beforeSection.diagnostics.map((diagnostic) => diagnostic.code)).toContain('UNASSIGNED_SOURCE_CONTENT');
+    expect(beforeEnd.diagnostics.map((diagnostic) => diagnostic.code)).toContain('UNASSIGNED_SOURCE_CONTENT');
+  });
+
+  it('keeps an option-count instruction inside its current question', () => {
+    const draft = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, 'Question 1.'),
+      block(2, 'Choose from 1 to 2 options before answering.'),
+      block(3, 'A. OneB. TwoC. ThreeD. Four')
+    ]);
+    const question = draft.sections[0]?.questions[0];
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+
+    expect(draft.sections).toHaveLength(1);
+    expect(question.promptHtml).toContain('Choose from 1 to 2 options before answering.');
+    expect(question.options).toHaveLength(4);
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('UNASSIGNED_SOURCE_CONTENT');
+  });
+
+  it('ignores long bold candidate labels when choosing the title', () => {
+    const firstBlockRuns = [
+      block(0, 'Candidate name: ', { formatting: { bold: true } }),
+      block(0, '________________'),
+      block(0, 'EXAM', { formatting: { bold: true } })
+    ].map((run, runIndex) => ({ ...run, location: { ...run.location, runIndex } }));
+    const draft = segment([
+      ...firstBlockRuns,
+      block(1, 'Question 1. Choose.'),
+      block(2, 'A. OneB. TwoC. ThreeD. Four')
+    ]);
+
+    expect(draft.title).toBe('EXAM');
+
+    for (const label of ['Name', 'Candidate', 'Họ và tên']) {
+      const splitLabelRuns = [
+        block(0, label, { formatting: { bold: true } }),
+        block(0, ': ________________'),
+        block(0, 'ĐỀ THI', { formatting: { bold: true } })
+      ].map((run, runIndex) => ({ ...run, location: { ...run.location, runIndex } }));
+      const splitLabelDraft = segment([
+        ...splitLabelRuns,
+        block(1, 'Question 1. Choose.'),
+        block(2, 'A. OneB. TwoC. ThreeD. Four')
+      ]);
+
+      expect(splitLabelDraft.title).toBe('ĐỀ THI');
+    }
   });
 
   it('does not invent a passage from preamble text and preserves option continuation text', () => {

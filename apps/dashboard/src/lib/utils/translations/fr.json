@@ -5334,6 +5334,7 @@
       "section_title_truncated": "A section title was shortened because it exceeded the supported length.",
       "passage_group_requires_split": "A large shared-content group will be split safely during publishing.",
       "no_questions_detected": "No reliable question markers were detected.",
+      "unassigned_source_content": "Certains contenus source n'ont pas pu être attribués de manière fiable. Vérifiez le document d'origine avant de publier.",
       "points_partially_specified": "Some questions specify points while others use the one-point default.",
       "points_defaulted": "No points were detected, so each question uses one point.",
       "answer_candidate_limit_exceeded": "Too many independent answer candidates were detected.",
