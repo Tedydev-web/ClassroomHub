@@ -28,7 +28,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     # Deployed via the self-hosted runner to keep hosted minutes at 0 for deployments.
     # Polling remains in-band to keep post-deploy status deterministic.
-    runs-on: [self-hosted, Linux, workstation]
+    runs-on: [self-hosted, Linux, workstation, deploy]
     timeout-minutes: 45
 
     steps:
