@@ -116,9 +116,9 @@ const OPTION_PATTERN = /([A-D])\s*[.)/]\s*/gu;
 const LOWER_ITEM_PATTERN = /^([a-e])\s*[.)]\s*/iu;
 const POINTS_PATTERN = /\(\s*(\d+(?:[.,]\d+)?)\s*(?:điểm|diem|points?)\s*\)/iu;
 const COGNITIVE_LEVEL_PATTERN = /\[\s*[0-3]\s*,\s*(NB|TH|VD|VDC)\s*\]/iu;
-const END_MARKER_PATTERN = /^(?:HẾT|THE END)\b/iu;
+const END_MARKER_PATTERN = /^(?:[-–—_=*]\s*)*(?:HẾT|THE END)\b/iu;
 const PASSAGE_MARKER_PATTERN =
-  /^Read the (?:following|foilowing) (?:passage|announcement|advertisement|letter|text|notice|article|dialogue)\b/iu;
+  /^Read the (?:following|foilowing) (?:passage|announcement|advertisement|leaflet|letter|text|notice|article|dialogue)\b/iu;
 const ARRANGEMENT_INSTRUCTION_PATTERN = /^Mark the letter .*?\barrangement\b/iu;
 const SOLUTION_MARKER_PATTERN = /^(?:Lời giải|Giải thích|Hướng dẫn giải)\b/iu;
 const ANSWER_LINE_PATTERN = /^(?:Đáp án|Dap an|Answer)\s*:/iu;
@@ -406,6 +406,38 @@ function parseQuestionMarkers(block: ExamImportSourceBlock): { prefix: string; m
   };
 }
 
+function isRowWiseOptionGrid(
+  columns: ReadonlyMap<number, ExamImportSourceBlock[]>,
+  questionBlocks: readonly ExamImportSourceBlock[]
+): boolean {
+  const questionOptionLabels = questionBlocks.flatMap((block) =>
+    parseQuestionMarkers(block).markers.flatMap((marker) =>
+      parseOptions(block.text.slice(marker.contentStart, marker.end), null).entries.map((entry) => entry.label)
+    )
+  );
+  if (!questionOptionLabels.includes('A')) return false;
+
+  const siblingOptionLabels: string[] = [];
+  for (const columnBlocks of columns.values()) {
+    if (columnBlocks === questionBlocks) continue;
+
+    const text = columnBlocks
+      .map((block) => block.text)
+      .join(' ')
+      .trim();
+    if (!text) continue;
+
+    const parsed = parseOptions(text, columnBlocks.length === 1 ? columnBlocks[0]!.listNumber : null);
+    if (parsed.prefix.trim() || parsed.entries.length === 0) return false;
+    siblingOptionLabels.push(...parsed.entries.map((entry) => entry.label));
+  }
+  if (siblingOptionLabels.length === 0) return false;
+
+  const labels = [...new Set([...questionOptionLabels, ...siblingOptionLabels])].sort();
+
+  return labels.length >= 2 && labels.every((label, index) => label === String.fromCharCode(65 + index));
+}
+
 function tablePassageLayouts(blocks: ExamImportSourceBlock[]): {
   byQuestionStart: Map<number, TablePassageLayout>;
   contentBlockIndexes: Set<number>;
@@ -431,6 +463,8 @@ function tablePassageLayouts(blocks: ExamImportSourceBlock[]): {
     if (questionColumns.length !== 1 || columns.size < 2) continue;
 
     const [questionColumn, questionBlocks] = questionColumns[0]!;
+    if (isRowWiseOptionGrid(columns, questionBlocks)) continue;
+
     const contentBlocks = [...columns.entries()]
       .filter(([column]) => column !== questionColumn)
       .flatMap(([, columnBlocks]) => columnBlocks)
