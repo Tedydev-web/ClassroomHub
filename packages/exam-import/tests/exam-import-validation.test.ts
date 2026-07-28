@@ -74,6 +74,18 @@ describe('ExamImportDraft validation', () => {
     expect(result.publishable).toBe(false);
   });
 
+  it('blocks a fallback question label when no shared passage supplies the missing prompt', () => {
+    const draft = buildValidExamImportDraft();
+    const question = draft.sections[0]!.questions[0]!;
+    question.promptHtml = `<p>Question ${question.sourceNumber}</p>`;
+    question.passageId = null;
+
+    const result = validateExamImportDraft(draft, validationContext);
+
+    expect(findingCodes(result)).toContain('PLACEHOLDER_QUESTION_PROMPT');
+    expect(result.publishable).toBe(false);
+  });
+
   it('rejects a field state whose ID-scoped target no longer exists', () => {
     const draft = buildValidExamImportDraft();
     draft.fieldStates.push({

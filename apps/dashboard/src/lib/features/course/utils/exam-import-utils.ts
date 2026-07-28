@@ -9,6 +9,8 @@ export type ExamImportQuestionView = {
   findings: ExamImportDiagnostic[];
 };
 
+type ExamImportReviewSharedContent = Pick<ExamImportDraft['sharedContents'][number], 'id' | 'html'>;
+
 const confidenceRank = {
   none: 0,
   low: 1,
@@ -113,7 +115,10 @@ export function getQuestionSourceExcerpt(question: ExamImportQuestion): string {
   return `${pageRange} · ${blockRange}`;
 }
 
-export function toExamImportDeliveryDefinition(question: ExamImportQuestion): AssessmentDeliveryDefinition | null {
+export function toExamImportDeliveryDefinition(
+  question: ExamImportQuestion,
+  sharedContent: ExamImportReviewSharedContent | null = null
+): AssessmentDeliveryDefinition | null {
   if (question.kind === 'unresolved') return null;
 
   const base = {
@@ -169,6 +174,17 @@ export function toExamImportDeliveryDefinition(question: ExamImportQuestion): As
 
   return {
     schemaVersion: 1,
-    blocks: [{ id: question.id, kind: 'interaction', interaction }]
+    blocks: [
+      ...(sharedContent === null
+        ? []
+        : [
+            {
+              id: sharedContent.id,
+              kind: 'content' as const,
+              content: { format: 'html' as const, html: sharedContent.html }
+            }
+          ]),
+      { id: question.id, kind: 'interaction', interaction }
+    ]
   };
 }

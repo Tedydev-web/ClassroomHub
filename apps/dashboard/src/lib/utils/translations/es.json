@@ -5307,6 +5307,7 @@
       "unresolved_question_not_blocked": "Unresolved source content must be reviewed or removed.",
       "question_kind_disabled": "This question type is not enabled for publishing.",
       "empty_question_prompt": "The question prompt is empty.",
+      "placeholder_question_prompt": "La pregunta necesita su texto fuente o un enunciado redactado por el docente antes de publicarse.",
       "duplicate_option_id": "Options contain duplicate identifiers.",
       "duplicate_option_order": "Options contain duplicate order values.",
       "duplicate_option_source_label": "Options contain duplicate source labels.",

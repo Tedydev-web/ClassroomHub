@@ -203,6 +203,12 @@ function hasRenderableHtml(html: string): boolean {
   );
 }
 
+function isPlaceholderQuestionPrompt(question: ExamImportQuestion): boolean {
+  if (question.passageId !== null || question.sourceNumber === null) return false;
+
+  return visibleText(question.promptHtml) === normalizeComparableText(`Question ${question.sourceNumber}`);
+}
+
 function contentIdentity(html: string): string {
   const text = visibleText(html);
 
@@ -608,6 +614,16 @@ function collectQuestionFindings(
 
   if (!hasRenderableHtml(question.promptHtml)) {
     findings.push(diagnostic('EMPTY_QUESTION_PROMPT', 'Question prompt must contain renderable content', question));
+  }
+  if (isPlaceholderQuestionPrompt(question)) {
+    findings.push(
+      diagnostic(
+        'PLACEHOLDER_QUESTION_PROMPT',
+        'Question prompt is only a generated label and requires shared source content or teacher review',
+        question,
+        { kind: 'question_field', questionId: question.id, field: 'promptHtml' }
+      )
+    );
   }
 
   if (question.kind === 'choice') {

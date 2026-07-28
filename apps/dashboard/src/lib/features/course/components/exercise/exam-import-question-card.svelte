@@ -30,6 +30,7 @@
   interface SharedContentOption {
     id: string;
     label: string;
+    html: string;
   }
 
   interface Props {
@@ -73,7 +74,10 @@
   const selectedOptionIds = new SvelteSet<string>();
   const statementAnswers = new SvelteMap<string, boolean | null>();
 
-  const definition = $derived(toExamImportDeliveryDefinition(question));
+  const sharedContent = $derived(
+    question.passageId === null ? null : (sharedContents.find((content) => content.id === question.passageId) ?? null)
+  );
+  const definition = $derived(toExamImportDeliveryDefinition(question, sharedContent));
   const sourceExcerpt = $derived(getQuestionSourceExcerpt(question));
   const hasBlockingFinding = $derived(findings.some((finding) => finding.blocking));
 

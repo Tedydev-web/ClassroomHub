@@ -5307,6 +5307,7 @@
       "unresolved_question_not_blocked": "Nội dung chưa xác định cần được kiểm tra hoặc xóa.",
       "question_kind_disabled": "Loại câu hỏi này chưa được bật để xuất bản.",
       "empty_question_prompt": "Đề bài đang trống.",
+      "placeholder_question_prompt": "Câu hỏi cần đoạn văn nguồn hoặc đề bài do giáo viên viết trước khi xuất bản.",
       "duplicate_option_id": "Các phương án có mã nhận dạng trùng nhau.",
       "duplicate_option_order": "Các phương án có thứ tự trùng nhau.",
       "duplicate_option_source_label": "Các phương án có nhãn nguồn trùng nhau.",

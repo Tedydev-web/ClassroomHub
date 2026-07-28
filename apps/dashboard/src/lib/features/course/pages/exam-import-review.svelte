@@ -65,7 +65,8 @@
   const sharedContentOptions = $derived(
     (draftView?.draft.sharedContents ?? []).map((content, index) => ({
       id: content.id,
-      label: $t(`exam_import.review.shared_content_${content.kind}`, { number: index + 1 })
+      label: $t(`exam_import.review.shared_content_${content.kind}`, { number: index + 1 }),
+      html: content.html
     }))
   );
 
