@@ -19,6 +19,10 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   deploy:
     # `workflow_run` fires on failure too, so the conclusion has to be checked.
@@ -31,21 +35,48 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      # The Access service token is created by hand in Cloudflare Zero Trust.
-      # Until it exists this job would fail on every push to main, so it skips
-      # instead — a red X on unrelated commits trains people to ignore CI.
+      # A successful Quality run must not be reported as a successful release
+      # when the production deploy contract is incomplete.
       - name: Check deploy credentials
         id: creds
         env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          if [ -z "${COOLIFY_TOKEN}" ] || [ -z "${CF_ACCESS_CLIENT_ID}" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Deploy skipped — set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to enable it."
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          missing=0
+          for variable_name in COOLIFY_URL COOLIFY_TOKEN COOLIFY_APP_UUID CF_ACCESS_CLIENT_ID CF_ACCESS_CLIENT_SECRET; do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Missing required production deploy secret: ${variable_name}"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Verify merged pull-request provenance
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          merged_pr_count=$(gh api \
+            "repos/${REPOSITORY}/commits/${RELEASE_SHA}/pulls" \
+            | jq --arg release_sha "$RELEASE_SHA" \
+                '[.[] | select(.base.ref == "main" and .merged_at != null and .merge_commit_sha == $release_sha)] | length')
+
+          if [ "$merged_pr_count" -ne 1 ]; then
+            echo "::error::Release ${RELEASE_SHA} is not the merge commit of exactly one merged pull request into main."
+            exit 1
           fi
+
+          echo "Verified merged pull-request provenance for ${RELEASE_SHA}."
 
       - name: Trigger Coolify deployment
         id: trigger

@@ -27,6 +27,7 @@ API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
 APEX_REDIRECT_HOST = "classroom-learn.tedydev.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
 EMBED_HOST = "classroom-embed.tedydev.io.vn"
+ASSET_HOST = "assets.classroom.tedydev.io.vn"
 API_URL = "https://classroom-api.tedydev.io.vn"
 
 # R2 binding so /hls/* streams segments straight from Cloudflare. The bucket name
@@ -47,8 +48,8 @@ enabled = true
 # Tenant sites and platform hosts share one label level here, and this Worker
 # picks its upstream by request path rather than by host. A wildcard route would
 # therefore swallow api.classroom.io.vn and forward it to the dashboard, so the
-# hostnames are listed one by one and `api`/`assets` stay off the Worker: the API
-# is reached through the tunnel, media straight from R2.
+# hostnames are listed one by one and `api` stays off the Worker. Public assets
+# are served from R2 by the Worker, while the API is reached through the tunnel.
 #
 # Adding a tenant means adding its route here and redeploying.
 [env.production]
@@ -59,9 +60,8 @@ routes = [
   # Apex is its own route because the wildcard below only matches subdomains.
   { pattern = "classroom.io.vn/*", zone_name = "classroom.io.vn" },
   # Every subdomain, so a newly created tenant `<siteName>.classroom.io.vn` is
-  # served without adding a route per org. The Worker hands `api` and `assets`
-  # (and the internal origins) straight to their origin via the passthrough
-  # branch in src/index.ts, so the wildcard does not disturb them.
+  # served without adding a route per org. The Worker hands `api` and the
+  # internal origins straight to their origin; `assets` is served from R2.
   { pattern = "*.classroom.io.vn/*", zone_name = "classroom.io.vn" }
 ]
 
@@ -73,11 +73,14 @@ API_UPSTREAM_HOST = "api-origin.classroom.io.vn"
 APEX_REDIRECT_HOST = "learn.classroom.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.io.vn"
 EMBED_HOST = "embed.classroom.io.vn"
+ASSET_HOST = "assets.classroom.io.vn"
 API_URL = "https://api.classroom.io.vn"
 # Service hosts the wildcard route catches but that must reach their origin
-# untouched: the public API (tunnel) and the R2 asset domain. The internal
-# origins are added in code from the upstream vars above.
-DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,assets.classroom.io.vn"
+# untouched: the public API tunnel. The internal origins are added in code from
+# the upstream vars above; the Worker serves the public R2 asset domain.
+DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn"
+MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn"
+MARKETING_CANONICAL_HOST = "classroom.io.vn"
 
 [[env.production.r2_buckets]]
 binding = "VIDEOS_BUCKET"
@@ -86,6 +89,10 @@ bucket_name = "videos"
 [[env.production.r2_buckets]]
 binding = "ASSETS_BUCKET"
 bucket_name = "assets"
+
+[[env.production.services]]
+binding = "MARKETING"
+service = "cio-web"
 
 [env.production.observability]
 enabled = true
