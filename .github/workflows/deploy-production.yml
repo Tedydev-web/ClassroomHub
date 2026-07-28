@@ -16,7 +16,9 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
-permissions: {}
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   deploy:
