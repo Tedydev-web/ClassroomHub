@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, Linux, workstation, deploy]
+    runs-on: [self-hosted, Linux, deploy]
     environment: production
 
     steps:
@@ -74,7 +74,7 @@ jobs:
 
   website:
     needs: deploy
-    runs-on: [self-hosted, Linux, workstation, deploy]
+    runs-on: [self-hosted, Linux, deploy]
     environment: production
     steps:
       - name: Checkout code
