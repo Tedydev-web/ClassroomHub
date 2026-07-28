@@ -18,6 +18,15 @@ const corpusDocumentSourceSchema = z.strictObject({
   usageRights: z.string().min(1)
 });
 
+const corpusDocumentCaptureKindSchema = z.enum([
+  'native_digital',
+  'scan_converted',
+  'physical_scan',
+  'synthetic_rasterization'
+]);
+
+const corpusDocumentEvaluationSplitSchema = z.enum(['regression', 'held_out']);
+
 const corpusDocumentSchema = z.strictObject({
   id: z.string().min(1),
   /** Path relative to the corpus root. */
@@ -28,6 +37,14 @@ const corpusDocumentSchema = z.strictObject({
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
   format: z.enum(['docx', 'pdf', 'gift', 'aiken']),
   subject: z.string().min(1),
+  /** Languages represented by the input, not by its provenance metadata. */
+  languages: z.array(z.string().min(2).max(16)).min(1),
+  /** Number of physical pages when this document is a paged format. */
+  pageCount: z.number().int().positive().nullable(),
+  /** How the visible input reached the importer. */
+  captureKind: corpusDocumentCaptureKindSchema,
+  /** Held-out documents are reserved for release qualification. */
+  evaluationSplit: corpusDocumentEvaluationSplitSchema,
   /** Provenance and usage rights must be explicit before a document can inform a release decision. */
   source: corpusDocumentSourceSchema,
   note: z.string(),
@@ -45,6 +62,72 @@ export const corpusManifestSchema = z.strictObject({
 });
 
 export type CorpusManifest = z.infer<typeof corpusManifestSchema>;
+
+export const SCANNED_PDF_CORPUS_REQUIREMENTS = {
+  documents: 10,
+  pages: 100,
+  languages: ['vi', 'en'],
+  traits: ['clean-scan', 'degraded-scan', 'multi-page', 'shared-passage', 'option-boundary-risk']
+} as const;
+
+export type ScannedPdfCorpusCoverageIssue =
+  | 'INSUFFICIENT_HELD_OUT_PHYSICAL_SCANS'
+  | 'INSUFFICIENT_HELD_OUT_SCAN_PAGES'
+  | 'MISSING_REQUIRED_LANGUAGE'
+  | 'MISSING_REQUIRED_TRAIT';
+
+export type ScannedPdfCorpusCoverage = {
+  qualifiedDocuments: CorpusDocument[];
+  qualifiedPageCount: number;
+  languages: string[];
+  traits: string[];
+  issues: Array<{ code: ScannedPdfCorpusCoverageIssue; value: string }>;
+  ready: boolean;
+};
+
+/**
+ * Synthetic and regression fixtures remain useful for tests, but cannot qualify
+ * a vision model for real scanned-PDF release. This pure gate makes that
+ * distinction enforceable rather than a release-process convention.
+ */
+export function assessScannedPdfCorpusCoverage(manifest: CorpusManifest): ScannedPdfCorpusCoverage {
+  const qualifiedDocuments = manifest.documents.filter(
+    (document) =>
+      document.format === 'pdf' && document.captureKind === 'physical_scan' && document.evaluationSplit === 'held_out'
+  );
+  const qualifiedPageCount = qualifiedDocuments.reduce((total, document) => total + (document.pageCount ?? 0), 0);
+  const languages = [...new Set(qualifiedDocuments.flatMap((document) => document.languages))].sort();
+  const traits = [...new Set(qualifiedDocuments.flatMap((document) => document.traits))].sort();
+  const issues: ScannedPdfCorpusCoverage['issues'] = [];
+
+  if (qualifiedDocuments.length < SCANNED_PDF_CORPUS_REQUIREMENTS.documents) {
+    issues.push({
+      code: 'INSUFFICIENT_HELD_OUT_PHYSICAL_SCANS',
+      value: `${qualifiedDocuments.length}/${SCANNED_PDF_CORPUS_REQUIREMENTS.documents}`
+    });
+  }
+
+  if (qualifiedPageCount < SCANNED_PDF_CORPUS_REQUIREMENTS.pages) {
+    issues.push({
+      code: 'INSUFFICIENT_HELD_OUT_SCAN_PAGES',
+      value: `${qualifiedPageCount}/${SCANNED_PDF_CORPUS_REQUIREMENTS.pages}`
+    });
+  }
+
+  for (const language of SCANNED_PDF_CORPUS_REQUIREMENTS.languages) {
+    if (!languages.includes(language)) {
+      issues.push({ code: 'MISSING_REQUIRED_LANGUAGE', value: language });
+    }
+  }
+
+  for (const trait of SCANNED_PDF_CORPUS_REQUIREMENTS.traits) {
+    if (!traits.includes(trait)) {
+      issues.push({ code: 'MISSING_REQUIRED_TRAIT', value: trait });
+    }
+  }
+
+  return { qualifiedDocuments, qualifiedPageCount, languages, traits, issues, ready: issues.length === 0 };
+}
 
 export type CorpusAvailability = {
   available: CorpusDocument[];

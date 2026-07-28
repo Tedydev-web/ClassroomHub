@@ -60,12 +60,16 @@ export {
 } from './docx/read-docx-runs';
 
 export {
+  assessScannedPdfCorpusCoverage,
   corpusManifestSchema,
   formatCorpusAvailability,
   resolveCorpusAvailability,
+  SCANNED_PDF_CORPUS_REQUIREMENTS,
   type CorpusAvailability,
   type CorpusDocument,
-  type CorpusManifest
+  type CorpusManifest,
+  type ScannedPdfCorpusCoverage,
+  type ScannedPdfCorpusCoverageIssue
 } from './corpus/corpus-manifest';
 
 export {
