@@ -12,7 +12,11 @@ on:
       - 'package.json'
       - 'turbo.json'
       - '.nvmrc'
+      - 'apps/docs/.nvmrc'
       - '.github/workflows/quality.yml'
+      - '.github/workflows/edge-quality.yml'
+      - '.github/workflows/deploy-production.yml'
+      - '.github/workflows/notify-ci-cd.yml'
   push:
     branches:
       - main
@@ -26,7 +30,11 @@ on:
       - 'package.json'
       - 'turbo.json'
       - '.nvmrc'
+      - 'apps/docs/.nvmrc'
       - '.github/workflows/quality.yml'
+      - '.github/workflows/edge-quality.yml'
+      - '.github/workflows/deploy-production.yml'
+      - '.github/workflows/notify-ci-cd.yml'
   workflow_dispatch:
 
 permissions:
