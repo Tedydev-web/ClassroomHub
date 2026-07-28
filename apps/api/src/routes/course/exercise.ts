@@ -281,7 +281,12 @@ export const exerciseRouter = new Hono()
           });
         }
 
-        const exercise = await getExerciseForCourseService(courseId, exerciseId, user?.id);
+        const viewerProfileId = user?.id ?? automationKey?.createdByProfileId;
+        if (!viewerProfileId) {
+          throw new AppError('Exercise viewer identity is missing', ErrorCodes.UNAUTHORIZED, 401);
+        }
+
+        const exercise = await getExerciseForCourseService(courseId, exerciseId, viewerProfileId);
 
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'get_course_exercise', {
