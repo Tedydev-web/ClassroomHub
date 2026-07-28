@@ -5334,6 +5334,7 @@
       "section_title_truncated": "Tiêu đề một phần đã được rút ngắn vì vượt quá độ dài hỗ trợ.",
       "passage_group_requires_split": "Một nhóm nội dung dùng chung lớn sẽ được tách an toàn khi xuất bản.",
       "no_questions_detected": "Không nhận diện được dấu hiệu câu hỏi đủ tin cậy.",
+      "unassigned_source_content": "Một phần nội dung nguồn chưa thể được gán an toàn. Hãy kiểm tra tài liệu gốc trước khi xuất bản.",
       "points_partially_specified": "Một số câu có điểm riêng, các câu còn lại dùng mặc định một điểm.",
       "points_defaulted": "Không nhận diện được điểm, vì vậy mỗi câu dùng mặc định một điểm.",
       "answer_candidate_limit_exceeded": "Nhận diện được quá nhiều nguồn đáp án độc lập.",
