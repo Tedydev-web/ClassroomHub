@@ -104,9 +104,13 @@ async function startImport(
 
   const dialog = page.getByRole('dialog', { name: 'Add content' });
   await expect(dialog).toBeVisible();
-  await dialog.getByText('Exercise', { exact: true }).click();
-  await dialog.getByRole('button', { name: 'Continue' }).click();
-  await dialog.getByText('Import from a document', { exact: true }).click();
+  const importDocumentOption = dialog.getByText('Import from a document', { exact: true });
+  if (!(await importDocumentOption.isVisible())) {
+    await dialog.getByText('Exercise', { exact: true }).click();
+    await dialog.getByRole('button', { name: 'Continue' }).click();
+  }
+
+  await importDocumentOption.click();
   await dialog.getByRole('button', { name: 'Next' }).click();
   await dialog.locator('input[type="file"]').setInputFiles(file);
   await dialog.getByRole('button', { name: 'Start import' }).click();
