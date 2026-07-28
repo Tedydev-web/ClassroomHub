@@ -126,7 +126,7 @@ jobs:
         run: |
           set -euo pipefail
           runner_container=$(docker ps \
-            --filter 'label=com.docker.compose.service=runner' \
+            --filter "id=$(hostname)" \
             --format '{{.Names}}' \
             | head -n 1)
           test -n "$runner_container"
