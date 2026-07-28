@@ -29,7 +29,7 @@ RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN NODE_OPTIONS="--max-old-space-size=8072" \
     PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED}" \
     PUBLIC_IS_SELF_OWNED="${PUBLIC_IS_SELF_OWNED}" \
-    pnpm -r --filter @cio/dashboard... build
+    pnpm --workspace-concurrency=1 -r --filter @cio/dashboard... build
 
 RUN test -f apps/dashboard/build/index.js || (echo "ERROR: Dashboard build output not found at apps/dashboard/build/index.js" && exit 1)
 
