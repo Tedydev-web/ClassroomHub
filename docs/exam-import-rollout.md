@@ -102,6 +102,8 @@ Scanned-PDF vision remains an internal opt-in until all of the following are tru
   AI-derived answers remain proposed and publish stays blocked until the teacher confirms them,
   regardless of benchmark results.
 
+Run the gate from the repository root with `pnpm --filter @cio/exam-import verify:scanned-pdf <manifest.json> <first-run.json> <second-run.json>`. The manifest owns every qualifying reference path; the verifier rejects malformed artifacts and references outside the corpus directory.
+
 These are safety gates, not a claim that arbitrary scans are error-free. The product guarantee is
 that unconfirmed or structurally suspect content does not become a machine-graded published exam.
 

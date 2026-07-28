@@ -84,6 +84,12 @@ export {
 } from './corpus/scanned-pdf-benchmark';
 
 export {
+  ScannedPdfBenchmarkArtifactError,
+  verifyScannedPdfBenchmarkArtifacts,
+  type ScannedPdfBenchmarkArtifactPaths
+} from './corpus/verify-scanned-pdf-benchmark';
+
+export {
   EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS,
   EXAM_IMPORT_SCHEMA_VERSION,
   examImportAnswerSourceSchema,

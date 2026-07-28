@@ -1,5 +1,13 @@
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 import { assessScannedPdfBenchmarkRuns, scannedPdfBenchmarkRunSchema } from '../src/corpus/scanned-pdf-benchmark';
+import {
+  ScannedPdfBenchmarkArtifactError,
+  verifyScannedPdfBenchmarkArtifacts
+} from '../src/corpus/verify-scanned-pdf-benchmark';
 import type { CorpusManifest } from '../src/corpus/corpus-manifest';
 import { parseGift } from '../src/interchange/gift';
 import type { ExamImportDraft } from '../src/draft/exam-import-draft';
@@ -94,7 +102,77 @@ function createReferences(manifest: CorpusManifest): ReadonlyMap<string, Referen
   return new Map(manifest.documents.map((document) => [document.id, createReference(document.path)]));
 }
 
+async function writeBenchmarkArtifacts(): Promise<{
+  manifest: CorpusManifest;
+  directory: string;
+  manifestPath: string;
+  firstRunPath: string;
+  secondRunPath: string;
+}> {
+  const manifest = createManifest();
+  const directory = await mkdtemp(join(tmpdir(), 'exam-import-benchmark-'));
+  const referencesDirectory = join(directory, 'references');
+  const manifestPath = join(directory, 'manifest.json');
+  const firstRunPath = join(directory, 'first-run.json');
+  const secondRunPath = join(directory, 'second-run.json');
+  await mkdir(referencesDirectory);
+  await writeFile(manifestPath, JSON.stringify(manifest));
+  await writeFile(firstRunPath, JSON.stringify(createRun('run-one', manifest)));
+  await writeFile(secondRunPath, JSON.stringify(createRun('run-two', manifest)));
+  await Promise.all(
+    manifest.documents.map((document) => {
+      const referencePath = join(directory, document.reference);
+      return writeFile(referencePath, JSON.stringify(createReference(document.path)));
+    })
+  );
+
+  return { manifest, directory, manifestPath, firstRunPath, secondRunPath };
+}
+
 describe('scanned-PDF benchmark gate', () => {
+  it('verifies durable manifest-owned artifacts and rejects malformed run JSON', async () => {
+    const artifacts = await writeBenchmarkArtifacts();
+
+    try {
+      const assessment = await verifyScannedPdfBenchmarkArtifacts({
+        manifestPath: artifacts.manifestPath,
+        firstRunPath: artifacts.firstRunPath,
+        secondRunPath: artifacts.secondRunPath
+      });
+      expect(assessment.ready).toBe(true);
+
+      await writeFile(artifacts.firstRunPath, '{}');
+      await expect(
+        verifyScannedPdfBenchmarkArtifacts({
+          manifestPath: artifacts.manifestPath,
+          firstRunPath: artifacts.firstRunPath,
+          secondRunPath: artifacts.secondRunPath
+        })
+      ).rejects.toBeInstanceOf(ScannedPdfBenchmarkArtifactError);
+    } finally {
+      await rm(artifacts.directory, { force: true, recursive: true });
+    }
+  });
+
+  it('rejects a manifest reference path that escapes the corpus directory', async () => {
+    const artifacts = await writeBenchmarkArtifacts();
+
+    try {
+      artifacts.manifest.documents[0]!.reference = '../outside.reference.json';
+      await writeFile(artifacts.manifestPath, JSON.stringify(artifacts.manifest));
+
+      await expect(
+        verifyScannedPdfBenchmarkArtifacts({
+          manifestPath: artifacts.manifestPath,
+          firstRunPath: artifacts.firstRunPath,
+          secondRunPath: artifacts.secondRunPath
+        })
+      ).rejects.toThrow('reference path must stay within the corpus directory');
+    } finally {
+      await rm(artifacts.directory, { force: true, recursive: true });
+    }
+  });
+
   it('requires non-empty run provenance and a complete draft artifact at the JSON boundary', () => {
     const manifest = createManifest();
     const run = createRun('run-one', manifest);
