@@ -46,6 +46,29 @@
       "note": "The same exam as its DOCX twin, as five scanned A4 pages at 300 DPI. Zero extractable characters, so it exercises the image branch and nothing else.",
       "traits": ["pure-scan", "no-text-layer", "five-pages", "same-exam-as-docx-twin"],
       "reference": "references/2026-en-on-luyen-03-scan-converted.reference.json"
+    },
+    {
+      "id": "oisc-level-1-feb-2021-synthetic-scan",
+      "path": "large/oisc-level-1-feb-2021-synthetic-scan.pdf",
+      "committed": false,
+      "bytes": 1463693,
+      "sha256": "66aea41e50217c2a21a008571242c9690cc0e96dc8ec85948d93330f8f460ab7",
+      "format": "pdf",
+      "subject": "immigration-law",
+      "source": {
+        "locator": "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1005932/OISC_Sample_Competence_Assessment_Paper-February_2021.pdf",
+        "usageRights": "Open Government Licence v3.0; source publication inspected on 2026-07-28."
+      },
+      "note": "Pages 1 to 5 of the public OISC sample paper, rendered to image-only PDF at 200 DPI. This is an independent content/layout fixture, but synthetic rasterization and therefore not evidence for real scanner-acquisition coverage.",
+      "traits": [
+        "synthetic-rasterization",
+        "no-text-layer",
+        "five-pages",
+        "twenty-choice-questions",
+        "long-option-wrapping",
+        "page-boundary-question"
+      ],
+      "reference": "references/oisc-level-1-feb-2021-synthetic-scan.reference.json"
     }
   ]
 }

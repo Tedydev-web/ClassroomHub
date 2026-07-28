@@ -1,0 +1,213 @@
+{
+  "document": "large/oisc-level-1-feb-2021-synthetic-scan.pdf",
+  "note": "The five-page scan contains the twenty multiple-choice questions from section 1 of the public OISC February 2021 sample paper. The model-answer portion starts after the scanned range and is deliberately absent from this input.",
+  "coverage": {
+    "structure": "verified",
+    "answerKeys": "verified",
+    "optionText": "unlabelled",
+    "reviewRouting": "verified"
+  },
+  "provenance": "Structure, option cardinality, and the absence of answers were checked against the first five pages of the source PDF on 2026-07-28. The source labels every item as one-of-four multiple choice and numbers them 1 through 20. Option wording is intentionally unlabelled because this fixture measures image transcription and segmentation rather than source-text fidelity. Every question requires review because the image-only input ends before the model answers.",
+  "questions": [
+    {
+      "number": "1",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "2",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "3",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "4",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "5",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "6",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "7",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "8",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "9",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "10",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "11",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "12",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "13",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "14",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "15",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "16",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "17",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "18",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "19",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    },
+    {
+      "number": "20",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": null,
+      "prompt": null,
+      "options": null,
+      "reviewRequired": true
+    }
+  ]
+}
