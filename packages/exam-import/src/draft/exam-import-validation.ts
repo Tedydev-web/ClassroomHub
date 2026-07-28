@@ -667,7 +667,12 @@ function collectQuestionFindings(
 
   findings.push(...collectAnswerKeyFindings(question));
 
-  if (requiresExamImportAnswerKey(question) && question.answerKey === null) {
+  const missingAnswerAlreadyReported = draft.diagnostics.some(
+    (candidate) =>
+      candidate.questionId === question.id &&
+      (candidate.code === 'ANSWER_KEY_MISSING' || candidate.code === 'MISSING_ANSWER_KEY')
+  );
+  if (requiresExamImportAnswerKey(question) && question.answerKey === null && !missingAnswerAlreadyReported) {
     findings.push(diagnostic('MISSING_ANSWER_KEY', 'Question requires an answer key before publishing', question));
   }
 
