@@ -48,6 +48,7 @@
     "@cio/core": "workspace:*",
     "@cio/db": "workspace:*",
     "@cio/email": "workspace:*",
+    "@cio/exam-import": "workspace:*",
     "@cio/jobs": "workspace:*",
     "@cio/question-types": "workspace:*",
     "@cio/utils": "workspace:*",

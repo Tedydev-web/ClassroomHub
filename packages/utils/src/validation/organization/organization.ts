@@ -128,6 +128,12 @@ export const ZUpdateOrganization = z.object({
           enrollmentWelcome: z.boolean().optional(),
           courseCompletion: z.boolean().optional()
         })
+        .optional(),
+      examImport: z
+        .object({
+          aiEnabled: z.boolean().optional(),
+          scanVisionEnabled: z.boolean().optional()
+        })
         .optional()
     })
     .optional()

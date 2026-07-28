@@ -1,5 +1,6 @@
 import { AppError, ErrorCodes } from '@cio/utils/errors';
 import { getTakenItemSlugs } from '@cio/db/queries/course';
+import type { DbOrTxClient } from '@cio/db/drizzle';
 import { SLUG_REGEX, resolveSlugCollision, slugifyTitle } from '@cio/utils/validation';
 
 /**
@@ -14,9 +15,10 @@ export async function resolveItemSlug(params: {
   title: string;
   requestedSlug?: string;
   ignoreItemSlug?: string;
+  dbClient?: DbOrTxClient;
 }): Promise<string> {
-  const { courseId, title, requestedSlug, ignoreItemSlug } = params;
-  const takenSlugs = await getTakenItemSlugs(courseId);
+  const { courseId, title, requestedSlug, ignoreItemSlug, dbClient } = params;
+  const takenSlugs = await getTakenItemSlugs(courseId, dbClient);
 
   if (ignoreItemSlug) {
     takenSlugs.delete(ignoreItemSlug);

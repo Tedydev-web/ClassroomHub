@@ -12,7 +12,7 @@ function numberingXml(body: string): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${body}</w:numbering>`;
 }
 
-async function zipWith(files: Record<string, string>): Promise<Uint8Array> {
+async function zipWith(files: Record<string, string | Uint8Array>): Promise<Uint8Array> {
   const zip = new JSZip();
   for (const [name, content] of Object.entries(files)) zip.file(name, content);
 
@@ -128,15 +128,38 @@ describe('docx package safety', () => {
     const data = await zipWith({ [DOCX_PART.document]: '<w:document/>', 'a.xml': 'a', 'b.xml': 'b' });
 
     await expect(
-      openDocxPackage(data, { maxEntries: 2, maxTotalUncompressedBytes: 1024, maxPartBytes: 1024 })
+      openDocxPackage(data, {
+        maxCompressedBytes: 1024,
+        maxEntries: 2,
+        maxTotalUncompressedBytes: 1024,
+        maxPartBytes: 1024
+      })
     ).rejects.toMatchObject({ code: 'TOO_MANY_ENTRIES' });
+  });
+
+  it('refuses compressed input before passing it to the zip parser', async () => {
+    const data = await zipWith({ [DOCX_PART.document]: '<w:document/>' });
+
+    await expect(
+      openDocxPackage(data, {
+        maxCompressedBytes: data.byteLength - 1,
+        maxEntries: 10,
+        maxTotalUncompressedBytes: 4096,
+        maxPartBytes: 4096
+      })
+    ).rejects.toMatchObject({ code: 'INPUT_TOO_LARGE' });
   });
 
   it('refuses a package that declares more expanded bytes than allowed', async () => {
     const data = await zipWith({ [DOCX_PART.document]: 'x'.repeat(4096) });
 
     await expect(
-      openDocxPackage(data, { maxEntries: 10, maxTotalUncompressedBytes: 64, maxPartBytes: 4096 })
+      openDocxPackage(data, {
+        maxCompressedBytes: data.byteLength,
+        maxEntries: 10,
+        maxTotalUncompressedBytes: 64,
+        maxPartBytes: 4096
+      })
     ).rejects.toMatchObject({ code: 'PACKAGE_TOO_LARGE' });
   });
 
@@ -145,6 +168,16 @@ describe('docx package safety', () => {
     const pkg = await openDocxPackage(data);
 
     expect(await pkg.readText(DOCX_PART.numbering)).toBeNull();
+  });
+
+  it('decodes a valid UTF-16LE XML part before security validation', async () => {
+    const document = `<?xml version="1.0" encoding="UTF-16"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Đề thi</w:t></w:r></w:p></w:body></w:document>`;
+    const encoded = Buffer.from(document, 'utf16le');
+    const utf16Document = new Uint8Array([0xff, 0xfe, ...encoded]);
+    const data = await zipWith({ [DOCX_PART.document]: utf16Document });
+    const pkg = await openDocxPackage(data);
+
+    expect(await pkg.readText(DOCX_PART.document)).toBe(document);
   });
 
   it('errors carry a code callers can branch on', async () => {

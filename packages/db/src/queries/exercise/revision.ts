@@ -258,14 +258,24 @@ export async function getAttemptedQuestionIds(questionIds: number[], dbClient: D
  * Archives questions (hides them from active delivery while keeping answers and revisions
  * reviewable). Already-archived rows are left untouched so the original archive time survives.
  */
-export async function archiveQuestionsByIds(questionIds: number[], dbClient: DbOrTxClient = db): Promise<TQuestion[]> {
+export async function archiveQuestionsByIds(
+  questionIds: number[],
+  exerciseId: string,
+  dbClient: DbOrTxClient = db
+): Promise<TQuestion[]> {
   if (questionIds.length === 0) return [];
 
   try {
     return await dbClient
       .update(schema.question)
       .set({ archivedAt: sql`now()`, updatedAt: new Date().toISOString() })
-      .where(and(inArray(schema.question.id, questionIds), isNull(schema.question.archivedAt)))
+      .where(
+        and(
+          inArray(schema.question.id, questionIds),
+          eq(schema.question.exerciseId, exerciseId),
+          isNull(schema.question.archivedAt)
+        )
+      )
       .returning();
   } catch (error) {
     console.error('archiveQuestionsByIds error:', error);

@@ -523,11 +523,15 @@ export async function updateCourse(courseId: string, data: Partial<TCourse>) {
  * Bumps updatedAt on a course without changing any other fields.
  * Call this whenever course content (lessons, exercises) changes.
  */
-export async function touchCourseUpdatedAt(courseId: string) {
+export async function touchCourseUpdatedAt(courseId: string, dbClient: DbOrTxClient = db) {
   try {
-    await db.update(schema.course).set({ updatedAt: new Date().toISOString() }).where(eq(schema.course.id, courseId));
+    await dbClient
+      .update(schema.course)
+      .set({ updatedAt: new Date().toISOString() })
+      .where(eq(schema.course.id, courseId));
   } catch (error) {
     console.error('touchCourseUpdatedAt error:', error);
+    throw new Error('Failed to touch course updated timestamp');
   }
 }
 
@@ -1173,7 +1177,10 @@ export const getExploreCourses = async ({
  * @param courseId Course ID
  * @returns Course and organization data or null if not found
  */
-export async function getCourseWithOrgData(courseId: string): Promise<{
+export async function getCourseWithOrgData(
+  courseId: string,
+  dbClient: DbOrTxClient = db
+): Promise<{
   courseTitle: string | null;
   orgId: string;
   orgName: string | null;
@@ -1186,7 +1193,7 @@ export async function getCourseWithOrgData(courseId: string): Promise<{
   welcomeEmailMessage: string | null;
 } | null> {
   try {
-    const result = await db
+    const result = await dbClient
       .select({
         courseTitle: schema.course.title,
         orgId: schema.organization.id,
@@ -1437,9 +1444,9 @@ export async function isCourseSlugTaken(slug: string): Promise<boolean> {
 }
 
 /** Course `type` only; `undefined` when the course does not exist. */
-export async function getCourseTypeById(courseId: string): Promise<string | undefined> {
+export async function getCourseTypeById(courseId: string, dbClient: DbOrTxClient = db): Promise<string | undefined> {
   try {
-    const [row] = await db
+    const [row] = await dbClient
       .select({ type: schema.course.type })
       .from(schema.course)
       .where(eq(schema.course.id, courseId))

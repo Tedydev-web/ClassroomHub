@@ -1,11 +1,19 @@
 import type {
   AssessmentBlock,
   AssessmentContentBlock,
+  AssessmentInteraction,
   AssessmentInteractionBlock,
   AssessmentItemDefinition,
   ItemFeedback
 } from '@cio/question-types';
-import { canonicalizeAssessmentItemDefinition, groupAssessmentBlocksByPassage } from '@cio/question-types';
+import {
+  DEFAULT_TRUE_FALSE_GROUP_TIERS,
+  MAX_ASSESSMENT_BLOCKS,
+  MAX_ASSESSMENT_INTERACTIONS,
+  MAX_INTERACTION_OPTIONS,
+  canonicalizeAssessmentItemDefinition,
+  groupAssessmentBlocksByPassage
+} from '@cio/question-types';
 
 export type AssessmentComposerDraft = Omit<AssessmentItemDefinition, 'blocks' | 'feedback'> & {
   blocks: AssessmentBlock[];
@@ -15,10 +23,15 @@ export type AssessmentComposerDraft = Omit<AssessmentItemDefinition, 'blocks' | 
 export type AssessmentComposerState = {
   definition: AssessmentComposerDraft;
   selectedBlockId: string | null;
+  trueFalseGroupTierDrafts?: Readonly<Record<string, number[]>>;
 };
 
 export type AssessmentComposerIdFactory = () => string;
 export type AssessmentItemPresentationLayout = NonNullable<AssessmentItemDefinition['presentation']>['layout'];
+export type TrueFalseGroupScoringMode = Extract<
+  AssessmentInteraction,
+  { kind: 'true_false_group' }
+>['config']['scoring']['mode'];
 
 export interface AssessmentComposerSaveReconciliation {
   persistedSnapshot: string;
@@ -82,8 +95,20 @@ export function initializeAssessmentPassageLayout(
   return nextState;
 }
 
+function canInsertAssessmentBlocks(state: AssessmentComposerState, blocks: readonly AssessmentBlock[]): boolean {
+  if (state.definition.blocks.length + blocks.length > MAX_ASSESSMENT_BLOCKS) return false;
+
+  const currentInteractionCount = state.definition.blocks.filter((block) => block.kind === 'interaction').length;
+  const addedInteractionCount = blocks.filter((block) => block.kind === 'interaction').length;
+
+  return currentInteractionCount + addedInteractionCount <= MAX_ASSESSMENT_INTERACTIONS;
+}
+
 function appendBlock(state: AssessmentComposerState, block: AssessmentBlock): AssessmentComposerState {
+  if (!canInsertAssessmentBlocks(state, [block])) return state;
+
   return {
+    ...state,
     definition: {
       ...state.definition,
       blocks: [...state.definition.blocks, block]
@@ -97,6 +122,8 @@ function insertInteractionBlock(
   block: AssessmentInteractionBlock,
   passageId?: string
 ): AssessmentComposerState {
+  if (!canInsertAssessmentBlocks(state, [block])) return state;
+
   if (!passageId) return appendBlock(state, block);
 
   const passageIndex = state.definition.blocks.findIndex(
@@ -113,6 +140,7 @@ function insertInteractionBlock(
   blocks.splice(insertionIndex, 0, block);
 
   return {
+    ...state,
     definition: { ...state.definition, blocks },
     selectedBlockId: block.id
   };
@@ -177,6 +205,188 @@ export function addTextInteractionBlock(
   };
 
   return insertInteractionBlock(state, block, passageId);
+}
+
+export function addTrueFalseGroupInteractionBlock(
+  state: AssessmentComposerState,
+  createId: AssessmentComposerIdFactory,
+  passageId?: string
+): AssessmentComposerState {
+  const block: AssessmentInteractionBlock = {
+    id: createId(),
+    kind: 'interaction',
+    interaction: {
+      kind: 'true_false_group',
+      prompt: { format: 'html', html: '' },
+      required: true,
+      maxScore: 1,
+      config: {
+        statements: Array.from({ length: 4 }, () => ({ id: createId(), html: '', correctValue: false })),
+        scoring: { mode: 'tiered', tiers: [...DEFAULT_TRUE_FALSE_GROUP_TIERS] }
+      }
+    }
+  };
+
+  return insertInteractionBlock(state, block, passageId);
+}
+
+function createTrueFalseGroupTiers(statementCount: number): number[] {
+  if (statementCount === 4) return [...DEFAULT_TRUE_FALSE_GROUP_TIERS];
+
+  return Array.from({ length: statementCount + 1 }, (_, correctCount) =>
+    Number((correctCount / statementCount).toFixed(2))
+  );
+}
+
+function resizeTrueFalseGroupTiers(tiers: readonly number[], statementCount: number): number[] {
+  const resized = [...tiers];
+  const targetLength = statementCount + 1;
+
+  while (resized.length < targetLength) {
+    resized.splice(Math.max(1, resized.length - 1), 0, resized.at(-2) ?? 0);
+  }
+  while (resized.length > targetLength) {
+    resized.splice(Math.max(1, resized.length - 2), 1);
+  }
+
+  return resized;
+}
+
+export function addTrueFalseGroupStatement(
+  state: AssessmentComposerState,
+  blockId: string,
+  createId: AssessmentComposerIdFactory
+): AssessmentComposerState {
+  const targetBlock = state.definition.blocks.find(
+    (block): block is AssessmentInteractionBlock =>
+      block.id === blockId && block.kind === 'interaction' && block.interaction.kind === 'true_false_group'
+  );
+  if (!targetBlock || targetBlock.interaction.config.statements.length >= MAX_INTERACTION_OPTIONS) return state;
+
+  const statements = [...targetBlock.interaction.config.statements, { id: createId(), html: '', correctValue: false }];
+  const currentScoring = targetBlock.interaction.config.scoring;
+  const scoring =
+    currentScoring.mode === 'tiered'
+      ? { mode: 'tiered' as const, tiers: resizeTrueFalseGroupTiers(currentScoring.tiers, statements.length) }
+      : currentScoring;
+  const tierDraft = state.trueFalseGroupTierDrafts?.[blockId];
+  const trueFalseGroupTierDrafts = tierDraft
+    ? { ...state.trueFalseGroupTierDrafts, [blockId]: resizeTrueFalseGroupTiers(tierDraft, statements.length) }
+    : state.trueFalseGroupTierDrafts;
+
+  return {
+    ...state,
+    trueFalseGroupTierDrafts,
+    definition: {
+      ...state.definition,
+      blocks: state.definition.blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...targetBlock,
+          interaction: {
+            ...targetBlock.interaction,
+            config: { ...targetBlock.interaction.config, statements, scoring }
+          }
+        };
+      })
+    }
+  };
+}
+
+export function removeTrueFalseGroupStatement(
+  state: AssessmentComposerState,
+  blockId: string,
+  statementId: string
+): AssessmentComposerState {
+  const targetBlock = state.definition.blocks.find(
+    (block): block is AssessmentInteractionBlock =>
+      block.id === blockId && block.kind === 'interaction' && block.interaction.kind === 'true_false_group'
+  );
+  if (
+    !targetBlock ||
+    targetBlock.interaction.config.statements.length <= 2 ||
+    !targetBlock.interaction.config.statements.some((statement) => statement.id === statementId)
+  ) {
+    return state;
+  }
+
+  const statements = targetBlock.interaction.config.statements.filter((statement) => statement.id !== statementId);
+  const currentScoring = targetBlock.interaction.config.scoring;
+  const scoring =
+    currentScoring.mode === 'tiered'
+      ? { mode: 'tiered' as const, tiers: resizeTrueFalseGroupTiers(currentScoring.tiers, statements.length) }
+      : currentScoring;
+  const tierDraft = state.trueFalseGroupTierDrafts?.[blockId];
+  const trueFalseGroupTierDrafts = tierDraft
+    ? { ...state.trueFalseGroupTierDrafts, [blockId]: resizeTrueFalseGroupTiers(tierDraft, statements.length) }
+    : state.trueFalseGroupTierDrafts;
+
+  return {
+    ...state,
+    trueFalseGroupTierDrafts,
+    definition: {
+      ...state.definition,
+      blocks: state.definition.blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...targetBlock,
+          interaction: {
+            ...targetBlock.interaction,
+            config: { ...targetBlock.interaction.config, statements, scoring }
+          }
+        };
+      })
+    }
+  };
+}
+
+export function setTrueFalseGroupScoringMode(
+  state: AssessmentComposerState,
+  blockId: string,
+  mode: TrueFalseGroupScoringMode
+): AssessmentComposerState {
+  const targetBlock = state.definition.blocks.find(
+    (block): block is AssessmentInteractionBlock =>
+      block.id === blockId && block.kind === 'interaction' && block.interaction.kind === 'true_false_group'
+  );
+  if (!targetBlock) return state;
+
+  const currentScoring = targetBlock.interaction.config.scoring;
+  const trueFalseGroupTierDrafts =
+    currentScoring.mode === 'tiered' && mode !== 'tiered'
+      ? { ...state.trueFalseGroupTierDrafts, [blockId]: [...currentScoring.tiers] }
+      : state.trueFalseGroupTierDrafts;
+  const savedTiers = trueFalseGroupTierDrafts?.[blockId];
+  const scoring =
+    mode === 'tiered'
+      ? {
+          mode,
+          tiers: savedTiers
+            ? resizeTrueFalseGroupTiers(savedTiers, targetBlock.interaction.config.statements.length)
+            : createTrueFalseGroupTiers(targetBlock.interaction.config.statements.length)
+        }
+      : { mode };
+
+  return {
+    ...state,
+    trueFalseGroupTierDrafts,
+    definition: {
+      ...state.definition,
+      blocks: state.definition.blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...targetBlock,
+          interaction: {
+            ...targetBlock.interaction,
+            config: { ...targetBlock.interaction.config, scoring }
+          }
+        };
+      })
+    }
+  };
 }
 
 export function setChoiceInteractionCardinality(
@@ -375,6 +585,7 @@ export function removeAssessmentBlocks(
       : state.selectedBlockId;
 
   return {
+    ...state,
     definition: { ...state.definition, blocks },
     selectedBlockId
   };
@@ -386,6 +597,7 @@ export function restoreAssessmentBlocks(
   destinationIndex: number
 ): AssessmentComposerState {
   if (restoredBlocks.length === 0) return state;
+  if (!canInsertAssessmentBlocks(state, restoredBlocks)) return state;
 
   const restoredIds = new Set(restoredBlocks.map((block) => block.id));
   if (state.definition.blocks.some((block) => restoredIds.has(block.id))) return state;
@@ -395,6 +607,7 @@ export function restoreAssessmentBlocks(
   blocks.splice(clampedDestinationIndex, 0, ...restoredBlocks);
 
   return {
+    ...state,
     definition: { ...state.definition, blocks },
     selectedBlockId: restoredBlocks[0]?.id ?? state.selectedBlockId
   };
@@ -411,6 +624,7 @@ export function removeAssessmentBlock(state: AssessmentComposerState, blockId: s
       : state.selectedBlockId;
 
   return {
+    ...state,
     definition: { ...state.definition, blocks },
     selectedBlockId
   };
@@ -422,12 +636,14 @@ export function restoreAssessmentBlock(
   destinationIndex: number
 ): AssessmentComposerState {
   if (state.definition.blocks.some((candidate) => candidate.id === block.id)) return state;
+  if (!canInsertAssessmentBlocks(state, [block])) return state;
 
   const blocks = [...state.definition.blocks];
   const clampedDestinationIndex = Math.max(0, Math.min(destinationIndex, blocks.length));
   blocks.splice(clampedDestinationIndex, 0, block);
 
   return {
+    ...state,
     definition: { ...state.definition, blocks },
     selectedBlockId: block.id
   };

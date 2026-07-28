@@ -105,7 +105,19 @@ const envSchema = z.object({
   /** Max org landing page image upload size in megabytes (default 0.5). */
   UPLOAD_MAX_LANDING_IMAGE_MB: z.string().optional(),
   /** Max media thumbnail upload size in megabytes (default 5). */
-  UPLOAD_MAX_THUMBNAIL_MB: z.string().optional()
+  UPLOAD_MAX_THUMBNAIL_MB: z.string().optional(),
+  /** Default-off gate for document-to-exam import writes. */
+  EXAM_IMPORT_ENABLED: z.string().optional(),
+  /** Default-off gate for the text-based PDF exam import reader. */
+  EXAM_IMPORT_PDF_ENABLED: z.string().optional(),
+  /** Default-off gate for least-privilege AI assistance during exam import. */
+  EXAM_IMPORT_AI_ENABLED: z.string().optional(),
+  /** Default-off rollback switch for scanned PDF vision transcription. */
+  EXAM_IMPORT_VISION_ENABLED: z.string().optional(),
+  /** Optional allowlisted model pin validated for exam-import structured output. */
+  EXAM_IMPORT_AI_MODEL: z.string().optional(),
+  /** Optional allowlisted vision model pin validated for scanned exam transcription. */
+  EXAM_IMPORT_VISION_MODEL: z.string().optional()
 });
 
 export const env = envSchema.parse(process.env);

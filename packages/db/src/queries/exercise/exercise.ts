@@ -291,12 +291,17 @@ export async function getQuestionsByExerciseIds(
   }
 }
 
-export async function updateQuestion(questionId: number, data: Partial<TNewQuestion>, dbClient: DbOrTxClient = db) {
+export async function updateQuestion(
+  questionId: number,
+  exerciseId: string,
+  data: Partial<TNewQuestion>,
+  dbClient: DbOrTxClient = db
+) {
   try {
     const [updated] = await dbClient
       .update(schema.question)
       .set(data)
-      .where(eq(schema.question.id, questionId))
+      .where(and(eq(schema.question.id, questionId), eq(schema.question.exerciseId, exerciseId)))
       .returning();
     return updated || null;
   } catch (error) {
@@ -346,9 +351,22 @@ export async function getOptionsByQuestionIds(questionIds: number[], dbClient: D
   }
 }
 
-export async function updateOption(optionId: number, data: Partial<TNewOption>, dbClient: DbOrTxClient = db) {
+export async function updateOption(
+  optionId: number,
+  exerciseId: string,
+  data: Partial<TNewOption>,
+  dbClient: DbOrTxClient = db
+) {
   try {
-    const [updated] = await dbClient.update(schema.option).set(data).where(eq(schema.option.id, optionId)).returning();
+    const questionsInExercise = dbClient
+      .select({ id: schema.question.id })
+      .from(schema.question)
+      .where(eq(schema.question.exerciseId, exerciseId));
+    const [updated] = await dbClient
+      .update(schema.option)
+      .set(data)
+      .where(and(eq(schema.option.id, optionId), inArray(schema.option.questionId, questionsInExercise)))
+      .returning();
     return updated || null;
   } catch (error) {
     console.error('updateOption error:', error);
@@ -434,21 +452,28 @@ export async function deleteOptionsByIds(optionIds: number[], exerciseId: string
  */
 export async function updateOptions(
   updates: Array<{ id: number; data: Partial<TNewOption> }>,
+  exerciseId: string,
   dbClient?: DbOrTxClient
 ) {
   if (updates.length === 0) return [];
   try {
-    const run = (client: DbOrTxClient) =>
-      Promise.all(
+    const run = (client: DbOrTxClient) => {
+      const questionsInExercise = client
+        .select({ id: schema.question.id })
+        .from(schema.question)
+        .where(eq(schema.question.exerciseId, exerciseId));
+
+      return Promise.all(
         updates.map(({ id, data }) =>
           client
             .update(schema.option)
             .set(data)
-            .where(eq(schema.option.id, id))
+            .where(and(eq(schema.option.id, id), inArray(schema.option.questionId, questionsInExercise)))
             .returning()
-            .then((r) => r[0])
+            .then((rows) => rows[0])
         )
       );
+    };
 
     const results = dbClient ? await run(dbClient) : await db.transaction((tx) => run(tx));
     return results.filter((r) => r !== undefined);
@@ -463,6 +488,7 @@ export async function updateOptions(
  */
 export async function updateQuestions(
   updates: Array<{ id: number; data: Partial<TNewQuestion> }>,
+  exerciseId: string,
   dbClient?: DbOrTxClient
 ) {
   if (updates.length === 0) return [];
@@ -473,7 +499,7 @@ export async function updateQuestions(
           client
             .update(schema.question)
             .set(data)
-            .where(eq(schema.question.id, id))
+            .where(and(eq(schema.question.id, id), eq(schema.question.exerciseId, exerciseId)))
             .returning()
             .then((r) => r[0])
         )

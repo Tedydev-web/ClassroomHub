@@ -17,6 +17,52 @@ export type GetSignedUrlParameters = Parameters<typeof getSignedUrl>;
 const PRESIGN_CACHE_TTL_SECONDS = 3000; // 50 min; presigned URLs typically valid 1 hour
 const PRESIGN_CACHE_KEY_PREFIX = 'presign:download:';
 
+export class S3ObjectSizeLimitExceededError extends Error {
+  constructor(readonly maxBytes: number) {
+    super(`Object exceeds the ${maxBytes}-byte read limit`);
+    this.name = 'S3ObjectSizeLimitExceededError';
+  }
+}
+
+async function readObjectBytesBounded(bucket: string, key: string, maxBytes: number): Promise<Uint8Array> {
+  const response = await getS3Client().send(
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Range: `bytes=0-${maxBytes}`
+    })
+  );
+  if (!response.Body) {
+    throw new Error(`S3 object ${bucket}/${key} returned no body`);
+  }
+
+  const chunks: Uint8Array[] = [];
+  let byteLength = 0;
+  for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+    byteLength += chunk.byteLength;
+    if (byteLength > maxBytes) {
+      throw new S3ObjectSizeLimitExceededError(maxBytes);
+    }
+
+    chunks.push(chunk);
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return bytes;
+}
+
+export async function readDocumentObjectBytes(fileKey: string, maxBytes: number): Promise<Uint8Array> {
+  const config = getStorageConfig();
+
+  return readObjectBytesBounded(config.bucketDocuments, fileKey, maxBytes);
+}
+
 export async function uploadToS3(params: PutObjectCommandInput): Promise<{ success: boolean; error?: string }> {
   try {
     await getS3Client().send(new PutObjectCommand(params));

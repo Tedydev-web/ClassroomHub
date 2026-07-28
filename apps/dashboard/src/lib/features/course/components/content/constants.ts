@@ -58,11 +58,12 @@ export const CONTENT_OPTIONS = [
   }
 ] as const;
 
-/** Exercise creation flow type (from scratch, template, or AI) */
+/** Exercise creation flow type */
 export const EXERCISE_CREATE_TYPE = {
   SCRATCH: 0,
   TEMPLATE: 1,
-  AI: 2
+  IMPORT: 2,
+  AI: 3
 } as const;
 
 export type ExerciseCreateType = (typeof EXERCISE_CREATE_TYPE)[keyof typeof EXERCISE_CREATE_TYPE];

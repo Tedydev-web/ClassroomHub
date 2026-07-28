@@ -4,7 +4,8 @@
     AnswerData,
     AssessmentDeliveryDefinition,
     AssessmentResponseEnvelope,
-    ExerciseQuestionModel
+    ExerciseQuestionModel,
+    ReleasedAssessmentFeedback
   } from '@cio/question-types';
   import type { Question } from '$features/course/types';
   import { Grade, ReasonBox } from '$features/ui/question';
@@ -23,6 +24,7 @@
     order?: number | null;
     exerciseSectionId?: string | null;
     definition: AssessmentDeliveryDefinition;
+    feedback?: ReleasedAssessmentFeedback[];
   };
 
   type MixedPreviewItem =
@@ -229,8 +231,12 @@
       <ExerciseQuestion.AssessmentItemRenderer
         definition={item.question.definition}
         response={canonicalAnswers[item.id]}
+        feedback={item.question.feedback}
+        feedbackLabel={$t('profileMenu.feedback')}
         disabled
         title={item.question.title}
+        trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+        falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
         questionNumber={showMixedGradeControls ? undefined : questionNumber}
         interactionNumberStart={questionNumber}
         questionNumberActive={false}

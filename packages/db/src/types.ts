@@ -215,6 +215,14 @@ export type TNewOrganizationAutomationUsage = typeof schema.organizationAutomati
 export type TCourseImportDraft = typeof schema.courseImportDraft.$inferSelect;
 export type TNewCourseImportDraft = typeof schema.courseImportDraft.$inferInsert;
 
+export type TExamImport = typeof schema.examImport.$inferSelect;
+export type TNewExamImport = typeof schema.examImport.$inferInsert;
+export type TExamImportDraft = typeof schema.examImportDraft.$inferSelect;
+export type TNewExamImportDraft = typeof schema.examImportDraft.$inferInsert;
+export type TExamImportStatus = (typeof schema.examImportStatus.enumValues)[number];
+export type TExamImportExtractor = (typeof schema.examImportExtractor.enumValues)[number];
+export type TExamImportFailure = NonNullable<TExamImport['failure']>;
+
 export type TCourseType = (typeof schema.courseType.enumValues)[number];
 
 export type TLocale = (typeof schema.locale.enumValues)[number];

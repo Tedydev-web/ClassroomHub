@@ -44,6 +44,7 @@ import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member'
 import { createRateLimiter } from '@api/middlewares/rate-limiter';
 import { enrollInCourse } from '@api/services/course/invite';
 import { exerciseRouter } from '@api/routes/course/exercise';
+import { examImportRouter } from '@api/routes/course/exam-import';
 import { extractClientIp } from '@api/utils/redis/key-generators';
 import { generateCertificatePdf, generateCertificatePng } from '@api/utils/certificate';
 import { assembleCertificateRender, assembleOwnerPreviewRender } from '@api/services/course/certificate';
@@ -617,6 +618,7 @@ export const courseRouter = new Hono()
   .route('/:courseId/section', sectionRouter)
   .route('/:courseId/lesson', lessonRouter)
   .route('/:courseId/exercise', exerciseRouter)
+  .route('/:courseId/exam-import', examImportRouter)
   .route('/:courseId/submission', submissionRouter)
   .route('/:courseId/attendance', attendanceRouter)
   .route('/:courseId/mark', markRouter)

@@ -9,11 +9,15 @@
   import { orgApi } from '$features/org/api/org.svelte';
 
   import { Input } from '@cio/ui/base/input';
+  import { Switch } from '@cio/ui/base/switch';
   import { UploadImage, UnsavedChanges } from '$features/ui';
   import * as Field from '@cio/ui/base/field';
 
   let avatar = $state<string | File | undefined>();
   let hasUnsavedChanges = $state(false);
+  let examImportAiEnabled = $derived($currentOrg.settings?.examImport?.aiEnabled ?? false);
+  let examImportScanVisionEnabled = $derived($currentOrg.settings?.examImport?.scanVisionEnabled ?? false);
+  let isSavingExamImportAi = $state(false);
 
   const themes = {
     rose: 'rose',
@@ -60,6 +64,39 @@
     }
   }
 
+  async function handleExamImportAiChange(enabled: boolean) {
+    isSavingExamImportAi = true;
+
+    try {
+      await orgApi.update($currentOrg.id, {
+        settings: {
+          examImport: {
+            aiEnabled: enabled,
+            ...(!enabled ? { scanVisionEnabled: false } : {})
+          }
+        }
+      });
+    } finally {
+      isSavingExamImportAi = false;
+    }
+  }
+
+  async function handleExamImportScanVisionChange(enabled: boolean) {
+    isSavingExamImportAi = true;
+
+    try {
+      await orgApi.update($currentOrg.id, {
+        settings: {
+          examImport: {
+            scanVisionEnabled: enabled
+          }
+        }
+      });
+    } finally {
+      isSavingExamImportAi = false;
+    }
+  }
+
   let isCustomTheme = $derived($currentOrg?.theme?.includes('#'));
   let hex = $derived($currentOrg.theme?.includes('#') ? $currentOrg.theme : undefined);
 </script>
@@ -86,6 +123,32 @@
         />
       </Field.Field>
     </Field.Group>
+  </Field.Set>
+
+  <Field.Separator />
+
+  <Field.Set>
+    <Field.Legend>{$t('settings.organization.exam_import_ai.heading')}</Field.Legend>
+    <Field.Description>{$t('settings.organization.exam_import_ai.description')}</Field.Description>
+    <Field.Field orientation="horizontal">
+      <Switch
+        checked={examImportAiEnabled}
+        disabled={isSavingExamImportAi}
+        onCheckedChange={handleExamImportAiChange}
+      />
+      <Field.Label>{$t('settings.organization.exam_import_ai.toggle')}</Field.Label>
+    </Field.Field>
+    <Field.Field orientation="horizontal">
+      <Switch
+        checked={examImportScanVisionEnabled}
+        disabled={isSavingExamImportAi || !examImportAiEnabled}
+        onCheckedChange={handleExamImportScanVisionChange}
+      />
+      <div>
+        <Field.Label>{$t('settings.organization.exam_import_ai.scan_toggle')}</Field.Label>
+        <Field.Description>{$t('settings.organization.exam_import_ai.scan_description')}</Field.Description>
+      </div>
+    </Field.Field>
   </Field.Set>
 
   <Field.Separator />

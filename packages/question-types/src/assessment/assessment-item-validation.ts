@@ -86,6 +86,27 @@ function collectConsistencyIssues(definition: AssessmentItemDefinition): Assessm
   if (!isUnique(feedbackIds)) {
     issues.push(assessmentIssue('MALFORMED_DEFINITION', ['feedback'], 'Feedback ids must be unique'));
   }
+  const choiceOptionsByInteractionId = new Map(
+    getAssessmentInteractionBlocks(definition).flatMap((block) =>
+      block.interaction.kind === 'choice'
+        ? [[block.id, new Set(block.interaction.config.options.map((option) => option.id))] as const]
+        : []
+    )
+  );
+  definition.feedback.forEach((feedback, feedbackIndex) => {
+    if (feedback.scope !== 'choice_option') return;
+
+    const optionIds = choiceOptionsByInteractionId.get(feedback.interactionId);
+    if (!optionIds?.has(feedback.optionId)) {
+      issues.push(
+        assessmentIssue(
+          'MALFORMED_DEFINITION',
+          ['feedback', feedbackIndex],
+          'Choice-option feedback must reference a declared option'
+        )
+      );
+    }
+  });
 
   definition.blocks.forEach((block, blockIndex) => {
     if (block.kind !== 'interaction') return;
@@ -113,6 +134,21 @@ function collectConsistencyIssues(definition: AssessmentItemDefinition): Assessm
           )
         );
       }
+      if (interaction.config.scoreWeights) {
+        const weightedOptionIds = Object.keys(interaction.config.scoreWeights);
+        if (
+          weightedOptionIds.length !== optionIds.length ||
+          weightedOptionIds.some((weightedOptionId) => !optionIdSet.has(weightedOptionId))
+        ) {
+          issues.push(
+            assessmentIssue(
+              'MALFORMED_DEFINITION',
+              [...configPath, 'scoreWeights'],
+              'Score weights must define every declared option exactly once'
+            )
+          );
+        }
+      }
     }
 
     if (interaction.kind === 'ordering') {
@@ -123,6 +159,52 @@ function collectConsistencyIssues(definition: AssessmentItemDefinition): Assessm
         issues.push(
           assessmentIssue('MALFORMED_DEFINITION', [...configPath, 'correctOrder'], 'Order entries must be unique')
         );
+      }
+      if (
+        interaction.config.options.length > 0 &&
+        !isExactStringPermutation(
+          interaction.config.correctOrder,
+          interaction.config.options.map((option) => option.id)
+        )
+      ) {
+        issues.push(
+          assessmentIssue(
+            'MALFORMED_DEFINITION',
+            [...configPath, 'correctOrder'],
+            'Order entries must reference every declared option exactly once'
+          )
+        );
+      }
+    }
+
+    if (interaction.kind === 'true_false_group') {
+      const statementIds = interaction.config.statements.map((statement) => statement.id);
+      if (!isUnique(statementIds)) {
+        issues.push(
+          assessmentIssue('MALFORMED_DEFINITION', [...configPath, 'statements'], 'Statement ids must be unique')
+        );
+      }
+
+      if (interaction.config.scoring.mode === 'tiered') {
+        const { tiers } = interaction.config.scoring;
+        if (tiers.length !== interaction.config.statements.length + 1) {
+          issues.push(
+            assessmentIssue(
+              'MALFORMED_DEFINITION',
+              [...configPath, 'scoring', 'tiers'],
+              'Tier count must equal statement count plus one'
+            )
+          );
+        }
+        if (tiers.some((tier, index) => index > 0 && tier < tiers[index - 1]!)) {
+          issues.push(
+            assessmentIssue(
+              'MALFORMED_DEFINITION',
+              [...configPath, 'scoring', 'tiers'],
+              'Tier fractions must be non-decreasing'
+            )
+          );
+        }
       }
     }
 
@@ -206,13 +288,18 @@ function collectPublishIssues(
 
   switch (interaction.kind) {
     case 'choice': {
-      const { options, correctOptionIds, cardinality, presentation } = interaction.config;
+      const { options, correctOptionIds, cardinality, presentation, scoreWeights } = interaction.config;
       if (options.length < 2) violation([...configPath, 'options'], 'Choice needs at least two options');
       if (correctOptionIds.length === 0) {
         violation([...configPath, 'correctOptionIds'], 'Choice needs at least one correct option');
       }
       if (cardinality === 'single' && correctOptionIds.length > 1) {
         violation([...configPath, 'correctOptionIds'], 'Single choice allows exactly one correct option');
+      }
+      if (scoreWeights) {
+        if (!correctOptionIds.every((optionId) => scoreWeights[optionId]! > 0)) {
+          violation([...configPath, 'scoreWeights'], 'Declared correct option ids must have positive score weights');
+        }
       }
       if (presentation === 'true_false') {
         const optionIds = options.map((option) => option.id).sort();
@@ -255,10 +342,33 @@ function collectPublishIssues(
       }
       break;
     }
+    case 'true_false_group': {
+      interaction.config.statements.forEach((statement, statementIndex) => {
+        if (!hasMeaningfulAuthoredContent(statement.html)) {
+          violation([...configPath, 'statements', statementIndex, 'html'], 'Statement content cannot be empty');
+        }
+      });
+      if (interaction.config.scoring.mode === 'tiered') {
+        const { tiers } = interaction.config.scoring;
+        if (tiers[0] !== 0) {
+          violation([...configPath, 'scoring', 'tiers', 0], 'The zero-correct tier must award zero');
+        }
+        if (tiers[tiers.length - 1] !== 1) {
+          violation(
+            [...configPath, 'scoring', 'tiers', tiers.length - 1],
+            'The all-correct tier must award the full interaction score'
+          );
+        }
+      }
+      break;
+    }
     case 'text':
     case 'file_upload':
     case 'link':
     case 'video_recording':
+      break;
+    default:
+      interaction satisfies never;
       break;
   }
 

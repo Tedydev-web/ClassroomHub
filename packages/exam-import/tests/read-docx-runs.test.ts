@@ -105,7 +105,7 @@ describe('reading the reference exam', () => {
     }
   });
 
-  it('states that highlight was not inspected rather than claiming it is absent', () => {
+  it('does not invent highlights when the reference document contains none', () => {
     expect(result.runs.every((run) => run.formatting.highlight === null)).toBe(true);
   });
 
@@ -132,6 +132,22 @@ describe('reading the reference exam', () => {
 
   it('leaves no list label unresolved', () => {
     expect(result.warnings.filter((entry) => entry.code === 'UNRESOLVED_LIST_LABEL')).toEqual([]);
+  });
+
+  it('aligns OOXML formatting with every extracted reference block', () => {
+    expect(result.warnings.filter((entry) => entry.code === 'FORMATTING_ALIGNMENT_FAILED')).toEqual([]);
+  });
+
+  it('recovers all 40 question markers from the verified reference structure', () => {
+    const blocks = new Map<number, string>();
+    for (const run of result.runs) {
+      blocks.set(run.block.index, `${blocks.get(run.block.index) ?? ''}${run.text}`);
+    }
+    const questionNumbers = [...blocks.values()].flatMap((text) =>
+      [...text.matchAll(/Question\s+(\d+)\.?/g)].map((match) => Number(match[1]))
+    );
+
+    expect(questionNumbers).toEqual(Array.from({ length: 40 }, (_, index) => index + 1));
   });
 });
 

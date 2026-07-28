@@ -221,6 +221,13 @@ export type SubmitExerciseRequest =
   (typeof classroomhub.course)[':courseId']['exercise'][':exerciseId']['submission']['$post'];
 export type SubmitExerciseSuccess = Extract<InferResponseType<SubmitExerciseRequest>, { success: true }>;
 export type SubmittedExerciseAttempt = SubmitExerciseSuccess['data'];
+export type GetExerciseSubmissionsRequest =
+  (typeof classroomhub.course)[':courseId']['exercise'][':exerciseId']['submissions']['$get'];
+export type GetExerciseSubmissionsSuccess = Extract<
+  InferResponseType<GetExerciseSubmissionsRequest>,
+  { success: true }
+>;
+export type ExerciseSubmissionsOverview = GetExerciseSubmissionsSuccess['data'];
 
 // Newsfeed types
 export type ListNewsfeedRequest = (typeof classroomhub.course)[':courseId']['newsfeed']['$get'];
@@ -530,3 +537,41 @@ export type VideoRecordingUploadCompleteRequest =
   (typeof classroomhub.course)[':courseId']['exercise'][':exerciseId']['question'][':questionId']['video-recording']['upload']['complete']['$post'];
 export type VideoRecordingPlaybackRequest =
   (typeof classroomhub.course)[':courseId']['exercise'][':exerciseId']['submission'][':submissionId']['question'][':questionId']['video-recording']['playback']['$get'];
+
+// Exam import types
+export type CreateExamImportRequest = (typeof classroomhub.course)[':courseId']['exam-import']['$post'];
+export type CreateExamImportSuccess = Extract<InferResponseType<CreateExamImportRequest>, { success: true }>;
+export type ExamImportStatus = CreateExamImportSuccess['data'];
+
+export type GetExamImportStatusRequest = (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['$get'];
+export type CancelExamImportRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['cancel']['$post'];
+
+export type GetExamImportDraftRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['draft']['$get'];
+export type GetExamImportDraftSuccess = Extract<InferResponseType<GetExamImportDraftRequest>, { success: true }>;
+export type ExamImportDraftView = GetExamImportDraftSuccess['data'];
+export type ExamImportDraft = ExamImportDraftView['draft'];
+export type ExamImportQuestion = ExamImportDraft['sections'][number]['questions'][number];
+export type ExamImportDiagnostic = ExamImportDraftView['findings'][number];
+export type ExamImportDraftPatchOperation = Parameters<
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['draft']['$patch']
+>[0]['json']['operations'][number];
+
+export type PatchExamImportDraftRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['draft']['$patch'];
+export type EstimateExamImportAiSuggestionRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['ai-suggestion']['estimate']['$post'];
+export type EstimateExamImportAiSuggestionSuccess = Extract<
+  InferResponseType<EstimateExamImportAiSuggestionRequest>,
+  { success: true }
+>;
+export type ExamImportAiSuggestionEstimate = EstimateExamImportAiSuggestionSuccess['data'];
+export type RequestExamImportAiSuggestionRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['ai-suggestion']['$post'];
+export type ApplyExamImportAnswerKeyRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['answer-key']['$post'];
+export type PublishExamImportRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['publish']['$post'];
+export type PublishExamImportSuccess = Extract<InferResponseType<PublishExamImportRequest>, { success: true }>;
+export type PublishedExamImport = PublishExamImportSuccess['data'];

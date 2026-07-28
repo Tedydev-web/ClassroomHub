@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   isCourseTeamMemberOrOrgAdmin: vi.fn(),
   lockExerciseAssignmentState: vi.fn(),
   updateExerciseSection: vi.fn(),
+  updateOptions: vi.fn(),
   updateQuestions: vi.fn()
 }));
 
@@ -55,7 +56,7 @@ vi.mock('@cio/db/queries/exercise', () => ({
   syncQuestionIdSequence: vi.fn(),
   updateExercise: vi.fn(),
   updateExerciseSection: mocks.updateExerciseSection,
-  updateOptions: vi.fn(),
+  updateOptions: mocks.updateOptions,
   updateQuestions: mocks.updateQuestions
 }));
 vi.mock('@cio/db/queries/lesson', () => ({ getLessonById: vi.fn() }));
@@ -78,6 +79,7 @@ import { ErrorCodes } from '@api/utils/errors';
 import {
   deleteExerciseService,
   getExercise,
+  getExerciseForCourseService,
   replaceExerciseService,
   updateExerciseService
 } from '@cio/core/services/exercise/exercise';
@@ -140,7 +142,7 @@ describe('updateExerciseService archived question hardening', () => {
       questions: [{ id: 2, question: 'Archived question', deletedAt: '2026-07-16T01:00:00.000Z' }]
     });
 
-    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([2], txStub);
+    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([2], 'exercise-a', txStub);
     expect(mocks.deleteQuestionsByIds).not.toHaveBeenCalled();
     // The update response is the active-delivery read.
     expect(mocks.getExerciseWithRelationsOptimized).toHaveBeenCalledWith('exercise-a', txStub, {
@@ -215,6 +217,7 @@ describe('updateExerciseService canonical question placement', () => {
           data: { exerciseSectionId: sectionTwoId, order: 2 }
         }
       ],
+      'exercise-a',
       txStub
     );
   });
@@ -338,10 +341,12 @@ describe('updateExerciseService canonical question placement', () => {
 
     expect(mocks.updateQuestions).toHaveBeenCalledWith(
       [{ id: sectionedCanonicalQuestion.id, data: { exerciseSectionId: sectionTwoId, order: 0 } }],
+      'exercise-a',
       txStub
     );
     expect(mocks.updateQuestions).toHaveBeenCalledWith(
       [{ id: sectionedLegacyQuestion.id, data: { order: 1 } }],
+      'exercise-a',
       txStub
     );
   });
@@ -452,7 +457,7 @@ describe('legacy submission-less answers (orphan answers) freeze the question gr
       ]
     });
 
-    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([1], txStub);
+    expect(mocks.archiveQuestionsByIds).toHaveBeenCalledWith([1], 'exercise-a', txStub);
     expect(mocks.deleteQuestionsByIds).toHaveBeenCalledWith([3], 'exercise-a', txStub);
   });
 
@@ -487,6 +492,7 @@ describe('legacy submission-less answers (orphan answers) freeze the question gr
 describe('getExercise active read hardening', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(false);
     mocks.getExerciseSectionsByExerciseId.mockResolvedValue([]);
     mocks.getQuestionRevisionsByIds.mockResolvedValue([]);
   });
@@ -639,6 +645,172 @@ describe('getExercise active read hardening', () => {
     expect(canonicalQuestion?.authorDefinition).toEqual(authorDefinition);
     expect(JSON.stringify(canonicalQuestion?.definition)).not.toContain('correctOptionIds');
   });
+
+  it('projects legacy questions without answer keys for an enrolled learner', async () => {
+    const orderingOptions = [
+      { id: 91, questionId: 9, label: 'First', value: 'First', isCorrect: false, settings: {} },
+      { id: 92, questionId: 9, label: 'Second', value: 'Second', isCorrect: false, settings: {} },
+      { id: 93, questionId: 9, label: 'Third', value: 'Third', isCorrect: false, settings: {} }
+    ];
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: { id: 'exercise-a', courseId: 'course-a' },
+      questions: [
+        {
+          ...activeQuestionRow,
+          questionTypeId: 1,
+          questionType: { id: 1, label: 'Single answer', typename: 'RADIO' },
+          settings: { description: 'Visible prompt details', privateMarker: 'must-not-ship' },
+          options: [
+            {
+              id: 11,
+              questionId: 1,
+              label: 'A',
+              value: 'A',
+              isCorrect: true,
+              settings: { imageUrl: 'https://cdn.test/a.png', privateMarker: 'must-not-ship' }
+            },
+            { id: 12, questionId: 1, label: 'B', value: 'B', isCorrect: false, settings: {} }
+          ]
+        },
+        {
+          ...activeQuestionRow,
+          id: 6,
+          questionTypeId: 6,
+          questionType: { id: 6, label: 'Numeric answer', typename: 'NUMERIC' },
+          settings: { correctValue: 42, tolerance: 0.5, imageUrls: ['https://cdn.test/numeric.png'] },
+          options: []
+        },
+        {
+          ...activeQuestionRow,
+          id: 7,
+          questionTypeId: 7,
+          questionType: { id: 7, label: 'Fill in the blank', typename: 'FILL_BLANK' },
+          settings: { acceptedAnswers: 'secret answer' },
+          options: []
+        },
+        {
+          ...activeQuestionRow,
+          id: 9,
+          questionTypeId: 9,
+          questionType: { id: 9, label: 'Ordering', typename: 'ORDERING' },
+          settings: { items: ['First', 'Second', 'Third'] },
+          options: orderingOptions
+        },
+        {
+          ...activeQuestionRow,
+          id: 10,
+          questionTypeId: 9,
+          questionType: { id: 9, label: 'Ordering', typename: 'ORDERING' },
+          settings: { items: ['Alpha', 'Beta', 'Gamma'] },
+          options: []
+        },
+        {
+          ...activeQuestionRow,
+          id: 11,
+          questionTypeId: 11,
+          questionType: { id: 11, label: 'Word bank', typename: 'WORD_BANK' },
+          settings: {
+            template: 'The ___ is blue.',
+            correctAnswers: ['sky'],
+            distractors: ['sea', 'grass']
+          },
+          options: []
+        },
+        {
+          ...activeQuestionRow,
+          id: 12,
+          questionTypeId: 12,
+          questionType: { id: 12, label: 'Star rating', typename: 'STAR' },
+          settings: { maxStars: 5, correctValue: 4 },
+          options: []
+        },
+        {
+          ...activeQuestionRow,
+          id: 13,
+          questionTypeId: 13,
+          questionType: { id: 13, label: 'Video recording', typename: 'VIDEO_RECORDING' },
+          settings: { maxDurationSeconds: 90, allowRetakes: true },
+          options: []
+        }
+      ]
+    });
+
+    const firstRead = await getExercise('exercise-a', undefined, 'profile-learner');
+    const secondRead = await getExercise('exercise-a', undefined, 'profile-learner');
+    const learnerPayload = JSON.stringify(firstRead.questions);
+    const radioQuestion = firstRead.questions?.find((question) => question.id === 1);
+    const orderingQuestion = firstRead.questions?.find((question) => question.id === 9);
+    const repeatedOrderingQuestion = secondRead.questions?.find((question) => question.id === 9);
+    const settingsOnlyOrderingQuestion = firstRead.questions?.find((question) => question.id === 10);
+    const wordBankQuestion = firstRead.questions?.find((question) => question.id === 11);
+
+    expect(mocks.isCourseTeamMemberOrOrgAdmin).toHaveBeenCalledWith('course-a', 'profile-learner');
+    expect(learnerPayload).not.toContain('"isCorrect"');
+    expect(learnerPayload).not.toContain('"correctValue"');
+    expect(learnerPayload).not.toContain('"acceptedAnswers"');
+    expect(learnerPayload).not.toContain('"correctAnswers"');
+    expect(learnerPayload).not.toContain('"distractors"');
+    expect(settingsOnlyOrderingQuestion?.settings).toHaveProperty('items');
+    expect(learnerPayload).not.toContain('"privateMarker"');
+    expect(radioQuestion?.settings).toEqual({ description: 'Visible prompt details' });
+    expect(radioQuestion?.options[0]?.settings).toEqual({ imageUrl: 'https://cdn.test/a.png' });
+    expect(firstRead.questions?.find((question) => question.id === 6)?.settings).toEqual({
+      imageUrls: ['https://cdn.test/numeric.png']
+    });
+    expect(firstRead.questions?.find((question) => question.id === 12)?.settings).toEqual({ maxStars: 5 });
+    expect(firstRead.questions?.find((question) => question.id === 13)?.settings).toEqual({
+      maxDurationSeconds: 90,
+      allowRetakes: true
+    });
+    expect(wordBankQuestion?.settings).toMatchObject({
+      template: 'The ___ is blue.',
+      bankTokens: expect.arrayContaining(['sky', 'sea', 'grass'])
+    });
+    expect(repeatedOrderingQuestion?.options.map((option) => option.id)).toEqual(
+      orderingQuestion?.options.map((option) => option.id)
+    );
+    expect(settingsOnlyOrderingQuestion?.options).toEqual([]);
+    expect(settingsOnlyOrderingQuestion?.settings?.items).toHaveLength(3);
+    expect(new Set(settingsOnlyOrderingQuestion?.settings?.items as string[])).toEqual(
+      new Set(['Alpha', 'Beta', 'Gamma'])
+    );
+  });
+
+  it('keeps full legacy answer keys for an authorized course author', async () => {
+    mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(true);
+    mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
+      exercise: { id: 'exercise-a', courseId: 'course-a' },
+      questions: [
+        {
+          ...activeQuestionRow,
+          questionTypeId: 1,
+          questionType: { id: 1, label: 'Single answer', typename: 'RADIO' },
+          settings: { correctValue: 'A' },
+          options: [{ id: 11, questionId: 1, label: 'A', value: 'A', isCorrect: true, settings: {} }]
+        }
+      ]
+    });
+
+    const exercise = await getExercise('exercise-a', undefined, 'profile-author');
+
+    expect(exercise.questions?.[0]?.settings).toEqual({ correctValue: 'A' });
+    expect(exercise.questions?.[0]?.options[0]?.isCorrect).toBe(true);
+  });
+
+  it('rejects an exercise read scoped through a different course', async () => {
+    mocks.getExerciseById.mockResolvedValue({
+      id: 'exercise-b',
+      courseId: 'course-b',
+      slug: null,
+      title: 'Foreign exercise'
+    });
+
+    await expect(getExerciseForCourseService('course-a', 'exercise-b')).rejects.toMatchObject({
+      code: ErrorCodes.EXERCISE_NOT_FOUND,
+      statusCode: 404
+    });
+    expect(mocks.getExerciseWithRelationsOptimized).not.toHaveBeenCalled();
+  });
 });
 
 describe('question graph deletes stay inside the edited exercise', () => {
@@ -664,31 +836,58 @@ describe('question graph deletes stay inside the edited exercise', () => {
     mocks.getQuestionRevisionsByIds.mockResolvedValue([]);
   });
 
-  it('ignores a delete for a question id that belongs to another exercise', async () => {
-    await updateExerciseService('exercise-a', {
-      questions: [{ id: 999, question: 'Foreign question', deletedAt: '2026-07-25T00:00:00.000Z' }]
-    });
+  it('rejects a delete for a question id that belongs to another exercise', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [{ id: 999, question: 'Foreign question', deletedAt: '2026-07-25T00:00:00.000Z' }]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
 
     expect(mocks.deleteQuestionsByIds).not.toHaveBeenCalled();
     expect(mocks.archiveQuestionsByIds).not.toHaveBeenCalled();
     expect(mocks.createQuestions).not.toHaveBeenCalled();
   });
 
-  it('ignores a delete for an option id that belongs to another question', async () => {
+  it('rejects an update for a question id that belongs to another exercise', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [{ id: 999, question: 'Foreign question', points: 1 }]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
+
+    expect(mocks.updateQuestions).not.toHaveBeenCalled();
+    expect(mocks.createQuestions).not.toHaveBeenCalled();
+  });
+
+  it('rejects a delete for an option id that belongs to another question', async () => {
+    await expect(
+      updateExerciseService('exercise-a', {
+        questions: [
+          {
+            id: 1,
+            question: 'Active question',
+            options: [{ id: 888, label: 'Foreign option', isCorrect: false, deletedAt: '2026-07-25T00:00:00.000Z' }]
+          }
+        ]
+      })
+    ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
+
+    expect(mocks.deleteOptionsByIds).not.toHaveBeenCalled();
+  });
+
+  it('passes the owning exercise id to update queries', async () => {
     await updateExerciseService('exercise-a', {
       questions: [
         {
           id: 1,
-          question: 'Active question',
-          options: [{ id: 888, label: 'Foreign option', isCorrect: false, deletedAt: '2026-07-25T00:00:00.000Z' }]
+          question: 'Updated question',
+          options: [{ id: 10, label: 'Updated option', isCorrect: true, settings: {} }]
         }
       ]
     });
 
-    // Option 10 is legitimately removed because the payload no longer carries
-    // it. The point of this test is that the foreign id never reaches a delete.
-    const deletedOptionIds = mocks.deleteOptionsByIds.mock.calls.flatMap((call) => call[0] as number[]);
-    expect(deletedOptionIds).not.toContain(888);
+    expect(mocks.updateQuestions).toHaveBeenCalledWith(expect.any(Array), 'exercise-a', txStub);
+    expect(mocks.updateOptions).toHaveBeenCalledWith(expect.any(Array), 'exercise-a', txStub);
   });
 
   it('passes the owning exercise id to the delete queries', async () => {

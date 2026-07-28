@@ -7,6 +7,7 @@ import './workers/notifications';
 import './workers/webhooks';
 import './workers/maintenance';
 import './workers/agent-course-generation';
+import './workers/exam-import';
 
 import { log } from './utils/logger';
 
@@ -18,6 +19,7 @@ log.info('all-workers-running', {
     'notifications',
     'webhooks',
     'maintenance',
-    'agent-course-generation'
+    'agent-course-generation',
+    'exam-import'
   ]
 });

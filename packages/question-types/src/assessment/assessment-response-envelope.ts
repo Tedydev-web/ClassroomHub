@@ -63,6 +63,19 @@ const orderingResponseSchema = z.strictObject({
   orderedOptionIds: z.array(z.string().min(1).max(MAX_ANSWER_ITEM_TEXT_LENGTH)).min(1).max(MAX_ANSWER_COLLECTION_ITEMS)
 });
 
+const trueFalseGroupResponseSchema = z.strictObject({
+  kind: z.literal('true_false_group'),
+  answers: z
+    .array(
+      z.strictObject({
+        statementId: z.string().min(1).max(MAX_ANSWER_ITEM_TEXT_LENGTH),
+        value: z.boolean()
+      })
+    )
+    .min(1)
+    .max(MAX_ANSWER_COLLECTION_ITEMS)
+});
+
 const fileUploadResponseSchema = z.strictObject({
   kind: z.literal('file_upload'),
   assetId: z.string().min(1).max(MAX_FILE_KEY_LENGTH),
@@ -109,6 +122,7 @@ export const assessmentInteractionResponseSchema = z.discriminatedUnion('kind', 
   fillBlankResponseSchema,
   wordBankResponseSchema,
   orderingResponseSchema,
+  trueFalseGroupResponseSchema,
   fileUploadResponseSchema,
   linkResponseSchema,
   starRatingResponseSchema,
@@ -137,6 +151,10 @@ export interface ValidatedAssessmentResponses {
   missingOptionalInteractionIds: string[];
 }
 
+export type AssessmentResponseValidationOptions = {
+  requireCompleteTrueFalseGroups?: boolean;
+};
+
 function normalizeBankToken(value: string): string {
   return value.trim().toLowerCase();
 }
@@ -154,94 +172,152 @@ function collectConstraintIssues(
   const issues: AssessmentIssue[] = [];
   const constraint = (message: string) => issues.push(assessmentIssue('RESPONSE_CONSTRAINT', path, message));
 
-  if (interaction.kind === 'choice' && response.kind === 'choice') {
-    const optionIds = new Set(interaction.config.options.map((option) => option.id));
-    if (!isUnique(response.selectedOptionIds)) constraint('Selected options must be unique');
-    if (interaction.config.cardinality === 'single' && response.selectedOptionIds.length !== 1) {
-      constraint('Single choice accepts exactly one selection');
-    }
-    if (!response.selectedOptionIds.every((selectedId) => optionIds.has(selectedId))) {
-      constraint('Selected options must reference declared options');
-    }
-  }
+  switch (interaction.kind) {
+    case 'choice': {
+      if (response.kind !== 'choice') return issues;
 
-  if (interaction.kind === 'text' && response.kind === 'text') {
-    const characterCount = textCharacterCount(response.text, interaction.config.format);
-    const { minCharacters, maxCharacters } = interaction.config;
-    if (minCharacters !== undefined && characterCount < minCharacters) {
-      constraint(`Answer must be at least ${minCharacters} characters`);
-    }
-    if (maxCharacters !== undefined && characterCount > maxCharacters) {
-      constraint(`Answer must be at most ${maxCharacters} characters`);
-    }
-  }
-
-  if (interaction.kind === 'fill_blank' && response.kind === 'fill_blank') {
-    if (response.values.length !== interaction.config.acceptedAnswers.length) {
-      constraint('Answer count must match the number of blanks');
-    }
-  }
-
-  if (interaction.kind === 'word_bank' && response.kind === 'word_bank') {
-    if (response.filledBlanks.length !== interaction.config.correctAnswers.length) {
-      constraint('Answer count must match the number of blanks');
-    } else {
-      const bank = new Set(
-        [...interaction.config.correctAnswers, ...interaction.config.distractors].map(normalizeBankToken)
-      );
-      if (!response.filledBlanks.every((filled) => bank.has(normalizeBankToken(filled)))) {
-        constraint('Answers must come from the word bank');
+      const optionIds = new Set(interaction.config.options.map((option) => option.id));
+      if (!isUnique(response.selectedOptionIds)) constraint('Selected options must be unique');
+      if (interaction.config.cardinality === 'single' && response.selectedOptionIds.length !== 1) {
+        constraint('Single choice accepts exactly one selection');
       }
+      if (!response.selectedOptionIds.every((selectedId) => optionIds.has(selectedId))) {
+        constraint('Selected options must reference declared options');
+      }
+
+      return issues;
     }
+    case 'text': {
+      if (response.kind !== 'text') return issues;
+
+      const characterCount = textCharacterCount(response.text, interaction.config.format);
+      const { minCharacters, maxCharacters } = interaction.config;
+      if (minCharacters !== undefined && characterCount < minCharacters) {
+        constraint(`Answer must be at least ${minCharacters} characters`);
+      }
+      if (maxCharacters !== undefined && characterCount > maxCharacters) {
+        constraint(`Answer must be at most ${maxCharacters} characters`);
+      }
+
+      return issues;
+    }
+    case 'numeric':
+      return issues;
+    case 'fill_blank': {
+      if (response.kind !== 'fill_blank') return issues;
+
+      if (response.values.length !== interaction.config.acceptedAnswers.length) {
+        constraint('Answer count must match the number of blanks');
+      }
+
+      return issues;
+    }
+    case 'word_bank': {
+      if (response.kind !== 'word_bank') return issues;
+
+      if (response.filledBlanks.length !== interaction.config.correctAnswers.length) {
+        constraint('Answer count must match the number of blanks');
+      } else {
+        const bank = new Set(
+          [...interaction.config.correctAnswers, ...interaction.config.distractors].map(normalizeBankToken)
+        );
+        if (!response.filledBlanks.every((filled) => bank.has(normalizeBankToken(filled)))) {
+          constraint('Answers must come from the word bank');
+        }
+      }
+
+      return issues;
+    }
+    case 'ordering': {
+      if (response.kind !== 'ordering') return issues;
+
+      const optionIds = interaction.config.options.map((option) => option.id);
+      if (!isExactStringPermutation(response.orderedOptionIds, optionIds)) {
+        constraint('Order must be an exact permutation of the options');
+      }
+
+      return issues;
+    }
+    case 'true_false_group': {
+      if (response.kind !== 'true_false_group') return issues;
+
+      const statementIds = new Set(interaction.config.statements.map((statement) => statement.id));
+      const responseStatementIds = response.answers.map((answer) => answer.statementId);
+      if (!isUnique(responseStatementIds)) constraint('Statement answers must be unique');
+      if (!responseStatementIds.every((statementId) => statementIds.has(statementId))) {
+        constraint('Statement answers must reference declared statements');
+      }
+
+      return issues;
+    }
+    case 'file_upload': {
+      if (response.kind !== 'file_upload') return issues;
+
+      const allowed = isFileUploadTypeAllowed(
+        { fileName: response.fileName, mimeType: response.mimeType },
+        interaction.config.acceptedTypes
+      );
+      if (!allowed) constraint('File type is not accepted for this interaction');
+      if (interaction.config.maxSizeMb !== undefined && response.size > interaction.config.maxSizeMb * 1024 * 1024) {
+        constraint(`File size cannot exceed ${interaction.config.maxSizeMb} MB`);
+      }
+
+      return issues;
+    }
+    case 'link':
+      return issues;
+    case 'star_rating':
+      if (response.kind === 'star_rating' && response.value > interaction.config.maxStars) {
+        constraint(`Rating cannot exceed ${interaction.config.maxStars} stars`);
+      }
+
+      return issues;
+    case 'video_recording':
+      if (response.kind === 'video_recording' && response.durationSeconds > interaction.config.maxDurationSeconds + 2) {
+        // Two-second grace mirrors the existing submission service tolerance.
+        constraint('Recording exceeds the configured duration');
+      }
+
+      return issues;
   }
 
-  if (interaction.kind === 'ordering' && response.kind === 'ordering') {
-    const optionIds = interaction.config.options.map((option) => option.id);
-    if (!isExactStringPermutation(response.orderedOptionIds, optionIds)) {
-      constraint('Order must be an exact permutation of the options');
-    }
-  }
-
-  if (interaction.kind === 'star_rating' && response.kind === 'star_rating') {
-    if (response.value > interaction.config.maxStars) {
-      constraint(`Rating cannot exceed ${interaction.config.maxStars} stars`);
-    }
-  }
-
-  if (interaction.kind === 'video_recording' && response.kind === 'video_recording') {
-    // Two-second grace mirrors the existing submission service tolerance.
-    if (response.durationSeconds > interaction.config.maxDurationSeconds + 2) {
-      constraint('Recording exceeds the configured duration');
-    }
-  }
-
-  if (interaction.kind === 'file_upload' && response.kind === 'file_upload') {
-    const allowed = isFileUploadTypeAllowed(
-      { fileName: response.fileName, mimeType: response.mimeType },
-      interaction.config.acceptedTypes
-    );
-    if (!allowed) constraint('File type is not accepted for this interaction');
-    if (interaction.config.maxSizeMb !== undefined && response.size > interaction.config.maxSizeMb * 1024 * 1024) {
-      constraint(`File size cannot exceed ${interaction.config.maxSizeMb} MB`);
-    }
-  }
-
+  interaction satisfies never;
   return issues;
 }
 
 /** A present response that carries no answerable content (required-check input). */
 function isMeaningfulResponse(interaction: AssessmentInteraction, response: AssessmentInteractionResponse): boolean {
-  if (interaction.kind === 'text' && response.kind === 'text') {
-    return textCharacterCount(response.text, interaction.config.format) > 0;
-  }
-  if (response.kind === 'fill_blank') {
-    return response.values.some((value) => value.trim().length > 0);
-  }
-  if (response.kind === 'word_bank') {
-    return response.filledBlanks.length > 0 && response.filledBlanks.every((value) => value.trim().length > 0);
+  switch (interaction.kind) {
+    case 'choice':
+      return response.kind === 'choice' && response.selectedOptionIds.length > 0;
+    case 'text':
+      return response.kind === 'text' && textCharacterCount(response.text, interaction.config.format) > 0;
+    case 'numeric':
+      return response.kind === 'numeric';
+    case 'fill_blank':
+      return response.kind === 'fill_blank' && response.values.some((value) => value.trim().length > 0);
+    case 'word_bank':
+      return (
+        response.kind === 'word_bank' &&
+        response.filledBlanks.length > 0 &&
+        response.filledBlanks.every((value) => value.trim().length > 0)
+      );
+    case 'ordering':
+      return response.kind === 'ordering' && response.orderedOptionIds.length > 0;
+    case 'true_false_group':
+      return response.kind === 'true_false_group' && response.answers.length > 0;
+    case 'file_upload':
+      return response.kind === 'file_upload';
+    case 'link':
+      return response.kind === 'link' && response.urls.length > 0;
+    case 'star_rating':
+      return response.kind === 'star_rating';
+    case 'video_recording':
+      return response.kind === 'video_recording';
   }
 
-  return true;
+  interaction satisfies never;
+  return false;
 }
 
 /**
@@ -252,7 +328,8 @@ function isMeaningfulResponse(interaction: AssessmentInteraction, response: Asse
  */
 export function validateAssessmentResponseEnvelope(
   definition: AssessmentItemDefinition,
-  value: unknown
+  value: unknown,
+  options: AssessmentResponseValidationOptions = {}
 ): AssessmentResult<ValidatedAssessmentResponses> {
   if (!isRecord(value)) {
     return assessmentFailure([assessmentIssue('MALFORMED_RESPONSE', [], 'Response envelope must be an object')]);
@@ -322,6 +399,21 @@ export function validateAssessmentResponseEnvelope(
     }
 
     issues.push(...collectConstraintIssues(interaction, entry.response, [...entryPath, 'response']));
+    if (
+      options.requireCompleteTrueFalseGroups &&
+      interaction.kind === 'true_false_group' &&
+      entry.response.kind === 'true_false_group' &&
+      entry.response.answers.length > 0 &&
+      entry.response.answers.length !== interaction.config.statements.length
+    ) {
+      issues.push(
+        assessmentIssue(
+          'MISSING_REQUIRED_RESPONSE',
+          [...entryPath, 'response', 'answers'],
+          `Interaction "${entry.interactionId}" must answer every statement once started`
+        )
+      );
+    }
     responsesByInteractionId.set(entry.interactionId, entry.response);
   });
 
