@@ -52,6 +52,27 @@ jobs:
           test "$missing" -eq 0
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
+      - name: Verify merged pull-request provenance
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          merged_pr_count=$(gh api \
+            "repos/${REPOSITORY}/commits/${RELEASE_SHA}/pulls" \
+            | jq --arg release_sha "$RELEASE_SHA" \
+                '[.[] | select(.base.ref == "main" and .merged_at != null and .merge_commit_sha == $release_sha)] | length')
+
+          if [ "$merged_pr_count" -ne 1 ]; then
+            echo "::error::Release ${RELEASE_SHA} is not the merge commit of exactly one merged pull request into main."
+            exit 1
+          fi
+
+          echo "Verified merged pull-request provenance for ${RELEASE_SHA}."
+
       - name: Trigger Coolify deployment
         id: trigger
         if: steps.creds.outputs.ready == 'true'
