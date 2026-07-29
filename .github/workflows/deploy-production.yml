@@ -104,8 +104,16 @@ jobs:
           resolve_image() {
             local image_name="$1"
             local digest
-            digest=$(docker buildx imagetools inspect "ghcr.io/tedydev-web/${image_name}:sha-${RELEASE_SHA}" --format '{{json .Manifest.Digest}}' | tr -d '"')
-            test "${digest#sha256:}" != "$digest"
+
+            if ! digest=$(docker buildx imagetools inspect "ghcr.io/tedydev-web/${image_name}:sha-${RELEASE_SHA}" --format '{{json .Manifest.Digest}}' | tr -d '"'); then
+              echo "::error::Missing immutable image for ${image_name} at ${RELEASE_SHA}" >&2
+              return 1
+            fi
+            if [ "${digest#sha256:}" = "$digest" ]; then
+              echo "::error::Invalid immutable digest for ${image_name} at ${RELEASE_SHA}" >&2
+              return 1
+            fi
+
             printf 'ghcr.io/tedydev-web/%s@%s' "${image_name}" "${digest}"
           }
 
