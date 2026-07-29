@@ -4,12 +4,11 @@
 services:
   runner:
     image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
-    privileged: true
     restart: unless-stopped
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-coolify-r4
+      RUNNER_NAME: classroomhub-deploy
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,coolify,deploy
       RUNNER_WORKDIR: /_work
@@ -30,12 +29,11 @@ services:
 
   runner-ci:
     image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
-    privileged: true
     restart: unless-stopped
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-ci-2-r4
+      RUNNER_NAME: classroomhub-ci-1
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,workstation,coolify,ci
       RUNNER_WORKDIR: /_work
@@ -56,12 +54,11 @@ services:
 
   runner-ci-3:
     image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
-    privileged: true
     restart: unless-stopped
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-ci-3-r4
+      RUNNER_NAME: classroomhub-ci-2
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,workstation,coolify,ci
       RUNNER_WORKDIR: /_work
