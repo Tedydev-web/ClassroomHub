@@ -12,6 +12,7 @@ import {
   inspectEnvFileSafely,
   parseExpectedNodeVersion,
   parsePackageManagerVersion,
+  parseTcpPort,
   parseUserAgentPnpmVersion,
   probeHttp,
   probePort,
@@ -25,6 +26,14 @@ test('parses repository Node and pnpm version declarations', () => {
     parsePackageManagerVersion('pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eac'),
     '10.19.0'
   );
+});
+
+test('accepts only valid TCP ports', () => {
+  assert.equal(parseTcpPort('8000'), 8000);
+  assert.equal(parseTcpPort('65535'), 65535);
+  assert.equal(parseTcpPort('0'), null);
+  assert.equal(parseTcpPort('800L'), null);
+  assert.equal(parseTcpPort(undefined), null);
 });
 
 test('parses pnpm version from the npm_config_user_agent env var without spawning a process', () => {
@@ -181,4 +190,12 @@ test('blocks when pnpm does not match the pinned version', () => {
 
   assert.equal(result.status, 1);
   assert.match(result.output, /\[BLOCK\] pnpm 9\.0\.0 is active/);
+});
+
+test('local development entrypoint exposes help without starting services', () => {
+  const scriptPath = path.resolve('scripts/start-development.sh');
+  const result = runCommandCheck('bash', [scriptPath, '--help']);
+
+  assert.equal(result.status, 0);
+  assert.match(result.output, /Usage: pnpm dev:local/);
 });

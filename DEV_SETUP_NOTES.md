@@ -37,6 +37,22 @@ To start the same workflow manually:
 scripts\start-development.cmd
 ```
 
+On Linux and macOS, after the one-time setup, use:
+
+```bash
+pnpm dev:local
+```
+
+It activates the Node version declared by `.nvmrc`, validates the local
+configuration, starts Docker infrastructure, and keeps the API, dashboard, jobs,
+and source watchers running with auto-reload. Use `pnpm dev:local:status` for a
+local health/port/tunnel report, `pnpm dev:local:tunnel` for only the tunnel
+check, and `pnpm dev:local:stop` after stopping the foreground watcher process.
+
+Set `DEV_TUNNEL_URL` only in the shell invocation when an end-to-end public
+tunnel probe is required. The command never changes a cloudflared ingress or
+redirects a production tunnel to local services.
+
 To stop the scheduled process before maintenance:
 
 ```powershell
