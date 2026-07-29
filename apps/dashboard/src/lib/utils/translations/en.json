@@ -5130,6 +5130,7 @@
       "dangling_diagnostic_question": "A finding references a question that no longer exists.",
       "diagnostic_target_ownership_mismatch": "A finding references a field owned by another question.",
       "section_title_truncated": "A section title was shortened because it exceeded the supported length.",
+      "section_question_range_mismatch": "The question range in this section instruction does not match the questions it contains.",
       "passage_group_requires_split": "A large shared-content group will be split safely during publishing.",
       "no_questions_detected": "No reliable question markers were detected.",
       "unassigned_source_content": "Some source content could not be assigned safely. Review the original document before publishing.",

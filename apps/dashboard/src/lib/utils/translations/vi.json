@@ -5346,6 +5346,7 @@
       "dangling_diagnostic_question": "Một phát hiện tham chiếu tới câu hỏi không còn tồn tại.",
       "diagnostic_target_ownership_mismatch": "Một phát hiện tham chiếu tới trường thuộc câu hỏi khác.",
       "section_title_truncated": "Tiêu đề một phần đã được rút ngắn vì vượt quá độ dài hỗ trợ.",
+      "section_question_range_mismatch": "Phạm vi câu hỏi trong hướng dẫn của phần này không khớp với các câu hỏi thực tế.",
       "passage_group_requires_split": "Một nhóm nội dung dùng chung lớn sẽ được tách an toàn khi xuất bản.",
       "no_questions_detected": "Không nhận diện được dấu hiệu câu hỏi đủ tin cậy.",
       "unassigned_source_content": "Một phần nội dung nguồn chưa thể được gán an toàn. Hãy kiểm tra tài liệu gốc trước khi xuất bản.",

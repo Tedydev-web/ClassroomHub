@@ -5346,6 +5346,7 @@
       "dangling_diagnostic_question": "A finding references a question that no longer exists.",
       "diagnostic_target_ownership_mismatch": "A finding references a field owned by another question.",
       "section_title_truncated": "A section title was shortened because it exceeded the supported length.",
+      "section_question_range_mismatch": "इस अनुभाग के निर्देश में दी गई प्रश्न सीमा इसमें शामिल प्रश्नों से मेल नहीं खाती।",
       "passage_group_requires_split": "A large shared-content group will be split safely during publishing.",
       "no_questions_detected": "No reliable question markers were detected.",
       "unassigned_source_content": "कुछ स्रोत सामग्री सुरक्षित रूप से निर्दिष्ट नहीं की जा सकी। प्रकाशित करने से पहले मूल दस्तावेज़ की समीक्षा करें।",

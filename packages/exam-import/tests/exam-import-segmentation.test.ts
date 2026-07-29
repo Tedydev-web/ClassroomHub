@@ -844,6 +844,16 @@ describe('exam import segmentation', () => {
     expect(questions.slice(17, 22).every((question) => question.passageId === draft.sharedContents[2]?.id)).toBe(true);
     expect(questions.slice(22, 30).every((question) => question.passageId === draft.sharedContents[3]?.id)).toBe(true);
     expect(questions.slice(30).every((question) => question.passageId === draft.sharedContents[4]?.id)).toBe(true);
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('UNASSIGNED_SOURCE_CONTENT');
+    expect(draft.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'SECTION_QUESTION_RANGE_MISMATCH',
+          blocking: false,
+          questionId: questions[30]?.id
+        })
+      ])
+    );
   });
 
   it('is deterministic for identical input', () => {

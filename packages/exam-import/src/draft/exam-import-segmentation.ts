@@ -124,7 +124,8 @@ const RANGED_QUESTION_INSTRUCTION_PATTERN =
 const ARRANGEMENT_INSTRUCTION_PATTERN =
   /^(?:Mark the letter .*?\barrangement\b|Choose the (?:best|correct) arrangement\b)/iu;
 const FORM_FIELD_LABEL_PATTERN =
-  /^(?:candidate(?:\s+name)?|student\s+name|full\s+name|name|class|họ\s*(?:và\s*)?tên|ho\s*(?:va\s*)?ten|tên|ten|lớp|lop|số\s+báo\s+danh|so\s+bao\s+danh|mã\s+học\s+sinh|ma\s+hoc\s+sinh)\s*:?\s*$/iu;
+  /^(?:candidate(?:\s+name)?|student\s+name|full\s+name|name|class|họ\s*(?:và\s*)?tên|ho\s*(?:va\s*)?ten|tên|ten|lớp|lop|số\s+báo\s+danh|so\s+bao\s+danh|mã\s+học\s+sinh|ma\s+hoc\s+sinh)\s*:?\s*(?:[_–—-]{2,}\s*)?$/iu;
+const INSTRUCTION_RANGE_PATTERN = /\bfrom\s+(\d+)\s*(?:to|through|[-–—])\s*(\d+)\b/iu;
 const SOLUTION_MARKER_PATTERN = /^(?:Lời giải|Giải thích|Hướng dẫn giải)\b/iu;
 const ANSWER_LINE_PATTERN = /^(?:Đáp án|Dap an|Answer)\s*:/iu;
 const COMPACT_KEY_PAIR_PATTERN = /(\d+)\s*[.)-]?\s*([A-D])(?=\s|$|\d)/giu;
@@ -1418,7 +1419,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (currentQuestion === null) {
-      if (block.index !== titleBlockIndex) {
+      if (block.index !== titleBlockIndex && !FORM_FIELD_LABEL_PATTERN.test(text)) {
         reportUnassignedSourceContent([block]);
       }
       continue;
@@ -1437,6 +1438,32 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       order: sectionIndex,
       questions: section.questions.map((question) => buildQuestion(question, section, fieldStates, diagnostics))
     }));
+
+  for (const section of outputSections) {
+    const range = section.title.match(INSTRUCTION_RANGE_PATTERN);
+    if (!range) continue;
+
+    const rangeStart = Number(range[1]);
+    const rangeEnd = Number(range[2]);
+    const outOfRangeQuestion = section.questions.find((question) => {
+      const sourceNumber = Number(question.sourceNumber);
+
+      return Number.isSafeInteger(sourceNumber) && (sourceNumber < rangeStart || sourceNumber > rangeEnd);
+    });
+    if (!outOfRangeQuestion) continue;
+
+    diagnostics.push({
+      tier: 'semantic',
+      severity: 'warning',
+      blocking: false,
+      code: 'SECTION_QUESTION_RANGE_MISMATCH',
+      message: `Section instruction states questions ${rangeStart} to ${rangeEnd}, but contains question ${outOfRangeQuestion.sourceNumber}`,
+      messageKey: 'exam_import.diagnostics.section_question_range_mismatch',
+      questionId: outOfRangeQuestion.id,
+      target: { kind: 'section_field', sectionId: section.id, field: 'title' },
+      provenance: outOfRangeQuestion.provenance
+    });
+  }
 
   for (const sharedContent of [...sharedContents]) {
     const groupedQuestions = outputSections
