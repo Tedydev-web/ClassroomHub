@@ -86,6 +86,11 @@
     shouldHydrateHistoricalSubmission
   } from '$features/course/utils/exercise-autosave-utils';
   import {
+    getLearnerSectionQuestionDisplayStorageKey,
+    resolveLearnerSectionQuestionDisplay,
+    type LearnerSectionQuestionDisplay
+  } from '$features/course/utils/exercise-section-display-mode';
+  import {
     getCanonicalAssessmentReviewItems,
     sumAnswerScoresForRenderedQuestions,
     type CanonicalAssessmentReviewItem
@@ -131,6 +136,8 @@
   let prevExerciseId = $state('');
   let slideDirection = $state<'next' | 'prev'>('next');
   let selectedTryIndex = $state(-1);
+  let learnerSectionQuestionDisplay = $state<LearnerSectionQuestionDisplay>('one_question');
+  let learnerSectionQuestionDisplayExerciseId = $state('');
   let draftSaveTimer: ReturnType<typeof setTimeout> | undefined;
   const questionLabels = $derived(getExerciseQuestionLabels());
   const passageWorkspaceLabels = $derived(getAssessmentPassageWorkspaceLabels());
@@ -821,7 +828,7 @@
   }
 
   function handleEnterKey(e: KeyboardEvent) {
-    if (hasSectionedExercise && $questionnaire.sectionDisplayMode === 'all_questions') return;
+    if (hasSectionedExercise && resolvedSectionQuestionDisplay === 'all_questions') return;
     if (e.key !== 'Enter' || isSubmitting || !currentQuestion) return;
 
     const target = e.target as HTMLElement;
@@ -961,6 +968,9 @@
     [...($questionnaire.sections ?? [])].filter((section) => !section.deletedAt).sort((a, b) => a.order - b.order)
   );
   const hasSectionedExercise = $derived(hasSections($questionnaire.sections ?? []));
+  const resolvedSectionQuestionDisplay = $derived(
+    resolveLearnerSectionQuestionDisplay($questionnaire.sectionDisplayMode, learnerSectionQuestionDisplay)
+  );
   const currentSection = $derived(
     hasSectionedExercise ? activeSections[$questionnaireMetaData.currentSectionIndex] : null
   );
@@ -1147,6 +1157,32 @@
 
   const flyX = $derived(slideDirection === 'next' ? 300 : -300);
   const flyOutX = $derived(-flyX);
+
+  $effect(() => {
+    if (!exerciseId || learnerSectionQuestionDisplayExerciseId === exerciseId) return;
+
+    let nextDisplay: LearnerSectionQuestionDisplay = 'one_question';
+    try {
+      const storedDisplay = localStorage.getItem(getLearnerSectionQuestionDisplayStorageKey(exerciseId));
+      if (storedDisplay === 'all_questions') nextDisplay = storedDisplay;
+    } catch (error) {
+      console.error('Failed to restore learner section display preference', { exerciseId, error });
+    }
+
+    learnerSectionQuestionDisplay = nextDisplay;
+    learnerSectionQuestionDisplayExerciseId = exerciseId;
+  });
+
+  function setLearnerSectionQuestionDisplay(display: LearnerSectionQuestionDisplay) {
+    learnerSectionQuestionDisplay = display;
+    if (!exerciseId) return;
+
+    try {
+      localStorage.setItem(getLearnerSectionQuestionDisplayStorageKey(exerciseId), display);
+    } catch (error) {
+      console.error('Failed to save learner section display preference', { exerciseId, error });
+    }
+  }
 
   $effect(() => {
     const finished = isFinished;
@@ -1557,10 +1593,26 @@
       section: $t('course.navItem.lessons.exercises.all_exercises.section.fallback_title')
     }}
   />
-{:else if hasSectionedExercise && currentSection && $questionnaire.sectionDisplayMode === 'all_questions' && $questionnaireMetaData.sectionPhase === 'questions'}
+{:else if hasSectionedExercise && currentSection && resolvedSectionQuestionDisplay === 'all_questions' && $questionnaireMetaData.sectionPhase === 'questions'}
   <div class="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
     <ExerciseQuestion.SectionNavigationSidebar sections={sectionNavigationGroups} />
     <section class="space-y-4">
+      {#if $questionnaire.sectionDisplayMode === 'learner_choice'}
+        <div
+          class="flex justify-end"
+          aria-label={$t('course.navItem.lessons.exercises.all_exercises.learner_display.label')}
+        >
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            aria-pressed={true}
+            onclick={() => setLearnerSectionQuestionDisplay('one_question')}
+          >
+            {$t('course.navItem.lessons.exercises.all_exercises.learner_display.one_question')}
+          </Button>
+        </div>
+      {/if}
       <ExerciseQuestion.SectionHeader
         title={currentSectionDisplayHtml}
         description={currentSection.description}
@@ -1635,6 +1687,22 @@
     {/if}
     <div class="flex min-w-0 flex-col gap-4">
       {#if hasSectionedExercise && currentSection}
+        {#if $questionnaire.sectionDisplayMode === 'learner_choice'}
+          <div
+            class="flex justify-end"
+            aria-label={$t('course.navItem.lessons.exercises.all_exercises.learner_display.label')}
+          >
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              aria-pressed={true}
+              onclick={() => setLearnerSectionQuestionDisplay('all_questions')}
+            >
+              {$t('course.navItem.lessons.exercises.all_exercises.learner_display.all_questions')}
+            </Button>
+          </div>
+        {/if}
         <ExerciseQuestion.SectionHeader
           title={currentSectionDisplayHtml}
           description={currentSection.description}

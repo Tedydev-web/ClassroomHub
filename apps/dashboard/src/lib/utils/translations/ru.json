@@ -1908,11 +1908,21 @@
               "collapse_section": "Свернуть раздел",
               "expand_section": "Развернуть раздел"
             },
+            "learner_display": {
+              "label": "Отображение вопросов",
+              "one_question": "Показать один вопрос",
+              "all_questions": "Показать все вопросы"
+            },
             "more": "Действия",
             "settings_completion_policy": "Правило завершения",
             "settings_completion_submitted": "Отправлено — любая отправка засчитывается",
             "settings_completion_passed": "Пройдено — требуется минимальный балл",
             "settings_pass_threshold": "Порог прохождения (%)",
+            "settings_section_display": "Отображение вопросов раздела",
+            "settings_section_display_helper": "Выберите, работают ли учащиеся с одним вопросом или со всем разделом одновременно.",
+            "settings_section_display_one_question": "По одному вопросу",
+            "settings_section_display_all_questions": "Все вопросы раздела",
+            "settings_section_display_learner_choice": "Разрешить учащимся выбирать",
             "notify": {
               "action": "Уведомить студентов",
               "sending": "Уведомление учащихся…",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Инструменты проверки",
+      "question_queue": "Очередь вопросов",
+      "no_linked_shared_content": "У этого вопроса нет связанного общего текста или таблицы.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

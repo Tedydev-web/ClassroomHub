@@ -1908,11 +1908,21 @@
               "collapse_section": "Zwiń sekcję",
               "expand_section": "Rozwiń sekcję"
             },
+            "learner_display": {
+              "label": "Widok pytań",
+              "one_question": "Pokaż jedno pytanie",
+              "all_questions": "Pokaż wszystkie pytania"
+            },
             "more": "Akcje",
             "settings_completion_policy": "Zasada uzupełnienia",
             "settings_completion_submitted": "Przesłane — liczy się każde przesłanie",
             "settings_completion_passed": "Zaliczony — wymagany minimalny wynik",
             "settings_pass_threshold": "Próg zaliczenia (%)",
+            "settings_section_display": "Wyświetlanie pytań w sekcji",
+            "settings_section_display_helper": "Wybierz, czy uczniowie pracują nad jednym pytaniem czy całą sekcją naraz.",
+            "settings_section_display_one_question": "Jedno pytanie naraz",
+            "settings_section_display_all_questions": "Wszystkie pytania w sekcji",
+            "settings_section_display_learner_choice": "Pozwól uczniom wybrać",
             "notify": {
               "action": "Powiadom uczniów",
               "sending": "Powiadamianie uczniów…",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Narzędzia przeglądu",
+      "question_queue": "Kolejka pytań",
+      "no_linked_shared_content": "To pytanie nie ma powiązanego wspólnego fragmentu ani tabeli.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

@@ -1908,11 +1908,21 @@
               "collapse_section": "Réduire la section",
               "expand_section": "Développer la section"
             },
+            "learner_display": {
+              "label": "Affichage des questions",
+              "one_question": "Afficher une question",
+              "all_questions": "Afficher toutes les questions"
+            },
             "more": "Actions",
             "settings_completion_policy": "Règle d'achèvement",
             "settings_completion_submitted": "Soumis – toute soumission compte",
             "settings_completion_passed": "Réussi – note minimale requise",
             "settings_pass_threshold": "Seuil de réussite (%)",
+            "settings_section_display": "Affichage des questions de la section",
+            "settings_section_display_helper": "Choisissez si les apprenants traitent une question ou toute la section à la fois.",
+            "settings_section_display_one_question": "Une question à la fois",
+            "settings_section_display_all_questions": "Toutes les questions de la section",
+            "settings_section_display_learner_choice": "Laisser les apprenants choisir",
             "notify": {
               "action": "Avertir les étudiants",
               "sending": "Informer les étudiants…",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Outils de révision",
+      "question_queue": "File de questions",
+      "no_linked_shared_content": "Cette question n'est liée à aucun passage ou tableau partagé.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

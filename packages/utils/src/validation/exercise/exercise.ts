@@ -261,7 +261,7 @@ export const ZExerciseUpdate = z.object({
   canonicalQuestionPlacements: ZCanonicalQuestionPlacements.optional(),
   assessmentItemMutations: z.array(ZAssessmentItemMutation).max(100).optional(),
   sections: z.array(ZExerciseSection).optional(),
-  sectionDisplayMode: z.enum(['one_question', 'all_questions']).optional(),
+  sectionDisplayMode: z.enum(['one_question', 'all_questions', 'learner_choice']).optional(),
   completionPolicy: z.enum(['submitted', 'passed']).optional(),
   passThreshold: z.number().int().min(0).max(100).optional()
 });

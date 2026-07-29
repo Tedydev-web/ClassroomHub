@@ -7,7 +7,7 @@ export interface ExerciseSectionAfterBehavior {
   exerciseSectionId?: string;
 }
 
-export type ExerciseSectionDisplayMode = 'one_question' | 'all_questions';
+export type ExerciseSectionDisplayMode = 'one_question' | 'all_questions' | 'learner_choice';
 export type ExerciseSectionColorTheme = 'blue' | 'green' | 'amber' | 'rose' | 'violet' | 'slate';
 
 export interface ExerciseSectionModel {

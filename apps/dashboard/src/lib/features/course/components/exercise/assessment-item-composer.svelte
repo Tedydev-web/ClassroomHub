@@ -1550,6 +1550,32 @@
               </span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+              {#if activePassageQuestionBlocks.length > 0}
+                <Select.Root
+                  type="single"
+                  value={activeQuestionBlock?.id ?? ''}
+                  onValueChange={(value) => {
+                    if (activePassageQuestionBlocks.some((block) => block.id === value)) selectQuestion(value);
+                  }}
+                >
+                  <Select.Trigger class="min-h-11 w-44">
+                    {activeQuestionBlock
+                      ? $t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', {
+                          index: getQuestionNumber(activeQuestionBlock.id)
+                        })
+                      : $t('course.navItem.lessons.exercises.all_exercises.assessment_item.question')}
+                  </Select.Trigger>
+                  <Select.Content>
+                    {#each activePassageQuestionBlocks as block (block.id)}
+                      <Select.Item value={block.id}>
+                        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', {
+                          index: getQuestionNumber(block.id)
+                        })}: {getQuestionTypeLabel(block)}
+                      </Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
+              {/if}
               <Button
                 type="button"
                 variant="secondary"
@@ -1586,49 +1612,7 @@
             </div>
           </header>
 
-          <div
-            class="min-h-0 xl:flex xl:h-[calc(100%-3.5rem)] xl:flex-col 2xl:grid 2xl:grid-cols-[14rem_minmax(0,1fr)]"
-          >
-            {#if activePassageQuestionBlocks.length > 0}
-              <nav
-                class="ui:border-border ui:bg-muted/20 flex shrink-0 gap-2 overflow-x-auto border-b p-2 2xl:block 2xl:space-y-1 2xl:overflow-y-auto 2xl:border-r 2xl:border-b-0"
-                aria-label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
-              >
-                {#each activePassageQuestionBlocks as block (block.id)}
-                  {@const blockIndex = composer.definition.blocks.findIndex((candidate) => candidate.id === block.id)}
-                  {@const issueCount = getBlockValidationIssueCount(blockIndex)}
-                  <Button
-                    type="button"
-                    variant={activeQuestionBlock?.id === block.id ? 'secondary' : 'ghost'}
-                    class="min-h-14 min-w-44 justify-start px-3 text-left 2xl:w-full 2xl:min-w-0"
-                    aria-current={activeQuestionBlock?.id === block.id ? 'true' : undefined}
-                    onclick={() => selectQuestion(block.id)}
-                  >
-                    <span class="ui:text-muted-foreground w-6 shrink-0 text-xs tabular-nums">
-                      {getQuestionNumber(block.id)}
-                    </span>
-                    <span class="min-w-0 flex-1">
-                      <span class="block truncate text-sm font-medium">{getQuestionTypeLabel(block)}</span>
-                      <span class="ui:text-muted-foreground block truncate text-xs">
-                        {$t('course.navItem.lessons.exercises.new_exercise_modal.points')}: {block.interaction.maxScore}
-                      </span>
-                    </span>
-                    {#if issueCount > 0}
-                      <span
-                        class="ui:bg-destructive ui:text-destructive-foreground inline-flex h-6 min-w-6 items-center justify-center rounded px-1 text-xs tabular-nums"
-                        aria-label={$t(
-                          'course.navItem.lessons.exercises.all_exercises.assessment_item.question_error_count',
-                          { count: issueCount }
-                        )}
-                      >
-                        {issueCount}
-                      </span>
-                    {/if}
-                  </Button>
-                {/each}
-              </nav>
-            {/if}
-
+          <div class="min-h-0 xl:h-[calc(100%-3.5rem)]">
             <div class="min-h-0 min-w-0 flex-1 overflow-y-auto">
               {#if activeQuestionBlock && activeQuestionIndex >= 0}
                 {@const blockIndex = composer.definition.blocks.findIndex(

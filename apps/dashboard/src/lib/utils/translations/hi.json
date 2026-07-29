@@ -1908,11 +1908,21 @@
               "collapse_section": "अनुभाग संकुचित करें",
               "expand_section": "अनुभाग विस्तारित करें"
             },
+            "learner_display": {
+              "label": "प्रश्न प्रदर्शन",
+              "one_question": "एक प्रश्न दिखाएँ",
+              "all_questions": "सभी प्रश्न दिखाएँ"
+            },
             "more": "क्रियाएँ",
             "settings_completion_policy": "समापन नियम",
             "settings_completion_submitted": "सबमिट किया गया - कोई भी सबमिशन मायने रखता है",
             "settings_completion_passed": "उत्तीर्ण - न्यूनतम अंक आवश्यक",
             "settings_pass_threshold": "पास सीमा (%)",
+            "settings_section_display": "अनुभाग प्रश्न प्रदर्शन",
+            "settings_section_display_helper": "चुनें कि शिक्षार्थी एक प्रश्न या पूरा अनुभाग एक समय में करें।",
+            "settings_section_display_one_question": "एक समय में एक प्रश्न",
+            "settings_section_display_all_questions": "अनुभाग के सभी प्रश्न",
+            "settings_section_display_learner_choice": "शिक्षार्थियों को चुनने दें",
             "notify": {
               "action": "छात्रों को सूचित करें",
               "sending": "छात्रों को सूचित किया जा रहा है...",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "समीक्षा उपकरण",
+      "question_queue": "प्रश्न कतार",
+      "no_linked_shared_content": "इस प्रश्न में कोई संबद्ध साझा अनुच्छेद या तालिका नहीं है।",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

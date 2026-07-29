@@ -801,11 +801,7 @@
           </UnderlineTabs.List>
           <UnderlineTabs.Content
             value="questions"
-            class={preview
-              ? 'w-full'
-              : $wideAssessmentComposerIds.size > 0
-                ? 'mx-auto w-full md:max-w-7xl'
-                : 'mx-auto w-full md:max-w-3xl'}
+            class={preview ? 'w-full' : $wideAssessmentComposerIds.size > 0 ? 'w-full' : 'mx-auto w-full md:max-w-3xl'}
           >
             <UpdateDescription {preview} />
             <div hidden={preview}>

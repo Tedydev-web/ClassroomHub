@@ -9,6 +9,7 @@
   import { Spinner } from '@cio/ui/base/spinner';
   import * as ToggleGroup from '@cio/ui/base/toggle-group';
   import { InputField } from '@cio/ui/custom/input-field';
+  import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
@@ -31,14 +32,11 @@
     importId: string;
   }
 
-  const QUESTION_PAGE_SIZE = 10;
-
   let { courseId, importId }: Props = $props();
 
   let sortMode = $state<'review' | 'document'>('review');
   let answerKey = $state('');
   let activeQuestionId = $state<string | null>(null);
-  let visibleQuestionCount = $state(QUESTION_PAGE_SIZE);
   let aiSuggestionDialogOpen = $state(false);
   let aiSuggestionEstimate = $state<ExamImportAiSuggestionEstimate | null>(null);
   let aiSuggestionLoading = $state(false);
@@ -51,7 +49,9 @@
   const questionViews = $derived(
     draftView ? getExamImportQuestionViews(draftView.draft, draftView.findings, sortMode) : []
   );
-  const visibleQuestionViews = $derived(questionViews.slice(0, visibleQuestionCount));
+  const activeQuestionView = $derived(
+    questionViews.find((view) => view.question.id === activeQuestionId) ?? questionViews[0] ?? null
+  );
   const blockingFindings = $derived(draftView?.findings.filter((finding) => finding.blocking) ?? []);
   const flaggedQuestionIds = $derived(
     questionViews
@@ -68,6 +68,12 @@
       label: $t(`exam_import.review.shared_content_${content.kind}`, { number: index + 1 }),
       html: content.html
     }))
+  );
+  const activeSharedContent = $derived(
+    activeQuestionView?.question.passageId === null
+      ? null
+      : (draftView?.draft.sharedContents.find((content) => content.id === activeQuestionView?.question.passageId) ??
+          null)
   );
 
   onMount(() => {
@@ -89,13 +95,8 @@
     goto(resolve(`/courses/${courseId}/lessons`, {}));
   }
 
-  function focusQuestion(questionId: string) {
-    const questionIndex = questionViews.findIndex((view) => view.question.id === questionId);
-    if (questionIndex >= visibleQuestionCount) visibleQuestionCount = questionIndex + 1;
+  function selectQuestion(questionId: string) {
     activeQuestionId = questionId;
-    requestAnimationFrame(() => {
-      document.getElementById(`exam-import-question-${questionId}`)?.focus();
-    });
   }
 
   function focusNextFlaggedQuestion() {
@@ -103,7 +104,7 @@
 
     const currentIndex = activeQuestionId ? flaggedQuestionIds.indexOf(activeQuestionId) : -1;
     const nextQuestionId = flaggedQuestionIds[(currentIndex + 1) % flaggedQuestionIds.length];
-    if (nextQuestionId) focusQuestion(nextQuestionId);
+    if (nextQuestionId) selectQuestion(nextQuestionId);
   }
 
   async function applyAnswerKey() {
@@ -132,11 +133,6 @@
 
     sortMode = value;
     activeQuestionId = null;
-    visibleQuestionCount = QUESTION_PAGE_SIZE;
-  }
-
-  function showMoreQuestions() {
-    visibleQuestionCount += QUESTION_PAGE_SIZE;
   }
 
   function setAiSuggestionSelection(questionId: string, selected: boolean) {
@@ -196,7 +192,7 @@
   <title>{$t('exam_import.review.page_title')}</title>
 </svelte:head>
 
-<div class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<div class="w-full px-4 py-6 sm:px-6 lg:px-8">
   <header class="mb-6 flex flex-wrap items-start justify-between gap-4">
     <div class="flex min-w-0 items-start gap-3">
       <Button variant="secondary" size="icon" aria-label={$t('exam_import.review.back')} onclick={goBack}>
@@ -297,83 +293,13 @@
       </span>
     </div>
 
-    <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
-      <main class="min-w-0 space-y-8">
-        {#key importId}
-          <ExamImportDraftSettings {courseId} {importId} draft={draftView.draft} />
-        {/key}
-
-        <section class="space-y-4" aria-labelledby="exam-import-questions-heading">
-          <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 id="exam-import-questions-heading" class="text-base font-semibold">
-                {$t('exam_import.review.questions')}
-              </h2>
-              <p class="ui:text-muted-foreground text-sm">
-                {$t('exam_import.review.questions_description')}
-              </p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              {#if flaggedQuestionIds.length > 0}
-                <Button variant="secondary" size="sm" onclick={focusNextFlaggedQuestion}>
-                  <ChevronDownIcon class="size-4" />
-                  {$t('exam_import.review.next_flagged')}
-                </Button>
-              {/if}
-              {#if aiSuggestionQuestionIds.length > 0}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={selectedAiQuestionCount === 0 || aiSuggestionLoading || aiSuggestionPending}
-                  onclick={openAiSuggestionConfirmation}
-                >
-                  <SparklesIcon class="size-4" />
-                  {$t('exam_import.review.ai_suggestion_action', { count: selectedAiQuestionCount })}
-                </Button>
-              {/if}
-              <ToggleGroup.Root
-                type="single"
-                variant="outline"
-                size="sm"
-                value={sortMode}
-                onValueChange={handleSortModeChange}
-              >
-                <ToggleGroup.Item value="review">{$t('exam_import.review.sort_review')}</ToggleGroup.Item>
-                <ToggleGroup.Item value="document">{$t('exam_import.review.sort_document')}</ToggleGroup.Item>
-              </ToggleGroup.Root>
-            </div>
-          </div>
-
-          <div class="space-y-4">
-            {#each visibleQuestionViews as view (view.question.id)}
-              {#key view.question.id}
-                <ExamImportQuestionCard
-                  {courseId}
-                  {importId}
-                  question={view.question}
-                  findings={view.findings}
-                  sharedContents={sharedContentOptions}
-                  questionNumber={view.documentIndex + 1}
-                  aiSuggestionEligible={aiSuggestionQuestionIds.includes(view.question.id)}
-                  aiSuggestionSelected={selectedAiQuestionIds.has(view.question.id)}
-                  onAiSuggestionSelectionChange={setAiSuggestionSelection}
-                />
-              {/key}
-            {/each}
-            {#if visibleQuestionViews.length < questionViews.length}
-              <div class="flex justify-center pt-2">
-                <Button variant="secondary" onclick={showMoreQuestions}>
-                  {$t('exam_import.review.load_more', {
-                    count: Math.min(QUESTION_PAGE_SIZE, questionViews.length - visibleQuestionViews.length)
-                  })}
-                </Button>
-              </div>
-            {/if}
-          </div>
-        </section>
-      </main>
-
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
+    <details class="ui:border-border mb-6 rounded-md border p-4">
+      <summary
+        class="ui:focus-visible:ring-ring cursor-pointer rounded-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      >
+        {$t('exam_import.review.review_tools')}
+      </summary>
+      <div class="mt-4 grid gap-6 lg:grid-cols-2">
         <section class="space-y-3" aria-labelledby="exam-import-answer-key-heading">
           <div>
             <h2 id="exam-import-answer-key-heading" class="text-sm font-semibold">
@@ -387,12 +313,7 @@
             bind:value={answerKey}
             errorMessage={examImportApi.errors.key ? $t(examImportApi.errors.key) : ''}
           />
-          <Button
-            class="w-full"
-            variant="secondary"
-            disabled={!answerKey.trim() || examImportApi.isLoading}
-            onclick={applyAnswerKey}
-          >
+          <Button variant="secondary" disabled={!answerKey.trim() || examImportApi.isLoading} onclick={applyAnswerKey}>
             {$t('exam_import.answer_key.apply')}
           </Button>
         </section>
@@ -415,7 +336,7 @@
                     <Button
                       variant="ghost"
                       class="h-auto w-full justify-start px-2 py-2 text-left text-sm whitespace-normal"
-                      onclick={() => focusQuestion(finding.questionId!)}
+                      onclick={() => selectQuestion(finding.questionId!)}
                     >
                       {$t(finding.messageKey)}
                     </Button>
@@ -427,11 +348,127 @@
             </ul>
           {/if}
         </section>
+      </div>
+    </details>
 
-        <Button class="w-full" onclick={publish} disabled={!draftView.publishable || examImportApi.isLoading}>
-          {$t('exam_import.publish.action')}
-        </Button>
-      </aside>
+    <div class="grid min-w-0 gap-6 xl:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)]">
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <div
+        role="region"
+        class="ui:border-border min-w-0 overflow-y-auto rounded-md border xl:max-h-[calc(100dvh-12rem)]"
+        aria-labelledby="exam-import-source-heading"
+        tabindex="0"
+      >
+        <div class="space-y-6 p-4 sm:p-6">
+          {#key importId}
+            <ExamImportDraftSettings {courseId} {importId} draft={draftView.draft} />
+          {/key}
+
+          <div class="ui:border-border border-t pt-5">
+            <h2 id="exam-import-source-heading" class="text-base font-semibold">
+              {$t('exam_import.review.shared_contents')}
+            </h2>
+            {#if activeSharedContent}
+              <div class="prose prose-sm mt-4 max-w-none">
+                <SafeHtmlContent content={activeSharedContent.html} />
+              </div>
+            {:else}
+              <p class="ui:text-muted-foreground mt-3 text-sm">
+                {$t('exam_import.review.no_linked_shared_content')}
+              </p>
+            {/if}
+          </div>
+        </div>
+      </div>
+
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <div
+        role="region"
+        class="ui:border-border min-w-0 overflow-y-auto rounded-md border xl:max-h-[calc(100dvh-12rem)]"
+        aria-labelledby="exam-import-questions-heading"
+        tabindex="0"
+      >
+        <header
+          class="ui:border-border ui:bg-background sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b p-4"
+        >
+          <div>
+            <h2 id="exam-import-questions-heading" class="text-base font-semibold">
+              {$t('exam_import.review.questions')}
+            </h2>
+            <p class="ui:text-muted-foreground text-sm">
+              {$t('exam_import.review.questions_description')}
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            {#if flaggedQuestionIds.length > 0}
+              <Button variant="secondary" size="sm" onclick={focusNextFlaggedQuestion}>
+                <ChevronDownIcon class="size-4" />
+                {$t('exam_import.review.next_flagged')}
+              </Button>
+            {/if}
+            {#if aiSuggestionQuestionIds.length > 0}
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={selectedAiQuestionCount === 0 || aiSuggestionLoading || aiSuggestionPending}
+                onclick={openAiSuggestionConfirmation}
+              >
+                <SparklesIcon class="size-4" />
+                {$t('exam_import.review.ai_suggestion_action', { count: selectedAiQuestionCount })}
+              </Button>
+            {/if}
+            <ToggleGroup.Root
+              type="single"
+              variant="outline"
+              size="sm"
+              value={sortMode}
+              onValueChange={handleSortModeChange}
+            >
+              <ToggleGroup.Item value="review">{$t('exam_import.review.sort_review')}</ToggleGroup.Item>
+              <ToggleGroup.Item value="document">{$t('exam_import.review.sort_document')}</ToggleGroup.Item>
+            </ToggleGroup.Root>
+          </div>
+        </header>
+
+        <details class="ui:border-border border-b p-3">
+          <summary
+            class="ui:focus-visible:ring-ring cursor-pointer rounded-sm text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          >
+            {$t('exam_import.review.question_queue')}
+          </summary>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {#each questionViews as view (view.question.id)}
+              <Button
+                type="button"
+                variant={activeQuestionView?.question.id === view.question.id ? 'secondary' : 'ghost'}
+                size="sm"
+                aria-current={activeQuestionView?.question.id === view.question.id ? 'step' : undefined}
+                onclick={() => selectQuestion(view.question.id)}
+              >
+                {$t('exam_import.review.question_number', { number: view.documentIndex + 1 })}
+              </Button>
+            {/each}
+          </div>
+        </details>
+
+        <div class="p-4 sm:p-6">
+          {#if activeQuestionView}
+            {#key activeQuestionView.question.id}
+              <ExamImportQuestionCard
+                {courseId}
+                {importId}
+                question={activeQuestionView.question}
+                findings={activeQuestionView.findings}
+                sharedContents={sharedContentOptions}
+                questionNumber={activeQuestionView.documentIndex + 1}
+                aiSuggestionEligible={aiSuggestionQuestionIds.includes(activeQuestionView.question.id)}
+                aiSuggestionSelected={selectedAiQuestionIds.has(activeQuestionView.question.id)}
+                onAiSuggestionSelectionChange={setAiSuggestionSelection}
+              />
+            {/key}
+          {/if}
+        </div>
+      </div>
     </div>
   {/if}
 </div>

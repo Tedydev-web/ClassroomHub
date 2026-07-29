@@ -38,6 +38,7 @@
     allowMultipleAttempts: boolean;
     completionPolicy: 'submitted' | 'passed';
     passThreshold: number;
+    sectionDisplayMode: 'one_question' | 'all_questions' | 'learner_choice';
     slug?: string;
   } | null>(null);
   let slug = $derived($questionnaire.slug ?? '');
@@ -49,6 +50,7 @@
     allowMultipleAttempts: !!$questionnaire.allowMultipleAttempts,
     completionPolicy: $questionnaire.completionPolicy ?? 'submitted',
     passThreshold: $questionnaire.passThreshold ?? 100,
+    sectionDisplayMode: $questionnaire.sectionDisplayMode ?? 'one_question',
     slug: isPublicCourse && slug ? slug : undefined
   });
   const settingsChanged = $derived(
@@ -248,6 +250,45 @@
         />
       </div>
     {/if}
+  </div>
+
+  <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+    <Label class="mb-2 block text-sm font-medium dark:text-gray-100">
+      {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display')}
+    </Label>
+    <p class="ui:text-muted-foreground mb-3 text-sm">
+      {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_helper')}
+    </p>
+    <Select.Root
+      type="single"
+      value={$questionnaire.sectionDisplayMode ?? 'one_question'}
+      onValueChange={(value) => {
+        if (value === 'one_question' || value === 'all_questions' || value === 'learner_choice') {
+          questionnaire.update((state) => ({ ...state, sectionDisplayMode: value }));
+        }
+      }}
+    >
+      <Select.Trigger class="w-full">
+        {#if ($questionnaire.sectionDisplayMode ?? 'one_question') === 'all_questions'}
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_all_questions')}
+        {:else if ($questionnaire.sectionDisplayMode ?? 'one_question') === 'learner_choice'}
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_learner_choice')}
+        {:else}
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_one_question')}
+        {/if}
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="one_question">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_one_question')}
+        </Select.Item>
+        <Select.Item value="all_questions">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_all_questions')}
+        </Select.Item>
+        <Select.Item value="learner_choice">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display_learner_choice')}
+        </Select.Item>
+      </Select.Content>
+    </Select.Root>
   </div>
 
   <div

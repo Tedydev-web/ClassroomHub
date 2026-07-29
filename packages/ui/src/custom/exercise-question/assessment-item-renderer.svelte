@@ -14,15 +14,12 @@
   import NumberBadge from '$src/base/number-badge/number-badge.svelte';
   import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
-  import LocateFixedIcon from '@lucide/svelte/icons/locate-fixed';
   import { Button } from '../../base/button';
   import { Checkbox } from '../../base/checkbox';
   import { Label } from '../../base/label';
   import * as RadioGroup from '../../base/radio-group';
   import { Textarea } from '../../base/textarea';
-  import * as Tooltip from '../../base/tooltip';
   import { sanitizeHtml } from '../../tools/sanitize';
-  import AssessmentPassageRail from './assessment-passage-rail.svelte';
   import { createAssessmentRichTextAnswer, createAssessmentRichTextQuestion } from './assessment-rich-text-adapter';
   import { getExerciseQuestionRenderer } from './renderer-contract';
   import QuestionSurface from './question-surface.svelte';
@@ -107,10 +104,6 @@
   let passagePanel = $state<HTMLElement | null>(null);
   let questionPanel = $state<HTMLElement | null>(null);
   let activeQuestionGroupId = $state<string | null>(null);
-  let visiblePassageGroupId = $state<string | null>(null);
-  let followsQuestionContext = $state(true);
-  let synchronizedGroupId = $state<string | null>(null);
-  let synchronizationSequence = 0;
 
   const passageGroups = $derived(groupAssessmentBlocksByPassage(definition.blocks));
   const passageGroupViews = $derived.by(() => {
@@ -139,19 +132,7 @@
     });
   });
 
-  const passageGroupSignature = $derived(passageGroupViews.map((group) => group.id).join('|'));
   const activePassageGroupView = $derived(passageGroupViews.find((group) => group.id === activeQuestionGroupId));
-
-  const railItems = $derived.by(() => {
-    if (!passageWorkspaceLabels) return [];
-
-    return passageGroupViews.map((group) => ({
-      id: group.id,
-      passageLabel: passageWorkspaceLabels.formatPassage(group.passageIndex),
-      questionRangeLabel: passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd),
-      progressLabel: passageWorkspaceLabels.formatProgress(group.answered, group.total)
-    }));
-  });
 
   function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -177,36 +158,10 @@
     });
   }
 
-  function revealPassageGroup(groupId: string) {
-    followsQuestionContext = true;
-    visiblePassageGroupId = groupId;
-    scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId);
-  }
-
-  function revealActivePassageGroup() {
-    if (!activeQuestionGroupId) return;
-
-    revealPassageGroup(activeQuestionGroupId);
-  }
-
   function selectPassageGroup(groupId: string) {
-    const currentSynchronizationSequence = ++synchronizationSequence;
-    synchronizedGroupId = groupId;
     activeQuestionGroupId = groupId;
-    visiblePassageGroupId = groupId;
-    followsQuestionContext = true;
     scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto');
     scrollPanelToGroup(questionPanel, 'data-assessment-question-group', groupId, 'auto');
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentSynchronizationSequence === synchronizationSequence) synchronizedGroupId = null;
-      });
-    });
-  }
-
-  function markPassageAsManuallyExplored() {
-    followsQuestionContext = false;
   }
 
   function selectMobileWorkspacePanel(panel: 'passage' | 'questions') {
@@ -225,84 +180,6 @@
     if (!(toolbar instanceof HTMLElement)) return;
 
     toolbar.querySelector<HTMLButtonElement>(`[data-assessment-mobile-panel="${nextPanel}"]`)?.focus();
-  }
-
-  function observeGroups(
-    node: HTMLElement,
-    groupAttribute: 'data-assessment-passage-group' | 'data-assessment-question-group',
-    onActiveGroupChange: (groupId: string) => void
-  ) {
-    const visibility = new Map<string, IntersectionObserverEntry>();
-    let observer: IntersectionObserver | null = null;
-
-    function updateActiveGroup() {
-      const panelRect = node.getBoundingClientRect();
-      const focusLine = panelRect.top + 72;
-      const candidates = [...visibility.entries()]
-        .filter(([, entry]) => entry.isIntersecting)
-        .map(([groupId, entry]) => ({ groupId, entry }));
-      if (candidates.length === 0) return;
-
-      const containingFocusLine = candidates.find(
-        ({ entry }) => entry.boundingClientRect.top <= focusLine && entry.boundingClientRect.bottom > focusLine
-      );
-      const nearest =
-        containingFocusLine ??
-        candidates.sort(
-          (first, second) =>
-            Math.abs(first.entry.boundingClientRect.top - focusLine) -
-            Math.abs(second.entry.boundingClientRect.top - focusLine)
-        )[0];
-      if (nearest) onActiveGroupChange(nearest.groupId);
-    }
-
-    function connect() {
-      observer?.disconnect();
-      visibility.clear();
-      observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            const groupId = (entry.target as HTMLElement).getAttribute(groupAttribute);
-            if (groupId) visibility.set(groupId, entry);
-          }
-          updateActiveGroup();
-        },
-        {
-          root: node,
-          threshold: [0, 0.05, 0.15, 0.3, 0.5, 0.75, 1]
-        }
-      );
-      node.querySelectorAll<HTMLElement>(`[${groupAttribute}]`).forEach((group) => observer?.observe(group));
-    }
-
-    queueMicrotask(connect);
-
-    return {
-      update: () => queueMicrotask(connect),
-      destroy: () => observer?.disconnect()
-    };
-  }
-
-  function observePassagePanel(node: HTMLElement, _signature: string) {
-    passagePanel = node;
-
-    return observeGroups(node, 'data-assessment-passage-group', (groupId) => {
-      if (synchronizedGroupId && groupId !== synchronizedGroupId) return;
-
-      visiblePassageGroupId = groupId;
-    });
-  }
-
-  function observeQuestionPanel(node: HTMLElement, _signature: string) {
-    questionPanel = node;
-
-    return observeGroups(node, 'data-assessment-question-group', (groupId) => {
-      if (synchronizedGroupId && groupId !== synchronizedGroupId) return;
-      if (activeQuestionGroupId === groupId) return;
-
-      activeQuestionGroupId = groupId;
-      if (followsQuestionContext) revealPassageGroup(groupId);
-    });
   }
 
   function updateResponse(
@@ -416,7 +293,6 @@
     const groupIds = passageGroupViews.map((group) => group.id);
     const firstGroupId = groupIds[0] ?? null;
     if (!activeQuestionGroupId || !groupIds.includes(activeQuestionGroupId)) activeQuestionGroupId = firstGroupId;
-    if (!visiblePassageGroupId || !groupIds.includes(visiblePassageGroupId)) visiblePassageGroupId = firstGroupId;
   });
 </script>
 
@@ -708,34 +584,48 @@
         </Button>
       </div>
 
+      <details class="ui:border-border ui:border-b ui:px-4 ui:py-2">
+        <summary
+          class="ui:focus-visible:ring-ring ui:cursor-pointer ui:rounded-sm ui:text-sm ui:font-medium ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
+        >
+          {passageWorkspaceLabels.navigation}
+        </summary>
+        <nav class="ui:flex ui:flex-wrap ui:gap-2 ui:pt-3" aria-label={passageWorkspaceLabels.navigation}>
+          {#each passageGroupViews as group (group.id)}
+            <Button
+              type="button"
+              variant={activeQuestionGroupId === group.id ? 'secondary' : 'ghost'}
+              size="sm"
+              aria-current={activeQuestionGroupId === group.id ? 'step' : undefined}
+              onclick={() => selectPassageGroup(group.id)}
+            >
+              {passageWorkspaceLabels.formatPassage(group.passageIndex)} ·
+              {passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+            </Button>
+          {/each}
+        </nav>
+      </details>
+
       <div
-        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_2.75rem_minmax(28rem,7fr)]"
+        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)]"
       >
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <section
           id={`${rendererId}-passage-panel`}
           bind:this={passagePanel}
-          use:observePassagePanel={passageGroupSignature}
           class={[
             'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
             mobileWorkspacePanel !== 'passage' ? 'ui:hidden' : ''
           ]}
           aria-label={passageWorkspaceLabels.passage}
           tabindex="0"
-          onwheel={markPassageAsManuallyExplored}
-          ontouchstart={markPassageAsManuallyExplored}
-          onpointerdown={markPassageAsManuallyExplored}
-          onkeydown={markPassageAsManuallyExplored}
         >
           <header
             class="ui:border-border ui:bg-background/95 ui:sticky ui:top-0 ui:z-10 ui:flex ui:min-h-14 ui:items-center ui:gap-2 ui:border-b ui:px-4 ui:backdrop-blur-sm"
           >
             <BookOpenTextIcon class="ui:text-muted-foreground ui:size-4" aria-hidden="true" />
             <span class="ui:text-sm ui:font-semibold">
-              {passageWorkspaceLabels.formatPassage(
-                passageGroupViews.find((group) => group.id === visiblePassageGroupId)?.passageIndex ?? 1
-              )}
+              {passageWorkspaceLabels.passage}
             </span>
           </header>
           {#each passageGroupViews as group (group.id)}
@@ -751,19 +641,10 @@
           {/each}
         </section>
 
-        <AssessmentPassageRail
-          items={railItems}
-          {activeQuestionGroupId}
-          {visiblePassageGroupId}
-          navigationLabel={passageWorkspaceLabels.navigation}
-          onSelect={selectPassageGroup}
-        />
-
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <section
           id={`${rendererId}-questions-panel`}
           bind:this={questionPanel}
-          use:observeQuestionPanel={passageGroupSignature}
           class={[
             'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
             mobileWorkspacePanel !== 'questions' ? 'ui:hidden' : ''
@@ -791,30 +672,6 @@
                 </p>
               </div>
             </div>
-            {#if activeQuestionGroupId && activeQuestionGroupId !== visiblePassageGroupId}
-              <Tooltip.Provider>
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    {#snippet child({ props })}
-                      <Button
-                        {...props}
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        class="ui:shrink-0"
-                        aria-label={passageWorkspaceLabels.locatePassage}
-                        onclick={revealActivePassageGroup}
-                      >
-                        <LocateFixedIcon class="ui:size-4" aria-hidden="true" />
-                      </Button>
-                    {/snippet}
-                  </Tooltip.Trigger>
-                  <Tooltip.Content side="left" sideOffset={6}>
-                    {passageWorkspaceLabels.locatePassage}
-                  </Tooltip.Content>
-                </Tooltip.Root>
-              </Tooltip.Provider>
-            {/if}
           </header>
 
           {#each passageGroupViews as group (group.id)}
@@ -822,10 +679,6 @@
               class="ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8"
               data-assessment-question-group={group.id}
               aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
-              onfocusin={() => {
-                activeQuestionGroupId = group.id;
-                if (followsQuestionContext) revealPassageGroup(group.id);
-              }}
             >
               <div class="ui:border-border ui:mb-6 ui:border-b ui:pb-3">
                 <p class="ui:text-sm ui:font-semibold">

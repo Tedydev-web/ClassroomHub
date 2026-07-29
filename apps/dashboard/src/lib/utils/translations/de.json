@@ -1908,11 +1908,21 @@
               "collapse_section": "Abschnitt einklappen",
               "expand_section": "Abschnitt ausklappen"
             },
+            "learner_display": {
+              "label": "Fragenanzeige",
+              "one_question": "Eine Frage anzeigen",
+              "all_questions": "Alle Fragen anzeigen"
+            },
             "more": "Aktionen",
             "settings_completion_policy": "Abschlussregel",
             "settings_completion_submitted": "Eingereicht – jede Einreichung zählt",
             "settings_completion_passed": "Bestanden – Mindestpunktzahl erforderlich",
             "settings_pass_threshold": "Bestehensschwelle (%)",
+            "settings_section_display": "Fragenanzeige im Abschnitt",
+            "settings_section_display_helper": "Wählen Sie, ob Lernende eine Frage oder den gesamten Abschnitt gleichzeitig bearbeiten.",
+            "settings_section_display_one_question": "Eine Frage nach der anderen",
+            "settings_section_display_all_questions": "Alle Fragen im Abschnitt",
+            "settings_section_display_learner_choice": "Lernende wählen lassen",
             "notify": {
               "action": "Benachrichtigen Sie die Schüler",
               "sending": "Studierende benachrichtigen…",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Prüfwerkzeuge",
+      "question_queue": "Fragenwarteschlange",
+      "no_linked_shared_content": "Diese Frage ist keinem gemeinsamen Text oder keiner Tabelle zugeordnet.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

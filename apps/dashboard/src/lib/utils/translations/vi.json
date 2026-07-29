@@ -1908,11 +1908,21 @@
               "collapse_section": "Thu gọn phần",
               "expand_section": "Mở rộng phần"
             },
+            "learner_display": {
+              "label": "Cách hiển thị câu hỏi",
+              "one_question": "Hiển thị một câu hỏi",
+              "all_questions": "Hiển thị tất cả câu hỏi"
+            },
             "more": "Hành động",
             "settings_completion_policy": "Quy tắc hoàn thành",
             "settings_completion_submitted": "Đã gửi - mọi lần gửi đều được tính",
             "settings_completion_passed": "Đạt - yêu cầu điểm tối thiểu",
             "settings_pass_threshold": "Ngưỡng vượt qua (%)",
+            "settings_section_display": "Cách hiển thị câu hỏi trong phần",
+            "settings_section_display_helper": "Chọn để học viên làm từng câu hoặc toàn bộ câu hỏi trong phần cùng lúc.",
+            "settings_section_display_one_question": "Từng câu một",
+            "settings_section_display_all_questions": "Tất cả câu hỏi trong phần",
+            "settings_section_display_learner_choice": "Cho học viên tự chọn",
             "notify": {
               "action": "Thông báo cho sinh viên",
               "sending": "Thông báo cho học sinh…",
@@ -5192,6 +5202,9 @@
       "save_structure": "Lưu cấu trúc",
       "questions": "Câu hỏi",
       "questions_description": "Ưu tiên kiểm tra các vấn đề đang chặn hoặc chuyển sang thứ tự gốc trong tài liệu.",
+      "review_tools": "Công cụ rà soát",
+      "question_queue": "Hàng đợi câu hỏi",
+      "no_linked_shared_content": "Câu hỏi này không liên kết với đoạn văn hoặc bảng dùng chung.",
       "next_flagged": "Vấn đề tiếp theo",
       "sort_review": "Thứ tự kiểm tra",
       "sort_document": "Thứ tự tài liệu",

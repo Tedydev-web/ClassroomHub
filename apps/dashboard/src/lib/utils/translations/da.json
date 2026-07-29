@@ -1908,11 +1908,21 @@
               "collapse_section": "Skjul afsnit",
               "expand_section": "Udvid afsnit"
             },
+            "learner_display": {
+              "label": "Spørgsmålsvisning",
+              "one_question": "Vis ét spørgsmål",
+              "all_questions": "Vis alle spørgsmål"
+            },
             "more": "Handlinger",
             "settings_completion_policy": "Fuldførelsesregel",
             "settings_completion_submitted": "Indsendt - enhver indsendelse tæller",
             "settings_completion_passed": "Bestået - minimumsscore kræves",
             "settings_pass_threshold": "Beståelsesgrænse (%)",
+            "settings_section_display": "Spørgsmålsvisning i afsnit",
+            "settings_section_display_helper": "Vælg, om elever arbejder med ét spørgsmål eller hele afsnittet ad gangen.",
+            "settings_section_display_one_question": "Ét spørgsmål ad gangen",
+            "settings_section_display_all_questions": "Alle spørgsmål i afsnittet",
+            "settings_section_display_learner_choice": "Lad elever vælge",
             "notify": {
               "action": "Giv eleverne besked",
               "sending": "Underretter elever...",
@@ -5192,6 +5202,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Gennemgangsværktøjer",
+      "question_queue": "Spørgsmålkø",
+      "no_linked_shared_content": "Dette spørgsmål har ingen tilknyttet fælles tekst eller tabel.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",

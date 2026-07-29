@@ -2550,6 +2550,11 @@
             "settings_completion_submitted": "Submitted — any submission counts",
             "settings_completion_passed": "Passed — minimum score required",
             "settings_pass_threshold": "Pass threshold (%)",
+            "settings_section_display": "Section question display",
+            "settings_section_display_helper": "Choose whether students work through one question or the whole section at a time.",
+            "settings_section_display_one_question": "One question at a time",
+            "settings_section_display_all_questions": "All section questions",
+            "settings_section_display_learner_choice": "Let students choose",
             "settings_completion_passed_helper": "Students must reach the passing score before this exercise counts as complete.",
             "settings_manual_grading_warning": "Manually graded submissions must be graded before they can count as passed.",
             "settings_single_attempt_warning": "With one attempt, failed students need instructor action before they can continue.",
@@ -2747,6 +2752,11 @@
                 "star": "Star rating",
                 "video_recording": "Video recording"
               }
+            },
+            "learner_display": {
+              "label": "Question display",
+              "one_question": "Show one question",
+              "all_questions": "Show all questions"
             },
             "view_mode": {
               "attempt_counter": "Attempt {current} of {total}",
@@ -4976,6 +4986,9 @@
       "save_structure": "Save structure",
       "questions": "Questions",
       "questions_description": "Review blocking findings first or switch to the original document order.",
+      "review_tools": "Review tools",
+      "question_queue": "Question queue",
+      "no_linked_shared_content": "This question has no linked shared passage or table.",
       "next_flagged": "Next flagged",
       "sort_review": "Review order",
       "sort_document": "Document order",
