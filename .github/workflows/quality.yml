@@ -77,11 +77,14 @@ jobs:
       - name: Check repository formatting
         run: pnpm format:all:check
 
-      - name: Build API dependency graph
-        run: pnpm turbo run build --filter=@cio/api...
+      # These are the exact package builds previously duplicated by the
+      # separate Package build check. Keeping them here retains the gate while
+      # avoiding a second runner queue and dependency installation.
+      - name: Build API packages
+        run: pnpm --filter @cio/api^... build && pnpm --filter @cio/api build
 
-      - name: Build dashboard dependency graph
-        run: pnpm turbo run build --filter=@cio/dashboard...
+      - name: Build dashboard packages
+        run: pnpm --filter @cio/dashboard^... build && pnpm --filter @cio/dashboard build
 
       - name: Run focused unit suites
         run: |

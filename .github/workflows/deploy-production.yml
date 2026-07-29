@@ -152,12 +152,24 @@ jobs:
           last=""
 
           while [ "$SECONDS" -lt "$deadline" ]; do
-            status=$(curl -sS --max-time 30 \
+            response=$(curl -sS --max-time 30 -w '\n%{http_code}' \
               -H "Authorization: Bearer ${token}" \
               -H "CF-Access-Client-Id: ${cf_id}" \
               -H "CF-Access-Client-Secret: ${cf_secret}" \
-              "${coolify_url}/api/v1/deployments/${DEPLOYMENT_UUID}" \
-              | jq -r '.status // "unknown"')
+              "${coolify_url}/api/v1/deployments/${DEPLOYMENT_UUID}" || true)
+
+            http_status=$(printf '%s' "$response" | tail -n1)
+            body=$(printf '%s' "$response" | sed '$d')
+            status=$(printf '%s' "$body" | jq -er '.status | strings' 2>/dev/null || true)
+
+            # Coolify is reached through Cloudflare Access. A transient edge
+            # HTML/error response is not a deployment result and must not turn
+            # a completed deployment into a false CI failure.
+            if [ "$http_status" != "200" ] || [ -z "$status" ]; then
+              echo "$(date -u +%H:%M:%S) poll unavailable; retrying"
+              sleep 20
+              continue
+            fi
 
             if [ "$status" != "$last" ]; then
               echo "$(date -u +%H:%M:%S) $status"
