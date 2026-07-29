@@ -1,0 +1,89 @@
+# Source of truth for the GitHub Actions runners managed by Coolify.
+# Deploy this file as a Coolify Service with the variables from the runbook.
+
+services:
+  runner:
+    image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
+    privileged: true
+    restart: unless-stopped
+    environment:
+      RUNNER_SCOPE: repo
+      REPO_URL: https://github.com/Tedydev-web/ClassroomHub
+      RUNNER_NAME: classroomhub-coolify
+      RUNNER_GROUP: Default
+      LABELS: self-hosted,Linux,X64,coolify,deploy
+      RUNNER_WORKDIR: /_work
+      CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /_runner
+      RUNNER_TOKEN: ${RUNNER_TOKEN:?RUNNER_TOKEN is required}
+      DISABLE_AUTOMATIC_DEREGISTRATION: 'true'
+      UNSET_CONFIG_VARS: 'true'
+    volumes:
+      - runner-work-clean:/_work
+      - runner-config-clean:/_runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ['CMD-SHELL', "test -s /_runner/.runner && pgrep -f 'Runner.Listener run' >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  runner-ci:
+    image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
+    privileged: true
+    restart: unless-stopped
+    environment:
+      RUNNER_SCOPE: repo
+      REPO_URL: https://github.com/Tedydev-web/ClassroomHub
+      RUNNER_NAME: classroomhub-ci-2
+      RUNNER_GROUP: Default
+      LABELS: self-hosted,Linux,X64,workstation,coolify,ci
+      RUNNER_WORKDIR: /_work
+      CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /_runner
+      RUNNER_TOKEN: ${RUNNER_CI_TOKEN:?RUNNER_CI_TOKEN is required}
+      DISABLE_AUTOMATIC_DEREGISTRATION: 'true'
+      UNSET_CONFIG_VARS: 'true'
+    volumes:
+      - runner-ci-work-clean:/_work
+      - runner-ci-config-clean:/_runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ['CMD-SHELL', "test -s /_runner/.runner && pgrep -f 'Runner.Listener run' >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  runner-ci-3:
+    image: myoung34/github-runner:latest@sha256:a79342af496ac11aa966bd94f2c5d48b3eae5c71525358bcdc7d1b67e68f2d86
+    privileged: true
+    restart: unless-stopped
+    environment:
+      RUNNER_SCOPE: repo
+      REPO_URL: https://github.com/Tedydev-web/ClassroomHub
+      RUNNER_NAME: classroomhub-ci-3
+      RUNNER_GROUP: Default
+      LABELS: self-hosted,Linux,X64,workstation,coolify,ci
+      RUNNER_WORKDIR: /_work
+      CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /_runner
+      RUNNER_TOKEN: ${RUNNER_CI_3_TOKEN:?RUNNER_CI_3_TOKEN is required}
+      DISABLE_AUTOMATIC_DEREGISTRATION: 'true'
+      UNSET_CONFIG_VARS: 'true'
+    volumes:
+      - runner-ci-3-work-clean:/_work
+      - runner-ci-3-config-clean:/_runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ['CMD-SHELL', "test -s /_runner/.runner && pgrep -f 'Runner.Listener run' >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  runner-work-clean:
+  runner-config-clean:
+  runner-ci-work-clean:
+  runner-ci-config-clean:
+  runner-ci-3-work-clean:
+  runner-ci-3-config-clean:
