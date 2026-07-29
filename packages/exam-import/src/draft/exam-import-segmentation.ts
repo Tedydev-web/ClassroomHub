@@ -1353,18 +1353,23 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       continue;
     }
 
+    if (RANGED_QUESTION_INSTRUCTION_PATTERN.test(text)) {
+      startInstructionSection(text, true);
+      continue;
+    }
+
     if (PASSAGE_MARKER_PATTERN.test(text)) {
+      if (!currentSection || currentSection.questions.length > 0) {
+        startInstructionSection(text, true);
+        continue;
+      }
+
       reportPendingPassageAsUnassigned();
       activePassageId = null;
       currentQuestion = null;
       collectingPassage = true;
       inSolution = false;
       ensureSection();
-      continue;
-    }
-
-    if (RANGED_QUESTION_INSTRUCTION_PATTERN.test(text)) {
-      startInstructionSection(text, true);
       continue;
     }
 

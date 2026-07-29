@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -17,6 +18,7 @@ const REFERENCE_DOCX = join(
   'exams',
   '2026-en-on-luyen-03-scan-converted.docx'
 );
+const G12_PRACTICE_TEST_DOCX = join(__dirname, '..', '..', '..', 'fixtures', 'exams', '2026-g12-practice-test-2.docx');
 
 type BlockOptions = {
   formatting?: Partial<RunFormatting>;
@@ -428,8 +430,9 @@ describe('exam import segmentation', () => {
       block(8, '----- The end -----'),
       block(9, 'Question 3. Must not be imported.')
     ]);
-    const questions = draft.sections[0]?.questions ?? [];
+    const questions = draft.sections.flatMap((section) => section.questions);
 
+    expect(draft.sections).toHaveLength(2);
     expect(draft.sharedContents).toHaveLength(2);
     expect(questions).toHaveLength(2);
     expect(questions[0]?.passageId).toBe(draft.sharedContents[0]?.id);
@@ -484,6 +487,34 @@ describe('exam import segmentation', () => {
       questions.flatMap((question) => (question.kind === 'choice' ? question.options : [])).map((option) => option.html)
     ).not.toEqual(expect.arrayContaining([expect.stringMatching(/Choose the|passage contains|Reading passage/u)]));
     expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('OPTION_CONTINUATION_ATTACHED');
+  });
+
+  it('keeps ranged reading instructions as separate sections', () => {
+    const firstInstruction =
+      'Read the following passage and mark the letter A, B, C, or D to indicate the correct option that best fits each of the numbered blanks from 1 to 2.';
+    const secondInstruction =
+      'Read the following passage and mark the letter A, B, C, or D to indicate the correct answer to each of the questions from 3 to 4.';
+    const draft = segment([
+      block(0, 'PRACTICE TEST'),
+      block(1, firstInstruction),
+      block(2, 'First shared passage.'),
+      block(3, 'Question 1. A. OneB. TwoC. ThreeD. Four'),
+      block(4, 'Question 2. A. AlphaB. BetaC. GammaD. Delta'),
+      block(5, secondInstruction),
+      block(6, 'Second shared passage.'),
+      block(7, 'Question 3. A. RedB. BlueC. GreenD. Black'),
+      block(8, 'Question 4. A. NorthB. SouthC. EastD. West')
+    ]);
+
+    expect(draft.sections.map((section) => section.title)).toEqual([firstInstruction, secondInstruction]);
+    expect(draft.sections.map((section) => section.questions.length)).toEqual([2, 2]);
+    expect(draft.sharedContents).toHaveLength(2);
+    expect(draft.sections[0]?.questions.every((question) => question.passageId === draft.sharedContents[0]?.id)).toBe(
+      true
+    );
+    expect(draft.sections[1]?.questions.every((question) => question.passageId === draft.sharedContents[1]?.id)).toBe(
+      true
+    );
   });
 
   it('prefers the substantive bold title over name and class form fields in the first block', () => {
@@ -784,6 +815,35 @@ describe('exam import segmentation', () => {
     expect(questions.slice(21, 27).every((question) => question.passageId === draft.sharedContents[3]?.id)).toBe(true);
     expect(questions.slice(27, 35).every((question) => question.passageId === draft.sharedContents[4]?.id)).toBe(true);
     expect(questions.slice(35).every((question) => question.passageId === null)).toBe(true);
+  });
+
+  it('segments the uploaded G12 practice test into its six instruction blocks', async () => {
+    const bytes = new Uint8Array(readFileSync(G12_PRACTICE_TEST_DOCX));
+    expect(bytes.byteLength).toBe(53_945);
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe(
+      '21c8d65a335af3b0fda01306430fc07fa7c230542a8ada1809748838e426c021'
+    );
+    const result = await readDocxRuns(bytes);
+    const draft = segmentExamImportRuns(result.runs, {
+      assetId: 'g12-practice-test-2',
+      fileName: '2026-g12-practice-test-2.docx',
+      mimeType: DOCX_MIME,
+      extractor: 'docx'
+    });
+    const questions = draft.sections.flatMap((section) => section.questions);
+
+    expect(draft.sections.map((section) => section.questions.length)).toEqual([6, 6, 5, 5, 8, 10]);
+    expect(questions.map((question) => question.sourceNumber)).toEqual(
+      Array.from({ length: 40 }, (_, index) => String(index + 1))
+    );
+    expect(questions.every((question) => question.kind === 'choice' && question.options.length === 4)).toBe(true);
+    expect(draft.sharedContents).toHaveLength(5);
+    expect(questions.slice(0, 6).every((question) => question.passageId === draft.sharedContents[0]?.id)).toBe(true);
+    expect(questions.slice(6, 12).every((question) => question.passageId === draft.sharedContents[1]?.id)).toBe(true);
+    expect(questions.slice(12, 17).every((question) => question.passageId === null)).toBe(true);
+    expect(questions.slice(17, 22).every((question) => question.passageId === draft.sharedContents[2]?.id)).toBe(true);
+    expect(questions.slice(22, 30).every((question) => question.passageId === draft.sharedContents[3]?.id)).toBe(true);
+    expect(questions.slice(30).every((question) => question.passageId === draft.sharedContents[4]?.id)).toBe(true);
   });
 
   it('is deterministic for identical input', () => {
