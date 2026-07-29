@@ -294,7 +294,7 @@ describe('requestNextExamImportAiRegion', () => {
     expect(body.messages[0]?.content).toContain('Never infer or solve a missing answer key');
     expect(body.messages[1]?.content).not.toContain('Sample exam');
     expect(body.tool_choice.function.name).toBe('submit_exam_import_region');
-    expect(body.tools[0]?.function.strict).toBe(true);
+    expect(body.tools[0]?.function.strict).toBe(false);
     expect(mocks.recordGatewaySuccess).toHaveBeenCalledOnce();
     expect(release).toHaveBeenCalledOnce();
   });

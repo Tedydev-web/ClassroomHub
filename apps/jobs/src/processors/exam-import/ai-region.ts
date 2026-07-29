@@ -227,7 +227,7 @@ export async function requestNextExamImportAiRegion(input: {
         function: {
           name: TOOL_NAME,
           description: 'Submit the strictly validated resolution for the supplied exam region.',
-          strict: true,
+          strict: false,
           parameters: schema
         }
       }
@@ -253,6 +253,7 @@ export async function requestNextExamImportAiRegion(input: {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
     });
     if (!response.ok) {
+      console.error('requestNextExamImportAiRegion gateway error:', response.status, response.statusText);
       await recordGatewayFailure({ status: response.status });
 
       return {
@@ -303,6 +304,7 @@ export async function requestNextExamImportAiRegion(input: {
       transportAvailable: true
     };
   } catch (error) {
+    console.error('requestNextExamImportAiRegion error:', error);
     await recordGatewayFailure(error);
 
     return {

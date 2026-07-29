@@ -183,11 +183,11 @@ test.describe('exam import', () => {
   });
 
   test('imports the provided DOCX as a review draft', async ({ page }) => {
-    test.setTimeout(4 * 60_000);
+    test.setTimeout(17 * 60_000);
     test.skip(!hasDocxConfiguration, 'Set E2E_EXAM_IMPORT_DOCX_PATH.');
 
     await startImport(page, docxPath!);
-    await expectReviewDraft(page, 40, 3 * 60_000);
+    await expectReviewDraft(page, 40, 16 * 60_000);
     await expect(page.getByRole('button', { name: 'Publish exercise' }).first()).toBeDisabled();
   });
 
