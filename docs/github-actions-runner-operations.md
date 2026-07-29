@@ -12,7 +12,7 @@ Compose nguồn: `infra/github-runners/docker-compose.yaml`.
 
 | Resource | Runner | Nhãn bắt buộc | Mục đích |
 |---|---|---|---|
-| deploy lane | `classroomhub-coolify` | `self-hosted,Linux,X64,coolify,deploy` | Gọi Coolify và deploy |
+| deploy lane | `classroomhub-coolify-r2` | `self-hosted,Linux,X64,coolify,deploy` | Gọi Coolify và deploy |
 | CI lane 2 | `classroomhub-ci-2-r2` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
 | CI lane 3 | `classroomhub-ci-3-r2` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
 
