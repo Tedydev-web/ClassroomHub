@@ -2,8 +2,30 @@ name: Edge and docs quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/docs/**'
+      - 'apps/tenant-router/**'
+      - 'apps/website/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - 'apps/docs/.nvmrc'
+      - '.github/workflows/edge-quality.yml'
   push:
     branches: [main]
+    paths:
+      - 'apps/docs/**'
+      - 'apps/tenant-router/**'
+      - 'apps/website/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - 'apps/docs/.nvmrc'
+      - '.github/workflows/edge-quality.yml'
   workflow_dispatch:
 
 permissions:
