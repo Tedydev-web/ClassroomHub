@@ -262,36 +262,61 @@ function htmlListIsGroundedInSource(htmlValues: readonly string[], sourceText: s
   return true;
 }
 
-function preserveUngroundedSourceAuditContent(
+function htmlListsHaveSameVisibleText(left: readonly string[], right: readonly string[]): boolean {
+  return (
+    left.length === right.length &&
+    left.every((html, index) => visibleHtmlText(html) === visibleHtmlText(right[index]!))
+  );
+}
+
+function promptsAreEquivalentFallbacks(next: ExamImportQuestion, original: ExamImportQuestion): boolean {
+  if (original.sourceNumber === null) return false;
+  const fallback = normalizeComparableText(`Question ${original.sourceNumber}`);
+
+  return (
+    visibleHtmlText(original.promptHtml) === fallback &&
+    visibleHtmlText(next.promptHtml).replace(/[.:)]$/u, '') === fallback
+  );
+}
+
+function guardSourceAuditContent(
   resolved: ExamImportQuestion,
   original: ExamImportQuestion,
   sourceQuestionText: string
 ): ExamImportQuestion {
   const next = structuredClone(resolved);
-  if (
-    visibleHtmlText(next.promptHtml) !== visibleHtmlText(original.promptHtml) &&
-    !htmlListIsGroundedInSource([next.promptHtml], sourceQuestionText)
-  ) {
+  const promptTextUnchanged =
+    visibleHtmlText(next.promptHtml) === visibleHtmlText(original.promptHtml) ||
+    promptsAreEquivalentFallbacks(next, original);
+  if (promptTextUnchanged || !htmlListIsGroundedInSource([next.promptHtml], sourceQuestionText)) {
     next.promptHtml = original.promptHtml;
   }
 
   if (
     next.kind === 'choice' &&
     original.kind === 'choice' &&
-    !htmlListIsGroundedInSource(
+    (htmlListsHaveSameVisibleText(
       next.options.map((option) => option.html),
-      sourceQuestionText
-    )
+      original.options.map((option) => option.html)
+    ) ||
+      !htmlListIsGroundedInSource(
+        next.options.map((option) => option.html),
+        sourceQuestionText
+      ))
   ) {
     next.options = structuredClone(original.options);
   }
   if (
     next.kind === 'true_false_group' &&
     original.kind === 'true_false_group' &&
-    !htmlListIsGroundedInSource(
+    (htmlListsHaveSameVisibleText(
       next.statements.map((statement) => statement.html),
-      sourceQuestionText
-    )
+      original.statements.map((statement) => statement.html)
+    ) ||
+      !htmlListIsGroundedInSource(
+        next.statements.map((statement) => statement.html),
+        sourceQuestionText
+      ))
   ) {
     next.statements = structuredClone(original.statements);
   }
@@ -354,7 +379,7 @@ export function applyExamImportAiRegionResponse(
 
     let question = normalizeAiQuestion(resolution, region, options.preserveMissingAnswerKeys === true);
     if (question && options.includeSourceAudit && options.sourceQuestionText) {
-      question = preserveUngroundedSourceAuditContent(question, region.question, options.sourceQuestionText);
+      question = guardSourceAuditContent(question, region.question, options.sourceQuestionText);
     }
     if (!question || !replaceQuestion(nextDraft, region.questionId, question)) {
       return { ...originalValidation, accepted: false };

@@ -243,6 +243,43 @@ describe('exam import AI regions', () => {
     expect(result.draft?.diagnostics).toEqual([]);
   });
 
+  it('preserves source formatting and equivalent generated fallback prompts', () => {
+    const draft = buildValidExamImportDraft();
+    const question = keylessQuestion();
+    question.promptHtml = '<p><strong>Question 1</strong></p>';
+    question.options[0]!.html = '<p><span style="color:#080808">First</span></p>';
+    draft.sections[0]!.questions = [question];
+    const reformattedQuestion = {
+      ...structuredClone(question),
+      promptHtml: '<p>Question 1.</p>',
+      options: [{ ...question.options[0]!, html: '<p>First</p>' }, question.options[1]!]
+    };
+
+    const result = applyExamImportAiRegionResponse(
+      draft,
+      {
+        regions: [
+          {
+            questionId: question.id,
+            question: reformattedQuestion,
+            findings: []
+          }
+        ]
+      },
+      validationContext,
+      {
+        includeSourceAudit: true,
+        preserveMissingAnswerKeys: true,
+        sourceQuestionText: 'Question 1. Choose the correct answer. A. First B. Second'
+      }
+    );
+    const applied = result.draft?.sections[0]?.questions[0];
+
+    expect(result.accepted).toBe(true);
+    expect(applied?.promptHtml).toBe(question.promptHtml);
+    expect(applied?.kind === 'choice' ? applied.options : null).toEqual(question.options);
+  });
+
   it('rejects unknown fields and responses beyond the region limit', () => {
     expect(examImportAiRegionResponseSchema.safeParse({ regions: [], unexpected: true }).success).toBe(false);
     expect(
