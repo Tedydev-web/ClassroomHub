@@ -12,9 +12,9 @@ Compose nguồn: `infra/github-runners/docker-compose.yaml`.
 
 | Resource | Runner | Nhãn bắt buộc | Mục đích |
 |---|---|---|---|
-| deploy lane | `classroomhub-coolify-r2` | `self-hosted,Linux,X64,coolify,deploy` | Gọi Coolify và deploy |
-| CI lane 2 | `classroomhub-ci-2-r2` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
-| CI lane 3 | `classroomhub-ci-3-r2` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
+| deploy lane | `classroomhub-coolify-r3` | `self-hosted,Linux,X64,coolify,deploy` | Gọi Coolify và deploy |
+| CI lane 2 | `classroomhub-ci-2-r3` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
+| CI lane 3 | `classroomhub-ci-3-r3` | `self-hosted,Linux,X64,workstation,coolify,ci` | Quality và kiểm thử |
 
 Mỗi runner có volume work/config riêng. Không dùng `docker compose down -v`, `docker volume prune` hoặc xóa volume runner khi chưa có inventory và xác nhận runner đã được deregister.
 

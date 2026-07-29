@@ -9,7 +9,7 @@ services:
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-coolify-r2
+      RUNNER_NAME: classroomhub-coolify-r3
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,coolify,deploy
       RUNNER_WORKDIR: /_work
@@ -35,7 +35,7 @@ services:
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-ci-2-r2
+      RUNNER_NAME: classroomhub-ci-2-r3
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,workstation,coolify,ci
       RUNNER_WORKDIR: /_work
@@ -61,7 +61,7 @@ services:
     environment:
       RUNNER_SCOPE: repo
       REPO_URL: https://github.com/Tedydev-web/ClassroomHub
-      RUNNER_NAME: classroomhub-ci-3-r2
+      RUNNER_NAME: classroomhub-ci-3-r3
       RUNNER_GROUP: Default
       LABELS: self-hosted,Linux,X64,workstation,coolify,ci
       RUNNER_WORKDIR: /_work
