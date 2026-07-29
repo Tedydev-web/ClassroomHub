@@ -1,0 +1,11 @@
+[Unit]
+Description=ClassroomHub GitHub Actions runner monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/classroomhub/runner-monitor.secrets
+ExecStart=/usr/local/libexec/classroomhub-runner-monitor
+StateDirectory=classroomhub-runner-monitor
+UMask=0077
