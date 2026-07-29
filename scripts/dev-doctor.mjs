@@ -8,6 +8,7 @@ import {
   parseEnvValues,
   parseExpectedNodeVersion,
   parsePackageManagerVersion,
+  parseTcpPort,
   parseUserAgentPnpmVersion,
   pathExists,
   probeHttp,
@@ -174,16 +175,23 @@ function checkMediaTooling(diagnostics) {
 async function checkPorts(diagnostics) {
   const devEnvPath = (await pathExists(path.resolve('.env.dev'))) ? '.env.dev' : '.env.dev.example';
   const devEnvironment = parseEnvValues(await readFile(path.resolve(devEnvPath), 'utf8'));
-  const requiredPorts = [
-    { port: Number(devEnvironment.get('DEV_API_LOCAL_PORT') ?? 8001), service: 'api' },
-    { port: Number(devEnvironment.get('DEV_DASHBOARD_LOCAL_PORT') ?? 8000), service: 'dashboard' },
-    { port: Number(devEnvironment.get('POSTGRES_PORT')), service: 'postgres' },
-    { port: Number(devEnvironment.get('REDIS_PORT')), service: 'redis' },
-    { port: Number(devEnvironment.get('MINIO_API_PORT')), service: 'minio (s3 api)' },
-    { port: Number(devEnvironment.get('MINIO_CONSOLE_PORT')), service: 'minio (console)' },
-    { port: Number(devEnvironment.get('MAILPIT_SMTP_PORT')), service: 'mailpit (smtp)' },
-    { port: Number(devEnvironment.get('MAILPIT_UI_PORT')), service: 'mailpit (web ui)' }
+  const configuredPorts = [
+    { fallback: '8001', key: 'DEV_API_LOCAL_PORT', service: 'api' },
+    { fallback: '8000', key: 'DEV_DASHBOARD_LOCAL_PORT', service: 'dashboard' },
+    { key: 'POSTGRES_PORT', service: 'postgres' },
+    { key: 'REDIS_PORT', service: 'redis' },
+    { key: 'MINIO_API_PORT', service: 'minio (s3 api)' },
+    { key: 'MINIO_CONSOLE_PORT', service: 'minio (console)' },
+    { key: 'MAILPIT_SMTP_PORT', service: 'mailpit (smtp)' },
+    { key: 'MAILPIT_UI_PORT', service: 'mailpit (web ui)' }
   ];
+  const requiredPorts = configuredPorts.flatMap(({ fallback, key, service }) => {
+    const port = parseTcpPort(devEnvironment.get(key) ?? fallback);
+    if (port !== null) return [{ port, service }];
+
+    addDiagnostic(diagnostics, 'error', `${key} must be an integer TCP port from 1 to 65535 in ${devEnvPath}.`);
+    return [];
+  });
   const composeResult = runCommandCheck('docker', [
     'compose',
     '--env-file',
@@ -368,6 +376,7 @@ async function checkEnvFilesAndProductMode(diagnostics) {
 }
 
 async function runDoctor() {
+  const preflightOnly = process.argv.includes('--preflight');
   const diagnostics = [];
 
   await checkNodeVersion(diagnostics);
@@ -376,9 +385,9 @@ async function runDoctor() {
   checkDockerToolchain(diagnostics);
   checkMediaTooling(diagnostics);
   await checkPorts(diagnostics);
-  await checkWorkspaceDependencies(diagnostics);
+  if (!preflightOnly) await checkWorkspaceDependencies(diagnostics);
   await checkEnvFilesAndProductMode(diagnostics);
-  await checkLocalApplications(diagnostics);
+  if (!preflightOnly) await checkLocalApplications(diagnostics);
 
   console.log('ClassroomHub development doctor');
   console.log('================================');

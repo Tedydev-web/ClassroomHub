@@ -232,6 +232,31 @@ auth secrets, and private server keys are intentionally never stored in document
 
    - If you see `Failed to resolve entry for package "@cio/..."`, the shared workspace packages haven't been built yet (their `dist/` is missing). Build them once with `pnpm build`, then re-run the dev commands.
 
+### Daily local development (Linux/macOS)
+
+After the one-time setup above, use one foreground command for the local API,
+dashboard, jobs worker, source watchers, and Docker infrastructure:
+
+```bash
+pnpm dev:local
+```
+
+The command selects the Node version from `.nvmrc`, runs preflight validation,
+starts the local Compose services, and keeps the auto-reload process in the
+terminal. `Ctrl+C` stops the watchers; stop the Docker services separately with
+`pnpm dev:local:stop`.
+
+Useful checks:
+
+```bash
+pnpm dev:local:status
+pnpm dev:local:tunnel
+```
+
+`status` checks the local services, ports, and cloudflared service. To add an
+end-to-end public tunnel probe without placing a URL in repository files, run
+`DEV_TUNNEL_URL=https://your-dev-host pnpm dev:local:tunnel`.
+
 9. Default local URLs:
 
    - `api`: [http://localhost:8001](http://localhost:8001)

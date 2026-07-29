@@ -2,8 +2,30 @@ name: Edge and docs quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/docs/**'
+      - 'apps/tenant-router/**'
+      - 'apps/website/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - 'apps/docs/.nvmrc'
+      - '.github/workflows/edge-quality.yml'
   push:
     branches: [main]
+    paths:
+      - 'apps/docs/**'
+      - 'apps/tenant-router/**'
+      - 'apps/website/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'turbo.json'
+      - '.nvmrc'
+      - 'apps/docs/.nvmrc'
+      - '.github/workflows/edge-quality.yml'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +41,7 @@ concurrency:
 jobs:
   docs-validation:
     name: docs-validation
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Linux, workstation, ci]
     timeout-minutes: 30
     steps:
@@ -45,6 +68,7 @@ jobs:
 
   website-validation:
     name: website-validation
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Linux, workstation, ci]
     timeout-minutes: 30
     steps:
@@ -80,6 +104,7 @@ jobs:
 
   tenant-router-validation:
     name: tenant-router-validation
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Linux, workstation, ci]
     timeout-minutes: 15
     steps:

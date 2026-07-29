@@ -27,6 +27,14 @@ export function parsePackageManagerVersion(value) {
   return match[1];
 }
 
+export function parseTcpPort(value) {
+  const port = Number(String(value ?? '').trim());
+
+  if (!Number.isInteger(port) || port < 1 || port > 65535) return null;
+
+  return port;
+}
+
 /**
  * Reads the active pnpm version from `npm_config_user_agent`, which pnpm sets on every
  * invocation (`pnpm run`, `pnpm exec`, ...). This avoids spawning `pnpm` as a subprocess:

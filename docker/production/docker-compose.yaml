@@ -16,13 +16,9 @@
 #     services publish on loopback only; nothing here claims 80/443.
 #
 # Deploy contract:
-#   - Images are built on this host from a pinned Git commit, not pulled. Coolify
-#     records the deployed commit, so a redeploy is reproducible without waiting
-#     on a registry release. The dashboard build args are hard-coded rather than
-#     env-driven: PUBLIC_IS_SELFHOSTED is baked into the bundle at build time, so
-#     a wrong value here cannot be corrected by runtime env.
-#   - To switch to pre-built GHCR images later, replace each `build:` block with
-#     a digest-pinned `image:` and drop the local image tags.
+#   - Application images are immutable GHCR digest references. Coolify records
+#     the deployed commit and reconciles the digest variables before deployment.
+#     The dashboard topology remains baked into its released image.
 #   - Every secret and public URL is required. The stack fails to start rather
 #     than booting with an empty auth secret or a wrong origin.
 #   - Development values must never be reused here; production starts from an
@@ -105,10 +101,10 @@ services:
   # release instead of leaving the API half-migrated.
   # `restart: "no"` also tells Coolify this container is not part of stack health.
   db-migrate:
-    # Reuses the image the api service builds — same code, so the schema it
-    # applies always matches the API that will serve it.
-    image: classroomhub-production-api:local
-    pull_policy: never
+    # Reuses the immutable API image, so the applied schema always matches the
+    # API that will serve it.
+    image: ${API_IMAGE:?set API_IMAGE to an immutable GHCR digest reference}
+    pull_policy: always
     labels:
       io.classroom.stack: production
       io.classroom.role: db-migrate
@@ -133,15 +129,8 @@ services:
           memory: 1G
 
   api:
-    image: classroomhub-production-api:local
-    build:
-      # Context is the repository root. Coolify's compose build pack resolves
-      # build contexts relative to the repo root it clones into, not relative to
-      # this file, so `.` is the root here even though the file is nested under
-      # docker/production. (A relative `../..` escapes above the clone and fails
-      # with "lstat /docker: no such file".) `dockerfile` is then root-relative.
-      context: .
-      dockerfile: docker/Dockerfile.api
+    image: ${API_IMAGE:?set API_IMAGE to an immutable GHCR digest reference}
+    pull_policy: always
     labels:
       io.classroom.stack: production
       io.classroom.role: api
@@ -249,16 +238,8 @@ services:
           memory: 1536M
 
   dashboard:
-    image: classroomhub-production-dashboard:local
-    build:
-      # Root-relative for Coolify's build pack — see the api service note.
-      context: .
-      dockerfile: docker/Dockerfile.dashboard
-      # Hard-coded, not env-driven: SvelteKit bakes these into the bundle, so an
-      # override at deploy time would silently produce the wrong topology.
-      args:
-        PUBLIC_IS_SELFHOSTED: "false"
-        PUBLIC_IS_SELF_OWNED: "true"
+    image: ${DASHBOARD_IMAGE:?set DASHBOARD_IMAGE to an immutable GHCR digest reference}
+    pull_policy: always
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -341,11 +322,8 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: classroomhub-production-jobs:local
-    build:
-      # Root-relative for Coolify's build pack — see the api service note.
-      context: .
-      dockerfile: docker/Dockerfile.jobs
+    image: ${JOBS_IMAGE:?set JOBS_IMAGE to an immutable GHCR digest reference}
+    pull_policy: always
     labels:
       io.classroom.stack: production
       io.classroom.role: jobs

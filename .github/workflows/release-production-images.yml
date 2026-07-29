@@ -1,0 +1,96 @@
+name: Release production images
+
+on:
+  workflow_run:
+    workflows: ['Quality']
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: classroomhub-production-image-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: tedydev-web
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    # This runner has no production credentials. Image publication stays
+    # separated from the deploy runner so untrusted CI work never gains them.
+    runs-on: [self-hosted, Linux, ci]
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      # The dashboard image is memory-intensive on this workstation. One image
+      # at a time is slower than an ideal builder pool but avoids OOM-killing
+      # the production stack; registry cache removes most repeated work.
+      max-parallel: 1
+      matrix:
+        include:
+          - name: api
+            dockerfile: ./docker/Dockerfile.api
+            image: classroom-api
+            build_args: ''
+          - name: dashboard
+            dockerfile: ./docker/Dockerfile.dashboard
+            image: classroom-dashboard
+            build_args: |
+              PUBLIC_IS_SELFHOSTED=false
+              PUBLIC_IS_SELF_OWNED=true
+          - name: jobs
+            dockerfile: ./docker/Dockerfile.jobs
+            image: classroom-jobs
+            build_args: ''
+
+    steps:
+      - name: Resolve release commit
+        id: release
+        env:
+          RELEASE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "${#RELEASE_SHA}" -eq 40
+          echo "sha=${RELEASE_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish ${{ matrix.name }} image
+        id: image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ steps.release.outputs.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
+          platforms: linux/amd64
+
+      - name: Record immutable image digest
+        run: |
+          set -euo pipefail
+          test -n '${{ steps.image.outputs.digest }}'
+          echo '${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}@${{ steps.image.outputs.digest }}'
