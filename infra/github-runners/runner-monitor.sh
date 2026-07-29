@@ -39,6 +39,6 @@ if [[ "$state" == "$previous" ]]; then
   exit 0
 fi
 
-printf '%s' "$state" >"$state_file"
 message="ClassroomHub runner monitor: ${state}; queued=${queued}"
 curl --fail-with-body --silent --show-error --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text=${message}" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" >/dev/null
+printf '%s' "$state" >"$state_file"
