@@ -324,7 +324,7 @@
             ? 'ui:border-destructive/40 ui:bg-destructive/5 rounded-md border px-3 py-2 text-sm'
             : 'ui:border-border ui:bg-muted/30 rounded-md border px-3 py-2 text-sm'}
         >
-          {$t(finding.messageKey)}
+          {finding.tier === 'assisted' ? finding.message : $t(finding.messageKey)}
         </li>
       {/each}
     </ul>

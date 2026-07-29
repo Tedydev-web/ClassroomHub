@@ -19,10 +19,13 @@ import {
   type ExamImportAiRegionResponse
 } from '@cio/exam-import/draft/exam-import-ai-regions';
 import type { ExamImportDraft } from '@cio/exam-import/draft/exam-import-draft';
+import type { SourceRun } from '@cio/exam-import/source-run';
 
 import { acquireExamImportAiLease } from './ai-lease';
 
 const REQUEST_TIMEOUT_MS = 60_000;
+const MAX_SOURCE_PASSAGE_CHARS = 45_000;
+const MAX_SOURCE_QUESTION_CHARS = 15_000;
 const TOOL_NAME = 'submit_exam_import_region';
 
 const gatewayResponseSchema = z.object({
@@ -110,18 +113,67 @@ function aiEnabledForOrganization(settings: unknown): boolean {
   return (examImport as Record<string, unknown>).aiEnabled === true;
 }
 
+function sourceTextForSpans(
+  sourceRuns: readonly SourceRun[],
+  spans: ExamImportAiRegion['provenance'],
+  maximumCharacters: number
+): string {
+  const matchingRuns = sourceRuns
+    .filter((run) =>
+      spans.some(
+        (span) =>
+          run.location.blockIndex >= span.start.blockIndex &&
+          run.location.blockIndex <= span.end.blockIndex &&
+          (run.location.blockIndex !== span.start.blockIndex || run.location.runIndex >= span.start.runIndex) &&
+          (run.location.blockIndex !== span.end.blockIndex || run.location.runIndex <= span.end.runIndex)
+      )
+    )
+    .sort(
+      (left, right) =>
+        left.location.blockIndex - right.location.blockIndex || left.location.runIndex - right.location.runIndex
+    );
+  const blocks = new Map<number, SourceRun[]>();
+  for (const run of matchingRuns) {
+    const existing = blocks.get(run.location.blockIndex);
+    if (existing) existing.push(run);
+    else blocks.set(run.location.blockIndex, [run]);
+  }
+
+  return [...blocks.values()]
+    .map((runs) => `${runs[0]?.block.listNumber ?? ''}${runs.map((run) => run.text).join('')}`)
+    .join('\n')
+    .slice(0, maximumCharacters);
+}
+
+function sourceContextForRegion(
+  region: ExamImportAiRegion,
+  draft: ExamImportDraft,
+  sourceRuns: readonly SourceRun[]
+): { instruction: string; passage: string | null; question: string } {
+  const section = draft.sections.find((entry) => entry.questions.some((question) => question.id === region.questionId));
+  const sharedContent = draft.sharedContents.find((content) => content.id === region.question.passageId);
+
+  return {
+    instruction: section?.title ?? '',
+    passage: sharedContent ? sourceTextForSpans(sourceRuns, sharedContent.provenance, MAX_SOURCE_PASSAGE_CHARS) : null,
+    question: sourceTextForSpans(sourceRuns, region.provenance, MAX_SOURCE_QUESTION_CHARS)
+  };
+}
+
 export async function requestNextExamImportAiRegion(input: {
   draft: ExamImportDraft;
   organizationId: string;
   auditedQuestionIds: ReadonlySet<string>;
   questionId?: string;
+  sourceRuns?: readonly SourceRun[];
+  auditSource?: boolean;
 }): Promise<ExamImportAiRegionCall> {
   if (env.EXAM_IMPORT_AI_ENABLED !== 'true') return { kind: 'disabled' };
 
   const organization = await getOrganizationById(input.organizationId);
   if (!organization || !aiEnabledForOrganization(organization.settings)) return { kind: 'disabled' };
 
-  const region = collectExamImportAiRegions(input.draft).find((candidate) =>
+  const region = collectExamImportAiRegions(input.draft, { includeSourceAudit: input.auditSource }).find((candidate) =>
     input.questionId ? candidate.questionId === input.questionId : !input.auditedQuestionIds.has(candidate.questionId)
   );
   if (!region) return { kind: 'disabled' };
@@ -148,17 +200,25 @@ export async function requestNextExamImportAiRegion(input: {
   if (!lease) return { kind: 'waiting' };
 
   const schema = z.toJSONSchema(examImportAiRegionResponseSchema);
+  const requestRegion = input.auditSource
+    ? {
+        ...region,
+        sourceContext: sourceContextForRegion(region, input.draft, input.sourceRuns ?? [])
+      }
+    : region;
   const requestBody = {
     model,
     messages: [
       {
         role: 'system',
         content:
-          'Resolve only the supplied exam region. Preserve identifiers and provenance. Return exactly one region matching the supplied questionId. Never add unrequested questions.'
+          input.auditSource === true
+            ? 'Compare the candidate question with sourceContext and restore only source-grounded content or structure. Preserve identifiers and provenance. Preserve source mistakes and return SOURCE_AUTHORING_CONCERN findings instead of silently rewriting meaning. Return SOURCE_CONTENT_MISMATCH only when candidate content or structure differs from the source. A source without an answer key is valid and is not a mismatch or concern by itself. Return an empty findings array when no concern remains. Never infer or solve a missing answer key; keep it null unless the source explicitly states one. Return exactly one region matching the supplied questionId. Never add unrequested questions.'
+            : 'Resolve only the supplied exam region. Preserve identifiers and provenance. Return exactly one region matching the supplied questionId with an empty findings array. Never add unrequested questions.'
       },
       {
         role: 'user',
-        content: JSON.stringify(region)
+        content: JSON.stringify(requestRegion)
       }
     ],
     tools: [

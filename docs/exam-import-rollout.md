@@ -13,8 +13,9 @@
    `PUBLIC_EXAM_IMPORT_PDF_ENABLED=true` and rebuild the dashboard. Keep both PDF flags disabled
    to withdraw PDF without affecting DOCX.
 7. Keep `EXAM_IMPORT_AI_ENABLED=false` until gateway structured-output preflight passes. To enable
-   deterministic-region AI for selected organizations, set the global flag to `true`, restart the
-   jobs worker, then enable the organization-level exam-import AI switch. Both gates are required.
+   automatic source audit and explicit answer suggestions for selected organizations, set the global
+   flag to `true`, restart the jobs worker, then enable the organization-level exam-import AI switch.
+   Both gates are required.
    Pin `EXAM_IMPORT_AI_MODEL` to the allowlisted model that passed the exact exam-import schema
    preflight; do not inherit a changing chat default in production.
 8. Scanned-PDF vision is a separate internal opt-in. Set `EXAM_IMPORT_VISION_ENABLED=true` and pin
@@ -75,9 +76,12 @@ resume job ID so a retained completed BullMQ job cannot block progress. Gateway 
 short-lived global and organization Redis leases; expired leases self-recover. After the bounded
 wait budget, the worker finalizes the deterministic draft rather than waiting indefinitely.
 
-AI calls send one unresolved region, persist only the region audit metadata, and record token
-usage with an idempotency key. Raw model output is never persisted. Turning off either AI gate
-causes waiting imports to complete deterministically on their next resume.
+Automatic AI calls send one question together with its source instruction, shared passage, and
+question runs. A validated response may restore source-grounded question content or structure and
+append advisory findings. It cannot fill an answer key that was absent from the source. The worker
+persists only the validated draft and region audit metadata, records token usage with an idempotency
+key, and never stores raw model output. Turning off either AI gate causes waiting imports to complete
+deterministically on their next resume.
 
 ## Product release gates
 

@@ -89,13 +89,126 @@ describe('exam import AI regions', () => {
     ]);
   });
 
+  it('audits every question against source without inventing a missing answer key', () => {
+    const draft = buildValidExamImportDraft();
+    const question = keylessQuestion();
+    draft.sections[0]!.questions = [question];
+    draft.fieldStates = draft.fieldStates.filter(
+      (fieldState) => !(fieldState.target.kind === 'question_field' && fieldState.target.field === 'answerKey')
+    );
+    const auditedQuestion = {
+      ...structuredClone(question),
+      promptHtml: '<p>Prompt restored from source</p>',
+      answerCandidates: [
+        {
+          id: 'candidate-ai',
+          kind: 'choice' as const,
+          correctOptionIds: ['option-a'],
+          source: 'ai' as const,
+          provenance: [sourceSpan]
+        }
+      ],
+      answerKey: {
+        kind: 'choice' as const,
+        correctOptionIds: ['option-a'],
+        agreement: 'single_source' as const,
+        selectedCandidateIds: ['candidate-ai'],
+        conflictingCandidateIds: []
+      }
+    };
+
+    expect(collectExamImportAiRegions(draft, { includeSourceAudit: true })[0]?.reasons).toEqual([
+      'missing_answer_key',
+      'source_audit'
+    ]);
+
+    const result = applyExamImportAiRegionResponse(
+      draft,
+      {
+        regions: [
+          {
+            questionId: question.id,
+            question: auditedQuestion,
+            findings: [
+              {
+                code: 'SOURCE_CONTENT_MISMATCH',
+                severity: 'warning',
+                message: 'The prompt was restored from source.'
+              },
+              {
+                code: 'SOURCE_AUTHORING_CONCERN',
+                severity: 'warning',
+                message: 'The question topic does not match the shared passage.'
+              }
+            ]
+          }
+        ]
+      },
+      validationContext,
+      { includeSourceAudit: true, preserveMissingAnswerKeys: true }
+    );
+    const applied = result.draft?.sections[0]?.questions[0];
+
+    expect(result.accepted).toBe(true);
+    expect(applied?.promptHtml).toBe('<p>Prompt restored from source</p>');
+    expect(applied?.answerCandidates).toEqual([]);
+    expect(applied?.answerKey).toBeNull();
+    expect(result.findings.map((finding) => finding.code)).toContain('MISSING_ANSWER_KEY');
+    expect(result.draft?.diagnostics).toContainEqual(
+      expect.objectContaining({
+        tier: 'assisted',
+        blocking: false,
+        code: 'SOURCE_AUTHORING_CONCERN',
+        message: 'The question topic does not match the shared passage.',
+        questionId: question.id
+      })
+    );
+    expect(result.draft?.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'SOURCE_CONTENT_MISMATCH',
+        message: 'The prompt was restored from source.'
+      })
+    );
+  });
+
+  it('drops a claimed source mismatch when AI made no source-content correction', () => {
+    const draft = buildValidExamImportDraft();
+    const question = keylessQuestion();
+    draft.sections[0]!.questions = [question];
+
+    const result = applyExamImportAiRegionResponse(
+      draft,
+      {
+        regions: [
+          {
+            questionId: question.id,
+            question,
+            findings: [
+              {
+                code: 'SOURCE_CONTENT_MISMATCH',
+                severity: 'warning',
+                message: 'The source has no answer key.'
+              }
+            ]
+          }
+        ]
+      },
+      validationContext,
+      { includeSourceAudit: true, preserveMissingAnswerKeys: true }
+    );
+
+    expect(result.accepted).toBe(true);
+    expect(result.draft?.diagnostics).toEqual([]);
+  });
+
   it('rejects unknown fields and responses beyond the region limit', () => {
     expect(examImportAiRegionResponseSchema.safeParse({ regions: [], unexpected: true }).success).toBe(false);
     expect(
       examImportAiRegionResponseSchema.safeParse({
         regions: Array.from({ length: MAX_EXAM_IMPORT_AI_REGIONS + 1 }, (_, index) => ({
           questionId: `question-${index}`,
-          question: keylessQuestion()
+          question: keylessQuestion(),
+          findings: []
         }))
       }).success
     ).toBe(false);
@@ -133,7 +246,7 @@ describe('exam import AI regions', () => {
 
     const result = applyExamImportAiRegionResponse(
       draft,
-      { regions: [{ questionId: question.id, question: aiQuestion }] },
+      { regions: [{ questionId: question.id, question: aiQuestion, findings: [] }] },
       validationContext
     );
     const applied = result.draft?.sections[0]?.questions[0];
@@ -156,10 +269,10 @@ describe('exam import AI regions', () => {
     const draft = buildValidExamImportDraft();
     const question = keylessQuestion();
     draft.sections[0]!.questions = [question];
-    const validResolution = { questionId: question.id, question };
+    const validResolution = { questionId: question.id, question, findings: [] };
 
     for (const response of [
-      { regions: [{ questionId: question.id, question: { ...question, unexpected: true } }] },
+      { regions: [{ questionId: question.id, question: { ...question, unexpected: true }, findings: [] }] },
       { regions: [validResolution, validResolution] },
       { regions: [{ ...validResolution, questionId: 'question-not-collected' }] }
     ]) {
@@ -196,7 +309,7 @@ describe('exam import AI regions', () => {
 
     const result = applyExamImportAiRegionResponse(
       draft,
-      { regions: [{ questionId: question.id, question: invalidQuestion }] },
+      { regions: [{ questionId: question.id, question: invalidQuestion, findings: [] }] },
       validationContext
     );
 
@@ -227,7 +340,7 @@ describe('exam import AI regions', () => {
     for (const responseQuestion of [question, essayResponse]) {
       const result = applyExamImportAiRegionResponse(
         draft,
-        { regions: [{ questionId: question.id, question: responseQuestion }] },
+        { regions: [{ questionId: question.id, question: responseQuestion, findings: [] }] },
         validationContext
       );
 

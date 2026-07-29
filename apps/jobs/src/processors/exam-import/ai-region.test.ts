@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ExamImportDraft, ExamImportQuestion } from '@cio/exam-import/draft/exam-import-draft';
+import { emptyFormatting, type SourceRun } from '@cio/exam-import/source-run';
 
 const mocks = vi.hoisted(() => ({
   assertAgentRunAdmitted: vi.fn(),
@@ -43,11 +44,27 @@ import { env } from '@cio/core/config/env';
 const provenance = [
   {
     start: { blockIndex: 0, runIndex: 0 },
-    end: { blockIndex: 0, runIndex: 3 },
+    end: { blockIndex: 2, runIndex: 0 },
     pageStart: null,
     pageEnd: null
   }
 ];
+
+function sourceRun(blockIndex: number, runIndex: number, text: string, listNumber: string | null = null): SourceRun {
+  return {
+    text,
+    formatting: emptyFormatting(),
+    block: {
+      kind: listNumber ? 'list_item' : 'paragraph',
+      index: blockIndex,
+      listNumber,
+      tableRef: null
+    },
+    math: null,
+    image: null,
+    location: { blockIndex, runIndex }
+  };
+}
 
 function keylessQuestion(): Extract<ExamImportQuestion, { kind: 'choice' }> {
   return {
@@ -217,7 +234,7 @@ describe('requestNextExamImportAiRegion', () => {
     const release = vi.fn();
     mocks.acquireExamImportAiLease.mockResolvedValue({ release });
     const argumentsJson = JSON.stringify({
-      regions: [{ questionId: 'question-1', question: resolvedQuestion() }]
+      regions: [{ questionId: 'question-1', question: resolvedQuestion(), findings: [] }]
     });
     vi.mocked(fetch).mockResolvedValue(
       new Response(
@@ -246,7 +263,13 @@ describe('requestNextExamImportAiRegion', () => {
     const result = await requestNextExamImportAiRegion({
       draft: draft(),
       organizationId: 'org-1',
-      auditedQuestionIds: new Set()
+      auditedQuestionIds: new Set(),
+      sourceRuns: [
+        sourceRun(0, 0, 'Question 1. Choose the source-faithful option.'),
+        sourceRun(1, 0, 'First'),
+        sourceRun(2, 0, 'Second')
+      ],
+      auditSource: true
     });
 
     expect(result).toMatchObject({
@@ -256,7 +279,7 @@ describe('requestNextExamImportAiRegion', () => {
       promptTokens: 120,
       completionTokens: 40,
       transportAvailable: true,
-      response: { regions: [{ questionId: 'question-1' }] }
+      response: { regions: [{ questionId: 'question-1', findings: [] }] }
     });
     const request = vi.mocked(fetch).mock.calls[0]?.[1];
     const body = JSON.parse(String(request?.body)) as {
@@ -265,6 +288,10 @@ describe('requestNextExamImportAiRegion', () => {
       tools: Array<{ function: { strict: boolean } }>;
     };
     expect(body.messages[1]?.content).toContain('"questionId":"question-1"');
+    expect(body.messages[1]?.content).toContain(
+      '"sourceContext":{"instruction":"Part I","passage":null,"question":"Question 1. Choose the source-faithful option.\\nFirst\\nSecond"}'
+    );
+    expect(body.messages[0]?.content).toContain('Never infer or solve a missing answer key');
     expect(body.messages[1]?.content).not.toContain('Sample exam');
     expect(body.tool_choice.function.name).toBe('submit_exam_import_region');
     expect(body.tools[0]?.function.strict).toBe(true);

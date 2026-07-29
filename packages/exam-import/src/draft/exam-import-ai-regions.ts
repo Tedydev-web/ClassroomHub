@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import {
+  MAX_EXAM_IMPORT_DIAGNOSTICS,
   MAX_EXAM_IMPORT_FIELD_STATES,
   MAX_EXAM_IMPORT_TOTAL_QUESTIONS,
   examImportDraftSchema,
@@ -32,7 +33,8 @@ export const examImportAiRegionReasonSchema = z.enum([
   'unresolved_question',
   'missing_answer_key',
   'source_conflict',
-  'unrecognized_shape'
+  'unrecognized_shape',
+  'source_audit'
 ]);
 
 export type ExamImportAiRegionReason = z.infer<typeof examImportAiRegionReasonSchema>;
@@ -47,7 +49,16 @@ export type ExamImportAiRegion = {
 
 const aiRegionResolutionSchema = z.strictObject({
   questionId: z.string().min(1).max(200),
-  question: examImportQuestionSchema
+  question: examImportQuestionSchema,
+  findings: z
+    .array(
+      z.strictObject({
+        code: z.enum(['SOURCE_CONTENT_MISMATCH', 'SOURCE_AUTHORING_CONCERN']),
+        severity: z.enum(['info', 'warning']),
+        message: z.string().min(1).max(2_000)
+      })
+    )
+    .max(20)
 });
 
 export const examImportAiRegionResponseSchema = z.strictObject({
@@ -73,7 +84,10 @@ function diagnosticReasons(diagnostics: readonly ExamImportDiagnostic[]): ExamIm
   return reasons;
 }
 
-export function collectExamImportAiRegions(draft: ExamImportDraft): ExamImportAiRegion[] {
+export function collectExamImportAiRegions(
+  draft: ExamImportDraft,
+  options: { includeSourceAudit?: boolean } = {}
+): ExamImportAiRegion[] {
   const parsedDraft = examImportDraftSchema.parse(draft);
   const regions: ExamImportAiRegion[] = [];
 
@@ -87,6 +101,7 @@ export function collectExamImportAiRegions(draft: ExamImportDraft): ExamImportAi
       } else if (requiresExamImportAnswerKey(question) && question.answerKey === null) {
         reasons.unshift('missing_answer_key');
       }
+      if (options.includeSourceAudit) reasons.push('source_audit');
       if (reasons.length === 0) continue;
 
       regions.push({
@@ -129,22 +144,33 @@ function aiQuestionFieldStates(
 
 function normalizeAiQuestion(
   resolution: ExamImportAiRegionResponse['regions'][number],
-  region: ExamImportAiRegion
+  region: ExamImportAiRegion,
+  preserveMissingAnswerKeys: boolean
 ): ExamImportQuestion | null {
   const original = region.question;
   if (resolution.question.id !== resolution.questionId || resolution.question.kind === 'unresolved') return null;
 
   const mayReplaceQuestion =
-    region.reasons.includes('unresolved_question') || region.reasons.includes('unrecognized_shape');
-  if (!mayReplaceQuestion && resolution.question.kind !== original.kind) return null;
+    region.reasons.includes('unresolved_question') ||
+    region.reasons.includes('unrecognized_shape') ||
+    region.reasons.includes('source_audit');
+  const mayChangeKind = region.reasons.includes('unresolved_question') || region.reasons.includes('source_audit');
+  if (resolution.question.kind !== original.kind && !mayChangeKind) return null;
 
-  const resolvedQuestion = mayReplaceQuestion
+  let resolvedQuestion = mayReplaceQuestion
     ? structuredClone(resolution.question)
     : {
         ...structuredClone(original),
         answerCandidates: structuredClone(resolution.question.answerCandidates),
         answerKey: structuredClone(resolution.question.answerKey)
       };
+  if (preserveMissingAnswerKeys && original.answerKey === null) {
+    resolvedQuestion = {
+      ...resolvedQuestion,
+      answerCandidates: structuredClone(original.answerCandidates),
+      answerKey: null
+    };
+  }
   const provenance = structuredClone(original.provenance);
   const normalized = {
     ...resolvedQuestion,
@@ -153,7 +179,7 @@ function normalizeAiQuestion(
     sourceNumber: original.sourceNumber,
     passageId: original.passageId,
     confidence: 'low' as const,
-    review: 'needs_attention' as const,
+    review: preserveMissingAnswerKeys && original.answerKey === null ? original.review : ('needs_attention' as const),
     provenance
   };
 
@@ -186,6 +212,19 @@ function replaceQuestion(draft: ExamImportDraft, questionId: string, replacement
   return false;
 }
 
+function comparableQuestionContent(question: ExamImportQuestion): string {
+  const {
+    answerCandidates: _answerCandidates,
+    answerKey: _answerKey,
+    confidence: _confidence,
+    provenance: _provenance,
+    review: _review,
+    ...content
+  } = question;
+
+  return JSON.stringify(content);
+}
+
 function replaceAiFieldStates(
   fieldStates: ExamImportFieldState[],
   question: ExamImportQuestion,
@@ -215,7 +254,8 @@ function replaceAiFieldStates(
 export function applyExamImportAiRegionResponse(
   draft: ExamImportDraft,
   response: unknown,
-  context: ExamImportValidationContext
+  context: ExamImportValidationContext,
+  options: { includeSourceAudit?: boolean; preserveMissingAnswerKeys?: boolean } = {}
 ): ApplyExamImportAiRegionResponseResult {
   const originalValidation = validateExamImportDraft(draft, context);
   const parsedResponse = examImportAiRegionResponseSchema.safeParse(response);
@@ -223,7 +263,7 @@ export function applyExamImportAiRegionResponse(
     return { ...originalValidation, accepted: false };
   }
 
-  const regions = collectExamImportAiRegions(originalValidation.draft);
+  const regions = collectExamImportAiRegions(originalValidation.draft, options);
   const regionsByQuestionId = new Map(regions.map((region) => [region.questionId, region]));
   const resolvedQuestionIds = new Set<string>();
   const nextDraft = structuredClone(originalValidation.draft);
@@ -238,7 +278,7 @@ export function applyExamImportAiRegionResponse(
       return { ...originalValidation, accepted: false };
     }
 
-    const question = normalizeAiQuestion(resolution, region);
+    const question = normalizeAiQuestion(resolution, region, options.preserveMissingAnswerKeys === true);
     if (!question || !replaceQuestion(nextDraft, region.questionId, question)) {
       return { ...originalValidation, accepted: false };
     }
@@ -250,6 +290,27 @@ export function applyExamImportAiRegionResponse(
       return { ...originalValidation, accepted: false };
     }
     nextDraft.fieldStates = fieldStates;
+    const contentChanged = comparableQuestionContent(question) !== comparableQuestionContent(region.question);
+    const retainedDiagnostics = nextDraft.diagnostics.filter(
+      (diagnostic) => diagnostic.tier !== 'assisted' || diagnostic.questionId !== region.questionId
+    );
+    const assistedDiagnostics: ExamImportDiagnostic[] = resolution.findings
+      .filter((finding) => finding.code !== 'SOURCE_CONTENT_MISMATCH' || contentChanged)
+      .map((finding) => ({
+        tier: 'assisted',
+        severity: finding.severity,
+        blocking: false,
+        code: finding.code,
+        message: finding.message,
+        messageKey: 'exam_import.diagnostics.ai_source_concern',
+        questionId: region.questionId,
+        target: null,
+        provenance: structuredClone(region.provenance)
+      }));
+    if (retainedDiagnostics.length + assistedDiagnostics.length > MAX_EXAM_IMPORT_DIAGNOSTICS) {
+      return { ...originalValidation, accepted: false };
+    }
+    nextDraft.diagnostics = [...retainedDiagnostics, ...assistedDiagnostics];
     resolvedQuestionIds.add(resolution.questionId);
   }
 
@@ -257,10 +318,16 @@ export function applyExamImportAiRegionResponse(
   if (validation.draft === null) {
     return { ...originalValidation, accepted: false };
   }
+  const originalBlockingFindings = new Set(
+    originalValidation.findings
+      .filter((finding) => finding.blocking)
+      .map((finding) => `${finding.code}:${finding.questionId ?? ''}`)
+  );
   const unexpectedBlockingFinding = validation.findings.some(
     (finding) =>
       finding.blocking &&
       finding.code !== 'AI_ANSWER_REQUIRES_CONFIRMATION' &&
+      !originalBlockingFindings.has(`${finding.code}:${finding.questionId ?? ''}`) &&
       (finding.questionId === null || resolvedQuestionIds.has(finding.questionId))
   );
   if (unexpectedBlockingFinding) {

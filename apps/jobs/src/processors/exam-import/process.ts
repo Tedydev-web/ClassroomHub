@@ -1155,16 +1155,18 @@ async function createAndSaveDraft(
     }
 
     let validatedDraft = validation.draft;
-    // The deterministic import pipeline must complete without requesting AI.
-    // AI region resolution is invoked only by an explicit teacher action.
-    const automaticAiRequestsEnabled = false;
+    const automaticSourceAuditEnabled =
+      !sourceCheckpoint.aiTranscribed &&
+      (sourceCheckpoint.source.extractor === 'docx' || sourceCheckpoint.source.extractor === 'pdf');
     const auditedQuestionIds = new Set((runningImport.aiRegionAudit ?? []).map((entry) => entry.questionId));
     let aiCall =
-      automaticAiRequestsEnabled && runningImport.actorProfileId
+      automaticSourceAuditEnabled && runningImport.actorProfileId
         ? await requestNextExamImportAiRegion({
             draft: validatedDraft,
             organizationId: scope.organizationId,
-            auditedQuestionIds
+            auditedQuestionIds,
+            sourceRuns: sourceCheckpoint.runs,
+            auditSource: true
           })
         : { kind: 'disabled' as const };
     const aiWaitStartedAt = runningImport.startedAt ? new Date(runningImport.startedAt).getTime() : Date.now();
@@ -1229,7 +1231,10 @@ async function createAndSaveDraft(
       const applied =
         aiCall.response === null
           ? { ...validation, accepted: false }
-          : applyExamImportAiRegionResponse(validatedDraft, aiCall.response, validationContext);
+          : applyExamImportAiRegionResponse(validatedDraft, aiCall.response, validationContext, {
+              includeSourceAudit: true,
+              preserveMissingAnswerKeys: true
+            });
       if (applied.accepted && applied.draft) {
         validation = applied;
         validatedDraft = applied.draft;
@@ -1238,7 +1243,9 @@ async function createAndSaveDraft(
       const nextAuditedQuestionIds = new Set([...auditedQuestionIds, aiCall.region.questionId]);
       const hasRemainingRegions =
         aiCall.transportAvailable &&
-        collectExamImportAiRegions(validatedDraft).some((region) => !nextAuditedQuestionIds.has(region.questionId));
+        collectExamImportAiRegions(validatedDraft, { includeSourceAudit: true }).some(
+          (region) => !nextAuditedQuestionIds.has(region.questionId)
+        );
       const expiresAt = new Date(Date.now() + DRAFT_RETENTION_MS).toISOString();
       const checkpointedImport = await db.transaction(async (tx) => {
         const auditedImport = await recordExamImportAiRegion(

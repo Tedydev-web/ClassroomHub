@@ -313,7 +313,7 @@ describe('processExamImport checkpoints', () => {
     expect(mocks.replaceExamImportDraft).toHaveBeenCalledOnce();
   });
 
-  it('checkpoints the deterministic draft without invoking optional AI assistance', async () => {
+  it('checkpoints the deterministic draft while waiting for automatic source audit capacity', async () => {
     const artifact = sourceArtifact();
     mocks.readFile.mockResolvedValue(artifact.compressed);
     mocks.getExamImportById.mockResolvedValue({
@@ -340,14 +340,20 @@ describe('processExamImport checkpoints', () => {
     });
     mocks.requestNextExamImportAiRegion.mockResolvedValue({ kind: 'waiting' });
 
-    await expect(processExamImport(payload)).resolves.toMatchObject({ status: 'draft_ready' });
+    await expect(processExamImport(payload)).resolves.toMatchObject({ status: 'waiting_for_ai' });
     expect(mocks.replaceExamImportDraft).toHaveBeenCalledOnce();
-    expect(mocks.requestNextExamImportAiRegion).not.toHaveBeenCalled();
-    expect(mocks.markExamImportWaitingForAi).not.toHaveBeenCalled();
-    expect(mocks.markExamImportDraftReady).toHaveBeenCalledOnce();
+    expect(mocks.requestNextExamImportAiRegion).toHaveBeenCalledWith({
+      draft: { schemaVersion: 1, sections: [] },
+      organizationId: payload.organizationId,
+      auditedQuestionIds: new Set(),
+      sourceRuns: sourceCheckpoint.runs,
+      auditSource: true
+    });
+    expect(mocks.markExamImportWaitingForAi).toHaveBeenCalledOnce();
+    expect(mocks.markExamImportDraftReady).not.toHaveBeenCalled();
   });
 
-  it('does not use AI capacity state when finalizing the deterministic draft', async () => {
+  it('finalizes the deterministic draft after the automatic source audit capacity timeout', async () => {
     const artifact = sourceArtifact();
     mocks.readFile.mockResolvedValue(artifact.compressed);
     mocks.getExamImportById.mockResolvedValue({
@@ -376,7 +382,7 @@ describe('processExamImport checkpoints', () => {
     mocks.requestNextExamImportAiRegion.mockResolvedValue({ kind: 'waiting' });
 
     await expect(processExamImport(payload)).resolves.toMatchObject({ status: 'draft_ready' });
-    expect(mocks.requestNextExamImportAiRegion).not.toHaveBeenCalled();
+    expect(mocks.requestNextExamImportAiRegion).toHaveBeenCalledOnce();
     expect(mocks.markExamImportDraftReady).toHaveBeenCalledOnce();
     expect(mocks.markExamImportWaitingForAi).not.toHaveBeenCalled();
   });
