@@ -136,6 +136,7 @@ jobs:
           API_IMAGE: ${{ steps.images.outputs.api_image }}
           DASHBOARD_IMAGE: ${{ steps.images.outputs.dashboard_image }}
           JOBS_IMAGE: ${{ steps.images.outputs.jobs_image }}
+          AI_GATEWAY_AUTH_TOKEN: ${{ secrets.PRODUCTION_AI_GATEWAY_AUTH_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -154,7 +155,7 @@ jobs:
           body=$(printf '%s' "$response" | sed '$d')
           test "$status" = "200"
 
-          reconcile_image() {
+          reconcile_value() {
             local key="$1"
             local expected="$2"
             local current
@@ -165,7 +166,7 @@ jobs:
 
             current=$(printf '%s' "$body" | jq -r --arg key "$key" '.. | objects | select(.key? == $key) | .value' | head -n1)
             if [ "$current" = "$expected" ]; then
-              echo "${key} already matches the release digest"
+              echo "${key} already matches the expected value"
               return
             fi
 
@@ -184,14 +185,17 @@ jobs:
               "${coolify_url}/api/v1/applications/${app_uuid}/envs")
             update_status=$(printf '%s' "$update_response" | tail -n1)
             case "$update_status" in
-              200|201) echo "${key} reconciled to the release digest" ;;
+              200|201) echo "${key} reconciled" ;;
               *) echo "::error::Coolify rejected ${key} reconciliation with HTTP ${update_status}" >&2; exit 1 ;;
             esac
           }
 
-          reconcile_image API_IMAGE "$API_IMAGE"
-          reconcile_image DASHBOARD_IMAGE "$DASHBOARD_IMAGE"
-          reconcile_image JOBS_IMAGE "$JOBS_IMAGE"
+          reconcile_value API_IMAGE "$API_IMAGE"
+          reconcile_value DASHBOARD_IMAGE "$DASHBOARD_IMAGE"
+          reconcile_value JOBS_IMAGE "$JOBS_IMAGE"
+          reconcile_value AI_GATEWAY_AUTH_TOKEN "$AI_GATEWAY_AUTH_TOKEN"
+          reconcile_value EXAM_IMPORT_AI_ENABLED true
+          reconcile_value EXAM_IMPORT_AI_MODEL claude-sonnet-5
 
       - name: Trigger Coolify deployment
         id: trigger
