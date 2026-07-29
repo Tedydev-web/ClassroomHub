@@ -36,6 +36,36 @@
       "reference": "references/2026-en-on-luyen-03-scan-converted.reference.json"
     },
     {
+      "id": "2026-g12-practice-test-2",
+      "path": "2026-g12-practice-test-2.docx",
+      "committed": true,
+      "bytes": 53945,
+      "sha256": "21c8d65a335af3b0fda01306430fc07fa7c230542a8ada1809748838e426c021",
+      "format": "docx",
+      "subject": "english",
+      "languages": ["en"],
+      "pageCount": null,
+      "captureKind": "native_digital",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:G12_PRACTICE TEST 2.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-07-29."
+      },
+      "note": "Natively authored 40-question practice paper with six instruction blocks, five shared passages, no answer key, and two known source-authoring concerns.",
+      "traits": [
+        "native-digital",
+        "no-answer-key",
+        "six-instruction-blocks",
+        "passage-shared-by-several-questions",
+        "sentence-arrangement",
+        "source-range-mismatch",
+        "source-question-passage-mismatch",
+        "no-tables",
+        "no-office-math"
+      ],
+      "reference": "references/2026-g12-practice-test-2.reference.json"
+    },
+    {
       "id": "2026-en-on-luyen-03-scan",
       "path": "large/2026-en-on-luyen-03-scan.pdf",
       "committed": false,

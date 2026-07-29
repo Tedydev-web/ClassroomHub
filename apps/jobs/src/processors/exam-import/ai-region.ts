@@ -81,6 +81,7 @@ export type ExamImportAiRegionCall =
       promptTokens: number;
       completionTokens: number;
       transportAvailable: boolean;
+      sourceQuestionText?: string;
     };
 
 function chatCompletionsUrl(baseUrl: string): string {
@@ -93,12 +94,16 @@ function requestHash(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
-function parseRegionResponse(argumentsJson: string): ExamImportAiRegionResponse | null {
+function parseRegionResponse(argumentsJson: string, expectedQuestionId: string): ExamImportAiRegionResponse | null {
   try {
     const parsedJson: unknown = JSON.parse(argumentsJson);
     const parsed = examImportAiRegionResponseSchema.safeParse(parsedJson);
 
-    return parsed.success ? parsed.data : null;
+    return parsed.success &&
+      parsed.data.regions.length === 1 &&
+      parsed.data.regions[0]?.questionId === expectedQuestionId
+      ? parsed.data
+      : null;
   } catch {
     return null;
   }
@@ -200,12 +205,8 @@ export async function requestNextExamImportAiRegion(input: {
   if (!lease) return { kind: 'waiting' };
 
   const schema = z.toJSONSchema(examImportAiRegionResponseSchema);
-  const requestRegion = input.auditSource
-    ? {
-        ...region,
-        sourceContext: sourceContextForRegion(region, input.draft, input.sourceRuns ?? [])
-      }
-    : region;
+  const sourceContext = input.auditSource ? sourceContextForRegion(region, input.draft, input.sourceRuns ?? []) : null;
+  const requestRegion = sourceContext ? { ...region, sourceContext } : region;
   const requestBody = {
     model,
     messages: [
@@ -266,7 +267,8 @@ export async function requestNextExamImportAiRegion(input: {
         quotaMultiplier: modelConfig.quotaWeight,
         promptTokens: 0,
         completionTokens: 0,
-        transportAvailable: false
+        transportAvailable: false,
+        sourceQuestionText: sourceContext?.question
       };
     }
 
@@ -285,7 +287,8 @@ export async function requestNextExamImportAiRegion(input: {
         quotaMultiplier: modelConfig.quotaWeight,
         promptTokens: usage.promptTokens,
         completionTokens: usage.completionTokens,
-        transportAvailable: true
+        transportAvailable: true,
+        sourceQuestionText: sourceContext?.question
       };
     }
 
@@ -294,14 +297,15 @@ export async function requestNextExamImportAiRegion(input: {
     return {
       kind: 'attempted',
       region,
-      response: toolCall ? parseRegionResponse(toolCall.function.arguments) : null,
+      response: toolCall ? parseRegionResponse(toolCall.function.arguments, region.questionId) : null,
       requestHash: digest,
       sentAt,
       model,
       quotaMultiplier: modelConfig.quotaWeight,
       promptTokens: usage.promptTokens,
       completionTokens: usage.completionTokens,
-      transportAvailable: true
+      transportAvailable: true,
+      sourceQuestionText: sourceContext?.question
     };
   } catch (error) {
     console.error('requestNextExamImportAiRegion error:', error);
@@ -317,7 +321,8 @@ export async function requestNextExamImportAiRegion(input: {
       quotaMultiplier: modelConfig.quotaWeight,
       promptTokens: 0,
       completionTokens: 0,
-      transportAvailable: false
+      transportAvailable: false,
+      sourceQuestionText: sourceContext?.question
     };
   } finally {
     try {

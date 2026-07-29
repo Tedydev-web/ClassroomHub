@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { readDocxRuns } from '../src/docx/read-docx-runs';
-import { examImportDraftSchema } from '../src/draft/exam-import-draft';
+import { examImportDraftSchema, type ExamImportSourceSpan } from '../src/draft/exam-import-draft';
 import { segmentExamImportRuns } from '../src/draft/exam-import-segmentation';
 import { validateExamImportDraft } from '../src/draft/exam-import-validation';
-import { emptyFormatting, type RunFormatting, type SourceRun } from '../src/source-run';
+import { emptyFormatting, normalizeComparableText, type RunFormatting, type SourceRun } from '../src/source-run';
 
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const REFERENCE_DOCX = join(
@@ -62,6 +62,65 @@ function segment(runs: SourceRun[]) {
     mimeType: DOCX_MIME,
     extractor: 'docx'
   });
+}
+
+function comparableVisibleText(value: string): string {
+  return normalizeComparableText(value).replace(/\s+([,.:;!?])/gu, '$1');
+}
+
+function decodedHtmlText(html: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: '&',
+    apos: "'",
+    gt: '>',
+    lt: '<',
+    nbsp: ' ',
+    quot: '"'
+  };
+
+  return comparableVisibleText(
+    html.replace(/<[^>]*>/gu, ' ').replace(/&([A-Za-z]+|#[0-9]+|#x[0-9A-Fa-f]+);/gu, (entity, value: string) => {
+      if (value in namedEntities) return namedEntities[value]!;
+      const codePoint = value.startsWith('#x')
+        ? Number.parseInt(value.slice(2), 16)
+        : value.startsWith('#')
+          ? Number.parseInt(value.slice(1), 10)
+          : Number.NaN;
+
+      return Number.isSafeInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff
+        ? String.fromCodePoint(codePoint)
+        : entity;
+    })
+  );
+}
+
+function runIsWithinProvenance(run: SourceRun, item: { provenance: ExamImportSourceSpan[] }): boolean {
+  return item.provenance.some((span) => {
+    const afterStart =
+      run.location.blockIndex > span.start.blockIndex ||
+      (run.location.blockIndex === span.start.blockIndex && run.location.runIndex >= span.start.runIndex);
+    const beforeEnd =
+      run.location.blockIndex < span.end.blockIndex ||
+      (run.location.blockIndex === span.end.blockIndex && run.location.runIndex <= span.end.runIndex);
+
+    return afterStart && beforeEnd;
+  });
+}
+
+function sourceTextForProvenance(runs: SourceRun[], item: { provenance: ExamImportSourceSpan[] }): string {
+  let previousBlock = -1;
+
+  const sourceText = runs
+    .filter((run) => runIsWithinProvenance(run, item))
+    .map((run) => {
+      const listNumber = run.location.blockIndex === previousBlock ? '' : (run.block.listNumber ?? '');
+      previousBlock = run.location.blockIndex;
+
+      return `${listNumber} ${run.text}`;
+    })
+    .join(' ');
+
+  return comparableVisibleText(sourceText.replace(/[●•▪]/gu, ' '));
 }
 
 describe('exam import segmentation', () => {
@@ -854,6 +913,44 @@ describe('exam import segmentation', () => {
         })
       ])
     );
+  });
+
+  it.each([
+    ['verified reference', REFERENCE_DOCX],
+    ['uploaded G12 practice test', G12_PRACTICE_TEST_DOCX]
+  ])('keeps every authored fragment from the %s grounded in its source span', async (_name, path) => {
+    const result = await readDocxRuns(new Uint8Array(readFileSync(path)));
+    const draft = segmentExamImportRuns(result.runs, {
+      assetId: 'option-fidelity',
+      fileName: path,
+      mimeType: DOCX_MIME,
+      extractor: 'docx'
+    });
+    const questions = draft.sections.flatMap((section) => section.questions);
+
+    expect(questions).toHaveLength(40);
+    for (const sharedContent of draft.sharedContents) {
+      const sourceText = sourceTextForProvenance(result.runs, sharedContent);
+
+      expect(sourceText).toContain(decodedHtmlText(sharedContent.html));
+    }
+    for (const question of questions) {
+      if (question.kind !== 'choice') throw new Error(`Expected choice question ${question.sourceNumber}`);
+      const sourceText = sourceTextForProvenance(result.runs, question);
+      let sourceCursor = 0;
+
+      expect(sourceText).toContain(decodedHtmlText(question.promptHtml));
+      for (const option of question.options) {
+        const optionText = decodedHtmlText(option.html);
+        const optionIndex = sourceText.indexOf(optionText, sourceCursor);
+
+        expect(
+          optionIndex,
+          `Question ${question.sourceNumber} option ${option.sourceLabel} is not source-grounded`
+        ).toBeGreaterThanOrEqual(0);
+        sourceCursor = optionIndex + optionText.length;
+      }
+    }
   });
 
   it('is deterministic for identical input', () => {

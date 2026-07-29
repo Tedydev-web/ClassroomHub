@@ -338,6 +338,48 @@ describe('requestNextExamImportAiRegion', () => {
     });
   });
 
+  it('discards a valid response for a different region', async () => {
+    const argumentsJson = JSON.stringify({
+      regions: [{ questionId: 'question-other', question: resolvedQuestion(), findings: [] }]
+    });
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                tool_calls: [
+                  {
+                    function: {
+                      name: 'submit_exam_import_region',
+                      arguments: argumentsJson
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        }
+      )
+    );
+
+    await expect(
+      requestNextExamImportAiRegion({
+        draft: draft(),
+        organizationId: 'org-1',
+        auditedQuestionIds: new Set()
+      })
+    ).resolves.toMatchObject({
+      kind: 'attempted',
+      response: null,
+      transportAvailable: true
+    });
+  });
+
   it('retains billed usage when the strict gateway envelope is invalid', async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(

@@ -201,6 +201,48 @@ describe('exam import AI regions', () => {
     expect(result.draft?.diagnostics).toEqual([]);
   });
 
+  it('preserves prompt and options that AI cannot ground in the question source span', () => {
+    const draft = buildValidExamImportDraft();
+    const question = keylessQuestion();
+    draft.sections[0]!.questions = [question];
+    const ungroundedQuestion = {
+      ...structuredClone(question),
+      promptHtml: '<p>Sentence copied from the shared passage.</p>',
+      options: [question.options[0]!, { ...question.options[1]!, html: '<p>Invented option</p>' }]
+    };
+
+    const result = applyExamImportAiRegionResponse(
+      draft,
+      {
+        regions: [
+          {
+            questionId: question.id,
+            question: ungroundedQuestion,
+            findings: [
+              {
+                code: 'SOURCE_CONTENT_MISMATCH',
+                severity: 'warning',
+                message: 'Restored content from source.'
+              }
+            ]
+          }
+        ]
+      },
+      validationContext,
+      {
+        includeSourceAudit: true,
+        preserveMissingAnswerKeys: true,
+        sourceQuestionText: 'Question 1. Choose the correct answer. A. First B. Second'
+      }
+    );
+    const applied = result.draft?.sections[0]?.questions[0];
+
+    expect(result.accepted).toBe(true);
+    expect(applied?.promptHtml).toBe(question.promptHtml);
+    expect(applied?.kind === 'choice' ? applied.options : null).toEqual(question.options);
+    expect(result.draft?.diagnostics).toEqual([]);
+  });
+
   it('rejects unknown fields and responses beyond the region limit', () => {
     expect(examImportAiRegionResponseSchema.safeParse({ regions: [], unexpected: true }).success).toBe(false);
     expect(

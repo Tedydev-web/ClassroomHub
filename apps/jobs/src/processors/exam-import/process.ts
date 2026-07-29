@@ -1233,7 +1233,8 @@ async function createAndSaveDraft(
           ? { ...validation, accepted: false }
           : applyExamImportAiRegionResponse(validatedDraft, aiCall.response, validationContext, {
               includeSourceAudit: true,
-              preserveMissingAnswerKeys: true
+              preserveMissingAnswerKeys: true,
+              sourceQuestionText: aiCall.sourceQuestionText
             });
       if (applied.accepted && applied.draft) {
         validation = applied;

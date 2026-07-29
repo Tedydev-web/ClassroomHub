@@ -113,7 +113,7 @@ type RenderedTable = {
 const EXPLICIT_QUESTION_PATTERN = /\b(?:Câu|Bài|Question)\s*(\d+)\s*[.:)]?/giu;
 const BARE_QUESTION_PATTERN = /^\s*(\d+)\s*[.)]\s*/u;
 const OPTION_PATTERN = /([A-D])\s*[.)/]\s*/gu;
-const LOWER_ITEM_PATTERN = /^([a-e])\s*[.)]\s*/iu;
+const LOWER_ITEM_PATTERN = /^([a-z])\s*[.)]\s*/iu;
 const POINTS_PATTERN = /\(\s*(\d+(?:[.,]\d+)?)\s*(?:điểm|diem|points?)\s*\)/iu;
 const COGNITIVE_LEVEL_PATTERN = /\[\s*[0-3]\s*,\s*(NB|TH|VD|VDC)\s*\]/iu;
 const END_MARKER_PATTERN = /^(?:[-–—_=*]\s*)*(?:HẾT|THE END)\b/iu;
@@ -843,7 +843,7 @@ function appendRegularBlock(
 ): void {
   if (!currentQuestion || SOLUTION_MARKER_PATTERN.test(block.text.trim())) return;
 
-  const lowerListLabel = block.listNumber?.match(/^([a-e])\s*[.)]?$/u)?.[1] ?? null;
+  const lowerListLabel = block.listNumber?.match(/^([a-z])\s*[.)]?$/u)?.[1] ?? null;
   if (lowerListLabel) {
     const html = sourceBlockSliceHtml(block, 0, block.text.length);
     addPromptPart(currentQuestion, block.text, block.span, lowerListLabel, html);

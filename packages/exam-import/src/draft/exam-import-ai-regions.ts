@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { normalizeComparableText } from '../source-run';
 import {
   MAX_EXAM_IMPORT_DIAGNOSTICS,
   MAX_EXAM_IMPORT_FIELD_STATES,
@@ -225,6 +226,79 @@ function comparableQuestionContent(question: ExamImportQuestion): string {
   return JSON.stringify(content);
 }
 
+function decodeHtmlCodePoint(entity: string, codePoint: string, radix: number): string {
+  const value = Number.parseInt(codePoint, radix);
+
+  return Number.isSafeInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : entity;
+}
+
+function visibleHtmlText(html: string): string {
+  const decoded = html
+    .replace(/<[^>]*>/gu, ' ')
+    .replace(/&#(\d+);/gu, (entity, codePoint: string) => decodeHtmlCodePoint(entity, codePoint, 10))
+    .replace(/&#x([0-9a-f]+);/giu, (entity, codePoint: string) => decodeHtmlCodePoint(entity, codePoint, 16))
+    .replace(/&quot;/gu, '"')
+    .replace(/&#39;|&apos;/gu, "'")
+    .replace(/&lt;/gu, '<')
+    .replace(/&gt;/gu, '>')
+    .replace(/&amp;/gu, '&');
+
+  return normalizeComparableText(decoded);
+}
+
+function htmlListIsGroundedInSource(htmlValues: readonly string[], sourceText: string): boolean {
+  const source = normalizeComparableText(sourceText);
+  let cursor = 0;
+
+  for (const html of htmlValues) {
+    const value = visibleHtmlText(html);
+    if (!value) continue;
+
+    const index = source.indexOf(value, cursor);
+    if (index < 0) return false;
+    cursor = index + value.length;
+  }
+
+  return true;
+}
+
+function preserveUngroundedSourceAuditContent(
+  resolved: ExamImportQuestion,
+  original: ExamImportQuestion,
+  sourceQuestionText: string
+): ExamImportQuestion {
+  const next = structuredClone(resolved);
+  if (
+    visibleHtmlText(next.promptHtml) !== visibleHtmlText(original.promptHtml) &&
+    !htmlListIsGroundedInSource([next.promptHtml], sourceQuestionText)
+  ) {
+    next.promptHtml = original.promptHtml;
+  }
+
+  if (
+    next.kind === 'choice' &&
+    original.kind === 'choice' &&
+    !htmlListIsGroundedInSource(
+      next.options.map((option) => option.html),
+      sourceQuestionText
+    )
+  ) {
+    next.options = structuredClone(original.options);
+  }
+  if (
+    next.kind === 'true_false_group' &&
+    original.kind === 'true_false_group' &&
+    !htmlListIsGroundedInSource(
+      next.statements.map((statement) => statement.html),
+      sourceQuestionText
+    )
+  ) {
+    next.statements = structuredClone(original.statements);
+  }
+
+  return next;
+}
+
 function replaceAiFieldStates(
   fieldStates: ExamImportFieldState[],
   question: ExamImportQuestion,
@@ -255,7 +329,7 @@ export function applyExamImportAiRegionResponse(
   draft: ExamImportDraft,
   response: unknown,
   context: ExamImportValidationContext,
-  options: { includeSourceAudit?: boolean; preserveMissingAnswerKeys?: boolean } = {}
+  options: { includeSourceAudit?: boolean; preserveMissingAnswerKeys?: boolean; sourceQuestionText?: string } = {}
 ): ApplyExamImportAiRegionResponseResult {
   const originalValidation = validateExamImportDraft(draft, context);
   const parsedResponse = examImportAiRegionResponseSchema.safeParse(response);
@@ -278,7 +352,10 @@ export function applyExamImportAiRegionResponse(
       return { ...originalValidation, accepted: false };
     }
 
-    const question = normalizeAiQuestion(resolution, region, options.preserveMissingAnswerKeys === true);
+    let question = normalizeAiQuestion(resolution, region, options.preserveMissingAnswerKeys === true);
+    if (question && options.includeSourceAudit && options.sourceQuestionText) {
+      question = preserveUngroundedSourceAuditContent(question, region.question, options.sourceQuestionText);
+    }
     if (!question || !replaceQuestion(nextDraft, region.questionId, question)) {
       return { ...originalValidation, accepted: false };
     }

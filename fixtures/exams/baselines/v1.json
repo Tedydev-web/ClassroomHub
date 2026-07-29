@@ -18,6 +18,24 @@
       },
       "missingQuestionNumbers": [],
       "optionCountMismatches": []
+    },
+    "2026-g12-practice-test-2": {
+      "questionRecall": 1,
+      "kindAccuracy": 1,
+      "groupingAccuracy": 1,
+      "optionCountAccuracy": 1,
+      "answerKeyAccuracy": null,
+      "optionFidelity": null,
+      "reviewPrecision": 1,
+      "reviewRecall": 1,
+      "counts": {
+        "referenceQuestions": 40,
+        "extractedQuestions": 40,
+        "matchedQuestions": 40,
+        "spuriousQuestions": 0
+      },
+      "missingQuestionNumbers": [],
+      "optionCountMismatches": []
     }
   }
 }
