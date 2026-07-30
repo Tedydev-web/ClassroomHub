@@ -1594,8 +1594,11 @@
     }}
   />
 {:else if hasSectionedExercise && currentSection && resolvedSectionQuestionDisplay === 'all_questions' && $questionnaireMetaData.sectionPhase === 'questions'}
-  <div class="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-    <ExerciseQuestion.SectionNavigationSidebar sections={sectionNavigationGroups} />
+  <div class="space-y-4">
+    <ExerciseQuestion.SectionNavigationSidebar
+      sections={sectionNavigationGroups}
+      navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
+    />
     <section class="space-y-4">
       {#if $questionnaire.sectionDisplayMode === 'learner_choice'}
         <div
@@ -1681,9 +1684,12 @@
     </section>
   </div>
 {:else if currentTakeItem}
-  <div class={hasSectionedExercise ? 'grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]' : ''}>
+  <div class={hasSectionedExercise ? 'space-y-4' : ''}>
     {#if hasSectionedExercise}
-      <ExerciseQuestion.SectionNavigationSidebar sections={sectionNavigationGroups} />
+      <ExerciseQuestion.SectionNavigationSidebar
+        sections={sectionNavigationGroups}
+        navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
+      />
     {/if}
     <div class="flex min-w-0 flex-col gap-4">
       {#if hasSectionedExercise && currentSection}

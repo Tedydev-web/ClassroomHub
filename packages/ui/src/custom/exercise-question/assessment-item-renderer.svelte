@@ -680,14 +680,6 @@
               data-assessment-question-group={group.id}
               aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
             >
-              <div class="ui:border-border ui:mb-6 ui:border-b ui:pb-3">
-                <p class="ui:text-sm ui:font-semibold">
-                  {passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
-                </p>
-                <p class="ui:text-muted-foreground ui:text-xs">
-                  {passageWorkspaceLabels.formatProgress(group.answered, group.total)}
-                </p>
-              </div>
               <div class="ui:space-y-8">
                 {#each group.interactions as block (block.id)}
                   {@const interactionIndex = interactionBlocks.findIndex(
