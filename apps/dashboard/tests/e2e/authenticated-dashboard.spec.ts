@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
 const environment = process['env'];
 const baseURL = environment.E2E_BASE_URL;
@@ -7,11 +7,12 @@ const email = environment.E2E_EMAIL;
 const password = environment.E2E_PASSWORD;
 const exercisePath = environment.E2E_EXERCISE_PATH;
 const lifecycleApiURL = environment.E2E_API_URL;
+const lifecycleProxyURL = environment.E2E_PROXY_URL ?? baseURL;
 const lifecycleCourseId = environment.E2E_COURSE_ID;
 const studentEmail = environment.E2E_STUDENT_EMAIL;
 const studentPassword = environment.E2E_STUDENT_PASSWORD;
 const hasAuthenticatedConfiguration = Boolean(baseURL && email && password);
-const hasLifecycleConfiguration = Boolean(lifecycleApiURL && lifecycleCourseId && studentEmail && studentPassword);
+const hasLifecycleConfiguration = Boolean(lifecycleProxyURL && lifecycleCourseId && studentEmail && studentPassword);
 const monitoredOrigins = new Set(
   [baseURL, lifecycleApiURL].flatMap((configuredURL) => (configuredURL ? [new URL(configuredURL).origin] : []))
 );
@@ -39,23 +40,42 @@ async function expectNoHorizontalPageOverflow(page: Page) {
 }
 
 async function expectExplicitPassageLayout(page: Page) {
-  const splitLayouts = page.locator('[data-assessment-layout="split"]');
-  let splitLayout = splitLayouts.first();
+  const layouts = page.locator('[data-assessment-layout="passage-workspace"], [data-assessment-layout="split"]');
+  let workspace = layouts.first();
 
-  for (const candidate of await splitLayouts.all()) {
+  for (const candidate of await layouts.all()) {
     if (await candidate.isVisible()) {
-      splitLayout = candidate;
+      workspace = candidate;
       break;
     }
   }
 
-  const passagePanel = splitLayout.locator('[data-assessment-panel="passage"]');
-  const interactionPanel = splitLayout.locator('[data-assessment-panel="interactions"]');
-  await expect(splitLayout).toBeVisible();
+  await expect(workspace).toBeVisible();
+  const layout = await workspace.getAttribute('data-assessment-layout');
+  const passagePanel =
+    layout === 'passage-workspace'
+      ? workspace.locator('[data-assessment-passage-group]').first()
+      : workspace.locator('[data-assessment-panel="passage"]');
+  const interactionPanel =
+    layout === 'passage-workspace'
+      ? workspace.locator('[data-assessment-question-group]').first()
+      : workspace.locator('[data-assessment-panel="interactions"]');
+  const viewport = page.viewportSize();
+
+  if (layout === 'passage-workspace' && viewport && viewport.width < 1024) {
+    const passageToggle = workspace.locator('[data-assessment-mobile-panel="passage"]');
+    const questionsToggle = workspace.locator('[data-assessment-mobile-panel="questions"]');
+    await passageToggle.click();
+    await expect(passagePanel).toBeVisible();
+    await expect(interactionPanel).toBeHidden();
+    await questionsToggle.click();
+    await expect(interactionPanel).toBeVisible();
+    await expect(passagePanel).toBeHidden();
+    return;
+  }
 
   const passageBox = await passagePanel.boundingBox();
   const interactionBox = await interactionPanel.boundingBox();
-  const viewport = page.viewportSize();
   expect(passageBox).not.toBeNull();
   expect(interactionBox).not.toBeNull();
   if (!passageBox || !interactionBox || !viewport) return;
@@ -111,39 +131,59 @@ async function gotoExpectedPage(page: Page, path: string) {
   }
 }
 
+async function requestThroughDashboardProxy(page: Page, url: string, method: string, data?: unknown) {
+  return page.evaluate(
+    async ({ requestUrl, requestMethod, requestData }) => {
+      const response = await fetch(requestUrl, {
+        method: requestMethod,
+        headers: requestData === undefined ? undefined : { 'content-type': 'application/json' },
+        body: requestData === undefined ? undefined : JSON.stringify(requestData)
+      });
+      const payload: unknown = await response.json();
+
+      return { status: response.status, payload };
+    },
+    { requestUrl: url, requestMethod: method, requestData: data }
+  );
+}
+
 async function createLifecycleExercise(
   page: Page,
-  apiURL: string,
+  proxyURL: string,
   courseId: string,
   title: string,
   legacyPrompt: string,
   legacyCorrectOption: string
 ) {
-  const response = await page.request.post(new URL(`/course/${courseId}/exercise`, apiURL).toString(), {
-    data: {
-      courseId,
-      title,
-      description: 'Isolated browser lifecycle fixture',
-      order: 0,
-      questions: [
-        {
-          question: legacyPrompt,
-          questionTypeId: 1,
-          points: 1,
-          order: 0,
-          options: [
-            { label: legacyCorrectOption, isCorrect: true },
-            { label: 'Legacy incorrect option', isCorrect: false }
-          ]
-        }
-      ]
-    }
-  });
-  if (response.status() !== 201) {
-    throw new Error(`Failed to create lifecycle exercise fixture: HTTP ${response.status()}`);
+  const data = {
+    courseId,
+    title,
+    description: 'Isolated browser lifecycle fixture',
+    order: 0,
+    questions: [
+      {
+        question: legacyPrompt,
+        questionTypeId: 1,
+        points: 1,
+        order: 0,
+        options: [
+          { label: legacyCorrectOption, isCorrect: true },
+          { label: 'Legacy incorrect option', isCorrect: false }
+        ]
+      }
+    ]
+  };
+  const response = await requestThroughDashboardProxy(
+    page,
+    new URL(`/proxy/course/${courseId}/exercise`, proxyURL).toString(),
+    'POST',
+    data
+  );
+  if (response.status !== 201) {
+    throw new Error(`Failed to create lifecycle exercise fixture: HTTP ${response.status}`);
   }
 
-  const payload: unknown = await response.json();
+  const payload = response.payload;
   if (!isRecord(payload) || !isRecord(payload.data) || typeof payload.data.id !== 'string') {
     throw new Error('Lifecycle exercise fixture response did not contain an exercise id');
   }
@@ -151,20 +191,17 @@ async function createLifecycleExercise(
   return payload.data.id;
 }
 
-async function deleteLifecycleExercise(
-  request: APIRequestContext,
-  apiURL: string,
-  courseId: string,
-  exerciseId: string
-) {
-  const submissionsResponse = await request.get(
-    new URL(`/course/${courseId}/exercise/${exerciseId}/submissions`, apiURL).toString()
+async function deleteLifecycleExercise(page: Page, proxyURL: string, courseId: string, exerciseId: string) {
+  const submissionsResponse = await requestThroughDashboardProxy(
+    page,
+    new URL(`/proxy/course/${courseId}/exercise/${exerciseId}/submissions`, proxyURL).toString(),
+    'GET'
   );
-  if (!submissionsResponse.ok()) {
-    throw new Error(`Failed to list lifecycle fixture submissions: HTTP ${submissionsResponse.status()}`);
+  if (submissionsResponse.status < 200 || submissionsResponse.status >= 300) {
+    throw new Error(`Failed to list lifecycle fixture submissions: HTTP ${submissionsResponse.status}`);
   }
 
-  const submissionsPayload: unknown = await submissionsResponse.json();
+  const submissionsPayload = submissionsResponse.payload;
   if (
     !isRecord(submissionsPayload) ||
     !isRecord(submissionsPayload.data) ||
@@ -178,17 +215,23 @@ async function deleteLifecycleExercise(
       throw new Error('Lifecycle fixture submissions response contained an invalid submission');
     }
 
-    const deleteSubmissionResponse = await request.delete(
-      new URL(`/course/${courseId}/submission/${submission.id}`, apiURL).toString()
+    const deleteSubmissionResponse = await requestThroughDashboardProxy(
+      page,
+      new URL(`/proxy/course/${courseId}/submission/${submission.id}`, proxyURL).toString(),
+      'DELETE'
     );
-    if (!deleteSubmissionResponse.ok()) {
-      throw new Error(`Failed to delete lifecycle fixture submission: HTTP ${deleteSubmissionResponse.status()}`);
+    if (deleteSubmissionResponse.status < 200 || deleteSubmissionResponse.status >= 300) {
+      throw new Error(`Failed to delete lifecycle fixture submission: HTTP ${deleteSubmissionResponse.status}`);
     }
   }
 
-  const response = await request.delete(new URL(`/course/${courseId}/exercise/${exerciseId}`, apiURL).toString());
-  if (!response.ok()) {
-    throw new Error(`Failed to delete lifecycle exercise fixture: HTTP ${response.status()}`);
+  const response = await requestThroughDashboardProxy(
+    page,
+    new URL(`/proxy/course/${courseId}/exercise/${exerciseId}`, proxyURL).toString(),
+    'DELETE'
+  );
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`Failed to delete lifecycle exercise fixture: HTTP ${response.status}`);
   }
 }
 
@@ -255,12 +298,15 @@ test.describe('authenticated dashboard', () => {
     const addAdvancedQuestionButton = page.getByRole('button', { name: 'Add advanced question' });
     await expect(addAdvancedQuestionButton).toBeVisible();
     await addAdvancedQuestionButton.click();
+    await expect(page.locator('[data-assessment-workspace]')).toBeVisible();
+    await expect(page.locator('[data-legacy-question-list]')).toBeHidden();
 
-    const questionTitleField = page.getByRole('textbox', { name: 'Question title' }).last();
-    const advancedComposer = questionTitleField.locator('xpath=ancestor::section[1]');
-    const addChoiceButton = advancedComposer.getByRole('button', { name: 'Add choice' });
-    const addExtendedTextButton = advancedComposer.getByRole('button', { name: 'Add extended text' });
-    const saveAdvancedQuestionButton = advancedComposer.getByRole('button', { name: 'Save advanced question' });
+    const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' });
+    const advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');
+    const questionTitleField = advancedComposer.getByRole('group', { name: 'Question title' });
+    const questionTitleEditor = questionTitleField.locator('[contenteditable="true"]');
+    const addChoiceButton = advancedComposer.getByRole('button', { name: 'Choice question' });
+    const addExtendedTextButton = advancedComposer.getByRole('button', { name: 'Extended text' });
     await expect(addChoiceButton).toBeVisible();
     await expect(advancedComposer.getByRole('button', { name: 'Add content' })).toBeVisible();
     await expect(addExtendedTextButton).toBeVisible();
@@ -269,11 +315,12 @@ test.describe('authenticated dashboard', () => {
     await expect(questionTitleField).toBeFocused();
     await expect(questionTitleField).toHaveAttribute('aria-invalid', 'true');
 
-    await questionTitleField.fill('Advanced question draft');
+    await questionTitleEditor.fill('Advanced question draft');
     await expect(questionTitleField).not.toHaveAttribute('aria-invalid', 'true');
     await addChoiceButton.click();
 
-    const promptField = advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true });
+    const promptField = advancedComposer.getByRole('group', { name: 'Prompt', exact: true }).first();
+    const promptEditor = promptField.locator('[contenteditable="true"]');
     const pointsField = advancedComposer.getByRole('spinbutton', { name: 'Points' });
     await pointsField.fill('');
     await saveAdvancedQuestionButton.click();
@@ -287,14 +334,18 @@ test.describe('authenticated dashboard', () => {
     await expect(promptField).toBeFocused();
     await expect(promptField).toHaveAttribute('aria-invalid', 'true');
 
-    await promptField.fill('Which option is correct?');
-    const firstOptionField = advancedComposer.getByRole('textbox', { name: 'Option 1' });
+    await promptEditor.fill('Which option is correct?');
+    const firstOptionField = advancedComposer.getByRole('group', { name: 'Option 1' });
+    const firstOptionEditor = firstOptionField.locator('[contenteditable="true"]');
     await saveAdvancedQuestionButton.click();
     await expect(firstOptionField).toBeFocused();
     await expect(firstOptionField).toHaveAttribute('aria-invalid', 'true');
 
-    await firstOptionField.fill('First option');
-    await advancedComposer.getByRole('textbox', { name: 'Option 2' }).fill('Second option');
+    await firstOptionEditor.fill('First option');
+    await advancedComposer
+      .getByRole('group', { name: 'Option 2' })
+      .locator('[contenteditable="true"]')
+      .fill('Second option');
 
     const firstCorrectOption = advancedComposer.getByRole('checkbox', {
       name: 'Toggle option as correct: Option 1'
@@ -306,8 +357,8 @@ test.describe('authenticated dashboard', () => {
 
     await expect(advancedComposer.getByRole('checkbox', { name: 'Multiple answers' })).toBeVisible();
     await expect(firstCorrectOption).toBeVisible();
-    await expect(advancedComposer.getByText('Which option is correct?', { exact: true })).toBeVisible();
-    await expect(advancedComposer.getByText('First option', { exact: true })).toBeVisible();
+    await expect(promptEditor).toHaveText('Which option is correct?');
+    await expect(firstOptionEditor).toHaveText('First option');
     await expect(advancedComposer.locator('[data-assessment-layout="stacked"]')).toBeVisible();
     await expect(advancedComposer.locator('[data-assessment-layout="split"]')).toHaveCount(0);
     await expect(saveAdvancedQuestionButton).toBeVisible();
@@ -377,7 +428,7 @@ test.describe('authenticated dashboard', () => {
       await signIn(page, { email: email!, password: password! });
       lifecycleExerciseId = await createLifecycleExercise(
         page,
-        lifecycleApiURL!,
+        lifecycleProxyURL!,
         lifecycleCourseId!,
         fixtureTitle,
         legacyPrompt,
@@ -388,42 +439,56 @@ test.describe('authenticated dashboard', () => {
       await gotoExpectedPage(page, exerciseURL);
       await page.getByRole('tab', { name: 'Questions' }).click();
       await page.getByRole('button', { name: 'Add advanced question' }).click();
+      await expect(page.locator('[data-assessment-workspace]')).toBeVisible();
+      await expect(page.locator('[data-legacy-question-list]')).toBeHidden();
 
-      const questionTitleField = page.getByRole('textbox', { name: 'Question title' });
-      const advancedComposer = questionTitleField.locator('xpath=ancestor::section[1]');
-      await questionTitleField.fill(fixtureTitle);
+      const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' }).last();
+      let advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');
+      const questionTitleField = advancedComposer.getByRole('group', { name: 'Question title' });
+      const questionTitleEditor = questionTitleField.locator('[contenteditable="true"]');
+      await questionTitleEditor.fill(fixtureTitle);
+      const composerTitleFieldId = await questionTitleField.getAttribute('id');
+      if (!composerTitleFieldId) {
+        throw new Error('Assessment composer title field did not expose an id');
+      }
+
+      advancedComposer = page.locator(`#${composerTitleFieldId}`).locator('xpath=ancestor::section[1]');
       const questionLayoutSelect = advancedComposer.getByRole('button', { name: 'Question layout' });
       await expect(questionLayoutSelect).toContainText('Standard flow');
       await questionLayoutSelect.click();
       await page.getByRole('option', { name: 'Passage and question panel' }).click();
       await expect(questionLayoutSelect).toContainText('Passage and question panel');
-      await advancedComposer.getByRole('button', { name: 'Add content' }).click();
       await advancedComposer
         .getByRole('textbox', { name: 'Add context, instructions, or media' })
         .fill('Read the prompt and answer both interactions.');
-      await advancedComposer.getByRole('button', { name: 'Add choice' }).click();
-      await advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true }).fill(attemptedChoicePrompt);
+      const choicePrompt = advancedComposer
+        .getByRole('group', { name: 'Prompt', exact: true })
+        .first()
+        .locator('[contenteditable="true"]');
+      await choicePrompt.fill(attemptedChoicePrompt);
       await advancedComposer.getByRole('spinbutton', { name: 'Points' }).fill('2');
-      await advancedComposer.getByRole('textbox', { name: 'Option 1' }).fill('Correct option');
-      await advancedComposer.getByRole('textbox', { name: 'Option 2' }).fill('Incorrect option');
+      await advancedComposer
+        .getByRole('group', { name: 'Option 1' })
+        .locator('[contenteditable="true"]')
+        .fill('Correct option');
+      await advancedComposer
+        .getByRole('group', { name: 'Option 2' })
+        .locator('[contenteditable="true"]')
+        .fill('Incorrect option');
       await advancedComposer.getByRole('checkbox', { name: 'Toggle option as correct: Option 1' }).check();
-      await advancedComposer.getByRole('button', { name: 'Add extended text' }).click();
+      await advancedComposer.getByRole('button', { name: 'Extended text' }).click();
 
       const extendedTextPrompt = advancedComposer.locator(
         '[data-assessment-text-prompt] [contenteditable="true"][aria-label="Prompt"]'
       );
       await extendedTextPrompt.fill(textPrompt);
-      await advancedComposer.getByRole('spinbutton', { name: 'Points' }).nth(1).fill('1');
 
-      await page.getByRole('button', { name: 'Preview', exact: true }).click();
+      await advancedComposer.getByRole('button', { name: 'Preview', exact: true }).click();
       await expect(page.getByRole('group', { name: attemptedChoicePrompt, exact: true })).toBeVisible();
       await expect(page.getByRole('textbox', { name: textPrompt })).toBeVisible();
       await expectExplicitPassageLayout(page);
       await expectNoHorizontalPageOverflow(page);
-      await page.getByRole('button', { name: 'Edit', exact: true }).click();
-      await expect(advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true }).first()).toHaveValue(
-        attemptedChoicePrompt
-      );
+      await advancedComposer.getByRole('button', { name: 'Back to editor', exact: true }).last().click();
       await expect(extendedTextPrompt).toHaveText(textPrompt);
 
       const createAssessmentResponse = page.waitForResponse((response) => {
@@ -434,11 +499,8 @@ test.describe('authenticated dashboard', () => {
           response.request().method() === 'PUT'
         );
       });
-      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await advancedComposer.getByRole('button', { name: 'Save advanced question', exact: true }).click();
       expect((await createAssessmentResponse).status()).toBe(200);
-      await expect(questionTitleField).toHaveCount(1);
-      await expect(questionTitleField).toHaveValue(fixtureTitle);
-      await expect(page.getByText(attemptedChoicePrompt, { exact: true })).toBeVisible();
 
       const { deviceScaleFactor, hasTouch, isMobile, userAgent, viewport } = testInfo.project.use;
       studentContext = await browser.newContext({
@@ -462,22 +524,24 @@ test.describe('authenticated dashboard', () => {
       });
 
       await signIn(studentPage, { email: studentEmail!, password: studentPassword! });
-      const studentExerciseResponse = await studentPage.request.get(
-        new URL(`/course/${lifecycleCourseId}/exercise/${lifecycleExerciseId}`, lifecycleApiURL!).toString()
+      const studentExerciseResponse = await requestThroughDashboardProxy(
+        studentPage,
+        new URL(`/proxy/course/${lifecycleCourseId}/exercise/${lifecycleExerciseId}`, lifecycleProxyURL!).toString(),
+        'GET'
       );
-      if (studentExerciseResponse.status() === 403) {
-        const errorPayload: unknown = await studentExerciseResponse.json();
+      if (studentExerciseResponse.status === 403) {
+        const errorPayload = studentExerciseResponse.payload;
         if (isRecord(errorPayload) && errorPayload.code === 'ORG_TEAM_NOT_AUTHORIZED') {
           throw new Error(
             `Lifecycle student fixture must already be enrolled in course ${lifecycleCourseId} before running this test`
           );
         }
       }
-      if (!studentExerciseResponse.ok()) {
-        throw new Error(`Failed to fetch lifecycle exercise as student: HTTP ${studentExerciseResponse.status()}`);
+      if (studentExerciseResponse.status < 200 || studentExerciseResponse.status >= 300) {
+        throw new Error(`Failed to fetch lifecycle exercise as student: HTTP ${studentExerciseResponse.status}`);
       }
 
-      const studentExercisePayload: unknown = await studentExerciseResponse.json();
+      const studentExercisePayload = studentExerciseResponse.payload;
       if (!isRecord(studentExercisePayload) || !isRecord(studentExercisePayload.data)) {
         throw new Error('Student exercise response did not contain exercise data');
       }
@@ -592,7 +656,10 @@ test.describe('authenticated dashboard', () => {
       if (await editExerciseButton.isVisible()) {
         await editExerciseButton.click();
       }
-      const currentChoicePromptField = page.getByRole('textbox', { name: 'Prompt', exact: true }).first();
+      const currentChoicePromptField = page
+        .getByRole('group', { name: 'Prompt', exact: true })
+        .first()
+        .locator('[contenteditable="true"]');
       await expect(currentChoicePromptField).toBeVisible({ timeout: 30_000 });
       await currentChoicePromptField.fill(currentChoicePrompt, { timeout: 30_000 });
       await page.getByRole('spinbutton', { name: 'Points' }).first().fill('4', { timeout: 30_000 });
@@ -633,12 +700,7 @@ test.describe('authenticated dashboard', () => {
     } finally {
       try {
         if (lifecycleExerciseId) {
-          await deleteLifecycleExercise(
-            page.context().request,
-            lifecycleApiURL!,
-            lifecycleCourseId!,
-            lifecycleExerciseId
-          );
+          await deleteLifecycleExercise(page, lifecycleProxyURL!, lifecycleCourseId!, lifecycleExerciseId);
         }
       } finally {
         await studentContext?.close();

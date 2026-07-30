@@ -378,7 +378,7 @@ describe('assessment vertical slice', () => {
     }
   });
 
-  it('rejects interactions that have no Phase 3 renderer and scorer', () => {
+  it('accepts numeric interactions once the canonical renderer and scorer are available', () => {
     const unsupportedDefinition = {
       ...definition,
       blocks: [
@@ -397,7 +397,7 @@ describe('assessment vertical slice', () => {
       ]
     };
 
-    expect(getUnsupportedAssessmentVerticalSliceInteractionKinds(unsupportedDefinition)).toEqual(['numeric']);
+    expect(getUnsupportedAssessmentVerticalSliceInteractionKinds(unsupportedDefinition)).toEqual([]);
   });
 
   it('scores the four-statement MOET tiers for zero through four correct answers', () => {
@@ -565,5 +565,72 @@ describe('assessment vertical slice', () => {
     if (!validation.success) throw new Error('expected a valid decimal response');
 
     expect(scoreAssessmentVerticalSlice(decimalDefinition, validation.data).autoScore).toBe(0.3);
+  });
+
+  it('scores numeric responses within the authored tolerance', () => {
+    const numericDefinition = {
+      schemaVersion: 1 as const,
+      blocks: [
+        {
+          id: 'numeric-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'numeric' as const,
+            prompt: { format: 'html' as const, html: '<p>Value.</p>' },
+            required: true,
+            maxScore: 2,
+            config: { correctValue: 10, tolerance: 0.25 }
+          }
+        }
+      ],
+      feedback: []
+    };
+    const accepted = validateAssessmentResponseEnvelope(numericDefinition, {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'numeric-1', response: { kind: 'numeric', value: 10.2 } }]
+    });
+    const rejected = validateAssessmentResponseEnvelope(numericDefinition, {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'numeric-1', response: { kind: 'numeric', value: 10.3 } }]
+    });
+    expect(
+      isAssessmentVerticalSliceResponseComplete(toAssessmentDeliveryDefinition(numericDefinition), undefined)
+    ).toBe(false);
+    if (!accepted.success || !rejected.success) throw new Error('expected numeric responses');
+    expect(scoreAssessmentVerticalSlice(numericDefinition, accepted.data).autoScore).toBe(2);
+    expect(scoreAssessmentVerticalSlice(numericDefinition, rejected.data).autoScore).toBe(0);
+  });
+
+  it('scores fill-blank responses positionally with legacy case-insensitive partial credit', () => {
+    const fillBlankDefinition = {
+      schemaVersion: 1 as const,
+      blocks: [
+        {
+          id: 'fill-1',
+          kind: 'interaction' as const,
+          interaction: {
+            kind: 'fill_blank' as const,
+            prompt: { format: 'html' as const, html: '<p>Complete both blanks.</p>' },
+            required: true,
+            maxScore: 3,
+            config: { acceptedAnswers: ['First', 'Second'] }
+          }
+        }
+      ],
+      feedback: []
+    };
+    const response = {
+      schemaVersion: 1,
+      responses: [{ interactionId: 'fill-1', response: { kind: 'fill_blank', values: [' first ', 'wrong'] } }]
+    } as const;
+    const validation = validateAssessmentResponseEnvelope(fillBlankDefinition, response);
+
+    expect(validation.success).toBe(true);
+    if (!validation.success) return;
+
+    expect(
+      isAssessmentVerticalSliceResponseComplete(toAssessmentDeliveryDefinition(fillBlankDefinition), response)
+    ).toBe(true);
+    expect(scoreAssessmentVerticalSlice(fillBlankDefinition, validation.data).autoScore).toBe(1.5);
   });
 });

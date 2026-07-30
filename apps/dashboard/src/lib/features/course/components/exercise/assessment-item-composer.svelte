@@ -42,6 +42,7 @@
     type AssessmentItemDefinition
   } from '@cio/question-types';
   import {
+    addAssessmentInteractionBlock,
     addChoiceInteractionBlock,
     addContentBlock,
     addTextInteractionBlock,
@@ -84,6 +85,7 @@
     initialDefinition?: AssessmentItemDefinition | null;
     initialRevision?: number;
     onSaveRequested: () => Promise<void>;
+    onExitRequested?: () => void;
     onSaved?: (item: {
       questionId: number;
       title: string;
@@ -123,6 +125,7 @@
     initialDefinition = null,
     initialRevision,
     onSaveRequested,
+    onExitRequested = () => {},
     onSaved = () => {}
   }: Props = $props();
   let composer = $state<AssessmentComposerState>(createAssessmentComposerState());
@@ -622,6 +625,22 @@
     updateComposer(addTextInteractionBlock(composer, createId, activePassageGroup?.passage?.id));
   }
 
+  function addNumericQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addAssessmentInteractionBlock(composer, 'numeric', createId, activePassageGroup?.passage?.id));
+  }
+
+  function addFillBlankQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addAssessmentInteractionBlock(composer, 'fill_blank', createId, activePassageGroup?.passage?.id));
+  }
+
   function addTrueFalseGroupQuestion() {
     if (interactionLimitReached) return;
 
@@ -679,6 +698,12 @@
     }
     if (block.interaction.kind === 'text') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text');
+    }
+    if (block.interaction.kind === 'numeric') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric');
+    }
+    if (block.interaction.kind === 'fill_blank') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank');
     }
     if (block.interaction.kind === 'true_false_group') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group');
@@ -828,6 +853,12 @@
     } finally {
       isSaving = false;
     }
+  }
+
+  async function exitWorkspace(): Promise<void> {
+    if (!(await save())) return;
+
+    onExitRequested();
   }
 
   onMount(() => {
@@ -1309,6 +1340,103 @@
 {#snippet interactionEditor(block: AssessmentInteractionBlock, blockIndex: number)}
   {@render choiceInteractionEditor(block, blockIndex)}
   {@render textInteractionEditor(block, blockIndex)}
+  {#if block.interaction.kind === 'numeric'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+    <Field.Group class="grid gap-4 sm:grid-cols-3">
+      <InputField
+        bind:value={block.interaction.maxScore}
+        name={getBlockDomId(block.id, 'points')}
+        label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+        type="number"
+        min="0"
+        step="0.01"
+        oninput={clearValidationState}
+      />
+      <InputField
+        bind:value={block.interaction.config.correctValue}
+        name={getBlockDomId(block.id, 'correct-value')}
+        label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.numeric.edit.correct_value_label')}
+        type="number"
+        oninput={clearValidationState}
+      />
+      <InputField
+        bind:value={block.interaction.config.tolerance}
+        name={getBlockDomId(block.id, 'tolerance')}
+        label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.numeric.edit.tolerance_label')}
+        type="number"
+        min="0"
+        step="0.01"
+        oninput={clearValidationState}
+      />
+    </Field.Group>
+  {/if}
+  {#if block.interaction.kind === 'fill_blank'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+    <InputField
+      bind:value={block.interaction.maxScore}
+      name={getBlockDomId(block.id, 'points')}
+      label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+      type="number"
+      min="0"
+      step="0.01"
+      oninput={clearValidationState}
+    />
+    <Field.Set>
+      <Field.Legend>{$t('course.navItem.lessons.exercises.all_exercises.shared_question.answer_key')}</Field.Legend>
+      <Field.Group class="grid gap-4 sm:grid-cols-2">
+        {#each block.interaction.config.acceptedAnswers as _answer, answerIndex (answerIndex)}
+          <div class="flex items-end gap-2">
+            <InputField
+              bind:value={block.interaction.config.acceptedAnswers[answerIndex]}
+              name={getBlockDomId(block.id, `accepted-answer-${answerIndex}`)}
+              label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.answer_key')} ${answerIndex + 1}`}
+              errorMessage={getValidationError([
+                'blocks',
+                blockIndex,
+                'interaction',
+                'config',
+                'acceptedAnswers',
+                answerIndex
+              ])}
+              oninput={clearValidationState}
+            />
+            {#if block.interaction.config.acceptedAnswers.length > 1}
+              <IconButton
+                type="button"
+                variant="secondary"
+                label={$t('common.remove')}
+                onclick={() => block.interaction.config.acceptedAnswers.splice(answerIndex, 1)}
+              >
+                <TrashIcon class="h-4 w-4" />
+              </IconButton>
+            {/if}
+          </div>
+        {/each}
+      </Field.Group>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={block.interaction.config.acceptedAnswers.length >= MAX_INTERACTION_OPTIONS}
+        onclick={() => block.interaction.config.acceptedAnswers.push('')}
+      >
+        <PlusIcon class="h-4 w-4" />
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_option')}
+      </Button>
+    </Field.Set>
+  {/if}
   {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
@@ -1326,6 +1454,9 @@
         />
         {@render layoutField()}
         <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap items-center justify-end gap-2" tabindex="-1">
+          <Button type="button" variant="secondary" class="min-h-11" onclick={exitWorkspace}>
+            {$t('course.navItem.lessons.exercises.all_exercises.view_mode.back')}
+          </Button>
           <div class="ui:text-muted-foreground flex min-h-11 items-center gap-2 px-2 text-sm" aria-live="polite">
             {#if isDirty}
               <CircleAlertIcon class="ui:text-amber-600 h-4 w-4" aria-hidden="true" />
@@ -1604,6 +1735,28 @@
                 size="sm"
                 class="min-h-11"
                 disabled={interactionLimitReached}
+                onclick={addNumericQuestion}
+              >
+                <PlusIcon class="h-4 w-4" />
+                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="min-h-11"
+                disabled={interactionLimitReached}
+                onclick={addFillBlankQuestion}
+              >
+                <PlusIcon class="h-4 w-4" />
+                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="min-h-11"
+                disabled={interactionLimitReached}
                 onclick={addTrueFalseGroupQuestion}
               >
                 <PlusIcon class="h-4 w-4" />
@@ -1678,6 +1831,26 @@
                       variant="secondary"
                       class="min-h-11"
                       disabled={interactionLimitReached}
+                      onclick={addNumericQuestion}
+                    >
+                      <PlusIcon class="h-4 w-4" />
+                      {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
+                      onclick={addFillBlankQuestion}
+                    >
+                      <PlusIcon class="h-4 w-4" />
+                      {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
                       onclick={addTrueFalseGroupQuestion}
                     >
                       <PlusIcon class="h-4 w-4" />
@@ -1733,6 +1906,9 @@
       <div class="ui:animate-pulse ui:h-24 ui:rounded ui:bg-muted"></div>
     {:else}
       <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap gap-2" tabindex="-1">
+        <Button type="button" variant="secondary" size="sm" onclick={exitWorkspace}>
+          {$t('course.navItem.lessons.exercises.all_exercises.view_mode.back')}
+        </Button>
         <Button
           type="button"
           variant="secondary"

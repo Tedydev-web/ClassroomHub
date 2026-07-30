@@ -2,17 +2,20 @@ import type {
   AssessmentBlock,
   AssessmentContentBlock,
   AssessmentInteraction,
+  AssessmentInteractionKind,
   AssessmentInteractionBlock,
   AssessmentItemDefinition,
   ItemFeedback
 } from '@cio/question-types';
 import {
   DEFAULT_TRUE_FALSE_GROUP_TIERS,
+  FILE_UPLOAD_MIME_TYPES,
   MAX_ASSESSMENT_BLOCKS,
   MAX_ASSESSMENT_INTERACTIONS,
   MAX_INTERACTION_OPTIONS,
   canonicalizeAssessmentItemDefinition,
-  groupAssessmentBlocksByPassage
+  groupAssessmentBlocksByPassage,
+  VIDEO_RECORDING_DEFAULT_MAX_DURATION_SECONDS
 } from '@cio/question-types';
 
 export type AssessmentComposerDraft = Omit<AssessmentItemDefinition, 'blocks' | 'feedback'> & {
@@ -185,6 +188,61 @@ export function addChoiceInteractionBlock(
   };
 
   return insertInteractionBlock(state, block, passageId);
+}
+
+export function addAssessmentInteractionBlock(
+  state: AssessmentComposerState,
+  kind: AssessmentInteractionKind,
+  createId: AssessmentComposerIdFactory,
+  passageId?: string
+): AssessmentComposerState {
+  if (kind === 'choice') return addChoiceInteractionBlock(state, createId, passageId);
+  if (kind === 'text') return addTextInteractionBlock(state, createId, passageId);
+  if (kind === 'true_false_group') return addTrueFalseGroupInteractionBlock(state, createId, passageId);
+
+  const interaction: AssessmentInteraction = {
+    kind,
+    prompt: { format: 'html', html: '' },
+    required: true,
+    maxScore: 1,
+    config: getDefaultInteractionConfig(kind, createId)
+  } as AssessmentInteraction;
+  const block: AssessmentInteractionBlock = { id: createId(), kind: 'interaction', interaction };
+
+  return insertInteractionBlock(state, block, passageId);
+}
+
+function getDefaultInteractionConfig(
+  kind: Exclude<AssessmentInteractionKind, 'choice' | 'text' | 'true_false_group'>,
+  createId: AssessmentComposerIdFactory
+): AssessmentInteraction['config'] {
+  switch (kind) {
+    case 'numeric':
+      return { correctValue: null, tolerance: 0 };
+    case 'fill_blank':
+      return { acceptedAnswers: [''] };
+    case 'word_bank':
+      return { template: '___', correctAnswers: [''], distractors: [] };
+    case 'ordering': {
+      const firstOptionId = createId();
+      const secondOptionId = createId();
+      return {
+        options: [
+          { id: firstOptionId, html: '' },
+          { id: secondOptionId, html: '' }
+        ],
+        correctOrder: [firstOptionId, secondOptionId]
+      };
+    }
+    case 'file_upload':
+      return { acceptedTypes: [FILE_UPLOAD_MIME_TYPES[0]] };
+    case 'link':
+      return {};
+    case 'star_rating':
+      return { maxStars: 5, correctValue: null };
+    case 'video_recording':
+      return { maxDurationSeconds: VIDEO_RECORDING_DEFAULT_MAX_DURATION_SECONDS };
+  }
 }
 
 export function addTextInteractionBlock(

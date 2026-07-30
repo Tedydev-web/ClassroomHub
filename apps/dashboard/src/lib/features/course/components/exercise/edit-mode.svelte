@@ -112,6 +112,9 @@
   const activeSections = $derived(
     [...($questionnaire.sections ?? [])].filter((section) => !section.deletedAt).sort((a, b) => a.order - b.order)
   );
+  const isAssessmentWorkspaceOpen = $derived(
+    !reorderQuestions && (activeCanonicalQuestionId !== null || newAssessmentComposerSectionId !== undefined)
+  );
   const sectionLabels = $derived({
     questions: t.get('course.navItem.lessons.exercises.all_exercises.section.questions'),
     shortQuestions: t.get('course.navItem.lessons.exercises.all_exercises.section.short_questions'),
@@ -163,6 +166,13 @@
   function openAssessmentComposer(sectionId: string | null) {
     newAssessmentComposerSectionId = sectionId;
     removeUntouchedLegacyQuestionDrafts();
+  }
+
+  function closeAssessmentWorkspace() {
+    activeCanonicalQuestionId = null;
+    pendingCanonicalQuestionId = null;
+    newAssessmentComposerSectionId = undefined;
+    promotedAssessmentQuestionId = null;
   }
 
   function onInitDeleteClicked(questionId) {
@@ -651,6 +661,7 @@
       initialDefinition={canonicalQuestion.authorDefinition}
       initialRevision={canonicalQuestion.revision}
       {onSaveRequested}
+      onExitRequested={closeAssessmentWorkspace}
       onSaved={updateCanonicalQuestionState}
     />
   {/if}
@@ -663,139 +674,143 @@
     </div>
   {/if}
   <div class="questions px-6 pt-6">
-    {#if hasSections($questionnaire.sections)}
-      <div class="space-y-5">
-        {#each activeSections as section, sectionIndex (section.id)}
-          {@const sectionQuestions = getQuestionsForSection($questionnaire.questions, section.id)}
-          {@const canonicalSectionQuestions = getCanonicalQuestionsForSection(section.id)}
-          {@const sectionPlacementItems = getRenderedQuestionPlacementItems(section.id)}
-          {@const reorderSectionQuestions = getReorderQuestionsForSection(section.id, sectionPlacementItems)}
-          <SectionEditor
-            exerciseSectionId={section.id}
-            title={section.title}
-            description={section.description}
-            sectionNumber={sectionIndex + 1}
-            totalSections={activeSections.length}
-            colorTheme={section.colorTheme}
-            questionCount={sectionQuestions.length + canonicalSectionQuestions.length}
-            requiredQuestionCount={getRequiredQuestionCount(sectionQuestions) + canonicalSectionQuestions.length}
-            labels={sectionLabels}
-            titleError={getSectionErrorMsg(errors, section.id, 'title')}
-            descriptionError={getSectionErrorMsg(errors, section.id, 'description')}
-            showReorderHandles={reorderQuestions}
-            onTitleChange={(title) => handleUpdateSectionTitle(section.id, title)}
-            onDescriptionChange={(description) => handleUpdateSectionDescription(section.id, description)}
-            onColorThemeChange={(colorTheme) => handleUpdateSectionColorTheme(section.id, colorTheme)}
-            onAddQuestion={() => addQuestionToSection(section.id)}
-            onDelete={() => onInitSectionDeleteClicked(section.id)}
-            onMoveUp={() => moveSection(section.id, -1)}
-            onMoveDown={() => moveSection(section.id, 1)}
-            canMoveUp={sectionIndex > 0}
-            canMoveDown={sectionIndex < activeSections.length - 1}
-          >
-            <div
-              class="space-y-2"
-              use:dndzone={{
-                items: reorderQuestions ? reorderSectionQuestions : sectionPlacementItems,
-                flipDurationMs,
-                dropTargetStyle: {
-                  border: '2px #1d4ed8 solid',
-                  'border-style': 'dashed',
-                  'border-radius': '0.5rem'
-                },
-                dragDisabled: !reorderQuestions,
-                type: 'exercise-question-placement'
-              }}
-              onconsider={(event) => handleSectionQuestionDndConsider(section.id, event)}
-              onfinalize={(event) => handleSectionQuestionDndFinalize(section.id, event)}
-            >
-              {#each reorderQuestions ? reorderSectionQuestions : sectionPlacementItems as item, index (item.id)}
-                <div
-                  animate:flip={{ duration: flipDurationMs }}
-                  class="flex items-start gap-3 transition {reorderQuestions
-                    ? 'cursor-grab active:cursor-grabbing'
-                    : ''}"
-                >
-                  <div class="ui:text-muted-foreground flex w-5 shrink-0 flex-col items-center gap-2 pt-3">
-                    {#if reorderQuestions}
-                      <GripVerticalIcon class="h-4 w-4 cursor-grab active:cursor-grabbing" aria-hidden="true" />
-                    {/if}
-                    <span class="text-xs font-medium tabular-nums">{index + 1}</span>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    {#if item.kind === 'legacy' && reorderQuestions}
-                      {@render compactQuestionRow(item.question, index)}
-                    {:else if item.kind === 'legacy'}
-                      {@render questionEditor(item.question, index)}
-                    {:else if reorderQuestions}
-                      {@render compactCanonicalQuestionRow(item.question, index)}
-                    {:else if activeCanonicalQuestionId === Number(item.question.id)}
-                      {@render canonicalQuestionEditor(item.question)}
-                    {:else}
-                      {@render compactCanonicalQuestionRow(item.question, index)}
-                    {/if}
-                  </div>
-                </div>
-              {/each}
-            </div>
-            {#if courseApi.course?.id && (newAssessmentComposerSectionId === section.id || !reorderQuestions)}
-              <div class="mt-4 space-y-4" hidden={reorderQuestions}>
-                {#if newAssessmentComposerSectionId === section.id}
-                  <AssessmentItemComposer
-                    courseId={courseApi.course.id}
-                    exerciseId={_exerciseId}
-                    exerciseSectionId={section.id}
-                    initialOrder={getNextQuestionOrder(section.id)}
-                    {onSaveRequested}
-                    onSaved={addCanonicalQuestionToState}
-                  />
-                {:else}
-                  <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(section.id)}>
-                    {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
-                  </Button>
-                {/if}
-              </div>
-            {/if}
-          </SectionEditor>
-
-          <ExerciseQuestion.SectionAfterBehavior
-            {sectionIndex}
-            currentSectionId={section.id}
-            allSections={activeSections}
-            afterBehavior={section.afterBehavior}
-            labels={sectionAfterBehaviorLabels}
-            onChange={(behavior) => handleUpdateSectionAfterBehavior(section.id, behavior)}
-          />
-        {/each}
-      </div>
-    {:else}
-      {#each getRenderedQuestionPlacementItems(null) as item, index (item.id)}
-        {#if item.kind === 'legacy'}
-          {@render questionEditor(item.question, index)}
-        {:else if activeCanonicalQuestionId === Number(item.question.id)}
-          {@render canonicalQuestionEditor(item.question)}
-        {:else}
-          {@render compactCanonicalQuestionRow(item.question, index)}
-        {/if}
-      {/each}
-      {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
-        <div class="mt-6 space-y-4" hidden={reorderQuestions}>
-          {#if newAssessmentComposerSectionId === null}
-            <AssessmentItemComposer
-              courseId={courseApi.course.id}
-              exerciseId={_exerciseId}
-              exerciseSectionId={null}
-              initialOrder={getNextQuestionOrder(null)}
-              {onSaveRequested}
-              onSaved={addCanonicalQuestionToState}
-            />
-          {:else}
-            <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(null)}>
-              {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
-            </Button>
+    {#if isAssessmentWorkspaceOpen}
+      <section class="mb-6 min-w-0" data-assessment-workspace>
+        {#if courseApi.course?.id && activeCanonicalQuestionId !== null}
+          {@const activeCanonicalQuestion = $questionnaire.canonicalQuestions.find(
+            (question) => Number(question.id) === activeCanonicalQuestionId
+          )}
+          {#if activeCanonicalQuestion}
+            {@render canonicalQuestionEditor(activeCanonicalQuestion)}
           {/if}
-        </div>
-      {/if}
+        {:else if courseApi.course?.id && newAssessmentComposerSectionId !== undefined}
+          <AssessmentItemComposer
+            courseId={courseApi.course.id}
+            exerciseId={_exerciseId}
+            exerciseSectionId={newAssessmentComposerSectionId}
+            initialOrder={getNextQuestionOrder(newAssessmentComposerSectionId)}
+            {onSaveRequested}
+            onExitRequested={closeAssessmentWorkspace}
+            onSaved={addCanonicalQuestionToState}
+          />
+        {/if}
+      </section>
+    {/if}
+    {#if !isAssessmentWorkspaceOpen}
+      <div data-legacy-question-list>
+        {#if hasSections($questionnaire.sections)}
+          <div class="space-y-5">
+            {#each activeSections as section, sectionIndex (section.id)}
+              {@const sectionQuestions = getQuestionsForSection($questionnaire.questions, section.id)}
+              {@const canonicalSectionQuestions = getCanonicalQuestionsForSection(section.id)}
+              {@const sectionPlacementItems = getRenderedQuestionPlacementItems(section.id)}
+              {@const reorderSectionQuestions = getReorderQuestionsForSection(section.id, sectionPlacementItems)}
+              <SectionEditor
+                exerciseSectionId={section.id}
+                title={section.title}
+                description={section.description}
+                sectionNumber={sectionIndex + 1}
+                totalSections={activeSections.length}
+                colorTheme={section.colorTheme}
+                questionCount={sectionQuestions.length + canonicalSectionQuestions.length}
+                requiredQuestionCount={getRequiredQuestionCount(sectionQuestions) + canonicalSectionQuestions.length}
+                labels={sectionLabels}
+                titleError={getSectionErrorMsg(errors, section.id, 'title')}
+                descriptionError={getSectionErrorMsg(errors, section.id, 'description')}
+                showReorderHandles={reorderQuestions}
+                onTitleChange={(title) => handleUpdateSectionTitle(section.id, title)}
+                onDescriptionChange={(description) => handleUpdateSectionDescription(section.id, description)}
+                onColorThemeChange={(colorTheme) => handleUpdateSectionColorTheme(section.id, colorTheme)}
+                onAddQuestion={() => addQuestionToSection(section.id)}
+                onDelete={() => onInitSectionDeleteClicked(section.id)}
+                onMoveUp={() => moveSection(section.id, -1)}
+                onMoveDown={() => moveSection(section.id, 1)}
+                canMoveUp={sectionIndex > 0}
+                canMoveDown={sectionIndex < activeSections.length - 1}
+              >
+                <div
+                  class="space-y-2"
+                  use:dndzone={{
+                    items: reorderQuestions ? reorderSectionQuestions : sectionPlacementItems,
+                    flipDurationMs,
+                    dropTargetStyle: {
+                      border: '2px #1d4ed8 solid',
+                      'border-style': 'dashed',
+                      'border-radius': '0.5rem'
+                    },
+                    dragDisabled: !reorderQuestions,
+                    type: 'exercise-question-placement'
+                  }}
+                  onconsider={(event) => handleSectionQuestionDndConsider(section.id, event)}
+                  onfinalize={(event) => handleSectionQuestionDndFinalize(section.id, event)}
+                >
+                  {#each reorderQuestions ? reorderSectionQuestions : sectionPlacementItems as item, index (item.id)}
+                    <div
+                      animate:flip={{ duration: flipDurationMs }}
+                      class="flex items-start gap-3 transition {reorderQuestions
+                        ? 'cursor-grab active:cursor-grabbing'
+                        : ''}"
+                    >
+                      <div class="ui:text-muted-foreground flex w-5 shrink-0 flex-col items-center gap-2 pt-3">
+                        {#if reorderQuestions}
+                          <GripVerticalIcon class="h-4 w-4 cursor-grab active:cursor-grabbing" aria-hidden="true" />
+                        {/if}
+                        <span class="text-xs font-medium tabular-nums">{index + 1}</span>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        {#if item.kind === 'legacy' && reorderQuestions}
+                          {@render compactQuestionRow(item.question, index)}
+                        {:else if item.kind === 'legacy'}
+                          {@render questionEditor(item.question, index)}
+                        {:else if reorderQuestions}
+                          {@render compactCanonicalQuestionRow(item.question, index)}
+                        {:else}
+                          {@render compactCanonicalQuestionRow(item.question, index)}
+                        {/if}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+                {#if courseApi.course?.id && (newAssessmentComposerSectionId === section.id || !reorderQuestions)}
+                  <div class="mt-4 space-y-4" hidden={reorderQuestions}>
+                    {#if newAssessmentComposerSectionId !== section.id}
+                      <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(section.id)}>
+                        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+                      </Button>
+                    {/if}
+                  </div>
+                {/if}
+              </SectionEditor>
+
+              <ExerciseQuestion.SectionAfterBehavior
+                {sectionIndex}
+                currentSectionId={section.id}
+                allSections={activeSections}
+                afterBehavior={section.afterBehavior}
+                labels={sectionAfterBehaviorLabels}
+                onChange={(behavior) => handleUpdateSectionAfterBehavior(section.id, behavior)}
+              />
+            {/each}
+          </div>
+        {:else}
+          {#each getRenderedQuestionPlacementItems(null) as item, index (item.id)}
+            {#if item.kind === 'legacy'}
+              {@render questionEditor(item.question, index)}
+            {:else}
+              {@render compactCanonicalQuestionRow(item.question, index)}
+            {/if}
+          {/each}
+          {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
+            <div class="mt-6 space-y-4" hidden={reorderQuestions}>
+              {#if newAssessmentComposerSectionId !== null}
+                <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(null)}>
+                  {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+                </Button>
+              {/if}
+            </div>
+          {/if}
+        {/if}
+      </div>
     {/if}
   </div>
 </div>
