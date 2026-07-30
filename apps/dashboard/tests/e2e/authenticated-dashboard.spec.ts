@@ -298,6 +298,8 @@ test.describe('authenticated dashboard', () => {
     const addAdvancedQuestionButton = page.getByRole('button', { name: 'Add advanced question' });
     await expect(addAdvancedQuestionButton).toBeVisible();
     await addAdvancedQuestionButton.click();
+    await expect(page.locator('[data-assessment-workspace]')).toBeVisible();
+    await expect(page.locator('[data-legacy-question-list]')).toBeHidden();
 
     const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' });
     const advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');
@@ -437,6 +439,8 @@ test.describe('authenticated dashboard', () => {
       await gotoExpectedPage(page, exerciseURL);
       await page.getByRole('tab', { name: 'Questions' }).click();
       await page.getByRole('button', { name: 'Add advanced question' }).click();
+      await expect(page.locator('[data-assessment-workspace]')).toBeVisible();
+      await expect(page.locator('[data-legacy-question-list]')).toBeHidden();
 
       const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' }).last();
       let advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');

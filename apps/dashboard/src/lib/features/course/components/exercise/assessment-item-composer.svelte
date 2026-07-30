@@ -85,6 +85,7 @@
     initialDefinition?: AssessmentItemDefinition | null;
     initialRevision?: number;
     onSaveRequested: () => Promise<void>;
+    onExitRequested?: () => void;
     onSaved?: (item: {
       questionId: number;
       title: string;
@@ -124,6 +125,7 @@
     initialDefinition = null,
     initialRevision,
     onSaveRequested,
+    onExitRequested = () => {},
     onSaved = () => {}
   }: Props = $props();
   let composer = $state<AssessmentComposerState>(createAssessmentComposerState());
@@ -853,6 +855,12 @@
     }
   }
 
+  async function exitWorkspace(): Promise<void> {
+    if (!(await save())) return;
+
+    onExitRequested();
+  }
+
   onMount(() => {
     activeQuestionId = questionId;
     void loadExistingItem();
@@ -1446,6 +1454,9 @@
         />
         {@render layoutField()}
         <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap items-center justify-end gap-2" tabindex="-1">
+          <Button type="button" variant="secondary" class="min-h-11" onclick={exitWorkspace}>
+            {$t('course.navItem.lessons.exercises.all_exercises.view_mode.back')}
+          </Button>
           <div class="ui:text-muted-foreground flex min-h-11 items-center gap-2 px-2 text-sm" aria-live="polite">
             {#if isDirty}
               <CircleAlertIcon class="ui:text-amber-600 h-4 w-4" aria-hidden="true" />
@@ -1895,6 +1906,9 @@
       <div class="ui:animate-pulse ui:h-24 ui:rounded ui:bg-muted"></div>
     {:else}
       <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap gap-2" tabindex="-1">
+        <Button type="button" variant="secondary" size="sm" onclick={exitWorkspace}>
+          {$t('course.navItem.lessons.exercises.all_exercises.view_mode.back')}
+        </Button>
         <Button
           type="button"
           variant="secondary"
