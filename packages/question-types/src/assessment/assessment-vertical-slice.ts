@@ -16,6 +16,7 @@ import {
 
 const SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS: ReadonlySet<AssessmentInteractionKind> = new Set([
   'choice',
+  'fill_blank',
   'numeric',
   'text',
   'true_false_group'
@@ -56,6 +57,10 @@ function hasExactChoiceResponse(expectedOptionIds: string[], selectedOptionIds: 
   return selectedOptionIds.every((selectedOptionId) => expectedIds.has(selectedOptionId));
 }
 
+function normalizeFillBlankValue(value: string): string {
+  return value.trim().toLowerCase();
+}
+
 /** Whether every required interaction in the Phase 3 delivery slice has a meaningful response. */
 export function isAssessmentVerticalSliceResponseComplete(
   definition: AssessmentDeliveryDefinition,
@@ -94,6 +99,9 @@ export function isAssessmentVerticalSliceResponseComplete(
       }
     } else if (interaction.kind === 'numeric' && entry.response.kind === 'numeric') {
       if (!Number.isFinite(entry.response.value)) return false;
+    } else if (interaction.kind === 'fill_blank' && entry.response.kind === 'fill_blank') {
+      if (entry.response.values.length !== interaction.config.blankCount) return false;
+      if (interaction.required && !entry.response.values.some((value) => value.trim().length > 0)) return false;
     } else if (interaction.kind === 'true_false_group' && entry.response.kind === 'true_false_group') {
       const statementIds = new Set(interaction.config.statements.map((statement) => statement.id));
       const responseStatementIds = entry.response.answers.map((answer) => answer.statementId);
@@ -217,6 +225,26 @@ export function scoreAssessmentVerticalSlice(
         Math.abs(response.value - interaction.config.correctValue) <= interaction.config.tolerance
           ? interaction.maxScore
           : 0;
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+      continue;
+    }
+
+    if (interaction.kind === 'fill_blank') {
+      const response = validated.responsesByInteractionId.get(block.id);
+      const correctCount =
+        response?.kind === 'fill_blank'
+          ? interaction.config.acceptedAnswers.reduce(
+              (count, expected, index) =>
+                count +
+                Number(normalizeFillBlankValue(response.values[index] ?? '') === normalizeFillBlankValue(expected)),
+              0
+            )
+          : 0;
+      const score = scaleScoreByFraction(
+        interaction.maxScore,
+        correctCount / interaction.config.acceptedAnswers.length
+      );
       autoScoreCents += Math.round(score * 100);
       interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
       continue;

@@ -201,7 +201,9 @@
       (textFormat === 'rich'
         ? getTextareaAnswerCharacterCount(nextResponse.text) === 0
         : nextResponse.text.trim().length === 0);
-    if (isEmptyChoice || isEmptyText) {
+    const isEmptyFillBlank =
+      nextResponse.kind === 'fill_blank' && nextResponse.values.every((value) => value.trim() === '');
+    if (isEmptyChoice || isEmptyText || isEmptyFillBlank) {
       onResponseChange({ schemaVersion: 1, responses: nextResponses });
 
       return;
@@ -499,6 +501,45 @@
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
         </div>
+      {:else if block.interaction.kind === 'fill_blank'}
+        {@const interaction = block.interaction}
+        {@const invalid = isInteractionInvalid(block)}
+        {@const errorElementId = `${rendererId}-${block.id}-error`}
+        {@const promptElementId = `${rendererId}-${block.id}-prompt`}
+        {@const responseValues =
+          responsesByInteractionId.get(block.id)?.kind === 'fill_blank'
+            ? (responsesByInteractionId.get(block.id)?.values ?? [])
+            : []}
+        {@const values = Array.from(
+          { length: interaction.config.blankCount },
+          (_, index) => responseValues[index] ?? ''
+        )}
+        <fieldset class="ui:space-y-3" data-assessment-invalid={invalid ? 'true' : undefined}>
+          <legend id={promptElementId} class="ui:font-medium"
+            >{@html renderAuthoredHtml(interaction.prompt.html)}</legend
+          >
+          <div class="ui:grid ui:gap-3 ui:sm:grid-cols-2">
+            {#each values as value, index (index)}
+              <Input
+                id={`${rendererId}-${block.id}-${index}`}
+                {value}
+                {disabled}
+                required={interaction.required}
+                aria-labelledby={promptElementId}
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorElementId : undefined}
+                oninput={(event) => {
+                  const nextValues = [...values];
+                  nextValues[index] = event.currentTarget.value;
+                  updateResponse(block.id, { kind: 'fill_blank', values: nextValues });
+                }}
+              />
+            {/each}
+          </div>
+          {#if invalid}
+            <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
+          {/if}
+        </fieldset>
       {:else if block.interaction.kind === 'true_false_group'}
         {@const interaction = block.interaction}
         {@const invalid = isInteractionInvalid(block)}
