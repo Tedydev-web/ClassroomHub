@@ -203,6 +203,7 @@
   {#snippet template()}
     <div class="ui:grid ui:max-w-5xl ui:gap-6 ui:lg:grid-cols-[190px_minmax(0,1fr)]">
       <ExerciseQuestion.SectionNavigationSidebar
+        navigationLabel="Question outline"
         sections={SECTIONED_EXERCISE_FIXTURE.map((section, sectionIndex) => ({
           id: section.id,
           title: section.title,

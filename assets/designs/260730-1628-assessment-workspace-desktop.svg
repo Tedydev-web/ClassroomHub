@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1024" viewBox="0 0 1600 1024" role="img" aria-labelledby="title description">
+  <title id="title">Mô phỏng workspace assessment cho giáo viên</title>
+  <desc id="description">Bố cục desktop hai pane gồm ngữ cảnh passage và interaction đang soạn, không có pane thứ ba cố định.</desc>
+  <style>
+    :root { --bg:#141918; --surface:#1a211f; --surface2:#202a27; --line:#35413d; --ink:#edf2ee; --muted:#aab7b0; --accent:#4b95f7; --ok:#62c98b; --warn:#f4c861; }
+    text { font-family: Geist, "Noto Sans", sans-serif; fill: var(--ink); }
+    .muted { fill: var(--muted); } .small { font-size: 13px; } .body { font-size: 16px; } .title { font-size: 22px; font-weight: 650; } .heading { font-size: 18px; font-weight: 650; } .label { font-size: 12px; font-weight: 600; letter-spacing: .08em; } .line { stroke: var(--line); stroke-width: 1; }
+  </style>
+  <rect width="1600" height="1024" fill="#141918"/>
+  <rect x="0" y="0" width="224" height="1024" fill="#171d1b"/>
+  <rect x="224" y="0" width="1376" height="72" fill="#171d1b"/>
+  <line x1="224" y1="72" x2="1600" y2="72" class="line"/>
+  <text x="24" y="34" class="heading">MS Đề ôn luyện số 03</text>
+  <text x="24" y="57" class="muted small">Nội dung khóa học</text>
+  <text x="24" y="112" class="label muted">NỘI DUNG</text>
+  <text x="24" y="145" class="body">Course materials</text>
+  <text x="24" y="177" class="body">Test 01</text>
+  <text x="24" y="209" class="body">Test 02</text>
+  <rect x="12" y="232" width="200" height="38" rx="8" fill="#202a27"/>
+  <text x="24" y="257" class="body">Practice Test 02</text>
+  <text x="250" y="30" class="muted small">Nội dung / Practice Test 02 / Assessment workspace</text>
+  <rect x="1270" y="16" width="92" height="40" rx="8" fill="#202a27"/>
+  <text x="1292" y="41" class="body">Preview</text>
+  <rect x="1374" y="16" width="92" height="40" rx="8" fill="#4b95f7"/>
+  <text x="1405" y="41" class="body">Lưu</text>
+  <text x="1490" y="41" class="muted body">•••</text>
+  <text x="264" y="112" class="title">Practice Test 02</text>
+  <text x="264" y="138" class="muted small">Đoạn đọc 2  /  Câu 8  /  Trắc nghiệm một đáp án</text>
+  <rect x="264" y="164" width="130" height="32" rx="16" fill="#1e3028"/>
+  <circle cx="284" cy="180" r="5" fill="#62c98b"/>
+  <text x="298" y="185" class="small">Đã lưu</text>
+  <rect x="1400" y="164" width="160" height="40" rx="8" fill="#202a27"/>
+  <text x="1422" y="189" class="body">Bản đồ đề  12</text>
+  <rect x="264" y="220" width="1296" height="748" rx="12" fill="#1a211f" stroke="#35413d"/>
+  <rect x="264" y="220" width="530" height="748" rx="12" fill="#1a211f"/>
+  <line x1="794" y1="220" x2="794" y2="968" class="line"/>
+  <text x="292" y="258" class="label muted">NGỮ CẢNH DÙNG CHUNG</text>
+  <text x="292" y="294" class="heading">Đoạn đọc 2</text>
+  <text x="292" y="322" class="muted small">Áp dụng cho câu 7–12</text>
+  <line x1="292" y1="344" x2="766" y2="344" class="line"/>
+  <text x="292" y="385" class="title">THE INSPIRING LEGACY OF</text>
+  <text x="292" y="415" class="title">HO CHI MINH</text>
+  <text x="292" y="456" class="body">President Ho Chi Minh's life teaches us that success is</text>
+  <text x="292" y="483" class="body">not about avoiding obstacles. His persistence and</text>
+  <text x="292" y="510" class="body">resilience allowed him to rise above every challenge.</text>
+  <text x="292" y="537" class="body">His journey of self-learning continues to inspire.</text>
+  <text x="292" y="594" class="label muted">MẸO SOẠN</text>
+  <text x="292" y="623" class="muted body">Sửa passage ở đây. Chuyển câu không làm cuộn</text>
+  <text x="292" y="648" class="muted body">hoặc mất vị trí đọc hiện tại.</text>
+  <text x="826" y="258" class="label muted">INTERACTION ĐANG SOẠN</text>
+  <text x="826" y="294" class="heading">Câu 8 · Chọn một đáp án</text>
+  <text x="826" y="322" class="muted small">1 điểm · chấm tự động</text>
+  <line x1="826" y1="344" x2="1528" y2="344" class="line"/>
+  <text x="826" y="386" class="label muted">PROMPT</text>
+  <rect x="826" y="404" width="702" height="96" rx="8" fill="#202a27" stroke="#35413d"/>
+  <text x="846" y="440" class="body">Despite facing a great (8) of hardship, he remained focused</text>
+  <text x="846" y="467" class="body">on his goals and never gave up.</text>
+  <text x="826" y="546" class="label muted">ĐÁP ÁN  ·  ĐÁP ÁN ĐÚNG ĐƯỢC ĐÁNH DẤU</text>
+  <rect x="826" y="566" width="702" height="54" rx="8" fill="#202a27" stroke="#35413d"/>
+  <circle cx="852" cy="593" r="10" fill="none" stroke="#aab7b0" stroke-width="2"/>
+  <text x="878" y="599" class="body">level</text>
+  <rect x="826" y="632" width="702" height="54" rx="8" fill="#20313a" stroke="#4b95f7"/>
+  <circle cx="852" cy="659" r="10" fill="#4b95f7"/>
+  <circle cx="852" cy="659" r="4" fill="#edf2ee"/>
+  <text x="878" y="665" class="body">amount</text>
+  <text x="1431" y="665" class="small" fill="#62c98b">Đúng</text>
+  <rect x="826" y="698" width="702" height="54" rx="8" fill="#202a27" stroke="#35413d"/>
+  <circle cx="852" cy="725" r="10" fill="none" stroke="#aab7b0" stroke-width="2"/>
+  <text x="878" y="731" class="body">variety</text>
+  <rect x="826" y="764" width="702" height="54" rx="8" fill="#202a27" stroke="#35413d"/>
+  <circle cx="852" cy="791" r="10" fill="none" stroke="#aab7b0" stroke-width="2"/>
+  <text x="878" y="797" class="body">quantity</text>
+  <rect x="826" y="852" width="168" height="42" rx="8" fill="#202a27"/>
+  <text x="850" y="878" class="body">+ Thêm đáp án</text>
+  <text x="264" y="1004" class="muted small">Mô phỏng review-only. “Bản đồ đề” mở overlay, không là pane thứ ba cố định.</text>
+</svg>

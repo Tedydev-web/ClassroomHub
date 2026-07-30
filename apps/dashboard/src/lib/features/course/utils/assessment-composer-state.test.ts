@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_ASSESSMENT_BLOCKS, MAX_ASSESSMENT_INTERACTIONS, MAX_INTERACTION_OPTIONS } from '@cio/question-types';
 
 import {
+  addAssessmentInteractionBlock,
   addChoiceInteractionBlock,
   addContentBlock,
   addTextInteractionBlock,
@@ -36,6 +37,30 @@ function createIdFactory() {
 }
 
 describe('assessment composer state', () => {
+  it('creates a selected canonical block for every persisted interaction kind', () => {
+    const kinds = [
+      'choice',
+      'text',
+      'numeric',
+      'fill_blank',
+      'word_bank',
+      'ordering',
+      'true_false_group',
+      'file_upload',
+      'link',
+      'star_rating',
+      'video_recording'
+    ] as const;
+
+    for (const kind of kinds) {
+      const state = addAssessmentInteractionBlock(createAssessmentComposerState(), kind, createIdFactory());
+      const [block] = state.definition.blocks;
+
+      expect(block).toMatchObject({ kind: 'interaction', interaction: { kind } });
+      expect(state.selectedBlockId).toBe(block?.id);
+    }
+  });
+
   it('keeps the native flow layout by default and changes presentation only through an explicit author action', () => {
     const initialState = createAssessmentComposerState();
     const splitState = setAssessmentItemPresentationLayout(initialState, 'passage_split');
