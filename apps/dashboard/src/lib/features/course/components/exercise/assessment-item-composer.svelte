@@ -1737,6 +1737,16 @@
                       variant="secondary"
                       class="min-h-11"
                       disabled={interactionLimitReached}
+                      onclick={addNumericQuestion}
+                    >
+                      <PlusIcon class="h-4 w-4" />
+                      {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="min-h-11"
+                      disabled={interactionLimitReached}
                       onclick={addTrueFalseGroupQuestion}
                     >
                       <PlusIcon class="h-4 w-4" />
