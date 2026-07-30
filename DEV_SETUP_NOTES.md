@@ -43,6 +43,24 @@ On Linux and macOS, after the one-time setup, use:
 pnpm dev:local
 ```
 
+### Dev Container on the Linux workstation
+
+Open the repository in VS Code, install the **Dev Containers** extension, then run
+**Dev Containers: Reopen in Container**. The definition uses Node 22 and the host
+Docker daemon; on this Linux workstation it shares the host network so the existing
+loopback-only development services remain reachable without changing any `.env` file.
+
+After the container is ready, start the normal workflow from its terminal:
+
+```bash
+pnpm dev:local
+```
+
+`pnpm dev:local:status`, `pnpm dev:local:tunnel`, and `pnpm dev:local:stop` work the
+same way. The container intentionally does not start watchers or alter Cloudflare tunnel
+ingress on attach. This definition is Linux-host specific because it uses host networking;
+use the documented native workflow on macOS or Windows.
+
 It activates the Node version declared by `.nvmrc`, validates the local
 configuration, starts Docker infrastructure, and keeps the API, dashboard, jobs,
 and source watchers running with auto-reload. Use `pnpm dev:local:status` for a
