@@ -105,6 +105,8 @@
   let previousReorderQuestions = $state(false);
   let newAssessmentComposerSectionId = $state<string | null | undefined>(undefined);
   let promotedAssessmentQuestionId = $state<number | null>(null);
+  let activeCanonicalQuestionId = $state<number | null>(null);
+  let pendingCanonicalQuestionId = $state<number | null>(null);
   let errors = $derived($questionnaireValidation);
   const questionLabels = $derived(getExerciseQuestionLabels());
   const activeSections = $derived(
@@ -441,6 +443,23 @@
           : question
       )
     }));
+
+    if (pendingCanonicalQuestionId !== null) {
+      activeCanonicalQuestionId = pendingCanonicalQuestionId;
+      pendingCanonicalQuestionId = null;
+    }
+  }
+
+  function openCanonicalQuestionEditor(questionId: number) {
+    if (activeCanonicalQuestionId === null) {
+      activeCanonicalQuestionId = questionId;
+      return;
+    }
+
+    if (activeCanonicalQuestionId === questionId) return;
+
+    pendingCanonicalQuestionId = questionId;
+    void onSaveRequested();
   }
 
   function getCanonicalQuestionsForSection(exerciseSectionId: string | null) {
@@ -610,6 +629,14 @@
         )}
       </p>
     </div>
+    <Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      onclick={() => openCanonicalQuestionEditor(Number(question.id))}
+    >
+      {$t('course.navItem.lessons.exercises.all_exercises.view_mode.edit')}
+    </Button>
   </div>
 {/snippet}
 
@@ -702,8 +729,10 @@
                       {@render questionEditor(item.question, index)}
                     {:else if reorderQuestions}
                       {@render compactCanonicalQuestionRow(item.question, index)}
-                    {:else}
+                    {:else if activeCanonicalQuestionId === Number(item.question.id)}
                       {@render canonicalQuestionEditor(item.question)}
+                    {:else}
+                      {@render compactCanonicalQuestionRow(item.question, index)}
                     {/if}
                   </div>
                 </div>
@@ -743,8 +772,10 @@
       {#each getRenderedQuestionPlacementItems(null) as item, index (item.id)}
         {#if item.kind === 'legacy'}
           {@render questionEditor(item.question, index)}
-        {:else}
+        {:else if activeCanonicalQuestionId === Number(item.question.id)}
           {@render canonicalQuestionEditor(item.question)}
+        {:else}
+          {@render compactCanonicalQuestionRow(item.question, index)}
         {/if}
       {/each}
       {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
