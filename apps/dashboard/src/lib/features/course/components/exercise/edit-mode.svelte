@@ -663,6 +663,27 @@
     </div>
   {/if}
   <div class="questions px-6 pt-6">
+    {#if !reorderQuestions && courseApi.course?.id && activeCanonicalQuestionId !== null}
+      {@const activeCanonicalQuestion = $questionnaire.canonicalQuestions.find(
+        (question) => Number(question.id) === activeCanonicalQuestionId
+      )}
+      {#if activeCanonicalQuestion}
+        <section class="mb-6 min-w-0">
+          {@render canonicalQuestionEditor(activeCanonicalQuestion)}
+        </section>
+      {/if}
+    {:else if !reorderQuestions && courseApi.course?.id && newAssessmentComposerSectionId !== undefined}
+      <section class="mb-6 min-w-0">
+        <AssessmentItemComposer
+          courseId={courseApi.course.id}
+          exerciseId={_exerciseId}
+          exerciseSectionId={newAssessmentComposerSectionId}
+          initialOrder={getNextQuestionOrder(newAssessmentComposerSectionId)}
+          {onSaveRequested}
+          onSaved={addCanonicalQuestionToState}
+        />
+      </section>
+    {/if}
     {#if hasSections($questionnaire.sections)}
       <div class="space-y-5">
         {#each activeSections as section, sectionIndex (section.id)}
@@ -729,8 +750,6 @@
                       {@render questionEditor(item.question, index)}
                     {:else if reorderQuestions}
                       {@render compactCanonicalQuestionRow(item.question, index)}
-                    {:else if activeCanonicalQuestionId === Number(item.question.id)}
-                      {@render canonicalQuestionEditor(item.question)}
                     {:else}
                       {@render compactCanonicalQuestionRow(item.question, index)}
                     {/if}
@@ -740,16 +759,7 @@
             </div>
             {#if courseApi.course?.id && (newAssessmentComposerSectionId === section.id || !reorderQuestions)}
               <div class="mt-4 space-y-4" hidden={reorderQuestions}>
-                {#if newAssessmentComposerSectionId === section.id}
-                  <AssessmentItemComposer
-                    courseId={courseApi.course.id}
-                    exerciseId={_exerciseId}
-                    exerciseSectionId={section.id}
-                    initialOrder={getNextQuestionOrder(section.id)}
-                    {onSaveRequested}
-                    onSaved={addCanonicalQuestionToState}
-                  />
-                {:else}
+                {#if newAssessmentComposerSectionId !== section.id}
                   <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(section.id)}>
                     {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
                   </Button>
@@ -772,24 +782,13 @@
       {#each getRenderedQuestionPlacementItems(null) as item, index (item.id)}
         {#if item.kind === 'legacy'}
           {@render questionEditor(item.question, index)}
-        {:else if activeCanonicalQuestionId === Number(item.question.id)}
-          {@render canonicalQuestionEditor(item.question)}
         {:else}
           {@render compactCanonicalQuestionRow(item.question, index)}
         {/if}
       {/each}
       {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
         <div class="mt-6 space-y-4" hidden={reorderQuestions}>
-          {#if newAssessmentComposerSectionId === null}
-            <AssessmentItemComposer
-              courseId={courseApi.course.id}
-              exerciseId={_exerciseId}
-              exerciseSectionId={null}
-              initialOrder={getNextQuestionOrder(null)}
-              {onSaveRequested}
-              onSaved={addCanonicalQuestionToState}
-            />
-          {:else}
+          {#if newAssessmentComposerSectionId !== null}
             <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(null)}>
               {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
             </Button>

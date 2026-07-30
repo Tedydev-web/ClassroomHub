@@ -256,11 +256,12 @@ test.describe('authenticated dashboard', () => {
     await expect(addAdvancedQuestionButton).toBeVisible();
     await addAdvancedQuestionButton.click();
 
-    const questionTitleField = page.getByRole('textbox', { name: 'Question title' }).last();
-    const advancedComposer = questionTitleField.locator('xpath=ancestor::section[1]');
+    const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' });
+    const advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');
+    const questionTitleField = advancedComposer.getByRole('group', { name: 'Question title' });
+    const questionTitleEditor = questionTitleField.locator('[contenteditable="true"]');
     const addChoiceButton = advancedComposer.getByRole('button', { name: 'Add choice' });
     const addExtendedTextButton = advancedComposer.getByRole('button', { name: 'Add extended text' });
-    const saveAdvancedQuestionButton = advancedComposer.getByRole('button', { name: 'Save advanced question' });
     await expect(addChoiceButton).toBeVisible();
     await expect(advancedComposer.getByRole('button', { name: 'Add content' })).toBeVisible();
     await expect(addExtendedTextButton).toBeVisible();
@@ -269,11 +270,12 @@ test.describe('authenticated dashboard', () => {
     await expect(questionTitleField).toBeFocused();
     await expect(questionTitleField).toHaveAttribute('aria-invalid', 'true');
 
-    await questionTitleField.fill('Advanced question draft');
+    await questionTitleEditor.fill('Advanced question draft');
     await expect(questionTitleField).not.toHaveAttribute('aria-invalid', 'true');
     await addChoiceButton.click();
 
-    const promptField = advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true });
+    const promptField = advancedComposer.getByRole('group', { name: 'Prompt', exact: true }).first();
+    const promptEditor = promptField.locator('[contenteditable="true"]');
     const pointsField = advancedComposer.getByRole('spinbutton', { name: 'Points' });
     await pointsField.fill('');
     await saveAdvancedQuestionButton.click();
@@ -287,14 +289,18 @@ test.describe('authenticated dashboard', () => {
     await expect(promptField).toBeFocused();
     await expect(promptField).toHaveAttribute('aria-invalid', 'true');
 
-    await promptField.fill('Which option is correct?');
-    const firstOptionField = advancedComposer.getByRole('textbox', { name: 'Option 1' });
+    await promptEditor.fill('Which option is correct?');
+    const firstOptionField = advancedComposer.getByRole('group', { name: 'Option 1' });
+    const firstOptionEditor = firstOptionField.locator('[contenteditable="true"]');
     await saveAdvancedQuestionButton.click();
     await expect(firstOptionField).toBeFocused();
     await expect(firstOptionField).toHaveAttribute('aria-invalid', 'true');
 
-    await firstOptionField.fill('First option');
-    await advancedComposer.getByRole('textbox', { name: 'Option 2' }).fill('Second option');
+    await firstOptionEditor.fill('First option');
+    await advancedComposer
+      .getByRole('group', { name: 'Option 2' })
+      .locator('[contenteditable="true"]')
+      .fill('Second option');
 
     const firstCorrectOption = advancedComposer.getByRole('checkbox', {
       name: 'Toggle option as correct: Option 1'
@@ -306,8 +312,8 @@ test.describe('authenticated dashboard', () => {
 
     await expect(advancedComposer.getByRole('checkbox', { name: 'Multiple answers' })).toBeVisible();
     await expect(firstCorrectOption).toBeVisible();
-    await expect(advancedComposer.getByText('Which option is correct?', { exact: true })).toBeVisible();
-    await expect(advancedComposer.getByText('First option', { exact: true })).toBeVisible();
+    await expect(promptEditor).toHaveText('Which option is correct?');
+    await expect(firstOptionEditor).toHaveText('First option');
     await expect(advancedComposer.locator('[data-assessment-layout="stacked"]')).toBeVisible();
     await expect(advancedComposer.locator('[data-assessment-layout="split"]')).toHaveCount(0);
     await expect(saveAdvancedQuestionButton).toBeVisible();
@@ -389,9 +395,11 @@ test.describe('authenticated dashboard', () => {
       await page.getByRole('tab', { name: 'Questions' }).click();
       await page.getByRole('button', { name: 'Add advanced question' }).click();
 
-      const questionTitleField = page.getByRole('textbox', { name: 'Question title' });
-      const advancedComposer = questionTitleField.locator('xpath=ancestor::section[1]');
-      await questionTitleField.fill(fixtureTitle);
+      const saveAdvancedQuestionButton = page.getByRole('button', { name: 'Save advanced question' });
+      const advancedComposer = saveAdvancedQuestionButton.locator('xpath=ancestor::section[1]');
+      const questionTitleField = advancedComposer.getByRole('group', { name: 'Question title' });
+      const questionTitleEditor = questionTitleField.locator('[contenteditable="true"]');
+      await questionTitleEditor.fill(fixtureTitle);
       const questionLayoutSelect = advancedComposer.getByRole('button', { name: 'Question layout' });
       await expect(questionLayoutSelect).toContainText('Standard flow');
       await questionLayoutSelect.click();
@@ -402,10 +410,20 @@ test.describe('authenticated dashboard', () => {
         .getByRole('textbox', { name: 'Add context, instructions, or media' })
         .fill('Read the prompt and answer both interactions.');
       await advancedComposer.getByRole('button', { name: 'Add choice' }).click();
-      await advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true }).fill(attemptedChoicePrompt);
+      await advancedComposer
+        .getByRole('group', { name: 'Prompt', exact: true })
+        .first()
+        .locator('[contenteditable="true"]')
+        .fill(attemptedChoicePrompt);
       await advancedComposer.getByRole('spinbutton', { name: 'Points' }).fill('2');
-      await advancedComposer.getByRole('textbox', { name: 'Option 1' }).fill('Correct option');
-      await advancedComposer.getByRole('textbox', { name: 'Option 2' }).fill('Incorrect option');
+      await advancedComposer
+        .getByRole('group', { name: 'Option 1' })
+        .locator('[contenteditable="true"]')
+        .fill('Correct option');
+      await advancedComposer
+        .getByRole('group', { name: 'Option 2' })
+        .locator('[contenteditable="true"]')
+        .fill('Incorrect option');
       await advancedComposer.getByRole('checkbox', { name: 'Toggle option as correct: Option 1' }).check();
       await advancedComposer.getByRole('button', { name: 'Add extended text' }).click();
 
@@ -421,9 +439,9 @@ test.describe('authenticated dashboard', () => {
       await expectExplicitPassageLayout(page);
       await expectNoHorizontalPageOverflow(page);
       await page.getByRole('button', { name: 'Edit', exact: true }).click();
-      await expect(advancedComposer.getByRole('textbox', { name: 'Prompt', exact: true }).first()).toHaveValue(
-        attemptedChoicePrompt
-      );
+      await expect(
+        advancedComposer.getByRole('group', { name: 'Prompt', exact: true }).first().locator('[contenteditable="true"]')
+      ).toHaveText(attemptedChoicePrompt);
       await expect(extendedTextPrompt).toHaveText(textPrompt);
 
       const createAssessmentResponse = page.waitForResponse((response) => {
@@ -437,7 +455,7 @@ test.describe('authenticated dashboard', () => {
       await page.getByRole('button', { name: 'Save', exact: true }).click();
       expect((await createAssessmentResponse).status()).toBe(200);
       await expect(questionTitleField).toHaveCount(1);
-      await expect(questionTitleField).toHaveValue(fixtureTitle);
+      await expect(questionTitleEditor).toHaveText(fixtureTitle);
       await expect(page.getByText(attemptedChoicePrompt, { exact: true })).toBeVisible();
 
       const { deviceScaleFactor, hasTouch, isMobile, userAgent, viewport } = testInfo.project.use;
@@ -592,7 +610,10 @@ test.describe('authenticated dashboard', () => {
       if (await editExerciseButton.isVisible()) {
         await editExerciseButton.click();
       }
-      const currentChoicePromptField = page.getByRole('textbox', { name: 'Prompt', exact: true }).first();
+      const currentChoicePromptField = page
+        .getByRole('group', { name: 'Prompt', exact: true })
+        .first()
+        .locator('[contenteditable="true"]');
       await expect(currentChoicePromptField).toBeVisible({ timeout: 30_000 });
       await currentChoicePromptField.fill(currentChoicePrompt, { timeout: 30_000 });
       await page.getByRole('spinbutton', { name: 'Points' }).first().fill('4', { timeout: 30_000 });
