@@ -16,6 +16,7 @@ import {
 
 const SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS: ReadonlySet<AssessmentInteractionKind> = new Set([
   'choice',
+  'numeric',
   'text',
   'true_false_group'
 ]);
@@ -91,6 +92,8 @@ export function isAssessmentVerticalSliceResponseComplete(
       if (interaction.config.maxCharacters !== undefined && characterCount > interaction.config.maxCharacters) {
         return false;
       }
+    } else if (interaction.kind === 'numeric' && entry.response.kind === 'numeric') {
+      if (!Number.isFinite(entry.response.value)) return false;
     } else if (interaction.kind === 'true_false_group' && entry.response.kind === 'true_false_group') {
       const statementIds = new Set(interaction.config.statements.map((statement) => statement.id));
       const responseStatementIds = entry.response.answers.map((answer) => answer.statementId);
@@ -203,6 +206,19 @@ export function scoreAssessmentVerticalSlice(
         maxScore: interaction.maxScore,
         grading: 'manual'
       });
+      continue;
+    }
+
+    if (interaction.kind === 'numeric') {
+      const response = validated.responsesByInteractionId.get(block.id);
+      const score =
+        response?.kind === 'numeric' &&
+        interaction.config.correctValue !== null &&
+        Math.abs(response.value - interaction.config.correctValue) <= interaction.config.tolerance
+          ? interaction.maxScore
+          : 0;
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
       continue;
     }
 

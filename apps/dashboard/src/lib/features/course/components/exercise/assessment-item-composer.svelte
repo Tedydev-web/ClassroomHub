@@ -42,6 +42,7 @@
     type AssessmentItemDefinition
   } from '@cio/question-types';
   import {
+    addAssessmentInteractionBlock,
     addChoiceInteractionBlock,
     addContentBlock,
     addTextInteractionBlock,
@@ -622,6 +623,14 @@
     updateComposer(addTextInteractionBlock(composer, createId, activePassageGroup?.passage?.id));
   }
 
+  function addNumericQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addAssessmentInteractionBlock(composer, 'numeric', createId, activePassageGroup?.passage?.id));
+  }
+
   function addTrueFalseGroupQuestion() {
     if (interactionLimitReached) return;
 
@@ -679,6 +688,9 @@
     }
     if (block.interaction.kind === 'text') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text');
+    }
+    if (block.interaction.kind === 'numeric') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric');
     }
     if (block.interaction.kind === 'true_false_group') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group');
@@ -1309,6 +1321,42 @@
 {#snippet interactionEditor(block: AssessmentInteractionBlock, blockIndex: number)}
   {@render choiceInteractionEditor(block, blockIndex)}
   {@render textInteractionEditor(block, blockIndex)}
+  {#if block.interaction.kind === 'numeric'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+    <Field.Group class="grid gap-4 sm:grid-cols-3">
+      <InputField
+        bind:value={block.interaction.maxScore}
+        name={getBlockDomId(block.id, 'points')}
+        label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+        type="number"
+        min="0"
+        step="0.01"
+        oninput={clearValidationState}
+      />
+      <InputField
+        bind:value={block.interaction.config.correctValue}
+        name={getBlockDomId(block.id, 'correct-value')}
+        label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.numeric.edit.correct_value_label')}
+        type="number"
+        oninput={clearValidationState}
+      />
+      <InputField
+        bind:value={block.interaction.config.tolerance}
+        name={getBlockDomId(block.id, 'tolerance')}
+        label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.numeric.edit.tolerance_label')}
+        type="number"
+        min="0"
+        step="0.01"
+        oninput={clearValidationState}
+      />
+    </Field.Group>
+  {/if}
   {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
@@ -1597,6 +1645,17 @@
               >
                 <PlusIcon class="h-4 w-4" />
                 {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="min-h-11"
+                disabled={interactionLimitReached}
+                onclick={addNumericQuestion}
+              >
+                <PlusIcon class="h-4 w-4" />
+                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
               </Button>
               <Button
                 type="button"

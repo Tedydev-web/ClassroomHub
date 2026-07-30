@@ -16,6 +16,7 @@
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
   import { Button } from '../../base/button';
   import { Checkbox } from '../../base/checkbox';
+  import { Input } from '../../base/input';
   import { Label } from '../../base/label';
   import * as RadioGroup from '../../base/radio-group';
   import { Textarea } from '../../base/textarea';
@@ -459,6 +460,41 @@
               oninput={(event) => updateResponse(block.id, { kind: 'text', text: event.currentTarget.value })}
             />
           {/if}
+          {#if invalid}
+            <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
+          {/if}
+        </div>
+      {:else if block.interaction.kind === 'numeric'}
+        {@const interaction = block.interaction}
+        {@const invalid = isInteractionInvalid(block)}
+        {@const errorElementId = `${rendererId}-${block.id}-error`}
+        {@const inputElementId = `${rendererId}-${block.id}`}
+        {@const value =
+          responsesByInteractionId.get(block.id)?.kind === 'numeric'
+            ? String(responsesByInteractionId.get(block.id)?.value ?? '')
+            : ''}
+        <div class="ui:space-y-3" data-assessment-invalid={invalid ? 'true' : undefined}>
+          <Label for={inputElementId} class="ui:font-medium">{@html renderAuthoredHtml(interaction.prompt.html)}</Label>
+          <Input
+            id={inputElementId}
+            type="number"
+            {value}
+            {disabled}
+            required={interaction.required}
+            aria-invalid={invalid}
+            aria-describedby={invalid ? errorElementId : undefined}
+            oninput={(event) => {
+              const nextValue = event.currentTarget.valueAsNumber;
+              if (!Number.isFinite(nextValue)) {
+                onResponseChange({
+                  schemaVersion: 1,
+                  responses: (response?.responses ?? []).filter((entry) => entry.interactionId !== block.id)
+                });
+                return;
+              }
+              updateResponse(block.id, { kind: 'numeric', value: nextValue });
+            }}
+          />
           {#if invalid}
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
