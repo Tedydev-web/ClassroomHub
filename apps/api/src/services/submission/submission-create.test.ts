@@ -273,11 +273,17 @@ const unsupportedHybridDefinition = {
       id: 'block-1',
       kind: 'interaction',
       interaction: {
-        kind: 'numeric',
-        prompt: { format: 'html', html: 'Enter the number' },
+        kind: 'ordering',
+        prompt: { format: 'html', html: 'Arrange the steps' },
         required: true,
         maxScore: 3,
-        config: { correctValue: 42, tolerance: 0 }
+        config: {
+          options: [
+            { id: 'option-1', html: 'First' },
+            { id: 'option-2', html: 'Second' }
+          ],
+          correctOrder: ['option-1', 'option-2']
+        }
       }
     },
     { ...manualTextDefinition.blocks[0], id: 'block-2' }
@@ -941,7 +947,7 @@ describe('createSubmissionService transaction guards', () => {
     const response = {
       schemaVersion: 1,
       responses: [
-        { interactionId: 'block-1', response: { kind: 'numeric', value: 42 } },
+        { interactionId: 'block-1', response: { kind: 'ordering', orderedOptionIds: ['option-1', 'option-2'] } },
         { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
       ]
     };
@@ -1022,7 +1028,7 @@ describe('createSubmissionService transaction guards', () => {
     const unsupportedResponse = {
       schemaVersion: 1,
       responses: [
-        { interactionId: 'block-1', response: { kind: 'numeric', value: 42 } },
+        { interactionId: 'block-1', response: { kind: 'ordering', orderedOptionIds: ['option-1', 'option-2'] } },
         { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
       ]
     };
