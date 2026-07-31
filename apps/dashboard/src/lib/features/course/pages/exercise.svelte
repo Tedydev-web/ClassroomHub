@@ -23,7 +23,6 @@
     hasSections,
     clearAssessmentComposerRegistry,
     dirtyAssessmentComposerIds,
-    wideAssessmentComposerIds,
     questionnaire,
     questionnaireOrder,
     reset,
@@ -799,10 +798,7 @@
               <Badge variant="outline">{submissions.length}</Badge>
             </UnderlineTabs.Trigger>
           </UnderlineTabs.List>
-          <UnderlineTabs.Content
-            value="questions"
-            class={preview ? 'w-full' : $wideAssessmentComposerIds.size > 0 ? 'w-full' : 'mx-auto w-full md:max-w-3xl'}
-          >
+          <UnderlineTabs.Content value="questions" class="w-full">
             <UpdateDescription {preview} />
             <div hidden={preview}>
               <EditMode
