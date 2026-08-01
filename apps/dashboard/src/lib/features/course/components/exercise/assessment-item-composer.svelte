@@ -5,9 +5,10 @@
   import { exerciseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { Button } from '@cio/ui/base/button';
+  import { Button, buttonVariants } from '@cio/ui/base/button';
   import { AssessmentItemRenderer } from '@cio/ui/custom/exercise-question';
   import { Checkbox } from '@cio/ui/base/checkbox';
+  import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
   import * as Field from '@cio/ui/base/field';
   import { InputField } from '@cio/ui/custom/input-field';
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -1440,20 +1441,52 @@
   {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
+{#snippet addInteractionMenu()}
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger
+      class={`${buttonVariants({ variant: 'default' })} min-h-11`}
+      disabled={interactionLimitReached}
+    >
+      <PlusIcon class="h-4 w-4" />
+      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content align="end" class="w-56">
+      <DropdownMenu.Item onclick={addChoiceQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.choice')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addTextQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addNumericQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addFillBlankQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addTrueFalseGroupQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
+      </DropdownMenu.Item>
+    </DropdownMenu.Content>
+  </DropdownMenu.Root>
+{/snippet}
+
 {#if usesPassageLayout}
   <section class="ui:border-border ui:bg-background overflow-hidden rounded-md border">
-    <div class="ui:border-border ui:bg-background space-y-4 border-b p-4">
-      <div class="grid items-end gap-4 xl:grid-cols-[minmax(18rem,1fr)_minmax(15rem,20rem)_auto]">
+    <div class="ui:border-border ui:bg-background border-b p-4">
+      <div class="flex flex-wrap items-end gap-3">
         <RichTextField
           bind:value={title}
           name={`${getComposerDomId()}-title`}
           label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.title')}
           placeholder={$t('course.navItem.lessons.exercises.all_exercises.write_your_question_here')}
           errorMessage={titleError}
+          className="min-w-64 flex-1"
           oninput={clearValidationState}
         />
-        {@render layoutField()}
-        <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap items-center justify-end gap-2" tabindex="-1">
+        <div class="w-full sm:w-56">
+          {@render layoutField()}
+        </div>
+        <div id={`${getComposerDomId()}-actions`} class="flex flex-wrap items-center gap-2" tabindex="-1">
           <Button type="button" variant="secondary" class="min-h-11" onclick={exitWorkspace}>
             {$t('course.navItem.lessons.exercises.all_exercises.view_mode.back')}
           </Button>
@@ -1578,17 +1611,40 @@
               </h2>
               <span class="ui:text-muted-foreground text-xs tabular-nums">{passageBlocks.length}</span>
             </div>
-            <Button
-              id={`${getComposerDomId()}-add-content`}
-              type="button"
-              variant="secondary"
-              size="sm"
-              class="min-h-11"
-              onclick={addPassageBlock}
-            >
-              <PlusIcon class="h-4 w-4" />
-              {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_content')}
-            </Button>
+            <div class="flex items-center gap-2">
+              {#if passageGroupsWithContent.length > 1}
+                <Select.Root type="single" value={activePassageGroup?.id ?? ''} onValueChange={selectPassage}>
+                  <Select.Trigger class="min-h-11 w-36">
+                    {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage', {
+                      index: activePassageIndex + 1
+                    })}
+                  </Select.Trigger>
+                  <Select.Content>
+                    {#each passageGroupsWithContent as passageGroup, passageIndex (passageGroup.id)}
+                      <Select.Item value={passageGroup.id}>
+                        {$t(
+                          'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage',
+                          {
+                            index: passageIndex + 1
+                          }
+                        )}
+                      </Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
+              {/if}
+              <Button
+                id={`${getComposerDomId()}-add-content`}
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="min-h-11"
+                onclick={addPassageBlock}
+              >
+                <PlusIcon class="h-4 w-4" />
+                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_content')}
+              </Button>
+            </div>
           </header>
           <p class="ui:text-muted-foreground ui:border-border border-b px-4 py-3 text-sm">
             {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_helper')}
@@ -1610,56 +1666,18 @@
                 {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add_content')}
               </Button>
             </div>
-          {:else}
-            <nav
-              class="ui:border-border ui:bg-muted/20 flex gap-2 overflow-x-auto border-b p-2"
-              aria-label={$t(
-                'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_navigation'
-              )}
-            >
-              {#each passageGroupsWithContent as passageGroup, passageIndex (passageGroup.id)}
-                {@const firstQuestion = passageGroup.interactions[0]}
-                {@const lastQuestion = passageGroup.interactions[passageGroup.interactions.length - 1]}
-                <Button
-                  type="button"
-                  variant={activePassageGroup?.id === passageGroup.id ? 'secondary' : 'ghost'}
-                  class="min-h-14 min-w-40 flex-col items-start gap-0.5 px-3 text-left"
-                  aria-current={activePassageGroup?.id === passageGroup.id ? 'true' : undefined}
-                  onclick={() => selectPassage(passageGroup.id)}
-                >
-                  <span class="text-sm font-medium">
-                    {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage', {
-                      index: passageIndex + 1
-                    })}
-                  </span>
-                  {#if firstQuestion && lastQuestion}
-                    <span class="ui:text-muted-foreground text-xs font-normal">
-                      {$t(
-                        'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_question_range',
-                        {
-                          start: getQuestionNumber(firstQuestion.id),
-                          end: getQuestionNumber(lastQuestion.id)
-                        }
-                      )}
-                    </span>
-                  {/if}
-                </Button>
-              {/each}
-            </nav>
-
-            {#if activePassageGroup?.passage}
-              <article id={getBlockDomId(activePassageGroup.passage.id, 'block')} class="space-y-4 p-4" tabindex="-1">
-                <div class="flex items-center justify-between gap-3">
-                  <p class="ui:text-muted-foreground text-xs font-medium">
-                    {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_part', {
-                      index: activePassageIndex + 1
-                    })}
-                  </p>
-                  {@render blockControls(activePassageGroup.passage)}
-                </div>
-                {@render contentEditor(activePassageGroup.passage)}
-              </article>
-            {/if}
+          {:else if activePassageGroup?.passage}
+            <article id={getBlockDomId(activePassageGroup.passage.id, 'block')} class="space-y-4 p-4" tabindex="-1">
+              <div class="flex items-center justify-between gap-3">
+                <p class="ui:text-muted-foreground text-xs font-medium">
+                  {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_part', {
+                    index: activePassageIndex + 1
+                  })}
+                </p>
+                {@render blockControls(activePassageGroup.passage)}
+              </div>
+              {@render contentEditor(activePassageGroup.passage)}
+            </article>
           {/if}
         </section>
 
@@ -1707,61 +1725,7 @@
                   </Select.Content>
                 </Select.Root>
               {/if}
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                class="min-h-11"
-                disabled={interactionLimitReached}
-                onclick={addChoiceQuestion}
-              >
-                <PlusIcon class="h-4 w-4" />
-                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.choice')}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                class="min-h-11"
-                disabled={interactionLimitReached}
-                onclick={addTextQuestion}
-              >
-                <PlusIcon class="h-4 w-4" />
-                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                class="min-h-11"
-                disabled={interactionLimitReached}
-                onclick={addNumericQuestion}
-              >
-                <PlusIcon class="h-4 w-4" />
-                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                class="min-h-11"
-                disabled={interactionLimitReached}
-                onclick={addFillBlankQuestion}
-              >
-                <PlusIcon class="h-4 w-4" />
-                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank')}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                class="min-h-11"
-                disabled={interactionLimitReached}
-                onclick={addTrueFalseGroupQuestion}
-              >
-                <PlusIcon class="h-4 w-4" />
-                {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
-              </Button>
+              {@render addInteractionMenu()}
             </div>
           </header>
 
@@ -1805,58 +1769,7 @@
                       {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.empty_questions_helper')}
                     </p>
                   </div>
-                  <div class="flex flex-wrap justify-center gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      class="min-h-11"
-                      disabled={interactionLimitReached}
-                      onclick={addChoiceQuestion}
-                    >
-                      <PlusIcon class="h-4 w-4" />
-                      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.choice')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      class="min-h-11"
-                      disabled={interactionLimitReached}
-                      onclick={addTextQuestion}
-                    >
-                      <PlusIcon class="h-4 w-4" />
-                      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.extended_text')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      class="min-h-11"
-                      disabled={interactionLimitReached}
-                      onclick={addNumericQuestion}
-                    >
-                      <PlusIcon class="h-4 w-4" />
-                      {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.numeric')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      class="min-h-11"
-                      disabled={interactionLimitReached}
-                      onclick={addFillBlankQuestion}
-                    >
-                      <PlusIcon class="h-4 w-4" />
-                      {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.fill_blank')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      class="min-h-11"
-                      disabled={interactionLimitReached}
-                      onclick={addTrueFalseGroupQuestion}
-                    >
-                      <PlusIcon class="h-4 w-4" />
-                      {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
-                    </Button>
-                  </div>
+                  {@render addInteractionMenu()}
                 </div>
               {/if}
             </div>
