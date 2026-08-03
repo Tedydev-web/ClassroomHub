@@ -21,5 +21,6 @@ export * from './star-rating-settings';
 export * from './video-recording-settings';
 export * from './file-upload-settings';
 export * from './true-false-answer-key';
-
 export * from './assessment';
+export * from './thumbs-question';
+export * from './agent-question-type-guide';

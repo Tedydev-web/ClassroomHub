@@ -42,14 +42,16 @@ describe('ASSESSMENT_ITEM registry identity', () => {
     const enabledKeys = ENABLED_QUESTION_TYPE_REGISTRY.map((entry) => entry.key);
 
     expect(enabledKeys).not.toContain(QUESTION_TYPE_KEY.ASSESSMENT_ITEM);
-    expect(enabledKeys).toHaveLength(13);
+    expect(enabledKeys).toHaveLength(14);
+    expect(enabledKeys).toContain(QUESTION_TYPE_KEY.THUMBS);
   });
 
   it('is included in the database-backed registry used by seed and migration checks', () => {
     const dbBacked = DB_BACKED_QUESTION_TYPE_REGISTRY.map((entry) => ({ id: entry.id, typename: entry.typename }));
 
     expect(dbBacked).toContainEqual({ id: 16, typename: 'ASSESSMENT_ITEM' });
-    expect(dbBacked).toHaveLength(14);
+    expect(dbBacked).toContainEqual({ id: 17, typename: 'THUMBS' });
+    expect(dbBacked).toHaveLength(15);
     expect(dbBacked.map((entry) => entry.typename)).not.toContain('MATCHING');
     expect(dbBacked.map((entry) => entry.typename)).not.toContain('HOTSPOT');
   });

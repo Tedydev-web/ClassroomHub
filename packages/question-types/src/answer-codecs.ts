@@ -5,6 +5,7 @@ import type {
   RadioAnswerData,
   CheckboxAnswerData,
   TrueFalseAnswerData,
+  ThumbsAnswerData,
   TextareaAnswerData,
   ShortAnswerData,
   NumericAnswerData,
@@ -120,6 +121,19 @@ const TRUE_FALSE_CODEC: AnswerCodec<TrueFalseAnswerData> = {
     const resolved = labelToBoolean(payload.answer);
     if (resolved === undefined) return null;
     return { type: 'TRUE_FALSE', value: resolved };
+  }
+};
+
+const THUMBS_CODEC: AnswerCodec<ThumbsAnswerData> = {
+  type: 'THUMBS',
+  toApiPayload(data, questionId) {
+    return { questionId, answer: String(data.value) };
+  },
+  fromApiPayload(payload) {
+    if (payload.answer === undefined) return null;
+    const resolved = labelToBoolean(payload.answer);
+    if (resolved === undefined) return null;
+    return { type: 'THUMBS', value: resolved };
   }
 };
 
@@ -427,6 +441,7 @@ export const ANSWER_CODECS: Record<QuestionTypeKey, AnswerCodec> = {
   [QUESTION_TYPE_KEY.RADIO]: RADIO_CODEC,
   [QUESTION_TYPE_KEY.CHECKBOX]: CHECKBOX_CODEC,
   [QUESTION_TYPE_KEY.TRUE_FALSE]: TRUE_FALSE_CODEC,
+  [QUESTION_TYPE_KEY.THUMBS]: THUMBS_CODEC,
   [QUESTION_TYPE_KEY.TEXTAREA]: TEXTAREA_CODEC,
   [QUESTION_TYPE_KEY.SHORT_ANSWER]: SHORT_ANSWER_CODEC,
   [QUESTION_TYPE_KEY.NUMERIC]: NUMERIC_CODEC,
@@ -451,6 +466,8 @@ export function toApiPayload(data: AnswerData, questionId: number): ApiPayload {
       return CHECKBOX_CODEC.toApiPayload(data, questionId);
     case QUESTION_TYPE_KEY.TRUE_FALSE:
       return TRUE_FALSE_CODEC.toApiPayload(data, questionId);
+    case QUESTION_TYPE_KEY.THUMBS:
+      return THUMBS_CODEC.toApiPayload(data, questionId);
     case QUESTION_TYPE_KEY.TEXTAREA:
       return TEXTAREA_CODEC.toApiPayload(data, questionId);
     case QUESTION_TYPE_KEY.SHORT_ANSWER:
@@ -530,6 +547,7 @@ export function decodeStoredAnswerData(value: unknown, question: ExerciseQuestio
       };
       break;
     case QUESTION_TYPE_KEY.TRUE_FALSE:
+    case QUESTION_TYPE_KEY.THUMBS:
       payload = {
         questionId,
         answer: typeof value.value === 'boolean' ? String(value.value) : undefined
@@ -606,6 +624,7 @@ export function extractAnswerDisplayValues(data: AnswerData): {
         selectedValues: data.optionIds
       };
     case 'TRUE_FALSE':
+    case 'THUMBS':
       return {
         selectedIds: [String(data.value)],
         selectedValues: [data.value]

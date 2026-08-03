@@ -29,7 +29,7 @@ import {
 import type { ClassroomHubApiClient } from '../api-client';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ZGetOrganizationCoursesQuery } from '@cio/utils/validation/organization';
-import { ENABLED_QUESTION_TYPE_REGISTRY } from '@cio/question-types';
+import { formatEnabledQuestionTypesGuide } from '@cio/question-types';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 
 export const ZUpdateCourseDraftToolInput = ZCourseImportDraftUpdate.extend({
@@ -105,10 +105,7 @@ const publishCourseDraftToExistingCourseShape =
   ZPublishCourseDraftToExistingCourseToolInput.shape as unknown as ZodRawShapeCompat;
 const tagCoursesShape = ZAutomationCourseTagAssignment.shape as unknown as ZodRawShapeCompat;
 
-const supportedQuestionTypes = ENABLED_QUESTION_TYPE_REGISTRY.map(
-  (type) => `${type.typename}=${type.id} (${type.label})`
-).join(', ');
-const SUPPORTED_QUESTION_TYPES_GUIDE = `Supported questionTypeId values: ${supportedQuestionTypes}. Use the numeric ids in exercise payloads.`;
+const SUPPORTED_QUESTION_TYPES_GUIDE = formatEnabledQuestionTypesGuide();
 const LESSON_HTML_GUIDE =
   'For draft lesson HTML, put only the lesson body in lessonLanguages[].content. Do not include the lesson title. Do not use h1 or h2 anywhere in lesson HTML. Start headings at h3 because that is the highest heading level allowed in lesson content.';
 

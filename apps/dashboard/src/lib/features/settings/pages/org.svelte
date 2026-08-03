@@ -13,11 +13,18 @@
   import { UploadImage, UnsavedChanges } from '$features/ui';
   import * as Field from '@cio/ui/base/field';
 
+  interface Props {
+    hasUnsavedChanges?: boolean;
+  }
+
+  let { hasUnsavedChanges = $bindable(false) }: Props = $props();
+
   let avatar = $state<string | File | undefined>();
-  let hasUnsavedChanges = $state(false);
   let examImportAiEnabled = $derived($currentOrg.settings?.examImport?.aiEnabled ?? false);
   let examImportScanVisionEnabled = $derived($currentOrg.settings?.examImport?.scanVisionEnabled ?? false);
   let isSavingExamImportAi = $state(false);
+  let savedName = $state('');
+  let capturedOrgId = $state<string | null>(null);
 
   const themes = {
     rose: 'rose',
@@ -61,6 +68,7 @@
     if (orgApi.success) {
       hasUnsavedChanges = false;
       avatar = undefined;
+      savedName = $currentOrg.name;
     }
   }
 
@@ -95,6 +103,26 @@
     } finally {
       isSavingExamImportAi = false;
     }
+  }
+
+  function captureSavedFields() {
+    savedName = $currentOrg.name;
+  }
+
+  $effect(() => {
+    if (!$currentOrg?.id) return;
+
+    if (capturedOrgId !== $currentOrg.id) {
+      capturedOrgId = $currentOrg.id;
+      captureSavedFields();
+    }
+  });
+
+  export function handleDiscard() {
+    $currentOrg.name = savedName;
+    avatar = undefined;
+    hasUnsavedChanges = false;
+    orgApi.errors = {};
   }
 
   let isCustomTheme = $derived($currentOrg?.theme?.includes('#'));
@@ -204,7 +232,7 @@
         </button>
 
         <div
-          style={isCustomTheme ? `border-color: ${$currentOrg.theme};` : ''}
+          style={isCustomTheme ? `border-color: ${$currentOrg.theme}; --picker-z-index: 50;` : '--picker-z-index: 50;'}
           class="group relative h-auto w-fit cursor-pointer rounded-full border-2 {!isCustomTheme
             ? 'custom-theme-picker--empty'
             : ''}"

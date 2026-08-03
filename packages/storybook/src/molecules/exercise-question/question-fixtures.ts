@@ -95,6 +95,22 @@ export const TEXTAREA_FIXTURE: QuestionStoryFixture = {
   answer: '<p>Specific feedback helps students improve on the next attempt quickly.</p>'
 };
 
+export const THUMBS_FIXTURE: QuestionStoryFixture = {
+  question: {
+    id: 'q-thumbs',
+    key: 'q-thumbs',
+    title: 'Thumbs Up or Down: Would you recommend ClassroomHub to a colleague? [THUMBS]',
+    questionType: 'THUMBS',
+    options: [
+      { id: 5001, label: 'Yes', value: 'true', isCorrect: false },
+      { id: 5002, label: 'No', value: 'false', isCorrect: false }
+    ],
+    settings: {}
+  },
+  answer: { type: 'THUMBS', value: true },
+  wrongAnswer: { type: 'THUMBS', value: false }
+};
+
 export const TRUE_FALSE_FIXTURE: QuestionStoryFixture = {
   question: {
     id: 'q-true-false',
@@ -291,7 +307,7 @@ export const LINK_FIXTURE: QuestionStoryFixture = {
       instructions: 'Add one or more relevant links.'
     }
   },
-  answer: ['https://classroom.io.vn/docs', 'https://www.svelte.dev']
+  answer: ['https://classroom.tedydev.io.vn/docs', 'https://www.svelte.dev']
 };
 
 export const SECTIONED_EXERCISE_FIXTURE: ExerciseSectionStoryFixture[] = [

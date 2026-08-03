@@ -120,3 +120,7 @@ apps/docs/.source/
 # permanently. `fixtures/exams/manifest.json` records their checksums, and the
 # harness reports a missing document instead of silently scoring a smaller corpus.
 fixtures/exams/large/
+
+# Upstream's UI CSS output is generated. The fork keeps its checked-in artifact
+# because the self-hosted build path consumes it; Git continues tracking it.
+output.css

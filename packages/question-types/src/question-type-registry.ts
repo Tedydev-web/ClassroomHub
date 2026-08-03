@@ -158,6 +158,15 @@ export const QUESTION_TYPE_REGISTRY: readonly QuestionTypeMetadata[] = [
     supportsPartialCredit: true,
     manualGradingRequired: true,
     internal: true
+  },
+  {
+    key: QUESTION_TYPE_KEY.THUMBS,
+    typename: 'THUMBS',
+    label: 'Thumbs up/down',
+    id: 17,
+    autoGradable: false,
+    supportsPartialCredit: false,
+    manualGradingRequired: false
   }
 ] as const;
 

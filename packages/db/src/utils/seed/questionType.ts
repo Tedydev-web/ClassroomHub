@@ -1,4 +1,5 @@
 import { DB_BACKED_QUESTION_TYPE_REGISTRY } from '@cio/question-types';
+import { syncQuestionTypeIdSequence } from '@db/queries/exercise';
 
 import { db, questionType, sql } from '@db/drizzle';
 
@@ -44,6 +45,7 @@ export async function seedQuestionTypes() {
   }
 
   if (questionTypesToInsert.length > 0) {
+    await syncQuestionTypeIdSequence();
     await db.insert(questionType).values(questionTypesToInsert);
     console.log(`   ✓ Inserted ${questionTypesToInsert.length} question type(s)`);
   } else {
