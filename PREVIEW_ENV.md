@@ -1,0 +1,77 @@
+# Railway Staging & PR Preview Environments
+
+ClassroomHub's fork production SaaS runs on Coolify + Cloudflare — **not** Railway. This
+setup adds a **separate, internal Railway project** with a base `staging` environment and
+short-lived preview environments for testing a trusted branch in this repository of the full stack (api, dashboard,
+jobs, Postgres, Redis, MinIO) before it merges to `main`.
+
+Real users are never routed here; it's a team-only sandbox.
+
+## Staging base environment
+
+The preview workflow duplicates the configured `staging` base environment. Its deployment
+policy is managed outside these preview workflows; this document makes no automatic-deploy claim.
+
+## How to deploy a branch to a preview environment
+
+Preview environments are opt-in. `railway-preview.yml` runs only through
+`workflow_dispatch`; choose a trusted branch in this repository and whether to deploy or destroy it from
+the **Actions** tab. `railway-preview-teardown.yml` is also `workflow_dispatch` only, so
+previews are never created or torn down automatically on pull-request events.
+
+## GitHub Environment protection
+
+Create a GitHub Environment named `railway-preview`. Store `RAILWAY_API_TOKEN` and
+`RAILWAY_PROJECT_ID` **only** as secrets in that environment; never add either as a
+repository or organization secret. Configure that environment to allow deployments only
+from the repository default branch. Both workflows also fail closed unless the dispatched
+workflow itself runs from that default branch.
+
+> A service that deploys from a **fixed Docker Hub image tag can never get a PR preview** —
+> an image tag has no branch. That's why the Railway app services build **from the repo**
+> via `docker/Dockerfile.*`, not from `docker-compose.images.yaml`.
+
+### Using the manual workflow
+
+> 🎥 Demo video: TODO
+
+**Actions → "Railway Preview Environment" → Run workflow:**
+- `branch` — a trusted branch in this repository to deploy; pull refs, forks, SHAs, and remote syntax are rejected.
+- `action` — `deploy` (create/update) or `destroy` (delete).
+- `seed` — also load the full demo dataset (`admin@test.com` etc.); migrations + essential
+  seed always run on api boot regardless.
+
+The run prints the preview dashboard URL in its job **summary**. The env is named
+`pr-<branch-slug>-<hash>`.
+
+The deploy step runs `railway up --ci` (no `--detach`), which streams build logs and **blocks until
+each service passes its deploy/healthcheck** before the next one starts — so the printed URL is live
+the moment the run finishes, and a failed healthcheck fails the run rather than reporting a broken
+preview.
+
+## Database behavior
+
+- Each environment has its **own isolated Postgres** — previews start fresh.
+- `cio-api` **self-migrates on boot** (`docker/entrypoint-api.sh` → `pnpm --filter @cio/db
+  db:setup` → `drizzle-kit migrate` + essential seed). No manual migrate step needed.
+- **The branch must include a committed Drizzle migration** (`pnpm --filter @cio/db
+  db:generate`) — the boot path runs committed migrations only, not schema `push`.
+
+## Verify before relying on it (spike, do on a throwaway env)
+
+Railway's docs are thin on a couple of points the workflow depends on — confirm these once:
+
+1. **`railway environment new --duplicate <env>` copies service config *and* variables.**
+   If your CLI version lacks `--duplicate`, use the GraphQL
+   `environmentCreate(sourceEnvironmentId)` mutation instead.
+2. **A duplicated env's Postgres starts empty** (so boot migration builds a clean schema).
+3. **The demo-seed step's DB reachability.** `railway run` executes on the GitHub runner, so
+   it needs a DB URL reachable from CI (Railway's public TCP proxy `DATABASE_PUBLIC_URL`),
+   not the private `railway.internal` one. If unreachable, drop the seed step and rely on the
+   boot-time essential seed. These caveats are marked `# SPIKE:` in `railway-preview.yml`.
+
+## Cost
+
+Every environment (staging + each preview) runs the full 6 services incl. a MinIO volume, so
+previews are not free while alive. Destroy them promptly with the preview workflow's
+`action = destroy` or by running the teardown workflow for the branch.

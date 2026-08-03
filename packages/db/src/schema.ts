@@ -2025,7 +2025,9 @@ export const courseNewsfeedComment = pgTable(
       minValue: 1,
       cache: 1
     }),
-    courseNewsfeedId: uuid('course_newsfeed_id')
+    courseNewsfeedId: uuid('course_newsfeed_id'),
+    parentId: bigint('parent_id', { mode: 'number' }),
+    replyToCommentId: bigint('reply_to_comment_id', { mode: 'number' })
   },
   (table) => [
     foreignKey({
@@ -2037,7 +2039,19 @@ export const courseNewsfeedComment = pgTable(
       columns: [table.courseNewsfeedId],
       foreignColumns: [courseNewsfeed.id],
       name: 'course_newsfeed_comment_course_newsfeed_id_fkey'
-    })
+    }),
+    foreignKey({
+      columns: [table.parentId],
+      foreignColumns: [table.id],
+      name: 'course_newsfeed_comment_parent_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.replyToCommentId],
+      foreignColumns: [table.id],
+      name: 'course_newsfeed_comment_reply_to_comment_id_fkey'
+    }).onDelete('set null'),
+    index('course_newsfeed_comment_parent_id_idx').on(table.parentId),
+    index('course_newsfeed_comment_reply_to_comment_id_idx').on(table.replyToCommentId)
   ]
 );
 
@@ -2327,8 +2341,9 @@ export const questionAnswer = pgTable(
 /**
  * Exercise question kinds (`typename` matches `@cio/question-types` keys). Expected ids:
  * 1 RADIO, 2 CHECKBOX, 3 TEXTAREA, 4 TRUE_FALSE, 5 SHORT_ANSWER, 6 NUMERIC, 7 FILL_BLANK,
- * 8 FILE_UPLOAD, 9 ORDERING, 10 LINK, 11 WORD_BANK, 12 STAR, 13 VIDEO_RECORDING.
- * MATCHING and HOTSPOT are disabled registry entries without database rows.
+ * 8 FILE_UPLOAD, 9 ORDERING, 10 LINK, 11 WORD_BANK, 12 STAR, 13 VIDEO_RECORDING,
+ * 16 ASSESSMENT_ITEM, 17 THUMBS. MATCHING and HOTSPOT are disabled registry entries
+ * at ids 14 and 15 without database rows.
  */
 export const questionType = pgTable(
   'question_type',

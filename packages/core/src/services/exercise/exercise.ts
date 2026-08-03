@@ -534,10 +534,11 @@ async function assertExercisePlacementBelongsToCourse(
  */
 async function createExerciseWithClient(data: TExerciseCreate, txClient: DbOrTxClient): Promise<TExercise> {
   const sanitizedData = sanitizeExercisePayload(data);
+  const questions = sanitizedData.questions ?? [];
 
   await guardNonAutoGradableQuestionsForCourseType({
     courseId: sanitizedData.courseId,
-    questionTypeIds: (sanitizedData.questions ?? []).map((question) => question.questionTypeId),
+    questionTypeIds: questions.map((question) => question.questionTypeId),
     dbClient: txClient
   });
 
@@ -565,39 +566,14 @@ async function createExerciseWithClient(data: TExerciseCreate, txClient: DbOrTxC
   }
 
   // Create questions and options if provided
-  if (sanitizedData.questions && sanitizedData.questions.length > 0) {
+  if (questions.length > 0) {
     await syncQuestionIdSequence(txClient);
-    const questionsData: TNewQuestion[] = sanitizedData.questions.map((question) => ({
-      exerciseId: exercise.id,
-      title: question.question,
-      questionTypeId: question.questionTypeId || 1,
-      points: question.points ?? 0,
-      order: typeof question.order === 'number' ? question.order : undefined,
-      settings: question.settings ?? {}
-    }));
-
-    const questions = await createQuestions(questionsData, txClient);
-    if (questions.length !== sanitizedData.questions.length) {
-      throw new AppError('Failed to create every exercise question', ErrorCodes.INTERNAL_ERROR, 500);
-    }
-
-    const hasOptions = sanitizedData.questions.some((question) => (question.options?.length ?? 0) > 0);
+    const hasOptions = questions.some((question) => (question.options?.length ?? 0) > 0);
     if (hasOptions) {
       await syncOptionIdSequence(txClient);
     }
 
-    // Create options for each question
-    for (const [index, questionData] of sanitizedData.questions.entries()) {
-      const question = questions[index]!;
-      const optionsData: TNewOption[] = (questionData.options ?? []).map((option) => ({
-        questionId: question.id,
-        label: option.label,
-        isCorrect: option.isCorrect,
-        settings: option.settings ?? {}
-      }));
-
-      await createOptions(optionsData, txClient);
-    }
+    await createNewQuestionsWithOptions(exercise.id, questions, txClient);
   }
 
   // Fetch the complete exercise with questions and options

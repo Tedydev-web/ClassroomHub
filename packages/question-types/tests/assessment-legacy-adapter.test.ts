@@ -41,11 +41,13 @@ function singleInteraction(definition: ReturnType<typeof adapt>) {
 }
 
 describe('legacyQuestionToAssessmentItem — golden fixtures', () => {
-  it('covers exactly the enabled question type registry', () => {
+  it('covers every adapter-supported enabled question type', () => {
     const fixtureTypeKeys = [...new Set(LEGACY_GOLDEN_CASES.map((goldenCase) => goldenCase.question.questionType))];
-    const enabledTypeKeys = ENABLED_QUESTION_TYPE_REGISTRY.map((type) => type.key);
+    const adapterSupportedEnabledTypeKeys = ENABLED_QUESTION_TYPE_REGISTRY.filter(
+      (type) => type.key !== QUESTION_TYPE_KEY.THUMBS
+    ).map((type) => type.key);
 
-    expect(fixtureTypeKeys.sort()).toEqual(enabledTypeKeys.sort());
+    expect(fixtureTypeKeys.sort()).toEqual(adapterSupportedEnabledTypeKeys.sort());
   });
 
   for (const goldenCase of LEGACY_GOLDEN_CASES) {

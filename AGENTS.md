@@ -22,10 +22,10 @@ When a task requires factual information (API specifications, context window siz
 
 ## Verification before commit/PR
 
-Before committing or opening/updating a PR, run the build checks that match the areas you changed. Use Node 20 (the repo's `.nvmrc` version):
+Before committing or opening/updating a PR, run the build checks that match the areas you changed. Use Node 22.23.1 (the repo's `.nvmrc` version):
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v20.19.3/bin:$PATH"
+export PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"
 ```
 
 - **Dashboard changes** (`apps/dashboard/**`, or shared packages consumed by the dashboard):
@@ -57,6 +57,27 @@ Also run `pnpm format:check` (see Translation, Formatting, and Git Workflow abov
   const studentsLimit = getPlanLimit('students', plan);
   org.limits = { students: toResourceUsage(studentsUsed, studentsLimit) };
   ```
+
+## Persisted columns store data, not presentation
+
+A user-content column (`content`, `body`, `description`, …) stores what the author typed and nothing else. Check this **at the write site** — the component or service building the value — not at the schema.
+
+Never write into such a column:
+
+- **Presentational markup** — wrapper elements, Tailwind classes, inline styles. Render that in a component instead.
+- **Localized strings** — copy baked in at write time can never be re-translated, and it freezes the author's locale for every future reader.
+- **Copied values from another row** — a quoted snippet, an author name, a title. Store the relationship (a real FK column) and join or derive the display value at render time, so it stays correct when the source row is edited or deleted.
+
+```ts
+// ❌ don't — markup, English copy and a copy of the parent all land in the column
+const quote = `<blockquote class="...">Replying to @${target.fullname}"${target.snippet}"</blockquote>`;
+await createComment(`${quote}${text}`, parentId);
+
+// ✅ do — persist the relationship, render the label from live data
+await createComment(text, parentId, target.commentId);
+```
+
+The tell that this went wrong: an edit form shows raw markup, because the markup *is* the content.
 
 ## Creating a New Route
 
@@ -423,6 +444,29 @@ Use `.server.ts` files for server-side code to isolate API keys.
 - **Icon-only buttons** (a `Button` whose content is just an icon, e.g. `size="icon"`) must use `variant="secondary"`.
 - **Theme color classes:** Classes that use colors from `packages/ui/src/index.css` (e.g. `text-muted-foreground`, `text-primary`) must be prefixed with `ui:` in dashboard code so they resolve against the UI theme (e.g. `ui:text-muted-foreground`, `ui:text-primary`). Only color-related utilities need the prefix; layout/sizing classes like `rounded`, `border`, `p-4` stay unprefixed (Tailwind defaults).
 
+### Page layout and settings save bar
+
+Use `@cio/ui/base/page` for dashboard page shells. See `packages/ui/README.md` § Page layout for the full component list.
+
+**Every settings page with save/discard** must use `Page.SettingsActions` as the last child of `Page.Root` (after `Page.Body`). Do not put Save in `Page.Header` or inline at the bottom of form sections.
+
+- Sticky at the viewport bottom while scrolling; docks naturally at the end of the page content
+- Save and Discard are disabled when `hasChanges` is false
+- Labels come from dashboard translations: `common.unsaved_changes.label`, `common.discard`, `common.save_changes`
+- Pair with `UnsavedChanges` for navigation guards where appropriate
+
+```svelte
+<Page.SettingsActions
+  hasChanges={hasUnsavedChanges}
+  loading={isSaving}
+  statusLabel={$t('common.unsaved_changes.label')}
+  discardLabel={$t('common.discard')}
+  saveLabel={$t('common.save_changes')}
+  onSave={handleSave}
+  onDiscard={handleDiscard}
+/>
+```
+
 ## Emails: system vs org-branded
 
 Every transactional email in `packages/email/src/emails` is one of two kinds — decide deliberately, because it changes the branding, the schema, and the `from` address.
@@ -543,13 +587,13 @@ When moving from `apps/dashboard/src/lib/components/` to `apps/dashboard/src/lib
 The full setup/run flow lives in `README.md` and `DEV_SETUP_NOTES.md`. The notes below cover only the non-obvious, cloud-VM-specific caveats. The update script already runs `pnpm install` on startup.
 
 ### Node version (important)
-The sandbox injects `/exec-daemon/node` (Node 22) at the front of `PATH`, so a bare `node`/`pnpm` runs under Node 22 even though the repo requires Node `^20.19.3` (`.nvmrc`). Node 20.19.3 is installed via nvm and set as the nvm default. Before running any `pnpm`/dev command, prepend the repo Node to `PATH`:
+The sandbox injects `/exec-daemon/node` (Node 22) at the front of `PATH`, matching the repo runtime Node 22.23.1 (`.nvmrc`). Node 22.23.1 is installed via nvm and set as the nvm default. Before running any `pnpm`/dev command, prepend the repo Node to `PATH`:
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v20.19.3/bin:$PATH"
+export PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"
 ```
 
-`pnpm install` itself succeeds under either version (there is no `engine-strict`), but run the dev servers and DB scripts on Node 20.
+`pnpm install` itself succeeds under either version (there is no `engine-strict`), but run the dev servers and DB scripts on Node 22.23.1.
 
 ### Services & how to run them
 Docker is installed and provides Postgres 16 + Redis 7 (the app does not run them natively). After a fresh VM boot the Docker daemon is usually not running — start it (it needs the snapshot's `/etc/docker/daemon.json`, which already sets `fuse-overlayfs` + disables the containerd snapshotter, plus `iptables-legacy`):

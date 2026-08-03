@@ -30,8 +30,11 @@
   "common": {
     "refresh": "Atualizar",
     "unsaved_changes": {
-      "message": "Você tem alterações não salvas. Tem certeza de que deseja sair?"
-    }
+      "message": "Você tem alterações não salvas. Tem certeza de que deseja sair?",
+      "label": "Alterações não salvas"
+    },
+    "discard": "Descartar",
+    "save_changes": "Salvar alterações"
   },
   "validations": {
     "generic": {
@@ -349,6 +352,7 @@
       "creating_new": "Falha ao criar novas traduções"
     },
     "exercise": {
+      "validation_errors": "Corrija todos os erros de validação antes de salvar.",
       "points_required_auto_grade": "Defina um valor de pontos positivo para cada pergunta antes de salvar.",
       "success": "Salvo com sucesso",
       "submission_updated": "Envio atualizado para",
@@ -1551,6 +1555,7 @@
                 "multiple": "Múltiplas respostas",
                 "paragraph": "Parágrafo",
                 "true_false": "Verdadeiro/Falso",
+                "thumbs": "Polegar para cima/baixo",
                 "short_answer": "Resposta curta",
                 "numeric": "Resposta numérica",
                 "fill_blank": "Preencha o espaço em branco",
@@ -1737,6 +1742,17 @@
                 },
                 "edit": {
                   "correct_answer_label": "Resposta correta"
+                }
+              },
+              "thumbs": {
+                "yes_label": "Sim",
+                "no_label": "Não",
+                "edit": {
+                  "positive_option_label": "Rótulo de polegar para cima",
+                  "negative_option_label": "Rótulo de polegar para baixo"
+                },
+                "preview": {
+                  "helper": "Aberta — os alunos escolhem polegar para cima ou para baixo."
                 }
               },
               "checkbox": {
@@ -2119,6 +2135,8 @@
               "cancel_upload": "Cancelar upload",
               "upload_cancelled": "Upload cancelado pelo usuário",
               "downloading": "Baixando...",
+              "download_success": "Documento baixado com sucesso",
+              "download_error": "Falha ao baixar o documento",
               "view_pdf": "Ver PDF",
               "remove_document": "Remover documento",
               "delete": "Excluir",
@@ -2128,7 +2146,11 @@
               "failed_to_render_pdf": "Falha ao renderizar a página PDF",
               "use_arrow_keys": "Use as teclas de seta para navegar, +/- para ampliar ou clique nos controles acima. O clique com o botão direito está desativado.",
               "empty_title": "Ainda não há documentos",
-              "empty_description": "Faça upload de documentos para compartilhar com seus alunos"
+              "empty_description": "Faça upload de documentos para compartilhar com seus alunos",
+              "attachments_heading": "Anexos",
+              "file_count": "{count, plural, one {# arquivo} other {# arquivos}}",
+              "view_file": "Ver arquivo",
+              "reorder_file": "Reordenar arquivo"
             },
             "video": {
               "title": "Vídeo",
@@ -2360,6 +2382,7 @@
         "heading": "Feed de notícias",
         "body_header": "Nenhuma postagem ainda",
         "body_content": "Faça uma postagem para sua turma. Comece clicando no botão Adicionar.",
+        "anonymous": "Anônimo",
         "pinned": "Fixado",
         "snackbar": {
           "comment_deleted": "Comentário excluído",
@@ -2371,6 +2394,7 @@
           "successfully": "Com sucesso",
           "feed_delete_success": "Feed excluído com sucesso",
           "fetch_feed_fail": "Falha ao buscar feeds de notícias",
+          "fetch_replies_fail": "Falha ao buscar respostas",
           "fetching_error": "Ocorreu um erro ao buscar o feed"
         },
         "heading_button": {
@@ -2388,13 +2412,32 @@
           "hide": "Ocultar comentários",
           "placeholder": "Adicionar comentário da turma",
           "submit_aria": "Enviar comentário",
-          "delete": "Excluir"
+          "delete": "Excluir",
+          "reply": "Responder",
+          "replying_to": "Respondendo a @{name}",
+          "cancel_reply": "Cancelar",
+          "view_replies": "Ver {count} {count, plural, =1 {resposta} other {respostas}}",
+          "hide_replies": "Ocultar respostas",
+          "view_more": "Ver mais comentários ({count})",
+          "loading": "Carregando...",
+          "save": "Salvar",
+          "saving": "Salvando...",
+          "send": "Enviar",
+          "load_more_replies": "Carregar mais respostas"
         },
         "card": {
           "pin": "Fixar",
           "unpin": "Liberar",
           "edit": "Editar",
           "delete": "Excluir"
+        },
+        "other_posts": "Outras postagens",
+        "user": "Usuário",
+        "delete_modal": {
+          "title": "Excluir feed",
+          "description": "Tem certeza de que deseja excluir este feed?",
+          "no": "Não",
+          "yes": "Sim"
         }
       },
       "compliance": {

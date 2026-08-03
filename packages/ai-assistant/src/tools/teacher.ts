@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { ENABLED_QUESTION_TYPE_REGISTRY, MAX_INTERACTION_MAX_SCORE } from '@cio/question-types';
+import {
+  ADD_QUESTIONS_TOOL_DESCRIPTION,
+  ENABLED_QUESTION_TYPE_REGISTRY,
+  ENABLED_QUESTION_TYPE_ID_DESCRIPTION,
+  MAX_INTERACTION_MAX_SCORE,
+  QUESTION_OPTIONS_SCHEMA_HINT,
+  QUESTION_SETTINGS_SCHEMA_HINT,
+  UPDATE_QUESTIONS_BINARY_TYPES_HINT
+} from '@cio/question-types';
 import { CoursePlanSchema } from '../types';
 import { CourseTemplateIdSchema, TemplateFormFieldSchema } from '../templates';
 import {
@@ -9,9 +17,7 @@ import {
 } from './landing-page-html-hint';
 
 const ENABLED_QUESTION_TYPE_IDS = ENABLED_QUESTION_TYPE_REGISTRY.map((type) => type.id);
-const QUESTION_TYPE_ID_DESCRIPTION = ENABLED_QUESTION_TYPE_REGISTRY.map(
-  (type) => `${type.id}=${type.typename} (${type.label})`
-).join(', ');
+const QUESTION_TYPE_ID_DESCRIPTION = ENABLED_QUESTION_TYPE_ID_DESCRIPTION;
 const zEnabledQuestionTypeId = z
   .number()
   .int()
@@ -151,12 +157,7 @@ export const createExerciseSchema = {
             .default(1)
             .describe(`Points for this question (integer, 0 to ${MAX_INTERACTION_MAX_SCORE})`),
           order: z.number().int().min(0).describe('Display order'),
-          settings: z
-            .record(z.string(), z.unknown())
-            .optional()
-            .describe(
-              'Per-type correct-answer storage. TRUE_FALSE: { correctValue: boolean }. NUMERIC: { correctValue: number, tolerance?: number }. STAR: { correctValue: number }. WORD_BANK: { correctAnswers: string[], template: string }.'
-            ),
+          settings: z.record(z.string(), z.unknown()).optional().describe(QUESTION_SETTINGS_SCHEMA_HINT),
           options: z
             .array(
               z.object({
@@ -164,9 +165,7 @@ export const createExerciseSchema = {
                 isCorrect: z.boolean().describe('Whether this is a correct answer')
               })
             )
-            .describe(
-              'Answer options. RADIO and CHECKBOX questions MUST have at least 4 options with plausible distractors (not obvious filler). RADIO needs exactly one correct option; CHECKBOX needs at least 2 correct and at least 1 incorrect. TRUE_FALSE uses exactly 2 options labeled True and False; set the correct answer in settings.correctValue. Leave empty for NUMERIC/STAR/WORD_BANK.'
-            )
+            .describe(QUESTION_OPTIONS_SCHEMA_HINT)
         })
       )
       .min(1)
@@ -262,8 +261,7 @@ export const updateExerciseSchema = {
 };
 
 export const addQuestionsSchema = {
-  description:
-    'Add questions to an existing exercise. Use this when the exercise already exists and you want to add more questions. When get_exercise_details returns a non-empty sections array, pass exerciseSectionId so new questions are placed in the right in-exercise block (same ids as update_exercise_section).',
+  description: ADD_QUESTIONS_TOOL_DESCRIPTION,
   parameters: z.object({
     courseId: z.string().describe('The course ID'),
     exerciseId: z.string().describe('The existing exercise ID'),
@@ -284,26 +282,22 @@ export const addQuestionsSchema = {
           .default(1)
           .describe(`Points for this question (integer, 0 to ${MAX_INTERACTION_MAX_SCORE})`),
         order: z.number().int().min(0).describe('Display order'),
-        settings: z
-          .record(z.string(), z.unknown())
-          .optional()
-          .describe(
-            'Per-type correct-answer storage. TRUE_FALSE: { correctValue: boolean }. NUMERIC: { correctValue: number, tolerance?: number }. STAR: { correctValue: number }. WORD_BANK: { correctAnswers: string[], template: string }.'
-          ),
-        options: z.array(
-          z.object({
-            label: z.string().min(1).describe('Option text'),
-            isCorrect: z.boolean().describe('Whether this is a correct answer')
-          })
-        )
+        settings: z.record(z.string(), z.unknown()).optional().describe(QUESTION_SETTINGS_SCHEMA_HINT),
+        options: z
+          .array(
+            z.object({
+              label: z.string().min(1).describe('Option text'),
+              isCorrect: z.boolean().describe('Whether this is a correct answer')
+            })
+          )
+          .describe(QUESTION_OPTIONS_SCHEMA_HINT)
       })
     )
   })
 };
 
 export const updateQuestionsSchema = {
-  description:
-    'Update existing questions in an exercise. Pass only the fields you want to change; `id` identifies the question. Optional `exerciseSectionId` (from get_exercise_details sections) moves the question to another in-exercise block; use null to clear section assignment. For TRUE_FALSE use `settings.correctValue` (boolean) and keep exactly two options labeled True and False. For NUMERIC the correct answer is `settings.correctValue` (a number), not an option — do NOT add options to NUMERIC questions. For STAR use `settings.correctValue` (1..max). For WORD_BANK use `settings.correctAnswers` and `settings.template`. RADIO/CHECKBOX use `options[].isCorrect`: include an option `id` to edit it, omit `id` to add a new one. `settings` is shallow-merged with the existing settings. Omit `options` entirely to leave existing options unchanged — if you pass an options array, any existing option not listed in it will be removed.',
+  description: `Update existing questions in an exercise. Pass only the fields you want to change; \`id\` identifies the question. Optional \`exerciseSectionId\` (from get_exercise_details sections) moves the question to another in-exercise block; use null to clear section assignment. ${UPDATE_QUESTIONS_BINARY_TYPES_HINT} For NUMERIC the correct answer is \`settings.correctValue\` (a number), not an option — do NOT add options to NUMERIC questions. For STAR use \`settings.correctValue\` (1..max). For WORD_BANK use \`settings.correctAnswers\` and \`settings.template\`. RADIO/CHECKBOX use \`options[].isCorrect\`: include an option \`id\` to edit it, omit \`id\` to add a new one. \`settings\` is shallow-merged with the existing settings. Omit \`options\` entirely to leave existing options unchanged — if you pass an options array, any existing option not listed in it will be removed.`,
   parameters: z.object({
     courseId: z.string().describe('The course ID'),
     exerciseId: z.string().describe('The existing exercise ID'),
@@ -329,9 +323,7 @@ export const updateQuestionsSchema = {
         settings: z
           .record(z.string(), z.unknown())
           .optional()
-          .describe(
-            'Per-type correct-answer storage. TRUE_FALSE: { correctValue: boolean }. NUMERIC: { correctValue: number, tolerance?: number }. STAR: { correctValue: number }. WORD_BANK: { correctAnswers: string[], template: string }. Shallow-merged with existing settings.'
-          ),
+          .describe(`${QUESTION_SETTINGS_SCHEMA_HINT} Shallow-merged with existing settings.`),
         options: z
           .array(
             z.object({

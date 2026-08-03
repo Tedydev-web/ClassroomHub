@@ -14,6 +14,7 @@ import {
 } from '@cio/db/queries/exercise';
 
 import {
+  normalizeThumbsQuestion,
   QUESTION_TYPE_IDS,
   QUESTION_TYPE_KEY,
   QUESTION_TYPE_REGISTRY,
@@ -198,12 +199,17 @@ function areSettingsEqual(left: unknown, right: unknown): boolean {
 }
 
 const TRUE_FALSE_QUESTION_TYPE_ID = QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.TRUE_FALSE];
+const THUMBS_QUESTION_TYPE_ID = QUESTION_TYPE_IDS[QUESTION_TYPE_KEY.THUMBS];
 
-function normalizeTrueFalseQuestion(
+function normalizeBinaryBooleanQuestion(
   question: ExerciseUpdateQuestion,
   currentQuestion?: CurrentQuestion
 ): ExerciseUpdateQuestion {
   const questionTypeId = question.questionTypeId ?? currentQuestion?.questionTypeId;
+  if (questionTypeId === THUMBS_QUESTION_TYPE_ID) {
+    return normalizeThumbsQuestion(question);
+  }
+
   if (questionTypeId !== TRUE_FALSE_QUESTION_TYPE_ID) return question;
 
   const settings = normalizeSettings(question.settings ?? currentQuestion?.settings);
@@ -247,7 +253,7 @@ export function categorizeQuestions(questions: NonNullable<TExerciseUpdate['ques
   const questionUpdates: Array<{ id: number; data: Partial<TNewQuestion> }> = [];
 
   for (const rawQuestion of questions) {
-    const q = normalizeTrueFalseQuestion(rawQuestion);
+    const q = normalizeBinaryBooleanQuestion(rawQuestion);
 
     if (q.deletedAt && q.id) {
       deletedIds.push(q.id);
@@ -394,7 +400,7 @@ export function computeExerciseDiff(
   const questionMap = new Map(currentQuestions.map((q) => [q.id, q]));
   const deletableIds = deletableQuestionIds ?? new Set(currentQuestions.map((q) => q.id));
   const normalizedIncomingQuestions = incomingQuestions.map((incoming) =>
-    normalizeTrueFalseQuestion(incoming, incoming.id ? questionMap.get(incoming.id) : undefined)
+    normalizeBinaryBooleanQuestion(incoming, incoming.id ? questionMap.get(incoming.id) : undefined)
   );
 
   const deletedQuestionIds: number[] = [];
@@ -503,7 +509,7 @@ export async function createNewQuestionsWithOptions(
   newQuestions: NonNullable<TExerciseUpdate['questions']>,
   txClient: DbOrTxClient
 ): Promise<void> {
-  const normalizedQuestions = newQuestions.map((question) => normalizeTrueFalseQuestion(question));
+  const normalizedQuestions = newQuestions.map((question) => normalizeBinaryBooleanQuestion(question));
   const createdQuestions = await createQuestions(
     normalizedQuestions.map((q) => ({
       exerciseId,

@@ -3,8 +3,8 @@ import { QUESTION_TYPE_IDS, QUESTION_TYPE_KEY } from '@cio/question-types';
 import { DEFAULT_QUESTION_TYPE, QUESTION_TYPES } from './constants';
 
 describe('question picker QUESTION_TYPES', () => {
-  it('offers exactly the 13 enabled legacy types', () => {
-    expect(QUESTION_TYPES).toHaveLength(13);
+  it('offers exactly the 14 enabled question types', () => {
+    expect(QUESTION_TYPES).toHaveLength(14);
   });
 
   it('never offers internal or disabled registry entries', () => {

@@ -57,6 +57,7 @@ export function hasMeaningfulAnswerData(answer: AnswerData | null | undefined): 
     case 'RADIO':
       return Number.isSafeInteger(answer.optionId);
     case 'TRUE_FALSE':
+    case 'THUMBS':
       return typeof answer.value === 'boolean';
     case 'NUMERIC':
     case 'STAR':

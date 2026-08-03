@@ -77,7 +77,6 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
-
   # The docs render the API reference statically from this spec, so a fresh
   # upload only reaches classroom.io.vn/docs/api once they rebuild.
   redeploy-docs:

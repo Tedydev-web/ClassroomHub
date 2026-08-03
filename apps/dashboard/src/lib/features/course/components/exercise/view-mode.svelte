@@ -724,6 +724,46 @@
     return completeResult.data;
   };
 
+  function hasAnswerValue(answerValue: AnswerData | null | undefined): boolean {
+    if (answerValue === null || answerValue === undefined) return false;
+    if (typeof answerValue === 'object' && 'type' in answerValue) {
+      switch (answerValue.type) {
+        case 'RADIO':
+        case 'TRUE_FALSE':
+        case 'THUMBS':
+        case 'NUMERIC':
+        case 'STAR':
+          return true;
+        case 'CHECKBOX':
+          return answerValue.optionIds.length > 0;
+        case 'TEXTAREA':
+          return getTextareaAnswerCharacterCount(answerValue.text) > 0;
+        case 'SHORT_ANSWER':
+          return answerValue.text.trim().length > 0;
+        case 'FILL_BLANK':
+          return answerValue.values.length > 0;
+        case 'WORD_BANK': {
+          const filled = answerValue.filledBlanks ?? [];
+          return filled.length > 0 && filled.every((v) => String(v).trim().length > 0);
+        }
+        case 'FILE_UPLOAD':
+          return !!answerValue.fileKey;
+        case 'VIDEO_RECORDING':
+          return !!answerValue.assetId && !!answerValue.storageKey;
+        case 'MATCHING':
+          return answerValue.pairs.length > 0;
+        case 'ORDERING':
+          return answerValue.orderedValues.length > 0;
+        case 'LINK':
+          return answerValue.urls.length > 0;
+        case 'HOTSPOT':
+          return answerValue.coordinates.length > 0;
+        default:
+          return false;
+      }
+    }
+    return false;
+  }
   function onSharedAnswerChange(answerValue: AnswerData | null) {
     if (!sharedCurrentQuestionKey) return;
 

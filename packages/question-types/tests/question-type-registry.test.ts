@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AUTO_GRADABLE_QUESTION_TYPE_IDS,
+  ADD_QUESTIONS_TOOL_DESCRIPTION,
   QUESTION_TYPE_BY_KEY,
   QUESTION_TYPE_ID_TO_KEY,
   QUESTION_TYPE_IDS,
@@ -13,6 +14,7 @@ import {
   getQuestionTypeId,
   isAutoGradableQuestionType,
   isAutoGradableQuestionTypeId,
+  formatEnabledQuestionTypesGuide,
   requiresManualGrading,
   supportsPartialCredit
 } from '../src';
@@ -139,12 +141,29 @@ const EXPECTED_REGISTRY = [
     supportsPartialCredit: true,
     manualGradingRequired: false,
     disabled: true
+  },
+  {
+    key: QUESTION_TYPE_KEY.ASSESSMENT_ITEM,
+    typename: 'ASSESSMENT_ITEM',
+    id: 16,
+    autoGradable: false,
+    supportsPartialCredit: true,
+    manualGradingRequired: true,
+    internal: true
+  },
+  {
+    key: QUESTION_TYPE_KEY.THUMBS,
+    typename: 'THUMBS',
+    id: 17,
+    autoGradable: false,
+    supportsPartialCredit: false,
+    manualGradingRequired: false
   }
 ] as const;
 
 // Canonical `question_type` rows in the database (the source of truth ids are
-// resolved against). Ids 1-13 are the live rows in insertion order; MATCHING and
-// HOTSPOT are intentionally absent (built-but-disabled). This list guards against
+// resolved against). Ids 1-13, 16, and 17 are live rows; MATCHING and HOTSPOT
+// are intentionally absent (built-but-disabled). This list guards against
 // the registry id ever drifting from the DB again.
 const CANONICAL_DB_QUESTION_TYPES: ReadonlyArray<{ id: number; typename: string }> = [
   { id: 1, typename: 'RADIO' },
@@ -160,9 +179,8 @@ const CANONICAL_DB_QUESTION_TYPES: ReadonlyArray<{ id: number; typename: string 
   { id: 11, typename: 'WORD_BANK' },
   { id: 12, typename: 'STAR' },
   { id: 13, typename: 'VIDEO_RECORDING' },
-  // Internal composite type: has a DB row reserved by migration at fixed id 16
-  // (MATCHING/HOTSPOT hold 14/15 in the registry without DB rows).
-  { id: 16, typename: 'ASSESSMENT_ITEM' }
+  { id: 16, typename: 'ASSESSMENT_ITEM' },
+  { id: 17, typename: 'THUMBS' }
 ];
 
 describe('question type registry', () => {
@@ -220,6 +238,15 @@ describe('question type registry', () => {
         expect(dbIds.has(entry.id), `db-backed ${entry.typename} must map to a DB row`).toBe(true);
       }
     }
+  });
+
+  it('derives executable THUMBS guides from the registry id', () => {
+    const thumbsDescription = `THUMBS (${QUESTION_TYPE_IDS.THUMBS})`;
+
+    expect(ADD_QUESTIONS_TOOL_DESCRIPTION).toContain(thumbsDescription);
+    expect(ADD_QUESTIONS_TOOL_DESCRIPTION).not.toContain('THUMBS (14)');
+    expect(formatEnabledQuestionTypesGuide()).toContain(thumbsDescription);
+    expect(formatEnabledQuestionTypesGuide()).not.toContain('THUMBS (14)');
   });
 
   it('returns undefined for unknown typename and id lookups', () => {

@@ -109,12 +109,12 @@
   }
 
   async function downloadDocument(doc: LessonDocument) {
-    downloadingDocuments.add(doc.name);
-
     if (!doc.key) {
       snackbar.error('Document not loaded correctly');
       return;
     }
+
+    downloadingDocuments.add(doc.name);
 
     try {
       const response = await fetch(doc.link);
@@ -130,9 +130,10 @@
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      snackbar.success($t('course.navItem.lessons.materials.tabs.document.download_success'));
     } catch (error) {
       console.error('Error downloading document:', error);
-      window.open(doc.link, '_blank');
+      snackbar.error($t('course.navItem.lessons.materials.tabs.document.download_error'));
     } finally {
       downloadingDocuments.delete(doc.name);
     }
@@ -287,6 +288,19 @@
     viewPDF(doc);
   }
 
+  function handleViewDocument(doc: LessonDocument) {
+    if (doc.type === 'pdf') {
+      handleViewPDF(doc);
+      return;
+    }
+
+    window.open(doc.link, '_blank', 'noopener,noreferrer');
+  }
+
+  function reorderDocuments(documents: LessonDocument[]) {
+    lessonApi.updateLessonState('documents', documents);
+  }
+
   function closePDFViewer() {
     // Cancel any ongoing render task
     if (currentRenderTask) {
@@ -352,19 +366,19 @@
 <DocumentList
   {mode}
   {displayDocuments}
-  {downloadingDocuments}
   {formatFileSize}
   {openDocumentUploadModal}
   {requestRemoveDocument}
-  onViewPDF={handleViewPDF}
+  onViewDocument={handleViewDocument}
   {downloadDocument}
+  {reorderDocuments}
 />
 
 <DeleteModal bind:open={openDeleteDocumentModal} onDelete={confirmRemoveDocument} />
 
 <!-- PDF Viewer Modal -->
 {#if pdfViewerOpen}
-  <div class="fixed inset-0 z-100 flex flex-col bg-white dark:bg-neutral-800">
+  <div class="z-modal fixed inset-0 flex flex-col bg-white dark:bg-neutral-800">
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:bg-neutral-800">
       <div class="flex items-center space-x-4">
