@@ -63,7 +63,7 @@
   import * as Alert from '@cio/ui/base/alert';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import InfoIcon from '@lucide/svelte/icons/info';
-  import { isAutoGradableQuestionType, isAutoGradableQuestionTypeId } from '@cio/question-types';
+  import { isAutoGradableQuestionTypeId } from '@cio/question-types';
   import * as Dialog from '@cio/ui/base/dialog';
   import type { ExerciseSectionState } from '$features/course/components/exercise/store';
   import {
