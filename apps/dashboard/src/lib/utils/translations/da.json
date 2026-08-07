@@ -892,7 +892,10 @@
           "description": "Tilmeldte elever vil ikke kunne tage låste lektioner eller øvelser, før du låser dem op.",
           "description_live": "Låste lektioner og øvelser forbliver skjult for eleverne, indtil du låser dem op - nyttigt, hvis du udgiver indhold uge for uge.",
           "unlock_all": "Lås alle op"
-        }
+        },
+        "certificate_deadline_required": "Angiv først certifikatfristen",
+        "certificate_deadline_required_description": "Compliance-kurser kræver en certifikatfrist, før deltagere kan tilmeldes. Angiv en frist i certifikatindstillingerne, før du udgiver.",
+        "go_to_certificate_settings": "Gå til certifikatindstillinger"
       },
       "analytics": {
         "title": "Analyse"
@@ -2605,7 +2608,9 @@
       "blocker_final_misconfigured": "Certificeringsøvelsen \"{exerciseTitle}\" har ingen point konfigureret; bed din instruktør om at ordne det.",
       "email_message_label": "E-mail besked",
       "email_message_placeholder": "f.eks. Vi er stolte af dine fremskridt - fortsæt med at lære!",
-      "final_exercise_multiple_attempts_note": "Elever får lov til ubegrænsede forsøg på den valgte øvelse."
+      "final_exercise_multiple_attempts_note": "Elever får lov til ubegrænsede forsøg på den valgte øvelse.",
+      "deadline_required": "En certifikatfrist er påkrævet, når certifikater kan downloades.",
+      "deadline_required_enroll": "Compliance-kurser kræver en certifikatfrist, før deltagere kan tilmeldes."
     },
     "creator": {
       "heading": "Hvilket kursus vil du lave?",
@@ -2743,6 +2748,7 @@
       "most_lessons": "Lektioner: Flest først",
       "fewest_lessons": "Lektioner: Færrest først",
       "date_created": "Dato oprettet",
+      "last_updated_at": "Sidst opdateret",
       "published": "Udgivet",
       "lessons": "Lektioner"
     },

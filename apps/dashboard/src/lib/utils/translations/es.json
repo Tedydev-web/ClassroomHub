@@ -892,7 +892,10 @@
           "description": "Los estudiantes inscritos no podrán tomar lecciones o ejercicios bloqueados hasta que los desbloquees.",
           "description_live": "Las lecciones y ejercicios bloqueados permanecen ocultos para los estudiantes hasta que los desbloqueas, lo que resulta útil si publicas contenido semana tras semana.",
           "unlock_all": "Desbloquear todo"
-        }
+        },
+        "certificate_deadline_required": "Establece primero la fecha límite del certificado",
+        "certificate_deadline_required_description": "Los cursos de cumplimiento requieren una fecha límite del certificado antes de poder inscribir a los estudiantes. Establece una fecha límite en la configuración del certificado antes de publicar.",
+        "go_to_certificate_settings": "Ir a la configuración del certificado"
       },
       "analytics": {
         "title": "Analíticas"
@@ -2605,7 +2608,9 @@
       "blocker_final_misconfigured": "El ejercicio de certificación \"{exerciseTitle}\" no tiene puntos configurados; Pídele a tu instructor que lo arregle.",
       "email_message_label": "Mensaje de correo electrónico",
       "email_message_placeholder": "por ej. Estamos orgullosos de tu progreso: ¡sigue aprendiendo!",
-      "final_exercise_multiple_attempts_note": "A los estudiantes se les permitirán intentos ilimitados en el ejercicio seleccionado."
+      "final_exercise_multiple_attempts_note": "A los estudiantes se les permitirán intentos ilimitados en el ejercicio seleccionado.",
+      "deadline_required": "Se requiere una fecha límite del certificado cuando los certificados se pueden descargar.",
+      "deadline_required_enroll": "Los cursos de cumplimiento requieren una fecha límite del certificado antes de poder inscribir a los estudiantes."
     },
     "creator": {
       "heading": "¿Qué curso quieres crear?",
@@ -2743,6 +2748,7 @@
       "most_lessons": "Lecciones: más primero",
       "fewest_lessons": "Lecciones: menos primero",
       "date_created": "Fecha de creación",
+      "last_updated_at": "Última actualización",
       "published": "Publicado",
       "lessons": "Lecciones"
     },

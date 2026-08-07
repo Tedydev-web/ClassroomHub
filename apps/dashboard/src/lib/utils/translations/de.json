@@ -892,7 +892,10 @@
           "description": "Eingeschriebene Schüler können erst dann an gesperrten Lektionen oder Übungen teilnehmen, wenn Sie sie entsperren.",
           "description_live": "Gesperrte Lektionen und Übungen bleiben den Schülern verborgen, bis Sie sie entsperren – nützlich, wenn Sie Inhalte Woche für Woche veröffentlichen.",
           "unlock_all": "Schalte alle frei"
-        }
+        },
+        "certificate_deadline_required": "Zuerst Zertifikatsstichtag festlegen",
+        "certificate_deadline_required_description": "Compliance-Kurse erfordern einen Zertifikatsstichtag, bevor Lernende eingeschrieben werden können. Bitte legen Sie vor der Veröffentlichung einen Stichtag in den Zertifikatseinstellungen fest.",
+        "go_to_certificate_settings": "Zu den Zertifikatseinstellungen"
       },
       "analytics": {
         "title": "Analysen"
@@ -2605,7 +2608,9 @@
       "blocker_final_misconfigured": "Für die Zertifizierungsübung „{exerciseTitle}“ sind keine Punkte konfiguriert; Bitten Sie Ihren Lehrer, das Problem zu beheben.",
       "email_message_label": "E-Mail-Nachricht",
       "email_message_placeholder": "z.B. Wir sind stolz auf Ihre Fortschritte – lernen Sie weiter!",
-      "final_exercise_multiple_attempts_note": "Den Schülern sind unbegrenzte Versuche für die ausgewählte Übung gestattet."
+      "final_exercise_multiple_attempts_note": "Den Schülern sind unbegrenzte Versuche für die ausgewählte Übung gestattet.",
+      "deadline_required": "Ein Zertifikatsstichtag ist erforderlich, wenn Zertifikate heruntergeladen werden können.",
+      "deadline_required_enroll": "Compliance-Kurse erfordern einen Zertifikatsstichtag, bevor Lernende eingeschrieben werden können."
     },
     "creator": {
       "heading": "Welchen Kurs möchten Sie erstellen?",
@@ -2743,6 +2748,7 @@
       "most_lessons": "Lektionen: Meiste zuerst",
       "fewest_lessons": "Lektionen: Wenigste zuerst",
       "date_created": "Erstellungsdatum",
+      "last_updated_at": "Zuletzt aktualisiert",
       "published": "Veröffentlicht",
       "lessons": "Lektionen"
     },
