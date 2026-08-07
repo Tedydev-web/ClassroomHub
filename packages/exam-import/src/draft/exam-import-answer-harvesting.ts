@@ -469,25 +469,39 @@ function applyExplicitAnswers(
   }
 }
 
-function formattingAtMarker(
+/**
+ * Collects the formatting of every meaningful run that overlaps an option's text region,
+ * from its `A.` marker up to the next marker (or the end of the block).
+ *
+ * Word frequently splits an emphasised option into several runs and starts the emphasis
+ * after the label, e.g. `C` + `. installed`. Reading only the run that holds the marker
+ * character would miss those answers, so the whole region is inspected instead.
+ */
+function optionRegionFormatting(
   block: ExamImportSourceBlock,
   label: string,
   span: ExamImportSourceSpan
-): RunFormatting | null {
-  const markers = [...block.text.matchAll(OPTION_MARKER_PATTERN)].filter((match) => match[1] === label);
-  for (const marker of markers) {
+): RunFormatting[] {
+  const markers = [...block.text.matchAll(OPTION_MARKER_PATTERN)];
+  const regionFormatting: RunFormatting[] = [];
+
+  for (const [markerIndex, marker] of markers.entries()) {
+    if (marker[1] !== label) continue;
+    const regionStart = marker.index;
+    const regionEnd = markers[markerIndex + 1]?.index ?? block.text.length;
     let offset = 0;
     for (const run of block.runs) {
       const end = offset + run.text.length;
       const withinSpan =
         run.location.runIndex >= (block.index === span.start.blockIndex ? span.start.runIndex : 0) &&
         run.location.runIndex <= (block.index === span.end.blockIndex ? span.end.runIndex : Number.POSITIVE_INFINITY);
-      if (withinSpan && marker.index >= offset && marker.index < end) return run.formatting;
+      const overlapsRegion = offset < regionEnd && end > regionStart;
+      if (withinSpan && overlapsRegion && run.text.trim().length > 0) regionFormatting.push(run.formatting);
       offset = end;
     }
   }
 
-  return null;
+  return regionFormatting;
 }
 
 function isEmphasized(formatting: RunFormatting, kind: EmphasisKind): boolean {
@@ -533,8 +547,8 @@ function applyEmphasisCandidates(
           for (let blockIndex = span.start.blockIndex; blockIndex <= span.end.blockIndex; blockIndex++) {
             const block = blocksByIndex.get(blockIndex);
             if (!block) continue;
-            const formatting = formattingAtMarker(block, option.sourceLabel.toUpperCase(), span);
-            if (formatting && isEmphasized(formatting, kind)) return true;
+            const regionFormatting = optionRegionFormatting(block, option.sourceLabel.toUpperCase(), span);
+            if (regionFormatting.some((formatting) => isEmphasized(formatting, kind))) return true;
           }
 
           return false;

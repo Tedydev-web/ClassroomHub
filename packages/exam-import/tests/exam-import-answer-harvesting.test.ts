@@ -334,6 +334,26 @@ describe('exam import answer harvesting', () => {
     expect(choiceCandidates(harvested, 1)).toEqual([]);
   });
 
+  it('harvests emphasis that starts after the option label instead of on it', () => {
+    const optionRuns = [
+      block(1, 'A. OneB. TwoC'),
+      block(1, '. Three', { formatting: { highlight: '#A9A9A9' } }),
+      block(1, 'D. Four')
+    ];
+    optionRuns.forEach((run, runIndex) => {
+      run.location.runIndex = runIndex;
+    });
+    const runs = [block(0, 'Question 1. Choose.'), ...optionRuns];
+    const harvested = harvestExamImportAnswerCandidates(draftFor(runs), runs);
+
+    expect(choiceCandidates(harvested, 0)).toMatchObject([
+      {
+        source: 'emphasis',
+        correctOptionIds: ['question-1-option-c']
+      }
+    ]);
+  });
+
   it('is pure and idempotent', () => {
     const runs = [...choiceQuestion(0, 1), block(2, 'Đáp án: B')];
     const original = draftFor(runs);
