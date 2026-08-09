@@ -313,11 +313,8 @@ class OrgApi extends BaseApiWithErrors {
           snackbar.error(result);
           return;
         }
-        if ('error' in result && 'field' in result) {
-          // Field-specific error automatically mapped to this.errors[field]
-          this.errors[result.field as string] = result.error;
-        } else if ('error' in result) {
-          this.errors.general = result.error;
+        if ('error' in result) {
+          this.handleValidationError(result);
         }
       }
     });
@@ -344,6 +341,11 @@ class OrgApi extends BaseApiWithErrors {
 
     if (!result.success) {
       this.errors = mapZodErrorsToTranslations(result.error, 'organization');
+      // Show the first validation error to the user
+      const firstError = Object.values(this.errors)[0];
+      if (firstError) {
+        snackbar.error(firstError);
+      }
       return;
     }
 
@@ -427,9 +429,41 @@ class OrgApi extends BaseApiWithErrors {
       onError: (error) => {
         console.error('Error updating organization:', error);
 
-        const message = error instanceof Error ? error.message : `${error}`;
-        this.errors.general = message;
+        if (typeof error === 'object' && error !== null && 'error' in error) {
+          const apiError = error as {
+            success: false;
+            error: string;
+            code?: string;
+            field?: string;
+          };
 
+          if (apiError.field === 'siteName' || apiError.code === 'SITENAME_EXISTS') {
+            const message = typeof apiError.error === 'string' ? apiError.error : 'Site name already exists';
+            this.errors = { ...this.errors, siteName: message };
+            snackbar.error(message);
+            return;
+          }
+
+          if (apiError.field && typeof apiError.error === 'string') {
+            this.errors = { ...this.errors, [apiError.field]: apiError.error };
+            snackbar.error(apiError.error);
+            return;
+          }
+
+          if (typeof apiError.error === 'string') {
+            this.errors = { ...this.errors, general: apiError.error };
+            snackbar.error(apiError.error);
+            return;
+          }
+
+          this.errors = { ...this.errors, general: t.get('snackbar.update_failed') };
+          snackbar.error(t.get('snackbar.update_failed'));
+          return;
+        }
+
+        const message =
+          error instanceof Error ? error.message : typeof error === 'string' ? error : t.get('snackbar.update_failed');
+        this.errors = { ...this.errors, general: message };
         snackbar.error(`${t.get('snackbar.update_failed')}: ${message}`);
       }
     });

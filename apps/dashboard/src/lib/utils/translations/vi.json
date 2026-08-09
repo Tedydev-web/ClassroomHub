@@ -892,7 +892,10 @@
           "description": "Học viên đã đăng ký sẽ không thể học các bài học hoặc bài tập bị khóa cho đến khi bạn mở khóa chúng.",
           "description_live": "Các bài học và bài tập bị khóa sẽ được ẩn khỏi học sinh cho đến khi bạn mở khóa chúng — hữu ích nếu bạn phát hành nội dung hàng tuần.",
           "unlock_all": "Mở khóa tất cả"
-        }
+        },
+        "certificate_deadline_required": "Đặt hạn chót cấp chứng chỉ trước",
+        "certificate_deadline_required_description": "Khóa học tuân thủ yêu cầu có hạn chót cấp chứng chỉ trước khi ghi danh học viên. Vui lòng đặt hạn chót trong phần cài đặt chứng chỉ trước khi xuất bản.",
+        "go_to_certificate_settings": "Đi tới cài đặt chứng chỉ"
       },
       "analytics": {
         "title": "Phân tích"
@@ -2605,7 +2608,9 @@
       "blocker_final_misconfigured": "Bài tập chứng nhận \"{exerciseTitle}\" không có cấu hình điểm nào; nhờ người hướng dẫn khắc phục.",
       "email_message_label": "Tin nhắn email",
       "email_message_placeholder": "ví dụ: Chúng tôi tự hào về sự tiến bộ của bạn - hãy tiếp tục học hỏi!",
-      "final_exercise_multiple_attempts_note": "Học sinh sẽ được phép thử không giới hạn bài tập đã chọn."
+      "final_exercise_multiple_attempts_note": "Học sinh sẽ được phép thử không giới hạn bài tập đã chọn.",
+      "deadline_required": "Cần có hạn chót cấp chứng chỉ khi chứng chỉ có thể tải xuống.",
+      "deadline_required_enroll": "Khóa học tuân thủ yêu cầu có hạn chót cấp chứng chỉ trước khi ghi danh học viên."
     },
     "creator": {
       "heading": "Bạn muốn tạo khóa học nào?",
@@ -2743,6 +2748,7 @@
       "most_lessons": "Bài học: Nhiều nhất trước",
       "fewest_lessons": "Bài học: Ít nhất trước",
       "date_created": "Ngày tạo",
+      "last_updated_at": "Cập nhật lần cuối",
       "published": "Đã xuất bản",
       "lessons": "Bài học"
     },

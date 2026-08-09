@@ -23,6 +23,7 @@
   let enrollmentSucceeded = $state(false);
   let verificationEmailSent = $state(false);
   let enrolledPendingVerification = $state(false);
+  let enrollmentError = $state<string | null>(null);
 
   const session = authClient.useSession();
   const sessionReady = $derived(!$session.isPending && !$session.isRefetching);
@@ -111,6 +112,7 @@
 
     enrollmentInFlight = true;
     loading = true;
+    enrollmentError = null;
 
     let navigatingAway = false;
 
@@ -119,7 +121,7 @@
       const result = await courseApi.enroll(data.course.id, body);
 
       if (!result?.data) {
-        snackbar.error('snackbar.invite.failed_join');
+        enrollmentError = t.get('snackbar.invite.failed_join');
         return;
       }
 
@@ -148,6 +150,10 @@
 
       navigatingAway = true;
       await goto(resolve(getStudentCourseContinuePath(data.course.id), {}));
+    } catch (error) {
+      console.error('[enroll] unexpected error during enrollment:', error);
+      enrollmentError = t.get('snackbar.invite.failed_join');
+      snackbar.error('snackbar.invite.failed_join');
     } finally {
       enrollmentInFlight = false;
       if (!navigatingAway) {
@@ -187,7 +193,15 @@
   }
 
   $effect(() => {
-    if (!sessionReady || !isLoggedIn || !canJoinCourse || enrollmentInFlight || loading || enrollmentSucceeded) {
+    if (
+      !sessionReady ||
+      !isLoggedIn ||
+      !canJoinCourse ||
+      enrollmentInFlight ||
+      loading ||
+      enrollmentSucceeded ||
+      enrollmentError
+    ) {
       return;
     }
 
@@ -246,6 +260,8 @@
       >
         {$t('course.navItem.landing_page.enroll_page.back_to_course')}
       </a>
+    {:else if enrollmentError}
+      <p class="mt-3 text-center text-sm text-red-500">{enrollmentError}</p>
     {:else if !canJoinCourse}
       <p class="mt-3 text-center text-sm text-red-500">{getBlockedMessage()}</p>
     {/if}
