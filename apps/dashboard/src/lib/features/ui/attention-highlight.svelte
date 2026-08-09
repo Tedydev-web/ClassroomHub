@@ -3,6 +3,7 @@
   import { replaceState } from '$app/navigation';
   import { resolve } from '$app/paths';
   import type { Snippet } from 'svelte';
+  import { SvelteURL } from 'svelte/reactivity';
 
   interface Props {
     id: string;
@@ -45,7 +46,7 @@
       pulsing = false;
       timeoutId = null;
 
-      const url = new URL(page.url);
+      const url = new SvelteURL(page.url);
       const highlightActive = url.searchParams.get('highlight') === id;
       const hashActive = url.hash.replace('#', '').trim() === id;
 
