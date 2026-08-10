@@ -226,18 +226,25 @@ function paragraphHtml(value: string): string {
   return `<p>${escapeHtml(value.trim())}</p>`;
 }
 
+/**
+ * Highlight is deliberately not rendered.
+ *
+ * A marker pen over an option is how teachers flag the answer key in the source
+ * document, and answer harvesting already reads that emphasis into `answerKey`.
+ * Carrying it through as `background-color` would repeat the key as visible
+ * styling and show learners which option is correct. The run keeps its
+ * `formatting.highlight` so harvesting still sees it; only the rendered HTML
+ * drops it, matching the documented set of preserved marks (bold, italic,
+ * underline, lists, tables, Office Math, images).
+ */
 function formattedTextHtml(run: SourceRun, text = run.text): string {
   let html = escapeHtml(text);
   if (run.formatting.strikethrough) html = `<s>${html}</s>`;
   if (run.formatting.underline) html = `<u>${html}</u>`;
   if (run.formatting.italic) html = `<em>${html}</em>`;
   if (run.formatting.bold) html = `<strong>${html}</strong>`;
-  if (run.formatting.color || run.formatting.highlight) {
-    const styles = [
-      run.formatting.color ? `color:${run.formatting.color}` : '',
-      run.formatting.highlight ? `background-color:${run.formatting.highlight}` : ''
-    ].filter(Boolean);
-    html = `<span style="${styles.join(';')}">${html}</span>`;
+  if (run.formatting.color) {
+    html = `<span style="color:${run.formatting.color}">${html}</span>`;
   }
 
   return html;
