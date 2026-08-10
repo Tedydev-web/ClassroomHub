@@ -124,6 +124,49 @@ function sourceTextForProvenance(runs: SourceRun[], item: { provenance: ExamImpo
 }
 
 describe('exam import segmentation', () => {
+  it('keeps answer-key highlighting out of the rendered option html', () => {
+    const optionRuns = [
+      block(1, 'A. First'),
+      block(1, 'B. Second', { formatting: { highlight: '#A9A9A9' } }),
+      block(1, 'C. ThirdD. Fourth')
+    ];
+    optionRuns.forEach((run, runIndex) => {
+      run.location.runIndex = runIndex;
+    });
+    const draft = segment([block(0, 'Question 1. Choose the correct answer.'), ...optionRuns]);
+    const question = draft.sections[0]?.questions[0];
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+
+    expect(question.options.map((option) => option.html).join('')).not.toContain('background-color');
+    expect(question.options[1]?.html).toBe('<p>Second</p>');
+  });
+
+  it('preserves bold, italic and underline in the rendered option html', () => {
+    const optionRuns = [
+      block(1, 'A. '),
+      block(1, 'plain'),
+      block(1, 'B. '),
+      block(1, 'strong', { formatting: { bold: true } }),
+      block(1, 'C. '),
+      block(1, 'stressed', { formatting: { italic: true } }),
+      block(1, 'D. '),
+      block(1, 'marked', { formatting: { underline: true } })
+    ];
+    optionRuns.forEach((run, runIndex) => {
+      run.location.runIndex = runIndex;
+    });
+    const draft = segment([block(0, 'Question 1. Choose the correct answer.'), ...optionRuns]);
+    const question = draft.sections[0]?.questions[0];
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+
+    expect(question.options.map((option) => option.html)).toEqual([
+      '<p>plain</p>',
+      '<p><strong>strong</strong></p>',
+      '<p><em>stressed</em></p>',
+      '<p><u>marked</u></p>'
+    ]);
+  });
+
   it('recognizes CEM sections, question markers, points, cognitive levels and concatenated options', () => {
     const draft = segment([
       block(0, 'Midterm exam'),
