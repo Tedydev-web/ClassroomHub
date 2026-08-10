@@ -6,31 +6,66 @@ export type ScreenshotViewport = {
   deviceScaleFactor?: number;
 };
 
-export const getCloudflarePdfBuffer = async (html: string, styles?: string) => {
-  console.log('Generating PDF with Cloudflare API...');
-  try {
-    const pdfResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE.CONFIGS.ACCOUNT_ID}/browser-rendering/pdf`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${CLOUDFLARE.CONFIGS.RENDERING_API_KEY}`
-        },
-        body: JSON.stringify({
-          html: html,
-          addStyleTag: [{ content: `${styles}` }]
-        })
-      }
-    );
+const BROWSER_RENDERING_BASE = 'https://api.cloudflare.com/client/v4/accounts';
 
-    console.log('PDF response status:', pdfResponse.status);
-    const arrayBuffer = await pdfResponse.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to generate PDF');
+/**
+ * Browser Rendering needs both an account and a token carrying the
+ * `Browser Rendering - Edit` permission. Without them the request used to be
+ * sent to `accounts/undefined/...`, and Cloudflare's JSON error was handed back
+ * to the caller as if it were a document.
+ */
+function requireBrowserRenderingConfig(): { accountId: string; apiKey: string } {
+  const accountId = CLOUDFLARE.CONFIGS.ACCOUNT_ID;
+  const apiKey = CLOUDFLARE.CONFIGS.RENDERING_API_KEY;
+
+  if (!accountId || !apiKey) {
+    const missing = [!accountId && 'CLOUDFLARE_ACCOUNT_ID', !apiKey && 'CLOUDFLARE_RENDERING_API_KEY']
+      .filter(Boolean)
+      .join(' and ');
+
+    throw new Error(`Cloudflare Browser Rendering is not configured: ${missing} is missing`);
   }
+
+  return { accountId, apiKey };
+}
+
+/**
+ * Cloudflare reports failures with a JSON envelope. Returning that body would
+ * produce a download that opens as a corrupt file, so anything that is not
+ * binary is surfaced as an error instead.
+ */
+async function readRenderedDocument(response: Response, kind: 'PDF' | 'PNG'): Promise<Buffer> {
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (!response.ok || contentType.includes('application/json')) {
+    const body = buffer.toString('utf8').slice(0, 500);
+    throw new Error(`Cloudflare Browser Rendering failed to produce a ${kind} (HTTP ${response.status}): ${body}`);
+  }
+
+  if (buffer.byteLength === 0) {
+    throw new Error(`Cloudflare Browser Rendering returned an empty ${kind}`);
+  }
+
+  return buffer;
+}
+
+export const getCloudflarePdfBuffer = async (html: string, styles?: string) => {
+  const { accountId, apiKey } = requireBrowserRenderingConfig();
+
+  const response = await fetch(`${BROWSER_RENDERING_BASE}/${accountId}/browser-rendering/pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      html,
+      addStyleTag: styles ? [{ content: styles }] : undefined
+    })
+  });
+
+  return readRenderedDocument(response, 'PDF');
 };
 
 /**
@@ -42,35 +77,25 @@ export const getCloudflarePngBuffer = async (
   styles?: string,
   viewport: ScreenshotViewport = { width: 1100, height: 780, deviceScaleFactor: 2 }
 ) => {
-  console.log('Generating PNG with Cloudflare API...');
-  try {
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE.CONFIGS.ACCOUNT_ID}/browser-rendering/screenshot`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${CLOUDFLARE.CONFIGS.RENDERING_API_KEY}`
-        },
-        body: JSON.stringify({
-          html,
-          addStyleTag: styles ? [{ content: styles }] : undefined,
-          viewport: {
-            width: viewport.width,
-            height: viewport.height,
-            deviceScaleFactor: viewport.deviceScaleFactor ?? 2
-          },
-          screenshotOptions: { type: 'png', omitBackground: false, fullPage: false }
-        })
-      }
-    );
+  const { accountId, apiKey } = requireBrowserRenderingConfig();
 
-    console.log('PNG response status:', response.status);
-    const arrayBuffer = await response.arrayBuffer();
+  const response = await fetch(`${BROWSER_RENDERING_BASE}/${accountId}/browser-rendering/screenshot`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      html,
+      addStyleTag: styles ? [{ content: styles }] : undefined,
+      viewport: {
+        width: viewport.width,
+        height: viewport.height,
+        deviceScaleFactor: viewport.deviceScaleFactor ?? 2
+      },
+      screenshotOptions: { type: 'png', omitBackground: false, fullPage: false }
+    })
+  });
 
-    return Buffer.from(arrayBuffer);
-  } catch (error) {
-    console.error('Error generating PNG:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to generate PNG');
-  }
+  return readRenderedDocument(response, 'PNG');
 };

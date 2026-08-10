@@ -137,6 +137,12 @@ jobs:
           DASHBOARD_IMAGE: ${{ steps.images.outputs.dashboard_image }}
           JOBS_IMAGE: ${{ steps.images.outputs.jobs_image }}
           AI_GATEWAY_AUTH_TOKEN: ${{ secrets.PRODUCTION_AI_GATEWAY_AUTH_TOKEN }}
+          # Certificate and course PDFs are rendered through Cloudflare Browser
+          # Rendering. The dedicated rendering secret wins; the Workers token is
+          # only a fallback so the feature is not dark when it is the only token
+          # configured. Either one needs the Browser Rendering permission.
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_RENDERING_API_KEY: ${{ secrets.CLOUDFLARE_RENDERING_API_KEY || secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -196,6 +202,8 @@ jobs:
           reconcile_value AI_GATEWAY_AUTH_TOKEN "$AI_GATEWAY_AUTH_TOKEN"
           reconcile_value EXAM_IMPORT_AI_ENABLED true
           reconcile_value EXAM_IMPORT_AI_MODEL claude-sonnet-5
+          reconcile_value CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
+          reconcile_value CLOUDFLARE_RENDERING_API_KEY "$CLOUDFLARE_RENDERING_API_KEY"
 
       - name: Trigger Coolify deployment
         id: trigger
