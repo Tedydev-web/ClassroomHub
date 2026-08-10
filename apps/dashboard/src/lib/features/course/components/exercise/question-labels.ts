@@ -510,10 +510,6 @@ export function getAssessmentPassageWorkspaceLabels() {
     questions: t.get('course.navItem.lessons.exercises.all_exercises.questions'),
     navigation: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_navigation'),
     locatePassage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_locate'),
-    showPassage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_passage'),
-    showQuestions: t.get(
-      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_questions'
-    ),
     formatPassage: (index: number) =>
       t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage', {
         index

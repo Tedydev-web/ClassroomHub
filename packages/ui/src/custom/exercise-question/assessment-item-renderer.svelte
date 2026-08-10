@@ -52,8 +52,6 @@
     questions: string;
     navigation: string;
     locatePassage: string;
-    showPassage: string;
-    showQuestions: string;
     formatPassage: (index: number) => string;
     formatQuestionRange: (start: number, end: number) => string;
     formatProgress: (answered: number, total: number) => string;
@@ -101,7 +99,6 @@
   const optionFeedback = $derived(feedback.filter((entry) => entry.scope === 'choice_option'));
   let handledFocusRequestKey = $state<number | undefined>(undefined);
   let focusTargetInteractionId = $state<string | null>(null);
-  let mobileWorkspacePanel = $state<'passage' | 'questions'>('questions');
   let passagePanel = $state<HTMLElement | null>(null);
   let questionPanel = $state<HTMLElement | null>(null);
   let activeQuestionGroupId = $state<string | null>(null);
@@ -163,24 +160,6 @@
     activeQuestionGroupId = groupId;
     scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto');
     scrollPanelToGroup(questionPanel, 'data-assessment-question-group', groupId, 'auto');
-  }
-
-  function selectMobileWorkspacePanel(panel: 'passage' | 'questions') {
-    mobileWorkspacePanel = panel;
-  }
-
-  function handleMobileWorkspaceKeydown(event: KeyboardEvent) {
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    const nextPanel = event.key === 'ArrowLeft' ? 'passage' : 'questions';
-    mobileWorkspacePanel = nextPanel;
-
-    const toolbar = event.currentTarget;
-    if (!(toolbar instanceof HTMLElement)) return;
-
-    toolbar.querySelector<HTMLButtonElement>(`[data-assessment-mobile-panel="${nextPanel}"]`)?.focus();
   }
 
   function updateResponse(
@@ -628,39 +607,6 @@
       class={['ui:bg-background ui:overflow-hidden', showContainer ? '' : 'ui:border-border ui:rounded-md ui:border']}
       data-assessment-layout="passage-workspace"
     >
-      <div
-        class="ui:border-border ui:bg-muted/20 ui:grid ui:grid-cols-2 ui:border-b ui:p-1 ui:lg:hidden"
-        role="toolbar"
-        tabindex="-1"
-        aria-label={passageWorkspaceLabels.navigation}
-        onkeydown={handleMobileWorkspaceKeydown}
-      >
-        <Button
-          type="button"
-          variant={mobileWorkspacePanel === 'passage' ? 'secondary' : 'ghost'}
-          class="ui:min-h-11"
-          data-assessment-mobile-panel="passage"
-          aria-pressed={mobileWorkspacePanel === 'passage'}
-          aria-controls={`${rendererId}-passage-panel`}
-          onclick={() => selectMobileWorkspacePanel('passage')}
-        >
-          <BookOpenTextIcon class="ui:size-4" aria-hidden="true" />
-          {passageWorkspaceLabels.showPassage}
-        </Button>
-        <Button
-          type="button"
-          variant={mobileWorkspacePanel === 'questions' ? 'secondary' : 'ghost'}
-          class="ui:min-h-11"
-          data-assessment-mobile-panel="questions"
-          aria-pressed={mobileWorkspacePanel === 'questions'}
-          aria-controls={`${rendererId}-questions-panel`}
-          onclick={() => selectMobileWorkspacePanel('questions')}
-        >
-          <ListChecksIcon class="ui:size-4" aria-hidden="true" />
-          {passageWorkspaceLabels.showQuestions}
-        </Button>
-      </div>
-
       <details class="ui:border-border ui:border-b ui:px-4 ui:py-2">
         <summary
           class="ui:focus-visible:ring-ring ui:cursor-pointer ui:rounded-sm ui:text-sm ui:font-medium ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
@@ -683,17 +629,20 @@
         </nav>
       </details>
 
+      <!--
+        Narrow screens stack the passage above its questions and keep it there while the
+        learner works through them, so the text stays in view instead of being swapped out.
+        Each row scrolls on its own; the passage only changes when a new group is selected.
+        From `lg` the two become side-by-side columns.
+      -->
       <div
-        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)]"
+        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
       >
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <section
           id={`${rendererId}-passage-panel`}
           bind:this={passagePanel}
-          class={[
-            'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
-            mobileWorkspacePanel !== 'passage' ? 'ui:hidden' : ''
-          ]}
+          class="ui:border-border ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:border-b ui:lg:border-b-0"
           aria-label={passageWorkspaceLabels.passage}
           tabindex="0"
         >
@@ -722,10 +671,7 @@
         <section
           id={`${rendererId}-questions-panel`}
           bind:this={questionPanel}
-          class={[
-            'ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain ui:lg:block',
-            mobileWorkspacePanel !== 'questions' ? 'ui:hidden' : ''
-          ]}
+          class="ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain"
           aria-label={passageWorkspaceLabels.questions}
           tabindex="0"
         >
