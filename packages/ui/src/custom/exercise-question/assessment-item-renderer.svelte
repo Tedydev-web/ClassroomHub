@@ -198,11 +198,17 @@
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
+  /**
+   * `headerOffset` is however much of the panel's top edge is covered by a sticky
+   * header, so the group lands below it rather than under it. The questions panel
+   * keeps its header outside the scrolling element and so needs no offset.
+   */
   function scrollPanelToGroup(
     panel: HTMLElement | null,
     groupAttribute: 'data-assessment-passage-group' | 'data-assessment-question-group',
     groupId: string,
-    behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth'
+    behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth',
+    headerOffset = 0
   ) {
     if (!panel) return;
 
@@ -211,16 +217,15 @@
 
     const panelRect = panel.getBoundingClientRect();
     const groupRect = group.getBoundingClientRect();
-    const stickyHeaderOffset = 56;
     panel.scrollTo({
-      top: panel.scrollTop + groupRect.top - panelRect.top - stickyHeaderOffset,
+      top: panel.scrollTop + groupRect.top - panelRect.top - headerOffset,
       behavior
     });
   }
 
   function selectPassageGroup(groupId: string) {
     activeQuestionGroupId = groupId;
-    scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto');
+    scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto', 56);
     scrollPanelToGroup(questionPanel, 'data-assessment-question-group', groupId, 'auto');
   }
 
@@ -729,16 +734,18 @@
           {/each}
         </section>
 
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <!--
+          The header, the question pager and the previous/next controls are siblings of
+          the scrolling element rather than sticky children of it, so they hold their
+          position exactly instead of sliding under each other as the learner scrolls.
+        -->
         <section
           id={`${rendererId}-questions-panel`}
-          bind:this={questionPanel}
-          class="ui:min-w-0 ui:overflow-y-auto ui:overscroll-contain"
+          class="ui:flex ui:min-h-0 ui:min-w-0 ui:flex-col"
           aria-label={passageWorkspaceLabels.questions}
-          tabindex="0"
         >
           <header
-            class="ui:border-border ui:bg-background/95 ui:sticky ui:top-0 ui:z-10 ui:flex ui:min-h-14 ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-4 ui:backdrop-blur-sm"
+            class="ui:border-border ui:bg-background ui:flex ui:min-h-14 ui:shrink-0 ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-4"
           >
             <div class="ui:flex ui:min-w-0 ui:items-center ui:gap-2">
               <ListChecksIcon class="ui:text-muted-foreground ui:size-4 ui:shrink-0" aria-hidden="true" />
@@ -774,8 +781,13 @@
           </header>
 
           {#if pagesOneQuestion && pagerGroup}
+            <!--
+              One row, whatever the question count. It scrolls sideways only when the
+              numbers genuinely overrun the width, which keeps a forty-question paper
+              from turning this strip into five stacked rows of buttons.
+            -->
             <nav
-              class="ui:border-border ui:flex ui:flex-wrap ui:gap-1.5 ui:border-b ui:px-4 ui:py-3"
+              class="ui:border-border ui:bg-background ui:flex ui:shrink-0 ui:gap-1.5 ui:overflow-x-auto ui:border-b ui:px-4 ui:py-3"
               aria-label={passageWorkspaceLabels.questions}
             >
               {#each pagerInteractions as block, index (block.id)}
@@ -785,7 +797,7 @@
                   type="button"
                   size="sm"
                   variant={block.id === activeInteractionId ? 'default' : isAnswered ? 'secondary' : 'outline'}
-                  class="ui:size-9 ui:p-0 ui:tabular-nums"
+                  class="ui:size-9 ui:shrink-0 ui:p-0 ui:tabular-nums"
                   aria-current={block.id === activeInteractionId ? 'true' : undefined}
                   aria-label={isAnswered
                     ? passageWorkspaceLabels.formatAnsweredQuestion(questionNumber)
@@ -798,35 +810,38 @@
             </nav>
           {/if}
 
-          {#each passageGroupViews as group (group.id)}
-            <!-- Paging shows one question, so the groups it is not in would only add blank scroll. -->
-            {#if !pagesOneQuestion || group.id === pagerGroup?.id}
-              <article
-                class={[
-                  'ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8',
-                  // Leave room for the sticky pager footer so the last option clears it.
-                  pagesOneQuestion ? 'ui:pb-24' : ''
-                ]}
-                data-assessment-question-group={group.id}
-                aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
-              >
-                <div class="ui:space-y-8">
-                  {#each group.interactions as block (block.id)}
-                    {@const interactionIndex = interactionBlocks.findIndex(
-                      (interactionBlock) => interactionBlock.id === block.id
-                    )}
-                    {#if !pagesOneQuestion || block.id === activeInteractionId}
-                      {@render renderInteractionBlock(block, interactionIndex)}
-                    {/if}
-                  {/each}
-                </div>
-              </article>
-            {/if}
-          {/each}
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <div
+            bind:this={questionPanel}
+            class="ui:min-h-0 ui:flex-1 ui:overflow-y-auto ui:overscroll-contain"
+            tabindex="0"
+          >
+            {#each passageGroupViews as group (group.id)}
+              <!-- Paging shows one question, so the groups it is not in would only add blank scroll. -->
+              {#if !pagesOneQuestion || group.id === pagerGroup?.id}
+                <article
+                  class="ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8"
+                  data-assessment-question-group={group.id}
+                  aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+                >
+                  <div class="ui:space-y-8">
+                    {#each group.interactions as block (block.id)}
+                      {@const interactionIndex = interactionBlocks.findIndex(
+                        (interactionBlock) => interactionBlock.id === block.id
+                      )}
+                      {#if !pagesOneQuestion || block.id === activeInteractionId}
+                        {@render renderInteractionBlock(block, interactionIndex)}
+                      {/if}
+                    {/each}
+                  </div>
+                </article>
+              {/if}
+            {/each}
+          </div>
 
           {#if pagesOneQuestion && pagerInteractions.length > 1}
             <div
-              class="ui:border-border ui:bg-background/95 ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3 ui:backdrop-blur-sm"
+              class="ui:border-border ui:bg-background ui:flex ui:shrink-0 ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3"
             >
               <Button
                 type="button"
