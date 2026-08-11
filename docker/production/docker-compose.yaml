@@ -105,8 +105,17 @@ services:
     # Built from the same sources as the API, so the applied schema always
     # matches the API that will serve it. The builder caches the layers, so the
     # second service costs nothing.
+    #
+    # Every build context here is `.`, not a path back up to the repository root,
+    # because Compose resolves a relative context against the *project directory*
+    # rather than the directory holding this file — and Coolify invokes Compose
+    # with `--project-directory` already pointing at the repository root. Writing
+    # `../..` resolves above that root and fails with `lstat /docker: no such
+    # file or directory`. To reproduce a deploy build by hand, pass the same
+    # project directory: `docker compose -f docker/production/docker-compose.yaml
+    # --project-directory . config`.
     build:
-      context: ../..
+      context: .
       dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
@@ -133,7 +142,7 @@ services:
 
   api:
     build:
-      context: ../..
+      context: .
       dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
@@ -243,7 +252,7 @@ services:
 
   dashboard:
     build:
-      context: ../..
+      context: .
       dockerfile: docker/Dockerfile.dashboard
     labels:
       io.classroom.stack: production
@@ -328,7 +337,7 @@ services:
   # and notifications. Without this service those queues fill up silently.
   jobs:
     build:
-      context: ../..
+      context: .
       dockerfile: docker/Dockerfile.jobs
     labels:
       io.classroom.stack: production
