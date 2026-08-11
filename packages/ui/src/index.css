@@ -266,3 +266,13 @@
       )
       border-box;
 }
+
+/*
+  Paints the passage gap belonging to the question a learner is currently on. Driven by
+  the Custom Highlight API from the assessment renderer, so the passage markup itself is
+  never rewritten. Only background and colour are allowed on ::highlight().
+*/
+::highlight(assessment-blank) {
+  background-color: color-mix(in oklab, var(--primary, #1d4ee2) 24%, transparent);
+  color: inherit;
+}

@@ -174,6 +174,9 @@
     )
   );
   const pagesOneQuestion = $derived(isCompactViewport && questionViewMode === 'single');
+  const activeQuestionNumber = $derived(
+    pagerGroup && activeInteractionId ? pagerGroup.questionStart + activeInteractionIndex : null
+  );
 
   // Keep the shown question inside the active group when the group changes.
   $effect(() => {
@@ -228,6 +231,103 @@
     scrollPanelToGroup(passagePanel, 'data-assessment-passage-group', groupId, 'auto', 56);
     scrollPanelToGroup(questionPanel, 'data-assessment-question-group', groupId, 'auto');
   }
+
+  /**
+   * Passages number their gaps in the prose itself — `(3) ______` — and carry no anchor
+   * to jump to, so the gap for the current question is found by matching that number in
+   * the text.
+   *
+   * The match cannot be done text node by text node: only the first gap in a passage
+   * tends to sit in one contiguous run, and the rest are cut in half by inline markup
+   * (`<strong>(1</strong><strong>3)</strong>` and similar), which a per-node search
+   * misses five times out of six. So the group's text is walked into one string, and the
+   * offsets of the match are mapped back onto the nodes they came from.
+   *
+   * Best effort by design: a paper whose questions do not point at a numbered gap, such
+   * as ordinary reading comprehension, simply gets no highlight.
+   */
+  const BLANK_HIGHLIGHT_NAME = 'assessment-blank';
+
+  function clearPassageBlankHighlight() {
+    CSS.highlights?.delete(BLANK_HIGHLIGHT_NAME);
+  }
+
+  function findBlankRange(scope: Node, questionNumber: number): Range | null {
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+    const nodes: Text[] = [];
+    let text = '';
+
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      nodes.push(node as Text);
+      text += node.textContent ?? '';
+    }
+
+    // Take the run of underscores after the number too, so the highlight covers the gap
+    // the learner is filling and not just its label. Papers that only cite a number,
+    // with no gap to fill, match the number alone.
+    const match = new RegExp(`\\(\\s*${questionNumber}\\s*\\)\\s*_*`).exec(text);
+    if (!match) return null;
+
+    // Turn an offset into the flattened text back into the node that holds it.
+    function locate(offset: number): [Text, number] | null {
+      let consumed = 0;
+
+      for (const node of nodes) {
+        const length = node.textContent?.length ?? 0;
+        if (offset <= consumed + length) return [node, offset - consumed];
+        consumed += length;
+      }
+
+      return null;
+    }
+
+    const start = locate(match.index);
+    const end = locate(match.index + match[0].length);
+    if (!start || !end) return null;
+
+    const range = document.createRange();
+    range.setStart(start[0], start[1]);
+    range.setEnd(end[0], end[1]);
+    return range;
+  }
+
+  function highlightPassageBlank(questionNumber: number | null) {
+    const panel = passagePanel;
+    if (!panel) return;
+
+    clearPassageBlankHighlight();
+    if (questionNumber === null) return;
+
+    const group = activeQuestionGroupId
+      ? panel.querySelector<HTMLElement>(`[data-assessment-passage-group="${activeQuestionGroupId}"]`)
+      : null;
+    const range = findBlankRange(group ?? panel, questionNumber);
+    if (!range) return;
+
+    // The Custom Highlight API paints the range without touching the passage markup, so
+    // authored HTML is never rewritten and there is nothing to unpick afterwards. Where
+    // it is missing the learner still gets the scroll, just without the tint.
+    if (typeof Highlight === 'function') CSS.highlights?.set(BLANK_HIGHLIGHT_NAME, new Highlight(range));
+
+    // Centre it within the passage panel by hand. `scrollIntoView` would also drag the
+    // page itself on a phone, pulling the whole workspace out of view.
+    const panelRect = panel.getBoundingClientRect();
+    const blankRect = range.getBoundingClientRect();
+    panel.scrollTo({
+      top: panel.scrollTop + blankRect.top - panelRect.top - panel.clientHeight / 2 + blankRect.height / 2,
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+    });
+  }
+
+  $effect(() => {
+    if (!pagesOneQuestion) {
+      clearPassageBlankHighlight();
+      return;
+    }
+
+    highlightPassageBlank(activeQuestionNumber);
+    return clearPassageBlankHighlight;
+  });
 
   function updateResponse(
     interactionId: string,
