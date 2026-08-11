@@ -16,9 +16,10 @@
 #     services publish on loopback only; nothing here claims 80/443.
 #
 # Deploy contract:
-#   - Application images are immutable GHCR digest references. Coolify records
-#     the deployed commit and reconciles the digest variables before deployment.
-#     The dashboard topology remains baked into its released image.
+#   - Coolify builds the application images from this checkout on every deploy,
+#     so what runs is whatever `main` contained when the webhook fired. There is
+#     no external image registry in the path: a push is the whole trigger.
+#     The dashboard topology is baked in at build time from these same sources.
 #   - Every secret and public URL is required. The stack fails to start rather
 #     than booting with an empty auth secret or a wrong origin.
 #   - Development values must never be reused here; production starts from an
@@ -101,10 +102,12 @@ services:
   # release instead of leaving the API half-migrated.
   # `restart: "no"` also tells Coolify this container is not part of stack health.
   db-migrate:
-    # Reuses the immutable API image, so the applied schema always matches the
-    # API that will serve it.
-    image: ${API_IMAGE:?set API_IMAGE to an immutable GHCR digest reference}
-    pull_policy: always
+    # Built from the same sources as the API, so the applied schema always
+    # matches the API that will serve it. The builder caches the layers, so the
+    # second service costs nothing.
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
       io.classroom.role: db-migrate
@@ -129,8 +132,9 @@ services:
           memory: 1G
 
   api:
-    image: ${API_IMAGE:?set API_IMAGE to an immutable GHCR digest reference}
-    pull_policy: always
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.api
     labels:
       io.classroom.stack: production
       io.classroom.role: api
@@ -238,8 +242,9 @@ services:
           memory: 1536M
 
   dashboard:
-    image: ${DASHBOARD_IMAGE:?set DASHBOARD_IMAGE to an immutable GHCR digest reference}
-    pull_policy: always
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.dashboard
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -322,8 +327,9 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: ${JOBS_IMAGE:?set JOBS_IMAGE to an immutable GHCR digest reference}
-    pull_policy: always
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.jobs
     labels:
       io.classroom.stack: production
       io.classroom.role: jobs
