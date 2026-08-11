@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Rückgängig",
               "validation_summary": "{count} Validierungsprobleme erfordern Aufmerksamkeit.",
-              "workspace": "Aufgabenbereich"
+              "workspace": "Aufgabenbereich",
+              "passage_workspace_show_all_questions": "Alle anzeigen",
+              "passage_workspace_show_one_question": "Einzeln",
+              "passage_workspace_previous_question": "Zurück",
+              "passage_workspace_next_question": "Weiter",
+              "passage_workspace_answered_question": "Frage {number}, beantwortet",
+              "passage_workspace_unanswered_question": "Frage {number}, nicht beantwortet"
             }
           },
           "new_exercise_modal": {

@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Deshacer",
               "validation_summary": "{count} problemas de validación requieren atención.",
-              "workspace": "Espacio de trabajo del ejercicio"
+              "workspace": "Espacio de trabajo del ejercicio",
+              "passage_workspace_show_all_questions": "Ver todas",
+              "passage_workspace_show_one_question": "Una a una",
+              "passage_workspace_previous_question": "Anterior",
+              "passage_workspace_next_question": "Siguiente",
+              "passage_workspace_answered_question": "Pregunta {number}, respondida",
+              "passage_workspace_unanswered_question": "Pregunta {number}, sin responder"
             }
           },
           "new_exercise_modal": {

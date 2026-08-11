@@ -510,6 +510,26 @@ export function getAssessmentPassageWorkspaceLabels() {
     questions: t.get('course.navItem.lessons.exercises.all_exercises.questions'),
     navigation: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_navigation'),
     locatePassage: t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_locate'),
+    showAllQuestions: t.get(
+      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_all_questions'
+    ),
+    showOneQuestion: t.get(
+      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_show_one_question'
+    ),
+    previousQuestion: t.get(
+      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_previous_question'
+    ),
+    nextQuestion: t.get(
+      'course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_next_question'
+    ),
+    formatAnsweredQuestion: (questionNumber: number) =>
+      t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_answered_question', {
+        number: questionNumber
+      }),
+    formatUnansweredQuestion: (questionNumber: number) =>
+      t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_unanswered_question', {
+        number: questionNumber
+      }),
     formatPassage: (index: number) =>
       t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_passage', {
         index

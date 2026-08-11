@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "पूर्ववत करें",
               "validation_summary": "{count} सत्यापन समस्याओं पर ध्यान देना आवश्यक है।",
-              "workspace": "अभ्यास कार्यक्षेत्र"
+              "workspace": "अभ्यास कार्यक्षेत्र",
+              "passage_workspace_show_all_questions": "सभी दिखाएँ",
+              "passage_workspace_show_one_question": "एक-एक करके",
+              "passage_workspace_previous_question": "पिछला",
+              "passage_workspace_next_question": "अगला",
+              "passage_workspace_answered_question": "प्रश्न {number}, उत्तर दिया गया",
+              "passage_workspace_unanswered_question": "प्रश्न {number}, उत्तर नहीं दिया गया"
             }
           },
           "new_exercise_modal": {

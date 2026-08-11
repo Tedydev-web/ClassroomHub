@@ -52,9 +52,15 @@
     questions: string;
     navigation: string;
     locatePassage: string;
+    showAllQuestions: string;
+    showOneQuestion: string;
+    previousQuestion: string;
+    nextQuestion: string;
     formatPassage: (index: number) => string;
     formatQuestionRange: (start: number, end: number) => string;
     formatProgress: (answered: number, total: number) => string;
+    formatAnsweredQuestion: (questionNumber: number) => string;
+    formatUnansweredQuestion: (questionNumber: number) => string;
   }
 
   let {
@@ -131,6 +137,72 @@
   });
 
   const activePassageGroupView = $derived(passageGroupViews.find((group) => group.id === activeQuestionGroupId));
+
+  /**
+   * A phone has room for one question at a time, so the questions panel pages
+   * through them instead of scrolling a long column. The pager and its mode
+   * switch only exist below `lg`; from there the panel always shows the whole
+   * group, which is what the side-by-side layout is for.
+   */
+  let questionViewMode = $state<'single' | 'all'>('single');
+  let activeInteractionId = $state<string | null>(null);
+  let isCompactViewport = $state(false);
+
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+
+    const wideEnough = window.matchMedia('(min-width: 64rem)');
+    const sync = () => {
+      isCompactViewport = !wideEnough.matches;
+    };
+    sync();
+    wideEnough.addEventListener('change', sync);
+
+    return () => wideEnough.removeEventListener('change', sync);
+  });
+
+  const answeredInteractionIds = $derived(
+    new Set(
+      interactionBlocks
+        .filter(
+          (block) =>
+            getAssessmentVerticalSliceResponseProgress(
+              { schemaVersion: definition.schemaVersion, blocks: [block] },
+              response
+            ).answered === 1
+        )
+        .map((block) => block.id)
+    )
+  );
+
+  const pagerGroup = $derived(activePassageGroupView ?? passageGroupViews[0]);
+  const pagerInteractions = $derived(pagerGroup?.interactions ?? []);
+  const activeInteractionIndex = $derived(
+    Math.max(
+      0,
+      pagerInteractions.findIndex((block) => block.id === activeInteractionId)
+    )
+  );
+  const pagesOneQuestion = $derived(isCompactViewport && questionViewMode === 'single');
+
+  // Keep the shown question inside the active group when the group changes.
+  $effect(() => {
+    const [firstInteraction] = pagerInteractions;
+    if (!firstInteraction) return;
+    if (pagerInteractions.some((block) => block.id === activeInteractionId)) return;
+
+    activeInteractionId = firstInteraction.id;
+  });
+
+  function goToInteraction(interactionId: string) {
+    activeInteractionId = interactionId;
+    questionPanel?.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+  }
+
+  function stepInteraction(offset: number) {
+    const next = pagerInteractions[activeInteractionIndex + offset];
+    if (next) goToInteraction(next.id);
+  }
 
   function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -695,24 +767,100 @@
                 </p>
               </div>
             </div>
+            {#if isCompactViewport}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="ui:shrink-0"
+                aria-pressed={questionViewMode === 'all'}
+                onclick={() => (questionViewMode = questionViewMode === 'single' ? 'all' : 'single')}
+              >
+                {questionViewMode === 'single'
+                  ? passageWorkspaceLabels.showAllQuestions
+                  : passageWorkspaceLabels.showOneQuestion}
+              </Button>
+            {/if}
           </header>
 
-          {#each passageGroupViews as group (group.id)}
-            <article
-              class="ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8"
-              data-assessment-question-group={group.id}
-              aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+          {#if pagesOneQuestion && pagerGroup}
+            <nav
+              class="ui:border-border ui:flex ui:flex-wrap ui:gap-1.5 ui:border-b ui:px-4 ui:py-3"
+              aria-label={passageWorkspaceLabels.questions}
             >
-              <div class="ui:space-y-8">
-                {#each group.interactions as block (block.id)}
-                  {@const interactionIndex = interactionBlocks.findIndex(
-                    (interactionBlock) => interactionBlock.id === block.id
-                  )}
-                  {@render renderInteractionBlock(block, interactionIndex)}
-                {/each}
-              </div>
-            </article>
+              {#each pagerInteractions as block, index (block.id)}
+                {@const questionNumber = pagerGroup.questionStart + index}
+                {@const isAnswered = answeredInteractionIds.has(block.id)}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={block.id === activeInteractionId ? 'default' : isAnswered ? 'secondary' : 'outline'}
+                  class="ui:size-9 ui:p-0 ui:tabular-nums"
+                  aria-current={block.id === activeInteractionId ? 'true' : undefined}
+                  aria-label={isAnswered
+                    ? passageWorkspaceLabels.formatAnsweredQuestion(questionNumber)
+                    : passageWorkspaceLabels.formatUnansweredQuestion(questionNumber)}
+                  onclick={() => goToInteraction(block.id)}
+                >
+                  {questionNumber}
+                </Button>
+              {/each}
+            </nav>
+          {/if}
+
+          {#each passageGroupViews as group (group.id)}
+            <!-- Paging shows one question, so the groups it is not in would only add blank scroll. -->
+            {#if !pagesOneQuestion || group.id === pagerGroup?.id}
+              <article
+                class={[
+                  'ui:min-h-full ui:px-5 ui:py-6 ui:sm:px-8',
+                  // Leave room for the sticky pager footer so the last option clears it.
+                  pagesOneQuestion ? 'ui:pb-24' : ''
+                ]}
+                data-assessment-question-group={group.id}
+                aria-label={passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+              >
+                <div class="ui:space-y-8">
+                  {#each group.interactions as block (block.id)}
+                    {@const interactionIndex = interactionBlocks.findIndex(
+                      (interactionBlock) => interactionBlock.id === block.id
+                    )}
+                    {#if !pagesOneQuestion || block.id === activeInteractionId}
+                      {@render renderInteractionBlock(block, interactionIndex)}
+                    {/if}
+                  {/each}
+                </div>
+              </article>
+            {/if}
           {/each}
+
+          {#if pagesOneQuestion && pagerInteractions.length > 1}
+            <div
+              class="ui:border-border ui:bg-background/95 ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3 ui:backdrop-blur-sm"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                class="ui:min-h-11"
+                disabled={activeInteractionIndex === 0}
+                onclick={() => stepInteraction(-1)}
+              >
+                {passageWorkspaceLabels.previousQuestion}
+              </Button>
+              <span class="ui:text-muted-foreground ui:text-xs ui:tabular-nums">
+                {activeInteractionIndex + 1}/{pagerInteractions.length}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                class="ui:min-h-11"
+                disabled={activeInteractionIndex >= pagerInteractions.length - 1}
+                onclick={() => stepInteraction(1)}
+              >
+                {passageWorkspaceLabels.nextQuestion}
+              </Button>
+            </div>
+          {/if}
         </section>
       </div>
     </div>

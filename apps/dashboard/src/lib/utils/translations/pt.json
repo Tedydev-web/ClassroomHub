@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Desfazer",
               "validation_summary": "{count} problemas de validação precisam de atenção.",
-              "workspace": "Área de edição do exercício"
+              "workspace": "Área de edição do exercício",
+              "passage_workspace_show_all_questions": "Ver todas",
+              "passage_workspace_show_one_question": "Uma de cada vez",
+              "passage_workspace_previous_question": "Anterior",
+              "passage_workspace_next_question": "Próxima",
+              "passage_workspace_answered_question": "Pergunta {number}, respondida",
+              "passage_workspace_unanswered_question": "Pergunta {number}, não respondida"
             }
           },
           "new_exercise_modal": {
