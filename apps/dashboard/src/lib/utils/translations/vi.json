@@ -2043,7 +2043,13 @@
               "title": "Tiêu đề tương tác",
               "undo": "Hoàn tác",
               "validation_summary": "Có {count} lỗi cần được xử lý.",
-              "workspace": "Không gian soạn bài tập"
+              "workspace": "Không gian soạn bài tập",
+              "passage_workspace_show_all_questions": "Xem tất cả",
+              "passage_workspace_show_one_question": "Từng câu",
+              "passage_workspace_previous_question": "Câu trước",
+              "passage_workspace_next_question": "Câu sau",
+              "passage_workspace_answered_question": "Câu {number}, đã trả lời",
+              "passage_workspace_unanswered_question": "Câu {number}, chưa trả lời"
             }
           },
           "new_exercise_modal": {

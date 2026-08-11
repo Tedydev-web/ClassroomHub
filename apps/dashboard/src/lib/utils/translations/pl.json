@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Cofnij",
               "validation_summary": "{count} problemy z walidacją wymagają uwagi.",
-              "workspace": "Obszar edycji ćwiczenia"
+              "workspace": "Obszar edycji ćwiczenia",
+              "passage_workspace_show_all_questions": "Pokaż wszystkie",
+              "passage_workspace_show_one_question": "Pojedynczo",
+              "passage_workspace_previous_question": "Poprzednie",
+              "passage_workspace_next_question": "Następne",
+              "passage_workspace_answered_question": "Pytanie {number}, udzielono odpowiedzi",
+              "passage_workspace_unanswered_question": "Pytanie {number}, bez odpowiedzi"
             }
           },
           "new_exercise_modal": {

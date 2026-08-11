@@ -2670,7 +2670,13 @@
               "true_false_group": "True/false group",
               "undo": "Undo",
               "validation_summary": "{count} validation issues need attention.",
-              "workspace": "Exercise workspace"
+              "workspace": "Exercise workspace",
+              "passage_workspace_show_all_questions": "Show all",
+              "passage_workspace_show_one_question": "One at a time",
+              "passage_workspace_previous_question": "Previous",
+              "passage_workspace_next_question": "Next",
+              "passage_workspace_answered_question": "Question {number}, answered",
+              "passage_workspace_unanswered_question": "Question {number}, not answered"
             },
             "add_section": "Add section",
             "reorder": "Reorder Questions",

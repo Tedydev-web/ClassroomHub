@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Annuler",
               "validation_summary": "{count} problèmes de validation nécessitent votre attention.",
-              "workspace": "Espace de travail de l’exercice"
+              "workspace": "Espace de travail de l’exercice",
+              "passage_workspace_show_all_questions": "Tout afficher",
+              "passage_workspace_show_one_question": "Une par une",
+              "passage_workspace_previous_question": "Précédent",
+              "passage_workspace_next_question": "Suivant",
+              "passage_workspace_answered_question": "Question {number}, répondue",
+              "passage_workspace_unanswered_question": "Question {number}, sans réponse"
             }
           },
           "new_exercise_modal": {

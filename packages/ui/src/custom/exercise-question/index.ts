@@ -10,6 +10,7 @@ export { default as SectionHeader } from './section-header.svelte';
 export { default as SectionNavigationSidebar } from './section-navigation-sidebar.svelte';
 export { default as SectionOverview } from './section-overview.svelte';
 export * from './renderer-contract';
+export * from './constants';
 
 export { default as ThumbsEdit } from './renderers/thumbs/edit.svelte';
 export { default as TrueFalseEdit } from './renderers/true-false/edit.svelte';

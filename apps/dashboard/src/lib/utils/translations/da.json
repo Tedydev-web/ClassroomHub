@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Fortryd",
               "validation_summary": "{count} valideringsproblemer kræver opmærksomhed.",
-              "workspace": "Arbejdsområde til øvelsen"
+              "workspace": "Arbejdsområde til øvelsen",
+              "passage_workspace_show_all_questions": "Vis alle",
+              "passage_workspace_show_one_question": "Én ad gangen",
+              "passage_workspace_previous_question": "Forrige",
+              "passage_workspace_next_question": "Næste",
+              "passage_workspace_answered_question": "Spørgsmål {number}, besvaret",
+              "passage_workspace_unanswered_question": "Spørgsmål {number}, ubesvaret"
             }
           },
           "new_exercise_modal": {

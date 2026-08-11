@@ -2043,7 +2043,13 @@
               "title": "Question title",
               "undo": "Отменить",
               "validation_summary": "{count} ошибок проверки требуют внимания.",
-              "workspace": "Рабочая область упражнения"
+              "workspace": "Рабочая область упражнения",
+              "passage_workspace_show_all_questions": "Показать все",
+              "passage_workspace_show_one_question": "По одному",
+              "passage_workspace_previous_question": "Назад",
+              "passage_workspace_next_question": "Далее",
+              "passage_workspace_answered_question": "Вопрос {number}, есть ответ",
+              "passage_workspace_unanswered_question": "Вопрос {number}, без ответа"
             }
           },
           "new_exercise_modal": {
