@@ -12,6 +12,8 @@
     type ReleasedAssessmentFeedback
   } from '@cio/question-types';
   import NumberBadge from '$src/base/number-badge/number-badge.svelte';
+  import { IsMobile } from '../../hooks/is-mobile.svelte';
+  import { SPLIT_LAYOUT_BREAKPOINT } from './constants';
   import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
   import { Button } from '../../base/button';
@@ -146,20 +148,8 @@
    */
   let questionViewMode = $state<'single' | 'all'>('single');
   let activeInteractionId = $state<string | null>(null);
-  let isCompactViewport = $state(false);
-
-  $effect(() => {
-    if (typeof window === 'undefined') return;
-
-    const wideEnough = window.matchMedia('(min-width: 64rem)');
-    const sync = () => {
-      isCompactViewport = !wideEnough.matches;
-    };
-    sync();
-    wideEnough.addEventListener('change', sync);
-
-    return () => wideEnough.removeEventListener('change', sync);
-  });
+  const belowSplitLayout = new IsMobile(SPLIT_LAYOUT_BREAKPOINT);
+  const isCompactViewport = $derived(belowSplitLayout.current);
 
   const answeredInteractionIds = $derived(
     new Set(

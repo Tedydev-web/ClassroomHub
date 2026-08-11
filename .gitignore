@@ -23,12 +23,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+# Cover every suffix rather than naming them one by one, so a new
+# .env.<something> holding credentials cannot be staged by accident.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.dev
+.env.*
+!.env.example
+!.env.dev.example
 
 # Google Cloud OAuth client downloads
 client_secret_*.apps.googleusercontent.com.json

@@ -19,6 +19,8 @@
     isCourseContentLockedForStudent
   } from '$features/ai-assistant/utils/content-ask-ai-bar';
   import { initialChatPrompt, openAiAssistant } from '$features/ai-assistant/utils/store';
+  import { SPLIT_LAYOUT_BREAKPOINT } from '@cio/ui/custom/exercise-question';
+  import { IsMobile } from '@cio/ui/hooks/is-mobile.svelte';
   import { sidePanel, SidePanelRail } from '$features/side-panel';
   import { transcriptPanelDefinition } from '$features/course/components/lesson/video/transcript-panel-definition';
   import { get } from 'svelte/store';
@@ -101,9 +103,18 @@
     )
   );
 
+  /**
+   * The bar is fixed to the bottom of the viewport, where a narrow screen already
+   * spends its height on the question itself and on the pager controls it would
+   * cover. The header's assistant button opens the same panel, so the shortcut is
+   * dropped there rather than stacked on top of the exam.
+   */
+  const belowSplitLayout = new IsMobile(SPLIT_LAYOUT_BREAKPOINT);
+
   const showContentAskAiBar = $derived(
     isCourseReady &&
       isLessonOrExercisePage &&
+      !belowSplitLayout.current &&
       !($isCourseLearnerView && isContentLockedForStudent) &&
       sidePanel.activePanelId !== AI_ASSISTANT_PANEL_ID
   );
