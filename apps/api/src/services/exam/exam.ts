@@ -4,10 +4,17 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { env } from '@cio/core/config/env';
 import { db } from '@cio/db/drizzle';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
-import { getExamById, getExamBySlug, listExamsByCourseId, softDeleteExam } from '@cio/db/queries/exam/exam';
+import {
+  getExamById,
+  getExamBySlug,
+  listExamsByCourseId,
+  restoreExam,
+  softDeleteExam
+} from '@cio/db/queries/exam/exam';
 import * as schema from '@cio/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
+import { assertIsContainer, freezeExamPaper, summariseContainer } from './exam-container';
 import { revealConfigurationIssue, type ExamRevealValue } from './exam-reveal-policy';
 
 /**
@@ -215,4 +222,68 @@ export async function deleteExamService(id: string) {
   if (!deleted) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
   return deleted;
+}
+
+/**
+ * Opening an exam is the moment its paper stops moving. The frozen snapshot is written
+ * here and nowhere else, and the exam cannot leave `draft` without one — every later
+ * guarantee about what a sitter sees, which revision an answer is pinned to, and what
+ * grading reads, rests on it existing.
+ */
+export async function openExamService(id: string) {
+  requireExamsEnabled();
+
+  const exam = await getExamById(id);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  if (exam.status === 'open') return exam;
+
+  await assertIsContainer(exam.exerciseId);
+  const paperSnapshot = await freezeExamPaper(exam.exerciseId);
+
+  const [opened] = await db
+    .update(schema.exam)
+    .set({ status: 'open', paperSnapshot, updatedAt: new Date().toISOString() })
+    .where(eq(schema.exam.id, id))
+    .returning();
+
+  return opened;
+}
+
+/**
+ * Closing stops new sitters. It deliberately leaves attempts already in progress alone:
+ * their own clocks decide when they end, and cutting them off mid-answer would lose work
+ * the server has already accepted.
+ */
+export async function closeExamService(id: string) {
+  requireExamsEnabled();
+
+  const [closed] = await db
+    .update(schema.exam)
+    .set({ status: 'closed', updatedAt: new Date().toISOString() })
+    .where(and(eq(schema.exam.id, id), isNull(schema.exam.deletedAt)))
+    .returning();
+
+  if (!closed) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  return closed;
+}
+
+export async function restoreExamService(id: string) {
+  requireExamsEnabled();
+
+  const restored = await restoreExam(id);
+  if (!restored) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  return restored;
+}
+
+/** What the teacher is shown before sending the link. Reports; refuses nothing. */
+export async function summariseExamPaperService(id: string) {
+  requireExamsEnabled();
+
+  const exam = await getExamById(id);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  return summariseContainer(exam.exerciseId);
 }

@@ -6,11 +6,15 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 
 import {
+  closeExamService,
   createExamService,
   deleteExamService,
   getExamService,
   listExamsService,
-  requireExamsEnabled
+  openExamService,
+  requireExamsEnabled,
+  restoreExamService,
+  summariseExamPaperService
 } from '@api/services/exam/exam';
 
 /**
@@ -86,6 +90,43 @@ export const examRouter = new Hono()
       const exam = await getExamService(c.req.param('examId'));
 
       return c.json({ success: true as const, data: exam });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // The paper is frozen here, so this is the last moment its questions can change.
+  .post('/:examId/open', authMiddleware, async (c) => {
+    try {
+      const exam = await openExamService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: exam });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .post('/:examId/close', authMiddleware, async (c) => {
+    try {
+      const exam = await closeExamService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: exam });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .post('/:examId/restore', authMiddleware, async (c) => {
+    try {
+      const exam = await restoreExamService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: exam });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/:examId/summary', authMiddleware, async (c) => {
+    try {
+      const summary = await summariseExamPaperService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: summary });
     } catch (error) {
       return handleError(c, error);
     }
