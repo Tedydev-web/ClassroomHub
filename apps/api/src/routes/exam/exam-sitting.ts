@@ -8,6 +8,7 @@ import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
+import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
 import {
   countAttemptsForToken,
   hashResumeToken,
@@ -70,7 +71,7 @@ export const examSittingRouter = new Hono()
     requireExamsEnabled();
     return next();
   })
-  .post('/:slug/start', zValidator('json', startSchema), async (c) => {
+  .post('/:slug/start', examRateLimiter('start'), zValidator('json', startSchema), async (c) => {
     try {
       requireSittingHeader(c.req.header(REQUIRED_HEADER));
 
@@ -117,7 +118,7 @@ export const examSittingRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .put('/attempt/:attemptId/answers', zValidator('json', saveSchema), async (c) => {
+  .put('/attempt/:attemptId/answers', examRateLimiter('save'), zValidator('json', saveSchema), async (c) => {
     try {
       requireSittingHeader(c.req.header(REQUIRED_HEADER));
 
@@ -128,7 +129,7 @@ export const examSittingRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .post('/attempt/:attemptId/submit', async (c) => {
+  .post('/attempt/:attemptId/submit', examRateLimiter('submit'), async (c) => {
     try {
       requireSittingHeader(c.req.header(REQUIRED_HEADER));
 
