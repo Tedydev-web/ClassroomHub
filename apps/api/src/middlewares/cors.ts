@@ -3,7 +3,11 @@ import { resolveTrustedBrowserOriginForCors } from '@api/utils/origins';
 
 const sharedCorsOptions = {
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'Cio-org-id'],
+  // `x-exam-sitting` is the CSRF capability check on the unauthenticated exam-sitting
+  // writes. It only works as one because a cross-site fetch cannot set it unless CORS
+  // allows it — which is precisely why it must be listed here for our own origins, and
+  // why leaving it out silently blocks every sitter at the preflight.
+  allowHeaders: ['Content-Type', 'Authorization', 'Cio-org-id', 'x-exam-sitting'],
   exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
   maxAge: 600
 };
