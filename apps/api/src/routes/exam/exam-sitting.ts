@@ -8,9 +8,11 @@ import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
+import { toExamSittingPaper } from '@api/services/exam/exam-paper-serializer';
 import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
 import {
   countAttemptsForToken,
+  resumeAttemptService,
   hashResumeToken,
   resumeCookieName,
   saveAnswersService,
@@ -88,6 +90,40 @@ export const examSittingRouter = new Hono()
           requiresPassword: Boolean(exam.passwordHash),
           workingSeconds: exam.workingSeconds,
           closesAt: exam.closesAt
+        }
+      });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // Called before the entry screen shows. A refresh mid-paper must continue the same
+  // attempt with the time already spent gone, not open a second one on a fresh clock.
+  .get('/:slug/resume', async (c) => {
+    try {
+      const exam = await getPublicExamService(c.req.param('slug'));
+      const rawToken = getCookie(c, resumeCookieName(exam.id));
+
+      if (!rawToken) {
+        return c.json({ success: true as const, data: null });
+      }
+
+      const resumed = await resumeAttemptService(exam.id, rawToken, new Date());
+      if (!resumed) {
+        return c.json({ success: true as const, data: null });
+      }
+
+      const snapshot = exam.paperSnapshot as Parameters<typeof toExamSittingPaper>[0];
+
+      return c.json({
+        success: true as const,
+        data: {
+          attemptId: resumed.attempt.id,
+          paper: toExamSittingPaper(snapshot),
+          answers: resumed.attempt.answers,
+          expiresAt: resumed.attempt.expiresAt,
+          secondsRemaining: resumed.secondsRemaining,
+          writable: resumed.writable,
+          serverNow: new Date().toISOString()
         }
       });
     } catch (error) {

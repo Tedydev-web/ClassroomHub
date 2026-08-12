@@ -133,6 +133,44 @@
     await submit();
   }
 
+  /**
+   * Asked once, before the entry screen appears. A refresh mid-paper must continue the
+   * same attempt with the time already spent gone — otherwise the student loses their work
+   * and gains a fresh clock, which is the wrong outcome twice over.
+   */
+  $effect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const response = await classroomhub['exam-sitting'][':slug'].resume.$get(
+          { param: { slug: data.slug } },
+          { headers: { 'x-exam-sitting': '1' } }
+        );
+        const body = await response.json();
+
+        if (cancelled || !('success' in body) || !body.success || !body.data) return;
+
+        attemptId = body.data.attemptId;
+        paper = body.data.paper;
+        expiresAt = body.data.expiresAt ?? null;
+        offset = clockOffsetMs(body.data.serverNow);
+
+        for (const saved of body.data.answers ?? []) {
+          responses[saved.questionId] = saved.answerData;
+        }
+
+        stage = 'sitting';
+      } catch {
+        // No resume is not an error: it only means this browser has not started yet.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  });
+
   const unansweredCount = $derived(
     (paper?.questions ?? []).filter((question) => responses[question.questionId] === undefined).length
   );

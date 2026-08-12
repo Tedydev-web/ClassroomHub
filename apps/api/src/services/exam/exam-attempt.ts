@@ -6,6 +6,7 @@ import * as schema from '@cio/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { canStartNow, computeExpiry, isWithinWritingWindow, secondsRemaining } from './exam-attempt-clock';
+import { getAttemptByToken } from '@cio/db/queries/exam/exam-attempt';
 import {
   paperQuestionIds,
   revisionForQuestion,
@@ -270,4 +271,28 @@ export async function countAttemptsForToken(examId: string, tokenHash: string): 
     .where(and(eq(schema.examAttempt.examId, examId), eq(schema.examAttempt.tokenHash, tokenHash)));
 
   return row?.count ?? 0;
+}
+
+/**
+ * The live attempt this browser already has, if any.
+ *
+ * Resume is by cookie, not by name: two sitters typing the same name get separate
+ * attempts, and the same sitter refreshing gets theirs back with the time already spent
+ * gone. Without this a refresh silently starts a second attempt on a fresh clock, which
+ * is both a lost paper and a way to get more time.
+ */
+export async function resumeAttemptService(examId: string, rawToken: string, now: Date) {
+  const attempt = await getAttemptByToken(examId, hashResumeToken(rawToken));
+  if (!attempt || attempt.status !== 'in_progress') return null;
+
+  const expiresAt = attempt.expiresAt ? new Date(attempt.expiresAt) : null;
+
+  return {
+    attempt,
+    expiresAt,
+    secondsRemaining: secondsRemaining(expiresAt, now),
+    // Whether writes are still accepted. An attempt whose clock ran out is resumable only
+    // in the sense that the sitter can see it finished; phase 4 will score it on read.
+    writable: isWithinWritingWindow(expiresAt, now)
+  };
 }
