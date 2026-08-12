@@ -202,18 +202,22 @@ describe.runIf(runDatabaseIntegration)('copying an exercise into an exam contain
       order: 99
     });
 
-    const before = await db
-      .select({ id: schema.exercise.id })
+    const [source] = await db
+      .select({ title: schema.exercise.title })
       .from(schema.exercise)
-      .where(and(isNull(schema.exercise.courseId), isNull(schema.exercise.lessonId)));
+      .where(eq(schema.exercise.id, sourceId));
 
     await expect(container.copyExerciseIntoContainer(sourceId, courseId, db)).rejects.toThrow(/canonical revision/);
 
-    const after = await db
+    // Matched on this source's own title rather than counting every container in the
+    // database: other tests create containers concurrently, and a count would measure them.
+    const leftovers = await db
       .select({ id: schema.exercise.id })
       .from(schema.exercise)
-      .where(and(isNull(schema.exercise.courseId), isNull(schema.exercise.lessonId)));
-    expect(after).toHaveLength(before.length);
+      .where(
+        and(isNull(schema.exercise.courseId), isNull(schema.exercise.lessonId), eq(schema.exercise.title, source.title))
+      );
+    expect(leftovers).toHaveLength(0);
   });
 
   it('offers the course its own exercises to copy, with their question counts', async () => {

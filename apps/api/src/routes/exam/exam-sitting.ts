@@ -10,6 +10,8 @@ import { z } from 'zod';
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
 import { toExamSittingPaper } from '@api/services/exam/exam-paper-serializer';
 import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
+import { scoreSubmittedAttempt } from '@api/services/exam/exam-finalisation';
+import { revealedScoreForSitterService } from '@api/services/exam/exam-results';
 import {
   countAttemptsForToken,
   resumeAttemptService,
@@ -196,9 +198,19 @@ export const examSittingRouter = new Hono()
     try {
       requireSittingHeader(c.req.header(REQUIRED_HEADER));
 
-      const attempt = await submitAttemptService(c.req.param('attemptId'), new Date());
+      const now = new Date();
+      const attempt = await submitAttemptService(c.req.param('attemptId'), now);
 
-      return c.json({ success: true as const, data: { attemptId: attempt.id, submittedAt: attempt.submittedAt } });
+      // Scored here rather than left for the teacher's page to finalise. Only expired
+      // attempts are picked up there, so without this a submitted paper keeps a null
+      // score for ever — and the sitter's one chance to be shown it is this response.
+      await scoreSubmittedAttempt(attempt.id, now);
+      const revealed = await revealedScoreForSitterService(attempt.id, now);
+
+      return c.json({
+        success: true as const,
+        data: { attemptId: attempt.id, submittedAt: attempt.submittedAt, result: revealed }
+      });
     } catch (error) {
       return handleError(c, error);
     }

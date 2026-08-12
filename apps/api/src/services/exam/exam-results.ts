@@ -6,6 +6,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { finaliseExpiredAttempts, rescoreFinishedAttempts } from './exam-finalisation';
 import { gradeAttempt, type ExamCorrection, type ManualMarks, type StoredExamAnswer } from './exam-grading';
+import { isRevealed, type ExamRevealValue } from './exam-reveal-policy';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 
 /**
@@ -31,6 +32,54 @@ export type ExamResultRow = {
   duplicateName: boolean;
   duplicateAddress: boolean;
 };
+
+/**
+ * What the sitter is allowed to see of their own result, right after submitting.
+ *
+ * The teacher chose this per exam, and `never` is the default. Returning nothing is the
+ * honest answer for every case except an explicit reveal — the sitter has no account, so
+ * this one response is the only chance they get.
+ */
+export async function revealedScoreForSitterService(
+  attemptId: string,
+  now = new Date()
+): Promise<{ score: string; total: string } | null> {
+  const [attempt] = await db
+    .select({
+      examId: schema.examAttempt.examId,
+      status: schema.examAttempt.status,
+      gradingState: schema.examAttempt.gradingState,
+      score: schema.examAttempt.score,
+      total: schema.examAttempt.total
+    })
+    .from(schema.examAttempt)
+    .where(eq(schema.examAttempt.id, attemptId))
+    .limit(1);
+
+  if (!attempt) return null;
+
+  const exam = await getExamById(attempt.examId);
+  if (!exam) return null;
+
+  const revealed = isRevealed(exam.scoreVisibility as ExamRevealValue, {
+    now,
+    exam: {
+      closesAt: exam.closesAt,
+      workingSeconds: exam.workingSeconds,
+      revealThreshold: exam.revealThreshold
+    },
+    attempt: {
+      status: attempt.status,
+      gradingState: attempt.gradingState,
+      score: attempt.score,
+      total: attempt.total
+    }
+  });
+
+  if (!revealed || attempt.score === null || attempt.total === null) return null;
+
+  return { score: attempt.score, total: attempt.total };
+}
 
 /**
  * The list deliberately does not select `answers` or `answerLog`. At four hundred sittings

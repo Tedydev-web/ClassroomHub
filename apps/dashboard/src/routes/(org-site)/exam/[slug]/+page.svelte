@@ -37,6 +37,8 @@
   let saveState = $state<'saved' | 'saving' | 'unsaved'>('saved');
   let submitting = $state(false);
   let submitError = $state<string | null>(null);
+  // Only ever set when the teacher chose to show it; the server decides, not this page.
+  let revealedResult = $state<{ score: string; total: string } | null>(null);
 
   const queue = createAutosaveQueue({
     send: async (answers) => {
@@ -114,10 +116,16 @@
         return;
       }
 
-      await classroomhub['exam-sitting'].attempt[':attemptId'].submit.$post(
+      const response = await classroomhub['exam-sitting'].attempt[':attemptId'].submit.$post(
         { param: { attemptId } },
         { headers: { 'x-exam-sitting': '1' } }
       );
+      const body = await response.json();
+
+      if ('success' in body && body.success) {
+        revealedResult = body.data.result ?? null;
+      }
+
       stage = 'submitted';
     } catch {
       submitError = $t('exam.sitting.submit_failed');
@@ -238,6 +246,13 @@
 {:else}
   <div class="ui:mx-auto ui:max-w-md ui:space-y-3 ui:px-4 ui:py-16 ui:text-center">
     <h1 class="ui:text-xl ui:font-semibold">{$t('exam.sitting.submitted_title')}</h1>
+
+    {#if revealedResult}
+      <p class="ui:tabular-nums ui:text-3xl ui:font-semibold">
+        {revealedResult.score}/{revealedResult.total}
+      </p>
+    {/if}
+
     <p class="ui:text-muted-foreground ui:text-sm">
       {$t('exam.sitting.submitted_body')}
     </p>
