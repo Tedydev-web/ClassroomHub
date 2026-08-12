@@ -193,28 +193,28 @@ moment the teacher most needs it.
 
 ## Success criteria
 
-- [ ] A blank paper scores zero; no exception escapes grading for any attempt state
-- [ ] An attempt referencing a question outside the paper is flagged, and the other
+- [x] A blank paper scores zero; no exception escapes grading for any attempt state
+- [x] An attempt referencing a question outside the paper is flagged, and the other
       attempts in the same request are still scored and rendered
-- [ ] An attempt is scored against the revision it was sat against, proven by a test that
+- [x] An attempt is scored against the revision it was sat against, proven by a test that
       edits the question between sitting and grading
-- [ ] An expired, unsubmitted attempt is scored from its saved answers on first read
-- [ ] Concurrent finalisation produces one score, not two
-- [ ] `submittedAt` equals `expiresAt` for a finalised attempt, not the read time
-- [ ] A paper mixing auto-scoreable and hand-marked questions scores the first kind, sets
+- [x] An expired, unsubmitted attempt is scored from its saved answers on first read
+- [x] Concurrent finalisation produces one score, not two
+- [x] `submittedAt` equals `expiresAt` for a finalised attempt, not the read time
+- [x] A paper mixing auto-scoreable and hand-marked questions scores the first kind, sets
       `gradingState = 'awaiting_manual'`, and never presents its partial score as final
-- [ ] Awarding a faulty question to everyone re-scores every attempt of that exam, including
+- [x] Awarding a faulty question to everyone re-scores every attempt of that exam, including
       ones already finalised, and leaves a record of the correction on the exam
-- [ ] Correcting a wrong key re-scores every attempt against the corrected key, so a student
+- [x] Correcting a wrong key re-scores every attempt against the corrected key, so a student
       who answered correctly gains and one who did not does not, and the frozen snapshot is
       updated for that question only
-- [ ] Neither correction happens as a side effect of editing the paper; both require the
+- [x] Neither correction happens as a side effect of editing the paper; both require the
       teacher to ask for it
-- [ ] An attempt still in progress when a correction lands is scored with that correction when
+- [x] An attempt still in progress when a correction lands is scored with that correction when
       it finalises later, without anyone re-running anything
-- [ ] Re-scoring a paper that has hand-marked questions preserves the marks: the total is the
+- [x] Re-scoring a paper that has hand-marked questions preserves the marks: the total is the
       automatic score plus the marks, never the automatic score alone
-- [ ] A correction records the previous key, so it can be explained and undone
+- [x] A correction records the previous key, so it can be explained and undone
 
 ## Risk assessment
 

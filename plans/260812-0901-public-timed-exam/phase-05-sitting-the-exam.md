@@ -95,14 +95,14 @@ work is saved when it is not.
 
 ## Success criteria
 
-- [ ] Every autosave failure mode has a passing unit test
-- [ ] Refreshing mid-paper restores answers and the correct remaining time
-- [ ] The countdown matches the server's expiry after a deliberate two-minute clock skew
+- [x] Every autosave failure mode has a passing unit test
+- [x] Refreshing mid-paper restores answers and the correct remaining time
+- [x] The countdown matches the server's expiry after a deliberate two-minute clock skew
       on the client
-- [ ] A student is never shown "saved" while a save is failing
-- [ ] The paper is usable one-handed on a phone, verified by rendering it, not by reading
+- [x] A student is never shown "saved" while a save is failing
+- [x] The paper is usable one-handed on a phone, verified by rendering it, not by reading
       the CSS
-- [ ] `exercise-view.svelte` is not imported anywhere in the exam route
+- [x] `exercise-view.svelte` is not imported anywhere in the exam route
 
 ## Risk assessment
 

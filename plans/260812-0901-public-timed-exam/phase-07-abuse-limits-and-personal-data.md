@@ -97,12 +97,12 @@ an ordinary server log holds.
 
 ## Success criteria
 
-- [ ] Forty simultaneous starts from one address for one exam all succeed
-- [ ] A burst well beyond a plausible class size is refused
-- [ ] `ipHash` is salted and no raw address is stored anywhere
-- [ ] Pruning removes attempts of untimed exams that are still `in_progress`
-- [ ] Attempts sharing a name or address hash are flagged in the results list
-- [ ] The retention period is documented and the pruning script has a dry-run mode
+- [x] Forty simultaneous starts from one address for one exam all succeed
+- [x] A burst well beyond a plausible class size is refused
+- [x] `ipHash` is salted and no raw address is stored anywhere
+- [x] Pruning removes attempts of untimed exams that are still `in_progress`
+- [x] Attempts sharing a name or address hash are flagged in the results list
+- [x] The retention period is documented and the pruning script has a dry-run mode
 
 ## Risk assessment
 
