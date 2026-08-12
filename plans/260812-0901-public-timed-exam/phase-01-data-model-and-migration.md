@@ -171,14 +171,14 @@ model to copy.
 
 ## Success criteria
 
-- [ ] `pnpm --filter @cio/db db:generate` produces exactly one migration, containing only
+- [x] `pnpm --filter @cio/db db:generate` produces exactly one migration, containing only
       `CREATE TYPE` and `CREATE TABLE` statements
-- [ ] The generated SQL contains no `ALTER TABLE` against `exercise`, `submission`,
+- [x] The generated SQL contains no `ALTER TABLE` against `exercise`, `submission`,
       `questionAnswer` or `groupmember`
-- [ ] The integration test passes against a real database
-- [ ] An attempt with neither identity is rejected by the database, not only by the code
-- [ ] Two exams cannot share a slug, enforced by the database
-- [ ] `pnpm --filter @cio/db db:setup` runs clean on an empty database
+- [x] The integration test passes against a real database
+- [x] An attempt with neither identity is rejected by the database, not only by the code
+- [x] Two exams cannot share a slug, enforced by the database
+- [x] `pnpm --filter @cio/db db:setup` runs clean on an empty database
 
 ## Risk assessment
 

@@ -108,16 +108,16 @@ a document with nothing enforcing it.
 
 ## Success criteria
 
-- [ ] Deep structural assertion proves the sitting payload contains no `isCorrect` at any
+- [x] Deep structural assertion proves the sitting payload contains no `isCorrect` at any
       depth
-- [ ] Every row of the reveal-policy table has a passing test, including the degenerate
+- [x] Every row of the reveal-policy table has a passing test, including the degenerate
       `after_everyone` configuration
-- [ ] The existing public-course test file is untouched by this phase and still passes
-- [ ] Creating an exam against another organisation's exercise is refused
-- [ ] The server refuses to store `after_everyone` without both a closing time and a
+- [x] The existing public-course test file is untouched by this phase and still passes
+- [x] Creating an exam against another organisation's exercise is refused
+- [x] The server refuses to store `after_everyone` without both a closing time and a
       working time
-- [ ] Every exam route returns 404 when the environment flag is off
-- [ ] Editing the container after publish leaves the sitting payload byte-identical, proving
+- [x] Every exam route returns 404 when the environment flag is off
+- [x] Editing the container after publish leaves the sitting payload byte-identical, proving
       delivery reads the frozen paper and not the live rows
 
 ## Risk assessment
