@@ -17,6 +17,7 @@ export const ROUTE = {
   RESET: '/reset',
   LOGOUT: '/logout',
   AUTH_FAILED: '/auth-failed',
+  EXAM: '/exam',
   VERIFY_EMAIL_ERROR: '/verify-email-error'
 };
 
@@ -32,6 +33,9 @@ export const PUBLIC_ROUTES = [
   `^${ROUTE.COURSE}/[^/]+(/enroll)?/?$`,
   `^${ROUTE.COURSE}/[^/]+/lesson/.*`,
   `^${ROUTE.COURSES}/?$`,
+  // A public exam is sat from the link alone. Anything that sends a sitter to
+  // /login here defeats the entire feature, so this must stay public.
+  `^${ROUTE.EXAM}/[^/]+/?$`,
   '/404',
   `^${ROUTE.VERIFY_EMAIL_ERROR}$`,
   ROUTE.AUTH_FAILED,
@@ -49,5 +53,6 @@ export const ROUTES_TO_HIDE_NAV = [
   `^${ROUTE.FORGOT}$`,
   `^${ROUTE.RESET}$`,
   `^${ROUTE.ONBOARDING}$`,
-  `^${ROUTE.VERIFY_EMAIL_ERROR}$`
+  `^${ROUTE.VERIFY_EMAIL_ERROR}$`,
+  `^${ROUTE.EXAM}/[^/]+/?$`
 ];
