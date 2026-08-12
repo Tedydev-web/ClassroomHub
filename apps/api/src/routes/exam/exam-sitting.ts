@@ -71,6 +71,29 @@ export const examSittingRouter = new Hono()
     requireExamsEnabled();
     return next();
   })
+  // What the entry screen needs, and nothing more. The questions arrive only from
+  // `start`, once a sitter has identified themselves and an attempt with a clock exists —
+  // otherwise the paper could be read without ever starting one.
+  .get('/:slug', async (c) => {
+    try {
+      const exam = await getPublicExamService(c.req.param('slug'));
+
+      return c.json({
+        success: true as const,
+        data: {
+          title: exam.title,
+          requiresName: exam.requiresName,
+          requiresClass: exam.requiresClass,
+          requiresCandidateNumber: exam.requiresCandidateNumber,
+          requiresPassword: Boolean(exam.passwordHash),
+          workingSeconds: exam.workingSeconds,
+          closesAt: exam.closesAt
+        }
+      });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .post('/:slug/start', examRateLimiter('start'), zValidator('json', startSchema), async (c) => {
     try {
       requireSittingHeader(c.req.header(REQUIRED_HEADER));
@@ -111,7 +134,11 @@ export const examSittingRouter = new Hono()
         data: {
           attemptId: started.attempt.id,
           paper: started.paper,
-          secondsRemaining: started.secondsRemaining
+          expiresAt: started.attempt.expiresAt,
+          secondsRemaining: started.secondsRemaining,
+          // The client measures its own drift against this, so a phone running minutes
+          // out still counts down to the moment the server will actually end the paper.
+          serverNow: now.toISOString()
         }
       });
     } catch (error) {
