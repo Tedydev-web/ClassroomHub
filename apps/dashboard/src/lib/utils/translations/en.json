@@ -5524,10 +5524,18 @@
       "on_submit_needs_single_attempt": "Showing the answers on submit needs a single attempt, or a sitter can read the answers and sit again",
       "opens_before_closes": "The exam must open before it closes",
       "pick_container": "Question set",
-      "no_containers": "No question set is available yet. Import a .docx first, then come back.",
+      "no_containers": "No question set yet. Copy one from a course exercise above first.",
       "created": "Created as a draft. Open it when you are ready to send the link.",
       "create_failed": "Could not create the exam",
-      "pick_container_first": "Choose a question set for this exam"
+      "pick_container_first": "Choose a question set for this exam",
+      "copy_from_exercise": "Take the questions from an existing exercise",
+      "copy_explainer": "An exam does not deliver a course exercise directly; it copies one. Enrolled students cannot open the copy, and editing the original afterwards never changes a paper already sat.",
+      "source_exercise": "Source exercise",
+      "no_copyable": "This course has no exercise to copy yet.",
+      "copy_paper": "Copy into a question set",
+      "copying": "Copying…",
+      "paper_copied": "Copied. Choose it below, then configure the exam.",
+      "copy_failed": "Could not copy that exercise"
     }
   }
 }

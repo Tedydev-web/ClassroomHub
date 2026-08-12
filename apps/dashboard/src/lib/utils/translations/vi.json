@@ -5534,10 +5534,18 @@
       "on_submit_needs_single_attempt": "Cho xem đáp án ngay khi nộp thì phải giới hạn 1 lượt làm, nếu không học sinh đọc đáp án rồi thi lại",
       "opens_before_closes": "Giờ mở đề phải trước giờ đóng đề",
       "pick_container": "Bộ câu hỏi",
-      "no_containers": "Chưa có bộ câu hỏi nào dùng được. Import một file .docx trước, rồi quay lại đây.",
+      "no_containers": "Chưa có bộ câu hỏi nào. Sao chép từ một bài tập của khoá học ở trên trước đã.",
       "created": "Đã tạo đề thi ở dạng nháp. Mở đề khi bạn sẵn sàng gửi link.",
       "create_failed": "Không tạo được đề thi",
-      "pick_container_first": "Chọn một bộ câu hỏi cho đề thi này"
+      "pick_container_first": "Chọn một bộ câu hỏi cho đề thi này",
+      "copy_from_exercise": "Lấy câu hỏi từ bài tập có sẵn",
+      "copy_explainer": "Đề thi không dùng thẳng bài tập của khoá, mà chép ra một bản riêng. Học sinh trong khoá không mở được bản này, và bạn sửa bài tập gốc sau đó cũng không làm đổi đề đã thi.",
+      "source_exercise": "Bài tập nguồn",
+      "no_copyable": "Khoá học này chưa có bài tập nào để chép.",
+      "copy_paper": "Chép thành bộ câu hỏi",
+      "copying": "Đang chép…",
+      "paper_copied": "Đã chép xong. Chọn bộ câu hỏi này ở dưới rồi đặt cấu hình đề thi.",
+      "copy_failed": "Không chép được bài tập"
     }
   }
 }

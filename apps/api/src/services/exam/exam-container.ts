@@ -1,8 +1,9 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import { db } from '@cio/db/drizzle';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { getQuestionTypeById, isExerciseAutoGradable } from '@cio/question-types';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { insertNextQuestionRevision, promoteQuestionCurrentRevision } from '@cio/db/queries/exercise/revision';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 
 import type { ExamPaperQuestionSnapshot, ExamPaperSnapshot } from './exam-paper-serializer';
 
@@ -19,7 +20,7 @@ import type { ExamPaperQuestionSnapshot, ExamPaperSnapshot } from './exam-paper-
  * `SELECTED_STUDENTS` with no assignees is a second line of defence, not the fix.
  */
 
-export async function createExamContainer(title: string, dbClient = db): Promise<string> {
+export async function createExamContainer(title: string, dbClient: DbOrTxClient = db): Promise<string> {
   const [container] = await dbClient
     .insert(schema.exercise)
     .values({
@@ -185,7 +186,7 @@ export async function freezeExamPaper(exerciseId: string, dbClient = db): Promis
 
 /**
  * Containers an exam may be built from: exercises carrying neither a course nor a lesson,
- * which is what the `.docx` import produces and what a duplicated exercise becomes.
+ * which is what `copyExerciseIntoContainer` produces.
  *
  * A working exercise is deliberately excluded. Delivering one as an exam would let every
  * enrolled student open the same questions without a clock, which is the leak the whole
@@ -204,4 +205,131 @@ export async function listAvailableContainersService(courseId: string, dbClient 
   void courseId;
 
   return containers;
+}
+
+/**
+ * The exercises of this course, offered as sources to copy a paper from.
+ *
+ * Both attachments count: an exercise may hang off the course directly or off one of its
+ * lessons, and a teacher who built the paper inside a lesson would otherwise be told the
+ * course has nothing to copy.
+ */
+export async function listCopyableExercisesService(courseId: string, dbClient = db) {
+  return dbClient
+    .select({
+      id: schema.exercise.id,
+      title: schema.exercise.title,
+      questionCount:
+        sql<number>`count(${schema.question.id}) filter (where ${schema.question.archivedAt} is null)`.mapWith(Number)
+    })
+    .from(schema.exercise)
+    .leftJoin(schema.lesson, eq(schema.lesson.id, schema.exercise.lessonId))
+    .leftJoin(schema.question, eq(schema.question.exerciseId, schema.exercise.id))
+    .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)))
+    .groupBy(schema.exercise.id, schema.exercise.title, schema.exercise.createdAt)
+    .orderBy(desc(schema.exercise.createdAt))
+    .limit(100);
+}
+
+/**
+ * Copies a working exercise into a detached container, so an exam can deliver it.
+ *
+ * A copy rather than a reference, for two independent reasons. The exam must not deliver
+ * the very rows enrolled students can already open untimed — that is the leak the
+ * container exists to prevent. And the teacher keeps editing the course exercise after the
+ * exam is built; a reference would let today's edit rewrite a paper sat last week.
+ *
+ * Each copied question gets its own revision carrying the source definition verbatim.
+ * The definition is self-contained — its option ids are internal strings, not row ids — so
+ * copying it is exact, and it is what `freezeExamPaper` will pin the exam to.
+ */
+export async function copyExerciseIntoContainer(
+  sourceExerciseId: string,
+  courseId: string,
+  dbClient = db
+): Promise<{ id: string; title: string }> {
+  const [source] = await dbClient
+    .select({
+      title: schema.exercise.title,
+      courseId: schema.exercise.courseId,
+      lessonCourseId: schema.lesson.courseId
+    })
+    .from(schema.exercise)
+    .leftJoin(schema.lesson, eq(schema.lesson.id, schema.exercise.lessonId))
+    .where(eq(schema.exercise.id, sourceExerciseId))
+    .limit(1);
+
+  if (!source) {
+    throw new AppError('That exercise does not exist', ErrorCodes.NOT_FOUND, 404);
+  }
+
+  // The middleware authorised the caller against this course, not against an arbitrary
+  // exercise id in the request body. Without this check a teacher of any one course could
+  // copy the paper of any other.
+  if (source.courseId !== courseId && source.lessonCourseId !== courseId) {
+    throw new AppError('That exercise belongs to another course', ErrorCodes.FORBIDDEN, 403);
+  }
+
+  const questions = await dbClient
+    .select({
+      title: schema.question.title,
+      questionTypeId: schema.question.questionTypeId,
+      points: schema.question.points,
+      order: schema.question.order,
+      settings: schema.question.settings,
+      currentRevisionId: schema.question.currentRevisionId
+    })
+    .from(schema.question)
+    .where(and(eq(schema.question.exerciseId, sourceExerciseId), isNull(schema.question.archivedAt)));
+
+  if (questions.length === 0) {
+    throw new AppError('That exercise has no questions to copy', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  return dbClient.transaction(async (tx) => {
+    const containerId = await createExamContainer(source.title, tx);
+
+    for (const question of questions) {
+      if (!question.currentRevisionId) {
+        throw new AppError(
+          `"${question.title}" has no canonical revision, so it cannot be delivered or graded`,
+          ErrorCodes.VALIDATION_ERROR,
+          400
+        );
+      }
+
+      const [revision] = await tx
+        .select({ definition: schema.questionRevision.definition, contentHash: schema.questionRevision.contentHash })
+        .from(schema.questionRevision)
+        .where(eq(schema.questionRevision.id, question.currentRevisionId))
+        .limit(1);
+
+      if (!revision) {
+        throw new AppError(`"${question.title}" points at a revision that is gone`, ErrorCodes.NOT_FOUND, 404);
+      }
+
+      const [copied] = await tx
+        .insert(schema.question)
+        .values({
+          exerciseId: containerId,
+          title: question.title,
+          questionTypeId: question.questionTypeId,
+          points: question.points,
+          order: question.order,
+          settings: question.settings,
+          // Sections are not copied: nothing in delivery, grading or the paper summary
+          // reads them, and an exam is sat as one flat paper.
+          exerciseSectionId: null
+        })
+        .returning({ id: schema.question.id });
+
+      const inserted = await insertNextQuestionRevision(
+        { questionId: copied.id, definition: revision.definition, contentHash: revision.contentHash },
+        tx
+      );
+      await promoteQuestionCurrentRevision(copied.id, inserted.id, Number(question.points ?? 0), tx);
+    }
+
+    return { id: containerId, title: source.title };
+  });
 }

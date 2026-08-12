@@ -16,7 +16,11 @@ import {
   restoreExamService,
   summariseExamPaperService
 } from '@api/services/exam/exam';
-import { listAvailableContainersService } from '@api/services/exam/exam-container';
+import {
+  copyExerciseIntoContainer,
+  listAvailableContainersService,
+  listCopyableExercisesService
+} from '@api/services/exam/exam-container';
 import {
   addCorrectionService,
   getExamAttemptDetailService,
@@ -105,6 +109,33 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
+  // The exercises this course already owns, offered as sources to copy a paper from.
+  .get('/course/:courseId/copyable-exercises', authMiddleware, courseTeamMemberMiddleware, async (c) => {
+    try {
+      const exercises = await listCopyableExercisesService(c.req.param('courseId'));
+
+      return c.json({ success: true as const, data: exercises });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // Copying is how a container comes into existence: the teacher's questions already live
+  // in a course exercise, and an exam may not deliver that row directly.
+  .post(
+    '/course/:courseId/paper-from-exercise',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('json', z.object({ exerciseId: z.string().uuid() })),
+    async (c) => {
+      try {
+        const container = await copyExerciseIntoContainer(c.req.valid('json').exerciseId, c.req.param('courseId'));
+
+        return c.json({ success: true as const, data: container }, 201);
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
   .get('/:examId', authMiddleware, async (c) => {
     try {
       const exam = await getExamService(c.req.param('examId'));
