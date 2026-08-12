@@ -21,6 +21,7 @@ import { agentRouter } from '@api/routes/agent';
 import { auth } from '@cio/db/auth';
 import { communityRouter } from '@api/routes/community';
 import { courseRouter } from '@api/routes/course';
+import { examRouter } from '@api/routes/exam';
 import { dashAnalyticsRouter } from '@api/routes/dash';
 import { domainRouter } from '@api/routes/domain/domain';
 import { internalRouter } from '@api/routes/internal';
@@ -240,6 +241,7 @@ export const app: HonoBase<AuthSession> = new Hono()
   .route('/notifications', notificationRouter)
   .route('/account', accountRouter)
   .route('/course', courseRouter)
+  .route('/exam', examRouter)
   .route('/domain', domainRouter)
   .route('/hls', hlsRouter)
   .route('/transcripts', transcriptsRouter)

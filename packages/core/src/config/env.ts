@@ -108,6 +108,14 @@ const envSchema = z.object({
   UPLOAD_MAX_THUMBNAIL_MB: z.string().optional(),
   /** Default-off gate for document-to-exam import writes. */
   EXAM_IMPORT_ENABLED: z.string().optional(),
+  /**
+   * Default-off gate for timed exams and their public sitting routes.
+   *
+   * A merge to main deploys, so the routes exist the moment they are merged while the
+   * rate limits and retention rules land later. This flag is what actually holds the
+   * feature back until all of it is in place; a note in a plan holds back nothing.
+   */
+  EXAM_ENABLED: z.string().optional(),
   /** Default-off gate for the text-based PDF exam import reader. */
   EXAM_IMPORT_PDF_ENABLED: z.string().optional(),
   /** Default-off gate for least-privilege AI assistance during exam import. */
