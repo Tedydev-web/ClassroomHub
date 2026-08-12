@@ -642,17 +642,31 @@ export async function syncOptionIdSequence(dbClient: DbOrTxClient = db): Promise
 }
 
 /**
- * Syncs the question table's identity sequence to the current max(id).
- * Call before inserting questions to avoid duplicate key on question_pkey when the sequence is behind.
+ * Advances the question identity sequence to `max(id)` when a restore or manual import
+ * has left it behind. Call before inserting questions, so a restored row's id is never
+ * handed out a second time.
+ *
+ * **It only ever advances.** Setting it to `max(id)` unconditionally is what the obvious
+ * version does, and it corrupts under concurrency: while one writer holds uncommitted
+ * rows, `max(id)` cannot see them, so a second writer's sync rewinds the sequence to
+ * below ids already taken and the next insert dies on `question_pkey`. Two teachers
+ * publishing at the same moment is enough — it does not need load. Rewinding is never
+ * useful, so the guard costs nothing and removes the whole class of failure.
  */
 export async function syncQuestionIdSequence(dbClient: DbOrTxClient = db): Promise<void> {
   await dbClient.execute(
     sql`
-      SELECT setval(
-        pg_get_serial_sequence('question', 'id'),
-        COALESCE((SELECT MAX(id) FROM question), 1),
-        EXISTS(SELECT 1 FROM question)
+      WITH sequence_name AS (
+        SELECT pg_get_serial_sequence('question', 'id')::regclass AS name
+      ),
+      state AS (
+        SELECT
+          name,
+          COALESCE((SELECT MAX(id) FROM question), 0) AS max_id,
+          COALESCE(pg_sequence_last_value(name), 0) AS current_value
+        FROM sequence_name
       )
+      SELECT setval(name, max_id, true) FROM state WHERE max_id > current_value
     `
   );
 }
