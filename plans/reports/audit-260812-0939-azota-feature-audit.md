@@ -208,7 +208,15 @@ structural leak test belongs where it is.
    nothing, which is a different thing from the four-statement question used in Maths and
    Physics papers. The trigger for revisiting this is the first import of a paper that
    contains one; until then there is nothing to grade and nothing to decide.
-3. Thirteen further sections exist under `huong-dan-su-dung` beyond the three audited, among
-   them `Quản lý lớp`, `Học sinh`, and `Đội nhóm – phân quyền`. Out of the scope given, but
-   they are where class rosters and student accounts are described, which is the territory a
-   later roster-mode release would enter.
+2. Coverage: **bounded deliberately, not forgotten.** The corpus is roughly two hundred pages
+   across sixteen sections; the brief named three. Beyond those, the sections most likely to
+   matter were sampled — `Ứng dụng tính năng`, `VIP tổ chức`, `Lỗi thường gặp`,
+   `Câu hỏi thường gặp`, `Học sinh` — and every one of them yielded something recorded above,
+   including the two blockers this plan was revised for. What stays unread is authoring depth
+   (question banks, blueprints, OCR), paper-based marking, and account and billing
+   administration: real features, all already declined, none of which changes a decision here.
+   `Quản lý lớp` and `Đội nhóm – phân quyền` are the two to read first if roster mode is ever
+   taken up, since that is where class lists and per-teacher permissions live.
+
+**Nothing else is outstanding.** Every question this audit opened has been answered or
+consciously closed.
