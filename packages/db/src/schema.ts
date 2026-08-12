@@ -41,6 +41,17 @@ export const examImportStatus = pgEnum('EXAM_IMPORT_STATUS', [
   'canceled'
 ]);
 export const examImportExtractor = pgEnum('EXAM_IMPORT_EXTRACTOR', ['docx', 'pdf', 'aiken', 'gift']);
+export const examMode = pgEnum('EXAM_MODE', ['public', 'private']);
+export const examStatus = pgEnum('EXAM_STATUS', ['draft', 'open', 'closed']);
+/**
+ * When a learner may see a thing. The four values mirror the vocabulary Vietnamese
+ * teachers already read in Azota's `Cho xem điểm`, and each of score, paper and
+ * comments carries its own — returning marked work with the comments visible and
+ * the mark withheld is an ordinary thing to want.
+ */
+export const examReveal = pgEnum('EXAM_REVEAL', ['never', 'on_submit', 'after_everyone', 'above_threshold']);
+export const examAttemptStatus = pgEnum('EXAM_ATTEMPT_STATUS', ['in_progress', 'submitted', 'expired']);
+export const examGradingState = pgEnum('EXAM_GRADING_STATE', ['complete', 'awaiting_manual', 'unscoreable']);
 export const organizationApiKeyType = pgEnum('ORGANIZATION_API_KEY_TYPE', ['mcp', 'api', 'zapier']);
 export const automationUsageCategory = pgEnum('AUTOMATION_USAGE_CATEGORY', ['read', 'write', 'publish']);
 export const aiAgentRunStatus = pgEnum('AI_AGENT_RUN_STATUS', [
@@ -4609,5 +4620,152 @@ export const deadLetterJob = pgTable(
   (table) => [
     index('idx_dead_letter_job_domain_created').on(table.domain, table.createdAt),
     index('idx_dead_letter_job_org_created').on(table.organizationId, table.createdAt)
+  ]
+);
+
+/**
+ * An exam is a sitting, not a paper. The questions live in an `exercise` used purely
+ * as a container — carrying no course and no lesson, so it never surfaces in a
+ * syllabus, a gradebook, or a learner's exercise list — and several exams may deliver
+ * the same container, which is how one paper is given to two classes on two days.
+ *
+ * Nothing here touches `submission`, `questionAnswer` or `groupmember`. Exercises keep
+ * requiring an account and recording progress exactly as before, and no code on that
+ * path learns that exams exist.
+ */
+export const exam = pgTable(
+  'exam',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    /** Nullable so a standalone exam stays possible later without a migration. */
+    courseId: uuid('course_id'),
+    exerciseId: uuid('exercise_id').notNull(),
+    title: text().notNull(),
+    /** Random and unguessable: the link is the only gate on a public exam. */
+    slug: varchar().notNull(),
+    /**
+     * The paper as delivered, frozen when the exam opens: for every question, the
+     * revision given and its definition. Grading reads this and never the live rows,
+     * so editing the container later cannot move a score that has already been earned.
+     */
+    paperSnapshot: jsonb('paper_snapshot'),
+    /**
+     * Append-only record of deliberate corrections — a question awarded to everyone,
+     * or a key put right. Grading is defined over the snapshot plus these, so an
+     * attempt finalised days later picks them up without anyone re-running a sweep.
+     */
+    corrections: jsonb().default([]).notNull(),
+    mode: examMode().default('private').notNull(),
+    status: examStatus().default('draft').notNull(),
+    /** Null means untimed. */
+    workingSeconds: integer('working_seconds'),
+    opensAt: timestamp('opens_at', { withTimezone: true, mode: 'string' }),
+    closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }),
+    /** Null means unlimited. Counted per cookie, so it is honest rather than enforced. */
+    maxAttempts: integer('max_attempts'),
+    /** The cheapest answer to a link forwarded outside the class. */
+    passwordHash: text('password_hash'),
+    requiresName: boolean('requires_name').default(true).notNull(),
+    requiresClass: boolean('requires_class').default(false).notNull(),
+    requiresCandidateNumber: boolean('requires_candidate_number').default(false).notNull(),
+    scoreVisibility: examReveal('score_visibility').default('never').notNull(),
+    answerVisibility: examReveal('answer_visibility').default('never').notNull(),
+    commentVisibility: examReveal('comment_visibility').default('never').notNull(),
+    /** Required by `above_threshold`; compared against score/total. */
+    revealThreshold: numeric('reveal_threshold'),
+    createdBy: uuid('created_by').notNull(),
+    /** Soft delete: an exam holds work that exists nowhere else. */
+    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'exam_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.courseId],
+      foreignColumns: [course.id],
+      name: 'exam_course_id_fkey'
+    }).onDelete('cascade'),
+    // RESTRICT, not cascade: a container must never vanish from under an exam, including
+    // one that is only soft-deleted and could still be restored with its attempts.
+    foreignKey({
+      columns: [table.exerciseId],
+      foreignColumns: [exercise.id],
+      name: 'exam_exercise_id_fkey'
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.createdBy],
+      foreignColumns: [profile.id],
+      name: 'exam_created_by_fkey'
+    }),
+    unique('exam_slug_key').on(table.slug),
+    index('idx_exam_course_id').on(table.courseId),
+    index('idx_exam_exercise_id').on(table.exerciseId),
+    check(
+      'exam_reveal_threshold_required',
+      sql`(${table.scoreVisibility} <> 'above_threshold' AND ${table.answerVisibility} <> 'above_threshold' AND ${table.commentVisibility} <> 'above_threshold') OR ${table.revealThreshold} IS NOT NULL`
+    )
+  ]
+);
+
+/**
+ * One sitting by one person. Identified either by a signed-in profile or by what they
+ * typed on the way in — never both, never neither.
+ */
+export const examAttempt = pgTable(
+  'exam_attempt',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    examId: uuid('exam_id').notNull(),
+    profileId: uuid('profile_id'),
+    displayName: varchar('display_name'),
+    className: varchar('class_name'),
+    candidateNumber: varchar('candidate_number'),
+    /** The resume cookie, hashed. The cookie carries the raw value. */
+    tokenHash: text('token_hash').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }).notNull(),
+    /** Null when the exam is untimed. */
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }),
+    submittedAt: timestamp('submitted_at', { withTimezone: true, mode: 'string' }),
+    status: examAttemptStatus().default('in_progress').notNull(),
+    gradingState: examGradingState('grading_state').default('complete').notNull(),
+    /** Current state, and what gets graded. Each entry names the revision it answered. */
+    answers: jsonb().default([]).notNull(),
+    /** Append-only: every change, with its moment. Settles disputes about a result. */
+    answerLog: jsonb('answer_log').default([]).notNull(),
+    /** questionId -> { score, comment } for questions a teacher must read. */
+    manualScores: jsonb('manual_scores').default({}).notNull(),
+    score: numeric(),
+    total: numeric(),
+    /** Salted hash, never an address. Exists to spot duplicates, not to identify anyone. */
+    ipHash: text('ip_hash'),
+    /** The request header, nothing more — no fingerprinting. */
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.examId],
+      foreignColumns: [exam.id],
+      name: 'exam_attempt_exam_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.profileId],
+      foreignColumns: [profile.id],
+      name: 'exam_attempt_profile_id_fkey'
+    }).onDelete('set null'),
+    unique('exam_attempt_exam_token_key').on(table.examId, table.tokenHash),
+    index('idx_exam_attempt_exam_id').on(table.examId),
+    index('idx_exam_attempt_exam_status').on(table.examId, table.status),
+    check(
+      'exam_attempt_has_an_identity',
+      sql`${table.profileId} IS NOT NULL OR (${table.displayName} IS NOT NULL AND length(btrim(${table.displayName})) > 0)`
+    )
   ]
 );
