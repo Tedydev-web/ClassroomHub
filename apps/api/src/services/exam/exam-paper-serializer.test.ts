@@ -52,7 +52,7 @@ function snapshotWithChoice(): ExamPaperSnapshot {
           blocks: [
             {
               id: 'b1',
-              type: 'interaction',
+              kind: 'interaction',
               interaction: {
                 kind: 'choice',
                 prompt: { html: '<p>Which one?</p>' },
@@ -98,6 +98,14 @@ describe('exam sitting paper', () => {
     const leaked = keysAtEveryDepth(paper).filter((key) => ANSWER_BEARING_KEYS.includes(key));
 
     expect(leaked).toEqual([]);
+
+    // And the sanitiser actually had something to sanitise. Without this, a fixture whose
+    // blocks the model cannot read would produce an empty payload and pass the assertion
+    // above for the worst possible reason — which is exactly what happened once already,
+    // when this fixture used `type` where the schema wants `kind`.
+    const keys = keysAtEveryDepth(paper);
+    expect(keys).toContain('interaction');
+    expect(keys).toContain('options');
   });
 
   it('still carries what a student needs to answer', () => {
