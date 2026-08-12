@@ -120,6 +120,16 @@
   const activeSections = $derived(
     [...($questionnaire.sections ?? [])].filter((section) => !section.deletedAt).sort((a, b) => a.order - b.order)
   );
+  /**
+   * Question authoring follows the upstream layout: every legacy question is edited
+   * in place inside its section, with no separate outline-and-editor split.
+   *
+   * The two-pane workspace panel below is kept intact behind this switch so it can be
+   * folded back in once the new authoring design is settled. Turning this on restores
+   * the split view; assessment items keep opening their own composer either way.
+   */
+  const USE_ASSESSMENT_WORKSPACE_PANEL = false;
+
   const isAssessmentWorkspaceOpen = $derived(
     !reorderQuestions && (activeCanonicalQuestionId !== null || newAssessmentComposerSectionId !== undefined)
   );
@@ -753,7 +763,7 @@
         {/if}
       </section>
     {/if}
-    {#if !isAssessmentWorkspaceOpen && !reorderQuestions}
+    {#if USE_ASSESSMENT_WORKSPACE_PANEL && !isAssessmentWorkspaceOpen && !reorderQuestions}
       <section class="ui:border-border ui:bg-background overflow-hidden rounded-md border" data-assessment-workspace>
         <div class="ui:border-border flex min-h-14 flex-wrap items-center justify-between gap-3 border-b px-4 py-2">
           <div class="flex min-w-0 items-center gap-2">
@@ -944,7 +954,7 @@
         </div>
       </section>
     {/if}
-    {#if !isAssessmentWorkspaceOpen && reorderQuestions}
+    {#if !isAssessmentWorkspaceOpen && (!USE_ASSESSMENT_WORKSPACE_PANEL || reorderQuestions)}
       <div data-legacy-question-list>
         {#if hasSections($questionnaire.sections)}
           <div class="space-y-5">
