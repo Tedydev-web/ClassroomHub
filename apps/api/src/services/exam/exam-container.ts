@@ -2,7 +2,7 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { getQuestionTypeById, isExerciseAutoGradable } from '@cio/question-types';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import type { ExamPaperQuestionSnapshot, ExamPaperSnapshot } from './exam-paper-serializer';
 
@@ -181,4 +181,27 @@ export async function freezeExamPaper(exerciseId: string, dbClient = db): Promis
     frozenAt: new Date().toISOString(),
     questions: frozen.sort((a, b) => a.order - b.order)
   };
+}
+
+/**
+ * Containers an exam may be built from: exercises carrying neither a course nor a lesson,
+ * which is what the `.docx` import produces and what a duplicated exercise becomes.
+ *
+ * A working exercise is deliberately excluded. Delivering one as an exam would let every
+ * enrolled student open the same questions without a clock, which is the leak the whole
+ * container idea exists to prevent.
+ */
+export async function listAvailableContainersService(courseId: string, dbClient = db) {
+  const containers = await dbClient
+    .select({ id: schema.exercise.id, title: schema.exercise.title, createdAt: schema.exercise.createdAt })
+    .from(schema.exercise)
+    .where(and(isNull(schema.exercise.courseId), isNull(schema.exercise.lessonId)))
+    .orderBy(desc(schema.exercise.createdAt))
+    .limit(100);
+
+  // `courseId` is accepted for authorisation only — the middleware has already checked the
+  // caller may act on this course. Containers themselves belong to no course by design.
+  void courseId;
+
+  return containers;
 }

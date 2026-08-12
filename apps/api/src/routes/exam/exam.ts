@@ -16,6 +16,7 @@ import {
   restoreExamService,
   summariseExamPaperService
 } from '@api/services/exam/exam';
+import { listAvailableContainersService } from '@api/services/exam/exam-container';
 import {
   addCorrectionService,
   getExamAttemptDetailService,
@@ -88,6 +89,18 @@ export const examRouter = new Hono()
       const exams = await listExamsService(c.req.param('courseId'));
 
       return c.json({ success: true as const, data: exams });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // Papers this course can deliver: detached containers only. A working exercise is not
+  // offered, because an exam must never deliver something enrolled students can already
+  // open without a clock.
+  .get('/course/:courseId/containers', authMiddleware, courseTeamMemberMiddleware, async (c) => {
+    try {
+      const containers = await listAvailableContainersService(c.req.param('courseId'));
+
+      return c.json({ success: true as const, data: containers });
     } catch (error) {
       return handleError(c, error);
     }
