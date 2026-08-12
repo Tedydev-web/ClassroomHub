@@ -54,6 +54,21 @@
     }
   }
 
+  async function remove(attemptId: string, displayName: string | null) {
+    // Destructive and unrecoverable, so it asks — naming the sitter, because a teacher
+    // clicking down a list of forty needs to see which paper they are about to destroy.
+    if (!window.confirm($t('exam.results.delete_confirm', { name: displayName ?? '—' }))) return;
+
+    const response = await classroomhub.exam.attempt[':attemptId'].$delete({ param: { attemptId } });
+
+    if (response.ok) {
+      snackbar.success($t('exam.results.deleted'));
+      await refresh();
+    } else {
+      snackbar.error($t('exam.results.delete_failed'));
+    }
+  }
+
   function openAttempt(attemptId: string) {
     window.location.href = `/courses/${data.courseId}/exams/${data.examId}/attempts/${attemptId}`;
   }
@@ -78,5 +93,5 @@
     </Button>
   </header>
 
-  <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} />
+  <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} ondelete={remove} />
 </div>

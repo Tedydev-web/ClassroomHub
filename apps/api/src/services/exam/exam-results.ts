@@ -217,6 +217,28 @@ export async function reopenAttemptService(attemptId: string, extraSeconds: numb
 }
 
 /**
+ * Throws a sitting away so the paper can be sat again from nothing.
+ *
+ * Distinct from reopening, which hands back the same answers with more time. When a
+ * student opened the paper by accident, or sat it as somebody else, more time on the
+ * wrong paper is not the remedy — Azota separates the two for the same reason.
+ *
+ * A hard delete rather than a flag: the row holds a name a student typed and the answers
+ * they gave, and a teacher who deletes a sitting means it to be gone. Removing the row
+ * also frees the attempt against `maxAttempts`, which is the point of deleting it.
+ */
+export async function deleteAttemptService(attemptId: string) {
+  const [deleted] = await db
+    .delete(schema.examAttempt)
+    .where(eq(schema.examAttempt.id, attemptId))
+    .returning({ id: schema.examAttempt.id, examId: schema.examAttempt.examId });
+
+  if (!deleted) throw new AppError('That attempt no longer exists', ErrorCodes.NOT_FOUND, 404);
+
+  return deleted;
+}
+
+/**
  * Records a correction and re-scores everything already finished. Attempts still in
  * progress are left alone on purpose: grading reads the corrections, so they pick it up
  * when they finalise.

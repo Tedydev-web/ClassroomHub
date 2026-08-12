@@ -23,6 +23,7 @@ import {
 } from '@api/services/exam/exam-container';
 import {
   addCorrectionService,
+  deleteAttemptService,
   getExamAttemptDetailService,
   listExamResultsService,
   reopenAttemptService,
@@ -266,6 +267,17 @@ export const examRouter = new Hono()
       }
     }
   )
+  // Throwing a sitting away, so the paper can be sat again from nothing. Reopening is the
+  // other remedy and keeps the answers; this one is for a paper that should not exist.
+  .delete('/attempt/:attemptId', authMiddleware, async (c) => {
+    try {
+      const deleted = await deleteAttemptService(c.req.param('attemptId'));
+
+      return c.json({ success: true as const, data: deleted });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .delete('/:examId', authMiddleware, async (c) => {
     try {
       const deleted = await deleteExamService(c.req.param('examId'));

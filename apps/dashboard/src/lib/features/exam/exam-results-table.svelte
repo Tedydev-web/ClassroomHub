@@ -30,11 +30,13 @@
   let {
     rows,
     onopen,
-    onreopen
+    onreopen,
+    ondelete
   }: {
     rows: ExamResultRow[];
     onopen: (attemptId: string) => void;
     onreopen: (attemptId: string) => void;
+    ondelete: (attemptId: string, displayName: string | null) => void;
   } = $props();
 
   type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual';
@@ -141,6 +143,12 @@
                     >{$t('exam.results.reopen')}</Button
                   >
                 {/if}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="ui:text-destructive"
+                  onclick={() => ondelete(row.attemptId, row.displayName)}>{$t('exam.results.delete')}</Button
+                >
               </td>
             </tr>
           {/each}

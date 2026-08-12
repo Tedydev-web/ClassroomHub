@@ -188,6 +188,19 @@ describe.runIf(runDatabaseIntegration)('scoring a submitted attempt', () => {
     expect(await results.revealedScoreForSitterService(attemptId)).toBeNull();
   });
 
+  it('deletes a sitting so the paper can be sat again from nothing', async () => {
+    const { db, schema, results } = await load();
+    const { attemptId, examId } = await seed(db, schema, 'never');
+
+    await results.deleteAttemptService(attemptId);
+
+    const rows = await results.listExamResultsService(examId);
+    expect(rows.find((entry) => entry.attemptId === attemptId)).toBeUndefined();
+
+    // Deleting the same sitting twice is the teacher clicking twice, not an error worth a 500.
+    await expect(results.deleteAttemptService(attemptId)).rejects.toThrow(/no longer exists/);
+  });
+
   it('reports the score on the teacher list too', async () => {
     const { db, schema, finalisation, results, attempt: attemptService } = await load();
     const { attemptId, examId } = await seed(db, schema, 'never');
