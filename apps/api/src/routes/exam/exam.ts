@@ -16,6 +16,13 @@ import {
   restoreExamService,
   summariseExamPaperService
 } from '@api/services/exam/exam';
+import {
+  addCorrectionService,
+  getExamAttemptDetailService,
+  listExamResultsService,
+  reopenAttemptService,
+  saveManualMarkService
+} from '@api/services/exam/exam-results';
 
 /**
  * Creating and configuring exams. Sitting one is a separate, unauthenticated router,
@@ -131,6 +138,90 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
+  // Reading the list finalises expired attempts. A GET that writes is deliberate: it is
+  // what makes a closed tab harmless. Do not "fix" it into a pure read.
+  .get('/:examId/results', authMiddleware, async (c) => {
+    try {
+      const rows = await listExamResultsService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: rows });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/attempt/:attemptId', authMiddleware, async (c) => {
+    try {
+      const detail = await getExamAttemptDetailService(c.req.param('attemptId'));
+
+      return c.json({ success: true as const, data: detail });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .put(
+    '/attempt/:attemptId/mark',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.object({ questionId: z.number().int().positive(), score: z.number(), comment: z.string().max(2000).optional() })
+    ),
+    async (c) => {
+      try {
+        const { questionId, score, comment } = c.req.valid('json');
+        const updated = await saveManualMarkService(c.req.param('attemptId'), questionId, { score, comment });
+
+        return c.json({ success: true as const, data: updated });
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
+  .post(
+    '/attempt/:attemptId/reopen',
+    authMiddleware,
+    zValidator('json', z.object({ extraSeconds: z.number().int().positive().max(86_400) })),
+    async (c) => {
+      try {
+        const reopened = await reopenAttemptService(c.req.param('attemptId'), c.req.valid('json').extraSeconds);
+
+        return c.json({ success: true as const, data: reopened });
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
+  .post(
+    '/:examId/corrections',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.discriminatedUnion('kind', [
+        z.object({ kind: z.literal('award'), questionId: z.number().int().positive() }),
+        z.object({
+          kind: z.literal('keyFix'),
+          questionId: z.number().int().positive(),
+          previousKey: z.array(z.string()),
+          correctedKey: z.array(z.string())
+        })
+      ])
+    ),
+    async (c) => {
+      try {
+        const user = c.get('user');
+        if (!user) throw new AppError('Sign in first', ErrorCodes.UNAUTHORIZED, 401);
+
+        const result = await addCorrectionService(c.req.param('examId'), {
+          ...c.req.valid('json'),
+          by: user.id,
+          at: new Date().toISOString()
+        });
+
+        return c.json({ success: true as const, data: result });
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
   .delete('/:examId', authMiddleware, async (c) => {
     try {
       const deleted = await deleteExamService(c.req.param('examId'));
