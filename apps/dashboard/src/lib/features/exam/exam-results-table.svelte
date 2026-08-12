@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { Badge } from '@cio/ui/badge';
-  import { Button } from '@cio/ui/button';
+  import { Badge } from '@cio/ui/base/badge';
+  import { Button } from '@cio/ui/base/button';
 
   /**
    * Who sat the paper, how far they got, and what they scored.

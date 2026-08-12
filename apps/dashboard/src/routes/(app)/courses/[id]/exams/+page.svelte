@@ -1,10 +1,10 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { Badge } from '@cio/ui/badge';
-  import { Button } from '@cio/ui/button';
+  import { Badge } from '@cio/ui/base/badge';
+  import { Button } from '@cio/ui/base/button';
 
   import { classroomhub } from '$lib/utils/services/api';
-  import { snackbar } from '$lib/components/Snackbar/store';
+  import { snackbar } from '$features/ui/snackbar/store';
 
   /**
    * The exams of one course.

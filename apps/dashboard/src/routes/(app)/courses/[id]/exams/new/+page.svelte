@@ -2,7 +2,7 @@
   import { t } from '$lib/utils/functions/translations';
   import ExamSettingsForm from '$features/exam/exam-settings-form.svelte';
   import { classroomhub } from '$lib/utils/services/api';
-  import { snackbar } from '$lib/components/Snackbar/store';
+  import { snackbar } from '$features/ui/snackbar/store';
 
   /**
    * Creating an exam from a paper that already exists as a detached container — one the

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { Button } from '@cio/ui/button';
-  import { Input } from '@cio/ui/input';
-  import { Label } from '@cio/ui/label';
+  import { Button } from '@cio/ui/base/button';
+  import { Input } from '@cio/ui/base/input';
+  import { Label } from '@cio/ui/base/label';
 
   /**
    * What a sitter fills in before the clock starts. Only the fields the exam asks for

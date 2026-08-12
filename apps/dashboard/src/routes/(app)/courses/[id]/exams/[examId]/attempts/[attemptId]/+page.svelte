@@ -1,11 +1,11 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { Button } from '@cio/ui/button';
-  import { Input } from '@cio/ui/input';
-  import { Textarea } from '@cio/ui/textarea';
+  import { Button } from '@cio/ui/base/button';
+  import { Input } from '@cio/ui/base/input';
+  import { Textarea } from '@cio/ui/base/textarea';
 
   import { classroomhub } from '$lib/utils/services/api';
-  import { snackbar } from '$lib/components/Snackbar/store';
+  import { snackbar } from '$features/ui/snackbar/store';
 
   /**
    * One sitting, in full: what the paper asked, what this person answered, when they

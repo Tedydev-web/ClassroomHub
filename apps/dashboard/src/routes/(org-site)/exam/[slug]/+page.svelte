@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { AssessmentItemRenderer } from '@cio/ui/exercise-question';
-  import { Button } from '@cio/ui/button';
+  import { AssessmentItemRenderer } from '@cio/ui/custom/exercise-question';
+  import { Button } from '@cio/ui/base/button';
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';

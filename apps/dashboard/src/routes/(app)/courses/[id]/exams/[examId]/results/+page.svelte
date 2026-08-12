@@ -1,10 +1,10 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { Button } from '@cio/ui/button';
+  import { Button } from '@cio/ui/base/button';
 
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
   import { classroomhub } from '$lib/utils/services/api';
-  import { snackbar } from '$lib/components/Snackbar/store';
+  import { snackbar } from '$features/ui/snackbar/store';
 
   /**
    * The teacher's view of one paper.
