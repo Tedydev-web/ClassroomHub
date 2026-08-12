@@ -5477,7 +5477,12 @@
       "comment_column": "Nhận xét",
       "reload": "Tải lại",
       "loading": "Đang tải…",
-      "summary_line": "{sat} lượt thi · {marked} đã chấm xong"
+      "summary_line": "{sat} lượt thi · {marked} đã chấm xong",
+      "status_column": "Trạng thái",
+      "time_taken_column": "Thời gian làm",
+      "no_name": "Không tên",
+      "no_extra_details": "Không khai báo thêm",
+      "summary_awaiting": "{count} chờ chấm tay"
     },
     "manage": {
       "title": "Đề thi",
@@ -5531,7 +5536,8 @@
       "pick_container": "Bộ câu hỏi",
       "no_containers": "Chưa có bộ câu hỏi nào dùng được. Import một file .docx trước, rồi quay lại đây.",
       "created": "Đã tạo đề thi ở dạng nháp. Mở đề khi bạn sẵn sàng gửi link.",
-      "create_failed": "Không tạo được đề thi"
+      "create_failed": "Không tạo được đề thi",
+      "pick_container_first": "Chọn một bộ câu hỏi cho đề thi này"
     }
   }
 }

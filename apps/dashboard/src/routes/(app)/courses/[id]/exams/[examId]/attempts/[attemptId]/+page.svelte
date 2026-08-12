@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/button';
   import { Input } from '@cio/ui/input';
   import { Textarea } from '@cio/ui/textarea';
@@ -66,7 +67,7 @@
     const numeric = Number(raw?.score);
 
     if (!Number.isFinite(numeric)) {
-      snackbar.error('Điểm phải là một con số');
+      snackbar.error($t('exam.results.mark_must_be_number'));
       return;
     }
 
@@ -83,9 +84,9 @@
         // Recomputed on the server by the one function that owns the total, so the
         // automatic part and the marks cannot drift apart.
         saved = { score: body.data.score, total: body.data.total, gradingState: body.data.gradingState };
-        snackbar.success('Đã lưu điểm');
+        snackbar.success($t('exam.results.mark_saved'));
       } else {
-        snackbar.error('Không lưu được điểm');
+        snackbar.error($t('exam.results.mark_failed'));
       }
     } finally {
       savingQuestionId = null;
@@ -115,16 +116,18 @@
 
 <div class="ui:mx-auto ui:w-full ui:max-w-4xl ui:space-y-6 ui:px-4 ui:py-6">
   <header class="ui:space-y-1">
-    <h1 class="ui:text-xl ui:font-semibold">{data.attempt.displayName ?? 'Không tên'}</h1>
+    <h1 class="ui:text-xl ui:font-semibold">{data.attempt.displayName ?? $t('exam.results.no_name')}</h1>
     <p class="ui:text-muted-foreground ui:text-sm">
-      {[data.attempt.className, data.attempt.candidateNumber].filter(Boolean).join(' · ') || 'Không khai báo thêm'}
+      {[data.attempt.className, data.attempt.candidateNumber].filter(Boolean).join(' · ') ||
+        $t('exam.results.no_extra_details')}
     </p>
     <p class="ui:text-sm">
-      Điểm: <span class="ui:font-semibold ui:tabular-nums">{score ?? '—'}/{total ?? '—'}</span>
+      {$t('exam.results.score_column')}:
+      <span class="ui:font-semibold ui:tabular-nums">{score ?? '—'}/{total ?? '—'}</span>
       {#if gradingState === 'awaiting_manual'}
-        <span class="ui:text-muted-foreground">— còn câu chờ chấm tay</span>
+        <span class="ui:text-muted-foreground">— {$t('exam.results.awaiting_manual_note')}</span>
       {:else if gradingState === 'unscoreable'}
-        <span class="ui:text-destructive">— bài này hệ thống không chấm được, cần xem lại</span>
+        <span class="ui:text-destructive">— {$t('exam.results.unscoreable_note')}</span>
       {/if}
     </p>
   </header>
@@ -134,29 +137,33 @@
       {@const chosen = chosenOptionIds(question.questionId)}
       {@const trail = trailByQuestion.get(question.questionId) ?? []}
       <li class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
-        <p class="ui:font-medium">Câu {question.order}</p>
+        <p class="ui:font-medium">{question.order}</p>
 
         {#if chosen.length > 0}
           <ul class="ui:space-y-1 ui:text-sm">
             {#each chosen as optionId (optionId)}
               <li class={isCorrectOption(question.questionId, optionId) ? 'ui:text-green-700' : 'ui:text-destructive'}>
-                Đã chọn: {optionId}
-                {isCorrectOption(question.questionId, optionId) ? '(đúng)' : '(sai)'}
+                {optionId}
+                {isCorrectOption(question.questionId, optionId) ? '✓' : '✗'}
               </li>
             {/each}
           </ul>
         {:else}
-          <p class="ui:text-muted-foreground ui:text-sm">Không trả lời</p>
+          <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.results.not_answered')}</p>
         {/if}
 
         {#if trail.length > 1}
           <!-- Settles a dispute about a result, and shows a paper answered all at once. -->
-          <p class="ui:text-muted-foreground ui:text-xs">Đã thay đổi đáp án {trail.length - 1} lần</p>
+          <p class="ui:text-muted-foreground ui:text-xs">
+            {$t('exam.results.changed_answer', { count: String(trail.length - 1) })}
+          </p>
         {/if}
 
         <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-2">
           <div class="ui:w-24">
-            <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${question.questionId}`}>Điểm</label>
+            <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${question.questionId}`}
+              >{$t('exam.results.score_column')}</label
+            >
             <Input
               id={`mark-${question.questionId}`}
               inputmode="decimal"
@@ -169,7 +176,9 @@
             />
           </div>
           <div class="ui:min-w-48 ui:flex-1">
-            <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${question.questionId}`}>Nhận xét</label>
+            <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${question.questionId}`}
+              >{$t('exam.results.comment_column')}</label
+            >
             <Textarea
               id={`comment-${question.questionId}`}
               rows={2}
@@ -186,7 +195,7 @@
             disabled={savingQuestionId === question.questionId}
             onclick={() => saveMark(question.questionId)}
           >
-            Lưu điểm
+            {$t('exam.results.save_mark')}
           </Button>
         </div>
       </li>

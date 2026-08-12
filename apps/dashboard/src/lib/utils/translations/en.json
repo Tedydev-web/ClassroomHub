@@ -5467,7 +5467,12 @@
       "comment_column": "Comment",
       "reload": "Reload",
       "loading": "Loading…",
-      "summary_line": "{sat} sittings · {marked} fully marked"
+      "summary_line": "{sat} sittings · {marked} fully marked",
+      "status_column": "Status",
+      "time_taken_column": "Time taken",
+      "no_name": "No name",
+      "no_extra_details": "Nothing else declared",
+      "summary_awaiting": "{count} awaiting marking"
     },
     "manage": {
       "title": "Exams",
@@ -5521,7 +5526,8 @@
       "pick_container": "Question set",
       "no_containers": "No question set is available yet. Import a .docx first, then come back.",
       "created": "Created as a draft. Open it when you are ready to send the link.",
-      "create_failed": "Could not create the exam"
+      "create_failed": "Could not create the exam",
+      "pick_container_first": "Choose a question set for this exam"
     }
   }
 }

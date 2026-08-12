@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/button';
 
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
@@ -37,7 +38,7 @@
   }
 
   async function reopen(attemptId: string) {
-    const minutes = Number(window.prompt('Cho làm tiếp bao nhiêu phút?', '15'));
+    const minutes = Number(window.prompt($t('exam.results.reopen_prompt'), '15'));
     if (!Number.isFinite(minutes) || minutes <= 0) return;
 
     const response = await classroomhub.exam.attempt[':attemptId'].reopen.$post({
@@ -46,10 +47,10 @@
     });
 
     if (response.ok) {
-      snackbar.success('Đã cho làm tiếp');
+      snackbar.success($t('exam.results.reopened'));
       await refresh();
     } else {
-      snackbar.error('Không mở lại được lượt làm này');
+      snackbar.error($t('exam.results.reopen_failed'));
     }
   }
 
@@ -67,11 +68,13 @@
     <div>
       <h1 class="ui:text-xl ui:font-semibold">{data.exam.title}</h1>
       <p class="ui:text-muted-foreground ui:text-sm">
-        {sat} lượt thi · {marked} đã chấm xong{awaiting > 0 ? ` · ${awaiting} chờ chấm tay` : ''}
+        {$t('exam.results.summary_line', { sat: String(sat), marked: String(marked) })}{awaiting > 0
+          ? ` · ${$t('exam.results.summary_awaiting', { count: String(awaiting) })}`
+          : ''}
       </p>
     </div>
     <Button variant="outline" disabled={refreshing} onclick={refresh}>
-      {refreshing ? 'Đang tải…' : 'Tải lại'}
+      {refreshing ? $t('exam.results.loading') : $t('exam.results.reload')}
     </Button>
   </header>
 

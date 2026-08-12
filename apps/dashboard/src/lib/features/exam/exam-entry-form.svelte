@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/button';
   import { Input } from '@cio/ui/input';
   import { Label } from '@cio/ui/label';
@@ -58,35 +59,37 @@
   <div class="ui:space-y-2">
     <h1 class="ui:text-2xl ui:font-semibold">{title}</h1>
     {#if workingMinutes}
-      <p class="ui:text-muted-foreground ui:text-sm">Thời gian làm bài: {workingMinutes} phút</p>
+      <p class="ui:text-muted-foreground ui:text-sm">
+        {$t('exam.entry.working_time', { minutes: String(workingMinutes) })}
+      </p>
     {/if}
   </div>
 
   <div class="ui:space-y-4">
     {#if requiresName}
       <div class="ui:space-y-2">
-        <Label for="exam-name">Họ và tên</Label>
+        <Label for="exam-name">{$t('exam.entry.full_name')}</Label>
         <Input id="exam-name" bind:value={displayName} autocomplete="name" maxlength={120} />
       </div>
     {/if}
 
     {#if requiresClass}
       <div class="ui:space-y-2">
-        <Label for="exam-class">Lớp</Label>
+        <Label for="exam-class">{$t('exam.entry.class_name')}</Label>
         <Input id="exam-class" bind:value={className} maxlength={120} />
       </div>
     {/if}
 
     {#if requiresCandidateNumber}
       <div class="ui:space-y-2">
-        <Label for="exam-candidate">Số báo danh</Label>
+        <Label for="exam-candidate">{$t('exam.entry.candidate_number')}</Label>
         <Input id="exam-candidate" bind:value={candidateNumber} maxlength={120} />
       </div>
     {/if}
 
     {#if requiresPassword}
       <div class="ui:space-y-2">
-        <Label for="exam-password">Mật khẩu đề thi</Label>
+        <Label for="exam-password">{$t('exam.entry.password')}</Label>
         <Input id="exam-password" type="password" bind:value={password} maxlength={200} />
       </div>
     {/if}
@@ -97,8 +100,7 @@
     limitation of sitting without an account: the result is not theirs to come back to.
   -->
   <p class="ui:text-muted-foreground ui:text-xs">
-    Bạn đang làm bài mà không đăng nhập, nên hệ thống không lưu lịch sử bài thi cho bạn. Sau khi nộp, bạn chỉ xem lại
-    được nếu giáo viên cho phép ngay trong lần này.
+    {$t('exam.entry.no_history_notice')}
   </p>
 
   {#if error}
@@ -106,6 +108,6 @@
   {/if}
 
   <Button class="ui:min-h-11 ui:w-full" disabled={missing || starting} onclick={start}>
-    {starting ? 'Đang mở đề…' : 'Bắt đầu làm bài'}
+    {starting ? $t('exam.entry.starting') : $t('exam.entry.start')}
   </Button>
 </div>

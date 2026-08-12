@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { onDestroy } from 'svelte';
 
   import { remainingSeconds } from './exam-autosave';
@@ -46,7 +47,7 @@
   });
 
   const label = $derived.by(() => {
-    if (left === null) return 'Không giới hạn thời gian';
+    if (left === null) return $t('exam.sitting.no_time_limit');
 
     const minutes = Math.floor(left / 60);
     const seconds = left % 60;

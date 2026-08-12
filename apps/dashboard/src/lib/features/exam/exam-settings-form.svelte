@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/button';
   import { Input } from '@cio/ui/input';
   import { Label } from '@cio/ui/label';
@@ -36,32 +37,32 @@
   let answerVisibility = $state<'never' | 'on_submit' | 'after_everyone' | 'above_threshold'>('never');
 
   const REVEAL_OPTIONS = [
-    { value: 'never', label: 'Không cho xem' },
-    { value: 'on_submit', label: 'Khi làm bài xong' },
-    { value: 'after_everyone', label: 'Khi tất cả thi xong' },
-    { value: 'above_threshold', label: 'Khi đạt điểm nhất định' }
+    { value: 'never', label: $t('exam.settings.reveal_never') },
+    { value: 'on_submit', label: $t('exam.settings.reveal_on_submit') },
+    { value: 'after_everyone', label: $t('exam.settings.reveal_after_everyone') },
+    { value: 'above_threshold', label: $t('exam.settings.reveal_above_threshold') }
   ] as const;
 
   const issues = $derived.by(() => {
     const found: string[] = [];
 
-    if (title.trim().length === 0) found.push('Đề thi cần có tiêu đề');
+    if (title.trim().length === 0) found.push($t('exam.settings.needs_title'));
 
     for (const [label, value] of [
-      ['Cho xem điểm', scoreVisibility],
-      ['Cho xem đề và đáp án', answerVisibility]
+      [$t('exam.settings.score_visibility'), scoreVisibility],
+      [$t('exam.settings.answer_visibility'), answerVisibility]
     ] as const) {
       if (value === 'after_everyone' && (!closesAt || workingMinutes.trim().length === 0)) {
-        found.push(`"${label} — khi tất cả thi xong" cần đặt cả thời gian làm bài và giờ đóng đề`);
+        found.push($t('exam.settings.after_everyone_needs_times', { label }));
       }
     }
 
     if (answerVisibility === 'on_submit' && maxAttempts !== '1') {
-      found.push('Cho xem đáp án ngay khi nộp thì phải giới hạn 1 lượt làm, nếu không học sinh đọc đáp án rồi thi lại');
+      found.push($t('exam.settings.on_submit_needs_single_attempt'));
     }
 
     if (opensAt && closesAt && new Date(opensAt) >= new Date(closesAt)) {
-      found.push('Giờ mở đề phải trước giờ đóng đề');
+      found.push($t('exam.settings.opens_before_closes'));
     }
 
     return found;
@@ -90,65 +91,70 @@
 
 <div class="ui:space-y-6">
   <div class="ui:space-y-2">
-    <Label for="exam-title">Tiêu đề đề thi</Label>
+    <Label for="exam-title">{$t('exam.settings.title')}</Label>
     <Input id="exam-title" bind:value={title} maxlength={300} />
   </div>
 
   <fieldset class="ui:space-y-2">
-    <legend class="ui:text-sm ui:font-medium">Ai được phép làm</legend>
+    <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.who_can_sit')}</legend>
     <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="radio" bind:group={mode} value="public" /> Tất cả mọi người có link, không cần đăng nhập
+      <input type="radio" bind:group={mode} value="public" />
+      {$t('exam.settings.anyone_with_link')}
     </label>
     <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="radio" bind:group={mode} value="private" /> Chỉ học sinh đã đăng nhập
+      <input type="radio" bind:group={mode} value="private" />
+      {$t('exam.settings.signed_in_only')}
     </label>
   </fieldset>
 
   <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
     <div class="ui:space-y-2">
-      <Label for="exam-minutes">Thời gian làm bài (phút)</Label>
+      <Label for="exam-minutes">{$t('exam.settings.working_minutes')}</Label>
       <Input
         id="exam-minutes"
         inputmode="numeric"
         bind:value={workingMinutes}
-        placeholder="Để trống nếu không giới hạn"
+        placeholder={$t('exam.settings.leave_empty_unlimited')}
       />
     </div>
     <div class="ui:space-y-2">
-      <Label for="exam-attempts">Số lượt làm đề</Label>
+      <Label for="exam-attempts">{$t('exam.settings.max_attempts')}</Label>
       <Input
         id="exam-attempts"
         inputmode="numeric"
         bind:value={maxAttempts}
-        placeholder="Để trống nếu không giới hạn"
+        placeholder={$t('exam.settings.leave_empty_unlimited')}
       />
     </div>
     <div class="ui:space-y-2">
-      <Label for="exam-opens">Giờ mở đề</Label>
+      <Label for="exam-opens">{$t('exam.settings.opens_at')}</Label>
       <Input id="exam-opens" type="datetime-local" bind:value={opensAt} />
     </div>
     <div class="ui:space-y-2">
-      <Label for="exam-closes">Giờ đóng đề</Label>
+      <Label for="exam-closes">{$t('exam.settings.closes_at')}</Label>
       <Input id="exam-closes" type="datetime-local" bind:value={closesAt} />
     </div>
   </div>
 
   <fieldset class="ui:space-y-2">
-    <legend class="ui:text-sm ui:font-medium">Học sinh khai báo</legend>
+    <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.declared_fields')}</legend>
     <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresName} /> Họ và tên
+      <input type="checkbox" bind:checked={requiresName} />
+      {$t('exam.entry.full_name')}
     </label>
     <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresClass} /> Lớp
+      <input type="checkbox" bind:checked={requiresClass} />
+      {$t('exam.entry.class_name')}
     </label>
     <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresCandidateNumber} /> Số báo danh
+      <input type="checkbox" bind:checked={requiresCandidateNumber} />
+      {$t('exam.entry.candidate_number')}
     </label>
   </fieldset>
 
   <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
     <div class="ui:space-y-2">
-      <Label for="exam-score-visibility">Cho xem điểm</Label>
+      <Label for="exam-score-visibility">{$t('exam.settings.score_visibility')}</Label>
       <select
         id="exam-score-visibility"
         class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
@@ -160,7 +166,7 @@
       </select>
     </div>
     <div class="ui:space-y-2">
-      <Label for="exam-answer-visibility">Cho xem đề và đáp án</Label>
+      <Label for="exam-answer-visibility">{$t('exam.settings.answer_visibility')}</Label>
       <select
         id="exam-answer-visibility"
         class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
@@ -182,6 +188,6 @@
   {/if}
 
   <Button class="ui:min-h-11" disabled={issues.length > 0 || submitting} onclick={save}>
-    {submitting ? 'Đang lưu…' : 'Lưu đề thi'}
+    {submitting ? $t('exam.settings.saving') : $t('exam.settings.save')}
   </Button>
 </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Badge } from '@cio/ui/badge';
   import { Button } from '@cio/ui/button';
 
@@ -40,11 +41,11 @@
   let filter = $state<Filter>('all');
 
   const FILTERS: Array<{ value: Filter; label: string }> = [
-    { value: 'all', label: 'Tất cả' },
-    { value: 'in_progress', label: 'Đang thi' },
-    { value: 'expired', label: 'Hết giờ (chưa nộp)' },
-    { value: 'submitted', label: 'Đã nộp' },
-    { value: 'awaiting_manual', label: 'Chưa chấm' }
+    { value: 'all', label: $t('exam.status.all') },
+    { value: 'in_progress', label: $t('exam.status.in_progress') },
+    { value: 'expired', label: $t('exam.status.expired') },
+    { value: 'submitted', label: $t('exam.status.submitted') },
+    { value: 'awaiting_manual', label: $t('exam.status.awaiting_manual') }
   ];
 
   const shown = $derived(
@@ -56,17 +57,17 @@
   );
 
   function statusLabel(row: ExamResultRow): string {
-    if (row.gradingState === 'unscoreable') return 'Lỗi, cần xem lại';
-    if (row.gradingState === 'awaiting_manual') return 'Chưa chấm';
-    if (row.status === 'in_progress') return 'Đang thi';
-    if (row.status === 'expired') return 'Hết giờ (chưa nộp)';
-    return 'Đã nộp';
+    if (row.gradingState === 'unscoreable') return $t('exam.status.unscoreable');
+    if (row.gradingState === 'awaiting_manual') return $t('exam.status.awaiting_manual');
+    if (row.status === 'in_progress') return $t('exam.status.in_progress');
+    if (row.status === 'expired') return $t('exam.status.expired');
+    return $t('exam.status.submitted');
   }
 
   function scoreLabel(row: ExamResultRow): string {
     if (row.score === null || row.total === null) return '—';
 
-    const suffix = row.gradingState === 'awaiting_manual' ? ' (chưa chấm hết)' : '';
+    const suffix = row.gradingState === 'awaiting_manual' ? ` (${$t('exam.results.partial_score')})` : '';
     return `${row.score}/${row.total}${suffix}`;
   }
 
@@ -77,7 +78,7 @@
       0,
       Math.round((new Date(row.submittedAt).getTime() - new Date(row.startedAt).getTime()) / 60_000)
     );
-    return `${minutes} phút`;
+    return $t('exam.results.minutes_taken', { minutes: String(minutes) });
   }
 </script>
 
@@ -95,18 +96,18 @@
   </div>
 
   {#if shown.length === 0}
-    <p class="ui:text-muted-foreground ui:py-8 ui:text-center ui:text-sm">Chưa có ai làm bài.</p>
+    <p class="ui:text-muted-foreground ui:py-8 ui:text-center ui:text-sm">{$t('exam.results.empty')}</p>
   {:else}
     <div class="ui:overflow-x-auto">
       <table class="ui:w-full ui:min-w-3xl ui:text-sm">
         <thead class="ui:border-border ui:text-muted-foreground ui:border-b ui:text-left ui:text-xs">
           <tr>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Họ và tên</th>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Lớp</th>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Số báo danh</th>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Trạng thái</th>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Điểm</th>
-            <th class="ui:py-2 ui:pr-3 ui:font-medium">Thời gian làm</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.entry.full_name')}</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.entry.class_name')}</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.entry.candidate_number')}</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.results.status_column')}</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.results.score_column')}</th>
+            <th class="ui:py-2 ui:pr-3 ui:font-medium">{$t('exam.results.time_taken_column')}</th>
             <th class="ui:py-2 ui:font-medium"></th>
           </tr>
         </thead>
@@ -120,10 +121,10 @@
                   a person is better placed to judge than a rule is.
                 -->
                 {#if row.duplicateName}
-                  <Badge variant="secondary" class="ui:ml-2">trùng tên</Badge>
+                  <Badge variant="secondary" class="ui:ml-2">{$t('exam.results.duplicate_name')}</Badge>
                 {/if}
                 {#if row.duplicateAddress}
-                  <Badge variant="secondary" class="ui:ml-1">cùng mạng</Badge>
+                  <Badge variant="secondary" class="ui:ml-1">{$t('exam.results.duplicate_address')}</Badge>
                 {/if}
               </td>
               <td class="ui:py-2 ui:pr-3">{row.className ?? '—'}</td>
@@ -132,9 +133,13 @@
               <td class="ui:py-2 ui:pr-3 ui:tabular-nums">{scoreLabel(row)}</td>
               <td class="ui:py-2 ui:pr-3 ui:tabular-nums">{minutesTaken(row)}</td>
               <td class="ui:py-2 ui:text-right">
-                <Button size="sm" variant="ghost" onclick={() => onopen(row.attemptId)}>Xem bài</Button>
+                <Button size="sm" variant="ghost" onclick={() => onopen(row.attemptId)}
+                  >{$t('exam.results.open_attempt')}</Button
+                >
                 {#if row.status !== 'in_progress'}
-                  <Button size="sm" variant="ghost" onclick={() => onreopen(row.attemptId)}>Cho làm tiếp</Button>
+                  <Button size="sm" variant="ghost" onclick={() => onreopen(row.attemptId)}
+                    >{$t('exam.results.reopen')}</Button
+                  >
                 {/if}
               </td>
             </tr>

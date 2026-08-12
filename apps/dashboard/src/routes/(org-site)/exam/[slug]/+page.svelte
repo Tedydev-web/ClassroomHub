@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { AssessmentItemRenderer } from '@cio/ui/exercise-question';
   import { Button } from '@cio/ui/button';
 
@@ -73,7 +74,7 @@
       const body = await response.json();
 
       if (!('success' in body) || !body.success) {
-        entryError = 'error' in body ? String(body.error) : 'Không mở được đề thi';
+        entryError = 'error' in body ? String(body.error) : $t('exam.manage.open_failed');
         return;
       }
 
@@ -84,7 +85,7 @@
       offset = clockOffsetMs(body.data.serverNow ?? new Date().toISOString());
       stage = 'sitting';
     } catch {
-      entryError = 'Không kết nối được tới máy chủ';
+      entryError = $t('exam.sitting.start_failed');
     } finally {
       starting = false;
     }
@@ -109,7 +110,7 @@
       saveState = queue.state();
 
       if (saveState === 'unsaved') {
-        submitError = 'Một số câu chưa lưu được. Kiểm tra kết nối rồi thử lại.';
+        submitError = $t('exam.sitting.unsaved_blocks_submit');
         return;
       }
 
@@ -119,7 +120,7 @@
       );
       stage = 'submitted';
     } catch {
-      submitError = 'Không nộp được bài. Thử lại sau ít giây.';
+      submitError = $t('exam.sitting.submit_failed');
     } finally {
       submitting = false;
     }
@@ -197,7 +198,11 @@
       <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-3">
         <!-- Never says "saved" while anything is outstanding. -->
         <span class="ui:text-muted-foreground ui:text-xs">
-          {saveState === 'saved' ? 'Đã lưu' : saveState === 'saving' ? 'Đang lưu…' : 'Chưa lưu'}
+          {saveState === 'saved'
+            ? $t('exam.sitting.saved')
+            : saveState === 'saving'
+              ? $t('exam.sitting.saving')
+              : $t('exam.sitting.unsaved')}
         </span>
         <ExamCountdown {expiresAt} clockOffsetMs={offset} onexpired={onTimeUp} />
       </div>
@@ -217,10 +222,12 @@
       class="ui:border-border ui:bg-background ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3"
     >
       <span class="ui:text-muted-foreground ui:text-xs">
-        {unansweredCount > 0 ? `Còn ${unansweredCount} câu chưa trả lời` : 'Đã trả lời hết'}
+        {unansweredCount > 0
+          ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
+          : $t('exam.sitting.all_answered')}
       </span>
       <Button class="ui:min-h-11" disabled={submitting} onclick={submit}>
-        {submitting ? 'Đang nộp…' : 'Nộp bài'}
+        {submitting ? $t('exam.sitting.submitting') : $t('exam.sitting.submit')}
       </Button>
     </footer>
 
@@ -230,9 +237,9 @@
   </div>
 {:else}
   <div class="ui:mx-auto ui:max-w-md ui:space-y-3 ui:px-4 ui:py-16 ui:text-center">
-    <h1 class="ui:text-xl ui:font-semibold">Đã nộp bài</h1>
+    <h1 class="ui:text-xl ui:font-semibold">{$t('exam.sitting.submitted_title')}</h1>
     <p class="ui:text-muted-foreground ui:text-sm">
-      Bài của bạn đã được ghi nhận. Vì bạn làm bài không đăng nhập nên hệ thống không lưu lịch sử cho bạn xem lại sau.
+      {$t('exam.sitting.submitted_body')}
     </p>
   </div>
 {/if}

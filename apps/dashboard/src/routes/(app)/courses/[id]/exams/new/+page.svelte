@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import ExamSettingsForm from '$features/exam/exam-settings-form.svelte';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$lib/components/Snackbar/store';
@@ -18,7 +19,7 @@
 
   async function create(settings: Record<string, unknown>) {
     if (!exerciseId) {
-      snackbar.error('Chọn một bộ câu hỏi cho đề thi này');
+      snackbar.error($t('exam.settings.pick_container_first'));
       return;
     }
 
@@ -32,10 +33,10 @@
       const body = await response.json();
 
       if ('success' in body && body.success) {
-        snackbar.success('Đã tạo đề thi ở dạng nháp. Mở đề khi bạn sẵn sàng gửi link.');
+        snackbar.success($t('exam.settings.created'));
         window.location.href = `/courses/${data.courseId}/exams`;
       } else {
-        snackbar.error('error' in body ? String(body.error) : 'Không tạo được đề thi');
+        snackbar.error('error' in body ? String(body.error) : $t('exam.settings.create_failed'));
       }
     } finally {
       submitting = false;
@@ -44,15 +45,15 @@
 </script>
 
 <div class="ui:mx-auto ui:w-full ui:max-w-3xl ui:space-y-6 ui:px-4 ui:py-6">
-  <h1 class="ui:text-xl ui:font-semibold">Tạo đề thi</h1>
+  <h1 class="ui:text-xl ui:font-semibold">{$t('exam.manage.create')}</h1>
 
   {#if data.containers.length === 0}
     <p class="ui:text-muted-foreground ui:text-sm">
-      Chưa có bộ câu hỏi nào dùng được. Import một file .docx trước, rồi quay lại đây.
+      {$t('exam.settings.no_containers')}
     </p>
   {:else}
     <div class="ui:space-y-2">
-      <label class="ui:text-sm ui:font-medium" for="exam-container">Bộ câu hỏi</label>
+      <label class="ui:text-sm ui:font-medium" for="exam-container">{$t('exam.settings.pick_container')}</label>
       <select
         id="exam-container"
         class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"

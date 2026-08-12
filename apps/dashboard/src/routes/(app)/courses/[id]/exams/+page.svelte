@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Badge } from '@cio/ui/badge';
   import { Button } from '@cio/ui/button';
 
@@ -58,11 +59,11 @@
       const response = await classroomhub.exam[':examId'].open.$post({ param: { examId } });
 
       if (response.ok) {
-        snackbar.success('Đã mở đề. Đề đã được đóng băng, sửa câu hỏi sau lúc này không đổi bài của học sinh.');
+        snackbar.success($t('exam.manage.opened_notice'));
         await refresh();
       } else {
         const body = await response.json();
-        snackbar.error('error' in body ? String(body.error) : 'Không mở được đề');
+        snackbar.error('error' in body ? String(body.error) : $t('exam.manage.open_failed'));
       }
     } finally {
       busyId = null;
@@ -74,7 +75,7 @@
 
     try {
       await classroomhub.exam[':examId'].close.$post({ param: { examId } });
-      snackbar.success('Đã đóng đề. Ai đang làm vẫn làm hết giờ của mình.');
+      snackbar.success($t('exam.manage.closed_notice'));
       await refresh();
     } finally {
       busyId = null;
@@ -83,25 +84,25 @@
 
   async function copyLink(slug: string) {
     await navigator.clipboard.writeText(`${window.location.origin}/exam/${slug}`);
-    snackbar.success('Đã sao chép link');
+    snackbar.success($t('exam.manage.link_copied'));
   }
 
   const STATUS_LABEL: Record<string, string> = {
-    draft: 'Nháp',
-    open: 'Đang mở',
-    closed: 'Đã đóng'
+    draft: $t('exam.manage.draft'),
+    open: $t('exam.manage.open'),
+    closed: $t('exam.manage.closed')
   };
 </script>
 
 <div class="ui:mx-auto ui:w-full ui:max-w-5xl ui:space-y-6 ui:px-4 ui:py-6">
   <header class="ui:flex ui:items-center ui:justify-between ui:gap-3">
-    <h1 class="ui:text-xl ui:font-semibold">Đề thi</h1>
-    <Button href={`/courses/${data.courseId}/exams/new`}>Tạo đề thi</Button>
+    <h1 class="ui:text-xl ui:font-semibold">{$t('exam.manage.title')}</h1>
+    <Button href={`/courses/${data.courseId}/exams/new`}>{$t('exam.manage.create')}</Button>
   </header>
 
   {#if exams.length === 0}
     <p class="ui:text-muted-foreground ui:py-10 ui:text-center ui:text-sm">
-      Chưa có đề thi nào. Tạo một đề rồi gửi link cho học sinh.
+      {$t('exam.manage.empty')}
     </p>
   {:else}
     <ul class="ui:space-y-3">
@@ -112,25 +113,33 @@
               <p class="ui:truncate ui:font-medium">{exam.title}</p>
               <p class="ui:text-muted-foreground ui:text-xs">
                 {STATUS_LABEL[exam.status] ?? exam.status}
-                {exam.mode === 'public' ? ' · Ai có link cũng làm được' : ' · Cần đăng nhập'}
-                {exam.workingSeconds ? ` · ${Math.round(exam.workingSeconds / 60)} phút` : ' · Không giới hạn giờ'}
+                {exam.mode === 'public'
+                  ? ` · ${$t('exam.manage.public_mode')}`
+                  : ` · ${$t('exam.manage.private_mode')}`}
+                {exam.workingSeconds
+                  ? ` · ${$t('exam.manage.minutes', { minutes: String(Math.round(exam.workingSeconds / 60)) })}`
+                  : ` · ${$t('exam.manage.unlimited_time')}`}
               </p>
             </div>
 
             <div class="ui:flex ui:flex-wrap ui:gap-2">
               <Button size="sm" variant="ghost" href={`/courses/${data.courseId}/exams/${exam.id}/results`}>
-                Kết quả
+                {$t('exam.manage.results')}
               </Button>
 
               {#if exam.status === 'draft'}
                 <Button size="sm" variant="outline" disabled={busyId === exam.id} onclick={() => checkPaper(exam.id)}>
-                  Kiểm tra đề
+                  {$t('exam.manage.check_paper')}
                 </Button>
-                <Button size="sm" disabled={busyId === exam.id} onclick={() => open(exam.id)}>Mở đề</Button>
+                <Button size="sm" disabled={busyId === exam.id} onclick={() => open(exam.id)}
+                  >{$t('exam.manage.open_exam')}</Button
+                >
               {:else if exam.status === 'open'}
-                <Button size="sm" variant="outline" onclick={() => copyLink(exam.slug)}>Sao chép link</Button>
+                <Button size="sm" variant="outline" onclick={() => copyLink(exam.slug)}
+                  >{$t('exam.manage.copy_link')}</Button
+                >
                 <Button size="sm" variant="outline" disabled={busyId === exam.id} onclick={() => close(exam.id)}>
-                  Đóng đề
+                  {$t('exam.manage.close_exam')}
                 </Button>
               {/if}
             </div>
@@ -138,17 +147,19 @@
 
           {#if summary && summary.examId === exam.id}
             <div class="ui:bg-muted ui:space-y-1 ui:rounded-md ui:p-3 ui:text-sm">
-              <p>Đề có {summary.questionCount} câu.</p>
+              <p>{$t('exam.manage.question_count', { count: String(summary.questionCount) })}</p>
               {#if summary.questionsWithoutAnswerKey.length > 0}
                 <p class="ui:text-destructive ui:font-medium">
-                  {summary.questionsWithoutAnswerKey.length} câu chưa có đáp án đúng:
-                  {summary.questionsWithoutAnswerKey.map((question) => `câu ${question.order}`).join(', ')}
+                  {$t('exam.manage.missing_keys', {
+                    count: String(summary.questionsWithoutAnswerKey.length),
+                    questions: summary.questionsWithoutAnswerKey.map((question) => question.order).join(', ')
+                  })}
                 </p>
                 <p class="ui:text-muted-foreground ui:text-xs">
-                  Những câu này sẽ được 0 điểm cho mọi học sinh. Sửa đáp án trước khi mở đề.
+                  {$t('exam.manage.missing_keys_note')}
                 </p>
               {:else}
-                <p class="ui:text-muted-foreground">Mọi câu đều có đáp án đúng.</p>
+                <p class="ui:text-muted-foreground">{$t('exam.manage.all_keys_present')}</p>
               {/if}
             </div>
           {/if}
@@ -158,7 +169,6 @@
   {/if}
 
   <p class="ui:text-muted-foreground ui:text-xs">
-    Đề thi tách riêng khỏi bài tập: bài tập cần tài khoản và ghi nhận tiến độ, đề thi có thể gửi link công khai và tính
-    giờ. Điểm thi không vào sổ điểm của khoá học.
+    {$t('exam.manage.separation_note')}
   </p>
 </div>
