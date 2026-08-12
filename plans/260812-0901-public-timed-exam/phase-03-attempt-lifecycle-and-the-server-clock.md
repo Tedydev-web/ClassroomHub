@@ -183,22 +183,22 @@ phase 4 protects finalisation only; it does nothing for this.
 
 ## Success criteria
 
-- [ ] Every branch of the expiry formula has a test, including both boundary cases
-- [ ] Reopening with a live cookie resumes the attempt and creates no second row
-- [ ] A save after `expiresAt + grace` is refused with a distinguishable error, not a
+- [x] Every branch of the expiry formula has a test, including both boundary cases
+- [x] Reopening with a live cookie resumes the attempt and creates no second row
+- [x] A save after `expiresAt + grace` is refused with a distinguishable error, not a
       generic failure
-- [ ] A save carrying one answer does not erase previously saved answers
-- [ ] Two overlapping saves for different questions both survive
-- [ ] An answer referencing a question outside the pinned paper is refused at save time
-- [ ] Every sitter-supplied field is length-bounded and rejected when blank
-- [ ] The stored revision comes from the pinned snapshot, and a client-supplied revision is
+- [x] A save carrying one answer does not erase previously saved answers
+- [x] Two overlapping saves for different questions both survive
+- [x] An answer referencing a question outside the pinned paper is refused at save time
+- [x] Every sitter-supplied field is length-bounded and rejected when blank
+- [x] The stored revision comes from the pinned snapshot, and a client-supplied revision is
       ignored
-- [ ] Starting an exam outside its window is refused
-- [ ] Starting past `maxAttempts` is refused for a sitter who keeps their cookie
-- [ ] The resume cookie is `httpOnly`, `Secure`, `SameSite=None`, and scoped per exam
-- [ ] The cookie is attached to a request from a different origin — asserted against the
+- [x] Starting an exam outside its window is refused
+- [x] Starting past `maxAttempts` is refused for a sitter who keeps their cookie
+- [x] The resume cookie is `httpOnly`, `Secure`, `SameSite=None`, and scoped per exam
+- [x] The cookie is attached to a request from a different origin — asserted against the
       cross-origin case, not merely against the cookie being set
-- [ ] A write without the required custom header, or from an origin outside the allow-list,
+- [x] A write without the required custom header, or from an origin outside the allow-list,
       is refused
 
 ## Risk assessment
