@@ -1,24 +1,20 @@
 name: Deploy production
 
-# Images are built on GitHub's runners and pulled by the production host, which
-# does no building at all.
+# Push to main, and this machine is running the new code a few minutes later.
 #
-# The host used to build from its own checkout, and Coolify hardcodes
-# `docker compose build --pull --no-cache` for compose deployments — it ignores
-# the application's own "disable build cache" setting. Every push therefore
-# rebuilt four images from zero on the machine that also serves the site: about
-# twenty minutes, of which roughly nine were a hard outage, because Coolify
-# removes the running containers before the new ones exist.
+# Two jobs. GitHub's runners produce the images; the runner on the production
+# host pulls them and starts the stack with plain Compose. Nothing is built
+# here and Coolify is not in the path — it stayed in it long enough to teach us
+# why it should not be: it hardcodes `build --pull --no-cache` for compose
+# deployments, so every push rebuilt four images from zero on the machine that
+# also serves the site, and it removes the running containers *before* the new
+# ones exist. A failed build therefore left the site down with nothing to fall
+# back to, which is exactly what happened three times in one morning.
 #
-# Splitting the work fixes both halves. The build moves off the production
-# machine entirely, and it regains a layer cache (a registry cache, so it
-# survives between runs). What Coolify does on the host shrinks to `up`.
-#
-# GitHub cannot reach Coolify directly: Cloudflare Access sits in front of the
-# public hostname and answers an unauthenticated request with a sign-in page,
-# recording HTTP 200 while Coolify never hears about it. The deploy job runs on
-# the runner that lives on the Coolify host and reaches the API over the Docker
-# bridge instead, from inside the Access perimeter.
+# There is no separate lint or test gate. The image build runs `tsc` for the API
+# and `vite build` for the dashboard, so a syntax error, a type error or an
+# unresolved import fails the build and never reaches this host. That is the
+# check worth having in the deploy path; the rest belongs in review.
 
 on:
   push:
@@ -27,9 +23,8 @@ on:
 
 concurrency:
   group: deploy-production
-  # Never cancel a deployment midway: Coolify removes the running containers
-  # before it creates the new ones, so an interrupted deploy leaves the site
-  # down with nothing to roll back to.
+  # Never cancel a deploy midway: `up -d` is quick, but interrupting it between
+  # `docker pull` and the restart would leave a half-updated stack.
   cancel-in-progress: false
 
 permissions:
@@ -39,6 +34,9 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: tedydev-web
+  # Written once from Coolify and owned by the host. Secrets stay on this
+  # machine instead of moving into GitHub.
+  HOST_ENV_DIR: /home/tedydev/.config/classroomhub
 
 jobs:
   images:
@@ -82,112 +80,92 @@ jobs:
           file: ${{ matrix.dockerfile }}
           build-args: ${{ matrix.build_args }}
           push: true
-          # The commit tag is what the deploy pulls; `latest` is only a
-          # convenience for a human reading the registry.
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           platforms: linux/amd64
           provenance: false
 
   deploy:
-    name: Deploy to Coolify
+    name: Start the new stack
     needs: images
     runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 30
     steps:
-      - name: Pull the images onto the production host
+      - uses: actions/checkout@v4
+
+      - name: Pull this commit's images
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
-          # The packages are private, and Coolify's own client has no registry
-          # credentials. Pulling here — as the runner, which does — puts the
-          # images in the host's local store, so `docker compose up` finds them
-          # without Coolify ever needing to authenticate.
           echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
 
           for image in classroom-api classroom-dashboard classroom-jobs; do
             ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
-            echo "Pulling ${ref}"
             docker pull --quiet "${ref}"
 
-            # The compose file names the `current` tag, which is moved here rather
-            # than written into Coolify's environment. Coolify's API token is
-            # read-only, and the deploy stays deterministic anyway: the same job
-            # that pulled this commit's image is the one that points `current` at
-            # it, so the tag can never name a different commit than was pulled.
+            # The compose file names `current`. Moving the tag here, in the job
+            # that just pulled this commit, is what makes the running stack and
+            # the commit provably the same thing.
             docker tag "${ref}" "${REGISTRY}/${IMAGE_NAMESPACE}/${image}:current"
           done
 
           docker logout "${REGISTRY}"
 
-      - name: Trigger and wait
-        env:
-          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
-          COOLIFY_URL: http://172.17.0.1:18080
-          APP_UUID: zj19oe40izga1bnpymfz5z55
-          POLL_SECONDS: 15
-          MAX_POLLS: 100
+      - name: Start the stack
         run: |
           set -euo pipefail
 
-          body="$(mktemp)"
-          trap 'rm -f "${body}"' EXIT
+          # This runner sees the Docker socket but not the host filesystem, so
+          # the environment is read through a throwaway container. It is written
+          # with a restrictive umask and removed at the end of the job.
+          umask 077
+          env_file="${RUNNER_TEMP}/production.env"
+          docker run --rm -v "${HOST_ENV_DIR}:/cfg:ro" alpine:3 cat /cfg/production.env > "${env_file}"
 
-          code="$(curl -sS -o "${body}" -w '%{http_code}' --max-time 60 \
-            "${COOLIFY_URL}/api/v1/deploy?uuid=${APP_UUID}&force=false" \
-            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}")"
+          test -s "${env_file}"
 
-          if [ "${code}" != "200" ]; then
-            echo "::error::Coolify refused the deploy request (HTTP ${code})"
-            cat "${body}"
-            exit 1
-          fi
+          docker compose \
+            --env-file "${env_file}" \
+            -f docker/production/docker-compose.yaml \
+            --project-directory . \
+            --project-name zj19oe40izga1bnpymfz5z55 \
+            up -d --no-build --remove-orphans
 
-          uuid="$(jq -r '.deployments[0].deployment_uuid // empty' "${body}")"
-          if [ -z "${uuid}" ]; then
-            echo "::error::Coolify accepted the request but queued no deployment"
-            cat "${body}"
-            exit 1
-          fi
+          rm -f "${env_file}"
 
-          echo "Queued deployment ${uuid} for ${GITHUB_SHA}."
+      - name: Prove it is serving
+        run: |
+          set -euo pipefail
 
-          previous=""
-          for _ in $(seq 1 "${MAX_POLLS}"); do
-            sleep "${POLL_SECONDS}"
-
-            # A single failed poll is not a failed deploy; keep waiting.
-            if ! curl -sS -o "${body}" --max-time 30 \
-              "${COOLIFY_URL}/api/v1/deployments/${uuid}" \
-              -H "Authorization: Bearer ${COOLIFY_API_TOKEN}"; then
-              echo "Status request failed, retrying."
-              continue
+          for service in api dashboard; do
+            name="zj19oe40izga1bnpymfz5z55-${service}-1"
+            for _ in $(seq 1 30); do
+              health="$(docker inspect --format '{{.State.Health.Status}}' "${name}" 2>/dev/null || echo missing)"
+              [ "${health}" = "healthy" ] && break
+              sleep 5
+            done
+            if [ "${health}" != "healthy" ]; then
+              echo "::error::${name} did not become healthy (${health})"
+              docker logs --tail 40 "${name}" || true
+              exit 1
             fi
-
-            status="$(jq -r '.status // empty' "${body}")"
-            [ -z "${status}" ] && { echo "No status in response, retrying."; continue; }
-
-            if [ "${status}" != "${previous}" ]; then
-              echo "Deployment ${uuid}: ${status}"
-              previous="${status}"
-            fi
-
-            case "${status}" in
-              finished)
-                echo "Deployment ${uuid} finished."
-                exit 0
-                ;;
-              failed|error|cancelled-by-user)
-                echo "::error::Deployment ${uuid} ended as ${status}. Open it in Coolify for the build log."
-                exit 1
-                ;;
-            esac
+            echo "${name}: healthy"
           done
 
-          echo "::error::Deployment ${uuid} did not finish within the polling budget; it may still be running in Coolify."
-          exit 1
+          # Healthy containers are not the same as a served page; ask the tunnel.
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 https://msna.classroom.io.vn/)"
+          if [ "${code}" != "200" ]; then
+            echo "::error::The site answered HTTP ${code} after the deploy"
+            exit 1
+          fi
+          echo "Site answered HTTP 200."
+
+      - name: Remove the images this deploy replaced
+        if: always()
+        run: |
+          set -euo pipefail
+          # Images are ~5 GB each; without this the disk fills within a fortnight.
+          docker image prune --force --filter 'until=168h' >/dev/null || true
