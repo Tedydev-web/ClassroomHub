@@ -1,6 +1,10 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { AssessmentItemRenderer, QuestionNavigation } from '@cio/ui/custom/exercise-question';
+  import {
+    AssessmentItemRenderer,
+    QuestionNavigation,
+    SectionNavigationSidebar
+  } from '@cio/ui/custom/exercise-question';
   import { Progress } from '@cio/ui/base/progress';
   import {
     getAssessmentVerticalSliceResponseProgress,
@@ -270,6 +274,52 @@
    * is the seventh question rather than the second item.
    */
   /**
+   * The question outline the exercise page carries, fed from the paper instead of from
+   * sections — an exam has none. Forty questions across ten passages is exactly where a
+   * candidate needs to see, at a glance, which ones they have not answered yet.
+   */
+  const outlineGroups = $derived.by(() => {
+    let number = 1;
+
+    return (paper?.questions ?? []).map((question, index) => {
+      const envelope = responses[question.questionId];
+      const answered = new Set(
+        (envelope?.responses ?? []).map((entry: { interactionId: string }) => entry.interactionId)
+      );
+      const interactions = (question.definition?.blocks ?? []).filter(
+        (block: { kind?: string }) => block.kind === 'interaction'
+      );
+
+      const questions = interactions.map((block: { id: string }) => {
+        const label = String(number);
+        number += 1;
+
+        return {
+          key: `${question.questionId}-${block.id}`,
+          label,
+          isCurrent: index + 1 === currentIndex,
+          isAnswered: answered.has(block.id)
+        };
+      });
+
+      return {
+        id: String(question.questionId),
+        title:
+          questions.length > 1
+            ? $t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_question_range', {
+                start: questions[0]?.label ?? '',
+                end: questions[questions.length - 1]?.label ?? ''
+              })
+            : $t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', {
+                index: questions[0]?.label ?? ''
+              }),
+        isCurrent: index + 1 === currentIndex,
+        questions
+      };
+    });
+  });
+
+  /**
    * One item at a time, with the same Previous/Next/Finish control the exercise page uses.
    * A paper of forty questions in one scroll is a different product from the one the
    * course already teaches with, and the passage workspace is built to own the viewport.
@@ -343,6 +393,11 @@
       Padding grows with the viewport instead, so a phone still gets its margins.
     -->
     <main class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:pb-4 ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16">
+      <SectionNavigationSidebar
+        sections={outlineGroups}
+        navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
+      />
+
       {#if currentItem}
         {#key currentItem.questionId}
           <AssessmentItemRenderer
