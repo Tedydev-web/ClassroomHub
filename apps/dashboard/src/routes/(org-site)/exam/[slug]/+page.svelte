@@ -1,7 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentItemRenderer, QuestionNavigation } from '@cio/ui/custom/exercise-question';
-  import { Button } from '@cio/ui/base/button';
   import { Progress } from '@cio/ui/base/progress';
   import {
     getAssessmentVerticalSliceResponseProgress,
@@ -297,7 +296,7 @@
       </div>
     </header>
 
-    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-4 ui:px-4 ui:py-6">
+    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-4 ui:px-4 ui:pt-6 ui:pb-4">
       {#if currentItem}
         {#key currentItem.questionId}
           <AssessmentItemRenderer
@@ -314,18 +313,6 @@
             onResponseChange={(response) => answered(currentItem.questionId, response)}
           />
         {/key}
-
-        <QuestionNavigation
-          canGoBack={currentIndex > 1}
-          canGoNext={!submitting}
-          isLast={isLastItem}
-          isSubmitting={submitting}
-          previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
-          nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
-          finishLabel={$t('exam.sitting.submit')}
-          onPrevious={goPrevious}
-          onNext={goNext}
-        />
       {/if}
     </main>
 
@@ -343,9 +330,22 @@
             : $t('exam.sitting.all_answered')}
         </span>
       </div>
-      <Button class="ui:min-h-11" disabled={submitting} onclick={submit}>
-        {submitting ? $t('exam.sitting.submitting') : $t('exam.sitting.submit')}
-      </Button>
+      <!--
+        Paging between items lives here rather than under the paper. The passage workspace
+        already carries its own previous/next for the questions inside one passage, and a
+        second pair directly beneath it read as a broken duplicate of the first.
+      -->
+      <QuestionNavigation
+        canGoBack={currentIndex > 1}
+        canGoNext={!submitting}
+        isLast={isLastItem}
+        isSubmitting={submitting}
+        previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
+        nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
+        finishLabel={$t('exam.sitting.submit')}
+        onPrevious={goPrevious}
+        onNext={goNext}
+      />
     </footer>
 
     {#if submitError}
