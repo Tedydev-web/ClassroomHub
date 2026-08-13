@@ -2,6 +2,13 @@
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentItemRenderer } from '@cio/ui/custom/exercise-question';
   import { Button } from '@cio/ui/base/button';
+  import { Progress } from '@cio/ui/base/progress';
+  import {
+    getAssessmentVerticalSliceResponseProgress,
+    type AssessmentDeliveryDefinition,
+    type AssessmentResponseEnvelope
+  } from '@cio/question-types';
+  import { getAssessmentPassageWorkspaceLabels } from '$features/course/components/exercise/question-labels';
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
@@ -29,11 +36,13 @@
   let entryError = $state<string | null>(null);
 
   let attemptId = $state<string | null>(null);
-  let paper = $state<{ questions: Array<{ questionId: number; definition: unknown }> } | null>(null);
+  let paper = $state<{ questions: Array<{ questionId: number; definition: AssessmentDeliveryDefinition }> } | null>(
+    null
+  );
   let expiresAt = $state<string | null>(null);
   let offset = $state(0);
 
-  const responses = $state<Record<number, unknown>>({});
+  const responses = $state<Record<number, AssessmentResponseEnvelope>>({});
   let saveState = $state<'saved' | 'saving' | 'unsaved'>('saved');
   let submitting = $state(false);
   let submitError = $state<string | null>(null);
@@ -93,7 +102,7 @@
     }
   }
 
-  function answered(questionId: number, response: unknown) {
+  function answered(questionId: number, response: AssessmentResponseEnvelope) {
     responses[questionId] = response;
     queue.enqueue({ questionId, answerData: response });
     saveState = 'unsaved';
@@ -180,9 +189,58 @@
     };
   });
 
-  const unansweredCount = $derived(
-    (paper?.questions ?? []).filter((question) => responses[question.questionId] === undefined).length
-  );
+  /**
+   * Rendering is the exercise page's, not a second one built for exams.
+   *
+   * Everything below mirrors `view-mode.svelte`: the same renderer, the same passage
+   * workspace labels, the same container and header rules, and the same continuous
+   * numbering across items. A paper sat as an exam should look like a paper sat as an
+   * exercise, because it is the same paper.
+   */
+  const passageWorkspaceLabels = $derived(getAssessmentPassageWorkspaceLabels());
+
+  /** Answered and total counted per interaction, so a passage of six counts as six. */
+  const progress = $derived.by(() => {
+    let answered = 0;
+    let total = 0;
+
+    for (const question of paper?.questions ?? []) {
+      const counted = getAssessmentVerticalSliceResponseModelProgress(question);
+      answered += counted.answered;
+      total += counted.total;
+    }
+
+    return { answered, total };
+  });
+
+  const unansweredCount = $derived(progress.total - progress.answered);
+
+  function getAssessmentVerticalSliceResponseModelProgress(question: {
+    questionId: number;
+    definition: AssessmentDeliveryDefinition;
+  }): { answered: number; total: number } {
+    return getAssessmentVerticalSliceResponseProgress(
+      question.definition,
+      (responses[question.questionId] ?? null) as AssessmentResponseEnvelope | null
+    );
+  }
+
+  /**
+   * The number the sitter sees beside each question, continuous across the whole paper.
+   * A passage holding six questions advances the count by six, so question seven really
+   * is the seventh question rather than the second item.
+   */
+  const numberStartByQuestionId = $derived.by(() => {
+    const starts: Record<number, number> = {};
+    let next = 1;
+
+    for (const question of paper?.questions ?? []) {
+      starts[question.questionId] = next;
+      next += getAssessmentVerticalSliceResponseModelProgress(question).total;
+    }
+
+    return starts;
+  });
 </script>
 
 {#if stage === 'entry'}
@@ -216,12 +274,20 @@
       </div>
     </header>
 
-    <main class="ui:flex-1 ui:px-4 ui:py-6">
+    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-6 ui:px-4 ui:py-6">
       {#each paper?.questions ?? [] as question (question.questionId)}
         <AssessmentItemRenderer
           definition={question.definition}
           response={responses[question.questionId]}
-          onresponsechange={(response: unknown) => answered(question.questionId, response)}
+          disabled={submitting}
+          questionNumber={numberStartByQuestionId[question.questionId]}
+          interactionNumberStart={numberStartByQuestionId[question.questionId]}
+          showItemHeader={question.definition?.presentation?.layout !== 'passage_split'}
+          showContainer
+          trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+          falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+          {passageWorkspaceLabels}
+          onResponseChange={(response) => answered(question.questionId, response)}
         />
       {/each}
     </main>
@@ -229,11 +295,17 @@
     <footer
       class="ui:border-border ui:bg-background ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3"
     >
-      <span class="ui:text-muted-foreground ui:text-xs">
-        {unansweredCount > 0
-          ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
-          : $t('exam.sitting.all_answered')}
-      </span>
+      <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
+        <Progress
+          value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
+          class="ui:h-2 ui:max-w-48"
+        />
+        <span class="ui:text-muted-foreground ui:shrink-0 ui:text-xs">
+          {unansweredCount > 0
+            ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
+            : $t('exam.sitting.all_answered')}
+        </span>
+      </div>
       <Button class="ui:min-h-11" disabled={submitting} onclick={submit}>
         {submitting ? $t('exam.sitting.submitting') : $t('exam.sitting.submit')}
       </Button>
