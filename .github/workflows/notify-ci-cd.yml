@@ -8,8 +8,8 @@ name: Notify CI/CD
 # keeps the notification out of the deploy's critical path — a Telegram outage
 # cannot fail a deploy — and means a new workflow only has to be named here.
 #
-# Only `completed` is reported. A "started" message costs a notification for
-# every push and says nothing the result will not say a minute later.
+# Both `in_progress` and `completed` are reported: one message when a run picks
+# up so a deploy can be watched while it happens, and one with the result.
 
 on:
   workflow_run:
@@ -21,6 +21,7 @@ on:
       - Deploy tenant router
       - Deploy embeds to R2
     types:
+      - in_progress
       - completed
   workflow_dispatch:
 
@@ -29,7 +30,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: notify-ci-cd-${{ github.event.workflow_run.id }}
+  # Keyed by action as well as run: the start and the result are two messages
+  # about the same run, and one must not cancel the other.
+  group: notify-ci-cd-${{ github.event.workflow_run.id }}-${{ github.event.action }}
   cancel-in-progress: false
 
 jobs:
@@ -52,6 +55,7 @@ jobs:
         env:
           IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
           WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          EVENT_ACTION: ${{ github.event.action }}
           CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           RUN_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
           COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
@@ -74,9 +78,17 @@ jobs:
           # so a long commit message cannot push the links out of the preview.
           subject="$(printf '%s' "${COMMIT_MESSAGE}" | head -n 1)"
 
+          # A run that has just picked up has no conclusion yet; saying "started"
+          # is what makes the first message readable instead of an empty status.
+          if [ "${EVENT_ACTION}" = "in_progress" ]; then
+            status="started"
+          else
+            status="${CONCLUSION}"
+          fi
+
           {
             echo "title=ClassroomHub — ${WORKFLOW_NAME}"
-            echo "status=${CONCLUSION}"
+            echo "status=${status}"
             echo "started_at=${RUN_STARTED_AT}"
             echo "commit_title=${subject}"
             echo "commit_author=${COMMIT_AUTHOR}"

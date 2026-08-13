@@ -63,12 +63,14 @@ case "$STATUS_NORM" in
   SUCCESS|OK|PASSED) STATUS_NORM="SUCCESS" ;;
   FAIL|FAILED|FAILURE|ERROR) STATUS_NORM="FAIL" ;;
   CANCELLED|CANCELED) STATUS_NORM="CANCELLED" ;;
+  STARTED|RUNNING|IN_PROGRESS) STATUS_NORM="STARTED" ;;
   *) : ;;
 esac
 
 ICON="❌"
 [ "$STATUS_NORM" = "SUCCESS" ] && ICON="✅"
 [ "$STATUS_NORM" = "CANCELLED" ] && ICON="🟨"
+[ "$STATUS_NORM" = "STARTED" ] && ICON="🚀"
 
 # -----------------------------
 # URLs (prefer metadata outputs)
@@ -97,8 +99,11 @@ RUN_URL_ESC="$(esc_url "${RUN_URL:-}")"
 # -----------------------------
 # Duration (prominent)
 # -----------------------------
+# A run that has only just started has no duration to report yet.
 DURATION_TEXT="—"
-if [ -n "${STARTED_AT:-}" ]; then
+if [ "$STATUS_NORM" = "STARTED" ]; then
+  DURATION_TEXT="đang chạy…"
+elif [ -n "${STARTED_AT:-}" ]; then
   STARTED_EPOCH="$(date -d "${STARTED_AT}" +%s 2>/dev/null \
     || date -j -f "%Y-%m-%dT%H:%M:%SZ" "${STARTED_AT}" +%s 2>/dev/null \
     || true)"
