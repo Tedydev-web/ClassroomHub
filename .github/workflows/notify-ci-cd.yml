@@ -1,5 +1,16 @@
 name: Notify CI/CD
 
+# One Telegram message per finished workflow, in the same format as the other
+# projects: status icon, elapsed time, branch, actor, the commit as a link with
+# its subject, and a link to the run for the per-step logs.
+#
+# Listening for `workflow_run` rather than notifying from inside each workflow
+# keeps the notification out of the deploy's critical path — a Telegram outage
+# cannot fail a deploy — and means a new workflow only has to be named here.
+#
+# Only `completed` is reported. A "started" message costs a notification for
+# every push and says nothing the result will not say a minute later.
+
 on:
   workflow_run:
     workflows:
@@ -10,7 +21,6 @@ on:
       - Deploy tenant router
       - Deploy embeds to R2
     types:
-      - in_progress
       - completed
   workflow_dispatch:
 
@@ -19,101 +29,74 @@ permissions:
   contents: read
 
 concurrency:
-  group: notify-ci-cd-${{ github.event.workflow_run.id }}-${{ github.event.action }}
+  group: notify-ci-cd-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
 
 jobs:
   notify:
     name: Send Telegram notification
-    # Keep notification delivery independent from the single build runner.
-    # These short jobs avoid waiting behind a long production build.
-    runs-on: [self-hosted, Linux, workstation, ci]
+    # On GitHub's runners, not the production machine: sending a message needs
+    # nothing local, and the point of this pipeline is to keep work off that box.
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main') ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - name: Validate notification configuration
+      # The composite action lives in this repository, so it has to be on disk
+      # before it can be used.
+      - uses: actions/checkout@v4
+
+      - name: Describe the run
+        id: run
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
+          COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+          COMMIT_AUTHOR: ${{ github.event.workflow_run.head_commit.author.name }}
         run: |
           set -euo pipefail
 
-          missing=0
-          for variable_name in TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID; do
-            if [ -z "${!variable_name}" ]; then
-              echo "::error::Missing required notification secret: ${variable_name}"
-              missing=1
-            fi
-          done
-
-          test "$missing" -eq 0
-
-      - name: Send workflow notification
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          EVENT_ACTION: ${{ github.event_name == 'workflow_dispatch' && 'manual' || github.event.action }}
-          WORKFLOW_NAME: ${{ github.event_name == 'workflow_dispatch' && 'Manual notification smoke test' || github.event.workflow_run.name }}
-          RUN_NUMBER: ${{ github.event_name == 'workflow_dispatch' && github.run_number || github.event.workflow_run.run_number }}
-          BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event.workflow_run.head_branch }}
-          COMMIT_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
-          RUN_URL: ${{ github.event_name == 'workflow_dispatch' && github.server_url || github.event.workflow_run.html_url }}
-          CONCLUSION: ${{ github.event_name == 'workflow_dispatch' && 'success' || github.event.workflow_run.conclusion }}
-        run: |
-          set -euo pipefail
-
-          case "$EVENT_ACTION" in
-            in_progress)
-              status="STARTED"
-              conclusion=""
-              ;;
-            completed)
-              status="COMPLETED"
-              conclusion="${CONCLUSION:-unknown}"
-              ;;
-            manual)
-              status="TEST"
-              conclusion="success"
-              ;;
-            *)
-              echo "::error::Unsupported workflow_run action: ${EVENT_ACTION}"
-              exit 1
-              ;;
-          esac
-
-          message=$(printf '%s\n' \
-            'ClassroomHub CI/CD' \
-            "Status: ${status}" \
-            "Workflow: ${WORKFLOW_NAME}" \
-            "Run: #${RUN_NUMBER}" \
-            "Branch: ${BRANCH_NAME}" \
-            "Commit: ${COMMIT_SHA:0:12}" \
-            "Conclusion: ${conclusion}" \
-            "Details: ${RUN_URL}")
-
-          response_file="$(mktemp)"
-          trap 'rm -f "$response_file"' EXIT
-
-          http_status="$(curl --silent --show-error --max-time 30 \
-            --retry 2 --retry-delay 1 \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=${message}" \
-            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --output "$response_file" \
-            --write-out '%{http_code}')"
-
-          if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
-            description="$(jq -r '.description // "No API error description"' "$response_file" 2>/dev/null || true)"
-            echo "::error::Telegram API request failed (HTTP ${http_status}): ${description}"
-            exit 1
+          if [ "${IS_MANUAL}" = "true" ]; then
+            {
+              echo "title=ClassroomHub — notification test"
+              echo "status=success"
+              echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              echo "commit_title=Manual notification smoke test"
+              echo "commit_author=${GITHUB_ACTOR}"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          if ! jq -e '.ok == true' "$response_file" >/dev/null 2>&1; then
-            description="$(jq -r '.description // "Invalid Telegram API response"' "$response_file" 2>/dev/null || true)"
-            echo "::error::Telegram API rejected the notification: ${description}"
-            exit 1
-          fi
+          # Only the first line is the subject; the body is deliberately dropped
+          # so a long commit message cannot push the links out of the preview.
+          subject="$(printf '%s' "${COMMIT_MESSAGE}" | head -n 1)"
 
-          echo "Telegram notification delivered."
+          {
+            echo "title=ClassroomHub — ${WORKFLOW_NAME}"
+            echo "status=${CONCLUSION}"
+            echo "started_at=${RUN_STARTED_AT}"
+            echo "commit_title=${subject}"
+            echo "commit_author=${COMMIT_AUTHOR}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram notification
+        uses: ./.github/actions/telegram-notify
+        with:
+          telegram_bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram_chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          title: ${{ steps.run.outputs.title }}
+          status: ${{ steps.run.outputs.status }}
+          branch: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event.workflow_run.head_branch }}
+          actor: ${{ github.event_name == 'workflow_dispatch' && github.actor || github.event.workflow_run.actor.login }}
+          repo: ${{ github.repository }}
+          run_id: ${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.workflow_run.id }}
+          commit: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          repo_url: ${{ github.server_url }}/${{ github.repository }}
+          run_url: ${{ github.event_name == 'workflow_dispatch' && format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) || github.event.workflow_run.html_url }}
+          commit_url: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          commit_title: ${{ steps.run.outputs.commit_title }}
+          commit_author: ${{ steps.run.outputs.commit_author }}
+          started_at: ${{ steps.run.outputs.started_at }}

@@ -1,0 +1,132 @@
+name: 'Telegram deploy notification'
+description: 'Send short deploy result to Telegram: status, duration, commit, link to view/download job logs'
+inputs:
+  telegram_bot_token:
+    description: 'Telegram bot token'
+    required: true
+  telegram_chat_id:
+    description: 'Telegram chat ID'
+    required: true
+
+  title:
+    description: 'Notification title (e.g. LHBS Deploy, LHBS CMS Deploy)'
+    required: true
+  status:
+    description: 'Job status (success or failure)'
+    required: true
+
+  branch:
+    description: 'Git branch'
+    required: false
+    default: ''
+  actor:
+    description: 'GitHub actor'
+    required: false
+    default: ''
+
+  repo:
+    description: 'GitHub repository (owner/repo)'
+    required: true
+  run_id:
+    description: 'GitHub run ID'
+    required: true
+  commit:
+    description: 'Full commit SHA'
+    required: true
+
+  repo_url:
+    description: 'Repo URL (e.g. https://github.com/owner/repo)'
+    required: false
+    default: ''
+  run_url:
+    description: 'Run URL'
+    required: false
+    default: ''
+  commit_url:
+    description: 'Commit URL'
+    required: false
+    default: ''
+  compare_url:
+    description: 'Compare URL'
+    required: false
+    default: ''
+
+  commit_short:
+    description: 'Short commit SHA'
+    required: false
+    default: ''
+  commit_title:
+    description: 'Commit subject'
+    required: false
+    default: ''
+  commit_body:
+    description: 'Commit body'
+    required: false
+    default: ''
+  commit_author:
+    description: 'Commit author'
+    required: false
+    default: ''
+  commit_date_utc:
+    description: 'Commit date (UTC)'
+    required: false
+    default: ''
+
+  commit_count:
+    description: 'Deploy window commit count'
+    required: false
+    default: ''
+  prev_success_sha:
+    description: 'Previous successful deploy SHA'
+    required: false
+    default: ''
+  commits_list:
+    description: 'List of commits (multiline)'
+    required: false
+    default: ''
+  files_changed:
+    description: 'List of files changed (multiline)'
+    required: false
+    default: ''
+
+  started_at:
+    description: 'Job start time (ISO UTC) for elapsed'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Send Telegram notification
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ inputs.telegram_bot_token }}
+        TELEGRAM_CHAT_ID: ${{ inputs.telegram_chat_id }}
+
+        TITLE: ${{ inputs.title }}
+        STATUS: ${{ inputs.status }}
+        BRANCH: ${{ inputs.branch }}
+        ACTOR: ${{ inputs.actor }}
+
+        REPO: ${{ inputs.repo }}
+        RUN_ID: ${{ inputs.run_id }}
+        COMMIT: ${{ inputs.commit }}
+
+        REPO_URL: ${{ inputs.repo_url }}
+        RUN_URL: ${{ inputs.run_url }}
+        COMMIT_URL: ${{ inputs.commit_url }}
+        COMPARE_URL: ${{ inputs.compare_url }}
+
+        COMMIT_SHORT: ${{ inputs.commit_short }}
+        COMMIT_TITLE: ${{ inputs.commit_title }}
+        COMMIT_BODY: ${{ inputs.commit_body }}
+        COMMIT_AUTHOR: ${{ inputs.commit_author }}
+        COMMIT_DATE_UTC: ${{ inputs.commit_date_utc }}
+
+        COMMIT_COUNT: ${{ inputs.commit_count }}
+        PREV_SUCCESS_SHA: ${{ inputs.prev_success_sha }}
+        COMMITS_LIST: ${{ inputs.commits_list }}
+        FILES_CHANGED: ${{ inputs.files_changed }}
+
+        STARTED_AT: ${{ inputs.started_at }}
+      run: bash .github/actions/telegram-notify/send.sh
+      shell: bash
