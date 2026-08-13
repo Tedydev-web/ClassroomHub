@@ -320,7 +320,7 @@
 {:else if stage === 'sitting'}
   <div class="ui:flex ui:min-h-dvh ui:flex-col">
     <header
-      class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-4 ui:py-3"
+      class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
     >
       <p class="ui:truncate ui:text-sm ui:font-semibold">{data.exam.title}</p>
       <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-3">
@@ -336,7 +336,13 @@
       </div>
     </header>
 
-    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-4 ui:px-4 ui:pt-6 ui:pb-4">
+    <!--
+      The paper takes the width it is given. A passage on the left and its questions on
+      the right is the whole point of this layout, and capping the page at a reading
+      column squeezed both into the middle while a third of a laptop screen sat empty.
+      Padding grows with the viewport instead, so a phone still gets its margins.
+    -->
+    <main class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:pb-4 ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16">
       {#if currentItem}
         {#key currentItem.questionId}
           <AssessmentItemRenderer
@@ -357,7 +363,7 @@
     </main>
 
     <footer
-      class="ui:border-border ui:bg-background ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3"
+      class="ui:border-border ui:bg-background ui:sticky ui:bottom-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
     >
       <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
         <Progress
