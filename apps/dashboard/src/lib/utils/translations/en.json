@@ -5541,6 +5541,15 @@
       "copying": "Copying…",
       "paper_copied": "Copied. Choose it below, then configure the exam.",
       "copy_failed": "Could not copy that exercise"
+    },
+    "refusal": {
+      "attempts_used": "You have used all your attempts at this paper.",
+      "not_open": "This paper is not open.",
+      "time_up": "Your time is up.",
+      "already_finished": "This attempt is already finished.",
+      "name_required": "Please enter your full name.",
+      "class_required": "Please enter your class.",
+      "candidate_required": "Please enter your candidate number."
     }
   }
 }

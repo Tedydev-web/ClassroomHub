@@ -72,6 +72,46 @@
     return () => clearInterval(timer);
   });
 
+  /** Server refusals a sitter can meet, mapped to the phrasing they should read. */
+  const SERVER_REFUSALS: Record<string, string> = {
+    'You have used all your attempts at this paper': 'attempts_used',
+    'This exam is not open': 'not_open',
+    'Your time is up': 'time_up',
+    'This attempt is already finished': 'already_finished',
+    'Your full name is required': 'name_required',
+    'Your class is required': 'class_required',
+    'Your candidate number is required': 'candidate_required'
+  };
+
+  /**
+   * What the server actually said.
+   *
+   * The API client throws on any 4xx before this page can read the body, so the old
+   * `catch` reported "could not reach the server" for every refusal — including "you have
+   * used all your attempts", which is not a connection problem and sends a sitter into
+   * retrying a paper that will never open. The thrown error carries the response text, so
+   * the message is there; it only had to be unwrapped.
+   */
+  function serverMessage(error: unknown, fallback: string): string {
+    const raw = error instanceof Error ? error.message : '';
+
+    try {
+      const parsed = JSON.parse(raw);
+      const message = typeof parsed?.error === 'string' ? parsed.error.trim() : '';
+      if (!message) return fallback;
+
+      // The API speaks English. A sitter should not, so the refusals they can
+      // actually meet are translated; anything else is shown as sent, because a
+      // message in the wrong language still beats the wrong message.
+      const key = SERVER_REFUSALS[message];
+      return key ? $t(`exam.refusal.${key}`) : message;
+    } catch {
+      // Not JSON — a genuine network failure, so the fallback is the honest answer.
+    }
+
+    return fallback;
+  }
+
   async function start(details: { displayName: string; className: string; candidateNumber: string; password: string }) {
     starting = true;
     entryError = null;
@@ -94,8 +134,8 @@
       // Measured once, so a device whose clock has drifted still sees the server's time.
       offset = clockOffsetMs(body.data.serverNow ?? new Date().toISOString());
       stage = 'sitting';
-    } catch {
-      entryError = $t('exam.sitting.start_failed');
+    } catch (error) {
+      entryError = serverMessage(error, $t('exam.sitting.start_failed'));
     } finally {
       starting = false;
     }
@@ -135,8 +175,8 @@
       }
 
       stage = 'submitted';
-    } catch {
-      submitError = $t('exam.sitting.submit_failed');
+    } catch (error) {
+      submitError = serverMessage(error, $t('exam.sitting.submit_failed'));
     } finally {
       submitting = false;
     }

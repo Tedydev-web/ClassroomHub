@@ -5551,6 +5551,15 @@
       "copying": "Đang chép…",
       "paper_copied": "Đã chép xong. Chọn bộ câu hỏi này ở dưới rồi đặt cấu hình đề thi.",
       "copy_failed": "Không chép được bài tập"
+    },
+    "refusal": {
+      "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
+      "not_open": "Đề thi chưa mở hoặc đã đóng.",
+      "time_up": "Đã hết giờ làm bài.",
+      "already_finished": "Bài này đã kết thúc.",
+      "name_required": "Vui lòng nhập họ và tên.",
+      "class_required": "Vui lòng nhập lớp.",
+      "candidate_required": "Vui lòng nhập số báo danh."
     }
   }
 }
