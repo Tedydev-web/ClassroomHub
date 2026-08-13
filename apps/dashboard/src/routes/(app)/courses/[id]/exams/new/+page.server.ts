@@ -1,5 +1,5 @@
-import { classroomhub } from '$lib/utils/services/api';
-import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
+import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
+import { safeServerApi } from '$lib/utils/services/api/server';
 
 /**
  * Papers this course can deliver as an exam: detached containers, which is what copying a
@@ -7,15 +7,18 @@ import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server'
  * copy from — an exam must not deliver something enrolled students can already open
  * without a clock.
  */
-export const load = async ({ params }) => {
+export const load = async ({ params, cookies }) => {
   const [containers, copyable] = await Promise.all([
     safeServerApi(() =>
-      classroomhub.exam.course[':courseId'].containers.$get({ param: { courseId: params.id } }, getApiKeyHeaders())
+      classroomhub.exam.course[':courseId'].containers.$get(
+        { param: { courseId: params.id } },
+        getApiHeaders(cookies, '')
+      )
     ),
     safeServerApi(() =>
       classroomhub.exam.course[':courseId']['copyable-exercises'].$get(
         { param: { courseId: params.id } },
-        getApiKeyHeaders()
+        getApiHeaders(cookies, '')
       )
     )
   ]);
