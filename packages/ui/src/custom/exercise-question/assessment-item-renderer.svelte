@@ -801,9 +801,14 @@
         learner works through them, so the text stays in view instead of being swapped out.
         Each row scrolls on its own; the passage only changes when a new group is selected.
         From `lg` the two become side-by-side columns.
+
+        The height is the viewport's, less the chrome around it. It used to stop at 48rem
+        as well, which on a tall screen left the passage scrolling inside a short box with
+        a third of the page empty beneath it — the one place where more height is always
+        worth having, because it is fewer scrolls through the text.
       -->
       <div
-        class="ui:grid ui:h-[min(44rem,calc(100dvh-14rem))] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[min(48rem,calc(100dvh-11rem))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
+        class="ui:grid ui:h-[calc(100dvh-14rem)] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[calc(100dvh-11rem)] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
       >
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <section
