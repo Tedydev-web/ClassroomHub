@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
 import { toExamSittingPaper } from '@api/services/exam/exam-paper-serializer';
 import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
+import { requireSittingRequest } from './exam-sitting-guard';
 import { scoreSubmittedAttempt } from '@api/services/exam/exam-finalisation';
 import { revealedScoreForSitterService } from '@api/services/exam/exam-results';
 import {
@@ -38,12 +39,8 @@ import {
  * different hosts".
  *
  * `SameSite=None` on an unauthenticated write invites cross-site request forgery, so
- * every write also requires a custom header. A cross-site `fetch` cannot set one unless
- * our CORS policy allows that origin, which makes the header a capability check rather
- * than a secret.
+ * every write also has to prove it came from us — see `requireSittingRequest`.
  */
-
-const REQUIRED_HEADER = 'x-exam-sitting';
 
 const startSchema = z.object({
   displayName: z.string().max(120).optional(),
@@ -55,12 +52,6 @@ const startSchema = z.object({
 const saveSchema = z.object({
   answers: z.array(z.object({ questionId: z.number().int().positive(), answerData: z.unknown() })).max(500)
 });
-
-function requireSittingHeader(header: string | undefined): void {
-  if (header !== '1') {
-    throw new AppError('Missing sitting header', ErrorCodes.FORBIDDEN, 403);
-  }
-}
 
 /** Salted, so it can spot a duplicate without identifying anybody. */
 function hashAddress(address: string | undefined): string | null {
@@ -134,7 +125,7 @@ export const examSittingRouter = new Hono()
   })
   .post('/:slug/start', examRateLimiter('start'), zValidator('json', startSchema), async (c) => {
     try {
-      requireSittingHeader(c.req.header(REQUIRED_HEADER));
+      requireSittingRequest(c);
 
       const exam = await getPublicExamService(c.req.param('slug'));
       const body = c.req.valid('json');
@@ -185,7 +176,7 @@ export const examSittingRouter = new Hono()
   })
   .put('/attempt/:attemptId/answers', examRateLimiter('save'), zValidator('json', saveSchema), async (c) => {
     try {
-      requireSittingHeader(c.req.header(REQUIRED_HEADER));
+      requireSittingRequest(c);
 
       const saved = await saveAnswersService(c.req.param('attemptId'), c.req.valid('json').answers, new Date());
 
@@ -196,7 +187,7 @@ export const examSittingRouter = new Hono()
   })
   .post('/attempt/:attemptId/submit', examRateLimiter('submit'), async (c) => {
     try {
-      requireSittingHeader(c.req.header(REQUIRED_HEADER));
+      requireSittingRequest(c);
 
       const now = new Date();
       const attempt = await submitAttemptService(c.req.param('attemptId'), now);
