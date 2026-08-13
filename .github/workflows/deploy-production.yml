@@ -114,39 +114,16 @@ jobs:
             ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
             echo "Pulling ${ref}"
             docker pull --quiet "${ref}"
+
+            # The compose file names the `current` tag, which is moved here rather
+            # than written into Coolify's environment. Coolify's API token is
+            # read-only, and the deploy stays deterministic anyway: the same job
+            # that pulled this commit's image is the one that points `current` at
+            # it, so the tag can never name a different commit than was pulled.
+            docker tag "${ref}" "${REGISTRY}/${IMAGE_NAMESPACE}/${image}:current"
           done
 
           docker logout "${REGISTRY}"
-
-      - name: Point the stack at this commit
-        env:
-          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
-          COOLIFY_URL: http://172.17.0.1:18080
-          APP_UUID: zj19oe40izga1bnpymfz5z55
-        run: |
-          set -euo pipefail
-
-          if [ -z "${COOLIFY_API_TOKEN}" ]; then
-            echo "::error::COOLIFY_API_TOKEN secret is missing"
-            exit 1
-          fi
-
-          # The compose file reads CLASSROOM_IMAGE_TAG, so the deployed commit is
-          # explicit rather than whatever `latest` happened to point at.
-          # PATCH upserts by key, so this works whether or not the variable exists.
-          body="$(mktemp)"
-          trap 'rm -f "${body}"' EXIT
-
-          code="$(curl -sS -o "${body}" -w '%{http_code}' --max-time 60 -X PATCH \
-            "${COOLIFY_URL}/api/v1/applications/${APP_UUID}/envs" \
-            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            -d "{\"key\":\"CLASSROOM_IMAGE_TAG\",\"value\":\"sha-${GITHUB_SHA}\",\"is_preview\":false}")"
-
-          case "${code}" in
-            200|201) echo "CLASSROOM_IMAGE_TAG set to sha-${GITHUB_SHA}." ;;
-            *) echo "::error::Coolify refused the environment update (HTTP ${code})"; cat "${body}"; exit 1 ;;
-          esac
 
       - name: Trigger and wait
         env:

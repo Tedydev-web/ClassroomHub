@@ -21,8 +21,8 @@
 #     split exists because Coolify hardcodes `build --pull --no-cache` for
 #     compose deployments: building on this machine meant a full rebuild of four
 #     images on every push, on the machine that also serves the site.
-#   - CLASSROOM_IMAGE_TAG pins the commit being run; the deploy job sets it. It
-#     falls back to `latest` so a hand-run `docker compose up` still works.
+#   - The `current` tag is moved by the deploy job, on this host, to the commit
+#     it just pulled. Set CLASSROOM_IMAGE_TAG to pin a different one by hand.
 #     The dashboard topology is baked into its image at build time.
 #   - Every secret and public URL is required. The stack fails to start rather
 #     than booting with an empty auth secret or a wrong origin.
@@ -107,7 +107,7 @@ services:
   # `restart: "no"` also tells Coolify this container is not part of stack health.
   db-migrate:
     # The API image, so the applied schema always matches the API that serves it.
-    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-latest}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-current}
     labels:
       io.classroom.stack: production
       io.classroom.role: db-migrate
@@ -132,7 +132,7 @@ services:
           memory: 1G
 
   api:
-    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-latest}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-current}
     labels:
       io.classroom.stack: production
       io.classroom.role: api
@@ -243,7 +243,7 @@ services:
           memory: 1536M
 
   dashboard:
-    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_IMAGE_TAG:-latest}
+    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_IMAGE_TAG:-current}
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -326,7 +326,7 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_IMAGE_TAG:-latest}
+    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_IMAGE_TAG:-current}
     labels:
       io.classroom.stack: production
       io.classroom.role: jobs
