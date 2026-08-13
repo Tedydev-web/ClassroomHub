@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import { AssessmentItemRenderer } from '@cio/ui/custom/exercise-question';
+  import { AssessmentItemRenderer, QuestionNavigation } from '@cio/ui/custom/exercise-question';
   import { Button } from '@cio/ui/base/button';
   import { Progress } from '@cio/ui/base/progress';
   import {
@@ -230,6 +230,29 @@
    * A passage holding six questions advances the count by six, so question seven really
    * is the seventh question rather than the second item.
    */
+  /**
+   * One item at a time, with the same Previous/Next/Finish control the exercise page uses.
+   * A paper of forty questions in one scroll is a different product from the one the
+   * course already teaches with, and the passage workspace is built to own the viewport.
+   */
+  let currentIndex = $state(1);
+  const items = $derived(paper?.questions ?? []);
+  const currentItem = $derived(items[currentIndex - 1]);
+  const isLastItem = $derived(currentIndex >= items.length);
+
+  function goPrevious() {
+    if (currentIndex > 1) currentIndex -= 1;
+  }
+
+  async function goNext() {
+    if (!isLastItem) {
+      currentIndex += 1;
+      return;
+    }
+
+    await submit();
+  }
+
   const numberStartByQuestionId = $derived.by(() => {
     const starts: Record<number, number> = {};
     let next = 1;
@@ -274,22 +297,36 @@
       </div>
     </header>
 
-    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-6 ui:px-4 ui:py-6">
-      {#each paper?.questions ?? [] as question (question.questionId)}
-        <AssessmentItemRenderer
-          definition={question.definition}
-          response={responses[question.questionId]}
-          disabled={submitting}
-          questionNumber={numberStartByQuestionId[question.questionId]}
-          interactionNumberStart={numberStartByQuestionId[question.questionId]}
-          showItemHeader={question.definition?.presentation?.layout !== 'passage_split'}
-          showContainer
-          trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
-          falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
-          {passageWorkspaceLabels}
-          onResponseChange={(response) => answered(question.questionId, response)}
+    <main class="ui:mx-auto ui:w-full ui:max-w-5xl ui:flex-1 ui:space-y-4 ui:px-4 ui:py-6">
+      {#if currentItem}
+        {#key currentItem.questionId}
+          <AssessmentItemRenderer
+            definition={currentItem.definition}
+            response={responses[currentItem.questionId]}
+            disabled={submitting}
+            questionNumber={numberStartByQuestionId[currentItem.questionId]}
+            interactionNumberStart={numberStartByQuestionId[currentItem.questionId]}
+            showItemHeader={currentItem.definition?.presentation?.layout !== 'passage_split'}
+            showContainer
+            trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+            falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+            {passageWorkspaceLabels}
+            onResponseChange={(response) => answered(currentItem.questionId, response)}
+          />
+        {/key}
+
+        <QuestionNavigation
+          canGoBack={currentIndex > 1}
+          canGoNext={!submitting}
+          isLast={isLastItem}
+          isSubmitting={submitting}
+          previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
+          nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
+          finishLabel={$t('exam.sitting.submit')}
+          onPrevious={goPrevious}
+          onNext={goNext}
         />
-      {/each}
+      {/if}
     </main>
 
     <footer
