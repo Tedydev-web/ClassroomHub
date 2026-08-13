@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   audit:
-    runs-on: [self-hosted, Linux, workstation, ci]
+    runs-on: ubuntu-latest
     env:
       SINCE_DAYS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.since_days || '1' }}
       HOSTED_MINUTES_LIMIT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.hosted_minutes_limit || '0' }}

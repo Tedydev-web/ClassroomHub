@@ -17,7 +17,7 @@ concurrency:
 jobs:
   take-issue:
     name: Disable take issue
-    runs-on: [self-hosted, Linux, workstation, ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Disable take an issue

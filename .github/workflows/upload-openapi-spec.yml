@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   generate-and-upload-openapi:
-    runs-on: [self-hosted, Linux, deploy]
+    runs-on: ubuntu-latest
     environment: production
     
     steps:
