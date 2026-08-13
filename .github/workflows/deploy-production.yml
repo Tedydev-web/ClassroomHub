@@ -162,9 +162,48 @@ jobs:
           fi
           echo "Site answered HTTP 200."
 
-      - name: Remove the images this deploy replaced
-        if: always()
+      # Only after a healthy deploy: a failed one must leave the previous image
+      # exactly where it is, because that is what the host is still running.
+      - name: Remove the images this deploy superseded
+        if: success()
+        env:
+          # The running image and the one before it. One is serving; the other is
+          # what a rollback would start, and it is already on disk.
+          KEEP_PER_REPO: 2
         run: |
           set -euo pipefail
-          # Images are ~5 GB each; without this the disk fills within a fortnight.
-          docker image prune --force --filter 'until=168h' >/dev/null || true
+
+          # Each image is about 5 GB and every commit produces three, so without
+          # this the disk gains ~15 GB per deploy. `docker image prune` cannot do
+          # it: these images carry tags, and prune only removes untagged ones.
+          running="${RUNNER_TEMP}/running-images.txt"
+          docker ps --format '{{.Image}}' | sort -u > "${running}"
+
+          for image in classroom-api classroom-dashboard classroom-jobs; do
+            repo="${REGISTRY}/${IMAGE_NAMESPACE}/${image}"
+
+            # Newest first, so anything past the keep count is the older tail.
+            # `|` separates the fields because a creation date contains spaces.
+            docker images "${repo}" --filter 'reference=*:sha-*' --format '{{.CreatedAt}}|{{.Repository}}:{{.Tag}}' \
+              | sort -r \
+              | cut -d'|' -f2 \
+              | tail -n "+$((KEEP_PER_REPO + 1))" > "${RUNNER_TEMP}/stale.txt"
+
+            while read -r ref; do
+              [ -n "${ref}" ] || continue
+
+              # Belt and braces: docker refuses to remove an image in use, but
+              # saying so plainly beats reading a failed command in the log.
+              if grep -qxF "${ref}" "${running}"; then
+                echo "keeping ${ref}: a container is running it"
+                continue
+              fi
+
+              echo "removing ${ref}"
+              docker rmi "${ref}" >/dev/null || true
+            done < "${RUNNER_TEMP}/stale.txt"
+          done
+
+          # Layers orphaned by the removals above.
+          docker image prune --force >/dev/null || true
+          df -h / | tail -1
