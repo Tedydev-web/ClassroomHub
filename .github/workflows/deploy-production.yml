@@ -102,8 +102,20 @@ jobs:
 
           echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
 
+          # Retried once. A pull writes into containerd's ingest area before it
+          # commits the layer, and anything sweeping the content store at that
+          # moment leaves it with a half-written blob: `commit failed: rename
+          # .../ingest/... no such file or directory`. That is what a concurrent
+          # docker cleanup did to this deploy, and a second attempt succeeds
+          # because the ingest starts again from nothing.
           for image in classroom-api classroom-dashboard classroom-jobs; do
-            docker pull --quiet "${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
+
+            if ! docker pull --quiet "${ref}"; then
+              echo "::warning::Pulling ${ref} failed; retrying once."
+              sleep 10
+              docker pull --quiet "${ref}"
+            fi
           done
 
           docker logout "${REGISTRY}"
