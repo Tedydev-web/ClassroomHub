@@ -4,6 +4,8 @@
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import { Button } from '@cio/ui/base/button';
+  import { Label } from '@cio/ui/base/label';
+  import * as Select from '@cio/ui/base/select';
   import { invalidateAll } from '$app/navigation';
 
   /**
@@ -90,19 +92,19 @@
     {:else}
       <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
         <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
-          <label class="ui:text-sm ui:font-medium" for="exam-source">{$t('exam.settings.source_exercise')}</label>
-          <select
-            id="exam-source"
-            class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
-            value={sourceId}
-            onchange={(event: Event) => (source = (event.currentTarget as HTMLSelectElement).value)}
-          >
-            {#each data.copyable as exercise (exercise.id)}
-              <option value={exercise.id}>
-                {exercise.title} — {$t('exam.manage.question_count', { count: String(exercise.questionCount) })}
-              </option>
-            {/each}
-          </select>
+          <Label for="exam-source">{$t('exam.settings.source_exercise')}</Label>
+          <Select.Root type="single" value={sourceId} onValueChange={(value) => (source = value)}>
+            <Select.Trigger id="exam-source" class="ui:w-full">
+              {data.copyable.find((exercise) => exercise.id === sourceId)?.title ?? ''}
+            </Select.Trigger>
+            <Select.Content>
+              {#each data.copyable as exercise (exercise.id)}
+                <Select.Item value={exercise.id}>
+                  {exercise.title} — {$t('exam.manage.question_count', { count: String(exercise.questionCount) })}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
         </div>
         <Button disabled={copying} onclick={copyPaper}>
           {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
@@ -117,17 +119,17 @@
     </p>
   {:else}
     <div class="ui:space-y-2">
-      <label class="ui:text-sm ui:font-medium" for="exam-container">{$t('exam.settings.pick_container')}</label>
-      <select
-        id="exam-container"
-        class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
-        value={exerciseId}
-        onchange={(event: Event) => (chosen = (event.currentTarget as HTMLSelectElement).value)}
-      >
-        {#each data.containers as container (container.id)}
-          <option value={container.id}>{container.title}</option>
-        {/each}
-      </select>
+      <Label for="exam-container">{$t('exam.settings.pick_container')}</Label>
+      <Select.Root type="single" value={exerciseId} onValueChange={(value) => (chosen = value)}>
+        <Select.Trigger id="exam-container" class="ui:w-full">
+          {data.containers.find((container) => container.id === exerciseId)?.title ?? ''}
+        </Select.Trigger>
+        <Select.Content>
+          {#each data.containers as container (container.id)}
+            <Select.Item value={container.id}>{container.title}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     </div>
 
     <ExamSettingsForm {submitting} onsubmit={create} />

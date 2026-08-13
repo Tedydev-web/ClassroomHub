@@ -1,8 +1,11 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
+  import { Checkbox } from '@cio/ui/base/checkbox';
   import { Input } from '@cio/ui/base/input';
   import { Label } from '@cio/ui/base/label';
+  import * as RadioGroup from '@cio/ui/base/radio-group';
+  import * as Select from '@cio/ui/base/select';
 
   /**
    * Configuring an exam, using the vocabulary Vietnamese teachers already read.
@@ -97,14 +100,16 @@
 
   <fieldset class="ui:space-y-2">
     <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.who_can_sit')}</legend>
-    <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="radio" bind:group={mode} value="public" />
-      {$t('exam.settings.anyone_with_link')}
-    </label>
-    <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="radio" bind:group={mode} value="private" />
-      {$t('exam.settings.signed_in_only')}
-    </label>
+    <RadioGroup.Root bind:value={mode} class="ui:space-y-2">
+      <div class="ui:flex ui:items-center ui:gap-2">
+        <RadioGroup.Item value="public" id="exam-mode-public" />
+        <Label for="exam-mode-public" class="ui:font-normal">{$t('exam.settings.anyone_with_link')}</Label>
+      </div>
+      <div class="ui:flex ui:items-center ui:gap-2">
+        <RadioGroup.Item value="private" id="exam-mode-private" />
+        <Label for="exam-mode-private" class="ui:font-normal">{$t('exam.settings.signed_in_only')}</Label>
+      </div>
+    </RadioGroup.Root>
   </fieldset>
 
   <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
@@ -138,44 +143,46 @@
 
   <fieldset class="ui:space-y-2">
     <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.declared_fields')}</legend>
-    <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresName} />
-      {$t('exam.entry.full_name')}
-    </label>
-    <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresClass} />
-      {$t('exam.entry.class_name')}
-    </label>
-    <label class="ui:flex ui:items-center ui:gap-2 ui:text-sm">
-      <input type="checkbox" bind:checked={requiresCandidateNumber} />
-      {$t('exam.entry.candidate_number')}
-    </label>
+    <div class="ui:flex ui:items-center ui:gap-2">
+      <Checkbox id="exam-requires-name" bind:checked={requiresName} />
+      <Label for="exam-requires-name" class="ui:font-normal">{$t('exam.entry.full_name')}</Label>
+    </div>
+    <div class="ui:flex ui:items-center ui:gap-2">
+      <Checkbox id="exam-requires-class" bind:checked={requiresClass} />
+      <Label for="exam-requires-class" class="ui:font-normal">{$t('exam.entry.class_name')}</Label>
+    </div>
+    <div class="ui:flex ui:items-center ui:gap-2">
+      <Checkbox id="exam-requires-candidate" bind:checked={requiresCandidateNumber} />
+      <Label for="exam-requires-candidate" class="ui:font-normal">{$t('exam.entry.candidate_number')}</Label>
+    </div>
   </fieldset>
 
   <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
     <div class="ui:space-y-2">
       <Label for="exam-score-visibility">{$t('exam.settings.score_visibility')}</Label>
-      <select
-        id="exam-score-visibility"
-        class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
-        bind:value={scoreVisibility}
-      >
-        {#each REVEAL_OPTIONS as option (option.value)}
-          <option value={option.value}>{option.label}</option>
-        {/each}
-      </select>
+      <Select.Root type="single" bind:value={scoreVisibility}>
+        <Select.Trigger id="exam-score-visibility" class="ui:w-full">
+          {REVEAL_OPTIONS.find((option) => option.value === scoreVisibility)?.label ?? ''}
+        </Select.Trigger>
+        <Select.Content>
+          {#each REVEAL_OPTIONS as option (option.value)}
+            <Select.Item value={option.value}>{option.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     </div>
     <div class="ui:space-y-2">
       <Label for="exam-answer-visibility">{$t('exam.settings.answer_visibility')}</Label>
-      <select
-        id="exam-answer-visibility"
-        class="ui:border-border ui:w-full ui:rounded-md ui:border ui:px-3 ui:py-2 ui:text-sm"
-        bind:value={answerVisibility}
-      >
-        {#each REVEAL_OPTIONS as option (option.value)}
-          <option value={option.value}>{option.label}</option>
-        {/each}
-      </select>
+      <Select.Root type="single" bind:value={answerVisibility}>
+        <Select.Trigger id="exam-answer-visibility" class="ui:w-full">
+          {REVEAL_OPTIONS.find((option) => option.value === answerVisibility)?.label ?? ''}
+        </Select.Trigger>
+        <Select.Content>
+          {#each REVEAL_OPTIONS as option (option.value)}
+            <Select.Item value={option.value}>{option.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     </div>
   </div>
 
