@@ -83,10 +83,22 @@
     {#if !showOnlyContent || showLogo}
       <Card.Header class="ui:flex ui:flex-col ui:items-center ui:gap-4">
         <Avatar.Root class="ui:size-14 ui:bg-transparent">
+          <!--
+            An organisation's logo can go missing — the file is deleted, the asset host
+            answers 404 — and a broken image renders its alt text, so the organisation's
+            own name appeared as clipped letters inside the avatar circle. Falling back to
+            the platform mark is the honest failure: a generic logo reads as a logo.
+          -->
           <Avatar.Image
             src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
             alt={$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}
             class="ui:object-contain"
+            onerror={(event: Event) => {
+              const image = event.currentTarget as HTMLImageElement;
+              if (image.src.endsWith('/logo-192.png')) return;
+              image.src = '/logo-192.png';
+              image.alt = '';
+            }}
           />
           <Avatar.Fallback class="ui:bg-transparent">
             <img src="/logo-192.png" alt="" class="size-full object-contain" aria-hidden="true" />
