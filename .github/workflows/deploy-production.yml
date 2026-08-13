@@ -1,15 +1,24 @@
 name: Deploy production
 
-# GitHub cannot call Coolify directly. Cloudflare Access sits in front of the
-# public Coolify hostname and answers an unauthenticated webhook with a sign-in
-# page, so GitHub records HTTP 200 while Coolify never hears about the push.
+# Images are built on GitHub's runners and pulled by the production host, which
+# does no building at all.
 #
-# This job runs on the runner that lives on the Coolify host and reaches the API
-# over the Docker bridge instead, which is already inside the Access perimeter.
-# Nothing is built here: Coolify builds the images from the checkout it pulls.
+# The host used to build from its own checkout, and Coolify hardcodes
+# `docker compose build --pull --no-cache` for compose deployments — it ignores
+# the application's own "disable build cache" setting. Every push therefore
+# rebuilt four images from zero on the machine that also serves the site: about
+# twenty minutes, of which roughly nine were a hard outage, because Coolify
+# removes the running containers before the new ones exist.
 #
-# The job then waits for the deployment to reach a terminal state, so a build
-# that dies halfway turns this run red instead of passing silently.
+# Splitting the work fixes both halves. The build moves off the production
+# machine entirely, and it regains a layer cache (a registry cache, so it
+# survives between runs). What Coolify does on the host shrinks to `up`.
+#
+# GitHub cannot reach Coolify directly: Cloudflare Access sits in front of the
+# public hostname and answers an unauthenticated request with a sign-in page,
+# recording HTTP 200 while Coolify never hears about it. The deploy job runs on
+# the runner that lives on the Coolify host and reaches the API over the Docker
+# bridge instead, from inside the Access perimeter.
 
 on:
   push:
@@ -18,23 +27,102 @@ on:
 
 concurrency:
   group: deploy-production
+  # Never cancel a deployment midway: Coolify removes the running containers
+  # before it creates the new ones, so an interrupted deploy leaves the site
+  # down with nothing to roll back to.
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: tedydev-web
+
 jobs:
+  images:
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: api
+            dockerfile: ./docker/Dockerfile.api
+            image: classroom-api
+            build_args: ''
+          - name: dashboard
+            dockerfile: ./docker/Dockerfile.dashboard
+            image: classroom-dashboard
+            build_args: |
+              PUBLIC_IS_SELFHOSTED=false
+              PUBLIC_IS_SELF_OWNED=true
+          - name: jobs
+            dockerfile: ./docker/Dockerfile.jobs
+            image: classroom-jobs
+            build_args: ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
+          push: true
+          # The commit tag is what the deploy pulls; `latest` is only a
+          # convenience for a human reading the registry.
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
+          platforms: linux/amd64
+          provenance: false
+
   deploy:
     name: Deploy to Coolify
+    needs: images
     runs-on: [self-hosted, Linux, deploy]
-    # Images are built from source on a spinning disk, which takes the better
-    # part of an hour when the layer cache is cold.
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
-      - name: Trigger and wait
+      - name: Pull the images onto the production host
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # The packages are private, and Coolify's own client has no registry
+          # credentials. Pulling here — as the runner, which does — puts the
+          # images in the host's local store, so `docker compose up` finds them
+          # without Coolify ever needing to authenticate.
+          echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
+
+          for image in classroom-api classroom-dashboard classroom-jobs; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
+            echo "Pulling ${ref}"
+            docker pull --quiet "${ref}"
+          done
+
+          docker logout "${REGISTRY}"
+
+      - name: Point the stack at this commit
         env:
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
           COOLIFY_URL: http://172.17.0.1:18080
           APP_UUID: zj19oe40izga1bnpymfz5z55
-          POLL_SECONDS: 30
-          MAX_POLLS: 170
         run: |
           set -euo pipefail
 
@@ -42,6 +130,33 @@ jobs:
             echo "::error::COOLIFY_API_TOKEN secret is missing"
             exit 1
           fi
+
+          # The compose file reads CLASSROOM_IMAGE_TAG, so the deployed commit is
+          # explicit rather than whatever `latest` happened to point at.
+          # PATCH upserts by key, so this works whether or not the variable exists.
+          body="$(mktemp)"
+          trap 'rm -f "${body}"' EXIT
+
+          code="$(curl -sS -o "${body}" -w '%{http_code}' --max-time 60 -X PATCH \
+            "${COOLIFY_URL}/api/v1/applications/${APP_UUID}/envs" \
+            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d "{\"key\":\"CLASSROOM_IMAGE_TAG\",\"value\":\"sha-${GITHUB_SHA}\",\"is_preview\":false}")"
+
+          case "${code}" in
+            200|201) echo "CLASSROOM_IMAGE_TAG set to sha-${GITHUB_SHA}." ;;
+            *) echo "::error::Coolify refused the environment update (HTTP ${code})"; cat "${body}"; exit 1 ;;
+          esac
+
+      - name: Trigger and wait
+        env:
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          COOLIFY_URL: http://172.17.0.1:18080
+          APP_UUID: zj19oe40izga1bnpymfz5z55
+          POLL_SECONDS: 15
+          MAX_POLLS: 100
+        run: |
+          set -euo pipefail
 
           body="$(mktemp)"
           trap 'rm -f "${body}"' EXIT
