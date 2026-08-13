@@ -146,7 +146,14 @@
    * switch only exist below `lg`; from there the panel always shows the whole
    * group, which is what the side-by-side layout is for.
    */
-  let questionViewMode = $state<'single' | 'all'>('single');
+  /**
+   * `null` means "follow the viewport": one question at a time where the passage and its
+   * questions are stacked, all of them where they sit side by side. Choosing from the
+   * toggle pins the mode instead, at any width — the control used to be hidden above
+   * `lg`, which left a reader of a ten-question passage no way to page through it just
+   * because their screen was wide.
+   */
+  let questionViewMode = $state<'single' | 'all' | null>(null);
   let activeInteractionId = $state<string | null>(null);
   const belowSplitLayout = new IsMobile(SPLIT_LAYOUT_BREAKPOINT);
   const isCompactViewport = $derived(belowSplitLayout.current);
@@ -173,7 +180,8 @@
       pagerInteractions.findIndex((block) => block.id === activeInteractionId)
     )
   );
-  const pagesOneQuestion = $derived(isCompactViewport && questionViewMode === 'single');
+  const effectiveViewMode = $derived(questionViewMode ?? (isCompactViewport ? 'single' : 'all'));
+  const pagesOneQuestion = $derived(effectiveViewMode === 'single');
   const activeQuestionNumber = $derived(
     pagerGroup && activeInteractionId ? pagerGroup.questionStart + activeInteractionIndex : null
   );
@@ -869,20 +877,18 @@
                 </p>
               </div>
             </div>
-            {#if isCompactViewport}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                class="ui:shrink-0"
-                aria-pressed={questionViewMode === 'all'}
-                onclick={() => (questionViewMode = questionViewMode === 'single' ? 'all' : 'single')}
-              >
-                {questionViewMode === 'single'
-                  ? passageWorkspaceLabels.showAllQuestions
-                  : passageWorkspaceLabels.showOneQuestion}
-              </Button>
-            {/if}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="ui:shrink-0"
+              aria-pressed={effectiveViewMode === 'all'}
+              onclick={() => (questionViewMode = effectiveViewMode === 'single' ? 'all' : 'single')}
+            >
+              {effectiveViewMode === 'single'
+                ? passageWorkspaceLabels.showAllQuestions
+                : passageWorkspaceLabels.showOneQuestion}
+            </Button>
           </header>
 
           {#if pagesOneQuestion && pagerGroup}
