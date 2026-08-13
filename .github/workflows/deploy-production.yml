@@ -103,13 +103,7 @@ jobs:
           echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
 
           for image in classroom-api classroom-dashboard classroom-jobs; do
-            ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
-            docker pull --quiet "${ref}"
-
-            # The compose file names `current`. Moving the tag here, in the job
-            # that just pulled this commit, is what makes the running stack and
-            # the commit provably the same thing.
-            docker tag "${ref}" "${REGISTRY}/${IMAGE_NAMESPACE}/${image}:current"
+            docker pull --quiet "${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
           done
 
           docker logout "${REGISTRY}"
@@ -127,7 +121,12 @@ jobs:
 
           test -s "${env_file}"
 
-          docker compose \
+          # The tag is exported rather than written anywhere: for interpolation the
+          # shell environment beats --env-file, so the commit is pinned for this
+          # one command. Containers then report their own commit in `docker ps`,
+          # which a tag that moves between deploys cannot do — once it moves, the
+          # running container shows a bare image id and nothing says what it is.
+          CLASSROOM_IMAGE_TAG="sha-${GITHUB_SHA}" docker compose \
             --env-file "${env_file}" \
             -f docker/production/docker-compose.yaml \
             --project-directory . \

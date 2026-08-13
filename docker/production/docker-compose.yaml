@@ -21,8 +21,9 @@
 #     split exists because Coolify hardcodes `build --pull --no-cache` for
 #     compose deployments: building on this machine meant a full rebuild of four
 #     images on every push, on the machine that also serves the site.
-#   - The `current` tag is moved by the deploy job, on this host, to the commit
-#     it just pulled. Set CLASSROOM_IMAGE_TAG to pin a different one by hand.
+#   - CLASSROOM_IMAGE_TAG is the commit being run. The deploy job exports it for
+#     the one `up` command, so `docker ps` names the commit each container came
+#     from. `current` is only the fallback for a hand-run `up`.
 #     The dashboard topology is baked into its image at build time.
 #   - Every secret and public URL is required. The stack fails to start rather
 #     than booting with an empty auth secret or a wrong origin.
