@@ -1,6 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
+  import * as Page from '@cio/ui/base/page';
 
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
   import { classroomhub } from '$lib/utils/services/api';
@@ -78,20 +79,26 @@
   const awaiting = $derived(rows.filter((row) => row.gradingState === 'awaiting_manual').length);
 </script>
 
-<div class="ui:mx-auto ui:w-full ui:max-w-6xl ui:space-y-6 ui:px-4 ui:py-6">
-  <header class="ui:flex ui:flex-wrap ui:items-center ui:justify-between ui:gap-3">
-    <div>
-      <h1 class="ui:text-xl ui:font-semibold">{data.exam.title}</h1>
-      <p class="ui:text-muted-foreground ui:text-sm">
+<Page.Root class="mx-auto flex w-[calc(95vw-var(--sidebar-width))]!">
+  <Page.Header>
+    <Page.HeaderContent>
+      <Page.Title>{data.exam.title}</Page.Title>
+      <Page.Subtitle>
         {$t('exam.results.summary_line', { sat: String(sat), marked: String(marked) })}{awaiting > 0
           ? ` · ${$t('exam.results.summary_awaiting', { count: String(awaiting) })}`
           : ''}
-      </p>
-    </div>
-    <Button variant="outline" disabled={refreshing} onclick={refresh}>
-      {refreshing ? $t('exam.results.loading') : $t('exam.results.reload')}
-    </Button>
-  </header>
+      </Page.Subtitle>
+    </Page.HeaderContent>
+    <Page.Action>
+      <Button variant="outline" disabled={refreshing} onclick={refresh}>
+        {refreshing ? $t('exam.results.loading') : $t('exam.results.reload')}
+      </Button>
+    </Page.Action>
+  </Page.Header>
 
-  <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} ondelete={remove} />
-</div>
+  <Page.Body>
+    {#snippet child()}
+      <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} ondelete={remove} />
+    {/snippet}
+  </Page.Body>
+</Page.Root>

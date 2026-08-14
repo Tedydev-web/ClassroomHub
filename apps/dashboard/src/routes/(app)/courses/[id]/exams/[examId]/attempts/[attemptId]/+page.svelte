@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as Page from '@cio/ui/base/page';
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
@@ -114,91 +115,99 @@
   }
 </script>
 
-<div class="ui:mx-auto ui:w-full ui:max-w-4xl ui:space-y-6 ui:px-4 ui:py-6">
-  <header class="ui:space-y-1">
-    <h1 class="ui:text-xl ui:font-semibold">{data.attempt.displayName ?? $t('exam.results.no_name')}</h1>
-    <p class="ui:text-muted-foreground ui:text-sm">
-      {[data.attempt.className, data.attempt.candidateNumber].filter(Boolean).join(' · ') ||
-        $t('exam.results.no_extra_details')}
-    </p>
-    <p class="ui:text-sm">
-      {$t('exam.results.score_column')}:
-      <span class="ui:font-semibold ui:tabular-nums">{score ?? '—'}/{total ?? '—'}</span>
-      {#if gradingState === 'awaiting_manual'}
-        <span class="ui:text-muted-foreground">— {$t('exam.results.awaiting_manual_note')}</span>
-      {:else if gradingState === 'unscoreable'}
-        <span class="ui:text-destructive">— {$t('exam.results.unscoreable_note')}</span>
-      {/if}
-    </p>
-  </header>
-
-  <ol class="ui:space-y-6">
-    {#each data.paper?.questions ?? [] as question (question.questionId)}
-      {@const chosen = chosenOptionIds(question.questionId)}
-      {@const trail = trailByQuestion.get(question.questionId) ?? []}
-      <li class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
-        <p class="ui:font-medium">{question.order}</p>
-
-        {#if chosen.length > 0}
-          <ul class="ui:space-y-1 ui:text-sm">
-            {#each chosen as optionId (optionId)}
-              <li class={isCorrectOption(question.questionId, optionId) ? 'ui:text-green-700' : 'ui:text-destructive'}>
-                {optionId}
-                {isCorrectOption(question.questionId, optionId) ? '✓' : '✗'}
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.results.not_answered')}</p>
+<Page.Root class="mx-auto flex w-[90%] px-4 lg:max-w-4xl">
+  <Page.Header>
+    <Page.HeaderContent>
+      <Page.Title>{data.attempt.displayName ?? $t('exam.results.no_name')}</Page.Title>
+      <Page.Subtitle>
+        {[data.attempt.className, data.attempt.candidateNumber].filter(Boolean).join(' · ') ||
+          $t('exam.results.no_extra_details')}
+      </Page.Subtitle>
+      <p class="ui:text-sm">
+        {$t('exam.results.score_column')}:
+        <span class="ui:font-semibold ui:tabular-nums">{score ?? '—'}/{total ?? '—'}</span>
+        {#if gradingState === 'awaiting_manual'}
+          <span class="ui:text-muted-foreground">— {$t('exam.results.awaiting_manual_note')}</span>
+        {:else if gradingState === 'unscoreable'}
+          <span class="ui:text-destructive">— {$t('exam.results.unscoreable_note')}</span>
         {/if}
+      </p>
+    </Page.HeaderContent>
+  </Page.Header>
 
-        {#if trail.length > 1}
-          <!-- Settles a dispute about a result, and shows a paper answered all at once. -->
-          <p class="ui:text-muted-foreground ui:text-xs">
-            {$t('exam.results.changed_answer', { count: String(trail.length - 1) })}
-          </p>
-        {/if}
+  <Page.Body>
+    {#snippet child()}
+      <ol class="ui:space-y-6">
+        {#each data.paper?.questions ?? [] as question (question.questionId)}
+          {@const chosen = chosenOptionIds(question.questionId)}
+          {@const trail = trailByQuestion.get(question.questionId) ?? []}
+          <li class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
+            <p class="ui:font-medium">{question.order}</p>
 
-        <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-2">
-          <div class="ui:w-24">
-            <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${question.questionId}`}
-              >{$t('exam.results.score_column')}</label
-            >
-            <Input
-              id={`mark-${question.questionId}`}
-              inputmode="decimal"
-              value={marks[question.questionId]?.score ?? ''}
-              oninput={(event: Event) =>
-                (edited[question.questionId] = {
-                  score: (event.currentTarget as HTMLInputElement).value,
-                  comment: marks[question.questionId]?.comment ?? ''
-                })}
-            />
-          </div>
-          <div class="ui:min-w-48 ui:flex-1">
-            <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${question.questionId}`}
-              >{$t('exam.results.comment_column')}</label
-            >
-            <Textarea
-              id={`comment-${question.questionId}`}
-              rows={2}
-              value={marks[question.questionId]?.comment ?? ''}
-              oninput={(event: Event) =>
-                (edited[question.questionId] = {
-                  score: marks[question.questionId]?.score ?? '',
-                  comment: (event.currentTarget as HTMLTextAreaElement).value
-                })}
-            />
-          </div>
-          <Button
-            size="sm"
-            disabled={savingQuestionId === question.questionId}
-            onclick={() => saveMark(question.questionId)}
-          >
-            {$t('exam.results.save_mark')}
-          </Button>
-        </div>
-      </li>
-    {/each}
-  </ol>
-</div>
+            {#if chosen.length > 0}
+              <ul class="ui:space-y-1 ui:text-sm">
+                {#each chosen as optionId (optionId)}
+                  <li
+                    class={isCorrectOption(question.questionId, optionId) ? 'ui:text-green-700' : 'ui:text-destructive'}
+                  >
+                    {optionId}
+                    {isCorrectOption(question.questionId, optionId) ? '✓' : '✗'}
+                  </li>
+                {/each}
+              </ul>
+            {:else}
+              <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.results.not_answered')}</p>
+            {/if}
+
+            {#if trail.length > 1}
+              <!-- Settles a dispute about a result, and shows a paper answered all at once. -->
+              <p class="ui:text-muted-foreground ui:text-xs">
+                {$t('exam.results.changed_answer', { count: String(trail.length - 1) })}
+              </p>
+            {/if}
+
+            <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-2">
+              <div class="ui:w-24">
+                <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${question.questionId}`}
+                  >{$t('exam.results.score_column')}</label
+                >
+                <Input
+                  id={`mark-${question.questionId}`}
+                  inputmode="decimal"
+                  value={marks[question.questionId]?.score ?? ''}
+                  oninput={(event: Event) =>
+                    (edited[question.questionId] = {
+                      score: (event.currentTarget as HTMLInputElement).value,
+                      comment: marks[question.questionId]?.comment ?? ''
+                    })}
+                />
+              </div>
+              <div class="ui:min-w-48 ui:flex-1">
+                <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${question.questionId}`}
+                  >{$t('exam.results.comment_column')}</label
+                >
+                <Textarea
+                  id={`comment-${question.questionId}`}
+                  rows={2}
+                  value={marks[question.questionId]?.comment ?? ''}
+                  oninput={(event: Event) =>
+                    (edited[question.questionId] = {
+                      score: marks[question.questionId]?.score ?? '',
+                      comment: (event.currentTarget as HTMLTextAreaElement).value
+                    })}
+                />
+              </div>
+              <Button
+                size="sm"
+                disabled={savingQuestionId === question.questionId}
+                onclick={() => saveMark(question.questionId)}
+              >
+                {$t('exam.results.save_mark')}
+              </Button>
+            </div>
+          </li>
+        {/each}
+      </ol>
+    {/snippet}
+  </Page.Body>
+</Page.Root>

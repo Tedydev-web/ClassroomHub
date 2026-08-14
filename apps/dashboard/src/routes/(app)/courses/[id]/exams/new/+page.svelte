@@ -5,6 +5,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { Button } from '@cio/ui/base/button';
   import { Label } from '@cio/ui/base/label';
+  import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
   import { invalidateAll } from '$app/navigation';
 
@@ -78,60 +79,70 @@
   }
 </script>
 
-<div class="ui:mx-auto ui:w-full ui:max-w-3xl ui:space-y-6 ui:px-4 ui:py-6">
-  <h1 class="ui:text-xl ui:font-semibold">{$t('exam.manage.create')}</h1>
+<Page.Root class="mx-auto flex w-[90%] px-4 md:max-w-2xl lg:max-w-3xl">
+  <Page.Header>
+    <Page.HeaderContent>
+      <Page.Title>{$t('exam.manage.create')}</Page.Title>
+    </Page.HeaderContent>
+  </Page.Header>
 
-  <div class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
-    <div class="ui:space-y-1">
-      <p class="ui:text-sm ui:font-medium">{$t('exam.settings.copy_from_exercise')}</p>
-      <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.copy_explainer')}</p>
-    </div>
+  <Page.Body>
+    {#snippet child()}
+      <div class="space-y-6">
+        <div class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
+          <div class="ui:space-y-1">
+            <p class="ui:text-sm ui:font-medium">{$t('exam.settings.copy_from_exercise')}</p>
+            <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.copy_explainer')}</p>
+          </div>
 
-    {#if data.copyable.length === 0}
-      <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.settings.no_copyable')}</p>
-    {:else}
-      <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
-        <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
-          <Label for="exam-source">{$t('exam.settings.source_exercise')}</Label>
-          <Select.Root type="single" value={sourceId} onValueChange={(value) => (source = value)}>
-            <Select.Trigger id="exam-source" class="ui:w-full">
-              {data.copyable.find((exercise) => exercise.id === sourceId)?.title ?? ''}
-            </Select.Trigger>
-            <Select.Content>
-              {#each data.copyable as exercise (exercise.id)}
-                <Select.Item value={exercise.id}>
-                  {exercise.title} — {$t('exam.manage.question_count', { count: String(exercise.questionCount) })}
-                </Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
+          {#if data.copyable.length === 0}
+            <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.settings.no_copyable')}</p>
+          {:else}
+            <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
+              <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
+                <Label for="exam-source">{$t('exam.settings.source_exercise')}</Label>
+                <Select.Root type="single" value={sourceId} onValueChange={(value) => (source = value)}>
+                  <Select.Trigger id="exam-source" class="ui:w-full">
+                    {data.copyable.find((exercise) => exercise.id === sourceId)?.title ?? ''}
+                  </Select.Trigger>
+                  <Select.Content>
+                    {#each data.copyable as exercise (exercise.id)}
+                      <Select.Item value={exercise.id}>
+                        {exercise.title} — {$t('exam.manage.question_count', { count: String(exercise.questionCount) })}
+                      </Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
+              </div>
+              <Button disabled={copying} onclick={copyPaper}>
+                {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
+              </Button>
+            </div>
+          {/if}
         </div>
-        <Button disabled={copying} onclick={copyPaper}>
-          {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
-        </Button>
+
+        {#if data.containers.length === 0}
+          <p class="ui:text-muted-foreground ui:text-sm">
+            {$t('exam.settings.no_containers')}
+          </p>
+        {:else}
+          <div class="ui:space-y-2">
+            <Label for="exam-container">{$t('exam.settings.pick_container')}</Label>
+            <Select.Root type="single" value={exerciseId} onValueChange={(value) => (chosen = value)}>
+              <Select.Trigger id="exam-container" class="ui:w-full">
+                {data.containers.find((container) => container.id === exerciseId)?.title ?? ''}
+              </Select.Trigger>
+              <Select.Content>
+                {#each data.containers as container (container.id)}
+                  <Select.Item value={container.id}>{container.title}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+
+          <ExamSettingsForm {submitting} onsubmit={create} />
+        {/if}
       </div>
-    {/if}
-  </div>
-
-  {#if data.containers.length === 0}
-    <p class="ui:text-muted-foreground ui:text-sm">
-      {$t('exam.settings.no_containers')}
-    </p>
-  {:else}
-    <div class="ui:space-y-2">
-      <Label for="exam-container">{$t('exam.settings.pick_container')}</Label>
-      <Select.Root type="single" value={exerciseId} onValueChange={(value) => (chosen = value)}>
-        <Select.Trigger id="exam-container" class="ui:w-full">
-          {data.containers.find((container) => container.id === exerciseId)?.title ?? ''}
-        </Select.Trigger>
-        <Select.Content>
-          {#each data.containers as container (container.id)}
-            <Select.Item value={container.id}>{container.title}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
-    </div>
-
-    <ExamSettingsForm {submitting} onsubmit={create} />
-  {/if}
-</div>
+    {/snippet}
+  </Page.Body>
+</Page.Root>
