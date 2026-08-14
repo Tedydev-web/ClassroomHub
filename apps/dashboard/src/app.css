@@ -71,6 +71,23 @@ html {
   --scrollbarBG: #fff;
   --thumbBG: #ccc;
   scroll-behavior: smooth;
+
+  /*
+   * Kills double-tap-to-zoom without taking pinch-zoom away.
+   *
+   * A tap near a control on a phone is often read as the first half of a
+   * double-tap, so the page lurches and scales instead of answering the tap —
+   * worst of all during an exam, where the second tap lands on a different
+   * option than the one aimed at. `manipulation` tells the browser this element
+   * responds to pan and pinch but has no double-tap gesture, so taps register
+   * immediately and nothing scales.
+   *
+   * Deliberately NOT `user-scalable=no` / `maximum-scale=1` in the viewport tag:
+   * iOS has ignored both since iOS 10, and where they are honoured they remove
+   * pinch-zoom, which a partially sighted reader needs (WCAG 1.4.4). Pinch
+   * still works here; only the accidental gesture is gone.
+   */
+  touch-action: manipulation;
   /* Paint the root with the theme background so the pre-hydration shell
      matches the mode set by app.html and never flashes white in dark mode. */
   background-color: var(--background);

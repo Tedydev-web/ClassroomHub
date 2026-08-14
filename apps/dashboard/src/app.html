@@ -2,9 +2,20 @@
 <html lang="en" translate="no">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!-- `viewport-fit=cover` lets the page paint under the notch and the home
+         indicator once it is installed; the safe-area insets below keep content
+         out of them. No `user-scalable=no`: iOS ignores it and it would take
+         pinch-zoom from anyone who needs it. -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
     <meta name="theme-color" content="#2563FF" />
     <meta name="google" content="notranslate" />
+
+    <!-- A page cannot hide the browser's address bar. Installed to the home
+         screen it runs without one, and these two say the app is ready for that
+         — the second is the old Apple spelling iOS still reads. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />

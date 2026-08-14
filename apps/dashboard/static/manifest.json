@@ -3,7 +3,7 @@
   "theme_color": "#2563FF",
   "name": "ClassroomHub",
   "short_name": "ClassroomHub",
-  "display": "minimal-ui",
+  "display": "standalone",
   "start_url": "/",
   "icons": [
     {
