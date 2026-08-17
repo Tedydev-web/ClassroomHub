@@ -27,6 +27,7 @@ import {
 } from '@db/queries';
 
 import { ROLE } from '@cio/utils/constants';
+import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { QUESTION_TYPE_IDS } from '@cio/question-types';
 
 /**
@@ -281,7 +282,12 @@ export async function cloneCourse(
   // All clone writes run in one transaction: the in-flight internal-question
   // backstop (or any other mid-clone failure) can never leave partial
   // group/course/section/lesson rows behind.
-  return db.transaction(async (tx) => {
+  // Captured inside the transaction, invalidated after it commits: the org-stats
+  // cache (upstream #883) is a Redis side effect and does not belong among the
+  // rollback-safe DB writes.
+  let statsOrgId: string | null | undefined;
+
+  const newCourse = await db.transaction(async (tx) => {
     const txClient = tx as DbOrTxClient;
 
     // 2. create group
@@ -293,6 +299,8 @@ export async function cloneCourse(
       },
       txClient
     );
+
+    statsOrgId = organizationId ?? newGroup.organizationId;
 
     // 3. create course for that group
     // Explicitly select only the fields we want to copy (exclude id, createdAt, updatedAt)
@@ -375,4 +383,8 @@ export async function cloneCourse(
 
     return newCourse;
   });
+
+  if (statsOrgId) await invalidateOrgStats(statsOrgId);
+
+  return newCourse;
 }

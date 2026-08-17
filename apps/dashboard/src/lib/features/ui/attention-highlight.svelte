@@ -3,19 +3,20 @@
   import { replaceState } from '$app/navigation';
   import { resolve } from '$app/paths';
   import type { Snippet } from 'svelte';
-  import { SvelteURL } from 'svelte/reactivity';
 
   interface Props {
     id: string;
     duration?: number;
+    trigger?: number;
     children?: Snippet;
   }
 
-  let { id, duration = 3, children }: Props = $props();
+  let { id, duration = 3, trigger = 0, children }: Props = $props();
 
   let containerRef = $state<HTMLDivElement | null>(null);
   let pulsing = $state(false);
   let handledFor = $state<string | null>(null);
+  let lastTrigger = trigger;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   function getActiveHighlightId(url: URL): string | null {
@@ -24,6 +25,29 @@
 
     const hash = url.hash.replace('#', '').trim();
     return hash || null;
+  }
+
+  function triggerPulse() {
+    pulsing = true;
+
+    containerRef?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      pulsing = false;
+      timeoutId = null;
+
+      const url = new URL(page.url);
+      const highlightActive = url.searchParams.get('highlight') === id;
+      const hashActive = url.hash.replace('#', '').trim() === id;
+
+      if (highlightActive) url.searchParams.delete('highlight');
+      if (hashActive) url.hash = '';
+
+      if (highlightActive || hashActive) {
+        replaceState(resolve(`${url.pathname}${url.search}`, {}), page.state);
+      }
+    }, duration * 1000);
   }
 
   $effect(() => {
@@ -37,26 +61,17 @@
     if (handledFor === activeHighlightId) return;
 
     handledFor = activeHighlightId;
-    pulsing = true;
+    triggerPulse();
+  });
 
-    containerRef?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $effect(() => {
+    if (trigger === lastTrigger) return;
 
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      pulsing = false;
-      timeoutId = null;
+    lastTrigger = trigger;
 
-      const url = new SvelteURL(page.url);
-      const highlightActive = url.searchParams.get('highlight') === id;
-      const hashActive = url.hash.replace('#', '').trim() === id;
-
-      if (highlightActive) url.searchParams.delete('highlight');
-      if (hashActive) url.hash = '';
-
-      if (highlightActive || hashActive) {
-        replaceState(resolve(`${url.pathname}${url.search}`, {}), page.state);
-      }
-    }, duration * 1000);
+    if (trigger > 0) {
+      triggerPulse();
+    }
   });
 
   $effect(() => {

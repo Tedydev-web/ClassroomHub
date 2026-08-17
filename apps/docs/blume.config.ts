@@ -134,6 +134,7 @@ export default defineConfig({
               {
                 label: 'Organization & team',
                 items: [
+                  '/guides/admin-dashboard',
                   '/guides/customize-organization',
                   '/guides/invite-team-member',
                   '/guides/roles-and-permissions'
@@ -162,8 +163,14 @@ export default defineConfig({
         root: '/self-hosted',
         items: [
           '/self-hosted',
-           {
-            label: 'Platforms',
+          '/self-hosted/101',
+          '/self-hosted/architecture',
+          {
+            label: 'Install',
+            display: 'group',
+            // Pinned open — it's what most visitors came for. The other groups
+            // start collapsed (and auto-expand when they contain the current page).
+            collapsed: false,
             items: [
               '/self-hosted/docker',
               '/self-hosted/digitalocean',
@@ -173,7 +180,9 @@ export default defineConfig({
             ]
           },
           {
-            label: 'Configuration',
+            label: 'Configure',
+            display: 'group',
+            collapsed: true,
             items: [
               '/self-hosted/configuration',
               '/self-hosted/configuration/secrets',
@@ -181,10 +190,21 @@ export default defineConfig({
               '/self-hosted/configuration/storage',
               '/self-hosted/configuration/csp',
               '/self-hosted/configuration/integrations',
-              '/self-hosted/configuration/sso',
-              '/self-hosted/configuration/versions'
+              '/self-hosted/enterprise'
             ]
           },
+          {
+            label: 'Manage',
+            display: 'group',
+            collapsed: true,
+            items: ['/self-hosted/configuration/versions', '/self-hosted/backups']
+          },
+          {
+            label: 'Troubleshoot',
+            display: 'group',
+            collapsed: true,
+            items: ['/self-hosted/troubleshooting']
+          }
         ]
       }
     ]

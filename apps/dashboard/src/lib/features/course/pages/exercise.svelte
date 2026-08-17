@@ -645,7 +645,7 @@
   }
 </script>
 
-<Page.Header isSticky={true} class="top-12! min-h-[36px]">
+<Page.Header isSticky={true} class="ui:z-app-bar top-12! min-h-[36px]">
   <Page.HeaderContent>
     <Page.Title class="flex flex-col gap-2">
       <span>{exerciseDisplayTitle}</span>
@@ -691,7 +691,7 @@
                       </Button>
                     {/snippet}
                   </DropdownMenu.Trigger>
-                  <DropdownMenu.Content align="end" class="z-menu-elevated!">
+                  <DropdownMenu.Content align="end">
                     <DropdownMenu.Item onclick={addSectionFromHeader}>
                       {$t('course.navItem.lessons.exercises.all_exercises.add_section')}
                     </DropdownMenu.Item>
@@ -730,7 +730,7 @@
                       </Button>
                     {/snippet}
                   </DropdownMenu.Trigger>
-                  <DropdownMenu.Content align="end" class="z-menu-elevated!">
+                  <DropdownMenu.Content align="end">
                     {#if hasSections($questionnaire.sections)}
                       <DropdownMenu.Item onclick={() => (reorderQuestions = !reorderQuestions)}>
                         {reorderQuestions

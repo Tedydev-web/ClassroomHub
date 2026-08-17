@@ -407,7 +407,8 @@
       "title": "Signup Disabled",
       "invite_only_message": "Signup is invite-only. Please use an invite link to create an account.",
       "go_to_login": "Go to Login"
-    }
+    },
+    "continue_with": "Or continue With"
   },
   "profileMenu": {
     "profile": "PROFILE",
@@ -786,7 +787,8 @@
         "upgrade": "Upgrade",
         "apply_theme": "Apply Theme",
         "preview": "Preview",
-        "card_menu_label": "Theme options"
+        "card_menu_label": "Theme options",
+        "by_classroomio": "by ClassroomIO"
       },
       "preview_tabs": {
         "label": "Preview page",
@@ -1672,7 +1674,8 @@
     "redirecting": "Redirecting",
     "loading_state": "Taking you to the next page, please wait.",
     "org_loading_state": "Taking you to your organization...",
-    "add_organization": "+ Add Organization"
+    "add_organization": "+ Add Organization",
+    "classroomio_home": "ClassroomIO Home"
   },
   "markdown_editor": {
     "write": "Write",
@@ -1760,7 +1763,8 @@
         "custom_favicon_save": "Save favicon",
         "custom_favicon_remove": "Remove favicon",
         "custom_favicon_saved": "Favicon updated",
-        "custom_code": "Custom code"
+        "custom_code": "Custom code",
+        "custom_domain_not_classroomio": "Domain cannot contain 'classroomio'"
       },
       "customize_lms": {
         "page_subtitle": "Choose which tabs, banners, course tools, and extras students see.",
@@ -2090,7 +2094,8 @@
       "blocker_final_score": "Your best score on \"{exerciseTitle}\" is {bestPercent}%; {requiredPercent}% is required.",
       "blocker_final_misconfigured": "The certification exercise \"{exerciseTitle}\" has no points configured; ask your instructor to fix it.",
       "email_message_label": "Email Message",
-      "email_message_placeholder": "e.g. We are proud of your progress — keep learning!"
+      "email_message_placeholder": "e.g. We are proud of your progress — keep learning!",
+      "deadline_invalid": "The course completion deadline is invalid."
     },
     "completion": {
       "modal": {
@@ -3463,7 +3468,8 @@
           "snackbar_failed_load_audit": "Failed to load invite audit",
           "snackbar_metadata_copied": "Invite metadata copied",
           "snackbar_email_invites_success": "Created {count} invite(s). Sent {sent}, failed {failed}. Skipped {duplicates} duplicate(s).",
-          "select_at_least_one_student": "Select at least one existing student"
+          "select_at_least_one_student": "Select at least one existing student",
+          "classroomio_brand": "ClassroomIO.com"
         },
         "delete_confirmation": {
           "title": "Delete",
@@ -3852,7 +3858,10 @@
         },
         "delete": "Delete Course",
         "delete_text": "Delete this course,this action cannot be undone",
-        "save": "Save Changes"
+        "save": "Save Changes",
+        "go_to_completion_deadline": "Go to Completion Deadline",
+        "completion_deadline_label": "Course completion deadline",
+        "completion_deadline_helper": "Students must meet the completion percentage before this datetime (local time). Leave empty for no deadline."
       }
     },
     "not_permitted": {
@@ -4192,7 +4201,8 @@
         "codex_description": "Adds the ClassroomHub MCP server to Codex with the same org-scoped key.",
         "cursor_description": "Paste this into `~/.cursor/mcp.json` or your workspace MCP config.",
         "opencode_description": "Add this to `opencode.json` in your project root or `~/.config/opencode/opencode.json`."
-      }
+      },
+      "view_docs": "View Docs"
     },
     "api": {
       "subtitle": "Manage API keys to integrate with the ClassroomHub public API.",
@@ -5314,7 +5324,8 @@
       "empty_title": "No courses yet",
       "empty_description": "Add courses to this cohort.",
       "published_access_callout_title": "Student access",
-      "published_access_callout_description": "Students only have access to published courses. Courses can be in this cohort for your team while still unpublished while those stay hidden from students until you publish them."
+      "published_access_callout_description": "Students only have access to published courses. Courses can be in this cohort for your team while still unpublished while those stay hidden from students until you publish them.",
+      "empty_student_description": "There are no published courses in this cohort yet."
     },
     "people": {
       "invite": "Invite",

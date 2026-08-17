@@ -895,7 +895,10 @@
         },
         "certificate_deadline_required": "Angiv først certifikatfristen",
         "certificate_deadline_required_description": "Compliance-kurser kræver en certifikatfrist, før deltagere kan tilmeldes. Angiv en frist i certifikatindstillingerne, før du udgiver.",
-        "go_to_certificate_settings": "Gå til certifikatindstillinger"
+        "go_to_certificate_settings": "Gå til certifikatindstillinger",
+        "go_to_completion_deadline": "Gå til fuldførelsesfristen",
+        "completion_deadline_label": "Deadline for kursusafslutning",
+        "completion_deadline_helper": "Studerende skal opfylde fuldførelsesprocenten inden denne dato (lokal tid). Lad være tomt uden deadline."
       },
       "analytics": {
         "title": "Analyse"
@@ -1288,7 +1291,8 @@
             "description": "Giv {email} adgang til dette kursus. Vi sender en invitationsmail, så vedkommende kan tilslutte sig din organisation og tilmelde sig kurset.",
             "cancel": "Annuller",
             "send_invite": "Send invitationen"
-          }
+          },
+          "classroomio_brand": "ClassroomIO.com"
         }
       },
       "marks": {
@@ -2616,7 +2620,8 @@
       "email_message_placeholder": "f.eks. Vi er stolte af dine fremskridt - fortsæt med at lære!",
       "final_exercise_multiple_attempts_note": "Elever får lov til ubegrænsede forsøg på den valgte øvelse.",
       "deadline_required": "En certifikatfrist er påkrævet, når certifikater kan downloades.",
-      "deadline_required_enroll": "Compliance-kurser kræver en certifikatfrist, før deltagere kan tilmeldes."
+      "deadline_required_enroll": "Compliance-kurser kræver en certifikatfrist, før deltagere kan tilmeldes.",
+      "deadline_invalid": "Kursusets fuldførelsesfrist er ugyldig."
     },
     "creator": {
       "heading": "Hvilket kursus vil du lave?",
@@ -2933,7 +2938,8 @@
         "ssl_pending_heading": "SSL-certifikat er ved at blive udstedt",
         "ssl_pending_body": "Dit domæne peger på os. Vi venter nu på, at SSL-certifikatet bliver udstedt og implementeret. Dette tager normalt et par minutter, når alle nedenstående DNS-poster er på plads.",
         "validation_errors_heading": "Certifikatudstedelse er blokeret",
-        "verified_snackbar": "Tilpasset domæne bekræftet"
+        "verified_snackbar": "Tilpasset domæne bekræftet",
+        "custom_domain_not_classroomio": "Domæne må ikke indeholde \"classroomio\""
       }
     },
     "quiz": {
@@ -2993,7 +2999,8 @@
     "loading_state": "Tag dig til næste side, vent venligst.",
     "org_loading_state": "Tager dig til din organisation...",
     "add_organization": "+ Tilføj organisation",
-    "goto_dashboard": "Dashboard"
+    "goto_dashboard": "Dashboard",
+    "classroomio_home": "ClassroomIO Home"
   },
   "add_org": {
     "create_org": "Opret organisation",
@@ -3575,7 +3582,8 @@
         "upgrade": "Opgrader",
         "apply_theme": "Anvend tema",
         "preview": "Forhåndsvisning",
-        "card_menu_label": "Temamuligheder"
+        "card_menu_label": "Temamuligheder",
+        "by_classroomio": "af ClassroomIO"
       },
       "current": {
         "title": "Aktuelt tema",
@@ -3966,7 +3974,8 @@
       "title": "Tilmelding deaktiveret",
       "invite_only_message": "Tilmelding er kun for invitationer. Brug venligst et invitationslink til at oprette en konto.",
       "go_to_login": "Gå til Login"
-    }
+    },
+    "continue_with": "Eller fortsæt med"
   },
   "app": {
     "search": {
@@ -4240,7 +4249,8 @@
         "rate_limits_description": "Læs/skriv/publicér anmodninger tilladt pr. minut.",
         "used_label": "Brugt:"
       },
-      "page_subtitle": "Forbind AI-værktøjer til ClassroomHub med organisationsnøgler, du kan rotere når som helst."
+      "page_subtitle": "Forbind AI-værktøjer til ClassroomHub med organisationsnøgler, du kan rotere når som helst.",
+      "view_docs": "Se dokumentation"
     },
     "api": {
       "subtitle": "Administrer API-nøgler til integration med Classrooms offentlige API.",
@@ -5049,7 +5059,8 @@
       "no_matching_cohort_courses": "Ingen kohortekurser matcher din søgning.",
       "pagination_status": "Side {page} af {totalPages}",
       "published_access_callout_title": "Studerendes adgang",
-      "published_access_callout_description": "Studerende har kun adgang til publicerede kurser. Kurser kan være i denne kohorte for dit team, mens de stadig er upublicerede, og de forbliver skjulte for studerende, indtil du publicerer dem."
+      "published_access_callout_description": "Studerende har kun adgang til publicerede kurser. Kurser kan være i denne kohorte for dit team, mens de stadig er upublicerede, og de forbliver skjulte for studerende, indtil du publicerer dem.",
+      "empty_student_description": "Der er endnu ingen offentliggjorte kurser i denne kohorte."
     },
     "newsfeed": {
       "post": "Nyt indlæg",

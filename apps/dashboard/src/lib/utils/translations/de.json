@@ -895,7 +895,10 @@
         },
         "certificate_deadline_required": "Zuerst Zertifikatsstichtag festlegen",
         "certificate_deadline_required_description": "Compliance-Kurse erfordern einen Zertifikatsstichtag, bevor Lernende eingeschrieben werden können. Bitte legen Sie vor der Veröffentlichung einen Stichtag in den Zertifikatseinstellungen fest.",
-        "go_to_certificate_settings": "Zu den Zertifikatseinstellungen"
+        "go_to_certificate_settings": "Zu den Zertifikatseinstellungen",
+        "go_to_completion_deadline": "Gehen Sie zur Abschlussfrist",
+        "completion_deadline_label": "Frist für den Abschluss des Kurses",
+        "completion_deadline_helper": "Die Schüler müssen den Abschlussprozentsatz vor diesem Datum/Uhrzeit (Ortszeit) erreichen. Für keine Frist leer lassen."
       },
       "analytics": {
         "title": "Analysen"
@@ -1288,7 +1291,8 @@
             "description": "Gewähren Sie {email} Zugang zu diesem Kurs. Wir senden eine Einladungs-E-Mail, damit die Person Ihrer Organisation beitreten und in diesem Kurs eingeschrieben werden kann.",
             "cancel": "Abbrechen",
             "send_invite": "Einladung senden"
-          }
+          },
+          "classroomio_brand": "ClassroomIO.com"
         }
       },
       "marks": {
@@ -2616,7 +2620,8 @@
       "email_message_placeholder": "z.B. Wir sind stolz auf Ihre Fortschritte – lernen Sie weiter!",
       "final_exercise_multiple_attempts_note": "Den Schülern sind unbegrenzte Versuche für die ausgewählte Übung gestattet.",
       "deadline_required": "Ein Zertifikatsstichtag ist erforderlich, wenn Zertifikate heruntergeladen werden können.",
-      "deadline_required_enroll": "Compliance-Kurse erfordern einen Zertifikatsstichtag, bevor Lernende eingeschrieben werden können."
+      "deadline_required_enroll": "Compliance-Kurse erfordern einen Zertifikatsstichtag, bevor Lernende eingeschrieben werden können.",
+      "deadline_invalid": "Die Abschlussfrist des Kurses ist ungültig."
     },
     "creator": {
       "heading": "Welchen Kurs möchten Sie erstellen?",
@@ -2933,7 +2938,8 @@
         "ssl_pending_heading": "SSL-Zertifikat wird ausgestellt",
         "ssl_pending_body": "Ihre Domain verweist auf uns. Wir warten nun darauf, dass das SSL-Zertifikat ausgestellt und bereitgestellt wird. Dies dauert normalerweise einige Minuten, sobald alle unten aufgeführten DNS-Einträge vorhanden sind.",
         "validation_errors_heading": "Die Ausstellung des Zertifikats ist gesperrt",
-        "verified_snackbar": "Benutzerdefinierte Domain verifiziert"
+        "verified_snackbar": "Benutzerdefinierte Domain verifiziert",
+        "custom_domain_not_classroomio": "Die Domain darf „classroomio“ nicht enthalten."
       }
     },
     "quiz": {
@@ -2993,7 +2999,8 @@
     "loading_state": "Bitte warten Sie, um zur nächsten Seite zu gelangen.",
     "org_loading_state": "Wir bringen Sie zu Ihrer Organisation...",
     "add_organization": "+ Organisation hinzufügen",
-    "goto_dashboard": "Dashboard"
+    "goto_dashboard": "Dashboard",
+    "classroomio_home": "ClassroomIO Startseite"
   },
   "add_org": {
     "create_org": "Organisation erstellen",
@@ -3575,7 +3582,8 @@
         "upgrade": "Upgrade",
         "apply_theme": "Theme anwenden",
         "preview": "Vorschau",
-        "card_menu_label": "Themenoptionen"
+        "card_menu_label": "Themenoptionen",
+        "by_classroomio": "von ClassroomIO"
       },
       "current": {
         "title": "Aktuelles Thema",
@@ -3966,7 +3974,8 @@
       "title": "Anmeldung deaktiviert",
       "invite_only_message": "Die Anmeldung ist nur auf Einladung möglich. Bitte verwenden Sie einen Einladungslink, um ein Konto zu erstellen.",
       "go_to_login": "Gehen Sie zu Anmelden"
-    }
+    },
+    "continue_with": "Oder fahren Sie mit fort"
   },
   "app": {
     "search": {
@@ -4240,7 +4249,8 @@
         "rate_limits_description": "Zulässige Lese-/Schreib-/Veröffentlichungsanfragen pro Minute.",
         "used_label": "Verwendet:"
       },
-      "page_subtitle": "Verbinden Sie KI-Tools mit ClassroomHub über organisationsbezogene Schlüssel, die Sie jederzeit rotieren können."
+      "page_subtitle": "Verbinden Sie KI-Tools mit ClassroomHub über organisationsbezogene Schlüssel, die Sie jederzeit rotieren können.",
+      "view_docs": "Dokumentation anzeigen"
     },
     "api": {
       "subtitle": "Verwalten Sie API-Schlüssel zur Integration mit der öffentlichen ClassroomHub-API.",
@@ -5049,7 +5059,8 @@
       "no_matching_cohort_courses": "Zu Ihrer Suche passen keine Kohortenkurse.",
       "pagination_status": "Seite {page} von {totalPages}",
       "published_access_callout_title": "Zugang für Studierende",
-      "published_access_callout_description": "Studierende haben nur Zugriff auf veröffentlichte Kurse. Kurse können für Ihr Team in dieser Kohorte enthalten sein, solange sie noch unveröffentlicht sind, und bleiben den Studierenden verborgen, bis Sie sie veröffentlichen."
+      "published_access_callout_description": "Studierende haben nur Zugriff auf veröffentlichte Kurse. Kurse können für Ihr Team in dieser Kohorte enthalten sein, solange sie noch unveröffentlicht sind, und bleiben den Studierenden verborgen, bis Sie sie veröffentlichen.",
+      "empty_student_description": "In dieser Kohorte gibt es noch keine veröffentlichten Kurse."
     },
     "newsfeed": {
       "post": "Neuer Beitrag",

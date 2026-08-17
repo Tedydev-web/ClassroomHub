@@ -20,6 +20,8 @@ import { claimMemberCertificateEarned } from '@cio/db/queries/course/people';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 import { PLAN } from '@cio/utils/plans';
 import { hasFullProductEntitlements } from '@cio/core/config/deployment';
+import { env } from '@cio/core/config/env';
+import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
 
 export type CertificationBlocker = {
@@ -255,6 +257,8 @@ export async function evaluateCourseCertification(
 
       if (didClaimCertificate) {
         isNewCompletion = true;
+
+        await invalidateOrgStats(courseRow.orgId);
 
         scheduleCertificationCompletionWork({
           courseId,

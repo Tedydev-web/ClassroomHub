@@ -895,7 +895,10 @@
         },
         "certificate_deadline_required": "Définissez d'abord la date limite du certificat",
         "certificate_deadline_required_description": "Les cours de conformité nécessitent une date limite de certificat avant de pouvoir inscrire des apprenants. Veuillez définir une date limite dans les paramètres du certificat avant de publier.",
-        "go_to_certificate_settings": "Aller aux paramètres du certificat"
+        "go_to_certificate_settings": "Aller aux paramètres du certificat",
+        "go_to_completion_deadline": "Accéder à la date limite d'achèvement",
+        "completion_deadline_label": "Date limite de fin de cours",
+        "completion_deadline_helper": "Les étudiants doivent atteindre le pourcentage d'achèvement avant cette date/heure (heure locale). Laisser vide sans date limite."
       },
       "analytics": {
         "title": "Analytique"
@@ -1288,7 +1291,8 @@
             "multi_use_30d": "Multi-usage (30 jours)",
             "custom": "Personnalisé"
           },
-          "student_limit_reached": "Vous avez atteint la limite d'étudiants de votre plan. Mettez à niveau pour inviter plus d'étudiants."
+          "student_limit_reached": "Vous avez atteint la limite d'étudiants de votre plan. Mettez à niveau pour inviter plus d'étudiants.",
+          "classroomio_brand": "ClassroomIO.com"
         }
       },
       "marks": {
@@ -2616,7 +2620,8 @@
       "email_message_placeholder": "par ex. Nous sommes fiers de vos progrès – continuez à apprendre !",
       "final_exercise_multiple_attempts_note": "Les étudiants auront droit à des tentatives illimitées sur l'exercice sélectionné.",
       "deadline_required": "Une date limite de certificat est requise lorsque les certificats sont téléchargeables.",
-      "deadline_required_enroll": "Les cours de conformité nécessitent une date limite de certificat avant de pouvoir inscrire des apprenants."
+      "deadline_required_enroll": "Les cours de conformité nécessitent une date limite de certificat avant de pouvoir inscrire des apprenants.",
+      "deadline_invalid": "La date limite d'achèvement du cours n'est pas valide."
     },
     "creator": {
       "heading": "Quel cours souhaitez-vous créer ?",
@@ -2933,7 +2938,8 @@
         "ssl_pending_heading": "Le certificat SSL est en cours d'émission",
         "ssl_pending_body": "Votre domaine pointe vers nous. Nous attendons maintenant que le certificat SSL soit émis et déployé. Cela prend généralement quelques minutes une fois que tous les enregistrements DNS ci-dessous sont en place.",
         "validation_errors_heading": "La délivrance du certificat est bloquée",
-        "verified_snackbar": "Domaine personnalisé vérifié"
+        "verified_snackbar": "Domaine personnalisé vérifié",
+        "custom_domain_not_classroomio": "Le domaine ne peut pas contenir « classroomio »"
       }
     },
     "quiz": {
@@ -2993,7 +2999,8 @@
     "loading_state": "Vous passez à la page suivante, veuillez patienter.",
     "org_loading_state": "Vous emmener dans votre organisation...",
     "add_organization": "+ Ajouter une organisation",
-    "goto_dashboard": "Tableau de bord"
+    "goto_dashboard": "Tableau de bord",
+    "classroomio_home": "Accueil ClassroomIO"
   },
   "add_org": {
     "create_org": "Créer une organisation",
@@ -3575,7 +3582,8 @@
         "upgrade": "Mettre à niveau",
         "apply_theme": "Appliquer le thème",
         "preview": "Aperçu",
-        "card_menu_label": "Options de thème"
+        "card_menu_label": "Options de thème",
+        "by_classroomio": "par ClassroomIO"
       },
       "current": {
         "title": "Thème actuel",
@@ -3966,7 +3974,8 @@
       "title": "Inscription désactivée",
       "invite_only_message": "L'inscription se fait sur invitation uniquement. Veuillez utiliser un lien d'invitation pour créer un compte.",
       "go_to_login": "Allez dans Connexion"
-    }
+    },
+    "continue_with": "Ou continuer avec"
   },
   "app": {
     "search": {
@@ -4240,7 +4249,8 @@
         "rate_limits_description": "Requêtes de lecture/écriture/publication autorisées par minute.",
         "used_label": "Utilisé :"
       },
-      "page_subtitle": "Connectez des outils IA à ClassroomHub avec des clés à l'échelle de l'organisation que vous pouvez faire pivoter à tout moment."
+      "page_subtitle": "Connectez des outils IA à ClassroomHub avec des clés à l'échelle de l'organisation que vous pouvez faire pivoter à tout moment.",
+      "view_docs": "Voir la documentation"
     },
     "api": {
       "subtitle": "Gérez les clés API pour intégrer l'API publique ClassroomHub.",
@@ -5049,7 +5059,8 @@
       "no_matching_cohort_courses": "Aucun cours de cohorte ne correspond à votre recherche.",
       "pagination_status": "Page {page} sur {totalPages}",
       "published_access_callout_title": "Accès étudiant",
-      "published_access_callout_description": "Les étudiants n’ont accès qu’aux cours publiés. Les cours peuvent figurer dans cette cohorte pour votre équipe alors qu’ils ne sont pas encore publiés, tout en restant cachés aux étudiants jusqu’à leur publication."
+      "published_access_callout_description": "Les étudiants n’ont accès qu’aux cours publiés. Les cours peuvent figurer dans cette cohorte pour votre équipe alors qu’ils ne sont pas encore publiés, tout en restant cachés aux étudiants jusqu’à leur publication.",
+      "empty_student_description": "Il n'y a pas encore de cours publiés dans cette cohorte."
     },
     "newsfeed": {
       "post": "Nouveau message",

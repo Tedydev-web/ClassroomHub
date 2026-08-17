@@ -44,6 +44,7 @@ import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
 import { uploadImage } from '$lib/utils/services/upload';
 import { DEFAULT_ORG_AUDIENCE_QUERY, toAudienceRequestQuery } from '../utils/audience-query-utils';
+import type { ZodError } from 'zod';
 
 export interface TOrgUpdateForm {
   name?: string;

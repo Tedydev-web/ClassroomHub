@@ -13,6 +13,15 @@ vi.mock('@cio/db/queries/course/people', () => ({
   getCourseTeachers: vi.fn()
 }));
 
+vi.mock('@cio/db/queries/course', () => ({
+  getOrgIdByCourseId: vi.fn().mockResolvedValue(null),
+  getCourseWithOrgData: vi.fn().mockResolvedValue(null)
+}));
+
+vi.mock('@cio/core/utils/redis/org-stats-cache', () => ({
+  invalidateOrgStats: vi.fn()
+}));
+
 vi.mock('@cio/db/queries/course/reset-progress', () => ({
   resetStudentCourseProgress: vi.fn()
 }));

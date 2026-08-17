@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { page } from '$app/state';
+  import { resolve } from '$app/paths';
   import * as Avatar from '@cio/ui/base/avatar';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
@@ -82,28 +83,34 @@
   <Card.Root class="ui:w-full relative z-10 max-w-[400px] shadow-sm">
     {#if !showOnlyContent || showLogo}
       <Card.Header class="ui:flex ui:flex-col ui:items-center ui:gap-4">
-        <Avatar.Root class="ui:size-14 ui:bg-transparent">
-          <!--
-            An organisation's logo can go missing — the file is deleted, the asset host
-            answers 404 — and a broken image renders its alt text, so the organisation's
-            own name appeared as clipped letters inside the avatar circle. Falling back to
-            the platform mark is the honest failure: a generic logo reads as a logo.
-          -->
-          <Avatar.Image
-            src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
-            alt={$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}
-            class="ui:object-contain"
-            onerror={(event: Event) => {
-              const image = event.currentTarget as HTMLImageElement;
-              if (image.src.endsWith('/logo-192.png')) return;
-              image.src = '/logo-192.png';
-              image.alt = '';
-            }}
-          />
-          <Avatar.Fallback class="ui:bg-transparent">
-            <img src="/logo-192.png" alt="" class="size-full object-contain" aria-hidden="true" />
-          </Avatar.Fallback>
-        </Avatar.Root>
+        <a
+          href={resolve(ROUTE.HOME, {})}
+          class="ui:inline-flex"
+          aria-label={$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}
+        >
+          <Avatar.Root class="ui:size-14 ui:bg-transparent">
+            <!--
+              An organisation's logo can go missing — the file is deleted, the asset host
+              answers 404 — and a broken image renders its alt text, so the organisation's
+              own name appeared as clipped letters inside the avatar circle. Falling back to
+              the platform mark is the honest failure: a generic logo reads as a logo.
+            -->
+            <Avatar.Image
+              src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
+              alt={$currentOrg.name ? $currentOrg.name : 'ClassroomHub'}
+              class="ui:object-contain"
+              onerror={(event: Event) => {
+                const image = event.currentTarget as HTMLImageElement;
+                if (image.src.endsWith('/logo-192.png')) return;
+                image.src = '/logo-192.png';
+                image.alt = '';
+              }}
+            />
+            <Avatar.Fallback class="ui:bg-transparent">
+              <img src="/logo-192.png" alt="" class="size-full object-contain" aria-hidden="true" />
+            </Avatar.Fallback>
+          </Avatar.Root>
+        </a>
 
         {#if !showOnlyContent}
           <a href="/">
@@ -127,7 +134,7 @@
         <div class="mt-6 flex flex-col gap-6">
           <div class="relative flex items-center justify-center">
             <Separator />
-            <span class="ui:bg-card ui:text-muted-foreground absolute px-2 text-sm"> Or continue With </span>
+            <span class="ui:bg-card ui:text-muted-foreground absolute px-2 text-sm">{$t('login.continue_with')}</span>
           </div>
 
           {#if getPasswordAuthAlternative}

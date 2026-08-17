@@ -895,7 +895,10 @@
         },
         "certificate_deadline_required": "Đặt hạn chót cấp chứng chỉ trước",
         "certificate_deadline_required_description": "Khóa học tuân thủ yêu cầu có hạn chót cấp chứng chỉ trước khi ghi danh học viên. Vui lòng đặt hạn chót trong phần cài đặt chứng chỉ trước khi xuất bản.",
-        "go_to_certificate_settings": "Đi tới cài đặt chứng chỉ"
+        "go_to_certificate_settings": "Đi tới cài đặt chứng chỉ",
+        "go_to_completion_deadline": "Đi tới thời hạn hoàn thành",
+        "completion_deadline_label": "Thời hạn hoàn thành khóa học",
+        "completion_deadline_helper": "Học sinh phải đáp ứng tỷ lệ hoàn thành trước ngày này (giờ địa phương). Để trống không có thời hạn."
       },
       "analytics": {
         "title": "Phân tích"
@@ -1288,7 +1291,8 @@
             "description": "Cấp cho {email} quyền truy cập khóa học này. Chúng tôi sẽ gửi email mời để tham gia tổ chức của bạn và đăng ký khóa học.",
             "cancel": "Hủy",
             "send_invite": "Gửi lời mời"
-          }
+          },
+          "classroomio_brand": "ClassroomIO.com"
         }
       },
       "marks": {
@@ -2619,7 +2623,8 @@
       "email_message_placeholder": "ví dụ: Chúng tôi tự hào về sự tiến bộ của bạn - hãy tiếp tục học hỏi!",
       "final_exercise_multiple_attempts_note": "Học sinh sẽ được phép thử không giới hạn bài tập đã chọn.",
       "deadline_required": "Cần có hạn chót cấp chứng chỉ khi chứng chỉ có thể tải xuống.",
-      "deadline_required_enroll": "Khóa học tuân thủ yêu cầu có hạn chót cấp chứng chỉ trước khi ghi danh học viên."
+      "deadline_required_enroll": "Khóa học tuân thủ yêu cầu có hạn chót cấp chứng chỉ trước khi ghi danh học viên.",
+      "deadline_invalid": "Thời hạn hoàn thành khóa học không hợp lệ."
     },
     "creator": {
       "heading": "Bạn muốn tạo khóa học nào?",
@@ -2936,7 +2941,8 @@
         "ssl_pending_heading": "Chứng chỉ SSL đang được cấp",
         "ssl_pending_body": "Tên miền của bạn đang trỏ đến chúng tôi. Hiện chúng tôi đang chờ chứng chỉ SSL được cấp và triển khai. Quá trình này thường mất vài phút sau khi tất cả bản ghi DNS bên dưới đã sẵn sàng.",
         "validation_errors_heading": "Việc cấp chứng chỉ bị chặn",
-        "verified_snackbar": "Đã xác minh miền tùy chỉnh"
+        "verified_snackbar": "Đã xác minh miền tùy chỉnh",
+        "custom_domain_not_classroomio": "Tên miền không thể chứa 'classroomio'"
       }
     },
     "quiz": {
@@ -2996,7 +3002,8 @@
     "loading_state": "Đang đưa bạn đến trang tiếp theo, vui lòng đợi.",
     "org_loading_state": "Đưa bạn đến tổ chức của bạn...",
     "add_organization": "+ Thêm tổ chức",
-    "goto_dashboard": "Bảng điều khiển"
+    "goto_dashboard": "Bảng điều khiển",
+    "classroomio_home": "Trang chủ ClassroomIO"
   },
   "add_org": {
     "create_org": "Tạo tổ chức",
@@ -3578,7 +3585,8 @@
         "upgrade": "Nâng cấp",
         "apply_theme": "Áp dụng chủ đề",
         "preview": "Xem trước",
-        "card_menu_label": "Tùy chọn chủ đề"
+        "card_menu_label": "Tùy chọn chủ đề",
+        "by_classroomio": "bởi ClassroomIO"
       },
       "current": {
         "title": "Chủ đề hiện tại",
@@ -3969,7 +3977,8 @@
       "title": "Đăng ký bị vô hiệu hóa",
       "invite_only_message": "Đăng ký chỉ dành cho người được mời. Vui lòng sử dụng liên kết mời để tạo tài khoản.",
       "go_to_login": "Đi tới Đăng nhập"
-    }
+    },
+    "continue_with": "Hoặc tiếp tục với"
   },
   "app": {
     "search": {
@@ -4243,7 +4252,8 @@
         "rate_limits_description": "Yêu cầu đọc/ghi/xuất bản được phép mỗi phút.",
         "used_label": "Đã sử dụng:"
       },
-      "page_subtitle": "Kết nối các công cụ AI với ClassroomHub bằng khóa theo phạm vi tổ chức mà bạn có thể xoay vòng bất cứ lúc nào."
+      "page_subtitle": "Kết nối các công cụ AI với ClassroomHub bằng khóa theo phạm vi tổ chức mà bạn có thể xoay vòng bất cứ lúc nào.",
+      "view_docs": "Xem tài liệu"
     },
     "api": {
       "subtitle": "Quản lý khóa API để tích hợp với API công khai của ClassroomHub.",
@@ -5052,7 +5062,8 @@
       "no_matching_cohort_courses": "Không có nhóm học tập khóa học phù hợp với tìm kiếm của bạn.",
       "pagination_status": "Trang {page} trong tổng số {totalPages}",
       "published_access_callout_title": "Quyền truy cập của sinh viên",
-      "published_access_callout_description": "Sinh viên chỉ có quyền truy cập vào các khóa học được xuất bản. Các khóa học có thể có trong nhóm học tập này cho nhóm của bạn trong khi vẫn chưa được xuất bản và các khóa học đó sẽ bị ẩn với sinh viên cho đến khi bạn xuất bản chúng."
+      "published_access_callout_description": "Sinh viên chỉ có quyền truy cập vào các khóa học được xuất bản. Các khóa học có thể có trong nhóm học tập này cho nhóm của bạn trong khi vẫn chưa được xuất bản và các khóa học đó sẽ bị ẩn với sinh viên cho đến khi bạn xuất bản chúng.",
+      "empty_student_description": "Chưa có khóa học nào được xuất bản trong nhóm này."
     },
     "newsfeed": {
       "post": "Bài đăng mới",
