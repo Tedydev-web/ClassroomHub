@@ -1338,7 +1338,9 @@
           "awaiting_manual_hint": "Cần xem xét thủ công",
           "failed_hint": "Tự động chấm điểm không thành công. Chuyển nội dung gửi này trở lại Đã gửi để thử lại.",
           "invalid_transition": "Việc di chuyển trạng thái này không được phép bởi quy trình chấm điểm"
-        }
+        },
+        "tab_exercises": "Bài tập",
+        "tab_exams": "Bài thi"
       },
       "attendance": {
         "title": "Tham dự",

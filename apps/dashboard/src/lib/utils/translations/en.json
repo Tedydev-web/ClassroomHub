@@ -3268,7 +3268,9 @@
           "delete_prompt": "Delete",
           "delete_error": "Failed to delete submission",
           "delete_success": "Successfully deleted submission"
-        }
+        },
+        "tab_exercises": "Exercises",
+        "tab_exams": "Exams"
       },
       "marks": {
         "title": "Marks",

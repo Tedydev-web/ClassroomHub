@@ -9,7 +9,6 @@
 
   import TableOfContentsIcon from '@lucide/svelte/icons/table-of-contents';
   import BotIcon from '@lucide/svelte/icons/bot';
-  import TimerIcon from '@lucide/svelte/icons/timer';
   import {
     AnalyticsIcon,
     AttendanceIcon,
@@ -138,18 +137,6 @@
         icon: getNavIcon(NAV_IDS.SUBMISSIONS)
       },
       {
-        id: NAV_IDS.EXAMS,
-        title: $t('course.navItems.nav_exams'),
-        url: getNavItemRoute(id, 'exams'),
-        isActive: (path || page.url.pathname).startsWith(getNavItemRoute(id, 'exams')),
-        show() {
-          // A student never sees this: an exam reaches them as a link, and the private
-          // kind opens from that same link once they are signed in.
-          return !isStudent;
-        },
-        icon: getNavIcon(NAV_IDS.EXAMS)
-      },
-      {
         id: NAV_IDS.MARKS,
         title: $t('course.navItems.nav_marks'),
         url: getNavItemRoute(id, 'marks'),
@@ -258,8 +245,6 @@
       return AttendanceIcon;
     } else if (id === NAV_IDS.SUBMISSIONS) {
       return SubmissionIcon;
-    } else if (id === NAV_IDS.EXAMS) {
-      return TimerIcon;
     } else if (id === NAV_IDS.MARKS) {
       return MarksIcon;
     } else if (id === NAV_IDS.COMPLIANCE) {
