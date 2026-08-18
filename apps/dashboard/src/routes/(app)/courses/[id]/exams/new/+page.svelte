@@ -8,6 +8,7 @@
   import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
   import { invalidateAll } from '$app/navigation';
+  import { page } from '$app/state';
 
   /**
    * Creating an exam from a paper held in a detached container. A teacher's questions start
@@ -22,7 +23,8 @@
   // Derived from the loader with a local override, for the same reason as everywhere else
   // in this feature: state seeded from `data` freezes at mount.
   let chosen = $state<string | null>(null);
-  let source = $state<string | null>(null);
+  // Preselect the source when arriving from an exercise's "publish as exam" action.
+  let source = $state<string | null>(page.url.searchParams.get('source'));
   const exerciseId = $derived(chosen ?? data.containers[0]?.id ?? '');
   const sourceId = $derived(source ?? data.copyable[0]?.id ?? '');
 

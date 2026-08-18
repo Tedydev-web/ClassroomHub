@@ -2316,7 +2316,9 @@
           "lesson_title": "Lesson",
           "lesson_description": "Teach with notes, slides, and videos.",
           "exercise_title": "Exercise",
-          "exercise_description": "Assess students with quizzes and tasks."
+          "exercise_description": "Assess students with quizzes and tasks.",
+          "exam_title": "Exam",
+          "exam_description": "A timed, auto-graded paper."
         },
         "add_content_section_title_placeholder": "e.g., Module 1: Introduction",
         "add_content_lesson_title_placeholder": "e.g., Getting Started with Variables",
@@ -3179,7 +3181,8 @@
                   "max_characters_placeholder": "Maximum characters"
                 }
               }
-            }
+            },
+            "publish_as_exam": "Publish as an exam"
           }
         },
         "disabled": "Feature is disabled",

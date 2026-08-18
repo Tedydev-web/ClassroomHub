@@ -1,6 +1,9 @@
 import { ContentType } from '@cio/utils/constants/content';
 import type { StepperState } from './types';
 
+/** Sentinel for the add-content card that opens the exam create flow (not a ContentType). */
+export const EXAM_OPTION_TYPE = 'EXAM' as const;
+
 /** Translation key for primary action (resolve with t() in components) */
 export const ADD_CONTENT_CREATE_KEY = 'course.navItem.lessons.add_content_create';
 export const ADD_CONTENT_CREATE_SECTION_KEY = 'course.navItem.lessons.add_content_create_section';
@@ -55,6 +58,14 @@ export const CONTENT_OPTIONS = [
     type: ContentType.Exercise,
     titleKey: 'course.navItem.lessons.add_content_options.exercise_title',
     descriptionKey: 'course.navItem.lessons.add_content_options.exercise_description'
+  },
+  {
+    // Not a ContentType: an exam is a detached container, not course content. The card
+    // routes to the dedicated create flow instead of the in-modal steppers.
+    id: 'exam',
+    type: EXAM_OPTION_TYPE,
+    titleKey: 'course.navItem.lessons.add_content_options.exam_title',
+    descriptionKey: 'course.navItem.lessons.add_content_options.exam_description'
   }
 ] as const;
 

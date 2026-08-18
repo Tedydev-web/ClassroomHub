@@ -752,6 +752,16 @@
                     >
                       {$t('course.navItem.lessons.exercises.all_exercises.notify.action')}
                     </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      disabled={!courseApi.course?.id || !exerciseId}
+                      onclick={() => {
+                        if (courseApi.course?.id && exerciseId) {
+                          goto(`/courses/${courseApi.course.id}/exams/new?source=${exerciseId}`);
+                        }
+                      }}
+                    >
+                      {$t('course.navItem.lessons.exercises.all_exercises.publish_as_exam')}
+                    </DropdownMenu.Item>
                     <DropdownMenu.Separator />
                     <DropdownMenu.Item
                       class="text-red-600 focus:text-red-600 dark:text-red-400"

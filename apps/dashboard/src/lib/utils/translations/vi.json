@@ -2056,7 +2056,8 @@
               "passage_workspace_next_question": "Câu sau",
               "passage_workspace_answered_question": "Câu {number}, đã trả lời",
               "passage_workspace_unanswered_question": "Câu {number}, chưa trả lời"
-            }
+            },
+            "publish_as_exam": "Xuất bản thành đề thi"
           },
           "new_exercise_modal": {
             "heading": "Bài tập mới",
@@ -2286,7 +2287,9 @@
           "lesson_title": "Bài học",
           "lesson_description": "Dạy bằng ghi chú, slide và video.",
           "exercise_title": "tập thể dục",
-          "exercise_description": "Đánh giá học sinh bằng các câu hỏi và nhiệm vụ."
+          "exercise_description": "Đánh giá học sinh bằng các câu hỏi và nhiệm vụ.",
+          "exam_title": "Đề thi",
+          "exam_description": "Bài thi có giờ, chấm điểm tự động."
         },
         "add_lesson": {
           "button_title": "Thêm",

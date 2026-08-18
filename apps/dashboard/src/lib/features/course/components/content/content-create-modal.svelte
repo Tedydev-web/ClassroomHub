@@ -14,12 +14,12 @@
   import SectionCreateStepper from './section-create-stepper.svelte';
   import LessonCreateStepper from './lesson-create-stepper.svelte';
   import type { StepperRef, StepperState } from './types';
-  import { DEFAULT_STEPPER_STATE, CONTENT_OPTIONS } from './constants';
+  import { DEFAULT_STEPPER_STATE, CONTENT_OPTIONS, EXAM_OPTION_TYPE } from './constants';
   import { t } from '$lib/utils/functions/translations';
   import { untrack } from 'svelte';
 
   let step = $state(0);
-  let selectedType = $state<ContentType>(ContentType.Lesson);
+  let selectedType = $state<ContentType | typeof EXAM_OPTION_TYPE>(ContentType.Lesson);
   let sectionId = $state('');
 
   // ============================================
@@ -131,6 +131,13 @@
   }
 
   function goToDetails() {
+    // An exam is not course content: leave the modal for the dedicated create flow.
+    if (selectedType === EXAM_OPTION_TYPE) {
+      const courseId = courseApi.course?.id;
+      closeModal();
+      if (courseId) goto(resolve(`/courses/${courseId}/exams/new`, {}));
+      return;
+    }
     step = 1;
   }
 
@@ -165,7 +172,7 @@
         <!-- Select a content type - Section | Lesson | Exercise -->
         <div class="flex flex-col gap-3">
           <Field.Description>{$t('course.navItem.lessons.add_content_description')}</Field.Description>
-          <RadioOptionCardGroup options={contentOptionsForGroup} bind:value={selectedType} class="md:grid-cols-3" />
+          <RadioOptionCardGroup options={contentOptionsForGroup} bind:value={selectedType} class="md:grid-cols-2" />
           <Dialog.Footer>
             <Button onclick={goToDetails}>{$t('course.navItem.lessons.add_content_continue')}</Button>
           </Dialog.Footer>
