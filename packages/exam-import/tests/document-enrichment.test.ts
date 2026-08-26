@@ -273,7 +273,7 @@ describe('table structure', () => {
 });
 
 describe('Office Math anchors', () => {
-  it('records converted math at the position occupied by officeparser flattened text', async () => {
+  it('records converted math at the text position it occupies, consuming no characters', async () => {
     const pkg = await packageWith({
       document: documentXml(
         '<w:p><w:r><w:t>Before</w:t></w:r>' +
@@ -291,7 +291,7 @@ describe('Office Math anchors', () => {
     expect(enrichment.mathByBlock.get(0)).toEqual([
       {
         afterTextCharacters: 6,
-        textCharacters: 2,
+        textCharacters: 0,
         latex: String.raw`\frac{1}{2}`,
         omml: null,
         sourceText: '12',
@@ -317,7 +317,7 @@ describe('Office Math anchors', () => {
     expect(table?.mathByCell.get('0:0')).toEqual([
       {
         afterTextCharacters: 0,
-        textCharacters: 1,
+        textCharacters: 0,
         latex: null,
         omml: expect.stringContaining('<m:unknown>'),
         sourceText: 'x',

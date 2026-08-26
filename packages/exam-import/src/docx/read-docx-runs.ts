@@ -120,14 +120,27 @@ function resolveListNumber(
   return { label, unresolved: label === null && level.format !== 'none' };
 }
 
+/**
+ * officeparser renders Office Math as its own node holding a LaTeX rendering. The
+ * OOXML side supplies those runs with their own conversion, so the placeholder text
+ * must stay out of the text stream that anchors offsets.
+ */
+function isMathNode(node: OfficeNode): boolean {
+  return node.metadata?.math !== undefined;
+}
+
 function collectTextRuns(node: OfficeNode): OfficeNode[] {
   const children = node.children ?? [];
   if (children.length === 0) {
-    return typeof node.text === 'string' && node.text.length > 0 ? [node] : [];
+    return typeof node.text === 'string' && node.text.length > 0 && !isMathNode(node) ? [node] : [];
   }
 
   return children.flatMap((child) =>
-    child.children && child.children.length > 0 ? collectTextRuns(child) : child.text ? [child] : []
+    child.children && child.children.length > 0
+      ? collectTextRuns(child)
+      : child.text && !isMathNode(child)
+        ? [child]
+        : []
   );
 }
 

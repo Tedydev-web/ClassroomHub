@@ -19,6 +19,8 @@ RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 # fetch` populates the store for the whole lockfile, so no hand-maintained package
 # list. Mirrors the api/dashboard images.
 COPY pnpm-lock.yaml ./
+# Patched deps in the lockfile are hashed against these files, so `pnpm fetch` needs them.
+COPY patches ./patches
 RUN pnpm fetch --store-dir /pnpm/store
 
 COPY . .

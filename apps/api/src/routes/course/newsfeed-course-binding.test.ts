@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   createNewsfeedCommentService: vi.fn(),
   deleteNewsfeedService: vi.fn(),
   deleteNewsfeedCommentService: vi.fn(),
-  getNewsfeedCommentsService: vi.fn(),
+  getNewsfeedCommentThreadService: vi.fn(),
   getNewsfeedItem: vi.fn(),
   getGroupMemberIdByCourseAndProfile: vi.fn(),
   updateNewsfeedReactionService: vi.fn(),
@@ -41,7 +41,7 @@ vi.mock('@api/services/newsfeed', () => ({
   createNewsfeedService: vi.fn(),
   deleteNewsfeedCommentService: mocks.deleteNewsfeedCommentService,
   deleteNewsfeedService: mocks.deleteNewsfeedService,
-  getNewsfeedCommentsService: mocks.getNewsfeedCommentsService,
+  getNewsfeedCommentThreadService: mocks.getNewsfeedCommentThreadService,
   getNewsfeedItem: mocks.getNewsfeedItem,
   listNewsfeedPaginated: vi.fn(),
   updateNewsfeedCommentService: mocks.updateNewsfeedCommentService,
@@ -109,7 +109,7 @@ function operations(): Operation[] {
     {
       name: 'read comments',
       request: new Request(`http://test/courses/course-a/newsfeed/${feedId}/comments`),
-      downstream: () => mocks.getNewsfeedCommentsService,
+      downstream: () => mocks.getNewsfeedCommentThreadService,
       ownershipCheck: () => mocks.assertNewsfeedBelongsToCourse,
       successStatus: 200
     },
@@ -165,7 +165,7 @@ describe('newsfeed course binding', () => {
     mocks.deleteNewsfeedCommentService.mockResolvedValue({ id: 1 });
     mocks.deleteNewsfeedService.mockResolvedValue({ id: feedId });
     mocks.getGroupMemberIdByCourseAndProfile.mockResolvedValue('member-a');
-    mocks.getNewsfeedCommentsService.mockResolvedValue({ items: [] });
+    mocks.getNewsfeedCommentThreadService.mockResolvedValue({ items: [] });
     mocks.getNewsfeedItem.mockResolvedValue({ id: feedId });
     mocks.updateNewsfeedReactionService.mockResolvedValue({ id: feedId });
     mocks.updateNewsfeedService.mockResolvedValue({ id: feedId });

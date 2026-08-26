@@ -252,13 +252,14 @@ function mathInNodes(nodes: OrderedNode[], namespaceDeclarations: NamespaceDecla
         const conversion = convertOmmlToLatex([node]);
         maths.push({
           afterTextCharacters: precedingText,
-          textCharacters: flattenedText.length,
+          // officeparser renders math as its own node, which the reader drops, so math
+          // contributes no characters to the text stream both sides are measured against.
+          textCharacters: 0,
           latex: conversion.success ? conversion.latex : null,
           omml: conversion.success ? null : officeMathXml(node, mathKey, namespaceDeclarations),
           sourceText: flattenedText,
           reason: conversion.success ? null : conversion.reason
         });
-        precedingText += flattenedText.length;
         continue;
       }
 
