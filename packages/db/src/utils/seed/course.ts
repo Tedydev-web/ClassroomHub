@@ -43,7 +43,7 @@ export async function seedCourses({
         description: '',
         requirements: '',
         lessonDownload: false,
-        allowNewStudent: true
+        allowSelfEnrollment: true
       },
       cost: 0,
       currency: 'NGN',
@@ -70,7 +70,7 @@ export async function seedCourses({
         description: '',
         requirements: '',
         lessonDownload: false,
-        allowNewStudent: true
+        allowSelfEnrollment: true
       },
       cost: 0,
       currency: 'NGN',
@@ -97,7 +97,7 @@ export async function seedCourses({
         description: '',
         requirements: '',
         lessonDownload: true,
-        allowNewStudent: true
+        allowSelfEnrollment: true
       },
       cost: 0,
       currency: 'NGN',
@@ -124,7 +124,7 @@ export async function seedCourses({
         description: '',
         requirements: '',
         lessonDownload: false,
-        allowNewStudent: true
+        allowSelfEnrollment: true
       },
       cost: 0,
       currency: 'NGN',

@@ -118,6 +118,7 @@ export default defineConfig({
                 label: 'Enrollment & students',
                 items: [
                   '/guides/course-enrollment',
+                  '/guides/enrollment-access-control',
                   '/guides/welcome-email',
                   '/guides/invite-students'
                 ]

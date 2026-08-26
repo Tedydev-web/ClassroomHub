@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 import { seedAccount } from '@db/utils/seed/account';
 import { seedCompliance } from '@db/utils/seed/compliance';
+import { seedNewsfeedThreads } from '@db/utils/seed/newsfeedThreads';
 import { MVC_SECTION_ID, PANDAS_SECTION_ID, REACT_SECTION_ID, seedCourseSections } from '@db/utils/seed/courseSection';
 import { seedCourses } from '@db/utils/seed/course';
 import { seedExercise } from '@db/utils/seed/exercise';
@@ -83,6 +84,7 @@ Flags:
   --questions                Seed questions
   --templates                Seed exercise templates
   --compliance               Seed compliance demo data (coursera-test org)
+  --newsfeed-threads         Seed nested newsfeed comment threads (coursera-test org)
   --help, -h                  Show this help message
 
 Examples:
@@ -234,6 +236,10 @@ const seedFunctions = {
   compliance: async () => {
     console.log('📝 Seeding compliance demo data (coursera-test)...');
     await seedCompliance({ enterpriseOrgId: ENTERPRISE_ORG_ID });
+  },
+  'newsfeed-threads': async () => {
+    console.log('📝 Seeding nested newsfeed comment threads (coursera-test)...');
+    await seedNewsfeedThreads({ enterpriseOrgId: ENTERPRISE_ORG_ID });
   }
 };
 
@@ -274,10 +280,14 @@ async function seed() {
       await seedFunctions.templates();
       if (extendedDemo) {
         await seedFunctions.compliance();
+        await seedFunctions['newsfeed-threads']();
       }
     } else {
-      if (!extendedDemo && (flags.has('organization-plan') || flags.has('compliance'))) {
-        throw new Error('The organization-plan and compliance seeds require --extended-demo');
+      if (
+        !extendedDemo &&
+        (flags.has('organization-plan') || flags.has('compliance') || flags.has('newsfeed-threads'))
+      ) {
+        throw new Error('The organization-plan, compliance and newsfeed-threads seeds require --extended-demo');
       }
 
       // Run only specified seed functions
@@ -300,7 +310,8 @@ async function seed() {
         'exercises',
         'questions',
         'templates',
-        'compliance'
+        'compliance',
+        'newsfeed-threads'
       ];
 
       for (const seedName of orderedSeeds) {

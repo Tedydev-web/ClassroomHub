@@ -15,7 +15,7 @@ import {
 import { Hono } from '@api/utils/hono';
 import type { AuthSession } from '@api/types/auth';
 import type { Hono as HonoBase } from 'hono';
-import { ErrorCodes } from '@api/utils/errors';
+import { ErrorCodes, handlePublicApiError } from '@api/utils/errors';
 import { accountRouter } from '@api/routes/account';
 import { agentRouter } from '@api/routes/agent';
 import { auth } from '@cio/db/auth';
@@ -272,6 +272,11 @@ export const app: HonoBase<AuthSession> = new Hono()
   .onError((err, c) => {
     Sentry.captureException(err);
     console.error('Error:', err);
+
+    if (c.req.path.startsWith('/public-api/v1/')) {
+      return handlePublicApiError(c, err, 'Internal Server Error', ErrorCodes.INTERNAL_ERROR);
+    }
+
     return c.json({ error: 'Internal Server Error' }, 500);
   });
 

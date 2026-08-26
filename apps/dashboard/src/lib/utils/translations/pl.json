@@ -152,7 +152,7 @@
         "custom": "{message}"
       },
       "points": {
-        "too_small": "Punkty muszą wynosić co najmniej 0"
+        "too_small": "Punkty muszą wynosić co najmniej 1"
       },
       "label": {
         "too_small": "Etykieta opcji jest wymagana"
@@ -323,7 +323,8 @@
         "unlocked_all_content": "Wszystkie elementy kursu odblokowane",
         "all_content_already_unlocked": "Cała treść jest już odblokowana",
         "content_grouping_enabled": "Grupowanie treści włączone",
-        "content_grouping_disabled": "Grupowanie treści wyłączone"
+        "content_grouping_disabled": "Grupowanie treści wyłączone",
+        "link_generated": "Link do kursu został pomyślnie zaktualizowany"
       }
     },
     "people": {
@@ -357,7 +358,8 @@
       "success": "Zapisano pomyślnie",
       "submission_updated": "Zgłoszenie zaktualizowane do",
       "error_fetching": "Pobieranie ćwiczeń nie powiodło się. Załaduj stronę ponownie",
-      "passed_requires_points": "Ukończenie przez zaliczenie wymaga co najmniej jednego dostępnego punktu."
+      "passed_requires_points": "Ukończenie przez zaliczenie wymaga co najmniej jednego dostępnego punktu.",
+      "draft_restored": "Przywróciliśmy niezapisane zmiany, które pozostawiłeś"
     },
     "poll": {
       "info": {
@@ -548,7 +550,8 @@
     "download_course": "Uaktualnij, aby pobrać kurs",
     "required": "Wymagana aktualizacja",
     "enterprise_required": "Ta funkcja wymaga planu Enterprise.",
-    "public_api_required": "Uaktualnij do Early Adopter lub Enterprise, aby uzyskać dostęp do publicznego API."
+    "public_api_required": "Uaktualnij do Early Adopter lub Enterprise, aby uzyskać dostęp do publicznego API.",
+    "unlock_field": "Uaktualnij, aby odblokować to ustawienie"
   },
   "analytics": {
     "title": "Analityka",
@@ -816,7 +819,7 @@
         "link": "Link do kursu",
         "grading": "Ocenianie",
         "reports": "Udostępnij raporty ocen na lekcjach",
-        "disabled": "Niepełnosprawny",
+        "disabled": "Wyłączone",
         "enabled": "Włączone",
         "order": "Zakładka Zamów Lekcje",
         "drag": "Przeciągnij i upuść etykiety, aby zmienić kolejność zakładek materiałów",
@@ -831,8 +834,8 @@
         "course_download": "Pobieranie kursu",
         "course_avail": "Udostępnij kurs do pobrania zarejestrowanym studentom",
         "download": "Pobierz",
-        "allow": "Zezwalaj na nowych uczniów",
-        "access": "Zezwól nowym studentom na dostęp do tego kursu",
+        "allow": "Uczniowie mogą zapisać się samodzielnie",
+        "access": "Gdy wyłączone, uczniowie mogą dołączyć tylko przez link z zaproszeniem lub po dodaniu w sekcji Osoby.",
         "publish": "Publikuj kurs",
         "determines": "Od tego zależy, czy Twój kurs wyświetli się na stronie docelowej",
         "published": "Opublikowano",
@@ -896,6 +899,9 @@
         "certificate_deadline_required": "Najpierw ustaw termin certyfikatu",
         "certificate_deadline_required_description": "Kursy zgodności wymagają terminu certyfikatu przed zapisaniem uczestników. Ustaw termin w ustawieniach certyfikatu przed opublikowaniem.",
         "go_to_certificate_settings": "Przejdź do ustawień certyfikatu",
+        "generate_link": "Wygeneruj nowy link",
+        "open_link": "Otwórz link w nowej karcie",
+        "copy_link": "Skopiuj link",
         "go_to_completion_deadline": "Przejdź do terminu ukończenia",
         "completion_deadline_label": "Termin zakończenia kursu",
         "completion_deadline_helper": "Studenci muszą osiągnąć procent ukończenia przed tą datą (czasu lokalnego). Pozostaw puste bez terminu."
@@ -952,7 +958,8 @@
           "join_course": "Dołącz do kursu",
           "enrolled_success": "Zapisano Cię na ten kurs.",
           "enrolled_verify_email": "Jesteś zapisany! Zweryfikuj swój e-mail, aby uzyskać dostęp do tego kursu.",
-          "student_limit_reached": "Organizacja {orgName} osiągnęła już limit uczniów. Skontaktuj się z administratorem organizacji."
+          "student_limit_reached": "Organizacja {orgName} osiągnęła już limit uczniów. Skontaktuj się z administratorem organizacji.",
+          "members_only": "Tylko członkowie tej organizacji mogą się zapisać. Poproś administratora o zaproszenie."
         },
         "pricing_section": {
           "free": "Bezpłatny",
@@ -983,7 +990,8 @@
             "no": "Nie",
             "yes": "Tak",
             "percent": "Procent rabatu",
-            "gift": "O prezencie"
+            "gift": "O prezencie",
+            "payment_required": "W przypadku kursów płatnych wymagany jest link do płatności"
           },
           "instructor_form": {
             "upload": "Logo instruktora",
@@ -1040,7 +1048,9 @@
             "curriculum": "Program nauczania",
             "chips": "Umiejętności i narzędzia",
             "skills": "Umiejętności, które zyskasz",
-            "tools": "Narzędzia, których się nauczysz"
+            "tools": "Narzędzia, których się nauczysz",
+            "navigation": "Nawigacja",
+            "footer": "Stopka"
           },
           "skills_help": "Naciśnij Enter, aby dodać. Pojawiają się one jako elementy poniżej programu nauczania.",
           "tools_help": "Naciśnij Enter, aby dodać. Pojawiają się one jako elementy poniżej programu nauczania.",
@@ -2436,7 +2446,13 @@
           "save": "Zapisz",
           "saving": "Zapisywanie...",
           "send": "Wyślij",
-          "load_more_replies": "Załaduj więcej odpowiedzi"
+          "load_more_replies": "Załaduj więcej odpowiedzi",
+          "collapse_thread": "Zwiń wątek",
+          "expand_thread": "Rozwiń wątek",
+          "more_replies": "{count, plural, one {Jeszcze # odpowiedź} few {Jeszcze # odpowiedzi} many {Jeszcze # odpowiedzi} other {Jeszcze # odpowiedzi}}",
+          "continue_thread": "Kontynuuj ten wątek",
+          "collapsed_summary": "{count, plural, one {# odpowiedź ukryta} few {# odpowiedzi ukryte} many {# odpowiedzi ukrytych} other {# odpowiedzi ukrytych}}",
+          "back_to_comments": "Powrót do wszystkich komentarzy"
         },
         "card": {
           "pin": "Przypnij",
@@ -2566,6 +2582,11 @@
         "completed": "Ukończono {completed} z {total}",
         "lessons": "{completed} z {total} lekcji",
         "exercises": "{completed} z {total} ćwiczeń"
+      },
+      "footer_nav": {
+        "label": "Nawigacja po treści kursu",
+        "previous": "Poprzedni",
+        "next": "Następny"
       }
     },
     "navItems": {
@@ -3763,16 +3784,16 @@
           "placeholder": "np. rejestracja jest wyłączona. Aby uzyskać dostęp, skontaktuj się z nami pod adresem Learn@domain.com"
         },
         "disable_signup": {
-          "label": "Wyłącz rejestrację",
-          "description": "Uniemożliwiaj rejestrację nowym użytkownikom. Tylko zaproszeni użytkownicy mogą dołączyć."
+          "label": "Zablokuj wszystkie nowe rejestracje",
+          "description": "Całkowicie uniemożliwiaj tworzenie nowych kont. Nikt nie może się zarejestrować — nawet zaproszeni użytkownicy. Istniejące konta nie są dotknięte."
         },
         "allow_public_signups": {
           "label": "Zezwalaj na publiczne rejestracje",
-          "description": "Gdy opcja jest wyłączona, rejestrować się mogą tylko użytkownicy posiadający link z zaproszeniem. Włącz, aby pozwolić każdemu na utworzenie konta."
+          "description": "Gdy włączone, każdy może utworzyć konto. Gdy wyłączone, tylko użytkownicy z prawidłowym linkiem zaproszenia mogą się zarejestrować."
         },
         "internal_enrollment_only": {
           "label": "Tylko rejestracja wewnętrzna",
-          "description": "Jeśli ta opcja jest włączona, każdy opublikowany kurs jest dostępny do samodzielnej rejestracji dla wszystkich uczniów w Twojej organizacji. Użyj opcji Wyłącz rejestrację, aby utworzyć zamkniętą akademię dostępną tylko dla zaproszonych, w której uczniowie mogą dołączać do dowolnego opublikowanego kursu bez konieczności konfigurowania poszczególnych kursów."
+          "description": "Po włączeniu tej opcji tylko obecni członkowie Twojej organizacji będą mogli zapisać się na Twoje kursy. Wszyscy pozostali muszą zostać zaproszeni — nie mogą zarejestrować się ze strony kursu, nawet jeśli kurs jest otwarty dla nowych studentów."
         }
       },
       "login": {
@@ -4121,9 +4142,12 @@
       "tags_title": "Tagi",
       "types_title": "Typy",
       "search_placeholder": "Wyszukaj kursy...",
+      "clear_search": "Wyczyść szukanie",
       "pricing_title": "Ceny",
       "pricing_free": "Bezpłatny",
-      "pricing_paid": "Płatny"
+      "pricing_paid": "Płatny",
+      "selected": "Wybrane:",
+      "save_changes": "Zapisz zmiany"
     }
   },
   "tags_admin": {
@@ -4832,7 +4856,7 @@
     },
     "powered_by": {
       "label": "Obsługiwane przez",
-      "brand": "KlasaIO"
+      "brand": "ClassroomIO"
     },
     "footer_nav": {
       "previous": "Poprzedni",

@@ -24,10 +24,10 @@
   let { feed, onPin, onEdit, onRequestDelete }: Props = $props();
 </script>
 
-<div class="relative px-4 pt-3 pb-0">
-  <div class="mb-2 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <UserAvatar src={feed.authorAvatarUrl} class="size-10" />
+<div class="relative px-3 pt-2.5 pb-0">
+  <div class="mb-1.5 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <UserAvatar src={feed.authorAvatarUrl} class="size-8" />
       <div class="flex flex-col">
         <p class="text-foreground text-sm font-semibold capitalize">
           {feed.authorFullname || $t('course.navItem.news_feed.anonymous')}
@@ -39,7 +39,7 @@
     <RoleBasedSecurity allowedRoles={[1, 2]}>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger
-          class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors"
+          class="ui:text-muted-foreground ui:hover:bg-accent ui:hover:text-accent-foreground flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors"
         >
           <EllipsisVerticalIcon class="h-4 w-4" />
         </DropdownMenu.Trigger>
@@ -69,7 +69,7 @@
 
   {#if !isHtmlValueEmpty(feed.content || '')}
     <HTMLRender
-      className="w-full text-foreground text-sm font-normal md:text-sm prose-headings:text-base prose-headings:font-semibold prose-headings:mb-2 prose-p:mb-2 prose-a:text-primary"
+      className="w-full ui:text-foreground text-sm font-normal md:text-sm prose-headings:text-base prose-headings:font-semibold prose-headings:mb-1.5 prose-p:mb-1 prose-a:text-primary"
     >
       <div>
         <SafeHtmlContent content={feed.content || ''} />

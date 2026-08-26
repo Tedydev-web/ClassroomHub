@@ -11,7 +11,8 @@
     getStudentCourseComplianceDate,
     getStudentCourseComplianceStatusKey,
     getStudentCourseComplianceStatusVariant,
-    getStudentCourseProgressPercent
+    getStudentCourseProgressPercent,
+    shouldShowStudentCourseComplianceStatusBadge
   } from '$features/course/utils/compliance-utils';
   import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
 
@@ -78,7 +79,7 @@
                   {@const complianceStatusKey = getStudentCourseComplianceStatusKey(course)}
                   {@const complianceDate = getStudentCourseComplianceDate(course)}
                   <div class="mt-2 flex flex-wrap items-center gap-2">
-                    {#if complianceStatusKey}
+                    {#if shouldShowStudentCourseComplianceStatusBadge(course) && complianceStatusKey}
                       <Badge variant={getStudentCourseComplianceStatusVariant(course)}>
                         {$t(complianceStatusKey)}
                       </Badge>

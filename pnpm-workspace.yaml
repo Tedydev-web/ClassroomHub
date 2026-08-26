@@ -14,7 +14,6 @@ minimumReleaseAgeExclude:
   - '@getworkbench/core'
 patchedDependencies:
   '@tiptap/extension-bubble-menu@3.14.0': patches/@tiptap__extension-bubble-menu@3.14.0.patch
-  layerchart@2.0.0-next.27: patches/layerchart@2.0.0-next.27.patch
 overrides:
   zod: 4.2.1
   miniflare>zod: 3.22.3

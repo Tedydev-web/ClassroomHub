@@ -4,6 +4,7 @@ import { OPERATOR_EMAIL, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 import type { TCourseNewsfeed, TNewCourseNewsfeed, TNewCourseNewsfeedComment } from '@cio/db/types';
 import type { TNewsfeedCreate, TNewsfeedUpdate } from '@cio/utils/validation/newsfeed';
 import {
+  countNewsfeedCommentDescendants,
   createNewsfeed,
   createNewsfeedComment,
   deleteNewsfeed,
@@ -12,8 +13,9 @@ import {
   getNewsfeedByCourseIdPaginated,
   getNewsfeedById,
   getNewsfeedCommentById,
+  getNewsfeedCommentDepth,
+  getNewsfeedCommentThread,
   getNewsfeedCommentsByFeedId,
-  getNewsfeedCommentsByFeedIdPaginated,
   getNewsfeedForEmail,
   updateNewsfeed,
   updateNewsfeedComment
@@ -24,6 +26,12 @@ import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { createNotification, createNotifications } from '@cio/db/queries/notifications';
 import { emitWebhookEvent } from '@api/services/webhook';
+
+/**
+ * Bounds pathological chains. Far beyond any real conversation — nesting is not
+ * otherwise limited, and the UI stops indenting long before this.
+ */
+const MAX_COMMENT_DEPTH = 50;
 
 /**
  * Lists newsfeed items for a course
@@ -238,14 +246,21 @@ export async function getNewsfeedComments(feedId: string) {
 }
 
 /**
- * Gets paginated comments for a newsfeed item
+ * Gets a comment subtree for a newsfeed item
  * @param feedId Newsfeed ID
- * @param options Pagination options (parentId, cursor, limit)
- * @returns Paginated comments with metadata
+ * @param options rootId, cursor, childCursor, rootLimit, childLimit, maxDepth
+ * @returns The subtree with pagination metadata
  */
-export async function getNewsfeedCommentsService(
+export async function getNewsfeedCommentThreadService(
   feedId: string,
-  options: { parentId?: number; cursor?: string; limit: number }
+  options: {
+    rootId?: number;
+    cursor?: string;
+    childCursor?: string;
+    rootLimit: number;
+    childLimit: number;
+    maxDepth: number;
+  }
 ) {
   try {
     const feed = await getNewsfeedById(feedId);
@@ -253,11 +268,11 @@ export async function getNewsfeedCommentsService(
       throw new AppError('Newsfeed item not found', ErrorCodes.INTERNAL_ERROR, 404);
     }
 
-    if (options.parentId !== undefined) {
-      await getNewsfeedCommentForFeed(options.parentId, feedId);
+    if (options.rootId !== undefined) {
+      await getNewsfeedCommentForFeed(options.rootId, feedId);
     }
 
-    return await getNewsfeedCommentsByFeedIdPaginated(feedId, options);
+    return await getNewsfeedCommentThread(feedId, options);
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
@@ -276,39 +291,25 @@ export async function getNewsfeedCommentsService(
  * @param feedId Newsfeed ID
  * @param authorId Group member ID (author)
  * @param content Comment content
- * @param parentId Optional parent comment ID for replies
- * @param replyToCommentId Optional comment being answered, within the same thread
+ * @param parentId Optional parent comment ID — the comment being replied to, at any depth
  * @returns Created comment
  */
 export async function createNewsfeedCommentService(
   feedId: string,
   authorId: string,
   content: string,
-  parentId?: number,
-  replyToCommentId?: number
+  parentId?: number
 ) {
   try {
     // Validate parentId when provided
     if (parentId !== undefined) {
-      const parentComment = await getNewsfeedCommentForFeed(parentId, feedId);
+      await getNewsfeedCommentForFeed(parentId, feedId);
 
-      if (parentComment.parentId !== null) {
-        throw new AppError(
-          'Cannot reply to a reply — only top-level comments can be replied to',
-          ErrorCodes.VALIDATION_ERROR,
-          400
-        );
-      }
-    }
-
-    if (replyToCommentId !== undefined) {
-      const targetComment = await getNewsfeedCommentForFeed(replyToCommentId, feedId);
-
-      const isThreadRoot = targetComment.id === parentId;
-      const isSiblingReply = targetComment.parentId === parentId;
-
-      if (!isThreadRoot && !isSiblingReply) {
-        throw new AppError('Comment being replied to is not part of this thread', ErrorCodes.VALIDATION_ERROR, 400);
+      // A new comment has no children, and updates only touch content, so an insert can
+      // never create a cycle. This cap only bounds pathological chains.
+      const parentDepth = await getNewsfeedCommentDepth(parentId);
+      if (parentDepth + 1 > MAX_COMMENT_DEPTH) {
+        throw new AppError('Reply is nested too deeply', ErrorCodes.VALIDATION_ERROR, 400);
       }
     }
 
@@ -319,13 +320,13 @@ export async function createNewsfeedCommentService(
       authorId,
       content: sanitizedContent,
       parentId: parentId ?? null,
-      replyToCommentId: replyToCommentId ?? null
+      replyToCommentId: null
     };
 
     const comment = await createNewsfeedComment(commentData);
 
     // Send email notification to feed author (async, don't wait)
-    sendNewsfeedCommentEmail(feedId, sanitizedContent).catch((error) => {
+    sendNewsfeedCommentEmail(feedId, sanitizedContent, authorId).catch((error) => {
       console.error('Failed to send newsfeed comment email:', error);
     });
     emitNewsfeedWebhook(feedId, 'course.newsfeed.comment.created', {
@@ -394,12 +395,15 @@ export async function updateNewsfeedCommentService(commentId: number, content: s
  */
 export async function deleteNewsfeedCommentService(commentId: number) {
   try {
+    // Must precede the delete — the cascade removes descendants before we could count them.
+    const deletedDescendantCount = await countNewsfeedCommentDescendants(commentId);
+
     const deleted = await deleteNewsfeedComment(commentId);
     if (!deleted) {
       throw new AppError('Comment not found', ErrorCodes.COMMENT_NOT_FOUND, 404);
     }
 
-    return deleted;
+    return { ...deleted, deletedDescendantCount };
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
@@ -482,9 +486,9 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
 
 /**
  * Sends email notification when a comment is added to a feed
- * Sends to the feed author (teacher)
+ * Sends to the feed author (teacher), unless they are the one commenting
  */
-async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) {
+async function sendNewsfeedCommentEmail(feedId: string, commentContent: string, commenterGroupMemberId: string) {
   try {
     const feedData = await getNewsfeedForEmail(feedId);
     if (!feedData || !feedData.courseId || !feedData.courseTitle || !feedData.organization?.siteName) {
@@ -492,6 +496,10 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string) 
     }
 
     if (!feedData.author?.email) {
+      return;
+    }
+
+    if (feedData.author.groupMemberId === commenterGroupMemberId) {
       return;
     }
 

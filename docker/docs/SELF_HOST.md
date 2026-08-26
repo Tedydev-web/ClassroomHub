@@ -48,7 +48,7 @@ Published images use a **rolling `latest` + pinned releases** tag policy:
 
 | Tag | Meaning | Use it for |
 |-----|---------|-----------|
-| `1.4.2` (exact) | An immutable, smoke-tested release | **Production — always pin this** |
+| `1.4.2` (exact) | An immutable, pinned release | **Production — always pin this** |
 | `1.4`, `1` | Latest patch/minor of that line | Tracking a line |
 | `latest` | The freshest `main` build (rolling; may include unreleased code) | Trying the newest code |
 
@@ -70,6 +70,7 @@ place without re-running schema that already exists.
 
 (Maintainers: every published image is boot-smoke-tested in CI before it ships — see
 [`PUBLISHING_IMAGES.md`](PUBLISHING_IMAGES.md).)
+
 
 ## Environment Variables
 
@@ -148,8 +149,18 @@ Container names: `cio-postgres`, `cio-redis`, `cio-api`, `cio-dashboard`, `cio-j
 
 MinIO is included by default. The startup script auto-configures env vars, starts MinIO, and creates `videos`, `documents`, and `media` buckets.
 
-- **API endpoint:** `http://localhost:8004`
-- **Web UI:** `http://localhost:8005` (default: `minioadmin` / `minioadmin`)
+- **S3 API endpoint:** `http://localhost:8004` (used for `OBJECT_STORAGE_ENDPOINT` and browser presigned uploads)
+- **Web console UI:** `http://localhost:8005` (default: `minioadmin` / `minioadmin`, or randomized in `.env`)
+
+### Viewing Buckets and Uploaded Files
+
+1. Open `http://localhost:8005` in your browser.
+2. Log in using `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`.
+3. In the left navigation bar, click **Object Browser** to inspect all buckets (`videos`, `documents`, `media`) and view file previews.
+
+### CORS & Presigned URL Uploads
+
+If uploading files from a custom web origin (e.g. `http://localhost:5173`), set `MINIO_API_CORS_ALLOW_ORIGIN="*"` in `.env` so MinIO returns `Access-Control-Allow-Origin` headers on preflight `OPTIONS` requests.
 
 To start MinIO manually (e.g. after `--no-minio`):
 
@@ -158,6 +169,7 @@ docker compose -f docker-compose.yaml --profile minio up -d
 ```
 
 - **Web UI:** `http://localhost:8005` (credentials are the randomized `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` written to your `.env`).
+
 
 **Security:** The startup script randomizes `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` on first provision and mirrors them into `OBJECT_STORAGE_ACCESS_KEY_ID` / `OBJECT_STORAGE_SECRET_ACCESS_KEY`. If you change them, keep both pairs in sync.
 

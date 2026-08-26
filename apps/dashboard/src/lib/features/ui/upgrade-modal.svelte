@@ -1,7 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { page } from '$app/state';
-  import { goto } from '$app/navigation';
   import { Progress } from '@cio/ui/base/progress';
   import RocketIcon from '@lucide/svelte/icons/rocket';
   import * as Dialog from '@cio/ui/base/dialog';
@@ -15,6 +14,15 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { toggleConfetti } from './confetti/store';
   import { currentOrg, isFreePlan } from '$lib/utils/store/org';
+  import {
+    UPGRADE_CONFIRMATION_PARAM,
+    UPGRADE_PARAM,
+    clearUpgradeSearchParams,
+    closeUpgradeModal,
+    isUpgradeModalOpen,
+    openUpgradeModal,
+    runUpgradeCheckoutHandoffs
+  } from '$lib/utils/store/upgrade-modal';
   import Confetti from './confetti/confetti.svelte';
   import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
@@ -23,10 +31,23 @@
   let isLoadingPlan: string | null = $state(null);
   let upgraded = $state(false);
   let isYearlyPlan = $state(false);
+  let isConfirming = $state(false);
+  let handledUpgradeParamFor: string | null = null;
 
-  const query = $derived(new URLSearchParams(page.url.search));
-  let open = $derived((query.get('upgrade') || '') === 'true');
-  let isConfirming = $derived((query.get('confirmation') || '') === 'true');
+  // Billing emails and the post-checkout return URL open the modal with `?upgrade=true`.
+  // The params are consumed once here so that closing the modal never has to navigate.
+  $effect(() => {
+    const currentHref = page.url.href;
+    if (page.url.searchParams.get(UPGRADE_PARAM) !== 'true') return;
+    if (handledUpgradeParamFor === currentHref) return;
+
+    untrack(() => {
+      handledUpgradeParamFor = currentHref;
+      isConfirming = page.url.searchParams.get(UPGRADE_CONFIRMATION_PARAM) === 'true';
+      clearUpgradeSearchParams();
+      openUpgradeModal();
+    });
+  });
 
   async function handleClick(plan, planName: string) {
     if (plan.CTA.IS_DISABLED || !$profile.id || !$profile.email || !$currentOrg.memberId) {
@@ -41,10 +62,18 @@
     isLoadingPlan = planName;
 
     try {
-      const checkoutURL = new URL('/api/polar/subscribe', page.url);
+      // Checkout unloads the page, so editors holding unsaved work stash it first.
+      runUpgradeCheckoutHandoffs();
 
-      checkoutURL.searchParams.set('products', isYearlyPlan ? plan.CTA.PRODUCT_ID_YEARLY : plan.CTA.PRODUCT_ID);
+      // Read the address bar rather than `page.url`: shallow routing leaves `page.url`
+      // holding upgrade params that were already stripped from the URL.
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      const productId = isYearlyPlan ? plan.CTA.PRODUCT_ID_YEARLY : plan.CTA.PRODUCT_ID;
+      const checkoutURL = new URL('/api/polar/subscribe', window.location.origin);
+
+      checkoutURL.searchParams.set('products', productId);
       checkoutURL.searchParams.set('orgId', $currentOrg.id);
+      checkoutURL.searchParams.set('returnTo', returnTo);
 
       requestAnimationFrame(() => {
         window.location.href = checkoutURL.toString();
@@ -68,14 +97,17 @@
     }, 1000);
   }
 
-  function onClose() {
-    goto(page.url.pathname);
+  function handleClose() {
+    isConfirming = false;
+    upgraded = false;
+    isLoadingPlan = null;
+    closeUpgradeModal();
   }
 
   function handleOpenChange(newOpen: boolean) {
-    if (!newOpen) {
-      onClose();
-    }
+    if (newOpen) return;
+
+    handleClose();
   }
 
   function onLearnMore() {
@@ -89,7 +121,7 @@
   }
 
   $effect(() => {
-    handleUpgradeSuccess(Boolean($currentOrg.id && !$isFreePlan && open));
+    handleUpgradeSuccess(Boolean($currentOrg.id && !$isFreePlan && $isUpgradeModalOpen));
   });
 </script>
 
@@ -97,7 +129,7 @@
   <Confetti />
 {/if}
 
-<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+<Dialog.Root open={$isUpgradeModalOpen} onOpenChange={handleOpenChange}>
   <Dialog.Content
     class="top-[4dvh]! max-h-[92dvh] w-[96vw] translate-y-0! overflow-y-auto p-4 sm:top-[50%]! sm:max-h-none sm:translate-y-[-50%]! sm:p-6 {upgraded ||
     isConfirming
@@ -115,7 +147,7 @@
           {$t('pricing.modal.plan')}
         </p>
         <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          <Button class="w-full sm:w-auto" variant="outline" onclick={onClose}>
+          <Button class="w-full sm:w-auto" variant="outline" onclick={handleClose}>
             {$t('pricing.modal.close')}
           </Button>
           <Button class="w-full sm:w-auto" variant="default" onclick={onLearnMore}>

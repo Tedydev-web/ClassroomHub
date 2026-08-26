@@ -4,15 +4,19 @@ const mocks = vi.hoisted(() => ({
   createNewsfeedComment: vi.fn(),
   getNewsfeedById: vi.fn(),
   getNewsfeedCommentById: vi.fn(),
-  getNewsfeedCommentsByFeedIdPaginated: vi.fn(),
+  getNewsfeedCommentDepth: vi.fn(),
+  getNewsfeedCommentThread: vi.fn(),
   getNewsfeedForEmail: vi.fn()
 }));
 
 vi.mock('@cio/db/queries/newsfeed', () => ({
+  countNewsfeedCommentDescendants: vi.fn(),
   createNewsfeedComment: mocks.createNewsfeedComment,
   getNewsfeedById: mocks.getNewsfeedById,
   getNewsfeedCommentById: mocks.getNewsfeedCommentById,
-  getNewsfeedCommentsByFeedIdPaginated: mocks.getNewsfeedCommentsByFeedIdPaginated,
+  getNewsfeedCommentDepth: mocks.getNewsfeedCommentDepth,
+  getNewsfeedCommentThread: mocks.getNewsfeedCommentThread,
+  getNewsfeedCommentsByFeedId: vi.fn(),
   getNewsfeedForEmail: mocks.getNewsfeedForEmail
 }));
 vi.mock('@cio/core/utils/sanitize-html', () => ({ sanitizeHtml: (content: string) => content }));
@@ -21,13 +25,17 @@ vi.mock('@api/services/webhook', () => ({ emitWebhookEvent: vi.fn() }));
 vi.mock('@cio/db/queries/notifications', () => ({ createNotification: vi.fn(), createNotifications: vi.fn() }));
 
 import { ErrorCodes } from '@api/utils/errors';
-import { createNewsfeedCommentService, getNewsfeedCommentsService } from './newsfeed';
+import { createNewsfeedCommentService, getNewsfeedCommentThreadService } from './newsfeed';
 
 const feedId = 'feed-a';
 const foreignFeedId = 'feed-b';
 
 function comment(id: number, courseNewsfeedId: string, parentId: number | null) {
   return { id, courseNewsfeedId, parentId };
+}
+
+function threadOptions(rootId: number) {
+  return { rootId, rootLimit: 5, childLimit: 3, maxDepth: 3 };
 }
 
 function expectCommentNotFound(promise: Promise<unknown>) {
@@ -39,31 +47,32 @@ describe('newsfeed comment feed binding', () => {
     vi.clearAllMocks();
     mocks.createNewsfeedComment.mockResolvedValue({ id: 99 });
     mocks.getNewsfeedById.mockResolvedValue({ id: feedId });
-    mocks.getNewsfeedCommentsByFeedIdPaginated.mockResolvedValue({ items: [] });
+    mocks.getNewsfeedCommentDepth.mockResolvedValue(0);
+    mocks.getNewsfeedCommentThread.mockResolvedValue({ items: [] });
   });
 
-  it('rejects reply fetches with a missing parent before pagination', async () => {
+  it('rejects subtree fetches with a missing root before reading the thread', async () => {
     mocks.getNewsfeedCommentById.mockResolvedValue(null);
 
-    await expectCommentNotFound(getNewsfeedCommentsService(feedId, { parentId: 1, limit: 5 }));
+    await expectCommentNotFound(getNewsfeedCommentThreadService(feedId, threadOptions(1)));
 
-    expect(mocks.getNewsfeedCommentsByFeedIdPaginated).not.toHaveBeenCalled();
+    expect(mocks.getNewsfeedCommentThread).not.toHaveBeenCalled();
   });
 
-  it('rejects reply fetches with a foreign-feed parent before pagination', async () => {
+  it('rejects subtree fetches with a foreign-feed root before reading the thread', async () => {
     mocks.getNewsfeedCommentById.mockResolvedValue(comment(1, foreignFeedId, null));
 
-    await expectCommentNotFound(getNewsfeedCommentsService(feedId, { parentId: 1, limit: 5 }));
+    await expectCommentNotFound(getNewsfeedCommentThreadService(feedId, threadOptions(1)));
 
-    expect(mocks.getNewsfeedCommentsByFeedIdPaginated).not.toHaveBeenCalled();
+    expect(mocks.getNewsfeedCommentThread).not.toHaveBeenCalled();
   });
 
-  it('fetches replies for a parent in the requested feed', async () => {
+  it('fetches the subtree for a root in the requested feed', async () => {
     mocks.getNewsfeedCommentById.mockResolvedValue(comment(1, feedId, null));
 
-    await expect(getNewsfeedCommentsService(feedId, { parentId: 1, limit: 5 })).resolves.toEqual({ items: [] });
+    await expect(getNewsfeedCommentThreadService(feedId, threadOptions(1))).resolves.toEqual({ items: [] });
 
-    expect(mocks.getNewsfeedCommentsByFeedIdPaginated).toHaveBeenCalledWith(feedId, { parentId: 1, limit: 5 });
+    expect(mocks.getNewsfeedCommentThread).toHaveBeenCalledWith(feedId, threadOptions(1));
   });
 
   it('rejects replies with a foreign parent before insert', async () => {
@@ -74,38 +83,26 @@ describe('newsfeed comment feed binding', () => {
     expect(mocks.createNewsfeedComment).not.toHaveBeenCalled();
   });
 
-  it('rejects replies with a foreign reply target before insert', async () => {
-    mocks.getNewsfeedCommentById
-      .mockResolvedValueOnce(comment(1, feedId, null))
-      .mockResolvedValueOnce(comment(2, foreignFeedId, 1));
+  it('creates replies for a same-feed parent at any depth', async () => {
+    mocks.getNewsfeedCommentById.mockResolvedValue(comment(2, feedId, 1));
+    mocks.getNewsfeedCommentDepth.mockResolvedValue(3);
 
-    await expectCommentNotFound(createNewsfeedCommentService(feedId, 'author-a', 'Reply', 1, 2));
-
-    expect(mocks.createNewsfeedComment).not.toHaveBeenCalled();
-  });
-
-  it('creates replies for a same-feed top-level parent and same-thread target', async () => {
-    mocks.getNewsfeedCommentById
-      .mockResolvedValueOnce(comment(1, feedId, null))
-      .mockResolvedValueOnce(comment(2, feedId, 1));
-
-    await expect(createNewsfeedCommentService(feedId, 'author-a', 'Reply', 1, 2)).resolves.toEqual({ id: 99 });
+    await expect(createNewsfeedCommentService(feedId, 'author-a', 'Reply', 2)).resolves.toEqual({ id: 99 });
 
     expect(mocks.createNewsfeedComment).toHaveBeenCalledWith({
       authorId: 'author-a',
       content: 'Reply',
       courseNewsfeedId: feedId,
-      parentId: 1,
-      replyToCommentId: 2
+      parentId: 2,
+      replyToCommentId: null
     });
   });
 
-  it('rejects a same-feed reply target from another thread before insert', async () => {
-    mocks.getNewsfeedCommentById
-      .mockResolvedValueOnce(comment(1, feedId, null))
-      .mockResolvedValueOnce(comment(2, feedId, 3));
+  it('rejects replies nested past the depth cap before insert', async () => {
+    mocks.getNewsfeedCommentById.mockResolvedValue(comment(2, feedId, 1));
+    mocks.getNewsfeedCommentDepth.mockResolvedValue(50);
 
-    await expect(createNewsfeedCommentService(feedId, 'author-a', 'Reply', 1, 2)).rejects.toMatchObject({
+    await expect(createNewsfeedCommentService(feedId, 'author-a', 'Reply', 2)).rejects.toMatchObject({
       code: ErrorCodes.VALIDATION_ERROR,
       statusCode: 400
     });

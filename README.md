@@ -213,9 +213,10 @@ auth secrets, and private server keys are intentionally never stored in document
    pnpm infra:up
    ```
 
-   - Console: http://localhost:8005 (development credentials are managed by `docker-compose.dev.yaml`)
+   - Console Web UI: http://localhost:8005 (development credentials are managed by `docker-compose.dev.yaml`). Open in browser and select **Object Browser** to view buckets and uploaded files.
    - S3 endpoint: http://localhost:8004
    - Buckets created by `minio-init`: `videos`, `documents`, `media`
+   - Browser presigned uploads work out of the box: Compose passes `MINIO_API_CORS_ALLOW_ORIGIN` (default `*`) from the **root `.env`** to the MinIO container — set it there if you need to restrict origins.
    - Add to `apps/api/.env` when using MinIO locally:
      - `OBJECT_STORAGE_ENDPOINT=http://localhost:8004`
      - `OBJECT_STORAGE_PUBLIC_ENDPOINT=http://localhost:8004`

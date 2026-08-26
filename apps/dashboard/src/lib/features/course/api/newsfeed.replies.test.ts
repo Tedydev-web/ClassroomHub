@@ -58,75 +58,95 @@ vi.mock('$lib/utils/store/user', () => ({
 
 import { NewsfeedApi } from './newsfeed.svelte';
 
+function commentItem(overrides: {
+  id: number;
+  parentId: number | null;
+  depth: number;
+  content: string;
+  hasMoreChildren?: boolean;
+}) {
+  return {
+    directReplyCount: 0,
+    descendantCount: 0,
+    loadedChildCount: 0,
+    hasMoreChildren: false,
+    ...overrides
+  };
+}
+
 function successfulCommentsResponse(data: {
-  items: Array<{ id: number; content: string }>;
-  totalCount: number;
+  items: ReturnType<typeof commentItem>[];
+  rootId: number | null;
+  totalRootCount: number;
+  totalCommentCount: number;
   hasMore: boolean;
   nextCursor: string | null;
 }) {
   return new Response(JSON.stringify({ success: true, data }));
 }
 
-describe('NewsfeedApi reply pagination', () => {
-  it('gets replies through the comments endpoint and stores the response state', async () => {
+describe('NewsfeedApi thread pagination', () => {
+  it('fetches the root thread through the comments endpoint and stores the response state', async () => {
     mocks.commentsGet.mockResolvedValueOnce(
       successfulCommentsResponse({
-        items: [{ id: 8, content: 'First reply' }],
-        totalCount: 2,
+        items: [commentItem({ id: 7, parentId: null, depth: 0, content: 'Root', hasMoreChildren: true })],
+        rootId: null,
+        totalRootCount: 1,
+        totalCommentCount: 2,
         hasMore: true,
-        nextCursor: 'reply-cursor'
+        nextCursor: 'root-cursor'
       })
     );
     const api = new NewsfeedApi();
 
-    await expect(api.getReplies('course-a', 'feed-b', 7, 2)).resolves.toBeUndefined();
+    await expect(api.getThread('course-a', 'feed-b', { limit: 2 })).resolves.toBeUndefined();
 
     expect(mocks.commentsGet).toHaveBeenCalledWith({
       param: { courseId: 'course-a', feedId: 'feed-b' },
-      query: { parentId: '7', limit: '2' }
+      query: { limit: '2', childLimit: '3', maxDepth: '3' }
     });
-    expect(api.repliesByParentId[7]).toEqual({
-      items: [{ id: 8, content: 'First reply' }],
-      totalCount: 2,
+    expect(api.threadByFeedId['feed-b']).toMatchObject({
+      rootIds: [7],
+      totalRootCount: 1,
+      totalCommentCount: 2,
       hasMore: true,
-      isLoading: false,
-      cursor: 'reply-cursor'
+      cursor: 'root-cursor',
+      isLoading: false
     });
   });
 
-  it('loads the next reply page through the comments endpoint and appends it', async () => {
-    mocks.commentsGet.mockResolvedValueOnce(
-      successfulCommentsResponse({
-        items: [{ id: 9, content: 'Second reply' }],
-        totalCount: 2,
-        hasMore: false,
-        nextCursor: null
-      })
-    );
+  it('loads a comment subtree through the comments endpoint and appends it', async () => {
+    mocks.commentsGet
+      .mockResolvedValueOnce(
+        successfulCommentsResponse({
+          items: [commentItem({ id: 7, parentId: null, depth: 0, content: 'Root', hasMoreChildren: true })],
+          rootId: null,
+          totalRootCount: 1,
+          totalCommentCount: 2,
+          hasMore: false,
+          nextCursor: null
+        })
+      )
+      .mockResolvedValueOnce(
+        successfulCommentsResponse({
+          items: [commentItem({ id: 8, parentId: 7, depth: 1, content: 'Reply' })],
+          rootId: 7,
+          totalRootCount: 1,
+          totalCommentCount: 2,
+          hasMore: false,
+          nextCursor: null
+        })
+      );
     const api = new NewsfeedApi();
-    api.repliesByParentId[7] = {
-      items: [{ id: 8, content: 'First reply' }],
-      totalCount: 2,
-      hasMore: true,
-      isLoading: false,
-      cursor: 'reply-cursor'
-    };
+    await api.getThread('course-a', 'feed-b');
 
-    await expect(api.loadMoreReplies('course-a', 'feed-b', 7, 2)).resolves.toBeUndefined();
+    await expect(api.loadMoreReplies('course-a', 'feed-b', 7)).resolves.toBeUndefined();
 
-    expect(mocks.commentsGet).toHaveBeenCalledWith({
+    expect(mocks.commentsGet).toHaveBeenLastCalledWith({
       param: { courseId: 'course-a', feedId: 'feed-b' },
-      query: { parentId: '7', cursor: 'reply-cursor', limit: '2' }
+      query: { rootId: '7', childLimit: '3', maxDepth: '3' }
     });
-    expect(api.repliesByParentId[7]).toEqual({
-      items: [
-        { id: 8, content: 'First reply' },
-        { id: 9, content: 'Second reply' }
-      ],
-      totalCount: 2,
-      hasMore: false,
-      isLoading: false,
-      cursor: null
-    });
+    expect(api.childIdsByParent['7']).toEqual([8]);
+    expect(api.commentById['8']).toMatchObject({ id: 8, content: 'Reply' });
   });
 });

@@ -1521,7 +1521,7 @@ export async function createExerciseFromTemplate(
                 exerciseId: exercise.id,
                 title: sanitizeHtml(title),
                 questionTypeId: question_type.id,
-                points: points || 0,
+                points: points ?? 1,
                 order: order || 0,
                 settings: questionSettings
               }
