@@ -40,7 +40,10 @@ async function isExamTeamMember(context: Context, examId: string): Promise<boole
   if (exam.courseId) return isCourseTeamMemberOrOrgAdmin(exam.courseId, user.id);
 
   // The schema allows an exam with no course so a standalone paper stays possible. Nothing
-  // creates one today; an organization admin is the only sensible owner if anything ever does.
+  // creates one today — `createExamService` always writes a course — so this branch is
+  // unreachable until that feature lands. When it does, note that `orgRoles` comes from the
+  // session's cached roles, so an account promoted to admin can be refused here until its
+  // session refreshes. Fail-closed either way.
   const orgRoles = (context.get('orgRoles') as Record<string, number> | undefined) ?? {};
 
   return orgRoles[exam.organizationId] === ROLE.ADMIN;

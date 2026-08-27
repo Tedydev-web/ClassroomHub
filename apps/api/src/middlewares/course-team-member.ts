@@ -51,13 +51,16 @@ export const courseTeamMemberMiddleware = async (c: Context, next: Next) => {
     );
   } catch (error) {
     console.error('Error in courseTeamMemberMiddleware:', error);
+
+    // 403, matching the exam guards. A database failure here is still a refusal to admit
+    // the caller; returning 500 made an outage read as an authorisation problem in logs.
     return c.json(
       {
         success: false,
         error: 'Unauthorized',
         code: ErrorCodes.UNAUTHORIZED
       },
-      500
+      403
     );
   }
 };
