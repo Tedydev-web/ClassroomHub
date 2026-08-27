@@ -99,37 +99,6 @@
 
   /** The paper as a marker reads it. Derived in a module so it can be tested without a browser. */
   const markedItems = $derived(markAttemptPaper(data.paper?.questions ?? [], answerByQuestion));
-
-  async function saveMark(questionId: number) {
-    const raw = marks[questionId];
-    const numeric = Number(raw?.score);
-
-    if (!Number.isFinite(numeric)) {
-      snackbar.error($t('exam.results.mark_must_be_number'));
-      return;
-    }
-
-    savingQuestionId = questionId;
-
-    try {
-      const response = await classroomhub.exam.attempt[':attemptId'].mark.$put({
-        param: { attemptId: data.attemptId },
-        json: { questionId, score: numeric, comment: raw?.comment ?? '' }
-      });
-      const body = await response.json();
-
-      if ('success' in body && body.success) {
-        // Recomputed on the server by the one function that owns the total, so the
-        // automatic part and the marks cannot drift apart.
-        saved = { score: body.data.score, total: body.data.total, gradingState: body.data.gradingState };
-        snackbar.success($t('exam.results.mark_saved'));
-      } else {
-        snackbar.error($t('exam.results.mark_failed'));
-      }
-    } finally {
-      savingQuestionId = null;
-    }
-  }
 </script>
 
 <Page.Root class="mx-auto flex w-[90%] px-4 lg:max-w-4xl">
