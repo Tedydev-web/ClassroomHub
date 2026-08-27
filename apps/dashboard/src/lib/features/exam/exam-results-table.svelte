@@ -100,17 +100,27 @@
     // Sorted by whichever column the teacher asked for. A sitting with no score or no
     // finish time sorts last in either direction rather than jumping to the top of a
     // descending sort, because "not yet" is not a high value.
+    //
+    // The missing cases are branches rather than arithmetic on infinity: two missing values
+    // subtracted give NaN, and a comparator that returns NaN has no defined behaviour — it
+    // breaks the sort's transitivity and the order it produces stops being meaningful.
     const direction = sortDescending ? -1 : 1;
-    const missingLast = (value: number | null) => (value === null ? Number.POSITIVE_INFINITY * direction : value);
+    const compareNumbers = (left: number | null, right: number | null) => {
+      if (left === null && right === null) return 0;
+      if (left === null) return 1;
+      if (right === null) return -1;
+
+      return (left - right) * direction;
+    };
 
     return [...filtered].sort((left, right) => {
       if (sortKey === 'score') {
-        const a = left.score === null ? null : Number(left.score);
-        const b = right.score === null ? null : Number(right.score);
-
-        return (missingLast(a) - missingLast(b)) * direction;
+        return compareNumbers(
+          left.score === null ? null : Number(left.score),
+          right.score === null ? null : Number(right.score)
+        );
       }
-      if (sortKey === 'time') return (missingLast(minutesOf(left)) - missingLast(minutesOf(right))) * direction;
+      if (sortKey === 'time') return compareNumbers(minutesOf(left), minutesOf(right));
 
       return (left.displayName ?? '').localeCompare(right.displayName ?? '', undefined, { numeric: true }) * direction;
     });
@@ -143,7 +153,19 @@
       $t('exam.results.score_column'),
       $t('exam.results.time_taken_column')
     ];
-    const escape = (value: string) => `"${value.replace(/"/gu, '""')}"`;
+    /**
+     * Quoted, and defused.
+     *
+     * A cell a spreadsheet reads as a formula is a cell it will execute when the teacher
+     * opens the file, and every name here was typed by whoever sat the exam. Prefixing the
+     * four leading characters that start a formula with an apostrophe makes the cell text
+     * again; the apostrophe is not displayed.
+     */
+    const escape = (value: string) => {
+      const defused = /^[=+\-@\t\r]/u.test(value) ? `'${value}` : value;
+
+      return `"${defused.replace(/"/gu, '""')}"`;
+    };
     const lines = [
       header.map(escape).join(','),
       ...shown.map((row) =>
