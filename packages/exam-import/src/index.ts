@@ -110,6 +110,7 @@ export {
   type ExamImportSourceSpan
 } from './draft/exam-import-draft';
 
+export { examImportFindingClass, type ExamImportFindingClass } from './draft/exam-import-finding-class';
 export { mapExamImportDraftHtml } from './draft/exam-import-authored-html';
 export { harvestExamImportAnswerCandidates } from './draft/exam-import-answer-harvesting';
 export {

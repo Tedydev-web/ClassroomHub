@@ -5330,7 +5330,9 @@
       "ai_suggestion_pending": "Đang áp dụng đề xuất AI",
       "ai_suggestion_invalid": "Chọn ít nhất một câu hợp lệ.",
       "ai_suggestion_estimate_failed": "Không thể chuẩn bị ước tính đề xuất AI.",
-      "ai_suggestion_request_failed": "Không thể xếp hàng đề xuất AI."
+      "ai_suggestion_request_failed": "Không thể xếp hàng đề xuất AI.",
+      "blocking_summary_answer_key": "Chưa xuất bản được: tài liệu không có đáp án.",
+      "blocking_summary_mixed": "Chưa xuất bản được: còn {count} vấn đề cần xử lý."
     },
     "confidence": {
       "none": "Chưa xác minh",
@@ -5458,6 +5460,15 @@
       "option_set_incomplete": "Tập phương án được nhận diện có vẻ chưa đầy đủ.",
       "option_ownership_ambiguous": "Một phương án có thể thuộc về nhiều câu hỏi.",
       "option_continuation_attached": "Một dòng nối tiếp đã được ghép vào phương án và cần được kiểm tra."
+    },
+    "findings": {
+      "input_missing_title": "Tài liệu chưa có đủ thông tin",
+      "input_missing_answer_key": "Tài liệu này không có đáp án. Dán chuỗi đáp án bên dưới để điền cho {count} câu.",
+      "source_defect_title": "Tài liệu gốc có lỗi",
+      "source_defect_help": "Máy đọc đúng những gì tài liệu ghi, nhưng chính tài liệu bị sai ở {count} chỗ. Bấm vào từng dòng để sửa tại chỗ.",
+      "extraction_uncertain_title": "Máy chưa đọc được cấu trúc",
+      "extraction_uncertain_help": "Có {count} chỗ máy không nhận ra dạng câu hỏi. Bấm vào từng dòng để xem nguồn và sửa.",
+      "occurrences": "{count} chỗ"
     }
   },
   "exam": {

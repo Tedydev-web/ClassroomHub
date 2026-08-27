@@ -33,9 +33,11 @@ import {
   createExamImportPublishPlan,
   examImportDraftSchema,
   inspectExamImportDocument,
+  examImportFindingClass,
   validateExamImportDraft,
   type ExamImportDraft,
   type ExamImportDraftPatchOperation,
+  type ExamImportFindingClass,
   type ExamImportValidationResult
 } from '@cio/exam-import';
 import { enqueueExamImport, enqueueExamImportAiSuggestion } from '@cio/jobs';
@@ -76,7 +78,12 @@ export type ExamImportStatusView = Pick<
 
 export type ExamImportDraftView = {
   draft: ExamImportDraft;
-  findings: ExamImportValidationResult['findings'];
+  /**
+   * Each finding carries what the teacher has to do about it. Derived here rather than
+   * stored on the draft or recomputed in the dashboard: one source of truth, and the
+   * client needs no copy of the mapping to drift from.
+   */
+  findings: Array<ExamImportValidationResult['findings'][number] & { class: ExamImportFindingClass }>;
   aiSuggestionQuestionIds: string[];
   publishable: boolean;
   expiresAt: string;
@@ -213,7 +220,7 @@ function draftView(draftRecord: TExamImportDraft, validation: ExamImportValidati
 
   return {
     draft: validation.draft,
-    findings: validation.findings,
+    findings: validation.findings.map((finding) => ({ ...finding, class: examImportFindingClass(finding.code) })),
     aiSuggestionQuestionIds: collectExamImportAiRegions(validation.draft).map((region) => region.questionId),
     publishable: validation.publishable,
     expiresAt: draftRecord.expiresAt,
