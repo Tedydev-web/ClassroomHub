@@ -119,27 +119,34 @@ describe('scanned PDF page raster extraction', () => {
     expect(peakVisitors).toBe(1);
   });
 
-  it.runIf(existsSync(SCANNED_PDF))('streams all five full-resolution pages from the reference scan', async () => {
-    const bytes = new Uint8Array(readFileSync(SCANNED_PDF));
-    const pages: Array<{ pageIndex: number; width: number; height: number }> = [];
+  it.runIf(existsSync(SCANNED_PDF))(
+    'streams all five full-resolution pages from the reference scan',
+    async () => {
+      const bytes = new Uint8Array(readFileSync(SCANNED_PDF));
+      const pages: Array<{ pageIndex: number; width: number; height: number }> = [];
 
-    const result = await visitScannedPdfPageRasters(bytes, async (page) => {
-      pages.push({
-        pageIndex: page.pageIndex,
-        width: page.intrinsicWidth,
-        height: page.intrinsicHeight
+      const result = await visitScannedPdfPageRasters(bytes, async (page) => {
+        pages.push({
+          pageIndex: page.pageIndex,
+          width: page.intrinsicWidth,
+          height: page.intrinsicHeight
+        });
       });
-    });
 
-    expect(result).toEqual({ pageCount: 5, totalPixels: 43_499_200 });
-    expect(pages).toEqual(
-      Array.from({ length: 5 }, (_, pageIndex) => ({
-        pageIndex,
-        width: 2480,
-        height: 3508
-      }))
-    );
-  });
+      expect(result).toEqual({ pageCount: 5, totalPixels: 43_499_200 });
+      expect(pages).toEqual(
+        Array.from({ length: 5 }, (_, pageIndex) => ({
+          pageIndex,
+          width: 2480,
+          height: 3508
+        }))
+      );
+      // Rasterising five full-resolution pages takes about 2.5s alone and longer when the
+      // rest of the suite is competing for the machine. The default five seconds has no
+      // margin for that; a genuine slowdown past thirty seconds still fails.
+    },
+    30_000
+  );
 
   it('fails closed when a page raster is missing or ambiguous', async () => {
     await expect(readScannedPdfPageRasters(imagePdf([{ images: [] }]))).rejects.toMatchObject({

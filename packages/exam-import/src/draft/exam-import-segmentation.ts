@@ -1225,6 +1225,17 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
   const sections: MutableSection[] = [];
   const sharedContents: ExamImportDraft['sharedContents'] = [];
   const fieldStates: ExamImportFieldState[] = [];
+  // Every other field records where it came from; the title did not, which left the block
+  // it was read from looking like content that had gone nowhere.
+  const titleBlock = titleBlockIndex === null ? null : blocks.find((block) => block.index === titleBlockIndex);
+  if (titleBlock) {
+    fieldStates.push({
+      target: { kind: 'draft_field', field: 'title' },
+      confidence: 'medium',
+      origin: 'deterministic',
+      provenance: [titleBlock.span]
+    });
+  }
   const diagnostics: ExamImportDiagnostic[] = [];
   let currentSection: MutableSection | null = null;
   let currentQuestion: MutableQuestion | null = null;
@@ -1268,7 +1279,11 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     collectingPassage = false;
   };
 
-  const startInstructionSection = (title: string, collectsPassage: boolean): void => {
+  const startInstructionSection = (
+    title: string,
+    collectsPassage: boolean,
+    instructionBlock: ExamImportSourceBlock | null = null
+  ): void => {
     if (sections.length >= MAX_EXAM_IMPORT_SECTIONS) {
       throw new Error(`Exam import cannot contain more than ${MAX_EXAM_IMPORT_SECTIONS} sections`);
     }
@@ -1276,6 +1291,16 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     reportPendingPassageAsUnassigned();
     currentSection = newSection(title, sections.length);
     sections.push(currentSection);
+    // The instruction line becomes this section's title, so it is accounted for. Without
+    // the record it looked like source content that had gone nowhere.
+    if (instructionBlock) {
+      fieldStates.push({
+        target: { kind: 'section_field', sectionId: currentSection.id, field: 'title' },
+        confidence: 'high',
+        origin: 'deterministic',
+        provenance: [instructionBlock.span]
+      });
+    }
     currentQuestion = null;
     activePassageId = null;
     activeTablePassageEndIndex = null;
@@ -1435,13 +1460,13 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (RANGED_QUESTION_INSTRUCTION_PATTERN.test(text)) {
-      startInstructionSection(text, true);
+      startInstructionSection(text, true, block);
       continue;
     }
 
     if (PASSAGE_MARKER_PATTERN.test(text)) {
       if (!currentSection || currentSection.questions.length > 0) {
-        startInstructionSection(text, true);
+        startInstructionSection(text, true, block);
         continue;
       }
 
@@ -1455,7 +1480,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (ARRANGEMENT_INSTRUCTION_PATTERN.test(text)) {
-      startInstructionSection(text, false);
+      startInstructionSection(text, false, block);
       continue;
     }
 
