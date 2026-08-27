@@ -168,7 +168,12 @@ export function markAttemptPaper(
     // item must not take the rest of the paper down with it.
     let scored: ReturnType<typeof scoreAssessmentVerticalSlice> | null = null;
     try {
-      const validated = validateAssessmentResponseEnvelope(definition, answer as never);
+      // The same leniency the server marks with. Without it this screen would show a whole
+      // passage unscored while the stored total had marked it question by question, and the
+      // teacher would be reading a number that disagrees with the rows above it.
+      const validated = validateAssessmentResponseEnvelope(definition, answer as never, {
+        allowMissingRequiredResponses: true
+      });
       scored = validated.success ? scoreAssessmentVerticalSlice(definition, validated.data) : null;
     } catch {
       scored = null;
@@ -212,32 +217,22 @@ export function markAttemptPaper(
 
       const interactionScore = scoreByInteraction.get(block.id);
       /**
-       * The scorer's own number when it has one, so partial credit reads as partial rather
-       * than as a red cross beside a total that counted it.
+       * The scorer's own number, or nothing.
        *
-       * When validation failed — one required question left blank invalidates the whole
-       * item — there is no score, and only multiple choice can be settled from the key
-       * alone. A weighted choice cannot: the scorer never consults `correctOptionIds` when
-       * `scoreWeights` is present, so claiming right or wrong here would be inventing a
-       * verdict the scorer would not have given.
+       * There used to be a fallback here that decided right or wrong from the answer key
+       * when the scorer had no verdict. It existed because one required question left blank
+       * made the whole item unreadable — which the grader no longer does, so the only items
+       * without a score now are the ones whose stored responses are malformed. Those score
+       * zero on the server, and a verdict read off the key would contradict that. Saying
+       * "not scored" is the honest answer, and `scoreBlocked` says why.
        */
       const score = interactionScore?.score ?? null;
       const outcome = ((): MarkedOutcome => {
         if (needsManual) return 'manual';
-        if (!answered) return 'unscored';
-        if (score !== null) {
-          if (score >= maxScore && maxScore > 0) return 'correct';
+        if (!answered || score === null) return 'unscored';
+        if (score >= maxScore && maxScore > 0) return 'correct';
 
-          return score > 0 ? 'partial' : 'incorrect';
-        }
-        if (kind !== 'choice' || correctIds.length === 0 || config?.scoreWeights !== undefined) return 'unscored';
-
-        const chosenSet = new Set(chosenIds);
-        const correctSet = new Set(correctIds);
-
-        return chosenSet.size === correctSet.size && [...chosenSet].every((optionId) => correctSet.has(optionId))
-          ? 'correct'
-          : 'incorrect';
+        return score > 0 ? 'partial' : 'incorrect';
       })();
 
       return {

@@ -144,7 +144,14 @@ export function gradeAttempt(
     }
 
     try {
-      const validated = validateAssessmentResponseEnvelope(question.definition, response as never);
+      // Marking reads what was stored; it does not re-run submission's insistence that every
+      // required question be answered. One blank question in a ten-question passage must not
+      // make the other nine unreadable — the scorer already gives an unanswered interaction
+      // a zero. Every other issue still fails the item, because a malformed envelope is not
+      // an unanswered question.
+      const validated = validateAssessmentResponseEnvelope(question.definition, response as never, {
+        allowMissingRequiredResponses: true
+      });
 
       if (!validated.success) {
         perQuestion.push({ questionId: question.questionId, score: 0, max });

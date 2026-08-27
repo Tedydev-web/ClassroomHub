@@ -227,3 +227,85 @@ describe('a paper that mixes hand-marked and automatic questions', () => {
     expect(gradeAttempt(snapshot, answers, [], { 2: { score: 2 } }).gradingState).toBe('complete');
   });
 });
+
+describe('an item holding several questions', () => {
+  function twoQuestionItem() {
+    return {
+      schemaVersion: 1,
+      blocks: [
+        {
+          id: 'a',
+          kind: 'interaction',
+          interaction: {
+            kind: 'choice',
+            prompt: { html: '<p>a</p>' },
+            required: true,
+            maxScore: 1,
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [
+                { id: '1', html: '<p>one</p>' },
+                { id: '2', html: '<p>two</p>' }
+              ],
+              correctOptionIds: ['1']
+            }
+          }
+        },
+        {
+          id: 'b',
+          kind: 'interaction',
+          interaction: {
+            kind: 'choice',
+            prompt: { html: '<p>b</p>' },
+            required: true,
+            maxScore: 1,
+            config: {
+              cardinality: 'single',
+              presentation: 'list',
+              options: [
+                { id: '1', html: '<p>one</p>' },
+                { id: '2', html: '<p>two</p>' }
+              ],
+              correctOptionIds: ['1']
+            }
+          }
+        }
+      ]
+    } as never;
+  }
+
+  it('still marks the answered questions when a sibling was left blank', () => {
+    // A reading passage is one item holding up to ten questions. Refusing to read the
+    // envelope because one of them is blank scored the whole passage zero — on the sitting
+    // that prompted this, one skipped question cost seven answered ones, several correct.
+    const snapshot = {
+      frozenAt: new Date().toISOString(),
+      questions: [{ questionId: 1, questionRevisionId: 'r1', order: 1, points: 2, definition: twoQuestionItem() }]
+    } as never;
+    const answers = [
+      {
+        questionId: 1,
+        questionRevisionId: 'r1',
+        answerData: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'a', response: { kind: 'choice', selectedOptionIds: ['1'] } }]
+        }
+      }
+    ] as never;
+
+    expect(gradeAttempt(snapshot, answers, [], {}).score).toBe(1);
+  });
+
+  it('still refuses an envelope that is malformed rather than merely incomplete', () => {
+    const snapshot = {
+      frozenAt: new Date().toISOString(),
+      questions: [{ questionId: 1, questionRevisionId: 'r1', order: 1, points: 2, definition: twoQuestionItem() }]
+    } as never;
+    const answers = [
+      { questionId: 1, questionRevisionId: 'r1', answerData: { schemaVersion: 99, responses: [] } }
+    ] as never;
+
+    expect(gradeAttempt(snapshot, answers, [], {}).score).toBe(0);
+  });
+});

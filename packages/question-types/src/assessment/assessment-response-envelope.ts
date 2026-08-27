@@ -153,6 +153,20 @@ export interface ValidatedAssessmentResponses {
 
 export type AssessmentResponseValidationOptions = {
   requireCompleteTrueFalseGroups?: boolean;
+  /**
+   * Accept an envelope that leaves a required interaction unanswered.
+   *
+   * Marking a sitting is not the same act as submitting one. Submission may insist every
+   * required question is answered; marking reads what was actually stored, and one blank
+   * question there must not make the other questions in the same item unreadable. The
+   * scorer already gives an interaction with no response a zero, so the answered ones keep
+   * their marks and the blank one keeps its nothing.
+   *
+   * Every other issue still fails the envelope: a malformed, duplicated or tampered
+   * response is not an unanswered question, and zero for the whole item is the right
+   * answer to it.
+   */
+  allowMissingRequiredResponses?: boolean;
 };
 
 function normalizeBankToken(value: string): string {
@@ -426,7 +440,7 @@ export function validateAssessmentResponseEnvelope(
       if (response === undefined) missingOptionalInteractionIds.push(block.id);
       continue;
     }
-    if (!meaningful) {
+    if (!meaningful && !options.allowMissingRequiredResponses) {
       issues.push(
         assessmentIssue('MISSING_REQUIRED_RESPONSE', ['responses'], `Interaction "${block.id}" requires an answer`)
       );

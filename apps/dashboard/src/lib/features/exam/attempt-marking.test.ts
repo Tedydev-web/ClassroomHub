@@ -133,10 +133,10 @@ describe('markAttemptPaper', () => {
     expect(marked[1]!.interactions[0]!.outcome).toBe('manual');
   });
 
-  it('still marks the answered questions when one blank sibling blocks the score', () => {
-    // A required question left blank fails the whole item's validation, and with it every
-    // sibling's verdict. On the paper that prompted this, one skipped question hid whether
-    // seven answered ones were right.
+  it('marks the answered questions and leaves the blank one unscored', () => {
+    // A required question left blank used to fail the whole item's validation, taking every
+    // sibling's verdict with it. The grader is lenient about a missing answer now, so the
+    // answered questions keep their marks and the blank one keeps its nothing.
     const marked = markAttemptPaper(
       [item(1, ['q1', 'q2', 'q3'], 'b')],
       new Map([
@@ -155,13 +155,13 @@ describe('markAttemptPaper', () => {
     expect(second!.outcome).toBe('incorrect');
     expect(third!.chosen).toEqual([]);
     expect(third!.outcome).toBe('unscored');
-    expect(marked[0]!.scoreBlocked).toBe(true);
+    expect(marked[0]!.scoreBlocked).toBe(false);
   });
 
   it('does not call a repeated choice correct when the key names two different options', () => {
-    // The fallback runs precisely when validation failed, so the responses it reads have
-    // not been normalised. Comparing by length and `includes` let ['a','a'] satisfy a key
-    // of ['a','b'].
+    // A repeated selection is a malformed response, not a wrong one: validation rejects the
+    // envelope, the server scores the item zero, and the screen says so rather than reading
+    // a verdict off the key and contradicting that zero.
     const multi = {
       questionId: 1,
       points: 1,
@@ -221,8 +221,8 @@ describe('markAttemptPaper', () => {
       ])
     );
 
+    expect(marked[0]!.interactions[0]!.outcome).toBe('unscored');
     expect(marked[0]!.scoreBlocked).toBe(true);
-    expect(marked[0]!.interactions[0]!.outcome).toBe('incorrect');
   });
 
   it('falls back to the questions own maximum when the paper states no points', () => {
@@ -309,9 +309,9 @@ describe('markAttemptPaper', () => {
     expect(numeric!.outcome).toBe('incorrect');
   });
 
-  it('does not invent a verdict for a weighted choice whose score is missing', () => {
-    // With `scoreWeights` the scorer never consults `correctOptionIds`, so the fallback
-    // cannot claim right or wrong without contradicting the total.
+  it('scores a weighted choice by its weight rather than by the key', () => {
+    // With `scoreWeights` the scorer never consults `correctOptionIds`. Reading the key here
+    // would contradict the total whenever a weight disagrees with it.
     const weighted = {
       questionId: 1,
       points: 2,
@@ -366,7 +366,7 @@ describe('markAttemptPaper', () => {
       ])
     );
 
-    expect(marked[0]!.scoreBlocked).toBe(true);
-    expect(marked[0]!.interactions[0]!.outcome).toBe('unscored');
+    expect(marked[0]!.scoreBlocked).toBe(false);
+    expect(marked[0]!.interactions[0]!.outcome).toBe('correct');
   });
 });
