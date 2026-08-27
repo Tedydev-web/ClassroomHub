@@ -3,6 +3,7 @@ import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { getQuestionTypeById, isExerciseAutoGradable } from '@cio/question-types';
 import { insertNextQuestionRevision, promoteQuestionCurrentRevision } from '@cio/db/queries/exercise/revision';
+import { listExerciseQuestionsInDeliveryOrder } from '@cio/db/queries/exercise/delivery-order';
 import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 
 import type { ExamPaperQuestionSnapshot, ExamPaperSnapshot } from './exam-paper-serializer';
@@ -73,15 +74,7 @@ export type ExamPaperSummary = {
  * It reports and refuses nothing — a mirror, not a gate.
  */
 export async function summariseContainer(exerciseId: string, dbClient = db): Promise<ExamPaperSummary> {
-  const questions = await dbClient
-    .select({
-      id: schema.question.id,
-      title: schema.question.title,
-      order: schema.question.order,
-      questionTypeId: schema.question.questionTypeId
-    })
-    .from(schema.question)
-    .where(and(eq(schema.question.exerciseId, exerciseId), isNull(schema.question.archivedAt)));
+  const questions = await listExerciseQuestionsInDeliveryOrder(exerciseId, dbClient);
 
   const options = await dbClient
     .select({ questionId: schema.option.questionId, isCorrect: schema.option.isCorrect })
@@ -100,18 +93,22 @@ export async function summariseContainer(exerciseId: string, dbClient = db): Pro
   const optionCounts: ExamPaperSummary['optionCounts'] = [];
   const questionsWithoutAnswerKey: ExamPaperSummary['questionsWithoutAnswerKey'] = [];
 
-  for (const question of questions) {
+  // `questions` already arrives in delivery order. The reported position is derived from
+  // that rather than from the stored `order`, which is section-relative and can repeat.
+  // It counts from one because the teacher reads it as a question number.
+  for (const [index, question] of questions.entries()) {
+    const position = index + 1;
     const kind = getQuestionTypeById(question.questionTypeId)?.label ?? `type ${question.questionTypeId}`;
     countsByKind[kind] = (countsByKind[kind] ?? 0) + 1;
 
     const bucket = optionsByQuestion.get(question.id) ?? [];
-    optionCounts.push({ questionId: question.id, order: question.order ?? 0, optionCount: bucket.length });
+    optionCounts.push({ questionId: question.id, order: position, optionCount: bucket.length });
 
     const meta = getQuestionTypeById(question.questionTypeId);
     if (meta?.autoGradable && bucket.length > 0 && !bucket.some((option) => option.isCorrect === true)) {
       questionsWithoutAnswerKey.push({
         questionId: question.id,
-        order: question.order ?? 0,
+        order: position,
         title: question.title ?? ''
       });
     }
@@ -120,10 +117,45 @@ export async function summariseContainer(exerciseId: string, dbClient = db): Pro
   return {
     questionCount: questions.length,
     countsByKind,
-    optionCounts: optionCounts.sort((a, b) => a.order - b.order),
-    questionsWithoutAnswerKey: questionsWithoutAnswerKey.sort((a, b) => a.order - b.order),
+    optionCounts,
+    questionsWithoutAnswerKey,
     autoGradable: isExerciseAutoGradable(questions.map((question) => question.questionTypeId))
   };
+}
+
+/**
+ * A container's `order` values must be unique, because they are the only thing that puts
+ * its questions in sequence — it is a flat delivery artifact with no sections to
+ * disambiguate a tie. `copyExerciseIntoContainer` produces `0..n`; a hand-built container
+ * numbering from one is equally deliverable, so the rule is uniqueness rather than any
+ * particular base.
+ *
+ * It is checked at the last moment before a paper is served rather than trusted from
+ * upstream, because that is the moment a mistake stops being recoverable: once a snapshot
+ * is frozen, students sit whatever it says. Failing loudly here is the difference between
+ * a teacher seeing an error and a class sitting a scrambled paper.
+ */
+function assertDeliveryOrderIsUnambiguous(questions: Array<{ order: number | null }>): void {
+  const seen = new Set<number>();
+
+  for (const question of questions) {
+    const order = question.order;
+    if (order === null || !Number.isInteger(order)) {
+      throw new AppError(
+        'This paper cannot be frozen: a question carries no order, so its position is undefined',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+    if (seen.has(order)) {
+      throw new AppError(
+        `This paper cannot be frozen: two questions share order ${order}, so their sequence is undefined`,
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+    seen.add(order);
+  }
 }
 
 /**
@@ -134,19 +166,13 @@ export async function summariseContainer(exerciseId: string, dbClient = db): Pro
  * The live rows are read here, once, and never again for delivery.
  */
 export async function freezeExamPaper(exerciseId: string, dbClient = db): Promise<ExamPaperSnapshot> {
-  const questions = await dbClient
-    .select({
-      id: schema.question.id,
-      order: schema.question.order,
-      points: schema.question.points,
-      currentRevisionId: schema.question.currentRevisionId
-    })
-    .from(schema.question)
-    .where(and(eq(schema.question.exerciseId, exerciseId), isNull(schema.question.archivedAt)));
+  const questions = await listExerciseQuestionsInDeliveryOrder(exerciseId, dbClient);
 
   if (questions.length === 0) {
     throw new AppError('This paper has no questions to freeze', ErrorCodes.VALIDATION_ERROR, 400);
   }
+
+  assertDeliveryOrderIsUnambiguous(questions);
 
   const frozen: ExamPaperQuestionSnapshot[] = [];
 
@@ -172,7 +198,10 @@ export async function freezeExamPaper(exerciseId: string, dbClient = db): Promis
     frozen.push({
       questionId: question.id,
       questionRevisionId: revision.id,
-      order: question.order ?? 0,
+      // The delivery position, not the stored `order`. A snapshot is the paper as sat,
+      // so its numbering has to be dense and total — the section-relative `order` is
+      // neither, and everything downstream sorts on this field.
+      order: frozen.length + 1,
       points: Number(question.points ?? 0),
       definition: revision.definition as ExamPaperQuestionSnapshot['definition']
     });
@@ -180,7 +209,7 @@ export async function freezeExamPaper(exerciseId: string, dbClient = db): Promis
 
   return {
     frozenAt: new Date().toISOString(),
-    questions: frozen.sort((a, b) => a.order - b.order)
+    questions: frozen
   };
 }
 
@@ -270,17 +299,7 @@ export async function copyExerciseIntoContainer(
     throw new AppError('That exercise belongs to another course', ErrorCodes.FORBIDDEN, 403);
   }
 
-  const questions = await dbClient
-    .select({
-      title: schema.question.title,
-      questionTypeId: schema.question.questionTypeId,
-      points: schema.question.points,
-      order: schema.question.order,
-      settings: schema.question.settings,
-      currentRevisionId: schema.question.currentRevisionId
-    })
-    .from(schema.question)
-    .where(and(eq(schema.question.exerciseId, sourceExerciseId), isNull(schema.question.archivedAt)));
+  const questions = await listExerciseQuestionsInDeliveryOrder(sourceExerciseId, dbClient);
 
   if (questions.length === 0) {
     throw new AppError('That exercise has no questions to copy', ErrorCodes.VALIDATION_ERROR, 400);
@@ -289,7 +308,10 @@ export async function copyExerciseIntoContainer(
   return dbClient.transaction(async (tx) => {
     const containerId = await createExamContainer(source.title, tx);
 
-    for (const question of questions) {
+    // The source's `order` is section-relative and repeats across sections; a container
+    // has no sections to disambiguate it. Renumbering densely here is what lets every
+    // later read sort on `order` alone and still be right.
+    for (const [position, question] of questions.entries()) {
       if (!question.currentRevisionId) {
         throw new AppError(
           `"${question.title}" has no canonical revision, so it cannot be delivered or graded`,
@@ -315,7 +337,7 @@ export async function copyExerciseIntoContainer(
           title: question.title,
           questionTypeId: question.questionTypeId,
           points: question.points,
-          order: question.order,
+          order: position,
           settings: question.settings,
           // Sections are not copied: nothing in delivery, grading or the paper summary
           // reads them, and an exam is sat as one flat paper.
