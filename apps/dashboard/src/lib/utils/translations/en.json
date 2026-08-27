@@ -5607,7 +5607,8 @@
       "needs_keys_short": "{count} answers missing",
       "paper_ready": "Paper has every answer",
       "checking_paper": "Checking the paper…",
-      "view_paper_check": "Check the paper before opening"
+      "view_paper_check": "Check the paper before opening",
+      "close_failed": "Could not close the exam"
     },
     "settings": {
       "title": "Exam title",

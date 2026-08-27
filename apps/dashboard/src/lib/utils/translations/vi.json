@@ -5617,7 +5617,8 @@
       "needs_keys_short": "Thiếu {count} đáp án",
       "paper_ready": "Đề đã đủ đáp án",
       "checking_paper": "Đang kiểm tra đề…",
-      "view_paper_check": "Kiểm tra đề trước khi mở"
+      "view_paper_check": "Kiểm tra đề trước khi mở",
+      "close_failed": "Không đóng được đề"
     },
     "settings": {
       "title": "Tiêu đề đề thi",

@@ -77,7 +77,11 @@
       marked: finished.filter((row) => row.gradingState === 'complete').length,
       awaiting: rows.filter((row) => row.gradingState === 'awaiting_manual').length,
       average: scored.length > 0 ? (totalScore / scored.length).toFixed(1) : null,
-      outOf: scored[0]?.total ?? null
+      // Only when every scored sitting was marked out of the same number. Re-opening an
+      // exam re-freezes its paper, so a class can hold attempts scored out of different
+      // totals; taking the first row's would print an average over one denominator beside
+      // a different one.
+      outOf: new Set(scored.map((row) => row.total)).size === 1 ? (scored[0]?.total ?? null) : null
     };
   });
 
@@ -293,22 +297,34 @@
               Sortable where sorting answers a question a teacher actually asks: who is at
               the bottom, who took longest, and where is a name in a class list.
             -->
-            <Table.Head>
+            <Table.Head aria-sort={sortKey === 'name' ? (sortDescending ? 'descending' : 'ascending') : 'none'}>
               <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('name')}>
-                {$t('exam.entry.full_name')}{sortKey === 'name' ? (sortDescending ? ' ↓' : ' ↑') : ''}
+                {$t('exam.entry.full_name')}<span aria-hidden="true"
+                  >{sortKey === 'name' ? (sortDescending ? ' ↓' : ' ↑') : ''}</span
+                >
               </button>
             </Table.Head>
             <Table.Head>{$t('exam.entry.class_name')}</Table.Head>
             <Table.Head>{$t('exam.entry.candidate_number')}</Table.Head>
             <Table.Head>{$t('exam.results.status_column')}</Table.Head>
-            <Table.Head class="ui:text-right">
+            <Table.Head
+              class="ui:text-right"
+              aria-sort={sortKey === 'score' ? (sortDescending ? 'descending' : 'ascending') : 'none'}
+            >
               <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('score')}>
-                {$t('exam.results.score_column')}{sortKey === 'score' ? (sortDescending ? ' ↓' : ' ↑') : ''}
+                {$t('exam.results.score_column')}<span aria-hidden="true"
+                  >{sortKey === 'score' ? (sortDescending ? ' ↓' : ' ↑') : ''}</span
+                >
               </button>
             </Table.Head>
-            <Table.Head class="ui:text-right">
+            <Table.Head
+              class="ui:text-right"
+              aria-sort={sortKey === 'time' ? (sortDescending ? 'descending' : 'ascending') : 'none'}
+            >
               <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('time')}>
-                {$t('exam.results.time_taken_column')}{sortKey === 'time' ? (sortDescending ? ' ↓' : ' ↑') : ''}
+                {$t('exam.results.time_taken_column')}<span aria-hidden="true"
+                  >{sortKey === 'time' ? (sortDescending ? ' ↓' : ' ↑') : ''}</span
+                >
               </button>
             </Table.Head>
             <Table.Head class="ui:w-0"></Table.Head>

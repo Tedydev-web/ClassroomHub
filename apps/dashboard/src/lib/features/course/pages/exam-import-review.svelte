@@ -273,9 +273,16 @@
         <Button onclick={publish} disabled={!draftView.publishable || examImportApi.isLoading}>
           {$t('exam_import.publish.action')}
         </Button>
-        {#if !draftView.publishable && blockingFindings.length > 0}
+        {#if !draftView.publishable}
+          <!--
+            Counted the way the list below counts: one entry per distinct problem, not per
+            occurrence. Forty questions missing a key are one thing to fix and one row in
+            that list, and saying "40" beside a single row reads as forty separate tasks.
+          -->
           <p class="ui:text-muted-foreground text-xs">
-            {$t('exam_import.review.blocked_reason', { count: String(blockingFindings.length) })}
+            {$t('exam_import.review.blocked_reason', {
+              count: String(findingGroups.reduce((total, group) => total + group.entries.length, 0))
+            })}
           </p>
         {/if}
       </div>

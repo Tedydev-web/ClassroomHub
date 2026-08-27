@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 
 import { db, type DbOrTxClient } from '../../drizzle';
 import * as schema from '../../schema';
@@ -54,21 +54,31 @@ export async function listExamsByCourseId(courseId: string, dbClient: DbOrTxClie
 
   return dbClient
     .select({
-      exam: schema.exam,
+      // Named columns, not the whole row. `select()` also carried `paperSnapshot` — the
+      // frozen paper with its answer keys — plus `corrections` and `passwordHash`, and this
+      // list is server-rendered, so all of it was being written into the HTML of a page a
+      // teacher opens. Forty kilobytes of answer key per exam, to draw a row that needs a
+      // title and a status.
+      id: schema.exam.id,
+      title: schema.exam.title,
+      slug: schema.exam.slug,
+      status: schema.exam.status,
+      mode: schema.exam.mode,
+      workingSeconds: schema.exam.workingSeconds,
+      opensAt: schema.exam.opensAt,
+      closesAt: schema.exam.closesAt,
+      maxAttempts: schema.exam.maxAttempts,
+      requiresName: schema.exam.requiresName,
+      requiresClass: schema.exam.requiresClass,
+      requiresCandidateNumber: schema.exam.requiresCandidateNumber,
+      createdAt: schema.exam.createdAt,
       sat: countWhere(),
       inProgress: countWhere(sql`${schema.examAttempt.status} = 'in_progress'`),
       awaitingManual: countWhere(sql`${schema.examAttempt.gradingState} = 'awaiting_manual'`)
     })
     .from(schema.exam)
     .where(and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt)))
-    .then((rows) =>
-      rows.map((row) => ({
-        ...row.exam,
-        sat: row.sat,
-        inProgress: row.inProgress,
-        awaitingManual: row.awaitingManual
-      }))
-    );
+    .orderBy(desc(schema.exam.createdAt));
 }
 
 /**

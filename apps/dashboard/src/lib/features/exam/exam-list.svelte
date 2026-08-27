@@ -100,7 +100,18 @@
     busyId = examId;
 
     try {
-      await classroomhub.exam[':examId'].close.$post({ param: { examId } });
+      // Checked, like `open` above it. This reported success unconditionally, and the client
+      // resolves on a 4xx as readily as on a 200 — so a close that the server refused told
+      // the teacher the exam was shut while candidates carried on sitting it.
+      const response = await classroomhub.exam[':examId'].close.$post({ param: { examId } });
+
+      if (!response.ok) {
+        const body = await response.json();
+        snackbar.error('error' in body ? String(body.error) : $t('exam.manage.close_failed'));
+
+        return;
+      }
+
       snackbar.success($t('exam.manage.closed_notice'));
       await refresh();
     } finally {
