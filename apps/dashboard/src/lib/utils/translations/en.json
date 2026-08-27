@@ -5592,8 +5592,8 @@
       "missing_keys_note": "Those questions will score zero for everybody. Fix the answers before opening.",
       "all_keys_present": "Every question has a correct answer.",
       "separation_note": "Exams are separate from exercises: an exercise needs an account and records progress, while an exam can be sent as a public link and timed. Exam scores do not enter the course gradebook.",
-      "sat_count": "Sat",
-      "sitting_now": "{count} sitting now",
+      "sat_count": "Started",
+      "sitting_now": "{count} still sitting",
       "awaiting_marking": "{count} awaiting a hand mark",
       "no_one_yet": "Nobody yet",
       "window_from": "Opens {from}",
@@ -5608,7 +5608,9 @@
       "paper_ready": "Paper has every answer",
       "checking_paper": "Checking the paper…",
       "view_paper_check": "Check the paper before opening",
-      "close_failed": "Could not close the exam"
+      "close_failed": "Could not close the exam",
+      "refresh_failed": "Could not reload the exam list",
+      "check_failed": "Could not check the paper"
     },
     "settings": {
       "title": "Exam title",

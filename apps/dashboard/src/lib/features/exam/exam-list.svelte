@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { t } from '$lib/utils/functions/translations';
+  import { locale, t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
   import { Badge } from '@cio/ui/base/badge';
   import * as Item from '@cio/ui/base/item';
   import * as Empty from '@cio/ui/base/empty';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
   import { Spinner } from '@cio/ui/base/spinner';
+  import { SvelteSet } from 'svelte/reactivity';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 
@@ -49,7 +50,14 @@
    */
   let refreshed = $state<ExamRow[] | null>(null);
   const exams = $derived(refreshed ?? initialExams);
-  let busyId = $state<string | null>(null);
+  /**
+   * The rows with an action in flight, not the single most recent one.
+   *
+   * A lone `busyId` meant two overlapping actions shared one slot: whichever finished first
+   * cleared the flag, re-enabling the other row's button and hiding its spinner while its
+   * request was still open.
+   */
+  let busyIds = $state(new SvelteSet<string>());
   let summary = $state<{
     examId: string;
     questionCount: number;
@@ -59,12 +67,21 @@
   async function refresh() {
     const response = await classroomhub.exam.course[':courseId'].$get({ param: { courseId } });
     const body = await response.json();
-    if ('success' in body && body.success) refreshed = body.data;
+
+    // A silent failure here left the list showing what it showed before, which then
+    // corroborated whichever success message had just been announced.
+    if ('success' in body && body.success) {
+      refreshed = body.data;
+
+      return;
+    }
+
+    snackbar.error($t('exam.manage.refresh_failed'));
   }
 
   /** Shown before opening, never as a gate. It reports; the teacher decides. */
   async function checkPaper(examId: string) {
-    busyId = examId;
+    busyIds.add(examId);
 
     try {
       const response = await classroomhub.exam[':examId'].summary.$get({ param: { examId } });
@@ -72,14 +89,18 @@
 
       if ('success' in body && body.success) {
         summary = { examId, ...body.data };
+      } else {
+        // The check is advisory, but a check that silently did not run reads exactly like a
+        // paper with nothing wrong in it.
+        snackbar.error($t('exam.manage.check_failed'));
       }
     } finally {
-      busyId = null;
+      busyIds.delete(examId);
     }
   }
 
   async function open(examId: string) {
-    busyId = examId;
+    busyIds.add(examId);
 
     try {
       const response = await classroomhub.exam[':examId'].open.$post({ param: { examId } });
@@ -92,12 +113,12 @@
         snackbar.error('error' in body ? String(body.error) : $t('exam.manage.open_failed'));
       }
     } finally {
-      busyId = null;
+      busyIds.delete(examId);
     }
   }
 
   async function close(examId: string) {
-    busyId = examId;
+    busyIds.add(examId);
 
     try {
       // Checked, like `open` above it. This reported success unconditionally, and the client
@@ -115,7 +136,7 @@
       snackbar.success($t('exam.manage.closed_notice'));
       await refresh();
     } finally {
-      busyId = null;
+      busyIds.delete(examId);
     }
   }
 
@@ -143,12 +164,15 @@
     closed: 'secondary'
   };
 
-  const dateFormat = new Intl.DateTimeFormat(undefined, {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  /**
+   * Derived rather than built once, so it follows the reader's language.
+   *
+   * Constructed with `undefined` it took whatever locale the runtime was in — which during
+   * server rendering is the container's, not the teacher's.
+   */
+  const dateFormat = $derived(
+    new Intl.DateTimeFormat($locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  );
 
   function when(value: string | null | undefined): string | null {
     if (!value) return null;
@@ -229,7 +253,7 @@
         {@const sat = exam.sat ?? 0}
         {@const sitting = exam.inProgress ?? 0}
         {@const awaiting = exam.awaitingManual ?? 0}
-        {@const checking = busyId === exam.id}
+        {@const checking = busyIds.has(exam.id)}
         <Item.Root variant="outline" class="ui:rounded-lg ui:flex-col ui:items-stretch ui:gap-3">
           <div class="ui:flex ui:flex-wrap ui:items-start ui:justify-between ui:gap-3">
             <Item.Content class="ui:min-w-0 ui:gap-1">

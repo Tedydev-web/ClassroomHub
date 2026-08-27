@@ -5602,8 +5602,8 @@
       "missing_keys_note": "Những câu này sẽ được 0 điểm cho mọi học sinh. Sửa đáp án trước khi mở đề.",
       "all_keys_present": "Mọi câu đều có đáp án đúng.",
       "separation_note": "Đề thi tách riêng khỏi bài tập: bài tập cần tài khoản và ghi nhận tiến độ, đề thi có thể gửi link công khai và tính giờ. Điểm thi không vào sổ điểm của khoá học.",
-      "sat_count": "Đã thi",
-      "sitting_now": "{count} đang làm",
+      "sat_count": "Đã vào thi",
+      "sitting_now": "trong đó {count} đang làm",
       "awaiting_marking": "{count} chờ chấm tay",
       "no_one_yet": "Chưa ai làm",
       "window_from": "Mở {from}",
@@ -5618,7 +5618,9 @@
       "paper_ready": "Đề đã đủ đáp án",
       "checking_paper": "Đang kiểm tra đề…",
       "view_paper_check": "Kiểm tra đề trước khi mở",
-      "close_failed": "Không đóng được đề"
+      "close_failed": "Không đóng được đề",
+      "refresh_failed": "Không tải lại được danh sách đề",
+      "check_failed": "Không kiểm tra được đề"
     },
     "settings": {
       "title": "Tiêu đề đề thi",

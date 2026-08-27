@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from '$lib/utils/functions/translations';
+  import { locale, t } from '$lib/utils/functions/translations';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import * as Table from '@cio/ui/base/table';
@@ -126,7 +126,16 @@
       }
       if (sortKey === 'time') return compareNumbers(minutesOf(left), minutesOf(right));
 
-      return (left.displayName ?? '').localeCompare(right.displayName ?? '', undefined, { numeric: true }) * direction;
+      // Compared in the reader's language, and unnamed sittings go last like every other
+      // missing value. `undefined` here meant the order followed whichever locale the
+      // browser happened to be in, which for Vietnamese names is a different order.
+      const leftName = left.displayName ?? '';
+      const rightName = right.displayName ?? '';
+      if (leftName === '' && rightName === '') return 0;
+      if (leftName === '') return 1;
+      if (rightName === '') return -1;
+
+      return leftName.localeCompare(rightName, $locale, { numeric: true }) * direction;
     });
   });
 
@@ -190,11 +199,16 @@
     // teachers actually use.
     const blob = new Blob([`\ufeff${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
+    // Attached before the click and revoked on the next tick: Safari has historically
+    // ignored a click on a detached anchor, and revoking in the same tick races the download
+    // the click just started.
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = `${$t('exam.manage.results').toLowerCase()}.csv`;
+    document.body.append(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url));
     snackbar.success($t('exam.results.exported'));
   }
 
