@@ -245,4 +245,32 @@ describe.runIf(runDatabaseIntegration)('exam results', () => {
 
     expect(Number(row.score)).toBeGreaterThan(0);
   });
+
+  it('hands the teacher the corrected key, not the key as first frozen', async () => {
+    // The score is computed against the corrected paper. Returning the raw snapshot beside
+    // it showed a corrected answer struck through in red while the total counted it right.
+    const { db, schema, results } = await load();
+    const examId = await seedExam(db, schema);
+    await addAttempt(db, schema, examId, { answerOption: '1' });
+
+    await results.addCorrectionService(examId, {
+      kind: 'keyFix',
+      questionId: 1,
+      previousKey: ['2'],
+      correctedKey: ['1'],
+      by: 'teacher',
+      at: new Date().toISOString()
+    });
+
+    const [attempt] = await db
+      .select({ id: schema.examAttempt.id })
+      .from(schema.examAttempt)
+      .where(eq(schema.examAttempt.examId, examId));
+    const detail = await results.getExamAttemptDetailService(attempt.id);
+    const definition = detail.paper?.questions?.[0]?.definition as unknown as {
+      blocks: Array<{ interaction: { config: { correctOptionIds: string[] } } }>;
+    };
+
+    expect(definition.blocks[0]?.interaction.config.correctOptionIds).toEqual(['1']);
+  });
 });

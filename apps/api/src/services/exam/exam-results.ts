@@ -5,7 +5,13 @@ import * as schema from '@cio/db/schema';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { finaliseExpiredAttempts, rescoreFinishedAttempts } from './exam-finalisation';
-import { gradeAttempt, type ExamCorrection, type ManualMarks, type StoredExamAnswer } from './exam-grading';
+import {
+  applyCorrections,
+  gradeAttempt,
+  type ExamCorrection,
+  type ManualMarks,
+  type StoredExamAnswer
+} from './exam-grading';
 import { isRevealed, type ExamRevealValue } from './exam-reveal-policy';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 
@@ -136,12 +142,22 @@ export async function getExamAttemptDetailService(attemptId: string) {
   const exam = await getExamById(attempt.examId);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
+  const snapshot = exam.paperSnapshot as ExamPaperSnapshot | null;
+  const corrections = (exam.corrections as ExamCorrection[]) ?? [];
+
   return {
     attempt,
     // The teacher sees the paper with its answers. The reveal policy governs what a
     // *student* may see; a teacher is not subject to it.
-    paper: exam.paperSnapshot as ExamPaperSnapshot | null,
-    corrections: (exam.corrections as ExamCorrection[]) ?? []
+    //
+    // Corrected before it leaves, by the same function grading uses. Handing over the raw
+    // snapshot showed the teacher the key as first frozen while the score beside it came
+    // from the corrected one, so a corrected answer was marked wrong on screen and right in
+    // the total.
+    paper: snapshot ? applyCorrections(snapshot, corrections) : null,
+    // Still sent, so the page can say a key was corrected rather than silently differ from
+    // what the class was originally marked against.
+    corrections
   };
 }
 
