@@ -5351,7 +5351,10 @@
       "apply": "Áp dụng đáp án",
       "invalid": "Định dạng đáp án không hợp lệ.",
       "failed": "Không thể áp dụng đáp án.",
-      "applied": "Đã áp dụng đáp án cho {count} câu"
+      "applied": "Đã áp dụng đáp án cho {count} câu",
+      "document_upload": "Tải tệp đáp án",
+      "document_unreadable": "Không đọc được đáp án trong tệp này.",
+      "document_hint": "Hoặc tải lên tệp đáp án riêng (Word hoặc PDF)."
     },
     "publish": {
       "action": "Xuất bản bài tập",

@@ -82,13 +82,21 @@ export function readAnswerKeyGrid(cells: GridCell[]): AnswerKeyPair[] {
     else rows.set(cell.row, [cell]);
   }
 
-  const ordered = [...rows.entries()]
+  const all = [...rows.entries()]
     .sort(([left], [right]) => left - right)
     .map(([, bucket]) => bucket.slice().sort((left, right) => left.column - right.column));
 
   const isNumberRow = (row: GridCell[]) => row.length > 0 && row.every((cell) => BARE_NUMBER_PATTERN.test(cell.text));
   const isAnswerRow = (row: GridCell[]) =>
     row.length > 0 && row.every((cell) => SINGLE_ANSWER_TOKEN_PATTERN.test(cell.text));
+  const isPairRow = (row: GridCell[]) =>
+    row.length === 2 && BARE_NUMBER_PATTERN.test(row[0]!.text) && SINGLE_ANSWER_TOKEN_PATTERN.test(row[1]!.text);
+
+  // A header row — `Câu | Đáp án` and its variants — is data about the table, not data in
+  // it. Exactly one is tolerated, and only when the rows beneath it are unambiguous.
+  const first = all[0];
+  const ordered = first && !isNumberRow(first) && !isAnswerRow(first) && !isPairRow(first) ? all.slice(1) : all;
+  if (ordered.length === 0) return [];
 
   const pairs: AnswerKeyPair[] = [];
 
@@ -110,9 +118,8 @@ export function readAnswerKeyGrid(cells: GridCell[]): AnswerKeyPair[] {
   // Arrangement 2: every row is a single `number | answer` pair.
   const vertical: AnswerKeyPair[] = [];
   for (const row of ordered) {
-    if (row.length !== 2) return [];
+    if (!isPairRow(row)) return [];
     const [numberCell, answerCell] = row as [GridCell, GridCell];
-    if (!BARE_NUMBER_PATTERN.test(numberCell.text) || !SINGLE_ANSWER_TOKEN_PATTERN.test(answerCell.text)) return [];
     vertical.push({ number: Number(numberCell.text), value: answerCell.text.toUpperCase() });
   }
 

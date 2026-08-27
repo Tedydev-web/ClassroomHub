@@ -354,6 +354,64 @@ export class ExamImportApi extends BaseApiWithErrors {
     return updated;
   }
 
+  /**
+   * Uploads a document that is only an answer key and applies what it states.
+   *
+   * Reuses the source upload path: a key file is an ordinary document as far as storage is
+   * concerned, and the server reads it with the same readers it uses for the paper.
+   */
+  async applyAnswerKeyDocument(courseId: string, importId: string, file: File): Promise<boolean> {
+    this.isUploading = true;
+    this.documentUploader.initUpload();
+    try {
+      const upload = await this.documentUploader.getPresignedUrl(file);
+      await this.documentUploader.uploadFile({ url: upload.url, file });
+
+      const asset = await mediaApi.createAsset({
+        kind: 'document',
+        provider: 'upload',
+        storageProvider: 's3',
+        storageKey: upload.fileKey,
+        mimeType: file.type || DOCX_MIME_TYPE,
+        byteSize: file.size,
+        title: file.name,
+        isExternal: false,
+        metadata: { fileName: file.name, purpose: 'exam_import_answer_key' }
+      });
+      if (!asset) {
+        snackbar.error('exam_import.answer_key.failed');
+        return false;
+      }
+
+      let updated = false;
+      await this.execute<ApplyExamImportAnswerKeyDocumentRequest>({
+        requestFn: () =>
+          classroomhub.course[':courseId']['exam-import'][':importId']['answer-key-document'].$post({
+            param: { courseId, importId },
+            json: { assetId: asset.id }
+          }),
+        logContext: 'applying exam import answer key document',
+        onSuccess: (response) => {
+          updated = true;
+          snackbar.success(t.get('exam_import.answer_key.applied', { count: response.data.appliedCount }));
+        },
+        onError: () => {
+          snackbar.error('exam_import.answer_key.document_unreadable');
+        }
+      });
+      if (updated) await this.getDraft(courseId, importId);
+
+      return updated;
+    } catch (error) {
+      console.error('ExamImportApi.applyAnswerKeyDocument error:', error);
+      snackbar.error(uploadFailureMessageKey(classifyUploadFailure(error)));
+      return false;
+    } finally {
+      this.isUploading = false;
+      resetDocumentUploadStore();
+    }
+  }
+
   async publish(courseId: string, importId: string): Promise<PublishedExamImport | null> {
     let published: PublishedExamImport | null = null;
     await this.execute<PublishExamImportRequest>({

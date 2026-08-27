@@ -149,6 +149,16 @@
     if (nextQuestionId) selectQuestion(nextQuestionId);
   }
 
+  async function handleAnswerKeyFile(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    await examImportApi.applyAnswerKeyDocument(courseId, importId, file);
+    // Cleared either way: a rejected file must not look like it is still pending.
+    input.value = '';
+  }
+
   async function applyAnswerKey() {
     const updated = await examImportApi.applyAnswerKey(courseId, importId, answerKey);
     if (updated) answerKey = '';
@@ -360,6 +370,17 @@
           <Button variant="secondary" disabled={!answerKey.trim() || examImportApi.isLoading} onclick={applyAnswerKey}>
             {$t('exam_import.answer_key.apply')}
           </Button>
+
+          <!-- A key that arrived as its own file is read by the same carriers, so it needs
+               no separate screen — only a way in. -->
+          <p class="ui:text-muted-foreground text-xs">{$t('exam_import.answer_key.document_hint')}</p>
+          <input
+            type="file"
+            accept=".docx,.pdf"
+            class="text-xs"
+            disabled={examImportApi.isUploading}
+            onchange={handleAnswerKeyFile}
+          />
         </section>
 
         <section class="space-y-3" aria-labelledby="exam-import-findings-heading">

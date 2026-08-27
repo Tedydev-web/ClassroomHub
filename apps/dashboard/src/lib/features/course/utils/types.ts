@@ -594,6 +594,8 @@ export type RequestExamImportAiSuggestionRequest =
   (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['ai-suggestion']['$post'];
 export type ApplyExamImportAnswerKeyRequest =
   (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['answer-key']['$post'];
+export type ApplyExamImportAnswerKeyDocumentRequest =
+  (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['answer-key-document']['$post'];
 export type PublishExamImportRequest =
   (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['publish']['$post'];
 export type PublishExamImportSuccess = Extract<InferResponseType<PublishExamImportRequest>, { success: true }>;
