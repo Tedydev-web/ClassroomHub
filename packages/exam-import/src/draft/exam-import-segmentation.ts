@@ -1,5 +1,6 @@
 import { MAX_ASSESSMENT_INTERACTIONS, MAX_INTERACTION_OPTIONS } from '@cio/question-types';
 import { sourceRunStreamSchema, type SourceRun } from '../source-run';
+import { readAnswerKeyGrid, readCompactAnswerKeyLine } from './exam-import-answer-key-format';
 import type {
   ExamImportDiagnostic,
   ExamImportDraft,
@@ -529,6 +530,23 @@ export function isExamImportAnswerTableBlocks(blocks: ExamImportSourceBlock[]): 
   return payload.length > 0 && payload.every((text) => STRICT_TABLE_ANSWER_VALUE_PATTERN.test(text));
 }
 
+/** Table blocks as `{ row, column, text }`, the shape the grid reader works in. */
+function answerGridCells(blocks: ExamImportSourceBlock[]): Array<{ row: number; column: number; text: string }> {
+  const cells = new Map<string, { row: number; column: number; text: string }>();
+
+  for (const block of blocks) {
+    const tableRef = block.runs[0]?.block.tableRef;
+    if (!tableRef) continue;
+    const key = `${tableRef.originRow}:${tableRef.originColumn}`;
+    const text = block.text.normalize('NFC').replace(/\s+/gu, ' ').trim();
+    const existing = cells.get(key);
+    if (existing) existing.text = `${existing.text} ${text}`.trim();
+    else cells.set(key, { row: tableRef.originRow, column: tableRef.originColumn, text });
+  }
+
+  return [...cells.values()];
+}
+
 function answerSourceBlockIndexes(blocks: ExamImportSourceBlock[]): Set<number> {
   const answerBlocks = new Set<number>();
   const tables = new Map<number, ExamImportSourceBlock[]>();
@@ -541,18 +559,17 @@ function answerSourceBlockIndexes(blocks: ExamImportSourceBlock[]): Set<number> 
   }
 
   for (const tableBlocks of tables.values()) {
-    if (isExamImportAnswerTableBlocks(tableBlocks)) {
+    // Either a headed answer table, or a header-less grid recognised by its shape.
+    const isAnswerTable =
+      isExamImportAnswerTableBlocks(tableBlocks) || readAnswerKeyGrid(answerGridCells(tableBlocks)).length > 0;
+    if (isAnswerTable) {
       for (const block of tableBlocks) answerBlocks.add(block.index);
     }
   }
 
   for (const block of blocks) {
     if (block.kind === 'table_cell') continue;
-    const text = block.text.trim();
-    const matches = [...text.matchAll(COMPACT_KEY_PAIR_PATTERN)];
-    if (matches.length === 0) continue;
-    const residue = text.replace(COMPACT_KEY_PAIR_PATTERN, '').replace(/[\s,;|]+/gu, '');
-    if (residue.length === 0) answerBlocks.add(block.index);
+    if (readCompactAnswerKeyLine(block.text).isKeyOnly) answerBlocks.add(block.index);
   }
 
   return answerBlocks;
@@ -1386,6 +1403,11 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       continue;
     }
 
+    // Asked before the block is read as a question. A trailing `1. B` key line matches
+    // the bare-number question pattern, so a key list used to become a second set of
+    // questions — a forty-question paper arriving as eighty.
+    if (answerBlocks.has(block.index)) continue;
+
     const parsedMarkers = parseQuestionMarkers(block);
     if (parsedMarkers.markers.length > 0) {
       inSolution = false;
@@ -1417,7 +1439,6 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       }
       continue;
     }
-    if (answerBlocks.has(block.index)) continue;
     if (inSolution) continue;
 
     if (currentQuestion === null && activePassageId === null && collectingPassage) {
