@@ -120,12 +120,17 @@ export function gradeAttempt(
   let autoScore = 0;
   let total = 0;
   const manualQuestionIds = new Set<number>();
+  let hasUnscoreableQuestion = false;
 
   for (const question of paper.questions) {
     // A definition with no interactions at all is not an empty paper — it is a paper we
-    // cannot read, and saying "zero, complete" about it would be a confident lie.
+    // cannot read, and saying "zero, complete" about it would be a confident lie. It costs
+    // its own question, though, not the whole sitting: the questions around it were read
+    // perfectly well and their marks stand.
     if (!isReadableDefinition(question.definition)) {
-      return { score: 0, total, perQuestion, gradingState: 'unscoreable' };
+      hasUnscoreableQuestion = true;
+      perQuestion.push({ questionId: question.questionId, score: 0, max: 0 });
+      continue;
     }
 
     const max = maxScoreOf(question.definition);
@@ -165,13 +170,14 @@ export function gradeAttempt(
       perQuestion.push({ questionId: question.questionId, score: scored.autoScore, max });
     } catch {
       // One unscoreable question must not fail the whole attempt, and one unscoreable
-      // attempt must not fail the whole results page.
-      return {
-        score: 0,
-        total,
-        perQuestion,
-        gradingState: 'unscoreable'
-      };
+      // attempt must not fail the whole results page. This block used to return, which did
+      // exactly what its comment forbids: a paper holding one question this build cannot
+      // mark threw away every other question's marks and reported the sitting as zero.
+      //
+      // The sitting is still flagged rather than called complete — a mark nobody could
+      // compute is not a mark of zero — but the questions that were marked keep their marks.
+      hasUnscoreableQuestion = true;
+      perQuestion.push({ questionId: question.questionId, score: 0, max });
     }
   }
 
@@ -182,6 +188,9 @@ export function gradeAttempt(
   // automatically scored question too — and the marking screen offers a box only where a
   // mark is owed, so there was no way left to satisfy it.
   const stillAwaiting = [...manualQuestionIds].some((questionId) => !markedQuestionIds.has(questionId));
+  if (hasUnscoreableQuestion) {
+    return { score: autoScore + manualTotal, total, perQuestion, gradingState: 'unscoreable' };
+  }
 
   return {
     score: autoScore + manualTotal,

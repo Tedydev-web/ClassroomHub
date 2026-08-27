@@ -309,3 +309,90 @@ describe('an item holding several questions', () => {
     expect(gradeAttempt(snapshot, answers, [], {}).score).toBe(0);
   });
 });
+
+describe('a paper holding a question this build cannot score', () => {
+  it('keeps the marks of the questions it can score', () => {
+    // The scorer throws on a kind it does not support, and the catch returned rather than
+    // continuing — so one such question threw away every other question's marks and called
+    // the whole sitting unscoreable. Its own comment says the opposite.
+    const snapshot = {
+      frozenAt: new Date().toISOString(),
+      questions: [
+        { questionId: 1, questionRevisionId: 'r1', order: 1, points: 1, definition: choiceDefinition('1') },
+        {
+          questionId: 2,
+          questionRevisionId: 'r2',
+          order: 2,
+          points: 2,
+          definition: {
+            schemaVersion: 1,
+            blocks: [
+              {
+                id: 'pick',
+                kind: 'interaction',
+                interaction: {
+                  kind: 'choice',
+                  prompt: { html: '<p>pick</p>' },
+                  required: true,
+                  maxScore: 1,
+                  config: {
+                    cardinality: 'single',
+                    presentation: 'list',
+                    options: [
+                      { id: '1', html: '<p>one</p>' },
+                      { id: '2', html: '<p>two</p>' }
+                    ],
+                    correctOptionIds: ['1']
+                  }
+                }
+              },
+              {
+                id: 'ord',
+                kind: 'interaction',
+                interaction: {
+                  kind: 'ordering',
+                  prompt: { html: '<p>order these</p>' },
+                  required: true,
+                  maxScore: 1,
+                  config: {
+                    items: [
+                      { id: 'i1', html: '<p>one</p>' },
+                      { id: 'i2', html: '<p>two</p>' }
+                    ]
+                  }
+                }
+              }
+            ]
+          } as never
+        }
+      ]
+    } as never;
+    const answers = [
+      {
+        questionId: 1,
+        questionRevisionId: 'r1',
+        answerData: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'b1', response: { kind: 'choice', selectedOptionIds: ['1'] } }]
+        }
+      },
+      {
+        // The ordering interaction is left blank. Leniency lets the envelope through, so the
+        // scorer is reached and throws on the kind it cannot handle.
+        questionId: 2,
+        questionRevisionId: 'r2',
+        answerData: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'pick', response: { kind: 'choice', selectedOptionIds: ['1'] } }]
+        }
+      }
+    ] as never;
+
+    const result = gradeAttempt(snapshot, answers, [], {});
+
+    expect(result.score).toBe(1);
+    // The sitting is still flagged: one question could not be marked, and saying "complete"
+    // about it would be the confident lie the whole-attempt zero was trying to avoid.
+    expect(result.gradingState).toBe('unscoreable');
+  });
+});
