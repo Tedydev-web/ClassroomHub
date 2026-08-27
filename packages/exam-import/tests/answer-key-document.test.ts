@@ -62,3 +62,27 @@ describe('answer key document', () => {
     await expect(keyOf(paragraph('Đây là một tài liệu bình thường, không có đáp án.'))).resolves.toBe('');
   });
 });
+
+/**
+ * The most common key file of all: the paper itself, with the answers marked.
+ *
+ * Every keyed document in this corpus states its key that way, and the reader missed it —
+ * it only knew the compact carriers. Caught by running the endpoint against a real file
+ * rather than against the shapes the unit tests happened to imagine.
+ */
+describe('answer key document — a marked-up copy of the paper', () => {
+  it('reads a key from a paper whose answers are highlighted', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const { join } = await import('node:path');
+    const bytes = new Uint8Array(
+      await readFile(join(__dirname, '..', '..', '..', 'fixtures', 'exams', '2026-g12-key-to-test-2.docx'))
+    );
+
+    const key = toCompactAnswerKey(readAnswerKeyPairsFromRuns((await readDocxRuns(bytes)).runs));
+
+    // Read by hand from the highlight runs when the document entered the corpus.
+    expect(key).toBe(
+      '1B 2D 3C 4C 5C 6C 7D 8A 9D 10B 11D 12C 13D 14C 15D 16D 17B 18B 19B 20C 21C 22B 23A 24C 25D 26D 27A 28D 29C 30A'
+    );
+  }, 60000);
+});

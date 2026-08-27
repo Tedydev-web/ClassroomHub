@@ -1,5 +1,6 @@
 import type { SourceRun } from '../source-run';
 import { readAnswerKeyGrid, readCompactAnswerKeyLine, type AnswerKeyPair } from './exam-import-answer-key-format';
+import { createExamImportDraftFromRuns } from './exam-import-pipeline';
 import { collectExamImportSourceBlocks } from './exam-import-segmentation';
 
 /**
@@ -13,6 +14,12 @@ import { collectExamImportSourceBlocks } from './exam-import-segmentation';
  *
  * Because every reader emits `SourceRun`, a `.docx` key and a `.pdf` key both arrive here
  * already in the one shape, and neither needs a parser of its own.
+ *
+ * Two kinds of key file exist, and the second is the commoner one. A file may be a key and
+ * nothing else — a grid, a table, a list. Or it may be the paper itself with the answers
+ * marked, which is how every keyed document in this project's corpus states its key. The
+ * first is read by its carriers; the second is read by importing it and taking the answers
+ * its questions resolved to.
  */
 export function readAnswerKeyPairsFromRuns(runs: readonly SourceRun[]): AnswerKeyPair[] {
   const blocks = collectExamImportSourceBlocks(runs as SourceRun[]);
@@ -44,6 +51,37 @@ export function readAnswerKeyPairsFromRuns(runs: readonly SourceRun[]): AnswerKe
 
   for (const cells of [...tables.entries()].sort(([left], [right]) => left - right).map(([, cells]) => cells)) {
     pairs.push(...readAnswerKeyGrid(cells));
+  }
+
+  if (pairs.length > 0) return pairs;
+
+  // No standalone carrier, so the file is likely the paper with its answers marked. Import
+  // it and read the keys off the questions. Tried second because a document that states a
+  // key outright says so more cheaply and more certainly than one that implies it.
+  return answersFromMarkedUpPaper(runs);
+}
+
+function answersFromMarkedUpPaper(runs: readonly SourceRun[]): AnswerKeyPair[] {
+  const draft = createExamImportDraftFromRuns(
+    runs as SourceRun[],
+    {
+      assetId: 'answer-key-document',
+      fileName: 'answer-key',
+      mimeType: 'application/octet-stream',
+      extractor: 'docx'
+    } as never
+  );
+
+  const pairs: AnswerKeyPair[] = [];
+  for (const question of draft.sections.flatMap((section) => section.questions)) {
+    const number = Number(question.sourceNumber);
+    if (!Number.isSafeInteger(number)) continue;
+    if (question.kind !== 'choice' || question.answerKey === null) continue;
+
+    for (const optionId of question.answerKey.correctOptionIds) {
+      const option = question.options.find((candidate) => candidate.id === optionId);
+      if (option) pairs.push({ number, value: option.sourceLabel.toUpperCase() });
+    }
   }
 
   return pairs;
