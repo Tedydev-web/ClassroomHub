@@ -44,6 +44,26 @@
   let actionBarHeight = $state(0);
 
   let stage = $state<Stage>('entry');
+
+  /**
+   * Stops a pull-to-refresh from reloading the paper mid-sitting.
+   *
+   * `overscroll-behavior` only governs an element that scrolls, and the document is what
+   * scrolls here — the class had been sitting on a flex column that never does, so the
+   * guard read as present and did nothing. Applied to the scrollport itself, and only while
+   * someone is actually sitting the exam, so no other page inherits it.
+   */
+  $effect(() => {
+    if (stage !== 'sitting' || typeof document === 'undefined') return;
+
+    const root = document.documentElement;
+    const previous = root.style.overscrollBehaviorY;
+    root.style.overscrollBehaviorY = 'contain';
+
+    return () => {
+      root.style.overscrollBehaviorY = previous;
+    };
+  });
   let starting = $state(false);
   let entryError = $state<string | null>(null);
 
@@ -377,15 +397,7 @@
     onstart={start}
   />
 {:else if stage === 'sitting'}
-  <!--
-    `overscroll-contain` stops the pull-to-refresh gesture at the top of the paper.
-    On a phone, dragging down to reach a question above reloads the page otherwise,
-    which throws away everything not yet autosaved — in the middle of a timed exam.
-  -->
-  <div
-    class="ui:flex ui:min-h-dvh ui:flex-col overscroll-y-contain"
-    style="--exercise-chrome-extra: {actionBarHeight}px"
-  >
+  <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {actionBarHeight}px">
     <header
       class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
     >
