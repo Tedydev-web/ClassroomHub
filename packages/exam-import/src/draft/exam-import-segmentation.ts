@@ -575,6 +575,59 @@ function answerSourceBlockIndexes(blocks: ExamImportSourceBlock[]): Set<number> 
   return answerBlocks;
 }
 
+/**
+ * A table that holds nothing but one question's options.
+ *
+ * A Vietnamese maths or physics paper writes the stem in a paragraph and lays the four
+ * options out in a grid beneath it, two by two or four across. The table carries no
+ * question marker, so the layouts above skip it and the whole thing used to be appended
+ * to the stem as prose — leaving the question with no options and no kind.
+ *
+ * Accepted only when every non-empty cell is exactly one option and the labels read, in
+ * row-major order, as a contiguous run from `A`. A table of prose beneath a stem parses
+ * to no options at all and is left alone.
+ */
+function readOptionGridTable(
+  tableBlocks: readonly ExamImportSourceBlock[]
+): Array<{ entry: OptionEntry; block: ExamImportSourceBlock }> | null {
+  const cells = new Map<string, ExamImportSourceBlock[]>();
+  for (const block of [...tableBlocks].sort((left, right) => left.index - right.index)) {
+    const tableRef = block.runs[0]?.block.tableRef;
+    if (!tableRef) return null;
+    const key = `${tableRef.originRow}:${tableRef.originColumn}`;
+    const bucket = cells.get(key);
+    if (bucket) bucket.push(block);
+    else cells.set(key, [block]);
+  }
+
+  const ordered = [...cells.entries()]
+    .map(([key, blocks]) => {
+      const [row, column] = key.split(':').map(Number);
+      return { row: row!, column: column!, blocks };
+    })
+    .sort((left, right) => left.row - right.row || left.column - right.column);
+
+  const found: Array<{ entry: OptionEntry; block: ExamImportSourceBlock }> = [];
+  for (const cell of ordered) {
+    const text = cell.blocks
+      .map((block) => block.text)
+      .join(' ')
+      .trim();
+    if (!text) continue;
+
+    const parsed = parseOptions(text, null);
+    if (parsed.prefix.trim() || parsed.entries.length !== 1) return null;
+    found.push({ entry: parsed.entries[0]!, block: cell.blocks[0]! });
+  }
+
+  if (found.length < 2) return null;
+
+  const labels = found.map((option) => option.entry.label);
+  const expected = labels.map((_, index) => String.fromCharCode(65 + index));
+
+  return labels.join('') === expected.join('') ? found : null;
+}
+
 function ordinaryTableLayouts(
   blocks: ExamImportSourceBlock[],
   answerBlockIndexes: Set<number>,
@@ -1335,7 +1388,10 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     if (tableLayouts.contentBlockIndexes.has(block.index)) continue;
     const ordinaryTable = ordinaryTables.byStart.get(block.index);
     if (ordinaryTable) {
-      if (currentQuestion) {
+      const optionGrid = currentQuestion ? readOptionGridTable(ordinaryTable.blocks) : null;
+      if (currentQuestion && optionGrid) {
+        for (const option of optionGrid) addOption(currentQuestion, option.entry, option.block.span);
+      } else if (currentQuestion) {
         addPromptPart(currentQuestion, ordinaryTable.text, ordinaryTable.span, null, ordinaryTable.html);
       } else if (collectingPassage) {
         pendingPassageBlocks.push(...ordinaryTable.blocks);
