@@ -5341,7 +5341,8 @@
       "apply": "Apply answer key",
       "invalid": "The answer key format is invalid.",
       "failed": "The answer key could not be applied.",
-      "applied": "Applied answers to {count} questions"
+      "applied": "Applied answers to {count} questions",
+      "applied_partial": "Applied answers to {count} questions; the paper still needs answers before it can be published"
     },
     "publish": {
       "action": "Publish exercise",

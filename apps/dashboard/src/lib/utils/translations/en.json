@@ -5135,6 +5135,7 @@
       "invalid": "The answer key format is invalid.",
       "failed": "The answer key could not be applied.",
       "applied": "Applied answers to {count} questions",
+      "applied_partial": "Applied answers to {count} questions; the paper still needs answers before it can be published",
       "document_upload": "Upload an answer key file",
       "document_unreadable": "No answer key could be read from that file.",
       "document_hint": "Or upload a separate answer key file (Word or PDF)."

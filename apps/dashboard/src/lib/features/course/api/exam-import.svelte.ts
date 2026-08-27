@@ -14,6 +14,7 @@ import { t } from '$lib/utils/functions/translations';
 import { env } from '$env/dynamic/public';
 import { SvelteDate } from 'svelte/reactivity';
 import type {
+  ApplyExamImportAnswerKeyDocumentRequest,
   ApplyExamImportAnswerKeyRequest,
   CancelExamImportRequest,
   CreateExamImportRequest,
@@ -343,7 +344,7 @@ export class ExamImportApi extends BaseApiWithErrors {
       logContext: 'applying exam import answer key',
       onSuccess: (response) => {
         updated = true;
-        snackbar.success(t.get('exam_import.answer_key.applied', { count: response.data.appliedCount }));
+        snackbar.success(answerKeyAppliedMessage(response.data));
       },
       onError: () => {
         snackbar.error('exam_import.answer_key.failed');
@@ -393,7 +394,7 @@ export class ExamImportApi extends BaseApiWithErrors {
         logContext: 'applying exam import answer key document',
         onSuccess: (response) => {
           updated = true;
-          snackbar.success(t.get('exam_import.answer_key.applied', { count: response.data.appliedCount }));
+          snackbar.success(answerKeyAppliedMessage(response.data));
         },
         onError: () => {
           snackbar.error('exam_import.answer_key.document_unreadable');
@@ -442,3 +443,17 @@ export class ExamImportApi extends BaseApiWithErrors {
 }
 
 export const examImportApi = new ExamImportApi();
+
+/**
+ * What to tell the teacher after a key is applied.
+ *
+ * A key may now cover only part of the paper — the answers it numbers are kept rather than
+ * discarded. Reporting only how many were applied would read as finished on a draft that
+ * still cannot be published, which is the exact miscommunication that keeping the partial
+ * key was meant to end.
+ */
+function answerKeyAppliedMessage(data: { appliedCount: number; publishable: boolean }): string {
+  const key = data.publishable ? 'applied' : 'applied_partial';
+
+  return t.get(`exam_import.answer_key.${key}`, { count: data.appliedCount });
+}

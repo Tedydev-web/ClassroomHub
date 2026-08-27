@@ -5352,6 +5352,7 @@
       "invalid": "Định dạng đáp án không hợp lệ.",
       "failed": "Không thể áp dụng đáp án.",
       "applied": "Đã áp dụng đáp án cho {count} câu",
+      "applied_partial": "Đã áp dụng đáp án cho {count} câu; đề vẫn còn câu thiếu đáp án nên chưa xuất bản được",
       "document_upload": "Tải tệp đáp án",
       "document_unreadable": "Không đọc được đáp án trong tệp này.",
       "document_hint": "Hoặc tải lên tệp đáp án riêng (Word hoặc PDF)."
