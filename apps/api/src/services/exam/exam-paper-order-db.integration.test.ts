@@ -180,6 +180,23 @@ describe.runIf(runDatabaseIntegration)('exam paper delivery order', () => {
     expect(snapshot.questions.map((question: any) => question.order)).toEqual(EXPECTED.map((_, index) => index + 1));
   });
 
+  it('serves the sitting paper in source order', async () => {
+    const { db, schema, container } = await load();
+    const { toExamSittingPaper } = await import('./exam-paper-serializer');
+    const courseId = await seedCourse(db, schema);
+    const sourceId = await seedSectionedExercise(db, schema, courseId, SECTIONS);
+    const copy = await container.copyExerciseIntoContainer(sourceId, courseId, db);
+
+    // The snapshot is what a student is served, so the guarantee is asserted where they
+    // meet it rather than one layer earlier.
+    const paper = toExamSittingPaper(await container.freezeExamPaper(copy.id, db));
+
+    expect(paper.questions.map((question: any) => question.definition.blocks[0].id)).toEqual(
+      EXPECTED.map((label) => `block-${label}`)
+    );
+    expect(paper.questions.map((question: any) => question.order)).toEqual(EXPECTED.map((_, index) => index + 1));
+  });
+
   it('summarises a container in delivery order', async () => {
     const { db, schema, container } = await load();
     const courseId = await seedCourse(db, schema);
