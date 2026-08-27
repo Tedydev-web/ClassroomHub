@@ -23,7 +23,7 @@ Headings and page breaks may separate sections.
 
 ### Where the answer key may live
 
-Any one of these states the key. All are read the same way and produce the same draft:
+Any one of these states the key. The importer recognises them all with the same readers:
 
 - the correct option highlighted, bold, or underlined in the paper itself;
 - a table at the end of the paper, laid out either as `Câu | Đáp án` rows or as a grid of
@@ -31,7 +31,15 @@ Any one of these states the key. All are read the same way and produce the same 
 - one line listing every answer — `1B 2C 3A 4D`, `ĐÁP ÁN: 1B 2C 3A 4D`, or `1 - B 2 - C`;
 - one answer per line — `1. B` or `Đáp án 1: B`;
 - a separate file holding only the key, or a second copy of the paper with the answers
-  marked. Upload it on the review screen; DOCX and text-based PDF are both accepted.
+  marked. Upload it on the review screen; DOCX is accepted, and PDF when PDF import is
+  enabled.
+
+A key inside the paper and a key in its own file are read alike but recorded differently.
+A key found in the paper is quoted from the source, so two carriers that disagree raise a
+conflict for the teacher to settle. A key arriving as its own file is recorded as
+teacher-supplied and is applied only to questions that still have no answer: where it
+disagrees with an answer the paper already marked, the paper wins and the file's answer is
+ignored. Put the key in the paper when you want disagreements surfaced.
 
 A key that numbers its answers may cover only some questions. The answers it does give are
 kept, and publishing stays blocked until every remaining question has one. A key written as

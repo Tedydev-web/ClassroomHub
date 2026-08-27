@@ -138,6 +138,16 @@ function answerPatch(question: KeyableQuestion, value: string): ExamImportAnswer
   }
 }
 
+/**
+ * Applies a key whose entries name the question they belong to.
+ *
+ * Key number `n` addresses the `n`-th question of the draft in reading order, not the
+ * question whose `sourceNumber` reads `n`. The two agree on every paper measured so far,
+ * and the draft's order is the paper's order, so the mapping is the paper's numbering in
+ * practice. It is a positional contract all the same: a paper whose printed numbering
+ * skips or restarts would key the wrong questions, and only the caller can see that.
+ * A number past the end is caught below; a number that merely points somewhere else is not.
+ */
 function numberedOperations(
   questions: ExamImportQuestion[],
   answers: NumberedAnswer[]
@@ -168,6 +178,15 @@ function numberedOperations(
   // that the count disagreed. Publication stays blocked either way: every question left
   // without a key raises its own blocking finding during validation.
   const covered = missingQuestions.filter(({ questionNumber }) => answersByNumber.has(questionNumber));
+  if (covered.length === 0) {
+    // Applying nothing is not a malformed patch, but that is what the patch layer would
+    // call it — an empty operation list fails its own schema. Say what actually happened,
+    // in terms of the key the teacher supplied.
+    throw new ExamImportCompactAnswerKeyError(
+      'ANSWER_KEY_COUNT_MISMATCH',
+      `Answer key covers none of the ${missingQuestions.length} questions still missing an answer`
+    );
+  }
 
   for (const questionNumber of answersByNumber.keys()) {
     const question = questions[questionNumber - 1];

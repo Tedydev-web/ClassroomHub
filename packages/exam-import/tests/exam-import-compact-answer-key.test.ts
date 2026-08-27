@@ -72,6 +72,35 @@ describe('applyExamImportCompactAnswerKey', () => {
     expect(validateExamImportDraft(result.draft, context).publishable).toBe(false);
   });
 
+  it('names the problem when a numbered key covers none of the missing answers', () => {
+    // Applying nothing is not a malformed patch, and saying so was how it read: the patch
+    // layer rejects an empty operation list with a message about the patch, which tells a
+    // teacher nothing about their key.
+    // Question 1 already has an answer; question 2 is the one still missing. A key naming
+    // only question 1 therefore covers nothing that needs covering.
+    const draft = buildValidExamImportDraft();
+    const firstQuestion = draft.sections[0]!.questions[0]!;
+    const secondQuestion = structuredClone(firstQuestion);
+    secondQuestion.id = 'question-2';
+    secondQuestion.order = 1;
+    secondQuestion.sourceNumber = '2';
+    secondQuestion.options = secondQuestion.options.map((option) => ({
+      ...option,
+      id: option.id.replace('option-', 'question-2-option-')
+    }));
+    secondQuestion.answerCandidates = [];
+    secondQuestion.answerKey = null;
+    secondQuestion.review = 'unresolved';
+    secondQuestion.confidence = 'none';
+    draft.sections[0]!.questions.push(secondQuestion);
+
+    expect(() => applyExamImportCompactAnswerKey(draft, '1B', context)).toThrowError(
+      expect.objectContaining<Partial<ExamImportCompactAnswerKeyError>>({
+        code: 'ANSWER_KEY_COUNT_MISMATCH'
+      })
+    );
+  });
+
   it('rejects an unnumbered key whose length disagrees with the missing answers', () => {
     // Positional keys carry no question numbers, so a short one cannot be applied in part —
     // every answer after the gap would land on the wrong question. Numbers are what make

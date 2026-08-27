@@ -86,3 +86,18 @@ describe('answer key document — a marked-up copy of the paper', () => {
     );
   }, 60000);
 });
+
+describe('toCompactAnswerKey', () => {
+  it('joins several answers for one question into a single entry', () => {
+    // A multi-select question yields one pair per correct option. Emitting them as
+    // separate entries repeats the question number, which the compact-key parser rejects
+    // as a duplicate — taking the whole document down with it.
+    expect(
+      toCompactAnswerKey([
+        { number: 1, value: 'A' },
+        { number: 1, value: 'C' },
+        { number: 2, value: 'B' }
+      ])
+    ).toBe('1A,C 2B');
+  });
+});

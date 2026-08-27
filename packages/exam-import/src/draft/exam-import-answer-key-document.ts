@@ -95,8 +95,22 @@ function answersFromMarkedUpPaper(runs: readonly SourceRun[]): AnswerKeyPair[] {
  * and its own way of being subtly different.
  */
 export function toCompactAnswerKey(pairs: readonly AnswerKeyPair[]): string {
-  return [...pairs]
-    .sort((left, right) => left.number - right.number)
-    .map((pair) => `${pair.number}${pair.value}`)
+  // A question with several correct options arrives as several pairs sharing one number.
+  // Written out separately they read as a repeated question number, which the compact-key
+  // parser rejects as a duplicate and refuses the whole document over. Comma-joined is the
+  // form that parser already accepts for a multi-select answer.
+  const byNumber = new Map<number, string[]>();
+  for (const pair of pairs) {
+    const values = byNumber.get(pair.number);
+    if (values) {
+      if (!values.includes(pair.value)) values.push(pair.value);
+      continue;
+    }
+    byNumber.set(pair.number, [pair.value]);
+  }
+
+  return [...byNumber.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([number, values]) => `${number}${values.join(',')}`)
     .join(' ');
 }
