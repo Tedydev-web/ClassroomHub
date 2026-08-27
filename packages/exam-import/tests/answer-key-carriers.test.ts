@@ -39,6 +39,12 @@ async function docx(body: string) {
   return zip.generateAsync({ type: 'uint8array' });
 }
 
+// A run carrying `<w:b/>`, so a paper can mark its answer by emboldening the option.
+const boldRun = (text: string) => `<w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r>`;
+const plainRun = (text: string) => `<w:r><w:t xml:space="preserve">${text}</w:t></w:r>`;
+const optionParagraph = (label: string, body: string, bold: boolean) =>
+  `<w:p>${bold ? boldRun(label) : plainRun(label)}${plainRun(body)}</w:p>`;
+
 const KEY = ['B', 'C', 'A', 'D'];
 const QUESTIONS = KEY.map(
   (_, index) =>
@@ -72,6 +78,41 @@ async function importWith(tail: string) {
 }
 
 describe('answer key carriers', () => {
+  it('reads a paper that marks its answers in bold instead of highlight', async () => {
+    // Bold is listed beside underline, highlight and colour as an answer carrier, but every
+    // test for it until now checked only that bold is *ignored* when it covers every option.
+    // A paper that emboldens exactly the correct option is the commoner case and had no test
+    // at all, so this pins the direction that actually produces a key.
+    const body = KEY.map(
+      (answer, index) =>
+        paragraph(`Câu ${index + 1}: Nội dung câu hỏi số ${index + 1}?`) +
+        ['A', 'B', 'C', 'D']
+          .map((label) => optionParagraph(`${label}.`, ` đáp án ${label}${index + 1}`, label === answer))
+          .join('')
+    ).join('');
+
+    const read = await readDocxRuns(await docx(body));
+    const draft = createExamImportDraftFromRuns(read.runs, {
+      assetId: 'asset',
+      fileName: 'exam.docx',
+      mimeType: MIME,
+      extractor: 'docx'
+    } as never);
+    const questions = draft.sections.flatMap((section) => section.questions);
+
+    expect(questions).toHaveLength(4);
+    expect(
+      questions.map((question) => {
+        const options = (question as { options?: Array<{ id: string; sourceLabel: string }> }).options ?? [];
+        const key = (question as { answerKey?: { correctOptionIds?: string[] } | null }).answerKey;
+
+        return (key?.correctOptionIds ?? [])
+          .map((id) => options.find((option) => option.id === id)?.sourceLabel ?? '?')
+          .join('');
+      })
+    ).toEqual(KEY);
+  });
+
   it('reads a vertical table headed Câu / Đáp án', async () => {
     const tail =
       paragraph('ĐÁP ÁN') + table(row('Câu', 'Đáp án'), ...KEY.map((answer, index) => row(String(index + 1), answer)));
