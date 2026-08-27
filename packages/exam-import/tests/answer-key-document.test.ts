@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { DOCX_PART } from '../src/docx/docx-package';
 import { readDocxRuns } from '../src/docx/read-docx-runs';
 import { readAnswerKeyPairsFromRuns, toCompactAnswerKey } from '../src/draft/exam-import-answer-key-document';
+import { applyExamImportCompactAnswerKey } from '../src/draft/exam-import-compact-answer-key';
+import { buildValidExamImportDraft } from './fixtures/exam-import-draft-fixture';
 
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const paragraph = (text: string) => `<w:p><w:r><w:t xml:space="preserve">${text}</w:t></w:r></w:p>`;
@@ -99,5 +101,39 @@ describe('toCompactAnswerKey', () => {
         { number: 2, value: 'B' }
       ])
     ).toBe('1A,C 2B');
+  });
+});
+
+describe('a multi-select key travels the whole chain', () => {
+  it('is read, rendered and applied without the question number repeating', () => {
+    // The break this pins: two correct options for one question used to render as `1A 1C`.
+    // The compact-key parser reads the repeated number as a duplicate and refuses the whole
+    // document, so no multi-select paper could supply its key as a separate file. Reading,
+    // rendering and applying are tested together because each half passed on its own while
+    // the seam between them did not.
+    const key = toCompactAnswerKey([
+      { number: 1, value: 'A' },
+      { number: 1, value: 'B' }
+    ]);
+    expect(key).toBe('1A,B');
+
+    const draft = buildValidExamImportDraft();
+    const question = draft.sections[0]!.questions[0]!;
+    if (question.kind !== 'choice') throw new Error('fixture is expected to be a choice question');
+    question.cardinality = 'multiple';
+    question.answerCandidates = [];
+    question.answerKey = null;
+    question.review = 'unresolved';
+    question.confidence = 'none';
+
+    const result = applyExamImportCompactAnswerKey(draft, key, {
+      enabledQuestionKinds: new Set(['choice', 'true_false_group', 'short_answer', 'numeric', 'essay'] as const)
+    });
+
+    expect(result.appliedCount).toBe(1);
+    expect(result.draft.sections[0]!.questions[0]!.answerKey).toMatchObject({
+      kind: 'choice',
+      correctOptionIds: ['option-a', 'option-b']
+    });
   });
 });

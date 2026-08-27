@@ -55,7 +55,11 @@ function parseNumberedLines(lines: string[]): NumberedAnswer[] | null {
 }
 
 function parseCompactPairs(value: string): NumberedAnswer[] | null {
-  const pattern = /(?:^|[\s;])(\d+)\s*[.)-]?\s*([A-Za-zĐđ01]+)(?=[\s;]|$)/gu;
+  // The value may join several labels for one question — a multi-select answer is written
+  // `A,C`, which is the form the applier already splits on. Only a separator *between*
+  // labels is allowed, so `1A,2B` still fails to parse rather than reading as one answer
+  // of "A,2B".
+  const pattern = /(?:^|[\s;])(\d+)\s*[.)-]?\s*([A-Za-zĐđ01]+(?:[,/&|][A-Za-zĐđ01]+)*)(?=[\s;]|$)/gu;
   const matches = [...value.matchAll(pattern)];
   if (matches.length === 0) return null;
 
