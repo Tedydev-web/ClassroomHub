@@ -126,3 +126,27 @@ describe('answer key carriers', () => {
     await expect(importWith(tail)).resolves.toMatchObject({ count: 5 });
   });
 });
+
+/**
+ * A header-less grid is recognised by shape alone, so the shape has to carry its weight.
+ * These are the tables that look like a key and are not one.
+ */
+describe('answer key carriers — what must not be read as a key', () => {
+  it('leaves a small two-column table alone', async () => {
+    // A rubric, a mark scheme, a legend: two columns of number beside letter, and nothing
+    // to do with the questions.
+    const tail = paragraph('THANG ĐIỂM') + table(row('Mức', 'Điểm'), row('1', 'A'), row('2', 'B'));
+    await expect(importWith(tail)).resolves.toEqual({ count: 4, answers: ['', '', '', ''] });
+  });
+
+  it('leaves a grid whose numbers do not ascend alone', async () => {
+    const tail = paragraph('BẢNG') + table(row('3', '1', '4', '2'), row('B', 'C', 'A', 'D'));
+    await expect(importWith(tail)).resolves.toEqual({ count: 4, answers: ['', '', '', ''] });
+  });
+
+  it('still reads a headed table however few rows it has', async () => {
+    // A header states intent, so it needs no corroboration from its size.
+    const tail = paragraph('ĐÁP ÁN') + table(row('Câu', 'Đáp án'), row('1', 'B'), row('2', 'C'));
+    await expect(importWith(tail)).resolves.toMatchObject({ count: 4 });
+  });
+});
