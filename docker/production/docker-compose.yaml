@@ -80,7 +80,20 @@ services:
       io.classroom.role: redis
     # Append-only so queued jobs survive a restart; a lost queue means lost
     # transcodes, transcriptions, and outbound email.
-    command: ["redis-server", "--appendonly", "yes"]
+    # `noeviction` because these are jobs: dropping a key to make room loses work that
+    # nobody knows was lost. The bound sits below the container limit so a full queue
+    # refuses writes with an error somebody can read, instead of being killed mid-write
+    # and coming back to replay its append-only file.
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--maxmemory",
+        "1600mb",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
     volumes:
       - /data/classroomhub-production/redis:/data
     healthcheck:
@@ -110,7 +123,11 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 512M
+          # Redis reported a 525 MB dataset while capped at 512 MB: the data did not fit
+          # its own limit, so every append-only rewrite forked into a wall and the
+          # container restarted — 1,848 times before anybody counted. Sized for the
+          # working set plus the copy-on-write a rewrite needs.
+          memory: 2G
 
   # Schema migration runs once per deploy, before any app process serves traffic.
   # Keeping it out of the API entrypoint means a failed migration blocks the
