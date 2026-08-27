@@ -129,7 +129,6 @@ const FORM_FIELD_LABEL_PATTERN =
 const INSTRUCTION_RANGE_PATTERN = /\bfrom\s+(\d+)\s*(?:to|through|[-–—])\s*(\d+)\b/iu;
 const SOLUTION_MARKER_PATTERN = /^(?:Lời giải|Giải thích|Hướng dẫn giải)\b/iu;
 const ANSWER_LINE_PATTERN = /^(?:Đáp án|Dap an|Answer)\s*:/iu;
-const COMPACT_KEY_PAIR_PATTERN = /(\d+)\s*[.)-]?\s*([A-D])(?=\s|$|\d)/giu;
 const TABLE_QUESTION_HEADER_PATTERN = /^(?:câu|cau|question|questions?)$/iu;
 const TABLE_ANSWER_HEADER_PATTERN = /^(?:chọn|chon|đáp án|dap an|answer|answers?|key)$/iu;
 const STRONG_TABLE_QUESTION_HEADER_PATTERN = /^(?:câu|cau)$/iu;
