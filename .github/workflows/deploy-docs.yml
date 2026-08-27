@@ -83,6 +83,14 @@ jobs:
       # Cloudflare's workerd binary needs newer glibc than the runner host
       # provides. Pin the full toolchain to Debian Bookworm so build and deploy
       # do not depend on the host operating system.
+      #
+      # The workspace is bind-mounted rather than taken with `--volumes-from
+      # "$HOSTNAME"`. That form needs the job itself to be running inside a
+      # container of that name; this job runs on `ubuntu-latest`, where $HOSTNAME
+      # is the hosted virtual machine and no such container exists, so every run
+      # since the job moved there has died on `No such container: runnervm…`.
+      # On a hosted runner the Docker daemon is that same machine, so the
+      # workspace path resolves directly.
       - name: Build and deploy website in compatible container
         env:
           R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -104,7 +112,7 @@ jobs:
             --env R2_SECRET_ACCESS_KEY \
             --env CLOUDFLARE_ACCOUNT_ID \
             --env CLOUDFLARE_API_TOKEN \
-            --volumes-from "$HOSTNAME" \
+            --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
             --volume "$dependency_volume:$GITHUB_WORKSPACE/node_modules" \
             --workdir "$GITHUB_WORKSPACE" \
             node:22-bookworm-slim \
