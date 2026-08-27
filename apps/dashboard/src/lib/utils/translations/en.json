@@ -5032,7 +5032,9 @@
       "document_only": "Choose a valid DOCX, PDF, Aiken, or GIFT file.",
       "invalid_size": "The document is empty or exceeds the upload limit.",
       "invalid_source": "The uploaded document could not be used for an exam import.",
-      "failed": "The document could not be uploaded. Try again."
+      "failed": "The document could not be uploaded. Try again.",
+      "storage_rejected": "Storage refused this file. This is not a transient error — ask an administrator to check the storage credentials.",
+      "network": "The file could not be sent. Check your connection and try again."
     },
     "status": {
       "queued": "Import queued",

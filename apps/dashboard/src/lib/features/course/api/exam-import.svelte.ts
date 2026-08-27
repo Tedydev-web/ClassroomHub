@@ -9,6 +9,7 @@ import { DocumentUploader } from '$lib/utils/services/courses/presign';
 import { lessonDocUpload, resetDocumentUploadStore } from '$features/course/components/lesson/store';
 import { mediaApi } from '$features/media/api';
 import { snackbar } from '$features/ui/snackbar/store';
+import { classifyUploadFailure, uploadFailureMessageKey } from '$features/course/utils/upload-failure';
 import { t } from '$lib/utils/functions/translations';
 import { env } from '$env/dynamic/public';
 import { SvelteDate } from 'svelte/reactivity';
@@ -105,7 +106,9 @@ export class ExamImportApi extends BaseApiWithErrors {
       return this.create(courseId, asset.id);
     } catch (error) {
       console.error('ExamImportApi.uploadAndCreate error:', error);
-      snackbar.error('exam_import.upload.failed');
+      // Storage refusing the request is not a transient error, and telling a teacher to
+      // try again hid a sixteen-day outage. Say which kind of failure this was.
+      snackbar.error(uploadFailureMessageKey(classifyUploadFailure(error)));
       return null;
     } finally {
       this.isUploading = false;

@@ -5249,7 +5249,9 @@
       "document_only": "Hãy chọn một tệp DOCX, PDF, Aiken hoặc GIFT hợp lệ.",
       "invalid_size": "Tài liệu rỗng hoặc vượt quá giới hạn tải lên.",
       "invalid_source": "Không thể dùng tài liệu đã tải lên để nhập đề thi.",
-      "failed": "Không thể tải tài liệu lên. Hãy thử lại."
+      "failed": "Không thể tải tài liệu lên. Hãy thử lại.",
+      "storage_rejected": "Kho lưu trữ từ chối tệp này. Đây không phải lỗi tạm thời — hãy báo quản trị viên kiểm tra thông tin đăng nhập kho lưu trữ.",
+      "network": "Không gửi được tệp lên. Kiểm tra kết nối mạng rồi thử lại."
     },
     "status": {
       "queued": "Đã xếp hàng nhập đề",
