@@ -4,6 +4,9 @@
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
   import { Textarea } from '@cio/ui/base/textarea';
+  import { Badge } from '@cio/ui/base/badge';
+  import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
+  import { markAttemptPaper } from '$features/exam/attempt-marking';
 
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -94,24 +97,38 @@
     }
   }
 
-  function isCorrectOption(questionId: number, optionId: string): boolean {
-    const question = data.paper?.questions?.find((entry: { questionId: number }) => entry.questionId === questionId);
-    const blocks = (question?.definition?.blocks ?? []) as Array<{
-      kind: string;
-      interaction?: { kind: string; config?: { correctOptionIds?: string[] } };
-    }>;
+  /** The paper as a marker reads it. Derived in a module so it can be tested without a browser. */
+  const markedItems = $derived(markAttemptPaper(data.paper?.questions ?? [], answerByQuestion));
 
-    return blocks.some(
-      (block) => block.kind === 'interaction' && block.interaction?.config?.correctOptionIds?.includes(optionId)
-    );
-  }
+  async function saveMark(questionId: number) {
+    const raw = marks[questionId];
+    const numeric = Number(raw?.score);
 
-  function chosenOptionIds(questionId: number): string[] {
-    const answer = answerByQuestion.get(questionId) as
-      | { responses?: Array<{ response?: { selectedOptionIds?: string[] } }> }
-      | undefined;
+    if (!Number.isFinite(numeric)) {
+      snackbar.error($t('exam.results.mark_must_be_number'));
+      return;
+    }
 
-    return (answer?.responses ?? []).flatMap((entry) => entry.response?.selectedOptionIds ?? []);
+    savingQuestionId = questionId;
+
+    try {
+      const response = await classroomhub.exam.attempt[':attemptId'].mark.$put({
+        param: { attemptId: data.attemptId },
+        json: { questionId, score: numeric, comment: raw?.comment ?? '' }
+      });
+      const body = await response.json();
+
+      if ('success' in body && body.success) {
+        // Recomputed on the server by the one function that owns the total, so the
+        // automatic part and the marks cannot drift apart.
+        saved = { score: body.data.score, total: body.data.total, gradingState: body.data.gradingState };
+        snackbar.success($t('exam.results.mark_saved'));
+      } else {
+        snackbar.error($t('exam.results.mark_failed'));
+      }
+    } finally {
+      savingQuestionId = null;
+    }
   }
 </script>
 
@@ -137,27 +154,94 @@
 
   <Page.Body>
     {#snippet child()}
-      <ol class="ui:space-y-6">
-        {#each data.paper?.questions ?? [] as question (question.questionId)}
-          {@const chosen = chosenOptionIds(question.questionId)}
-          {@const trail = trailByQuestion.get(question.questionId) ?? []}
-          <li class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
-            <p class="ui:font-medium">{question.order}</p>
+      <ol class="ui:space-y-4">
+        {#each markedItems as item (item.questionId)}
+          {@const trail = trailByQuestion.get(item.questionId) ?? []}
+          <li class="ui:border-border ui:bg-card ui:space-y-3 ui:rounded-lg ui:border ui:p-4">
+            <div class="ui:flex ui:flex-wrap ui:items-center ui:gap-2">
+              <p class="ui:text-sm ui:font-semibold">
+                {item.lastNumber > item.firstNumber
+                  ? $t('exam.results.question_range', {
+                      from: String(item.firstNumber),
+                      to: String(item.lastNumber)
+                    })
+                  : $t('exam.results.question_label', { number: String(item.firstNumber) })}
+              </p>
+              {#if item.needsManual}
+                <Badge variant="secondary">{$t('exam.results.needs_manual')}</Badge>
+              {:else}
+                <Badge variant="outline">{$t('exam.results.auto_scored')}</Badge>
+              {/if}
+              {#if item.autoScore !== null}
+                <span class="ui:text-muted-foreground ui:ml-auto ui:text-xs ui:tabular-nums">
+                  {$t('exam.results.item_score', {
+                    score: String(item.autoScore),
+                    max: String(item.maxScore)
+                  })}
+                </span>
+              {/if}
+            </div>
 
-            {#if chosen.length > 0}
-              <ul class="ui:space-y-1 ui:text-sm">
-                {#each chosen as optionId (optionId)}
-                  <li
-                    class={isCorrectOption(question.questionId, optionId) ? 'ui:text-green-700' : 'ui:text-destructive'}
-                  >
-                    {optionId}
-                    {isCorrectOption(question.questionId, optionId) ? '✓' : '✗'}
-                  </li>
-                {/each}
-              </ul>
-            {:else}
-              <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.results.not_answered')}</p>
+            {#if item.unreadable}
+              <p class="ui:text-destructive ui:text-sm">{$t('exam.results.unsupported_item')}</p>
+            {:else if item.scoreBlocked}
+              <p class="ui:text-amber-600 ui:dark:text-amber-400 ui:text-xs">
+                {$t('exam.results.score_blocked')}
+              </p>
             {/if}
+
+            {#if item.sharedHtml}
+              <!--
+                Collapsed. A marker needs the passage to settle a disputed answer and almost
+                never otherwise, and ten passages opened at once bury the forty answers this
+                page exists to show.
+              -->
+              <details class="ui:border-border ui:rounded-md ui:border ui:px-3 ui:py-2">
+                <summary class="ui:text-muted-foreground ui:cursor-pointer ui:text-xs">
+                  {$t('exam.results.passage')}
+                </summary>
+                <div class="ui:mt-2 ui:text-sm">
+                  <SafeHtmlContent content={item.sharedHtml} />
+                </div>
+              </details>
+            {/if}
+
+            <ol class="ui:divide-border ui:divide-y">
+              {#each item.interactions as interaction (interaction.interactionId)}
+                <li class="ui:flex ui:flex-wrap ui:items-baseline ui:gap-x-2 ui:gap-y-1 ui:py-2 ui:text-sm">
+                  <span class="ui:text-muted-foreground ui:w-8 ui:shrink-0 ui:tabular-nums">
+                    {interaction.number}.
+                  </span>
+
+                  {#if interaction.chosen.length === 0}
+                    <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
+                  {:else}
+                    <span
+                      class={interaction.isCorrect === false
+                        ? 'ui:text-destructive ui:min-w-0 ui:flex-1'
+                        : interaction.isCorrect === true
+                          ? 'ui:min-w-0 ui:flex-1 ui:text-emerald-600 ui:dark:text-emerald-400'
+                          : 'ui:min-w-0 ui:flex-1'}
+                    >
+                      {#each interaction.chosen as option (option.label)}
+                        <span class="ui:font-semibold">{option.label}.</span>
+                        <SafeHtmlContent content={option.html} />
+                      {/each}
+                      {#if interaction.isCorrect === true}<span aria-hidden="true"> ✓</span>{/if}
+                      {#if interaction.isCorrect === false}<span aria-hidden="true"> ✗</span>{/if}
+                    </span>
+                  {/if}
+
+                  {#if interaction.isCorrect === false && interaction.correct.length > 0}
+                    <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
+                      {$t('exam.results.correct_answer', {
+                        answer: interaction.correct.map((option) => option.label).join(', ')
+                      })}
+                    </span>
+                  {/if}
+                </li>
+              {/each}
+            </ol>
 
             {#if trail.length > 1}
               <!-- Settles a dispute about a result, and shows a paper answered all at once. -->
@@ -166,45 +250,52 @@
               </p>
             {/if}
 
-            <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-2">
-              <div class="ui:w-24">
-                <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${question.questionId}`}
-                  >{$t('exam.results.score_column')}</label
+            {#if item.needsManual}
+              <!--
+                One box per item, because a mark is saved against the item's questionId. It
+                appears only where a hand mark is actually owed; showing it under every
+                auto-scored question was most of what made this screen unreadable.
+              -->
+              <div class="ui:border-border ui:flex ui:flex-wrap ui:items-end ui:gap-2 ui:border-t ui:pt-3">
+                <div class="ui:w-24">
+                  <label class="ui:text-muted-foreground ui:text-xs" for={`mark-${item.questionId}`}>
+                    {$t('exam.results.score_column')}
+                  </label>
+                  <Input
+                    id={`mark-${item.questionId}`}
+                    inputmode="decimal"
+                    value={marks[item.questionId]?.score ?? ''}
+                    oninput={(event: Event) =>
+                      (edited[item.questionId] = {
+                        score: (event.currentTarget as HTMLInputElement).value,
+                        comment: marks[item.questionId]?.comment ?? ''
+                      })}
+                  />
+                </div>
+                <div class="ui:min-w-48 ui:flex-1">
+                  <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${item.questionId}`}>
+                    {$t('exam.results.comment_column')}
+                  </label>
+                  <Textarea
+                    id={`comment-${item.questionId}`}
+                    rows={2}
+                    value={marks[item.questionId]?.comment ?? ''}
+                    oninput={(event: Event) =>
+                      (edited[item.questionId] = {
+                        score: marks[item.questionId]?.score ?? '',
+                        comment: (event.currentTarget as HTMLTextAreaElement).value
+                      })}
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  disabled={savingQuestionId === item.questionId}
+                  onclick={() => saveMark(item.questionId)}
                 >
-                <Input
-                  id={`mark-${question.questionId}`}
-                  inputmode="decimal"
-                  value={marks[question.questionId]?.score ?? ''}
-                  oninput={(event: Event) =>
-                    (edited[question.questionId] = {
-                      score: (event.currentTarget as HTMLInputElement).value,
-                      comment: marks[question.questionId]?.comment ?? ''
-                    })}
-                />
+                  {$t('exam.results.save_mark')}
+                </Button>
               </div>
-              <div class="ui:min-w-48 ui:flex-1">
-                <label class="ui:text-muted-foreground ui:text-xs" for={`comment-${question.questionId}`}
-                  >{$t('exam.results.comment_column')}</label
-                >
-                <Textarea
-                  id={`comment-${question.questionId}`}
-                  rows={2}
-                  value={marks[question.questionId]?.comment ?? ''}
-                  oninput={(event: Event) =>
-                    (edited[question.questionId] = {
-                      score: marks[question.questionId]?.score ?? '',
-                      comment: (event.currentTarget as HTMLTextAreaElement).value
-                    })}
-                />
-              </div>
-              <Button
-                size="sm"
-                disabled={savingQuestionId === question.questionId}
-                onclick={() => saveMark(question.questionId)}
-              >
-                {$t('exam.results.save_mark')}
-              </Button>
-            </div>
+            {/if}
           </li>
         {/each}
       </ol>
