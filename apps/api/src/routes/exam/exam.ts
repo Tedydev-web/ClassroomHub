@@ -2,6 +2,7 @@ import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
+import { examAttemptTeamMemberMiddleware, examTeamMemberMiddleware } from '@api/middlewares/exam-team-member';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 
@@ -137,7 +138,7 @@ export const examRouter = new Hono()
       }
     }
   )
-  .get('/:examId', authMiddleware, async (c) => {
+  .get('/:examId', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const exam = await getExamService(c.req.param('examId'));
 
@@ -147,7 +148,7 @@ export const examRouter = new Hono()
     }
   })
   // The paper is frozen here, so this is the last moment its questions can change.
-  .post('/:examId/open', authMiddleware, async (c) => {
+  .post('/:examId/open', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const exam = await openExamService(c.req.param('examId'));
 
@@ -156,7 +157,7 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .post('/:examId/close', authMiddleware, async (c) => {
+  .post('/:examId/close', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const exam = await closeExamService(c.req.param('examId'));
 
@@ -165,7 +166,7 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .post('/:examId/restore', authMiddleware, async (c) => {
+  .post('/:examId/restore', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const exam = await restoreExamService(c.req.param('examId'));
 
@@ -174,7 +175,7 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .get('/:examId/summary', authMiddleware, async (c) => {
+  .get('/:examId/summary', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const summary = await summariseExamPaperService(c.req.param('examId'));
 
@@ -185,7 +186,7 @@ export const examRouter = new Hono()
   })
   // Reading the list finalises expired attempts. A GET that writes is deliberate: it is
   // what makes a closed tab harmless. Do not "fix" it into a pure read.
-  .get('/:examId/results', authMiddleware, async (c) => {
+  .get('/:examId/results', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const rows = await listExamResultsService(c.req.param('examId'));
 
@@ -194,7 +195,7 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .get('/attempt/:attemptId', authMiddleware, async (c) => {
+  .get('/attempt/:attemptId', authMiddleware, examAttemptTeamMemberMiddleware, async (c) => {
     try {
       const detail = await getExamAttemptDetailService(c.req.param('attemptId'));
 
@@ -206,6 +207,7 @@ export const examRouter = new Hono()
   .put(
     '/attempt/:attemptId/mark',
     authMiddleware,
+    examAttemptTeamMemberMiddleware,
     zValidator(
       'json',
       z.object({ questionId: z.number().int().positive(), score: z.number(), comment: z.string().max(2000).optional() })
@@ -224,6 +226,7 @@ export const examRouter = new Hono()
   .post(
     '/attempt/:attemptId/reopen',
     authMiddleware,
+    examAttemptTeamMemberMiddleware,
     zValidator('json', z.object({ extraSeconds: z.number().int().positive().max(86_400) })),
     async (c) => {
       try {
@@ -238,6 +241,7 @@ export const examRouter = new Hono()
   .post(
     '/:examId/corrections',
     authMiddleware,
+    examTeamMemberMiddleware,
     zValidator(
       'json',
       z.discriminatedUnion('kind', [
@@ -269,7 +273,7 @@ export const examRouter = new Hono()
   )
   // Throwing a sitting away, so the paper can be sat again from nothing. Reopening is the
   // other remedy and keeps the answers; this one is for a paper that should not exist.
-  .delete('/attempt/:attemptId', authMiddleware, async (c) => {
+  .delete('/attempt/:attemptId', authMiddleware, examAttemptTeamMemberMiddleware, async (c) => {
     try {
       const deleted = await deleteAttemptService(c.req.param('attemptId'));
 
@@ -278,7 +282,7 @@ export const examRouter = new Hono()
       return handleError(c, error);
     }
   })
-  .delete('/:examId', authMiddleware, async (c) => {
+  .delete('/:examId', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const deleted = await deleteExamService(c.req.param('examId'));
 
