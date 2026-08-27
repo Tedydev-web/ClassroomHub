@@ -533,7 +533,7 @@
     "home": "Trang chủ",
     "my_learning": "Học tập của tôi",
     "certificates": "Chứng chỉ",
-    "exercise": "tập thể dục",
+    "exercise": "Bài tập",
     "community": "cộng đồng",
     "explore": "Khám phá",
     "help": "Trợ giúp",
@@ -2296,7 +2296,7 @@
           "section_description": "Nhóm các bài học và bài tập lại với nhau.",
           "lesson_title": "Bài học",
           "lesson_description": "Dạy bằng ghi chú, slide và video.",
-          "exercise_title": "tập thể dục",
+          "exercise_title": "Bài tập",
           "exercise_description": "Đánh giá học sinh bằng các câu hỏi và nhiệm vụ.",
           "exam_title": "Đề thi",
           "exam_description": "Bài thi có giờ, chấm điểm tự động."
@@ -3142,7 +3142,7 @@
       },
       "target": {
         "lesson": "Bài học",
-        "exercise": "tập thể dục",
+        "exercise": "Bài tập",
         "question": "Câu hỏi",
         "unknown": "Không xác định"
       },
@@ -5603,7 +5603,8 @@
       "copy_paper": "Chép thành bộ câu hỏi",
       "copying": "Đang chép…",
       "paper_copied": "Đã chép xong. Chọn bộ câu hỏi này ở dưới rồi đặt cấu hình đề thi.",
-      "copy_failed": "Không chép được bài tập"
+      "copy_failed": "Không chép được bài tập",
+      "import_document": "Nhập câu hỏi từ tài liệu"
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",

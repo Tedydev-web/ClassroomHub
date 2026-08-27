@@ -5593,7 +5593,8 @@
       "copy_paper": "Copy into a question set",
       "copying": "Copying…",
       "paper_copied": "Copied. Choose it below, then configure the exam.",
-      "copy_failed": "Could not copy that exercise"
+      "copy_failed": "Could not copy that exercise",
+      "import_document": "Import questions from a document"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
