@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 
 import { env } from './config/env';
 import { warnIfFfmpegMissing } from './utils/ffmpeg';
+import { startHealthcheckLoop } from './utils/healthcheck-loop';
 import { log } from './utils/logger';
 import { connectRedis, redis } from '@cio/core/utils/redis/redis';
 
@@ -19,21 +20,13 @@ async function refreshHealthcheck(): Promise<void> {
   await writeFile(healthcheckFile, `${Date.now()}\n`);
 }
 
-void refreshHealthcheck()
-  .then(() => {
-    const interval = setInterval(() => {
-      void refreshHealthcheck().catch((error: unknown) => {
-        log.error('worker-healthcheck-failed', { message: error instanceof Error ? error.message : String(error) });
-      });
-    }, 15_000);
-
-    interval.unref();
-  })
-  .catch((error: unknown) => {
-    log.error('worker-healthcheck-initialization-failed', {
-      message: error instanceof Error ? error.message : String(error)
-    });
-  });
+startHealthcheckLoop({
+  probe: refreshHealthcheck,
+  intervalMs: 15_000,
+  onError: (error: unknown) => {
+    log.error('worker-healthcheck-failed', { message: error instanceof Error ? error.message : String(error) });
+  }
+});
 
 void warnIfFfmpegMissing();
 

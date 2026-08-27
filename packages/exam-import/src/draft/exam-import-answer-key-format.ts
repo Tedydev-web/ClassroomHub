@@ -22,6 +22,10 @@ export const ANSWER_KEY_PAIR_PATTERN = /(\d+)\s*[.):\-–—]?\s*([A-D])(?=\s|$|
 const SINGLE_ANSWER_TOKEN_PATTERN = /^[A-D]$/iu;
 const BARE_NUMBER_PATTERN = /^\d+$/u;
 
+/** Below this, a grid is likelier to be a rubric than a key, and guessing costs more
+ * than declining. */
+const MINIMUM_HEADERLESS_KEY_PAIRS = 4;
+
 export type AnswerKeyPair = {
   number: number;
   value: string;
@@ -69,8 +73,18 @@ type GridCell = {
  *   1 2 3 4      |  1  B
  *   B C A D      |  2  C
  *
- * Returns an empty array when the table is anything else. Fewer than two pairs is treated
- * as no key at all: one number beside one letter is too weak a signal to act on.
+ * Shape is the only evidence a header-less grid offers, so it has to carry the whole
+ * claim. Two further conditions come from what separates a key from the tables that
+ * resemble one — a rubric, a mark scheme, a legend:
+ *
+ *   - the numbers ascend. A key is question order; a table whose first column is not in
+ *     order is indexing something else, and reading it as a key would assign answers to
+ *     the wrong questions rather than fail visibly.
+ *   - there are at least four pairs. Rubrics are short and keys are not, and a table too
+ *     small to be a key is also too small to be worth the risk of guessing.
+ *
+ * A table carrying a header states its intent in words and is read elsewhere, without
+ * either condition, because it needs no corroboration from its shape.
  */
 export function readAnswerKeyGrid(cells: GridCell[]): AnswerKeyPair[] {
   if (cells.length === 0) return [];
@@ -113,7 +127,7 @@ export function readAnswerKeyGrid(cells: GridCell[]): AnswerKeyPair[] {
     }
   }
 
-  if (pairs.length >= 2) return pairs;
+  if (isPlausibleKey(pairs)) return pairs;
 
   // Arrangement 2: every row is a single `number | answer` pair.
   const vertical: AnswerKeyPair[] = [];
@@ -123,5 +137,12 @@ export function readAnswerKeyGrid(cells: GridCell[]): AnswerKeyPair[] {
     vertical.push({ number: Number(numberCell.text), value: answerCell.text.toUpperCase() });
   }
 
-  return vertical.length >= 2 ? vertical : [];
+  return isPlausibleKey(vertical) ? vertical : [];
+}
+
+/** Long enough and ordered enough that shape alone is evidence. */
+function isPlausibleKey(pairs: readonly AnswerKeyPair[]): boolean {
+  if (pairs.length < MINIMUM_HEADERLESS_KEY_PAIRS) return false;
+
+  return pairs.every((pair, index) => index === 0 || pair.number > pairs[index - 1]!.number);
 }
