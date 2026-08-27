@@ -6,6 +6,8 @@
   import { Label } from '@cio/ui/base/label';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import * as Select from '@cio/ui/base/select';
+  import * as Card from '@cio/ui/base/card';
+  import * as Alert from '@cio/ui/base/alert';
 
   /**
    * Configuring an exam, using the vocabulary Vietnamese teachers already read.
@@ -93,108 +95,149 @@
 </script>
 
 <div class="ui:space-y-6">
-  <div class="ui:space-y-2">
-    <Label for="exam-title">{$t('exam.settings.title')}</Label>
-    <Input id="exam-title" bind:value={title} maxlength={300} />
-  </div>
+  <!--
+    Four sections, because these settings are not one list. A teacher setting up a first
+    exam reads them as four decisions — what the paper is, who may sit it, when, and what
+    the candidate learns afterwards — and the flat run of eight field groups gave them no
+    map for any of it.
+  -->
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_paper')}</Card.Title>
+    </Card.Header>
+    <Card.Content class="ui:space-y-2">
+      <Label for="exam-title">{$t('exam.settings.title')}</Label>
+      <Input id="exam-title" bind:value={title} maxlength={300} />
+    </Card.Content>
+  </Card.Root>
 
-  <fieldset class="ui:space-y-2">
-    <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.who_can_sit')}</legend>
-    <RadioGroup.Root bind:value={mode} class="ui:space-y-2">
-      <div class="ui:flex ui:items-center ui:gap-2">
-        <RadioGroup.Item value="public" id="exam-mode-public" />
-        <Label for="exam-mode-public" class="ui:font-normal">{$t('exam.settings.anyone_with_link')}</Label>
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_access')}</Card.Title>
+      <Card.Description>{$t('exam.settings.access_help')}</Card.Description>
+    </Card.Header>
+    <Card.Content class="ui:space-y-6">
+      <fieldset class="ui:space-y-2">
+        <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.who_can_sit')}</legend>
+        <RadioGroup.Root bind:value={mode} class="ui:space-y-2">
+          <div class="ui:flex ui:items-center ui:gap-2">
+            <RadioGroup.Item value="public" id="exam-mode-public" />
+            <Label for="exam-mode-public" class="ui:font-normal">{$t('exam.settings.anyone_with_link')}</Label>
+          </div>
+          <div class="ui:flex ui:items-center ui:gap-2">
+            <RadioGroup.Item value="private" id="exam-mode-private" />
+            <Label for="exam-mode-private" class="ui:font-normal">{$t('exam.settings.signed_in_only')}</Label>
+          </div>
+        </RadioGroup.Root>
+      </fieldset>
+
+      <fieldset class="ui:space-y-2">
+        <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.declared_fields')}</legend>
+        <div class="ui:flex ui:items-center ui:gap-2">
+          <Checkbox id="exam-requires-name" bind:checked={requiresName} />
+          <Label for="exam-requires-name" class="ui:font-normal">{$t('exam.entry.full_name')}</Label>
+        </div>
+        <div class="ui:flex ui:items-center ui:gap-2">
+          <Checkbox id="exam-requires-class" bind:checked={requiresClass} />
+          <Label for="exam-requires-class" class="ui:font-normal">{$t('exam.entry.class_name')}</Label>
+        </div>
+        <div class="ui:flex ui:items-center ui:gap-2">
+          <Checkbox id="exam-requires-candidate" bind:checked={requiresCandidateNumber} />
+          <Label for="exam-requires-candidate" class="ui:font-normal">{$t('exam.entry.candidate_number')}</Label>
+        </div>
+      </fieldset>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_timing')}</Card.Title>
+      <Card.Description>{$t('exam.settings.timing_help')}</Card.Description>
+    </Card.Header>
+    <Card.Content class="ui:grid ui:gap-4 sm:grid-cols-2">
+      <div class="ui:space-y-2">
+        <Label for="exam-minutes">{$t('exam.settings.working_minutes')}</Label>
+        <Input
+          id="exam-minutes"
+          inputmode="numeric"
+          bind:value={workingMinutes}
+          placeholder={$t('exam.settings.leave_empty_unlimited')}
+        />
       </div>
-      <div class="ui:flex ui:items-center ui:gap-2">
-        <RadioGroup.Item value="private" id="exam-mode-private" />
-        <Label for="exam-mode-private" class="ui:font-normal">{$t('exam.settings.signed_in_only')}</Label>
+      <div class="ui:space-y-2">
+        <Label for="exam-attempts">{$t('exam.settings.max_attempts')}</Label>
+        <Input
+          id="exam-attempts"
+          inputmode="numeric"
+          bind:value={maxAttempts}
+          placeholder={$t('exam.settings.unlimited_attempts')}
+        />
       </div>
-    </RadioGroup.Root>
-  </fieldset>
+      <div class="ui:space-y-2">
+        <Label for="exam-opens">{$t('exam.settings.opens_at')}</Label>
+        <Input id="exam-opens" type="datetime-local" bind:value={opensAt} />
+      </div>
+      <div class="ui:space-y-2">
+        <Label for="exam-closes">{$t('exam.settings.closes_at')}</Label>
+        <Input id="exam-closes" type="datetime-local" bind:value={closesAt} />
+      </div>
+    </Card.Content>
+  </Card.Root>
 
-  <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
-    <div class="ui:space-y-2">
-      <Label for="exam-minutes">{$t('exam.settings.working_minutes')}</Label>
-      <Input
-        id="exam-minutes"
-        inputmode="numeric"
-        bind:value={workingMinutes}
-        placeholder={$t('exam.settings.leave_empty_unlimited')}
-      />
-    </div>
-    <div class="ui:space-y-2">
-      <Label for="exam-attempts">{$t('exam.settings.max_attempts')}</Label>
-      <Input
-        id="exam-attempts"
-        inputmode="numeric"
-        bind:value={maxAttempts}
-        placeholder={$t('exam.settings.leave_empty_unlimited')}
-      />
-    </div>
-    <div class="ui:space-y-2">
-      <Label for="exam-opens">{$t('exam.settings.opens_at')}</Label>
-      <Input id="exam-opens" type="datetime-local" bind:value={opensAt} />
-    </div>
-    <div class="ui:space-y-2">
-      <Label for="exam-closes">{$t('exam.settings.closes_at')}</Label>
-      <Input id="exam-closes" type="datetime-local" bind:value={closesAt} />
-    </div>
-  </div>
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_reveal')}</Card.Title>
+      <Card.Description>{$t('exam.settings.reveal_help')}</Card.Description>
+    </Card.Header>
+    <Card.Content class="ui:grid ui:gap-4 sm:grid-cols-2">
+      <div class="ui:space-y-2">
+        <Label for="exam-score-visibility">{$t('exam.settings.score_visibility')}</Label>
+        <Select.Root type="single" bind:value={scoreVisibility}>
+          <Select.Trigger id="exam-score-visibility" class="ui:w-full">
+            {REVEAL_OPTIONS.find((option) => option.value === scoreVisibility)?.label ?? ''}
+          </Select.Trigger>
+          <Select.Content>
+            {#each REVEAL_OPTIONS as option (option.value)}
+              <Select.Item value={option.value}>{option.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div class="ui:space-y-2">
+        <Label for="exam-answer-visibility">{$t('exam.settings.answer_visibility')}</Label>
+        <Select.Root type="single" bind:value={answerVisibility}>
+          <Select.Trigger id="exam-answer-visibility" class="ui:w-full">
+            {REVEAL_OPTIONS.find((option) => option.value === answerVisibility)?.label ?? ''}
+          </Select.Trigger>
+          <Select.Content>
+            {#each REVEAL_OPTIONS as option (option.value)}
+              <Select.Item value={option.value}>{option.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+    </Card.Content>
+  </Card.Root>
 
-  <fieldset class="ui:space-y-2">
-    <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.declared_fields')}</legend>
-    <div class="ui:flex ui:items-center ui:gap-2">
-      <Checkbox id="exam-requires-name" bind:checked={requiresName} />
-      <Label for="exam-requires-name" class="ui:font-normal">{$t('exam.entry.full_name')}</Label>
-    </div>
-    <div class="ui:flex ui:items-center ui:gap-2">
-      <Checkbox id="exam-requires-class" bind:checked={requiresClass} />
-      <Label for="exam-requires-class" class="ui:font-normal">{$t('exam.entry.class_name')}</Label>
-    </div>
-    <div class="ui:flex ui:items-center ui:gap-2">
-      <Checkbox id="exam-requires-candidate" bind:checked={requiresCandidateNumber} />
-      <Label for="exam-requires-candidate" class="ui:font-normal">{$t('exam.entry.candidate_number')}</Label>
-    </div>
-  </fieldset>
-
-  <div class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
-    <div class="ui:space-y-2">
-      <Label for="exam-score-visibility">{$t('exam.settings.score_visibility')}</Label>
-      <Select.Root type="single" bind:value={scoreVisibility}>
-        <Select.Trigger id="exam-score-visibility" class="ui:w-full">
-          {REVEAL_OPTIONS.find((option) => option.value === scoreVisibility)?.label ?? ''}
-        </Select.Trigger>
-        <Select.Content>
-          {#each REVEAL_OPTIONS as option (option.value)}
-            <Select.Item value={option.value}>{option.label}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
-    </div>
-    <div class="ui:space-y-2">
-      <Label for="exam-answer-visibility">{$t('exam.settings.answer_visibility')}</Label>
-      <Select.Root type="single" bind:value={answerVisibility}>
-        <Select.Trigger id="exam-answer-visibility" class="ui:w-full">
-          {REVEAL_OPTIONS.find((option) => option.value === answerVisibility)?.label ?? ''}
-        </Select.Trigger>
-        <Select.Content>
-          {#each REVEAL_OPTIONS as option (option.value)}
-            <Select.Item value={option.value}>{option.label}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
-    </div>
-  </div>
-
+  <!--
+    The reasons the save button is disabled, stated where the button is. They used to be a
+    bare list at the foot of the form, so a teacher met a dead button first and the
+    explanation second.
+  -->
   {#if issues.length > 0}
-    <ul class="ui:text-destructive ui:space-y-1 ui:text-sm" role="alert">
-      {#each issues as issue (issue)}
-        <li>{issue}</li>
-      {/each}
-    </ul>
+    <Alert.Root variant="destructive" role="alert">
+      <Alert.Title>{$t('exam.settings.issues_heading', { count: String(issues.length) })}</Alert.Title>
+      <Alert.Description>
+        <ul class="ui:list-disc ui:space-y-1 ui:pl-4">
+          {#each issues as issue (issue)}
+            <li>{issue}</li>
+          {/each}
+        </ul>
+      </Alert.Description>
+    </Alert.Root>
   {/if}
 
-  <Button class="ui:min-h-11" disabled={issues.length > 0 || submitting} onclick={save}>
+  <Button class="ui:min-h-11 ui:w-full sm:w-auto" disabled={issues.length > 0 || submitting} onclick={save}>
     {submitting ? $t('exam.settings.saving') : $t('exam.settings.save')}
   </Button>
 </div>
