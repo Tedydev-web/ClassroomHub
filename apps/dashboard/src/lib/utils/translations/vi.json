@@ -5555,7 +5555,7 @@
       "no_name": "Không tên",
       "summary_sat": "Đã thi",
       "summary_marked": "Đã chấm xong",
-      "summary_awaiting": "Chờ chấm tay",
+      "awaiting_label": "Chờ chấm tay",
       "summary_average": "Điểm trung bình",
       "sort_by": "Sắp xếp",
       "sort_name": "Tên",

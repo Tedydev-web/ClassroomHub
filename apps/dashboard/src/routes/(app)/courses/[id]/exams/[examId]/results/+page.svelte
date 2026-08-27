@@ -73,21 +73,18 @@
   function openAttempt(attemptId: string) {
     window.location.href = `/courses/${data.courseId}/exams/${data.examId}/attempts/${attemptId}`;
   }
-
-  const sat = $derived(rows.length);
-  const marked = $derived(rows.filter((row) => row.gradingState === 'complete').length);
-  const awaiting = $derived(rows.filter((row) => row.gradingState === 'awaiting_manual').length);
 </script>
 
 <Page.Root class="mx-auto flex w-[calc(95vw-var(--sidebar-width))]!">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{data.exam.title}</Page.Title>
-      <Page.Subtitle>
-        {$t('exam.results.summary_line', { sat: String(sat), marked: String(marked) })}{awaiting > 0
-          ? ` · ${$t('exam.results.summary_awaiting', { count: String(awaiting) })}`
-          : ''}
-      </Page.Subtitle>
+      <!--
+        Context, not counts. The table below states how many sat, how many are marked and
+        how many wait on a hand mark; repeating them here made the same four numbers appear
+        twice on one screen, in two different shapes.
+      -->
+      <Page.Subtitle>{$t('exam.manage.results')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
       <Button variant="outline" disabled={refreshing} onclick={refresh}>

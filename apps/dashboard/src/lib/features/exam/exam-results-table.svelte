@@ -228,7 +228,7 @@
 
     {@render stat($t('exam.results.summary_sat'), String(summary.sat))}
     {@render stat($t('exam.results.summary_marked'), String(summary.marked))}
-    {@render stat($t('exam.results.summary_awaiting'), String(summary.awaiting), summary.awaiting > 0)}
+    {@render stat($t('exam.results.awaiting_label'), String(summary.awaiting), summary.awaiting > 0)}
     {@render stat(
       $t('exam.results.summary_average'),
       summary.average === null ? '—' : summary.outOf ? `${summary.average}/${summary.outOf}` : summary.average

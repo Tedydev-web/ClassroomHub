@@ -5545,7 +5545,7 @@
       "no_name": "No name",
       "summary_sat": "Sat",
       "summary_marked": "Marked",
-      "summary_awaiting": "Awaiting a hand mark",
+      "awaiting_label": "Awaiting a hand mark",
       "summary_average": "Average score",
       "sort_by": "Sort",
       "sort_name": "Name",
