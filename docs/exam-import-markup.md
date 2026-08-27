@@ -21,9 +21,29 @@ Supported answer-key labels include `Answer`, `ANSWER`, and `Đáp án`. Multipl
 more than one option. Shared passages should appear before the questions that depend on them.
 Headings and page breaks may separate sections.
 
+### Where the answer key may live
+
+Any one of these states the key. All are read the same way and produce the same draft:
+
+- the correct option highlighted, bold, or underlined in the paper itself;
+- a table at the end of the paper, laid out either as `Câu | Đáp án` rows or as a grid of
+  question numbers over their answers;
+- one line listing every answer — `1B 2C 3A 4D`, `ĐÁP ÁN: 1B 2C 3A 4D`, or `1 - B 2 - C`;
+- one answer per line — `1. B` or `Đáp án 1: B`;
+- a separate file holding only the key, or a second copy of the paper with the answers
+  marked. Upload it on the review screen; DOCX and text-based PDF are both accepted.
+
+A key that numbers its answers may cover only some questions. The answers it does give are
+kept, and publishing stays blocked until every remaining question has one. A key written as
+one answer per line with no question numbers must cover every missing answer, because
+without numbers a short list would shift every answer after the gap onto the wrong question.
+
 The importer preserves bold, italic, underline, lists, tables, Office Math, and embedded raster
 images when the source contains those structures. It flags ambiguous grouping, incomplete option
-sets, conflicting keys, and missing keys for review.
+sets, conflicting keys, and missing keys for review. Each finding says who has to act on it:
+something the document does not contain and the teacher must supply, something the document
+states wrongly and the teacher must edit, or something the importer could not read and the
+teacher should check.
 
 Text-based PDFs are supported. Scanned PDFs without a usable text layer are rejected until the
 organization's AI image-import capability is available. Converting a damaged scan to DOCX does not

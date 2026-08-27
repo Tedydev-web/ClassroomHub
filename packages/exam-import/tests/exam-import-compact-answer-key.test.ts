@@ -3,6 +3,7 @@ import {
   ExamImportCompactAnswerKeyError,
   applyExamImportCompactAnswerKey
 } from '../src/draft/exam-import-compact-answer-key';
+import { validateExamImportDraft } from '../src/draft/exam-import-validation';
 import { buildValidExamImportDraft } from './fixtures/exam-import-draft-fixture';
 
 const context = {
@@ -39,15 +40,61 @@ describe('applyExamImportCompactAnswerKey', () => {
     });
   });
 
-  it('rejects a key that does not cover every missing answer', () => {
+  it('keeps the answers a partial numbered key does cover, and still blocks publishing', () => {
+    const draft = buildValidExamImportDraft();
+    const firstQuestion = draft.sections[0]!.questions[0]!;
+    const secondQuestion = structuredClone(firstQuestion);
+    secondQuestion.id = 'question-2';
+    secondQuestion.order = 1;
+    secondQuestion.sourceNumber = '2';
+    secondQuestion.options = secondQuestion.options.map((option) => ({
+      ...option,
+      id: option.id.replace('option-', 'question-2-option-')
+    }));
+    draft.sections[0]!.questions.push(secondQuestion);
+    for (const question of draft.sections[0]!.questions) {
+      question.answerCandidates = [];
+      question.answerKey = null;
+      question.review = 'unresolved';
+      question.confidence = 'none';
+    }
+
+    const result = applyExamImportCompactAnswerKey(draft, '1B', context);
+
+    expect(result.appliedCount).toBe(1);
+    expect(result.draft.sections[0]!.questions[0]!.answerKey).toMatchObject({
+      kind: 'choice',
+      correctOptionIds: ['option-b']
+    });
+    expect(result.draft.sections[0]!.questions[1]!.answerKey).toBeNull();
+    // The decision was that a partial key blocks. Keeping the entry that parsed does not
+    // weaken it: the question still without a key raises its own blocking finding.
+    expect(validateExamImportDraft(result.draft, context).publishable).toBe(false);
+  });
+
+  it('rejects an unnumbered key whose length disagrees with the missing answers', () => {
+    // Positional keys carry no question numbers, so a short one cannot be applied in part —
+    // every answer after the gap would land on the wrong question. Numbers are what make
+    // partial application safe, and this path has none. Do not unify it with the one above.
     const draft = buildValidExamImportDraft();
     const question = draft.sections[0]!.questions[0]!;
-    question.answerCandidates = [];
-    question.answerKey = null;
-    question.review = 'unresolved';
-    question.confidence = 'none';
+    const second = structuredClone(question);
+    second.id = 'question-2';
+    second.order = 1;
+    second.sourceNumber = '2';
+    second.options = second.options.map((option) => ({
+      ...option,
+      id: option.id.replace('option-', 'question-2-option-')
+    }));
+    draft.sections[0]!.questions.push(second);
+    for (const candidate of draft.sections[0]!.questions) {
+      candidate.answerCandidates = [];
+      candidate.answerKey = null;
+      candidate.review = 'unresolved';
+      candidate.confidence = 'none';
+    }
 
-    expect(() => applyExamImportCompactAnswerKey(draft, '2A', context)).toThrowError(
+    expect(() => applyExamImportCompactAnswerKey(draft, 'A', context)).toThrowError(
       expect.objectContaining<Partial<ExamImportCompactAnswerKeyError>>({
         code: 'ANSWER_KEY_COUNT_MISMATCH'
       })

@@ -28,7 +28,8 @@ The API treats the flag as default-off. Disabling it blocks create, edit, answer
 writes while leaving status and draft reads available.
 
 `EXAM_IMPORT_PDF_ENABLED` is also default-off. A PDF is accepted only when its bytes identify it
-as PDF and the server flag is enabled. Text-free scans fail with `EXAM_IMPORT_PDF_NO_TEXT_LAYER`
+as PDF and the server flag is enabled. This applies to a PDF uploaded as a separate answer key as
+well as to the paper itself, so turning the flag off rejects every new PDF on both paths. Text-free scans fail with `EXAM_IMPORT_PDF_NO_TEXT_LAYER`
 until the image/OCR branch is enabled separately. The supplied five-page scan is safely
 extractable as bounded page rasters, but both preflighted vision models remained above 12% word
 error rate and invented option markers. The image branch is therefore intentionally disconnected;
@@ -114,7 +115,11 @@ that unconfirmed or structurally suspect content does not become a machine-grade
 ## Operational checks
 
 - Queue `course-imports` has an active worker.
-- Maintenance scheduler `exam-import-reconcile-scheduler` is registered.
+- Maintenance schedulers `exam-import-reconcile-scheduler`, `media-job-reap-scheduler`,
+  `storage-health-check-scheduler`, and `analytics-daily-rollup-scheduler` are registered, each
+  at its declared interval in `apps/jobs/src/workers/maintenance-schedule.ts`. A sweep running
+  far hotter than its interval floods the Redis keyspace with repeat keys; the exported interval
+  list exists so a test can assert none of them runs too hot.
 - New imports move from `queued` to `running` and then `draft_ready`.
 - AI-enabled imports may move from `running` to `waiting_for_ai`, then resume to `running`.
 - Final failures contain a machine-readable code and have a dead-letter record.

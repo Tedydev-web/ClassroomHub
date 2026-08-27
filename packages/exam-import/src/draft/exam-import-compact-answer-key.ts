@@ -163,12 +163,11 @@ function numberedOperations(
       (entry): entry is { question: KeyableQuestion; questionNumber: number } =>
         isKeyableQuestion(entry.question) && entry.question.answerKey === null
     );
-  if (missingQuestions.some(({ questionNumber }) => !answersByNumber.has(questionNumber))) {
-    throw new ExamImportCompactAnswerKeyError(
-      'ANSWER_KEY_COUNT_MISMATCH',
-      `Answer key must cover all ${missingQuestions.length} questions with missing answers`
-    );
-  }
+  // Apply what the key does cover rather than refusing the whole of it. A teacher who
+  // supplied thirty-nine of forty answers used to lose all thirty-nine and be told only
+  // that the count disagreed. Publication stays blocked either way: every question left
+  // without a key raises its own blocking finding during validation.
+  const covered = missingQuestions.filter(({ questionNumber }) => answersByNumber.has(questionNumber));
 
   for (const questionNumber of answersByNumber.keys()) {
     const question = questions[questionNumber - 1];
@@ -180,12 +179,15 @@ function numberedOperations(
     }
   }
 
-  return missingQuestions.map(({ question, questionNumber }) => ({
+  return covered.map(({ question, questionNumber }) => ({
     target: { kind: 'question_field', questionId: question.id, field: 'answerKey' },
     value: answerPatch(question, answersByNumber.get(questionNumber)!)
   }));
 }
 
+// Positional keys carry no question numbers, so a short one cannot be applied in part: every
+// answer after the gap would land on the wrong question. The numbered path above may be
+// partial precisely because its numbers say where each answer belongs. Keep them separate.
 function orderedOperations(missingQuestions: KeyableQuestion[], values: string[]): ExamImportDraftPatchOperation[] {
   if (values.length !== missingQuestions.length) {
     throw new ExamImportCompactAnswerKeyError(

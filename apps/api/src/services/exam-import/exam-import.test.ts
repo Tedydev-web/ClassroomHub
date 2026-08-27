@@ -96,6 +96,7 @@ vi.mock('@cio/jobs', () => ({
 
 import { ErrorCodes } from '@api/utils/errors';
 import {
+  applyExamImportAnswerKeyDocumentService,
   cancelExamImportService,
   createExamImportService,
   getExamImportDraftService,
@@ -169,6 +170,26 @@ describe('exam import service', () => {
         fileSize: 1_024
       }).success
     ).toBe(true);
+  });
+
+  it('refuses a PDF answer-key document while PDF import is disabled', async () => {
+    // The paper path rejects a PDF when the server flag is off. A key file reaches the same
+    // PDF reader, so accepting one here would reopen through the second door exactly what
+    // that flag exists to close — and would leave the documented PDF rollback incomplete.
+    mocks.getAssetById.mockResolvedValue({
+      id: assetId,
+      kind: 'document',
+      provider: 'upload',
+      status: 'active',
+      isExternal: false,
+      storageKey: 'documents/key.pdf',
+      title: 'key.pdf'
+    });
+    mocks.inspectExamImportDocument.mockResolvedValue({ supported: true, detectedType: 'pdf', reason: null });
+
+    await expect(applyExamImportAnswerKeyDocumentService(scope, importId, assetId)).rejects.toMatchObject({
+      code: ErrorCodes.EXAM_IMPORT_SOURCE_INVALID
+    });
   });
 
   it('replays a published import without creating another exercise', async () => {

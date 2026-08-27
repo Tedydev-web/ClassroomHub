@@ -498,6 +498,13 @@ export async function applyExamImportAnswerKeyDocumentService(
     );
   }
 
+  // The same admission gate the paper path applies. A key file goes through the same PDF
+  // reader, so without this the flag closes one door and leaves the other open — and
+  // turning PDF off would stop rejecting every new PDF, which is what rollback relies on.
+  if (inspection.detectedType === 'pdf' && env.EXAM_IMPORT_PDF_ENABLED !== 'true') {
+    throw new AppError('PDF exam import is disabled', ErrorCodes.EXAM_IMPORT_SOURCE_INVALID, 400, 'assetId');
+  }
+
   const runs = inspection.detectedType === 'docx' ? (await readDocxRuns(bytes)).runs : (await readPdfRuns(bytes)).runs;
   const key = toCompactAnswerKey(readAnswerKeyPairsFromRuns(runs));
   if (!key) {
