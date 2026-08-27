@@ -133,7 +133,13 @@ export function markAttemptPaper(
         if (interactionScore !== undefined) return (interactionScore.score ?? 0) >= interactionScore.maxScore;
         if (correctIds.length === 0) return null;
 
-        return chosenIds.length === correctIds.length && chosenIds.every((optionId) => correctIds.includes(optionId));
+        // As sets. Comparing lengths and membership let a repeated choice — `['a', 'a']`
+        // against a key of `['a', 'b']` — pass as correct, and this path reads responses
+        // that failed validation, so nothing upstream has removed the repeat.
+        const chosenSet = new Set(chosenIds);
+        const correctSet = new Set(correctIds);
+
+        return chosenSet.size === correctSet.size && [...chosenSet].every((optionId) => correctSet.has(optionId));
       };
 
       return {

@@ -157,4 +157,71 @@ describe('markAttemptPaper', () => {
     expect(third!.isCorrect).toBeNull();
     expect(marked[0]!.scoreBlocked).toBe(true);
   });
+
+  it('does not call a repeated choice correct when the key names two different options', () => {
+    // The fallback runs precisely when validation failed, so the responses it reads have
+    // not been normalised. Comparing by length and `includes` let ['a','a'] satisfy a key
+    // of ['a','b'].
+    const multi = {
+      questionId: 1,
+      points: 1,
+      definition: {
+        schemaVersion: 1,
+        blocks: [
+          {
+            id: 'q1',
+            kind: 'interaction',
+            interaction: {
+              kind: 'choice',
+              prompt: { html: '<p>q1</p>', format: 'html' },
+              required: true,
+              maxScore: 1,
+              config: {
+                cardinality: 'multiple',
+                presentation: 'list',
+                options: [
+                  { id: 'q1-a', html: '<p>first</p>' },
+                  { id: 'q1-b', html: '<p>second</p>' }
+                ],
+                correctOptionIds: ['q1-a', 'q1-b']
+              }
+            }
+          },
+          {
+            id: 'q2',
+            kind: 'interaction',
+            interaction: {
+              kind: 'choice',
+              prompt: { html: '<p>q2</p>', format: 'html' },
+              required: true,
+              maxScore: 1,
+              config: {
+                cardinality: 'single',
+                presentation: 'list',
+                options: [{ id: 'q2-a', html: '<p>only</p>' }],
+                correctOptionIds: ['q2-a']
+              }
+            }
+          }
+        ]
+      } as never
+    };
+
+    // q2 left blank, so the item fails validation and the fallback decides q1.
+    const marked = markAttemptPaper(
+      [multi],
+      new Map([
+        [
+          1,
+          {
+            schemaVersion: 1,
+            responses: [{ interactionId: 'q1', response: { kind: 'choice', selectedOptionIds: ['q1-a', 'q1-a'] } }]
+          }
+        ]
+      ])
+    );
+
+    expect(marked[0]!.scoreBlocked).toBe(true);
+    expect(marked[0]!.interactions[0]!.isCorrect).toBe(false);
+  });
 });
