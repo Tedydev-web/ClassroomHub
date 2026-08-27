@@ -113,6 +113,55 @@ describe('answer key carriers', () => {
     ).toEqual(KEY);
   });
 
+  it('reads bold answers whose emphasis does not line up with the label', async () => {
+    // Real papers do not mark cleanly. In the supplied THPT paper the highlighted run often
+    // begins mid-label — the run reads ". installed", with the "C" left behind in the run
+    // before it. Bold is applied by the same hands, so the three shapes below are the ones
+    // an option marker actually arrives in: body only, label split across runs, and the
+    // whole label plus body.
+    const ragged = [
+      // 1: bold covers the body but not the label.
+      paragraph('Câu 1: Nội dung câu hỏi số 1?') +
+        `<w:p>${plainRun('A.')}${plainRun(' đáp án A1')}</w:p>` +
+        `<w:p>${plainRun('B.')}${boldRun(' đáp án B1')}</w:p>` +
+        `<w:p>${plainRun('C.')}${plainRun(' đáp án C1')}</w:p>` +
+        `<w:p>${plainRun('D.')}${plainRun(' đáp án D1')}</w:p>`,
+      // 2: the label is split, and bold starts at the dot.
+      paragraph('Câu 2: Nội dung câu hỏi số 2?') +
+        `<w:p>${plainRun('A.')}${plainRun(' đáp án A2')}</w:p>` +
+        `<w:p>${plainRun('B.')}${plainRun(' đáp án B2')}</w:p>` +
+        `<w:p>${plainRun('C')}${boldRun('. đáp án C2')}</w:p>` +
+        `<w:p>${plainRun('D.')}${plainRun(' đáp án D2')}</w:p>`,
+      // 3: bold covers label and body together.
+      paragraph('Câu 3: Nội dung câu hỏi số 3?') +
+        `<w:p>${boldRun('A.')}${boldRun(' đáp án A3')}</w:p>` +
+        `<w:p>${plainRun('B.')}${plainRun(' đáp án B3')}</w:p>` +
+        `<w:p>${plainRun('C.')}${plainRun(' đáp án C3')}</w:p>` +
+        `<w:p>${plainRun('D.')}${plainRun(' đáp án D3')}</w:p>`
+    ].join('');
+
+    const read = await readDocxRuns(await docx(ragged));
+    const draft = createExamImportDraftFromRuns(read.runs, {
+      assetId: 'asset',
+      fileName: 'exam.docx',
+      mimeType: MIME,
+      extractor: 'docx'
+    } as never);
+    const questions = draft.sections.flatMap((section) => section.questions);
+
+    expect(questions).toHaveLength(3);
+    expect(
+      questions.map((question) => {
+        const options = (question as { options?: Array<{ id: string; sourceLabel: string }> }).options ?? [];
+        const key = (question as { answerKey?: { correctOptionIds?: string[] } | null }).answerKey;
+
+        return (key?.correctOptionIds ?? [])
+          .map((id) => options.find((option) => option.id === id)?.sourceLabel ?? '?')
+          .join('');
+      })
+    ).toEqual(['B', 'C', 'A']);
+  });
+
   it('reads a vertical table headed Câu / Đáp án', async () => {
     const tail =
       paragraph('ĐÁP ÁN') + table(row('Câu', 'Đáp án'), ...KEY.map((answer, index) => row(String(index + 1), answer)));
