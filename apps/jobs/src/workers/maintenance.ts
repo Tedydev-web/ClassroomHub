@@ -4,6 +4,7 @@ import { Queue, Worker } from 'bullmq';
 
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
+import { checkStorageHealth } from '../services/storage-health';
 import { pruneDeadLetterJobsOlderThan, reapStuckMediaJobs } from '@cio/db/queries';
 import {
   JOB_NAMES,
@@ -82,6 +83,20 @@ const worker = new Worker(
       return { assetId: data.assetId };
     }
 
+    if (job.name === JOB_NAMES.maintenance.storageHealthCheck) {
+      const health = await checkStorageHealth();
+
+      // Warn, loudly, with the bucket and the reason. The outage this exists for was
+      // invisible precisely because the only signal was a teacher being told to retry.
+      if (health.ok) log.info('storage-health-ok', { buckets: health.buckets.length });
+      else
+        log.error('storage-health-failed', {
+          failed: health.buckets.filter((bucket) => !bucket.ok)
+        });
+
+      return health;
+    }
+
     if (job.name === JOB_NAMES.maintenance.analyticsDailyRollup) {
       const data = ZAnalyticsDailyRollupPayload.parse(job.data ?? {});
       const result = await runAnalyticsRollupDaily({ daysAgo: data.daysAgo });
@@ -101,6 +116,9 @@ const worker = new Worker(
  */
 const MEDIA_JOB_REAP_INTERVAL_MS = 5 * 60 * 1_000;
 const EXAM_IMPORT_RECONCILE_INTERVAL_MS = 5 * 1_000;
+/** Ten minutes: often enough that an outage is noticed the same morning, rare enough
+ * that the probe objects are noise-free. */
+const STORAGE_HEALTH_CHECK_INTERVAL_MS = 10 * 60 * 1_000;
 // BullMQ requires a dedicated connection per Worker; give the Queue its own
 // so the scheduler upsert doesn't piggyback on the worker's blocking client.
 const schedulerConnection = createRedisConnection();
@@ -126,6 +144,16 @@ async function registerSchedulers(): Promise<void> {
     log.info('maintenance-scheduler-registered', {
       name: JOB_NAMES.maintenance.examImportReconcile,
       everyMs: EXAM_IMPORT_RECONCILE_INTERVAL_MS
+    });
+
+    await maintenanceQueue.upsertJobScheduler(
+      'storage-health-check-scheduler',
+      { every: STORAGE_HEALTH_CHECK_INTERVAL_MS },
+      { name: JOB_NAMES.maintenance.storageHealthCheck, data: {} }
+    );
+    log.info('maintenance-scheduler-registered', {
+      name: JOB_NAMES.maintenance.storageHealthCheck,
+      everyMs: STORAGE_HEALTH_CHECK_INTERVAL_MS
     });
 
     await maintenanceQueue.upsertJobScheduler(

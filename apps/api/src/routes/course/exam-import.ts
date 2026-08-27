@@ -1,5 +1,6 @@
 import {
   ZExamImportAnswerKey,
+  ZExamImportAnswerKeyDocument,
   ZExamImportAiSuggestion,
   ZExamImportCourseParam,
   ZExamImportCreate,
@@ -12,6 +13,7 @@ import { authMiddleware } from '@api/middlewares/auth';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import {
+  applyExamImportAnswerKeyDocumentService,
   applyExamImportAnswerKeyService,
   cancelExamImportService,
   createExamImportService,
@@ -221,6 +223,41 @@ export const examImportRouter = new Hono()
         );
       } catch (error) {
         return handleError(c, error, 'Failed to apply exam import answer key');
+      }
+    }
+  )
+  .post(
+    '/:importId/answer-key-document',
+    authMiddleware,
+    orgMemberMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('param', ZExamImportParam),
+    zValidator('json', ZExamImportAnswerKeyDocument),
+    async (c) => {
+      try {
+        const { courseId, importId } = c.req.valid('param');
+        const { assetId } = c.req.valid('json');
+        const organizationId = c.get('orgId')!;
+        const user = c.get('user')!;
+        const draft = await applyExamImportAnswerKeyDocumentService(
+          { organizationId, courseId, userId: user.id },
+          importId,
+          assetId
+        );
+
+        return c.json(
+          {
+            success: true,
+            data: {
+              appliedCount: draft.appliedCount,
+              updatedAt: draft.updatedAt,
+              publishable: draft.publishable
+            }
+          },
+          200
+        );
+      } catch (error) {
+        return handleError(c, error, 'Failed to apply exam import answer key document');
       }
     }
   )

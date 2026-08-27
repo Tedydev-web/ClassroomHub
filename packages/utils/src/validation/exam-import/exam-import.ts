@@ -31,6 +31,12 @@ export const ZExamImportAnswerKey = z.strictObject({
 });
 export type TExamImportAnswerKey = z.infer<typeof ZExamImportAnswerKey>;
 
+/** A key that arrived as its own document rather than inside the paper. */
+export const ZExamImportAnswerKeyDocument = z.strictObject({
+  assetId: z.string().trim().min(1).max(200)
+});
+export type TExamImportAnswerKeyDocument = z.infer<typeof ZExamImportAnswerKeyDocument>;
+
 export const MAX_EXAM_IMPORT_AI_SUGGESTION_QUESTIONS = 25;
 
 export const ZExamImportAiSuggestion = z.strictObject({

@@ -52,7 +52,49 @@
   const activeQuestionView = $derived(
     questionViews.find((view) => view.question.id === activeQuestionId) ?? questionViews[0] ?? null
   );
+  /**
+   * The API classifies every finding by what the teacher has to do about it. Read rather
+   * than recomputed here so the dashboard carries no second copy of the mapping; the
+   * fallback only covers a response from an API older than the classification.
+   */
+  type FindingClass = 'input_missing' | 'source_defect' | 'extraction_uncertain';
+  const findingClassOf = (finding: { class?: string }): FindingClass =>
+    finding.class === 'input_missing' || finding.class === 'source_defect' ? finding.class : 'extraction_uncertain';
+
   const blockingFindings = $derived(draftView?.findings.filter((finding) => finding.blocking) ?? []);
+
+  /**
+   * Findings grouped by what the teacher has to do about them, and deduplicated by code.
+   * Forty identical "no answer key" rows say the same thing forty times and bury the one
+   * finding that needs a human; one row per code with a count says it once.
+   */
+  const findingGroups = $derived.by(() => {
+    const groups = new Map<
+      FindingClass,
+      Array<{ code: string; messageKey: string; questionId: string | null; count: number }>
+    >();
+
+    for (const finding of blockingFindings) {
+      const group = findingClassOf(finding);
+      const bucket = groups.get(group) ?? [];
+      const existing = bucket.find((entry) => entry.code === finding.code);
+      if (existing) existing.count += 1;
+      else
+        bucket.push({ code: finding.code, messageKey: finding.messageKey, questionId: finding.questionId, count: 1 });
+      groups.set(group, bucket);
+    }
+
+    return (['input_missing', 'source_defect', 'extraction_uncertain'] as const)
+      .map((group) => ({ group, entries: groups.get(group) ?? [] }))
+      .filter((entry) => entry.entries.length > 0);
+  });
+
+  const missingAnswerKeyCount = $derived(
+    blockingFindings.filter((finding) => findingClassOf(finding) === 'input_missing').length
+  );
+
+  /** Opened when there is something to resolve: the remedy must not be behind a click. */
+  const reviewToolsOpen = $derived(blockingFindings.length > 0);
   const flaggedQuestionIds = $derived(
     questionViews
       .filter((view) => view.findings.length > 0 || view.question.review !== 'clean')
@@ -105,6 +147,16 @@
     const currentIndex = activeQuestionId ? flaggedQuestionIds.indexOf(activeQuestionId) : -1;
     const nextQuestionId = flaggedQuestionIds[(currentIndex + 1) % flaggedQuestionIds.length];
     if (nextQuestionId) selectQuestion(nextQuestionId);
+  }
+
+  async function handleAnswerKeyFile(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    await examImportApi.applyAnswerKeyDocument(courseId, importId, file);
+    // Cleared either way: a rejected file must not look like it is still pending.
+    input.value = '';
   }
 
   async function applyAnswerKey() {
@@ -278,7 +330,9 @@
       <Badge variant={draftView.publishable ? 'secondary' : 'destructive'}>
         {draftView.publishable
           ? $t('exam_import.review.ready_to_publish')
-          : $t('exam_import.review.blocking_count', { count: blockingFindings.length })}
+          : missingAnswerKeyCount === blockingFindings.length
+            ? $t('exam_import.review.blocking_summary_answer_key')
+            : $t('exam_import.review.blocking_summary_mixed', { count: String(blockingFindings.length) })}
       </Badge>
       <Badge variant="outline">
         {$t('exam_import.review.question_count', {
@@ -293,7 +347,7 @@
       </span>
     </div>
 
-    <details class="ui:border-border mb-6 rounded-md border p-4">
+    <details class="ui:border-border mb-6 rounded-md border p-4" open={reviewToolsOpen}>
       <summary
         class="ui:focus-visible:ring-ring cursor-pointer rounded-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
@@ -316,6 +370,17 @@
           <Button variant="secondary" disabled={!answerKey.trim() || examImportApi.isLoading} onclick={applyAnswerKey}>
             {$t('exam_import.answer_key.apply')}
           </Button>
+
+          <!-- A key that arrived as its own file is read by the same carriers, so it needs
+               no separate screen — only a way in. -->
+          <p class="ui:text-muted-foreground text-xs">{$t('exam_import.answer_key.document_hint')}</p>
+          <input
+            type="file"
+            accept=".docx,.pdf"
+            class="text-xs"
+            disabled={examImportApi.isUploading}
+            onchange={handleAnswerKeyFile}
+          />
         </section>
 
         <section class="space-y-3" aria-labelledby="exam-import-findings-heading">
@@ -329,23 +394,42 @@
               <TriangleAlertIcon />
               <Alert.Title>{$t('exam_import.review.resolve_before_publish')}</Alert.Title>
             </Alert.Root>
-            <ul class="space-y-2">
-              {#each blockingFindings as finding, findingIndex (`${finding.code}:${finding.questionId ?? ''}:${findingIndex}`)}
-                <li>
-                  {#if finding.questionId}
-                    <Button
-                      variant="ghost"
-                      class="h-auto w-full justify-start px-2 py-2 text-left text-sm whitespace-normal"
-                      onclick={() => selectQuestion(finding.questionId!)}
-                    >
-                      {$t(finding.messageKey)}
-                    </Button>
-                  {:else}
-                    <p class="px-2 py-2 text-sm">{$t(finding.messageKey)}</p>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
+            {#each findingGroups as group (group.group)}
+              <div class="space-y-2">
+                <h3 class="text-sm font-medium">{$t(`exam_import.findings.${group.group}_title`)}</h3>
+                <p class="ui:text-muted-foreground text-xs">
+                  {group.group === 'input_missing'
+                    ? $t('exam_import.findings.input_missing_answer_key', {
+                        count: String(group.entries.reduce((total, entry) => total + entry.count, 0))
+                      })
+                    : $t(`exam_import.findings.${group.group}_help`, {
+                        count: String(group.entries.reduce((total, entry) => total + entry.count, 0))
+                      })}
+                </p>
+                <ul class="space-y-1">
+                  {#each group.entries as entry (entry.code)}
+                    <li>
+                      {#if entry.questionId}
+                        <Button
+                          variant="ghost"
+                          class="h-auto w-full justify-start px-2 py-2 text-left text-sm whitespace-normal"
+                          onclick={() => selectQuestion(entry.questionId!)}
+                        >
+                          {$t(entry.messageKey)}
+                          {#if entry.count > 1}
+                            <Badge variant="outline" class="ml-2"
+                              >{$t('exam_import.findings.occurrences', { count: String(entry.count) })}</Badge
+                            >
+                          {/if}
+                        </Button>
+                      {:else}
+                        <p class="px-2 py-2 text-sm">{$t(entry.messageKey)}</p>
+                      {/if}
+                    </li>
+                  {/each}
+                </ul>
+              </div>
+            {/each}
           {/if}
         </section>
       </div>

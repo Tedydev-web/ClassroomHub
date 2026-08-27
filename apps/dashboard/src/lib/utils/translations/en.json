@@ -5032,7 +5032,9 @@
       "document_only": "Choose a valid DOCX, PDF, Aiken, or GIFT file.",
       "invalid_size": "The document is empty or exceeds the upload limit.",
       "invalid_source": "The uploaded document could not be used for an exam import.",
-      "failed": "The document could not be uploaded. Try again."
+      "failed": "The document could not be uploaded. Try again.",
+      "storage_rejected": "Storage refused this file. This is not a transient error — ask an administrator to check the storage credentials.",
+      "network": "The file could not be sent. Check your connection and try again."
     },
     "status": {
       "queued": "Import queued",
@@ -5113,7 +5115,9 @@
       "ai_suggestion_pending": "AI suggestions are being applied",
       "ai_suggestion_invalid": "Select one or more eligible questions.",
       "ai_suggestion_estimate_failed": "The AI suggestion estimate could not be prepared.",
-      "ai_suggestion_request_failed": "AI suggestions could not be queued."
+      "ai_suggestion_request_failed": "AI suggestions could not be queued.",
+      "blocking_summary_answer_key": "Not publishable: the document states no answer key.",
+      "blocking_summary_mixed": "Not publishable: {count} findings still need attention."
     },
     "confidence": {
       "none": "Not verified",
@@ -5130,7 +5134,10 @@
       "apply": "Apply answer key",
       "invalid": "The answer key format is invalid.",
       "failed": "The answer key could not be applied.",
-      "applied": "Applied answers to {count} questions"
+      "applied": "Applied answers to {count} questions",
+      "document_upload": "Upload an answer key file",
+      "document_unreadable": "No answer key could be read from that file.",
+      "document_hint": "Or upload a separate answer key file (Word or PDF)."
     },
     "publish": {
       "action": "Publish exercise",
@@ -5241,6 +5248,15 @@
       "option_set_incomplete": "The detected option set appears incomplete.",
       "option_ownership_ambiguous": "An option could belong to more than one question.",
       "option_continuation_attached": "A continuation line was attached to an option and should be verified."
+    },
+    "findings": {
+      "input_missing_title": "The document is missing information",
+      "input_missing_answer_key": "This document states no answer key. Paste one below to fill in all {count} questions.",
+      "source_defect_title": "The source document is faulty",
+      "source_defect_help": "The importer read the document correctly, but the document itself is wrong in {count} places. Select a line to fix it here.",
+      "extraction_uncertain_title": "The structure could not be read",
+      "extraction_uncertain_help": "{count} places did not match a question shape the importer knows. Select a line to see the source.",
+      "occurrences": "{count} places"
     }
   },
   "cohorts": {
@@ -5580,7 +5596,8 @@
       "copy_paper": "Copy into a question set",
       "copying": "Copying…",
       "paper_copied": "Copied. Choose it below, then configure the exam.",
-      "copy_failed": "Could not copy that exercise"
+      "copy_failed": "Could not copy that exercise",
+      "import_document": "Import questions from a document"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",

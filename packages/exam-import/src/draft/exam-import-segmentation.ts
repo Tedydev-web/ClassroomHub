@@ -1,5 +1,6 @@
 import { MAX_ASSESSMENT_INTERACTIONS, MAX_INTERACTION_OPTIONS } from '@cio/question-types';
 import { sourceRunStreamSchema, type SourceRun } from '../source-run';
+import { readAnswerKeyGrid, readCompactAnswerKeyLine } from './exam-import-answer-key-format';
 import type {
   ExamImportDiagnostic,
   ExamImportDraft,
@@ -128,7 +129,6 @@ const FORM_FIELD_LABEL_PATTERN =
 const INSTRUCTION_RANGE_PATTERN = /\bfrom\s+(\d+)\s*(?:to|through|[-–—])\s*(\d+)\b/iu;
 const SOLUTION_MARKER_PATTERN = /^(?:Lời giải|Giải thích|Hướng dẫn giải)\b/iu;
 const ANSWER_LINE_PATTERN = /^(?:Đáp án|Dap an|Answer)\s*:/iu;
-const COMPACT_KEY_PAIR_PATTERN = /(\d+)\s*[.)-]?\s*([A-D])(?=\s|$|\d)/giu;
 const TABLE_QUESTION_HEADER_PATTERN = /^(?:câu|cau|question|questions?)$/iu;
 const TABLE_ANSWER_HEADER_PATTERN = /^(?:chọn|chon|đáp án|dap an|answer|answers?|key)$/iu;
 const STRONG_TABLE_QUESTION_HEADER_PATTERN = /^(?:câu|cau)$/iu;
@@ -529,6 +529,23 @@ export function isExamImportAnswerTableBlocks(blocks: ExamImportSourceBlock[]): 
   return payload.length > 0 && payload.every((text) => STRICT_TABLE_ANSWER_VALUE_PATTERN.test(text));
 }
 
+/** Table blocks as `{ row, column, text }`, the shape the grid reader works in. */
+function answerGridCells(blocks: ExamImportSourceBlock[]): Array<{ row: number; column: number; text: string }> {
+  const cells = new Map<string, { row: number; column: number; text: string }>();
+
+  for (const block of blocks) {
+    const tableRef = block.runs[0]?.block.tableRef;
+    if (!tableRef) continue;
+    const key = `${tableRef.originRow}:${tableRef.originColumn}`;
+    const text = block.text.normalize('NFC').replace(/\s+/gu, ' ').trim();
+    const existing = cells.get(key);
+    if (existing) existing.text = `${existing.text} ${text}`.trim();
+    else cells.set(key, { row: tableRef.originRow, column: tableRef.originColumn, text });
+  }
+
+  return [...cells.values()];
+}
+
 function answerSourceBlockIndexes(blocks: ExamImportSourceBlock[]): Set<number> {
   const answerBlocks = new Set<number>();
   const tables = new Map<number, ExamImportSourceBlock[]>();
@@ -541,21 +558,73 @@ function answerSourceBlockIndexes(blocks: ExamImportSourceBlock[]): Set<number> 
   }
 
   for (const tableBlocks of tables.values()) {
-    if (isExamImportAnswerTableBlocks(tableBlocks)) {
+    // Either a headed answer table, or a header-less grid recognised by its shape.
+    const isAnswerTable =
+      isExamImportAnswerTableBlocks(tableBlocks) || readAnswerKeyGrid(answerGridCells(tableBlocks)).length > 0;
+    if (isAnswerTable) {
       for (const block of tableBlocks) answerBlocks.add(block.index);
     }
   }
 
   for (const block of blocks) {
     if (block.kind === 'table_cell') continue;
-    const text = block.text.trim();
-    const matches = [...text.matchAll(COMPACT_KEY_PAIR_PATTERN)];
-    if (matches.length === 0) continue;
-    const residue = text.replace(COMPACT_KEY_PAIR_PATTERN, '').replace(/[\s,;|]+/gu, '');
-    if (residue.length === 0) answerBlocks.add(block.index);
+    if (readCompactAnswerKeyLine(block.text).isKeyOnly) answerBlocks.add(block.index);
   }
 
   return answerBlocks;
+}
+
+/**
+ * A table that holds nothing but one question's options.
+ *
+ * A Vietnamese maths or physics paper writes the stem in a paragraph and lays the four
+ * options out in a grid beneath it, two by two or four across. The table carries no
+ * question marker, so the layouts above skip it and the whole thing used to be appended
+ * to the stem as prose — leaving the question with no options and no kind.
+ *
+ * Accepted only when every non-empty cell is exactly one option and the labels read, in
+ * row-major order, as a contiguous run from `A`. A table of prose beneath a stem parses
+ * to no options at all and is left alone.
+ */
+function readOptionGridTable(
+  tableBlocks: readonly ExamImportSourceBlock[]
+): Array<{ entry: OptionEntry; block: ExamImportSourceBlock }> | null {
+  const cells = new Map<string, ExamImportSourceBlock[]>();
+  for (const block of [...tableBlocks].sort((left, right) => left.index - right.index)) {
+    const tableRef = block.runs[0]?.block.tableRef;
+    if (!tableRef) return null;
+    const key = `${tableRef.originRow}:${tableRef.originColumn}`;
+    const bucket = cells.get(key);
+    if (bucket) bucket.push(block);
+    else cells.set(key, [block]);
+  }
+
+  const ordered = [...cells.entries()]
+    .map(([key, blocks]) => {
+      const [row, column] = key.split(':').map(Number);
+      return { row: row!, column: column!, blocks };
+    })
+    .sort((left, right) => left.row - right.row || left.column - right.column);
+
+  const found: Array<{ entry: OptionEntry; block: ExamImportSourceBlock }> = [];
+  for (const cell of ordered) {
+    const text = cell.blocks
+      .map((block) => block.text)
+      .join(' ')
+      .trim();
+    if (!text) continue;
+
+    const parsed = parseOptions(text, null);
+    if (parsed.prefix.trim() || parsed.entries.length !== 1) return null;
+    found.push({ entry: parsed.entries[0]!, block: cell.blocks[0]! });
+  }
+
+  if (found.length < 2) return null;
+
+  const labels = found.map((option) => option.entry.label);
+  const expected = labels.map((_, index) => String.fromCharCode(65 + index));
+
+  return labels.join('') === expected.join('') ? found : null;
 }
 
 function ordinaryTableLayouts(
@@ -1155,6 +1224,17 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
   const sections: MutableSection[] = [];
   const sharedContents: ExamImportDraft['sharedContents'] = [];
   const fieldStates: ExamImportFieldState[] = [];
+  // Every other field records where it came from; the title did not, which left the block
+  // it was read from looking like content that had gone nowhere.
+  const titleBlock = titleBlockIndex === null ? null : blocks.find((block) => block.index === titleBlockIndex);
+  if (titleBlock) {
+    fieldStates.push({
+      target: { kind: 'draft_field', field: 'title' },
+      confidence: 'medium',
+      origin: 'deterministic',
+      provenance: [titleBlock.span]
+    });
+  }
   const diagnostics: ExamImportDiagnostic[] = [];
   let currentSection: MutableSection | null = null;
   let currentQuestion: MutableQuestion | null = null;
@@ -1198,7 +1278,11 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     collectingPassage = false;
   };
 
-  const startInstructionSection = (title: string, collectsPassage: boolean): void => {
+  const startInstructionSection = (
+    title: string,
+    collectsPassage: boolean,
+    instructionBlock: ExamImportSourceBlock | null = null
+  ): void => {
     if (sections.length >= MAX_EXAM_IMPORT_SECTIONS) {
       throw new Error(`Exam import cannot contain more than ${MAX_EXAM_IMPORT_SECTIONS} sections`);
     }
@@ -1206,6 +1290,16 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     reportPendingPassageAsUnassigned();
     currentSection = newSection(title, sections.length);
     sections.push(currentSection);
+    // The instruction line becomes this section's title, so it is accounted for. Without
+    // the record it looked like source content that had gone nowhere.
+    if (instructionBlock) {
+      fieldStates.push({
+        target: { kind: 'section_field', sectionId: currentSection.id, field: 'title' },
+        confidence: 'high',
+        origin: 'deterministic',
+        provenance: [instructionBlock.span]
+      });
+    }
     currentQuestion = null;
     activePassageId = null;
     activeTablePassageEndIndex = null;
@@ -1318,7 +1412,10 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     if (tableLayouts.contentBlockIndexes.has(block.index)) continue;
     const ordinaryTable = ordinaryTables.byStart.get(block.index);
     if (ordinaryTable) {
-      if (currentQuestion) {
+      const optionGrid = currentQuestion ? readOptionGridTable(ordinaryTable.blocks) : null;
+      if (currentQuestion && optionGrid) {
+        for (const option of optionGrid) addOption(currentQuestion, option.entry, option.block.span);
+      } else if (currentQuestion) {
         addPromptPart(currentQuestion, ordinaryTable.text, ordinaryTable.span, null, ordinaryTable.html);
       } else if (collectingPassage) {
         pendingPassageBlocks.push(...ordinaryTable.blocks);
@@ -1362,13 +1459,13 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (RANGED_QUESTION_INSTRUCTION_PATTERN.test(text)) {
-      startInstructionSection(text, true);
+      startInstructionSection(text, true, block);
       continue;
     }
 
     if (PASSAGE_MARKER_PATTERN.test(text)) {
       if (!currentSection || currentSection.questions.length > 0) {
-        startInstructionSection(text, true);
+        startInstructionSection(text, true, block);
         continue;
       }
 
@@ -1382,9 +1479,14 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
 
     if (ARRANGEMENT_INSTRUCTION_PATTERN.test(text)) {
-      startInstructionSection(text, false);
+      startInstructionSection(text, false, block);
       continue;
     }
+
+    // Asked before the block is read as a question. A trailing `1. B` key line matches
+    // the bare-number question pattern, so a key list used to become a second set of
+    // questions — a forty-question paper arriving as eighty.
+    if (answerBlocks.has(block.index)) continue;
 
     const parsedMarkers = parseQuestionMarkers(block);
     if (parsedMarkers.markers.length > 0) {
@@ -1417,7 +1519,6 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       }
       continue;
     }
-    if (answerBlocks.has(block.index)) continue;
     if (inSolution) continue;
 
     if (currentQuestion === null && activePassageId === null && collectingPassage) {

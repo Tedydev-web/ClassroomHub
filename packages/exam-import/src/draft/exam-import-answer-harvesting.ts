@@ -8,6 +8,7 @@ import type {
   ExamImportQuestion,
   ExamImportSourceSpan
 } from './exam-import-draft';
+import { readAnswerKeyGrid, readCompactAnswerKeyLine } from './exam-import-answer-key-format';
 import {
   collectExamImportSourceBlocks,
   isExamImportAnswerTableBlocks,
@@ -175,6 +176,13 @@ function answerTableEntries(blocks: ExamImportSourceBlock[]): AnswerEntry[] {
     .sort(([left], [right]) => left - right)
     .flatMap(([tableIndex, cells]) => {
       const tableBlocks = blocks.filter((block) => block.runs[0]?.block.tableRef?.tableIndex === tableIndex);
+      const provenance = cells.flatMap((cell) => cell.provenance);
+
+      // A grid with no header at all — the standard Vietnamese layout — is read by shape
+      // instead. Tried first because such a table cannot pass the header check below.
+      const grid = readAnswerKeyGrid(cells);
+      if (grid.length > 0) return grid.map((pair) => ({ ...pair, provenance }));
+
       if (!isExamImportAnswerTableBlocks(tableBlocks)) return [];
 
       const hasQuestionHeader = cells.some((cell) => TABLE_QUESTION_HEADER_PATTERN.test(cell.text));
@@ -203,13 +211,10 @@ function compactKeyEntries(blocks: ExamImportSourceBlock[]): AnswerEntry[] {
   const entries: AnswerEntry[] = [];
 
   for (const block of blocks) {
-    const explicit = block.text.trim().match(EXPLICIT_ANSWER_PATTERN);
-    const candidateText = explicit?.[1] ?? block.text.trim();
-    const parsed = parseKeyPairs(candidateText, [block.span]);
-    if (parsed.length === 0) continue;
+    const line = readCompactAnswerKeyLine(block.text);
+    if (!line.isKeyOnly) continue;
 
-    const residue = candidateText.replace(KEY_PAIR_PATTERN, '').replace(/[\s,;|]+/gu, '');
-    if (residue.length === 0) entries.push(...parsed);
+    entries.push(...line.pairs.map((pair) => ({ ...pair, provenance: [block.span] })));
   }
 
   return entries;

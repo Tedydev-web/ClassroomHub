@@ -7,7 +7,8 @@
   import { Label } from '@cio/ui/base/label';
   import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
-  import { invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
 
   /**
@@ -52,6 +53,11 @@
     } finally {
       copying = false;
     }
+  }
+
+  /** The question set may still be in a file. Take the teacher to the importer. */
+  function goToImport() {
+    goto(resolve(`/courses/${data.courseId}/content`, {}));
   }
 
   async function create(settings: Record<string, unknown>) {
@@ -99,6 +105,9 @@
 
           {#if data.copyable.length === 0}
             <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.settings.no_copyable')}</p>
+            <!-- Without this, a teacher whose questions are still in a file has to leave,
+                 find the content screen, import there, and come back. -->
+            <Button variant="secondary" onclick={goToImport}>{$t('exam.settings.import_document')}</Button>
           {:else}
             <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
               <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
@@ -120,6 +129,9 @@
                 {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
               </Button>
             </div>
+            <Button variant="link" class="ui:h-auto ui:p-0 ui:text-xs" onclick={goToImport}>
+              {$t('exam.settings.import_document')}
+            </Button>
           {/if}
         </div>
 

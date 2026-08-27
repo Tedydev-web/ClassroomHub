@@ -111,6 +111,86 @@
         "page-boundary-question"
       ],
       "reference": "references/oisc-level-1-feb-2021-synthetic-scan.reference.json"
+    },
+    {
+      "id": "2026-key-de-thi-thpt",
+      "path": "2026-key-de-thi-thpt.docx",
+      "committed": true,
+      "bytes": 25609,
+      "sha256": "84879a9b7e612a7e56ea443aecaea7f34ddf53358a80effdabd9a061a7fdcd79",
+      "format": "docx",
+      "subject": "english",
+      "languages": ["en"],
+      "pageCount": null,
+      "captureKind": "native_digital",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:KEY- DE THI THPT 2026.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-08-27. Authorship metadata stripped before committing."
+      },
+      "note": "40-question paper whose answer key is highlighted in place, with ragged highlight boundaries. Imported cleanly on production on 2026-08-10 and again on 2026-08-26.",
+      "traits": [
+        "native-digital",
+        "highlight-answer-key",
+        "ragged-highlight-boundaries",
+        "passage-shared-by-several-questions",
+        "cloze-prompt-is-question-number",
+        "underlined-vocabulary-carries-meaning",
+        "six-instruction-blocks"
+      ],
+      "reference": "references/2026-key-de-thi-thpt.reference.json"
+    },
+    {
+      "id": "2026-g12-practice-test-topic-2",
+      "path": "2026-g12-practice-test-topic-2.docx",
+      "committed": true,
+      "bytes": 31487,
+      "sha256": "36a533b2580709ae6ef48786cc141f534f2ea980be207283f12ead933b030cd9",
+      "format": "docx",
+      "subject": "english",
+      "languages": ["en"],
+      "pageCount": null,
+      "captureKind": "native_digital",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:G12 - PRACTICE TEST FOR UNIT 2.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-08-27. Authorship metadata stripped before committing."
+      },
+      "note": "The student version of a 30-question paper: no answer key anywhere. Blocked publication on production on 2026-07-28 with thirty ANSWER_KEY_MISSING findings, which is correct behaviour and the reason the document is kept.",
+      "traits": [
+        "native-digital",
+        "no-answer-key",
+        "student-version-of-a-pair",
+        "sentence-arrangement",
+        "passage-shared-by-several-questions"
+      ],
+      "reference": "references/2026-g12-practice-test-topic-2.reference.json"
+    },
+    {
+      "id": "2026-g12-key-to-test-2",
+      "path": "2026-g12-key-to-test-2.docx",
+      "committed": true,
+      "bytes": 26863,
+      "sha256": "8ff26bf1ca5b77a653ae31c8638478740d06dc5386c443a40cab3b26f6de6870",
+      "format": "docx",
+      "subject": "english",
+      "languages": ["en"],
+      "pageCount": null,
+      "captureKind": "native_digital",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:G12 - KEY - PRACTICE TEST 2.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-08-27. Authorship metadata stripped before committing."
+      },
+      "note": "The teacher's key version of the same test. Held as a pair with 2026-g12-practice-test-topic-2 so the answer-key layer is measured with the question content controlled: one document states a key, the other does not.",
+      "traits": [
+        "native-digital",
+        "highlight-answer-key",
+        "key-version-of-a-pair",
+        "sentence-arrangement",
+        "passage-shared-by-several-questions"
+      ],
+      "reference": "references/2026-g12-key-to-test-2.reference.json"
     }
   ]
 }

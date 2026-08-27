@@ -54,6 +54,7 @@ export const JOB_NAMES = {
     mediaJobReap: 'media-job-reap',
     examImportReconcile: 'exam-import-reconcile',
     analyticsDailyRollup: 'analytics-daily-rollup',
-    assetStorageCleanup: 'asset-storage-cleanup'
+    assetStorageCleanup: 'asset-storage-cleanup',
+    storageHealthCheck: 'storage-health-check'
   }
 } as const;

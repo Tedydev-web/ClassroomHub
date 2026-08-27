@@ -7,6 +7,9 @@ import { sanitizeHtml } from '@cio/core/utils/sanitize-html';
 import { S3ObjectSizeLimitExceededError, readDocumentObjectBytes } from '@cio/core/utils/s3';
 import { db, type DbOrTxClient, type TxClient } from '@cio/db/drizzle';
 import { getAssetById } from '@cio/db/queries/assets';
+import { readDocxRuns } from '@cio/exam-import/docx/read-docx-runs';
+import { readPdfRuns } from '@cio/exam-import/pdf/read-pdf-runs';
+import { readAnswerKeyPairsFromRuns, toCompactAnswerKey } from '@cio/exam-import/draft/exam-import-answer-key-document';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { getOrganizationById } from '@cio/db/queries/organization';
 import {
@@ -33,9 +36,11 @@ import {
   createExamImportPublishPlan,
   examImportDraftSchema,
   inspectExamImportDocument,
+  examImportFindingClass,
   validateExamImportDraft,
   type ExamImportDraft,
   type ExamImportDraftPatchOperation,
+  type ExamImportFindingClass,
   type ExamImportValidationResult
 } from '@cio/exam-import';
 import { enqueueExamImport, enqueueExamImportAiSuggestion } from '@cio/jobs';
@@ -76,7 +81,12 @@ export type ExamImportStatusView = Pick<
 
 export type ExamImportDraftView = {
   draft: ExamImportDraft;
-  findings: ExamImportValidationResult['findings'];
+  /**
+   * Each finding carries what the teacher has to do about it. Derived here rather than
+   * stored on the draft or recomputed in the dashboard: one source of truth, and the
+   * client needs no copy of the mapping to drift from.
+   */
+  findings: Array<ExamImportValidationResult['findings'][number] & { class: ExamImportFindingClass }>;
   aiSuggestionQuestionIds: string[];
   publishable: boolean;
   expiresAt: string;
@@ -213,7 +223,7 @@ function draftView(draftRecord: TExamImportDraft, validation: ExamImportValidati
 
   return {
     draft: validation.draft,
-    findings: validation.findings,
+    findings: validation.findings.map((finding) => ({ ...finding, class: examImportFindingClass(finding.code) })),
     aiSuggestionQuestionIds: collectExamImportAiRegions(validation.draft).map((region) => region.questionId),
     publishable: validation.publishable,
     expiresAt: draftRecord.expiresAt,
@@ -424,6 +434,82 @@ export async function patchExamImportDraftService(
 
     throw error;
   }
+}
+
+/**
+ * Applies a key that arrived as its own document.
+ *
+ * Papers carry their key in a second file as often as inside the paper, and a key is a key
+ * however it travels. The document is read into the same `SourceRun` shape every reader
+ * produces, the same carriers are recognised, and the pairs are rendered back into the one
+ * compact form the answer-key path already accepts — so a second file gains no second
+ * application path, no second conflict rule and no second way of being subtly different.
+ *
+ * The answers are attributed to the key string rather than to spans in the other document:
+ * the draft has no way to quote a file it did not import, and claiming provenance it
+ * cannot show would be worse than claiming none.
+ */
+export async function applyExamImportAnswerKeyDocumentService(
+  scope: ExamImportRequestScope,
+  importId: string,
+  assetId: string
+): Promise<ExamImportAnswerKeyView> {
+  requireExamImportWritesEnabled();
+  await assertCourseOrganization(scope);
+
+  const asset = await getAssetById(assetId, scope.organizationId);
+  if (
+    !asset ||
+    asset.kind !== 'document' ||
+    asset.provider !== 'upload' ||
+    asset.status !== 'active' ||
+    asset.isExternal ||
+    !asset.storageKey
+  ) {
+    throw new AppError('Answer key document was not found', ErrorCodes.EXAM_IMPORT_SOURCE_INVALID, 400, 'assetId');
+  }
+
+  const maxDocumentBytes = getUploadLimits().documentBytes;
+  let bytes: Uint8Array;
+  try {
+    bytes = await readDocumentObjectBytes(asset.storageKey, maxDocumentBytes);
+  } catch (error) {
+    if (error instanceof S3ObjectSizeLimitExceededError) {
+      throw new AppError(
+        'Answer key document exceeds the upload limit',
+        ErrorCodes.EXAM_IMPORT_SOURCE_INVALID,
+        400,
+        'assetId'
+      );
+    }
+
+    console.error('applyExamImportAnswerKeyDocumentService read error:', error);
+    throw new AppError('Answer key document could not be read', ErrorCodes.INTERNAL_ERROR, 503, 'assetId');
+  }
+
+  const fileName = asset.title?.trim() || asset.storageKey;
+  const inspection = await inspectExamImportDocument(bytes, maxDocumentBytes, fileName);
+  if (!inspection.supported || (inspection.detectedType !== 'docx' && inspection.detectedType !== 'pdf')) {
+    throw new AppError(
+      'The answer key document is not supported',
+      ErrorCodes.EXAM_IMPORT_SOURCE_INVALID,
+      400,
+      'assetId'
+    );
+  }
+
+  const runs = inspection.detectedType === 'docx' ? (await readDocxRuns(bytes)).runs : (await readPdfRuns(bytes)).runs;
+  const key = toCompactAnswerKey(readAnswerKeyPairsFromRuns(runs));
+  if (!key) {
+    throw new AppError(
+      'That document states no answer key the importer could read',
+      ErrorCodes.EXAM_IMPORT_ANSWER_KEY_INVALID,
+      400,
+      'assetId'
+    );
+  }
+
+  return applyExamImportAnswerKeyService(scope, importId, key);
 }
 
 export async function applyExamImportAnswerKeyService(
