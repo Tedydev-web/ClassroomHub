@@ -84,11 +84,21 @@ services:
     volumes:
       - /data/classroomhub-production/redis:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # Measured on this deployment: `PING` answers `LOADING` for the whole of a restart —
+      # twenty-one seconds to read a base RDB of 370,000 keys plus its incremental files —
+      # so the probe fails for that entire window. The old allowance of ten seconds of
+      # grace plus a hundred of retries was not always enough, and a deploy failed with
+      # `dependency failed to start: redis is unhealthy` while Redis was merely still
+      # loading. `INFO persistence` is answered during loading and states the truth, so the
+      # probe asks it too rather than trusting `PING` alone across versions.
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG && redis-cli INFO persistence | grep -q '^loading:0'"]
       interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
+      timeout: 5s
+      # The append-only file is measured in gigabytes and a cold load reads all of it. The
+      # window is sized for that rather than for the warm restart that is easy to observe:
+      # three minutes of grace, then two more minutes of retries before it is called dead.
+      retries: 12
+      start_period: 180s
     stop_grace_period: 30s
     restart: unless-stopped
     logging:

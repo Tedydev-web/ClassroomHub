@@ -5,6 +5,12 @@ import { Queue, Worker } from 'bullmq';
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
 import { checkStorageHealth } from '../services/storage-health';
+import {
+  ANALYTICS_DAILY_ROLLUP_INTERVAL_MS,
+  EXAM_IMPORT_RECONCILE_INTERVAL_MS,
+  MEDIA_JOB_REAP_INTERVAL_MS,
+  STORAGE_HEALTH_CHECK_INTERVAL_MS
+} from './maintenance-schedule';
 import { pruneDeadLetterJobsOlderThan, reapStuckMediaJobs } from '@cio/db/queries';
 import {
   JOB_NAMES,
@@ -110,15 +116,9 @@ const worker = new Worker(
 );
 
 /**
- * BullMQ repeatable scheduler for the media-job reaper. `upsertJobScheduler`
- * is idempotent on the scheduler id, so it's safe to call on every worker
- * boot. Without this, stuck `media_job` rows would never get cleaned up.
+ * BullMQ repeatable schedulers. `upsertJobScheduler` is idempotent on the scheduler id, so
+ * it is safe to call on every worker boot. The cadences live in `maintenance-schedule`.
  */
-const MEDIA_JOB_REAP_INTERVAL_MS = 5 * 60 * 1_000;
-const EXAM_IMPORT_RECONCILE_INTERVAL_MS = 5 * 1_000;
-/** Ten minutes: often enough that an outage is noticed the same morning, rare enough
- * that the probe objects are noise-free. */
-const STORAGE_HEALTH_CHECK_INTERVAL_MS = 10 * 60 * 1_000;
 // BullMQ requires a dedicated connection per Worker; give the Queue its own
 // so the scheduler upsert doesn't piggyback on the worker's blocking client.
 const schedulerConnection = createRedisConnection();
@@ -158,12 +158,12 @@ async function registerSchedulers(): Promise<void> {
 
     await maintenanceQueue.upsertJobScheduler(
       'analytics-daily-rollup-scheduler',
-      { every: 86_400_000 },
+      { every: ANALYTICS_DAILY_ROLLUP_INTERVAL_MS },
       { name: JOB_NAMES.maintenance.analyticsDailyRollup, data: {} }
     );
     log.info('analytics-rollup-scheduler-registered', {
       name: JOB_NAMES.maintenance.analyticsDailyRollup,
-      everyMs: 86_400_000
+      everyMs: ANALYTICS_DAILY_ROLLUP_INTERVAL_MS
     });
   } catch (err) {
     log.error('maintenance-scheduler-register-failed', { error: errorMessage(err) });
