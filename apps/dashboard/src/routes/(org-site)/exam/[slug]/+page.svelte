@@ -383,11 +383,11 @@
     which throws away everything not yet autosaved — in the middle of a timed exam.
   -->
   <div
-    class="ui:flex ui:min-h-dvh ui:flex-col ui:overscroll-y-contain"
+    class="ui:flex ui:min-h-dvh ui:flex-col overscroll-y-contain"
     style="--exercise-chrome-extra: {actionBarHeight}px"
   >
     <header
-      class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:pt-[max(0.75rem,env(safe-area-inset-top))] ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
+      class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
     >
       <p class="ui:truncate ui:text-sm ui:font-semibold">{data.exam.title}</p>
       <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-3">
@@ -415,7 +415,7 @@
       on top of the final answers and a candidate cannot see what they are choosing.
     -->
     <main
-      class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
+      class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:sm:px-6 ui:lg:px-8 2xl:px-16"
       style="padding-bottom: calc({actionBarHeight}px + 1rem)"
     >
       <SectionNavigationSidebar
@@ -450,7 +450,7 @@
     -->
     <footer
       bind:clientHeight={actionBarHeight}
-      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:pb-[max(0.75rem,env(safe-area-inset-bottom))] ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
+      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] 2xl:px-16"
     >
       <!--
         Inside the bar, not after it. The bar is pinned, so anything following it in the
@@ -466,7 +466,7 @@
         <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
           <Progress
             value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
-            class="ui:h-2 ui:max-w-48"
+            class="ui:h-2 max-w-48"
           />
           <span class="ui:text-muted-foreground ui:shrink-0 ui:text-xs">
             {unansweredCount > 0

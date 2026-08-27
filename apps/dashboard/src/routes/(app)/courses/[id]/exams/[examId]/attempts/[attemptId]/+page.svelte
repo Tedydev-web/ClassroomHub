@@ -184,13 +184,13 @@
               {#each item.interactions as interaction (interaction.interactionId)}
                 {@const tone =
                   interaction.outcome === 'correct'
-                    ? 'ui:text-emerald-600 ui:dark:text-emerald-400'
+                    ? 'ui:text-emerald-600 dark:text-emerald-400'
                     : interaction.outcome === 'incorrect'
                       ? 'ui:text-destructive'
                       : interaction.outcome === 'partial'
                         ? 'ui:text-amber-600 ui:dark:text-amber-400'
                         : ''}
-                <li class="ui:flex ui:flex-wrap ui:items-baseline ui:gap-x-2 ui:gap-y-1 ui:py-2 ui:text-sm">
+                <li class="ui:flex ui:flex-wrap ui:items-baseline ui:gap-x-3 ui:gap-y-1 ui:py-2 ui:text-sm">
                   <span class="ui:text-muted-foreground ui:w-8 ui:shrink-0 ui:tabular-nums">
                     {interaction.number}.
                   </span>
@@ -198,7 +198,7 @@
                   {#if !interaction.answered}
                     <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
                   {:else}
-                    <span class="ui:min-w-0 ui:flex-1 ui:[&_p]:ui:m-0 ui:[&_p]:ui:inline {tone}">
+                    <span class="ui:min-w-0 ui:flex-1 [&_p]:m-0 [&_p]:inline {tone}">
                       <!--
                         Keyed by position, not by label. An option id the paper no longer
                         contains resolves to "?", and two of them in one answer would be two

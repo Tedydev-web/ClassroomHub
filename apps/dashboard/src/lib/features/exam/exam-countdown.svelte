@@ -60,8 +60,8 @@
 
 <div
   class={[
-    'ui:tabular-nums ui:rounded-md ui:px-3 ui:py-1.5 ui:text-sm ui:font-semibold',
-    urgent ? 'ui:bg-destructive/10 ui:text-destructive' : 'ui:bg-muted ui:text-foreground'
+    'ui:tabular-nums ui:rounded-md ui:px-3 ui:text-sm ui:font-semibold py-1.5',
+    urgent ? 'bg-destructive/10 ui:text-destructive' : 'ui:bg-muted ui:text-foreground'
   ]}
   role="timer"
   aria-live={urgent ? 'assertive' : 'off'}
