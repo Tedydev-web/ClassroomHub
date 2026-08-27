@@ -169,13 +169,12 @@ export function gradeAttempt(
 
       perQuestion.push({ questionId: question.questionId, score: scored.autoScore, max });
     } catch {
-      // One unscoreable question must not fail the whole attempt, and one unscoreable
-      // attempt must not fail the whole results page. This block used to return, which did
-      // exactly what its comment forbids: a paper holding one question this build cannot
-      // mark threw away every other question's marks and reported the sitting as zero.
+      // A question this build cannot mark costs itself and nothing else. Returning here
+      // instead threw away every other question's marks and reported the whole sitting as
+      // zero, which is what the second half of this rule exists to prevent.
       //
-      // The sitting is still flagged rather than called complete — a mark nobody could
-      // compute is not a mark of zero — but the questions that were marked keep their marks.
+      // The sitting is still flagged rather than called complete: a mark nobody could
+      // compute is not a mark of zero. But every question that was marked keeps its mark.
       hasUnscoreableQuestion = true;
       perQuestion.push({ questionId: question.questionId, score: 0, max });
     }

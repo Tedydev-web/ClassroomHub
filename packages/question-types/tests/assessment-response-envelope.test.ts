@@ -14,6 +14,14 @@ function envelope(responses: Array<{ interactionId: string; response: unknown }>
   return { schemaVersion: 1, responses };
 }
 
+function expectLenientIssue(definition: AssessmentItemDefinition, value: unknown, code: AssessmentIssueCode): void {
+  const result = validateAssessmentResponseEnvelope(definition, value, { allowMissingRequiredResponses: true });
+  expect(result.success).toBe(false);
+  if (result.success) return;
+
+  expect(result.issues.map((issue) => issue.code)).toContain(code);
+}
+
 function expectEnvelopeIssue(definition: AssessmentItemDefinition, value: unknown, code: AssessmentIssueCode): void {
   const result = validateAssessmentResponseEnvelope(definition, value);
   expect(result.success).toBe(false);
@@ -492,5 +500,71 @@ describe('validateAssessmentResponseEnvelope — per-kind constraints', () => {
       envelope([{ interactionId: 'i1', response: { ...validFile, size: 1024 * 1024 + 1 } }]),
       'RESPONSE_CONSTRAINT'
     );
+  });
+});
+
+describe('validateAssessmentResponseEnvelope — allowMissingRequiredResponses', () => {
+  /**
+   * The option exists so a sitting can be marked question by question: one blank required
+   * question must not make its siblings unreadable. It must excuse nothing else. These pin
+   * that boundary here, where the option lives, rather than only through the caller that
+   * happens to use it.
+   */
+
+  it('accepts an envelope that leaves a required interaction unanswered', () => {
+    const result = validateAssessmentResponseEnvelope(
+      HYBRID,
+      envelope([{ interactionId: 'i1', response: VALID_CHOICE }]),
+      { allowMissingRequiredResponses: true }
+    );
+
+    expect(result.success).toBe(true);
+  });
+
+  it('reports the same envelope as invalid without the option', () => {
+    expectEnvelopeIssue(
+      HYBRID,
+      envelope([{ interactionId: 'i1', response: VALID_CHOICE }]),
+      'MISSING_REQUIRED_RESPONSE'
+    );
+  });
+
+  it('still rejects a duplicated response entry', () => {
+    expectLenientIssue(
+      HYBRID,
+      envelope([
+        { interactionId: 'i1', response: VALID_CHOICE },
+        { interactionId: 'i1', response: VALID_CHOICE }
+      ]),
+      'DUPLICATE_RESPONSE_ENTRY'
+    );
+  });
+
+  it('still rejects a response for an interaction the paper does not have', () => {
+    expectLenientIssue(HYBRID, envelope([{ interactionId: 'ghost', response: VALID_CHOICE }]), 'UNKNOWN_INTERACTION');
+  });
+
+  it('still rejects a response whose kind does not match the interaction', () => {
+    expectLenientIssue(HYBRID, envelope([{ interactionId: 'i1', response: VALID_TEXT }]), 'RESPONSE_KIND_MISMATCH');
+  });
+
+  it("still rejects a response that breaks the interaction's own constraints", () => {
+    expectLenientIssue(
+      HYBRID,
+      envelope([{ interactionId: 'i1', response: { kind: 'choice', selectedOptionIds: ['a', 'b'] } }]),
+      'RESPONSE_CONSTRAINT'
+    );
+  });
+
+  it('still rejects an envelope of the wrong schema version', () => {
+    const result = validateAssessmentResponseEnvelope(
+      HYBRID,
+      { schemaVersion: 99, responses: [] },
+      {
+        allowMissingRequiredResponses: true
+      }
+    );
+
+    expect(result.success).toBe(false);
   });
 });

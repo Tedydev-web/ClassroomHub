@@ -207,7 +207,9 @@ describe('markAttemptPaper', () => {
       } as never
     };
 
-    // q2 left blank, so the item fails validation and the fallback decides q1.
+    // The repeated selection is what fails validation — a blank q2 is excused now. So the
+    // item has no score, and the screen says "not scored" rather than reading a verdict off
+    // the key and contradicting the zero the server gave.
     const marked = markAttemptPaper(
       [multi],
       new Map([
