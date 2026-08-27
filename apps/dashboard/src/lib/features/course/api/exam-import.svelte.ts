@@ -362,6 +362,16 @@ export class ExamImportApi extends BaseApiWithErrors {
    * concerned, and the server reads it with the same readers it uses for the paper.
    */
   async applyAnswerKeyDocument(courseId: string, importId: string, file: File): Promise<boolean> {
+    // Refuse before uploading, not after. The server rejects a PDF key while PDF import is
+    // disabled, and reaching that answer by way of a presigned upload costs the teacher the
+    // wait and leaves an asset row behind for a file that was never going to be read.
+    const pdfEnabled = env.PUBLIC_EXAM_IMPORT_PDF_ENABLED === 'true';
+    if (!isDocxFile(file) && !(pdfEnabled && isPdfFile(file))) {
+      const errorKey = pdfEnabled ? 'exam_import.upload.document_only' : 'exam_import.upload.docx_only';
+      snackbar.error(errorKey);
+      return false;
+    }
+
     this.isUploading = true;
     this.documentUploader.initUpload();
     try {

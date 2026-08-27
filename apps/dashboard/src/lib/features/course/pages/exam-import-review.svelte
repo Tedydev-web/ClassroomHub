@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { env } from '$env/dynamic/public';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import * as Alert from '@cio/ui/base/alert';
@@ -26,6 +27,8 @@
   import { t } from '$lib/utils/functions/translations';
   import { SvelteSet } from 'svelte/reactivity';
   import type { ExamImportAiSuggestionEstimate } from '$features/course/utils/types';
+
+  const pdfImportEnabled = env.PUBLIC_EXAM_IMPORT_PDF_ENABLED === 'true';
 
   interface Props {
     courseId: string;
@@ -376,7 +379,7 @@
           <p class="ui:text-muted-foreground text-xs">{$t('exam_import.answer_key.document_hint')}</p>
           <input
             type="file"
-            accept=".docx,.pdf"
+            accept={pdfImportEnabled ? '.docx,.pdf' : '.docx'}
             class="text-xs"
             disabled={examImportApi.isUploading}
             onchange={handleAnswerKeyFile}
