@@ -326,7 +326,7 @@
                 {$t('exam.manage.question_count', { count: String(summary.questionCount) })}
               </p>
               {#if missing.length > 0}
-                <p class="ui:mt-1 ui:font-medium text-amber-700 dark:text-amber-300">
+                <p class="ui:mt-1 ui:font-medium ui:dark:text-amber-300 text-amber-700">
                   {$t('exam.manage.missing_keys', {
                     count: String(missing.length),
                     questions: missing.map((question) => question.order).join(', ')

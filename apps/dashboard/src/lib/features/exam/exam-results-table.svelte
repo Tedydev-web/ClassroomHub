@@ -234,13 +234,13 @@
     What the class did, before any individual did it. Four numbers, and the only one that
     can require action is the one that takes a colour.
   -->
-  <div class="ui:grid ui:gap-3 ui:grid-cols-2 lg:grid-cols-4">
+  <div class="ui:grid ui:gap-3 ui:grid-cols-2 ui:lg:grid-cols-4">
     {#snippet stat(label: string, value: string, accent = false)}
       <div class="ui:border-border ui:rounded-lg ui:border ui:px-3 ui:py-2">
         <p class="ui:text-muted-foreground ui:text-xs">{label}</p>
         <p
           class={accent
-            ? 'ui:text-lg ui:font-semibold ui:tabular-nums text-amber-600 dark:text-amber-400'
+            ? 'ui:text-lg ui:font-semibold ui:tabular-nums ui:text-amber-600 ui:dark:text-amber-400'
             : 'ui:text-lg ui:font-semibold ui:tabular-nums'}
         >
           {value}
@@ -294,7 +294,7 @@
               the bottom, who took longest, and where is a name in a class list.
             -->
             <Table.Head>
-              <button type="button" class="ui:font-medium hover:underline" onclick={() => sortBy('name')}>
+              <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('name')}>
                 {$t('exam.entry.full_name')}{sortKey === 'name' ? (sortDescending ? ' ↓' : ' ↑') : ''}
               </button>
             </Table.Head>
@@ -302,12 +302,12 @@
             <Table.Head>{$t('exam.entry.candidate_number')}</Table.Head>
             <Table.Head>{$t('exam.results.status_column')}</Table.Head>
             <Table.Head class="ui:text-right">
-              <button type="button" class="ui:font-medium hover:underline" onclick={() => sortBy('score')}>
+              <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('score')}>
                 {$t('exam.results.score_column')}{sortKey === 'score' ? (sortDescending ? ' ↓' : ' ↑') : ''}
               </button>
             </Table.Head>
             <Table.Head class="ui:text-right">
-              <button type="button" class="ui:font-medium hover:underline" onclick={() => sortBy('time')}>
+              <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('time')}>
                 {$t('exam.results.time_taken_column')}{sortKey === 'time' ? (sortDescending ? ' ↓' : ' ↑') : ''}
               </button>
             </Table.Head>
@@ -358,7 +358,7 @@
                       {/if}
                       <!-- Destructive stays last and coloured; a delete here loses the sitting. -->
                       <DropdownMenu.Item
-                        class="text-destructive"
+                        class="ui:text-destructive"
                         onclick={() => ondelete(row.attemptId, row.displayName)}
                       >
                         {$t('exam.results.delete')}

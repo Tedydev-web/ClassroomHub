@@ -198,7 +198,7 @@
                   {#if !interaction.answered}
                     <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
                   {:else}
-                    <span class="ui:min-w-0 ui:flex-1 [&_p]:m-0 [&_p]:inline {tone}">
+                    <span class="ui:min-w-0 ui:flex-1 ui:[&_p]:m-0 ui:[&_p]:inline {tone}">
                       <!--
                         Keyed by position, not by label. An option id the paper no longer
                         contains resolves to "?", and two of them in one answer would be two

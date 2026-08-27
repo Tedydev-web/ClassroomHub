@@ -154,7 +154,7 @@
       <Card.Title class="ui:text-base">{$t('exam.settings.section_timing')}</Card.Title>
       <Card.Description>{$t('exam.settings.timing_help')}</Card.Description>
     </Card.Header>
-    <Card.Content class="ui:grid ui:gap-4 sm:grid-cols-2">
+    <Card.Content class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
       <div class="ui:space-y-2">
         <Label for="exam-minutes">{$t('exam.settings.working_minutes')}</Label>
         <Input
@@ -189,7 +189,7 @@
       <Card.Title class="ui:text-base">{$t('exam.settings.section_reveal')}</Card.Title>
       <Card.Description>{$t('exam.settings.reveal_help')}</Card.Description>
     </Card.Header>
-    <Card.Content class="ui:grid ui:gap-4 sm:grid-cols-2">
+    <Card.Content class="ui:grid ui:gap-4 ui:sm:grid-cols-2">
       <div class="ui:space-y-2">
         <Label for="exam-score-visibility">{$t('exam.settings.score_visibility')}</Label>
         <Select.Root type="single" bind:value={scoreVisibility}>
