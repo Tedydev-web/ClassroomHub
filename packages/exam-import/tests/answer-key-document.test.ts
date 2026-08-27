@@ -137,3 +137,64 @@ describe('a multi-select key travels the whole chain', () => {
     });
   });
 });
+
+describe('every carrier round-trips through the applier', () => {
+  // The read side of each carrier is covered elsewhere, one assertion per carrier, all of
+  // the form "this document yields this string". None of them asked whether the applier
+  // can read the string back. That gap is exactly where the multi-select key broke: both
+  // halves passed while the seam between them did not, so check the seam for all of them.
+  const bodies: Array<[string, string]> = [
+    ['grid with no header', paragraph('ĐÁP ÁN') + table(row('1', '2', '3', '4'), row('B', 'C', 'A', 'D'))],
+    ['headed table', table(row('Câu', 'Đáp án'), row('1', 'B'), row('2', 'C'), row('3', 'A'), row('4', 'D'))],
+    ['one answer per line', ['1. B', '2. C', '3. A', '4. D'].map(paragraph).join('')],
+    ['one compact line', paragraph('1B 2C 3A 4D')],
+    ['labelled compact line', paragraph('ĐÁP ÁN: 1B 2C 3A 4D')],
+    ['dash separated', paragraph('1 - B 2 - C 3 - A 4 - D')]
+  ];
+
+  function draftOfFourQuestions() {
+    const draft = buildValidExamImportDraft();
+    const template = draft.sections[0]!.questions[0]!;
+    if (template.kind !== 'choice') throw new Error('fixture is expected to be a choice question');
+    const options = ['A', 'B', 'C', 'D'];
+
+    draft.sections[0]!.questions = [1, 2, 3, 4].map((number) => {
+      const question = structuredClone(template);
+      question.id = `question-${number}`;
+      question.order = number - 1;
+      question.sourceNumber = String(number);
+      question.options = options.map((label, index) => ({
+        id: `question-${number}-option-${label.toLowerCase()}`,
+        sourceLabel: label,
+        html: `<p>${label}</p>`,
+        order: index
+      }));
+      question.answerCandidates = [];
+      question.answerKey = null;
+      question.review = 'unresolved';
+      question.confidence = 'none';
+
+      return question;
+    });
+
+    return draft;
+  }
+
+  for (const [name, body] of bodies) {
+    it(name, async () => {
+      const key = await keyOf(body);
+      expect(key).toBe('1B 2C 3A 4D');
+
+      const result = applyExamImportCompactAnswerKey(draftOfFourQuestions(), key, {
+        enabledQuestionKinds: new Set(['choice', 'true_false_group', 'short_answer', 'numeric', 'essay'] as const)
+      });
+
+      expect(result.appliedCount).toBe(4);
+      expect(
+        result.draft.sections[0]!.questions.map((question) =>
+          question.kind === 'choice' && question.answerKey ? question.answerKey.correctOptionIds[0] : null
+        )
+      ).toEqual(['question-1-option-b', 'question-2-option-c', 'question-3-option-a', 'question-4-option-d']);
+    });
+  }
+});
