@@ -5102,6 +5102,7 @@
       "blocking_findings": "Blocking findings",
       "no_blocking_findings": "No blocking findings remain.",
       "resolve_before_publish": "Resolve these findings before publishing.",
+      "blocked_reason": "{count} things to resolve before publishing",
       "question_number": "Question {number}",
       "source_excerpt": "Source {location}",
       "question_findings": "Question findings",

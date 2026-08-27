@@ -5319,6 +5319,7 @@
       "blocking_findings": "Vấn đề đang chặn",
       "no_blocking_findings": "Không còn vấn đề nào đang chặn.",
       "resolve_before_publish": "Hãy xử lý các vấn đề này trước khi xuất bản.",
+      "blocked_reason": "Còn {count} chỗ phải xử lý trước khi xuất bản",
       "question_number": "Câu {number}",
       "source_excerpt": "Nguồn {location}",
       "question_findings": "Vấn đề của câu hỏi",

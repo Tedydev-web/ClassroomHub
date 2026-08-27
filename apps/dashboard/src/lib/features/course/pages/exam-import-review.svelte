@@ -264,9 +264,21 @@
     </div>
 
     {#if draftView}
-      <Button onclick={publish} disabled={!draftView.publishable || examImportApi.isLoading}>
-        {$t('exam_import.publish.action')}
-      </Button>
+      <!--
+        Why the button cannot be pressed, next to the button. The findings that block it are
+        listed further down the page, so a teacher met a dead control first and the reason
+        for it only after scrolling.
+      -->
+      <div class="flex flex-col items-end gap-1">
+        <Button onclick={publish} disabled={!draftView.publishable || examImportApi.isLoading}>
+          {$t('exam_import.publish.action')}
+        </Button>
+        {#if !draftView.publishable && blockingFindings.length > 0}
+          <p class="ui:text-muted-foreground text-xs">
+            {$t('exam_import.review.blocked_reason', { count: String(blockingFindings.length) })}
+          </p>
+        {/if}
+      </div>
     {/if}
   </header>
 
