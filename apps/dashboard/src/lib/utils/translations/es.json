@@ -5342,7 +5342,8 @@
       "invalid": "The answer key format is invalid.",
       "failed": "The answer key could not be applied.",
       "applied": "Applied answers to {count} questions",
-      "applied_partial": "Applied answers to {count} questions; the paper still needs answers before it can be published"
+      "applied_partial": "Applied answers to {count} questions; the paper still cannot be published — see the findings below",
+      "applied_none": "That key changed nothing: every question it names already has an answer"
     },
     "publish": {
       "action": "Publish exercise",

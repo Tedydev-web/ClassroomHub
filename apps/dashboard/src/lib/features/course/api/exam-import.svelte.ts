@@ -463,6 +463,13 @@ export const examImportApi = new ExamImportApi();
  * key was meant to end.
  */
 function answerKeyAppliedMessage(data: { appliedCount: number; publishable: boolean }): string {
+  // Three outcomes, not two. A key can be read and change nothing — every question it names
+  // already had an answer — and saying "applied 0" as a success explains nothing. When the
+  // draft still cannot be published the reason is not necessarily a missing answer either:
+  // the paper may be fully keyed and blocked by a defect of its own. Do not name a cause
+  // this response cannot see; the review panel below lists the actual findings.
+  if (data.appliedCount === 0) return t.get('exam_import.answer_key.applied_none');
+
   const key = data.publishable ? 'applied' : 'applied_partial';
 
   return t.get(`exam_import.answer_key.${key}`, { count: data.appliedCount });
