@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { db, type DbOrTxClient } from '../../drizzle';
 import * as schema from '../../schema';
@@ -31,11 +31,46 @@ export async function getExamBySlug(slug: string, dbClient: DbOrTxClient = db) {
   return exam ?? null;
 }
 
+/**
+ * The exams of a course, each carrying how many people have sat it.
+ *
+ * The counts come with the list because they are what a teacher opens the page to find
+ * out: whether anyone has taken the exam yet, and whether any of it is waiting to be
+ * marked by hand. Fetching them per row afterwards would be one request per exam to
+ * answer a question the list is supposed to answer at a glance.
+ */
 export async function listExamsByCourseId(courseId: string, dbClient: DbOrTxClient = db) {
+  const attempts = dbClient.$with('exam_attempt_counts').as(
+    dbClient
+      .select({
+        examId: schema.examAttempt.examId,
+        sat: sql<number>`count(*)::int`.as('sat'),
+        inProgress: sql<number>`count(*) filter (where ${schema.examAttempt.status} = 'in_progress')::int`.as(
+          'in_progress'
+        ),
+        awaitingManual:
+          sql<number>`count(*) filter (where ${schema.examAttempt.gradingState} = 'awaiting_manual')::int`.as(
+            'awaiting_manual'
+          )
+      })
+      .from(schema.examAttempt)
+      .groupBy(schema.examAttempt.examId)
+  );
+
   return dbClient
-    .select()
+    .with(attempts)
+    .select({
+      exam: schema.exam,
+      sat: sql<number>`coalesce(${attempts.sat}, 0)::int`,
+      inProgress: sql<number>`coalesce(${attempts.inProgress}, 0)::int`,
+      awaitingManual: sql<number>`coalesce(${attempts.awaitingManual}, 0)::int`
+    })
     .from(schema.exam)
-    .where(and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt)));
+    .leftJoin(attempts, eq(attempts.examId, schema.exam.id))
+    .where(and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt)))
+    .then((rows) =>
+      rows.map((row) => ({ ...row.exam, sat: row.sat, inProgress: row.inProgress, awaitingManual: row.awaitingManual }))
+    );
 }
 
 /**
