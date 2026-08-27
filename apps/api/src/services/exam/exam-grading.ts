@@ -119,7 +119,7 @@ export function gradeAttempt(
   const perQuestion: ExamGradeResult['perQuestion'] = [];
   let autoScore = 0;
   let total = 0;
-  let awaitingManual = false;
+  const manualQuestionIds = new Set<number>();
 
   for (const question of paper.questions) {
     // A definition with no interactions at all is not an empty paper — it is a paper we
@@ -153,7 +153,7 @@ export function gradeAttempt(
 
       const scored = scoreAssessmentVerticalSlice(question.definition, validated.data);
       autoScore += scored.autoScore;
-      if (scored.manualMaxScore > 0) awaitingManual = true;
+      if (scored.manualMaxScore > 0) manualQuestionIds.add(question.questionId);
 
       perQuestion.push({ questionId: question.questionId, score: scored.autoScore, max });
     } catch {
@@ -170,7 +170,11 @@ export function gradeAttempt(
 
   const manualTotal = Object.values(manualMarks).reduce((sum, mark) => sum + (mark.score ?? 0), 0);
   const markedQuestionIds = new Set(Object.keys(manualMarks).map(Number));
-  const stillAwaiting = awaitingManual && paper.questions.some((q) => !markedQuestionIds.has(q.questionId));
+  // Only the questions that actually owe a hand mark. Asking for a mark on every question
+  // meant an attempt stayed `awaiting_manual` until a teacher entered a score against each
+  // automatically scored question too — and the marking screen offers a box only where a
+  // mark is owed, so there was no way left to satisfy it.
+  const stillAwaiting = [...manualQuestionIds].some((questionId) => !markedQuestionIds.has(questionId));
 
   return {
     score: autoScore + manualTotal,

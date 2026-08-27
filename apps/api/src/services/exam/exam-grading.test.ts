@@ -171,3 +171,59 @@ describe('applying corrections to a paper', () => {
     expect(definition.blocks[0]?.interaction.config.correctOptionIds).toEqual(['1']);
   });
 });
+
+function textDefinition() {
+  return {
+    schemaVersion: 1,
+    blocks: [
+      {
+        id: 'essay',
+        kind: 'interaction',
+        interaction: {
+          kind: 'text',
+          prompt: { html: '<p>Discuss</p>' },
+          required: true,
+          maxScore: 2,
+          config: { multiline: true }
+        }
+      }
+    ]
+  } as never;
+}
+
+describe('a paper that mixes hand-marked and automatic questions', () => {
+  it('is complete once the hand-marked questions are marked, not once every question is', () => {
+    // The screen only offers a mark box where a mark is owed. Requiring a key for every
+    // question — including the thirty-nine the machine already scored — left the attempt
+    // stuck awaiting a mark that no one could enter.
+    const snapshot = {
+      frozenAt: new Date().toISOString(),
+      questions: [
+        { questionId: 1, questionRevisionId: 'r1', order: 1, points: 1, definition: choiceDefinition('1') },
+        { questionId: 2, questionRevisionId: 'r2', order: 2, points: 2, definition: textDefinition() }
+      ]
+    } as never;
+
+    const answers = [
+      {
+        questionId: 1,
+        questionRevisionId: 'r1',
+        answerData: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'b1', response: { kind: 'choice', selectedOptionIds: ['1'] } }]
+        }
+      },
+      {
+        questionId: 2,
+        questionRevisionId: 'r2',
+        answerData: {
+          schemaVersion: 1,
+          responses: [{ interactionId: 'essay', response: { kind: 'text', text: 'an answer' } }]
+        }
+      }
+    ] as never;
+
+    expect(gradeAttempt(snapshot, answers, [], {}).gradingState).toBe('awaiting_manual');
+    expect(gradeAttempt(snapshot, answers, [], { 2: { score: 2 } }).gradingState).toBe('complete');
+  });
+});

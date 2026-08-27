@@ -92,6 +92,11 @@
       } else {
         snackbar.error($t('exam.results.mark_failed'));
       }
+    } catch {
+      // The API client throws on any non-2xx, so without this a rejected save fell through
+      // silently: no message, the button re-enabled, and the teacher believed the mark had
+      // landed.
+      snackbar.error($t('exam.results.mark_failed'));
     } finally {
       savingQuestionId = null;
     }
@@ -177,36 +182,76 @@
 
             <ol class="ui:divide-border ui:divide-y">
               {#each item.interactions as interaction (interaction.interactionId)}
+                {@const tone =
+                  interaction.outcome === 'correct'
+                    ? 'ui:text-emerald-600 ui:dark:text-emerald-400'
+                    : interaction.outcome === 'incorrect'
+                      ? 'ui:text-destructive'
+                      : interaction.outcome === 'partial'
+                        ? 'ui:text-amber-600 ui:dark:text-amber-400'
+                        : ''}
                 <li class="ui:flex ui:flex-wrap ui:items-baseline ui:gap-x-2 ui:gap-y-1 ui:py-2 ui:text-sm">
                   <span class="ui:text-muted-foreground ui:w-8 ui:shrink-0 ui:tabular-nums">
                     {interaction.number}.
                   </span>
 
-                  {#if interaction.chosen.length === 0}
+                  {#if !interaction.answered}
                     <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
                   {:else}
-                    <span
-                      class={interaction.isCorrect === false
-                        ? 'ui:text-destructive ui:min-w-0 ui:flex-1'
-                        : interaction.isCorrect === true
-                          ? 'ui:min-w-0 ui:flex-1 ui:text-emerald-600 ui:dark:text-emerald-400'
-                          : 'ui:min-w-0 ui:flex-1'}
-                    >
-                      {#each interaction.chosen as option (option.label)}
+                    <span class="ui:min-w-0 ui:flex-1 ui:[&_p]:ui:m-0 ui:[&_p]:ui:inline {tone}">
+                      <!--
+                        Keyed by position, not by label. An option id the paper no longer
+                        contains resolves to "?", and two of them in one answer would be two
+                        identical keys, which Svelte rejects — taking the whole page down
+                        rather than the one row.
+                      -->
+                      {#each interaction.chosen as option, position (position)}
                         <span class="ui:font-semibold">{option.label}.</span>
                         <SafeHtmlContent content={option.html} />
                       {/each}
-                      {#if interaction.isCorrect === true}<span aria-hidden="true"> ✓</span>{/if}
-                      {#if interaction.isCorrect === false}<span aria-hidden="true"> ✗</span>{/if}
+                      {#if interaction.givenText}{interaction.givenText}{/if}
+                      <!--
+                        The verdict reaches a screen reader as a word. The glyph and the
+                        colour are the only other carriers, and neither is available to one.
+                      -->
+                      {#if interaction.outcome === 'correct'}
+                        <span class="ui:sr-only">{$t('exam.results.marked_correct')}</span>
+                        <span aria-hidden="true"> ✓</span>
+                      {:else if interaction.outcome === 'incorrect'}
+                        <span class="ui:sr-only">{$t('exam.results.marked_incorrect')}</span>
+                        <span aria-hidden="true"> ✗</span>
+                      {:else if interaction.outcome === 'partial'}
+                        <span class="ui:sr-only">{$t('exam.results.marked_partial')}</span>
+                        <span class="ui:text-xs ui:tabular-nums">
+                          ({$t('exam.results.interaction_score', {
+                            score: String(interaction.score ?? 0),
+                            max: String(interaction.maxScore)
+                          })})
+                        </span>
+                      {:else if interaction.outcome === 'manual'}
+                        <span class="ui:text-muted-foreground ui:text-xs">
+                          — {$t('exam.results.awaiting_hand_mark')}
+                        </span>
+                      {:else}
+                        <span class="ui:text-muted-foreground ui:text-xs">
+                          — {$t('exam.results.marked_unscored')}
+                        </span>
+                      {/if}
                     </span>
                   {/if}
 
-                  {#if interaction.isCorrect === false && interaction.correct.length > 0}
-                    <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
-                      {$t('exam.results.correct_answer', {
-                        answer: interaction.correct.map((option) => option.label).join(', ')
-                      })}
-                    </span>
+                  {#if interaction.outcome !== 'correct' && interaction.outcome !== 'manual'}
+                    {#if interaction.correct.length > 0}
+                      <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
+                        {$t('exam.results.correct_answer', {
+                          answer: interaction.correct.map((option) => option.label).join(', ')
+                        })}
+                      </span>
+                    {:else if interaction.expectedText}
+                      <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
+                        {$t('exam.results.expected_answer', { answer: interaction.expectedText })}
+                      </span>
+                    {/if}
                   {/if}
                 </li>
               {/each}

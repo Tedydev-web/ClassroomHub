@@ -5543,6 +5543,13 @@
       "item_score": "{score}/{max} points",
       "unsupported_item": "This item could not be read for display",
       "score_blocked": "This group scored zero because a required question was left blank — the answers below are still checked against the key.",
+      "marked_correct": "Correct",
+      "marked_incorrect": "Incorrect",
+      "marked_partial": "Partly correct",
+      "marked_unscored": "Not scored",
+      "interaction_score": "{score}/{max}",
+      "expected_answer": "Expected: {answer}",
+      "awaiting_hand_mark": "Awaiting a hand mark",
       "no_extra_details": "Nothing else declared",
       "summary_awaiting": "{count} awaiting marking"
     },

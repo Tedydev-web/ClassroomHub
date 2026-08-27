@@ -91,10 +91,10 @@ describe('markAttemptPaper', () => {
     const [right, wrong] = marked[0]!.interactions;
 
     expect(right!.chosen).toEqual([{ label: 'C', html: '<p>third</p>' }]);
-    expect(right!.isCorrect).toBe(true);
+    expect(right!.outcome).toBe('correct');
 
     expect(wrong!.chosen).toEqual([{ label: 'A', html: '<p>first</p>' }]);
-    expect(wrong!.isCorrect).toBe(false);
+    expect(wrong!.outcome).toBe('incorrect');
     expect(wrong!.correct).toEqual([{ label: 'C', html: '<p>third</p>' }]);
   });
 
@@ -130,7 +130,7 @@ describe('markAttemptPaper', () => {
 
     expect(marked[0]!.needsManual).toBe(false);
     expect(marked[1]!.needsManual).toBe(true);
-    expect(marked[1]!.interactions[0]!.isCorrect).toBeNull();
+    expect(marked[1]!.interactions[0]!.outcome).toBe('manual');
   });
 
   it('still marks the answered questions when one blank sibling blocks the score', () => {
@@ -151,10 +151,10 @@ describe('markAttemptPaper', () => {
     );
     const [first, second, third] = marked[0]!.interactions;
 
-    expect(first!.isCorrect).toBe(true);
-    expect(second!.isCorrect).toBe(false);
+    expect(first!.outcome).toBe('correct');
+    expect(second!.outcome).toBe('incorrect');
     expect(third!.chosen).toEqual([]);
-    expect(third!.isCorrect).toBeNull();
+    expect(third!.outcome).toBe('unscored');
     expect(marked[0]!.scoreBlocked).toBe(true);
   });
 
@@ -222,6 +222,151 @@ describe('markAttemptPaper', () => {
     );
 
     expect(marked[0]!.scoreBlocked).toBe(true);
-    expect(marked[0]!.interactions[0]!.isCorrect).toBe(false);
+    expect(marked[0]!.interactions[0]!.outcome).toBe('incorrect');
+  });
+
+  it('falls back to the questions own maximum when the paper states no points', () => {
+    const noPoints = { ...item(1, ['q1', 'q2'], 'a'), points: undefined };
+
+    expect(markAttemptPaper([noPoints], new Map())[0]!.maxScore).toBe(2);
+  });
+
+  it('reads a true/false group and a numeric answer instead of calling them unanswered', () => {
+    // Only `selectedOptionIds` was ever read, so every kind that is not multiple choice was
+    // reported as unanswered — beside an item score that had counted it.
+    const paper = {
+      questionId: 1,
+      points: 3,
+      definition: {
+        schemaVersion: 1,
+        blocks: [
+          {
+            id: 'tf',
+            kind: 'interaction',
+            interaction: {
+              kind: 'true_false_group',
+              prompt: { html: '<p>tf</p>', format: 'html' },
+              required: true,
+              maxScore: 2,
+              config: {
+                scoring: { mode: 'all_or_nothing' },
+                statements: [
+                  { id: 's1', html: '<p>one</p>', correctValue: true },
+                  { id: 's2', html: '<p>two</p>', correctValue: false }
+                ]
+              }
+            }
+          },
+          {
+            id: 'num',
+            kind: 'interaction',
+            interaction: {
+              kind: 'numeric',
+              prompt: { html: '<p>num</p>', format: 'html' },
+              required: true,
+              maxScore: 1,
+              config: { correctValue: 42, tolerance: 0 }
+            }
+          }
+        ]
+      } as never
+    };
+
+    const marked = markAttemptPaper(
+      [paper],
+      new Map([
+        [
+          1,
+          {
+            schemaVersion: 1,
+            responses: [
+              {
+                interactionId: 'tf',
+                response: {
+                  kind: 'true_false_group',
+                  answers: [
+                    { statementId: 's1', value: true },
+                    { statementId: 's2', value: false }
+                  ]
+                }
+              },
+              { interactionId: 'num', response: { kind: 'numeric', value: 41 } }
+            ]
+          }
+        ]
+      ]),
+      { trueLabel: 'Đúng', falseLabel: 'Sai' }
+    );
+    const [group, numeric] = marked[0]!.interactions;
+
+    expect(group!.answered).toBe(true);
+    expect(group!.givenText).toBe('Đúng · Sai');
+    expect(group!.outcome).toBe('correct');
+
+    expect(numeric!.answered).toBe(true);
+    expect(numeric!.givenText).toBe('41');
+    expect(numeric!.expectedText).toBe('42');
+    expect(numeric!.outcome).toBe('incorrect');
+  });
+
+  it('does not invent a verdict for a weighted choice whose score is missing', () => {
+    // With `scoreWeights` the scorer never consults `correctOptionIds`, so the fallback
+    // cannot claim right or wrong without contradicting the total.
+    const weighted = {
+      questionId: 1,
+      points: 2,
+      definition: {
+        schemaVersion: 1,
+        blocks: [
+          {
+            id: 'w',
+            kind: 'interaction',
+            interaction: {
+              kind: 'choice',
+              prompt: { html: '<p>w</p>', format: 'html' },
+              required: true,
+              maxScore: 1,
+              config: {
+                cardinality: 'single',
+                presentation: 'list',
+                options: [
+                  { id: 'w-a', html: '<p>a</p>' },
+                  { id: 'w-b', html: '<p>b</p>' }
+                ],
+                correctOptionIds: ['w-a'],
+                scoreWeights: { 'w-a': 100, 'w-b': 50 }
+              }
+            }
+          },
+          {
+            id: 'blank',
+            kind: 'interaction',
+            interaction: {
+              kind: 'numeric',
+              prompt: { html: '<p>blank</p>', format: 'html' },
+              required: true,
+              maxScore: 1,
+              config: { correctValue: 1, tolerance: 0 }
+            }
+          }
+        ]
+      } as never
+    };
+
+    const marked = markAttemptPaper(
+      [weighted],
+      new Map([
+        [
+          1,
+          {
+            schemaVersion: 1,
+            responses: [{ interactionId: 'w', response: { kind: 'choice', selectedOptionIds: ['w-a'] } }]
+          }
+        ]
+      ])
+    );
+
+    expect(marked[0]!.scoreBlocked).toBe(true);
+    expect(marked[0]!.interactions[0]!.outcome).toBe('unscored');
   });
 });

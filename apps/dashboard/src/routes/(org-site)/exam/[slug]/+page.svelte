@@ -382,7 +382,10 @@
     On a phone, dragging down to reach a question above reloads the page otherwise,
     which throws away everything not yet autosaved — in the middle of a timed exam.
   -->
-  <div class="ui:flex ui:min-h-dvh ui:flex-col ui:overscroll-y-contain">
+  <div
+    class="ui:flex ui:min-h-dvh ui:flex-col ui:overscroll-y-contain"
+    style="--exercise-chrome-extra: {actionBarHeight}px"
+  >
     <header
       class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:pt-[max(0.75rem,env(safe-area-inset-top))] ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
     >
@@ -447,40 +450,48 @@
     -->
     <footer
       bind:clientHeight={actionBarHeight}
-      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-3 ui:py-3 ui:pb-[max(0.75rem,env(safe-area-inset-bottom))] ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
+      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:pb-[max(0.75rem,env(safe-area-inset-bottom))] ui:sm:px-6 ui:lg:px-8 ui:2xl:px-16"
     >
-      <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
-        <Progress
-          value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
-          class="ui:h-2 ui:max-w-48"
-        />
-        <span class="ui:text-muted-foreground ui:shrink-0 ui:text-xs">
-          {unansweredCount > 0
-            ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
-            : $t('exam.sitting.all_answered')}
-        </span>
-      </div>
       <!--
+        Inside the bar, not after it. The bar is pinned, so anything following it in the
+        flow is pushed to the very place the bar occupies — which is where a failed submit
+        used to go, leaving a candidate no idea their paper had not been handed in. Being
+        inside also means its height is measured, so the paper still clears it.
+      -->
+      {#if submitError}
+        <p class="ui:text-destructive ui:text-sm" role="alert">{submitError}</p>
+      {/if}
+
+      <div class="ui:flex ui:items-center ui:justify-between ui:gap-3">
+        <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
+          <Progress
+            value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
+            class="ui:h-2 ui:max-w-48"
+          />
+          <span class="ui:text-muted-foreground ui:shrink-0 ui:text-xs">
+            {unansweredCount > 0
+              ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
+              : $t('exam.sitting.all_answered')}
+          </span>
+        </div>
+        <!--
         Paging between items lives here rather than under the paper. The passage workspace
         already carries its own previous/next for the questions inside one passage, and a
         second pair directly beneath it read as a broken duplicate of the first.
       -->
-      <QuestionNavigation
-        canGoBack={currentIndex > 1}
-        canGoNext={!submitting}
-        isLast={isLastItem}
-        isSubmitting={submitting}
-        previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
-        nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
-        finishLabel={$t('exam.sitting.submit')}
-        onPrevious={goPrevious}
-        onNext={goNext}
-      />
+        <QuestionNavigation
+          canGoBack={currentIndex > 1}
+          canGoNext={!submitting}
+          isLast={isLastItem}
+          isSubmitting={submitting}
+          previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
+          nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
+          finishLabel={$t('exam.sitting.submit')}
+          onPrevious={goPrevious}
+          onNext={goNext}
+        />
+      </div>
     </footer>
-
-    {#if submitError}
-      <p class="ui:text-destructive ui:px-4 ui:pb-4 ui:text-sm" role="alert">{submitError}</p>
-    {/if}
   </div>
 {:else}
   <div class="ui:mx-auto ui:max-w-md ui:space-y-3 ui:px-4 ui:py-16 ui:text-center">

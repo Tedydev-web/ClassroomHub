@@ -815,8 +815,15 @@
         a third of the page empty beneath it — the one place where more height is always
         worth having, because it is fewer scrolls through the text.
       -->
+      <!--
+        `--exercise-chrome-extra` is how a host tells this box about chrome it cannot see.
+        The exam sitting page pins an action bar over the paper whose height it measures at
+        runtime — it wraps to two lines on a narrow phone and grows by the safe-area inset —
+        so no constant here can be right for it. Unset it resolves to `0px` and every other
+        caller keeps the height it has today.
+      -->
       <div
-        class="ui:grid ui:h-[calc(100dvh-14rem)] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[calc(100dvh-11rem)] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
+        class="ui:grid ui:h-[calc(100dvh-14rem-var(--exercise-chrome-extra,0px))] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[calc(100dvh-11rem-var(--exercise-chrome-extra,0px))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
       >
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <section
