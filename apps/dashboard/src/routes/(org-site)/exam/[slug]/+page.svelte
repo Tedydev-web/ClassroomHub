@@ -25,6 +25,8 @@
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
+  import ExamResumeOffer from '$features/exam/exam-resume-offer.svelte';
+  import type { ResumeOwner } from '$features/exam/exam-resume-owner';
   import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
   import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
   import { Button } from '@cio/ui/base/button';
@@ -391,10 +393,22 @@
   }
 
   /**
-   * Asked once, before the entry screen appears. A refresh mid-paper must continue the
-   * same attempt with the time already spent gone — otherwise the student loses their work
-   * and gains a fresh clock, which is the wrong outcome twice over.
+   * The paper this device already has open, offered rather than entered.
+   *
+   * A refresh mid-paper must continue the same attempt with the time already spent gone —
+   * otherwise the student loses their work and gains a fresh clock, which is the wrong
+   * outcome twice over. That used to happen automatically, which quietly handed the second
+   * person to pick up a shared phone the first person's answers.
+   *
+   * The cookie cannot tell those two apart and neither can the server, so the question goes
+   * to the only party who knows. Until it is answered this holds nothing but a name: the
+   * paper and the answers stay on the server.
    */
+  let resumable = $state<ResumeOwner | null>(null);
+  let resumableSeconds = $state<number | null>(null);
+  let resuming = $state(false);
+  let resumeError = $state<string | null>(null);
+
   $effect(() => {
     let cancelled = false;
 
@@ -408,16 +422,9 @@
 
         if (cancelled || !('success' in body) || !body.success || !body.data) return;
 
-        attemptId = body.data.attemptId;
-        paper = body.data.paper;
-        expiresAt = body.data.expiresAt ?? null;
+        resumable = body.data;
+        resumableSeconds = body.data.secondsRemaining ?? null;
         offset = clockOffsetMs(body.data.serverNow);
-
-        for (const saved of body.data.answers ?? []) {
-          responses[saved.questionId] = saved.answerData;
-        }
-
-        stage = 'sitting';
       } catch {
         // No resume is not an error: it only means this browser has not started yet.
       }
@@ -427,6 +434,42 @@
       cancelled = true;
     };
   });
+
+  /** Claims the offered paper, once its owner has said it is theirs. */
+  async function continueAttempt() {
+    resuming = true;
+    resumeError = null;
+
+    try {
+      const response = await classroomhub['exam-sitting'][':slug'].resume.$post(
+        { param: { slug: data.slug } },
+        { headers: { 'x-exam-sitting': '1' } }
+      );
+      const body = await response.json();
+
+      if (!('success' in body) || !body.success || !body.data) {
+        // The attempt was there a moment ago and is not now: its clock ran out, or it was
+        // submitted from another tab. Dropping the offer puts the entry form in its place.
+        resumable = null;
+        return;
+      }
+
+      attemptId = body.data.attemptId;
+      paper = body.data.paper;
+      expiresAt = body.data.expiresAt ?? null;
+      offset = clockOffsetMs(body.data.serverNow);
+
+      for (const saved of body.data.answers ?? []) {
+        responses[saved.questionId] = saved.answerData;
+      }
+
+      stage = 'sitting';
+    } catch (error) {
+      resumeError = serverMessage(error, $t('exam.resume.failed'));
+    } finally {
+      resuming = false;
+    }
+  }
 
   /**
    * Rendering is the exercise page's, not a second one built for exams.
@@ -610,8 +653,21 @@
   }
 </script>
 
+{#snippet offerResume()}
+  {#if resumable}
+    <ExamResumeOffer
+      owner={resumable}
+      secondsRemaining={resumableSeconds}
+      continuing={resuming}
+      error={resumeError}
+      oncontinue={continueAttempt}
+    />
+  {/if}
+{/snippet}
+
 {#if stage === 'entry'}
   <ExamEntryForm
+    resumeOffer={resumable ? offerResume : undefined}
     title={data.exam.title}
     requiresName={data.exam.requiresName}
     requiresClass={data.exam.requiresClass}

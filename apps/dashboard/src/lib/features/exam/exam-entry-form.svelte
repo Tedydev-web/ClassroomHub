@@ -28,6 +28,7 @@
     starting = false,
     error = null,
     attemptsUsed = false,
+    resumeOffer = undefined,
     onstart
   }: {
     title: string;
@@ -40,6 +41,12 @@
     error?: string | null;
     /** Set when the candidate says the device belongs to somebody who has already sat. */
     attemptsUsed?: boolean;
+    /**
+     * The offer to carry on with a paper this device already has open, drawn above the
+     * fields. It lives in the same card because it is the same decision: this paper, or a
+     * new one. The form never knows what is inside it.
+     */
+    resumeOffer?: import('svelte').Snippet;
     onstart: (details: {
       displayName: string;
       className: string;
@@ -88,6 +95,13 @@
         </p>
       {/if}
     </div>
+
+    {#if resumeOffer}
+      {@render resumeOffer()}
+
+      <!-- Says plainly that what follows is the other choice, not a second step. -->
+      <p class="ui:text-muted-foreground ui:text-center ui:text-xs">{$t('exam.resume.or_new')}</p>
+    {/if}
 
     {#if requiresName}
       <Field.Field>

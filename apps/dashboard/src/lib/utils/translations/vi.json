@@ -5744,6 +5744,16 @@
       "candidate_required": "Vui lòng nhập số báo danh.",
       "password_required": "Đề này cần mật khẩu giáo viên đọc cho bạn."
     },
+    "resume": {
+      "heading": "Máy này đang có một bài làm dở",
+      "started_at": "Bắt đầu lúc {time}",
+      "remaining": "Còn khoảng {minutes} phút",
+      "continue": "Tiếp tục bài này",
+      "continuing": "Đang mở lại bài…",
+      "not_yours": "Không phải bài của bạn? Điền thông tin bên dưới để làm bài của riêng mình.",
+      "or_new": "hoặc",
+      "failed": "Chưa mở lại được bài. Thử lại giúp mình."
+    },
     "corrections": {
       "title": "Đáp án",
       "help": "Sửa đáp án ở đây sẽ chấm lại toàn bộ những lượt thi đã xong. Đề thi không đổi — thí sinh đã đọc đề đó, và những lượt đã chấm cũng được chấm trên đề đó.",

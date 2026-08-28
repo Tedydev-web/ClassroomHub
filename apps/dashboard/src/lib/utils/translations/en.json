@@ -5734,6 +5734,16 @@
       "candidate_required": "Please enter your candidate number.",
       "password_required": "This exam needs the password your teacher gave you."
     },
+    "resume": {
+      "heading": "This device has a paper already open",
+      "started_at": "Started at {time}",
+      "remaining": "About {minutes} minutes left",
+      "continue": "Carry on with this paper",
+      "continuing": "Reopening the paper…",
+      "not_yours": "Not yours? Fill in the form below to sit your own paper.",
+      "or_new": "or",
+      "failed": "Could not reopen the paper. Please try again."
+    },
     "corrections": {
       "title": "Answer keys",
       "help": "Correcting a key here re-marks every sitting that has already finished. The paper itself is not changed — candidates have read it, and the sittings already marked were measured against it.",

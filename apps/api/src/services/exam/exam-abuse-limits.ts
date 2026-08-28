@@ -22,11 +22,13 @@ import type { MiddlewareHandler } from 'hono';
  * directly, rather than only inside the middleware.
  */
 
-export type ExamRateLimitedRoute = 'start' | 'save' | 'submit';
+export type ExamRateLimitedRoute = 'start' | 'resume' | 'save' | 'submit';
 
 export const EXAM_RATE_LIMITS: Record<ExamRateLimitedRoute, { windowMs: number; maxRequests: number }> = {
   /** A class arrives together. Generous enough for forty, far short of a script. */
   start: { windowMs: 60_000, maxRequests: 120 },
+  /** Claiming a paper already open on this device: once per refresh, and a class refreshes. */
+  resume: { windowMs: 60_000, maxRequests: 120 },
   /** One sitter saves every few seconds; a class of forty for an hour is a lot of saves. */
   save: { windowMs: 60_000, maxRequests: 2_000 },
   /** Once per sitter, at the end — but a class finishes together too. */

@@ -150,10 +150,65 @@ export const examSittingRouter = new Hono()
       return handleError(c, error);
     }
   })
-  // Called before the entry screen shows. A refresh mid-paper must continue the same
-  // attempt with the time already spent gone, not open a second one on a fresh clock.
+  /**
+   * Whether this browser has a paper open, and whose it is. Never the paper itself.
+   *
+   * A refresh mid-paper must continue the same attempt with the time already spent gone,
+   * not open a second one on a fresh clock — so something has to answer "is there one".
+   * What it must not do is answer with the answers.
+   *
+   * The cookie says a paper was started on this device. It cannot say who is holding the
+   * device now: a phone shared by two candidates carries one cookie, and the second person
+   * to pick it up was being handed the first person's work without being asked. Nobody but
+   * the human in front of the screen can tell those two apart, so this route returns only
+   * what a human needs to recognise their own paper, and the claim is a separate request.
+   */
   .get('/:slug/resume', async (c) => {
     try {
+      const exam = await getPublicExamService(c.req.param('slug'));
+      const rawToken = getCookie(c, resumeCookieName(exam.id));
+
+      if (!rawToken) {
+        return c.json({ success: true as const, data: null });
+      }
+
+      const resumed = await resumeAttemptService(exam.id, rawToken, new Date());
+      if (!resumed) {
+        return c.json({ success: true as const, data: null });
+      }
+
+      return c.json({
+        success: true as const,
+        data: {
+          // Exactly the fields that answer "is this mine", and no others. They are what the
+          // holder typed on their way in, and a classmate sharing the device will see the
+          // same name on the results board afterwards.
+          displayName: resumed.attempt.displayName,
+          nickname: resumed.attempt.nickname,
+          className: resumed.attempt.className,
+          candidateNumber: resumed.attempt.candidateNumber,
+          startedAt: resumed.attempt.startedAt,
+          secondsRemaining: resumed.secondsRemaining,
+          serverNow: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  /**
+   * Claiming the paper this browser has open, once a human has said it is theirs.
+   *
+   * Same attempt, same clock, same answers as `resume` used to hand over unasked. Holding
+   * the cookie is still all it takes — the server cannot see who tapped — so this is not a
+   * lock against somebody determined to read another candidate's work. It is the narrower
+   * and more useful thing: a candidate who answers the question honestly never receives
+   * somebody else's answers at all.
+   */
+  .post('/:slug/resume', examRateLimiter('resume'), async (c) => {
+    try {
+      requireSittingRequest(c);
+
       const exam = await getPublicExamService(c.req.param('slug'));
       const rawToken = getCookie(c, resumeCookieName(exam.id));
 
