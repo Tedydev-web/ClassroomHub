@@ -51,6 +51,24 @@ describe('resolveMetaTags', () => {
     expect(base.openGraph.title).toBe('ClassroomHub');
   });
 
+  it('falls back rather than blanking when a page has nothing to say', () => {
+    // A course with no description passes null, and lodash treats null as a value worth
+    // copying. Left alone it would erase the default for exactly the pages with the least.
+    const resolved = resolveMetaTags(siteDefaults(), {
+      title: 'Khoá K12',
+      description: null as unknown as string,
+      openGraph: { title: 'Khoá K12', description: null as unknown as string }
+    });
+
+    expect(resolved.title).toBe('Khoá K12');
+    expect(resolved.description).toBe('Marketing copy');
+    expect(resolved.openGraph?.description).toBe('Marketing copy');
+  });
+
+  it('lets a page blank a tag on purpose with an empty string', () => {
+    expect(resolveMetaTags(siteDefaults(), { description: '' }).description).toBe('');
+  });
+
   it('survives a page that sets nothing at all', () => {
     expect(resolveMetaTags(siteDefaults(), undefined).title).toBe('ClassroomHub');
   });

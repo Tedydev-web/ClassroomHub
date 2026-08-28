@@ -19,5 +19,30 @@ import type { MetaTagsProps } from 'svelte-meta-tags';
  * side effect of reading them.
  */
 export function resolveMetaTags(base: MetaTagsProps, page: MetaTagsProps | undefined | null): MetaTagsProps {
-  return merge({}, base, page ?? {});
+  return merge({}, base, withoutEmptyValues(page ?? {}));
+}
+
+/**
+ * Drops the keys a page has nothing to say about, so they fall back instead of blanking.
+ *
+ * A loader builds its tags from whatever the record holds, and plenty of records hold
+ * nothing: a course with no description passes `description: null`. lodash treats `null` as
+ * a value worth copying and `undefined` as an absence, so leaving the nulls in would have
+ * this function silently erase the site defaults for exactly the pages with the least to
+ * say — which is the same shape of quiet wrongness it was written to end.
+ *
+ * Overriding means replacing what a page has, never what it lacks.
+ */
+function withoutEmptyValues<T>(tags: T): T {
+  if (Array.isArray(tags) || tags === null || typeof tags !== 'object') return tags;
+
+  const kept: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(tags)) {
+    if (value === null || value === undefined) continue;
+
+    kept[key] = withoutEmptyValues(value);
+  }
+
+  return kept as T;
 }
