@@ -5500,7 +5500,8 @@
       "one_minute_left": "One minute remaining. Your paper is handed in automatically when the time ends.",
       "go_to_question": "Go to question {number}",
       "timed_out_title": "Time is up",
-      "timed_out_offline_body": "We could not reach the server to hand your paper in, but the answers you had saved are already on it. They will be marked. You do not need to do anything else."
+      "timed_out_offline_body": "We could not reach the server to hand your paper in, but the answers you had saved are already on it. They will be marked. You do not need to do anything else.",
+      "time_up_closing": "Time is up. Your answers are already on the server; this paper is being handed in."
     },
     "status": {
       "in_progress": "Sitting",

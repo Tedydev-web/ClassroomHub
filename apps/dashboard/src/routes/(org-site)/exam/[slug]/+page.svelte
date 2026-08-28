@@ -33,6 +33,7 @@
   import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
+  import { isSittingOver, refusalKey, refusalMessage } from '$features/exam/exam-refusals';
   import { classroomhub } from '$lib/utils/services/api';
 
   /**
@@ -97,6 +98,12 @@
   let submitError = $state<string | null>(null);
   /** The clock ended the paper and the server could not be reached to say so. */
   let timedOutOffline = $state(false);
+  /**
+   * The clock has reached zero. Set before anything is submitted, because the paper must
+   * stop looking live the moment it stops being live — a candidate reading 00:00 next to
+   * working Next and Previous buttons is being told they still have time.
+   */
+  let timeUp = $state(false);
   // Only ever set when the teacher chose to show it; the server decides, not this page.
   let revealedResult = $state<{ score: string; total: string } | null>(null);
 
@@ -125,17 +132,6 @@
   });
 
   /** Server refusals a sitter can meet, mapped to the phrasing they should read. */
-  const SERVER_REFUSALS: Record<string, string> = {
-    'You have used all your attempts at this paper': 'attempts_used',
-    'This exam is not open': 'not_open',
-    'Your time is up': 'time_up',
-    'This attempt is already finished': 'already_finished',
-    'Your full name is required': 'name_required',
-    'Your class is required': 'class_required',
-    'Your candidate number is required': 'candidate_required',
-    'This exam needs the password your teacher gave you': 'password_required'
-  };
-
   /**
    * What the server actually said.
    *
@@ -146,27 +142,14 @@
    * the message is there; it only had to be unwrapped.
    */
   function serverMessage(error: unknown, fallback: string): string {
-    const raw = error instanceof Error ? error.message : '';
+    const key = refusalKey(error);
+    if (key) return $t(`exam.refusal.${key}`);
 
-    try {
-      const parsed = JSON.parse(raw);
-      const message = typeof parsed?.error === 'string' ? parsed.error.trim() : '';
-      if (!message) return fallback;
-
-      // The API speaks English. A sitter should not, so the refusals they can
-      // actually meet are translated; anything else is shown as sent, because a
-      // message in the wrong language still beats the wrong message.
-      const key = SERVER_REFUSALS[message];
-      return key ? $t(`exam.refusal.${key}`) : message;
-    } catch {
-      // Not JSON — a genuine network failure, so the fallback is the honest answer.
-    }
-
-    return fallback;
+    // The API speaks English and a sitter should not, so the refusals they can actually
+    // meet are translated above. Anything else is shown as sent: a message in the wrong
+    // language still beats the wrong message.
+    return refusalMessage(error) || fallback;
   }
-
-  // Seeded from the loader, then raised if the server refuses a start for want of one.
-  let needsPassword = $state(data.exam.requiresPassword);
 
   type EntryDetails = { displayName: string; className: string; candidateNumber: string; password: string };
 
@@ -185,8 +168,7 @@
   async function confirmStart() {
     if (!pendingEntry) return;
 
-    const details = pendingEntry;
-    await start(details);
+    await start(pendingEntry);
 
     // Left open on failure so the message is read against the same screen that produced
     // it; a refused password re-opens the form underneath with its field showing.
@@ -212,9 +194,7 @@
           needsPassword = true;
         }
 
-        const message = 'error' in body ? String(body.error) : '';
-        const key = SERVER_REFUSALS[message];
-        entryError = key ? $t(`exam.refusal.${key}`) : message || $t('exam.manage.open_failed');
+        entryError = serverMessage(body, $t('exam.manage.open_failed'));
         return;
       }
 
@@ -305,7 +285,17 @@
       saveState = queue.state();
 
       if (saveState === 'unsaved') {
+        // Unless the clock already ended it, in which case there is nothing to wait for:
+        // the server grades an expired attempt from whatever reached it.
+        if (timeUp) {
+          stage = 'submitted';
+          timedOutOffline = true;
+
+          return;
+        }
+
         submitError = $t('exam.sitting.unsaved_blocks_submit');
+
         return;
       }
 
@@ -317,11 +307,22 @@
 
       if ('success' in body && body.success) {
         revealedResult = body.data.result ?? null;
+      } else if (isSittingOver(body)) {
+        // Already over on the server. Say so, rather than leaving them on a live paper.
+        stage = 'submitted';
+
+        return;
       }
 
       stage = 'submitted';
       if (celebrated) celebrate();
     } catch (error) {
+      if (isSittingOver(error)) {
+        stage = 'submitted';
+
+        return;
+      }
+
       submitError = serverMessage(error, $t('exam.sitting.submit_failed'));
     } finally {
       submitting = false;
@@ -340,6 +341,8 @@
    * moment the clock ended. Their paper was never in danger; only the message was.
    */
   async function onTimeUp() {
+    timeUp = true;
+
     const until = Date.now() + 30_000;
 
     while (Date.now() < until) {
@@ -719,7 +722,7 @@
           <AssessmentItemRenderer
             definition={currentItem.definition}
             response={responses[currentItem.questionId]}
-            disabled={submitting}
+            disabled={submitting || timeUp}
             questionNumber={numberStartByQuestionId[currentItem.questionId]}
             interactionNumberStart={numberStartByQuestionId[currentItem.questionId]}
             showItemHeader={currentItem.definition?.presentation?.layout !== 'passage_split'}
@@ -749,7 +752,16 @@
         used to go, leaving a candidate no idea their paper had not been handed in. Being
         inside also means its height is measured, so the paper still clears it.
       -->
-      {#if submitError}
+      {#if timeUp}
+        <!--
+          Said where the buttons were, because that is where a candidate is looking when the
+          clock stops. It reports rather than warns: the answers are already on the server,
+          and the sitting is being closed off, not lost.
+        -->
+        <p class="ui:text-muted-foreground ui:px-3 ui:pb-2 ui:text-sm ui:sm:px-6" role="status">
+          {$t('exam.sitting.time_up_closing')}
+        </p>
+      {:else if submitError}
         <p class="ui:text-destructive ui:text-sm" role="alert">{submitError}</p>
       {/if}
 
@@ -802,8 +814,8 @@
         </div>
 
         <QuestionNavigation
-          canGoBack={currentIndex > 1}
-          canGoNext={!submitting}
+          canGoBack={currentIndex > 1 && !timeUp}
+          canGoNext={!submitting && !timeUp}
           isLast={isLastItem}
           isSubmitting={submitting}
           previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
