@@ -27,6 +27,7 @@
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
   import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
   import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
+  import { Button } from '@cio/ui/base/button';
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus } from '$features/exam/exam-activity';
@@ -227,6 +228,13 @@
       offset = clockOffsetMs(body.data.serverNow ?? new Date().toISOString());
       stage = 'sitting';
     } catch (error) {
+      // The client throws on a 4xx before the body can be read, so every refusal that
+      // matters reaches the page here rather than above. Setting the flag only in the
+      // branch that never runs is why a candidate sharing a phone was shown the refusal
+      // and never the way past it.
+      if (refusalKey(error) === 'attempts_used') attemptsUsed = true;
+      if (refusalKey(error) === 'password_required') needsPassword = true;
+
       entryError = serverMessage(error, $t('exam.sitting.start_failed'));
     } finally {
       starting = false;
