@@ -150,7 +150,9 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
         scoreVisibility: 'never',
         answerVisibility: 'never',
         commentVisibility: 'never',
-        revealThreshold: null
+        revealThreshold: null,
+        autoSubmitAfterLeaves: null,
+        supportContact: null
       },
       courseId,
       teacherId
@@ -233,7 +235,9 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
         scoreVisibility: 'never',
         answerVisibility: 'never',
         commentVisibility: 'never',
-        revealThreshold: null
+        revealThreshold: null,
+        autoSubmitAfterLeaves: null,
+        supportContact: null
       },
       courseId,
       teacherId

@@ -19,6 +19,7 @@ import {
   resumeAttemptService,
   hashResumeToken,
   resumeCookieName,
+  recordActivityService,
   saveAnswersService,
   startAttemptService,
   submitAttemptService
@@ -100,6 +101,10 @@ export const examSittingRouter = new Hono()
           workingSeconds: exam.workingSeconds,
           closesAt: exam.closesAt,
           maxAttempts: exam.maxAttempts,
+          // Told before the clock starts so the warning a candidate meets later can say what
+          // will actually happen, rather than a threat nobody configured.
+          autoSubmitAfterLeaves: exam.autoSubmitAfterLeaves,
+          supportContact: exam.supportContact,
           // How many questions, counted the way a candidate counts them: a passage holding
           // six is six, not one. Told before the clock starts, because "how long is this
           // paper" is the first thing anybody asks and the answer is not a secret.
@@ -206,6 +211,32 @@ export const examSittingRouter = new Hono()
       return handleError(c, error);
     }
   })
+  // Reporting that the paper stopped being the visible document. Rate-limited like a save,
+  // since it arrives from the same page under the same conditions.
+  .post(
+    '/attempt/:attemptId/activity',
+    examRateLimiter('save'),
+    zValidator(
+      'json',
+      z.object({
+        events: z
+          .array(z.object({ kind: z.enum(['left', 'returned']), at: z.string().datetime() }))
+          .min(1)
+          .max(50)
+      })
+    ),
+    async (c) => {
+      try {
+        requireSittingRequest(c);
+
+        const outcome = await recordActivityService(c.req.param('attemptId'), c.req.valid('json').events, new Date());
+
+        return c.json({ success: true as const, data: outcome });
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
   .post('/attempt/:attemptId/submit', examRateLimiter('submit'), async (c) => {
     try {
       requireSittingRequest(c);

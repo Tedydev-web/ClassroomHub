@@ -63,6 +63,10 @@ export type ExamSettingsInput = {
   revealThreshold: string | null;
   /** Plain text, hashed here. Absent or `null` means the exam has no password. */
   password?: string | null;
+  /** `null` means a candidate is never handed in for leaving the paper. */
+  autoSubmitAfterLeaves: number | null;
+  /** Where a candidate turns if something goes wrong mid-paper. */
+  supportContact: string | null;
 };
 
 /**
@@ -188,6 +192,8 @@ export async function createExamService(input: ExamSettingsInput, courseId: stri
       answerVisibility: input.answerVisibility,
       commentVisibility: input.commentVisibility,
       revealThreshold: input.revealThreshold,
+      autoSubmitAfterLeaves: input.autoSubmitAfterLeaves,
+      supportContact: input.supportContact,
       passwordHash: input.password ? await hashExamPassword(input.password) : null,
       createdBy
     })
@@ -242,7 +248,12 @@ export async function updateExamSettingsService(id: string, patch: ExamSettingsP
     scoreVisibility: settingsPatch.scoreVisibility ?? exam.scoreVisibility,
     answerVisibility: settingsPatch.answerVisibility ?? exam.answerVisibility,
     commentVisibility: settingsPatch.commentVisibility ?? exam.commentVisibility,
-    revealThreshold: settingsPatch.revealThreshold !== undefined ? settingsPatch.revealThreshold : exam.revealThreshold
+    revealThreshold: settingsPatch.revealThreshold !== undefined ? settingsPatch.revealThreshold : exam.revealThreshold,
+    autoSubmitAfterLeaves:
+      settingsPatch.autoSubmitAfterLeaves !== undefined
+        ? settingsPatch.autoSubmitAfterLeaves
+        : exam.autoSubmitAfterLeaves,
+    supportContact: settingsPatch.supportContact !== undefined ? settingsPatch.supportContact : exam.supportContact
   };
 
   const issues = validateExamSettings(merged);

@@ -5715,7 +5715,16 @@
       "after_days_help": "Tính từ giờ mở đề, nên mở sáng thứ Sáu và để ba ngày thì đóng vào sáng thứ Hai.",
       "closes_on": "Đóng lúc {at}",
       "after_days_needs_open": "Muốn đóng sau số ngày thì phải có giờ mở đề để tính từ đó",
-      "after_days_needs_number": "Nhập số ngày đề mở"
+      "after_days_needs_number": "Nhập số ngày đề mở",
+      "section_sitting": "Trong lúc thí sinh làm bài",
+      "sitting_help": "Những gì thí sinh có thể dùng tới trong giờ làm bài, và điều gì xảy ra nếu họ rời khỏi bài thi.",
+      "support_contact": "Liên hệ khi có sự cố",
+      "support_placeholder": "ví dụ: Cô Lan — 09xx xxx xxx, phòng 204",
+      "support_help": "Hiện cho thí sinh trong lúc làm bài. Để trống thì không hiện gì.",
+      "auto_submit": "Tự nộp bài sau bao nhiêu lần rời khỏi",
+      "auto_submit_off": "Để trống — không bao giờ tự nộp",
+      "auto_submit_range": "Nhập số lần từ 1 đến 50, hoặc để trống",
+      "auto_submit_warning": "Đọc kỹ trước khi bật. Điện thoại tự khoá màn hình sinh ra đúng tín hiệu giống hệt lúc thí sinh tra cứu, nên tính năng này bắt em đang úp máy suy nghĩ trước khi bắt được người gian lận. Nó cũng không thể kích hoạt với người rời đi và không quay lại, còn một chiếc điện thoại thứ hai đặt cạnh bàn thì không sinh tín hiệu nào cả. Dù bật hay tắt, số lần rời vẫn được ghi lại và hiện cho thầy cô; cái này chỉ quyết định có lấy bài của thí sinh đi hay không."
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
@@ -5770,6 +5779,19 @@
       "begin": "Bắt đầu làm bài",
       "starting": "Đang bắt đầu…",
       "back": "Quay lại"
+    },
+    "left": {
+      "title": "Bạn vừa rời khỏi bài thi",
+      "recorded": "Việc này được ghi lại. Số lần bạn đã rời: {count}. Thầy cô sẽ thấy sau khi bài thi kết thúc.",
+      "remaining": "Rời thêm {count} lần nữa thì bài của bạn sẽ được nộp.",
+      "last_chance": "Rời thêm một lần nữa là bài của bạn được nộp.",
+      "continue": "Quay lại làm bài"
+    },
+    "help": {
+      "title": "Gặp sự cố?",
+      "saved_note": "Mọi câu bạn đã trả lời đều đã được lưu trên máy chủ. Đóng trang hay mất mạng cũng không mất bài.",
+      "no_contact": "Thầy cô chưa để lại liên hệ cho đề này. Hãy báo người đang coi thi.",
+      "clock_note": "Đồng hồ vẫn chạy. Chỉ thầy cô mới bù giờ được, và có thể bù sau khi thi xong."
     }
   }
 }

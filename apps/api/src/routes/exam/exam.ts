@@ -64,7 +64,10 @@ const createExamSchema = z.object({
   revealThreshold: z.string().nullable().default(null),
   // The password itself, never its hash: hashing is the server's job, and a client that
   // could send a hash could send somebody else's.
-  password: z.string().min(1).max(200).nullable().default(null)
+  password: z.string().min(1).max(200).nullable().default(null),
+  // `null` is off, and off is the default. See the column's own note for why.
+  autoSubmitAfterLeaves: z.number().int().positive().max(50).nullable().default(null),
+  supportContact: z.string().max(300).nullable().default(null)
 });
 
 /**
@@ -99,7 +102,9 @@ export const updateExamSchema = z.object({
   // Three states, and the difference matters: a string sets a new password, `null` removes
   // the one there is, and leaving the key out keeps it. Without the third state, editing an
   // exam's title would clear its password.
-  password: z.string().min(1).max(200).nullable().optional()
+  password: z.string().min(1).max(200).nullable().optional(),
+  autoSubmitAfterLeaves: z.number().int().positive().max(50).nullable().optional(),
+  supportContact: z.string().max(300).nullable().optional()
 });
 
 export const examRouter = new Hono()

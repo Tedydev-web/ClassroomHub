@@ -4669,6 +4669,23 @@ export const exam = pgTable(
     maxAttempts: integer('max_attempts'),
     /** The cheapest answer to a link forwarded outside the class. */
     passwordHash: text('password_hash'),
+    /**
+     * How many times a candidate may leave the paper before it is handed in for them.
+     * `null` — the default, and what every existing exam has — means never.
+     *
+     * Off by default on purpose. The signal behind it cannot tell a phone locking its own
+     * screen from an answer being looked up, and it fires only when a candidate comes
+     * back, so it misses anyone who leaves for good and lands hardest on a cheap phone with
+     * aggressive battery management. It exists because a teacher who knows their room may
+     * want it; it is not something to switch on for them.
+     */
+    autoSubmitAfterLeaves: integer('auto_submit_after_leaves'),
+    /**
+     * Where a candidate should turn if something goes wrong mid-paper — a phone number, a
+     * room, a name. Shown to them while they sit. Free text because what helps varies by
+     * school, and an empty one simply shows nothing.
+     */
+    supportContact: text('support_contact'),
     requiresName: boolean('requires_name').default(true).notNull(),
     requiresClass: boolean('requires_class').default(false).notNull(),
     requiresCandidateNumber: boolean('requires_candidate_number').default(false).notNull(),
@@ -4741,6 +4758,15 @@ export const examAttempt = pgTable(
     answers: jsonb().default([]).notNull(),
     /** Append-only: every change, with its moment. Settles disputes about a result. */
     answerLog: jsonb('answer_log').default([]).notNull(),
+    /**
+     * Append-only: when the paper stopped being the visible document, and when it came
+     * back. Kept apart from `answerLog`, which is about what was answered and is read to
+     * settle a mark; mixing the two would make each harder to trust.
+     *
+     * A description, never a conclusion. A hidden document means a phone locked itself as
+     * readily as it means an answer was looked up.
+     */
+    activityLog: jsonb('activity_log').default([]).notNull(),
     /** questionId -> { score, comment } for questions a teacher must read. */
     manualScores: jsonb('manual_scores').default({}).notNull(),
     score: numeric(),

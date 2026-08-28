@@ -17,6 +17,10 @@
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
+  import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
+  import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
+  import * as Dialog from '@cio/ui/base/dialog';
+  import { watchFocus } from '$features/exam/exam-activity';
   import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
@@ -229,6 +233,56 @@
    * who ran out of time is not in a mood to be congratulated, and confetti over that reads
    * as the screen not understanding what just happened to them.
    */
+  /**
+   * Reports departures and returns while the paper is being sat.
+   *
+   * The report is sent on the way out as well as on the way back, so a candidate who leaves
+   * and never returns still leaves a record — that one is the only case the paper cannot
+   * describe from the return alone.
+   */
+  let leaves = $state(0);
+  let warningOpen = $state(false);
+  let helpOpen = $state(false);
+  let autoSubmitAfterLeaves = $state<number | null>(null);
+
+  async function reportActivity(events: Array<{ kind: 'left' | 'returned'; at: string }>) {
+    if (!attemptId) return;
+
+    try {
+      const response = await classroomhub['exam-sitting'].attempt[':attemptId'].activity.$post(
+        { param: { attemptId }, json: { events } },
+        { headers: { 'x-exam-sitting': '1' } }
+      );
+      const body = await response.json();
+      if (!('success' in body) || !body.success) return;
+
+      leaves = body.data.leaves;
+      autoSubmitAfterLeaves = body.data.autoSubmitAfterLeaves;
+
+      // The server decides, not the page: a candidate whose paper was handed in for them
+      // must not be able to keep answering by ignoring a dialog.
+      if (body.data.submitted) {
+        warningOpen = false;
+        stage = 'submitted';
+      }
+    } catch {
+      // A report that did not arrive is not worth interrupting a candidate over. The
+      // absence itself is what the record is for, and the next one will carry the count.
+    }
+  }
+
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    return watchFocus({
+      onLeft: (at) => void reportActivity([{ kind: 'left', at }]),
+      onReturned: (at) => {
+        warningOpen = true;
+        void reportActivity([{ kind: 'returned', at }]);
+      }
+    });
+  });
+
   async function submit({ celebrated = true }: { celebrated?: boolean } = {}) {
     if (!attemptId || submitting) return;
 
@@ -454,6 +508,29 @@
     onconfirm={confirmStart}
   />
 {:else if stage === 'sitting'}
+  <Dialog.Root open={helpOpen} onOpenChange={(next) => (helpOpen = next)}>
+    <Dialog.Content class="ui:max-w-sm">
+      <Dialog.Header>
+        <Dialog.Title>{$t('exam.help.title')}</Dialog.Title>
+        <Dialog.Description>{$t('exam.help.saved_note')}</Dialog.Description>
+      </Dialog.Header>
+
+      {#if data.exam.supportContact}
+        <p class="ui:text-sm ui:font-medium">{data.exam.supportContact}</p>
+      {:else}
+        <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.help.no_contact')}</p>
+      {/if}
+
+      <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.help.clock_note')}</p>
+
+      <Dialog.Footer>
+        <Button onclick={() => (helpOpen = false)}>{$t('exam.left.continue')}</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+
+  <ExamLeftWarning open={warningOpen} {leaves} {autoSubmitAfterLeaves} onacknowledge={() => (warningOpen = false)} />
+
   <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {actionBarHeight}px">
     <header
       class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
@@ -468,6 +545,21 @@
               ? $t('exam.sitting.saving')
               : $t('exam.sitting.unsaved')}
         </span>
+        <!--
+          Beside the clock, because a candidate in trouble looks at the clock first. It says
+          what to do rather than promising to fix anything: the paper cannot grant time, and
+          only the person named here can.
+        -->
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={$t('exam.help.title')}
+          onclick={() => (helpOpen = true)}
+        >
+          <LifeBuoyIcon size={18} />
+        </Button>
+
         <ExamCountdown {expiresAt} clockOffsetMs={offset} onexpired={onTimeUp} />
       </div>
     </header>

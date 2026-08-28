@@ -50,7 +50,9 @@ export const load = async ({ params, cookies }) => {
       answerVisibility: exam.answerVisibility,
       commentVisibility: exam.commentVisibility,
       revealThreshold: exam.revealThreshold,
-      hasPassword: exam.hasPassword
+      hasPassword: exam.hasPassword,
+      autoSubmitAfterLeaves: exam.autoSubmitAfterLeaves,
+      supportContact: exam.supportContact
     }
   };
 };

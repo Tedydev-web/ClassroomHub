@@ -42,6 +42,8 @@
     revealThreshold: string | null;
     /** Whether one is set. The password itself never comes back from the server. */
     hasPassword: boolean;
+    autoSubmitAfterLeaves: number | null;
+    supportContact: string | null;
   };
 
   let {
@@ -95,6 +97,9 @@
   // the field would arrive empty and saving a changed title would clear the password.
   let password = $state('');
   let passwordTouched = $state(false);
+
+  let supportContact = $state(initial?.supportContact ?? '');
+  let autoSubmitLeaves = $state(initial?.autoSubmitAfterLeaves ? String(initial.autoSubmitAfterLeaves) : '');
 
   /**
    * Two ways to say the same closing time. A teacher who knows "it runs for three days"
@@ -163,6 +168,13 @@
       found.push($t('exam.settings.opens_before_closes'));
     }
 
+    if (autoSubmitLeaves.trim()) {
+      const leaves = Number(autoSubmitLeaves);
+      if (!Number.isInteger(leaves) || leaves < 1 || leaves > 50) {
+        found.push($t('exam.settings.auto_submit_range'));
+      }
+    }
+
     if (closeMode === 'after') {
       const days = Number(closeAfterDays);
 
@@ -195,7 +207,9 @@
       revealThreshold: needsThreshold ? String(Number(thresholdPercent) / 100) : null,
       // Omitted entirely unless it was touched, which is what tells the server to keep the
       // password it already has. An empty box that was touched removes it.
-      ...(initial && !passwordTouched ? {} : { password: password.trim() || null })
+      ...(initial && !passwordTouched ? {} : { password: password.trim() || null }),
+      supportContact: supportContact.trim() || null,
+      autoSubmitAfterLeaves: autoSubmitLeaves.trim() ? Number(autoSubmitLeaves) : null
     });
   }
 </script>
@@ -333,6 +347,37 @@
             {/if}
           </p>
         {/if}
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_sitting')}</Card.Title>
+      <Card.Description>{$t('exam.settings.sitting_help')}</Card.Description>
+    </Card.Header>
+    <Card.Content class="ui:space-y-6">
+      <div class="ui:space-y-2">
+        <Label for="exam-support">{$t('exam.settings.support_contact')}</Label>
+        <Input id="exam-support" bind:value={supportContact} placeholder={$t('exam.settings.support_placeholder')} />
+        <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.support_help')}</p>
+      </div>
+
+      <div class="ui:space-y-2">
+        <Label for="exam-auto-submit">{$t('exam.settings.auto_submit')}</Label>
+        <Input
+          id="exam-auto-submit"
+          inputmode="numeric"
+          bind:value={autoSubmitLeaves}
+          placeholder={$t('exam.settings.auto_submit_off')}
+        />
+        <!--
+          The warning beside the switch, not buried in a document. A teacher turning this on
+          is entitled to know who it actually catches, and it is not who they expect.
+        -->
+        <Alert.Root>
+          <Alert.Description class="ui:text-xs">{$t('exam.settings.auto_submit_warning')}</Alert.Description>
+        </Alert.Root>
       </div>
     </Card.Content>
   </Card.Root>

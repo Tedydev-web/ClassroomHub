@@ -216,6 +216,82 @@ export async function startAttemptService(input: StartAttemptInput) {
   };
 }
 
+export type ActivityEventPayload = { kind: 'left' | 'returned'; at: string };
+
+export type ActivityOutcome = {
+  /** How many departures the attempt has recorded in total. */
+  leaves: number;
+  /** The limit the teacher set, or `null` where they set none. */
+  autoSubmitAfterLeaves: number | null;
+  /** Whether this call ended the attempt. */
+  submitted: boolean;
+};
+
+/**
+ * Records that the paper stopped being the visible document, and whether that ended it.
+ *
+ * The events are stored as sent and never interpreted here. What the log can say is when
+ * the document was hidden and for how long; what it cannot say is why, and a phone locking
+ * its own screen produces the same entry as an answer being looked up.
+ *
+ * Enforcement is the teacher's choice and off unless they made it. Where they did, it is
+ * counted on departures rather than on anything cleverer, because a cleverer rule would
+ * only look more certain than the signal underneath it.
+ *
+ * A finished attempt swallows these quietly rather than raising: the events arrive from a
+ * page that may not yet know it was submitted, and a candidate should never meet an error
+ * because their browser reported something a moment too late.
+ */
+export async function recordActivityService(
+  attemptId: string,
+  events: ActivityEventPayload[],
+  now: Date
+): Promise<ActivityOutcome> {
+  return db.transaction(async (tx) => {
+    const [attempt] = await tx
+      .select()
+      .from(schema.examAttempt)
+      .where(eq(schema.examAttempt.id, attemptId))
+      .limit(1)
+      .for('update');
+
+    if (!attempt) throw new AppError('Attempt not found', ErrorCodes.NOT_FOUND, 404);
+
+    const existing = (attempt.activityLog as ActivityEventPayload[]) ?? [];
+
+    if (attempt.status !== 'in_progress') {
+      return {
+        leaves: existing.filter((event) => event.kind === 'left').length,
+        autoSubmitAfterLeaves: null,
+        submitted: true
+      };
+    }
+
+    const appended = [...existing, ...events];
+    const leaves = appended.filter((event) => event.kind === 'left').length;
+
+    const [exam] = await tx
+      .select({ autoSubmitAfterLeaves: schema.exam.autoSubmitAfterLeaves })
+      .from(schema.exam)
+      .where(eq(schema.exam.id, attempt.examId))
+      .limit(1);
+
+    const limit = exam?.autoSubmitAfterLeaves ?? null;
+    const submitted = limit !== null && leaves > limit;
+
+    await tx
+      .update(schema.examAttempt)
+      .set({
+        activityLog: appended,
+        updatedAt: now.toISOString(),
+        ...(submitted ? { status: 'submitted' as const, submittedAt: now.toISOString() } : {})
+      })
+      .where(eq(schema.examAttempt.id, attemptId));
+
+    return { leaves, autoSubmitAfterLeaves: limit, submitted };
+  });
+}
+
 /**
  * Saves under a row lock, so two overlapping saves cannot lose one another — and phase 5
  * creates overlapping saves by design, pairing a debounced save with an interval save and

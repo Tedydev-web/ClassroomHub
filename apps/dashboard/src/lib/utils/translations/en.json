@@ -5705,7 +5705,16 @@
       "after_days_help": "Counted from the opening time, so three days opening Friday morning closes Monday morning.",
       "closes_on": "Closes {at}",
       "after_days_needs_open": "Closing after a number of days needs an opening time to count from",
-      "after_days_needs_number": "Enter how many days the exam stays open"
+      "after_days_needs_number": "Enter how many days the exam stays open",
+      "section_sitting": "While they sit",
+      "sitting_help": "What a candidate can reach during the paper, and what happens if they leave it.",
+      "support_contact": "Who to contact if something goes wrong",
+      "support_placeholder": "e.g. Ms Lan — 09xx xxx xxx, room 204",
+      "support_help": "Shown to candidates while they sit. Leave empty to show nothing.",
+      "auto_submit": "Hand the paper in after this many departures",
+      "auto_submit_off": "Leave empty — never hand it in automatically",
+      "auto_submit_range": "Enter a number of departures between 1 and 50, or leave it empty",
+      "auto_submit_warning": "Read before switching this on. A phone that locks its own screen produces the same signal as a candidate looking something up, so this catches a student thinking with the phone face-down before it catches anyone cheating. It also cannot fire on somebody who leaves and never comes back, and a second phone beside the desk produces no signal at all. Departures are recorded and shown to you either way; this only decides whether the paper is taken from them."
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
@@ -5760,6 +5769,19 @@
       "begin": "Begin",
       "starting": "Starting…",
       "back": "Back"
+    },
+    "left": {
+      "title": "You left the exam",
+      "recorded": "This is recorded. Times you have left so far: {count}. Your teacher sees this after the paper.",
+      "remaining": "Leave {count} more time(s) and your paper is handed in.",
+      "last_chance": "Leaving again hands your paper in.",
+      "continue": "Back to the paper"
+    },
+    "help": {
+      "title": "Something wrong?",
+      "saved_note": "Every answer you have given is already saved on the server. Closing this page or losing your connection does not lose them.",
+      "no_contact": "Your teacher has not left a contact for this paper. Tell whoever is invigilating.",
+      "clock_note": "The clock keeps running. Only your teacher can give time back, and they can do it after the paper."
     }
   }
 }
