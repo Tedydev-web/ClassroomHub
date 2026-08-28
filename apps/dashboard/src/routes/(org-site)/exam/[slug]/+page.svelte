@@ -535,10 +535,21 @@
     <header
       class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
     >
-      <p class="ui:truncate ui:text-sm ui:font-semibold">{data.exam.title}</p>
-      <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-3">
-        <!-- Never says "saved" while anything is outstanding. -->
-        <span class="ui:text-muted-foreground ui:text-xs">
+      <!-- Quiet on purpose: the candidate knows which paper they are sitting, and the
+           header has one thing worth reading at a glance. -->
+      <p class="ui:text-muted-foreground ui:truncate ui:text-sm">{data.exam.title}</p>
+      <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-2">
+        <!--
+          Never says "saved" while anything is outstanding. The reassurance folds away on a
+          narrow header to leave the clock room; the warning never does, because a candidate
+          whose work is not on the server is the one person who has to know.
+        -->
+        <span
+          class={[
+            'ui:text-muted-foreground ui:text-xs',
+            saveState === 'saved' ? 'ui:hidden ui:sm:inline' : 'ui:text-foreground ui:font-medium'
+          ]}
+        >
           {saveState === 'saved'
             ? $t('exam.sitting.saved')
             : saveState === 'saving'

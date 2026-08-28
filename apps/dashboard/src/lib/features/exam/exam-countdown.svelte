@@ -98,14 +98,24 @@
   });
 </script>
 
+<!--
+  The one thing on this screen that has to be readable at a glance, so it is the largest
+  thing in the header and everything beside it stays quiet.
+
+  Each stage escalates on three channels at once — fill, border weight, and icon — rather
+  than on hue alone, so it still escalates in grey. The urgent stage is a strong border and
+  a light fill rather than a solid red block: dark text on a pale ground is the higher
+  contrast of the two, and a screen that turns red under somebody already short of time is
+  competing with the paper for their attention rather than informing them.
+-->
 <div
   class={[
-    'ui:tabular-nums ui:inline-flex ui:items-center ui:gap-1.5 ui:rounded-md ui:px-3 ui:py-1.5 ui:text-base ui:font-semibold ui:transition-colors',
+    'ui:tabular-nums ui:inline-flex ui:items-center ui:gap-2 ui:rounded-md ui:border ui:px-3 ui:py-1.5 ui:text-lg ui:font-semibold ui:transition-colors ui:duration-200',
     stage === 'urgent'
-      ? 'ui:bg-destructive ui:text-white'
+      ? 'ui:border-destructive ui:bg-destructive/10 ui:text-destructive ui:border-2'
       : stage === 'notice'
-        ? 'ui:bg-amber-100 ui:text-amber-900 ui:dark:bg-amber-950 ui:dark:text-amber-100'
-        : 'ui:bg-muted ui:text-foreground'
+        ? 'ui:bg-amber-50 ui:text-amber-900 ui:dark:bg-amber-950 border-amber-500 dark:text-amber-100'
+        : 'ui:border-transparent ui:bg-muted ui:text-foreground'
   ]}
   role="timer"
   aria-live="off"
@@ -117,9 +127,9 @@
       grey still sees a different shape, and everyone sees it move from a clock to a
       warning — which is the actual message.
     -->
-    <TriangleAlertIcon size={16} aria-hidden="true" />
+    <TriangleAlertIcon size={18} aria-hidden="true" />
   {:else}
-    <ClockIcon size={16} aria-hidden="true" />
+    <ClockIcon size={18} aria-hidden="true" />
   {/if}
 
   <span>{label}</span>

@@ -36,14 +36,35 @@
 
   const interactive = $derived(typeof onSelect === 'function');
 
-  const CHIP =
-    'ui:inline-flex ui:h-7 ui:min-w-7 ui:items-center ui:justify-center ui:rounded ui:border ui:px-1.5 ui:text-xs ui:font-medium';
+  /**
+   * Bigger where it can be pressed. A read-only outline is a picture and 28px is plenty;
+   * the same chip on a phone, as the way around a forty-question paper, is a target a
+   * thumb has to hit, and the floor for that is 44px.
+   */
+  const CHIP = 'ui:inline-flex ui:items-center ui:justify-center ui:rounded ui:border ui:font-medium';
+  const STATIC_SIZE = 'ui:h-7 ui:min-w-7 ui:px-1.5 ui:text-xs';
+  const TAP_SIZE = 'ui:h-11 ui:min-w-11 ui:px-2 ui:text-sm';
 
+  /**
+   * Answered and unanswered differ by more than hue.
+   *
+   * They used to differ only by a tint of the brand colour, which a colour-blind candidate
+   * reads as one state — on the panel whose whole job is to say which questions are still
+   * blank. The answered chip now carries a full-strength border and a heavier weight, so
+   * the difference survives being seen in grey.
+   */
   function chipClass(question: SectionNavQuestion): string {
-    if (question.isCurrent) return `${CHIP} ui:border-primary ui:bg-primary ui:text-primary-foreground`;
-    if (question.isAnswered) return `${CHIP} ui:border-primary/40 ui:bg-primary/10 ui:text-primary`;
+    const size = interactive ? TAP_SIZE : STATIC_SIZE;
 
-    return `${CHIP} ui:border-border ui:text-muted-foreground`;
+    if (question.isCurrent) {
+      return `${CHIP} ${size} ui:border-primary ui:bg-primary ui:text-primary-foreground ui:font-semibold`;
+    }
+
+    if (question.isAnswered) {
+      return `${CHIP} ${size} ui:border-primary ui:bg-primary/15 ui:text-primary ui:font-semibold`;
+    }
+
+    return `${CHIP} ${size} ui:border-border ui:text-muted-foreground`;
   }
 </script>
 
@@ -62,12 +83,12 @@
           >
             {richTextToPlainText(section.title)}
           </p>
-          <div class="ui:flex ui:flex-wrap ui:gap-1.5">
+          <div class={interactive ? 'ui:flex ui:flex-wrap ui:gap-2' : 'ui:flex ui:flex-wrap ui:gap-1.5'}>
             {#each section.questions as question (question.key)}
               {#if interactive}
                 <button
                   type="button"
-                  class={`${chipClass(question)} ui:focus-visible:ring-ring ui:cursor-pointer ui:transition-colors ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-1 ui:hover:border-primary`}
+                  class={`${chipClass(question)} ui:focus-visible:ring-ring ui:cursor-pointer ui:outline-none ui:transition-[background-color,border-color,transform] ui:duration-150 ui:focus-visible:ring-2 ui:focus-visible:ring-offset-1 ui:hover:border-primary ui:active:scale-[0.97]`}
                   aria-current={question.isCurrent ? 'step' : undefined}
                   aria-label={selectLabel ? selectLabel(question.label) : question.label}
                   onclick={() => onSelect?.(section.id)}
