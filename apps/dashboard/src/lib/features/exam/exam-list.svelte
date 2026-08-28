@@ -138,6 +138,36 @@
     }
   }
 
+  /**
+   * Copies the exam for a second sitting and goes straight to the copy's settings.
+   *
+   * The copy deliberately arrives without the original's password or its window, so the
+   * settings screen is not a convenience here — it is where the two things the copy is
+   * missing get set, before anybody is given its link.
+   */
+  async function duplicate(exam: ExamRow) {
+    busyIds.add(exam.id);
+
+    try {
+      const response = await classroomhub.exam[':examId'].duplicate.$post({
+        param: { examId: exam.id },
+        json: { title: $t('exam.manage.copy_of', { title: exam.title }) }
+      });
+      const body = await response.json();
+
+      if (!('success' in body) || !body.success) {
+        snackbar.error('error' in body ? String(body.error) : $t('exam.manage.duplicate_failed'));
+
+        return;
+      }
+
+      snackbar.success($t('exam.manage.duplicated_notice'));
+      goto(`/courses/${courseId}/exams/${body.data.id}/edit`);
+    } finally {
+      busyIds.delete(exam.id);
+    }
+  }
+
   /** Shown before opening, never as a gate. It reports; the teacher decides. */
   async function checkPaper(examId: string) {
     busyIds.add(examId);
@@ -395,8 +425,14 @@
                     <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}/edit`)}>
                       {$t('exam.manage.edit')}
                     </DropdownMenu.Item>
+                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}/preview`)}>
+                      {$t('exam.manage.preview_paper')}
+                    </DropdownMenu.Item>
                     <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>
                       {$t('exam.manage.check_paper')}
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item disabled={checking} onclick={() => duplicate(exam)}>
+                      {$t('exam.manage.duplicate')}
                     </DropdownMenu.Item>
                     {#if exam.status === 'open'}
                       <DropdownMenu.Item disabled={checking} onclick={() => close(exam.id)}>

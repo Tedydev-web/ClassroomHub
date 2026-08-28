@@ -5633,7 +5633,12 @@
       "deleted_notice": "Đã xoá đề. Tìm lại ở \"Hiện đề đã xoá\".",
       "restore_exam": "Khôi phục",
       "restore_failed": "Không khôi phục được đề này",
-      "restored_notice": "Đã khôi phục đề"
+      "restored_notice": "Đã khôi phục đề",
+      "preview_paper": "Xem thử như thí sinh",
+      "duplicate": "Nhân bản",
+      "copy_of": "{title} (bản sao)",
+      "duplicate_failed": "Không nhân bản được đề này",
+      "duplicated_notice": "Đã nhân bản. Đặt lại thời gian và mật khẩu trước khi gửi link."
     },
     "settings": {
       "title": "Tiêu đề đề thi",
@@ -5729,6 +5734,14 @@
       "several_parts": "Câu này có nhiều phần trả lời bằng cách chọn phương án, sửa đáp án sẽ ghi đè lên tất cả các phần. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
       "not_choice": "Câu này không trả lời bằng cách chọn phương án nên không có đáp án để sửa. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
       "empty": "Đề này chưa đóng băng đề thi. Mở đề trước — đề được đóng băng lúc mở."
+    },
+    "preview": {
+      "title": "Xem thử đề",
+      "back": "Về danh sách đề",
+      "help": "Đây là đề đúng như thí sinh nhận được, đã bỏ đáp án. Đọc trước khi gửi link — phương án bị dồn thành một đoạn chữ, hay công thức mất khi import, chỉ lộ ra ở đây.",
+      "frozen": "Đề đang mở, nên đây chính là đề thí sinh đang làm",
+      "not_frozen": "Chưa mở, nên đây là đề sẽ được đóng băng khi mở",
+      "unavailable": "Đề này chưa có câu hỏi nào nên không có gì để xem."
     }
   }
 }

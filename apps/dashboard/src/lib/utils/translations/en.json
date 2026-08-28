@@ -5623,7 +5623,12 @@
       "deleted_notice": "Exam deleted. Find it again under \"Show deleted exams\".",
       "restore_exam": "Restore",
       "restore_failed": "Could not restore that exam",
-      "restored_notice": "Exam restored"
+      "restored_notice": "Exam restored",
+      "preview_paper": "Preview as a candidate",
+      "duplicate": "Duplicate",
+      "copy_of": "{title} (copy)",
+      "duplicate_failed": "Could not duplicate that exam",
+      "duplicated_notice": "Copied. Set its window and password before sending the link."
     },
     "settings": {
       "title": "Exam title",
@@ -5719,6 +5724,14 @@
       "several_parts": "This question is answered in more than one part, and a key correction would rewrite all of them. Award it instead, or mark it by hand.",
       "not_choice": "This question is not answered by choosing options, so it has no key to correct. Award it instead, or mark it by hand.",
       "empty": "This exam has no frozen paper yet. Open it first — the paper freezes when it opens."
+    },
+    "preview": {
+      "title": "Preview",
+      "back": "Back to exams",
+      "help": "This is the paper as a candidate is served it, with the answer keys removed. Read it before the link goes out — an option that came through as plain text, or an equation lost in an import, shows here and nowhere else.",
+      "frozen": "This exam is open, so this is the paper its candidates are sitting",
+      "not_frozen": "Not open yet, so this is the paper it would freeze on opening",
+      "unavailable": "This paper has no questions yet, so there is nothing to show."
     }
   }
 }

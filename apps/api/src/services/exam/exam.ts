@@ -16,7 +16,13 @@ import {
 import * as schema from '@cio/db/schema';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { assertIsContainer, freezeExamPaper, summariseContainer } from './exam-container';
+import {
+  assertIsContainer,
+  copyQuestionsIntoNewContainer,
+  freezeExamPaper,
+  summariseContainer
+} from './exam-container';
+import { toExamSittingPaper, type ExamPaperSnapshot } from './exam-paper-serializer';
 import { hashExamPassword } from './exam-password';
 import { revealConfigurationIssue, type ExamRevealValue } from './exam-reveal-policy';
 
@@ -289,6 +295,86 @@ export async function listExamsService(courseId: string, includeDeleted = false)
   requireExamsEnabled();
 
   return listExamsByCourseId(courseId, { includeDeleted });
+}
+
+/**
+ * The paper as a candidate would be served it, for a teacher to read before the link goes
+ * out.
+ *
+ * An exam that has opened is previewed from its frozen snapshot, because that is what its
+ * candidates are actually sitting. One that has not is previewed by freezing the container
+ * and throwing the result away — the same function `open` uses, so the preview is the
+ * paper, not an approximation of it, and a teacher can see what they are about to release
+ * while there is still time to change it.
+ *
+ * Answer keys are stripped by `toExamSittingPaper`, exactly as they are for a candidate.
+ * A teacher checking their own keys has the answer-key screen for that; this one answers a
+ * different question — what does this look like to sit.
+ */
+export async function previewExamPaperService(id: string) {
+  requireExamsEnabled();
+
+  const exam = await getExamById(id);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  const snapshot = (exam.paperSnapshot as ExamPaperSnapshot | null) ?? (await freezeExamPaper(exam.exerciseId));
+
+  return {
+    frozen: Boolean(exam.paperSnapshot),
+    paper: toExamSittingPaper(snapshot)
+  };
+}
+
+/**
+ * Copies an exam so the same paper can be sat again — a second sitting, a second class, a
+ * resit.
+ *
+ * The copy gets its own questions rather than pointing at the original's container: two
+ * exams sharing one container would mean editing the paper of the second rewrote what the
+ * first freezes the next time it opens.
+ *
+ * It arrives as a draft with no paper frozen, no results, and no password. The password is
+ * deliberately not carried over: the people who sat the original know it, and a copy that
+ * silently inherited it would be protected in name only. The caller sends the teacher
+ * straight to the copy's settings, which is where that gets set.
+ */
+export async function duplicateExamService(id: string, title?: string) {
+  requireExamsEnabled();
+
+  const exam = await getExamById(id);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  const copiedTitle = title?.trim() || exam.title;
+  const container = await copyQuestionsIntoNewContainer(exam.exerciseId, copiedTitle);
+
+  const [copy] = await db
+    .insert(schema.exam)
+    .values({
+      organizationId: exam.organizationId,
+      courseId: exam.courseId,
+      exerciseId: container.id,
+      title: copiedTitle,
+      slug: generateExamSlug(),
+      mode: exam.mode,
+      workingSeconds: exam.workingSeconds,
+      // The window is not carried over. A second sitting happens at a different time by
+      // definition, and inheriting the first one's dates would either open the copy in the
+      // past or quietly schedule it against the original.
+      opensAt: null,
+      closesAt: null,
+      maxAttempts: exam.maxAttempts,
+      requiresName: exam.requiresName,
+      requiresClass: exam.requiresClass,
+      requiresCandidateNumber: exam.requiresCandidateNumber,
+      scoreVisibility: exam.scoreVisibility,
+      answerVisibility: exam.answerVisibility,
+      commentVisibility: exam.commentVisibility,
+      revealThreshold: exam.revealThreshold,
+      createdBy: exam.createdBy
+    })
+    .returning({ id: schema.exam.id, title: schema.exam.title });
+
+  return copy;
 }
 
 /**

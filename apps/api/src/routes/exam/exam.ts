@@ -15,6 +15,8 @@ import {
   openExamService,
   requireExamsEnabled,
   restoreExamService,
+  duplicateExamService,
+  previewExamPaperService,
   summariseExamPaperService,
   updateExamSettingsService
 } from '@api/services/exam/exam';
@@ -242,6 +244,35 @@ export const examRouter = new Hono()
   })
   // Reading the list finalises expired attempts. A GET that writes is deliberate: it is
   // what makes a closed tab harmless. Do not "fix" it into a pure read.
+  // The paper as a candidate is served it. Read before the link goes out, which is why it
+  // works on a draft too: freezing to look and freezing to open are the same function, so
+  // what a teacher checks here is the paper rather than a rehearsal of it.
+  .get('/:examId/preview', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const preview = await previewExamPaperService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: preview });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // Copying an exam for a second sitting. The title comes from the caller because it is
+  // the one part of a copy that is written in the teacher's language, not the server's.
+  .post(
+    '/:examId/duplicate',
+    authMiddleware,
+    examTeamMemberMiddleware,
+    zValidator('json', z.object({ title: z.string().min(1).max(300).optional() })),
+    async (c) => {
+      try {
+        const copy = await duplicateExamService(c.req.param('examId'), c.req.valid('json').title);
+
+        return c.json({ success: true as const, data: copy });
+      } catch (error) {
+        return handleError(c, error);
+      }
+    }
+  )
   // The answer key of the paper that was actually sat, with every correction already
   // applied. Behind the same guard as the results: it is the answer key, and only the
   // people who may read a candidate's marks may read it.

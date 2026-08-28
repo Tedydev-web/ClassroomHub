@@ -299,6 +299,26 @@ export async function copyExerciseIntoContainer(
     throw new AppError('That exercise belongs to another course', ErrorCodes.FORBIDDEN, 403);
   }
 
+  return copyQuestionsIntoNewContainer(sourceExerciseId, source.title, dbClient);
+}
+
+/**
+ * Copies every question of one exercise or container into a brand new container.
+ *
+ * Separate from the caller above because the two differ only in who is allowed to ask.
+ * Copying a course exercise is checked against the course; copying a container is checked
+ * against the exam that owns it, since a container belongs to no course — it has no
+ * `courseId` at all, which is what makes it a container.
+ *
+ * Questions are copied, never shared. Two exams pointing at one container would mean
+ * editing the paper of the second silently rewrote what the first freezes next time it
+ * opens.
+ */
+export async function copyQuestionsIntoNewContainer(
+  sourceExerciseId: string,
+  title: string,
+  dbClient = db
+): Promise<{ id: string; title: string }> {
   const questions = await listExerciseQuestionsInDeliveryOrder(sourceExerciseId, dbClient);
 
   if (questions.length === 0) {
@@ -306,7 +326,7 @@ export async function copyExerciseIntoContainer(
   }
 
   return dbClient.transaction(async (tx) => {
-    const containerId = await createExamContainer(source.title, tx);
+    const containerId = await createExamContainer(title, tx);
 
     // The source's `order` is section-relative and repeats across sections; a container
     // has no sections to disambiguate it. Renumbering densely here is what lets every
@@ -352,6 +372,6 @@ export async function copyExerciseIntoContainer(
       await promoteQuestionCurrentRevision(copied.id, inserted.id, Number(question.points ?? 0), tx);
     }
 
-    return { id: containerId, title: source.title };
+    return { id: containerId, title };
   });
 }
