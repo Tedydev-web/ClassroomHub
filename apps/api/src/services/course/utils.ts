@@ -41,7 +41,12 @@ export type CourseContent = {
 const CONTENT_TYPE_PRIORITY: Record<ContentType, number> = {
   [ContentType.Section]: -1,
   [ContentType.Lesson]: 0,
-  [ContentType.Exercise]: 1
+  [ContentType.Exercise]: 1,
+  // Exams are not course content and never reach this sort — they are delivered by their
+  // own link, from a container that belongs to no course. The entry exists because the map
+  // must cover the type, and it sorts last so that a future item that did arrive here would
+  // land after the content rather than in the middle of it.
+  [ContentType.Exam]: 2
 };
 
 function sortContentItems(items: CourseContentItem[]): CourseContentItem[] {
