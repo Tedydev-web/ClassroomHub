@@ -16,6 +16,7 @@
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
+  import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
   import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
@@ -154,7 +155,32 @@
   // Seeded from the loader, then raised if the server refuses a start for want of one.
   let needsPassword = $state(data.exam.requiresPassword);
 
-  async function start(details: { displayName: string; className: string; candidateNumber: string; password: string }) {
+  type EntryDetails = { displayName: string; className: string; candidateNumber: string; password: string };
+
+  /**
+   * Held between the form and the confirmation. The clock starts on the request the
+   * confirmation sends, so until then this is only what the candidate typed.
+   */
+  let pendingEntry = $state<EntryDetails | null>(null);
+  let confirming = $state(false);
+
+  function propose(details: EntryDetails) {
+    pendingEntry = details;
+    confirming = true;
+  }
+
+  async function confirmStart() {
+    if (!pendingEntry) return;
+
+    const details = pendingEntry;
+    await start(details);
+
+    // Left open on failure so the message is read against the same screen that produced
+    // it; a refused password re-opens the form underneath with its field showing.
+    if (stage === 'sitting') confirming = false;
+  }
+
+  async function start(details: EntryDetails) {
     starting = true;
     entryError = null;
 
@@ -414,7 +440,18 @@
     workingMinutes={data.exam.workingSeconds ? Math.round(data.exam.workingSeconds / 60) : null}
     {starting}
     error={entryError}
-    onstart={start}
+    onstart={propose}
+  />
+
+  <ExamStartConfirm
+    open={confirming}
+    title={data.exam.title}
+    workingMinutes={data.exam.workingSeconds ? Math.round(data.exam.workingSeconds / 60) : null}
+    questionCount={data.exam.questionCount ?? 0}
+    maxAttempts={data.exam.maxAttempts ?? null}
+    {starting}
+    oncancel={() => (confirming = false)}
+    onconfirm={confirmStart}
   />
 {:else if stage === 'sitting'}
   <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {actionBarHeight}px">

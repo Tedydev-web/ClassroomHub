@@ -8,7 +8,8 @@ import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
-import { toExamSittingPaper } from '@api/services/exam/exam-paper-serializer';
+import { toExamSittingPaper, type ExamPaperSnapshot } from '@api/services/exam/exam-paper-serializer';
+import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
 import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
 import { requireSittingRequest } from './exam-sitting-guard';
 import { scoreSubmittedAttempt } from '@api/services/exam/exam-finalisation';
@@ -61,6 +62,21 @@ function hashAddress(address: string | undefined): string | null {
   return createHash('sha256').update(`${salt}:${address}`).digest('hex');
 }
 
+/**
+ * The number of answerable questions in a frozen paper.
+ *
+ * Counted over interactions rather than over items: an item is a passage and may hold ten
+ * questions, so counting items would tell a candidate a forty-question paper has ten.
+ */
+function countExamQuestions(snapshot: ExamPaperSnapshot | null): number {
+  if (!snapshot?.questions?.length) return 0;
+
+  return snapshot.questions.reduce(
+    (total, question) => total + getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition).length,
+    0
+  );
+}
+
 export const examSittingRouter = new Hono()
   .use('*', async (c, next) => {
     requireExamsEnabled();
@@ -82,7 +98,12 @@ export const examSittingRouter = new Hono()
           requiresCandidateNumber: exam.requiresCandidateNumber,
           requiresPassword: Boolean(exam.passwordHash),
           workingSeconds: exam.workingSeconds,
-          closesAt: exam.closesAt
+          closesAt: exam.closesAt,
+          maxAttempts: exam.maxAttempts,
+          // How many questions, counted the way a candidate counts them: a passage holding
+          // six is six, not one. Told before the clock starts, because "how long is this
+          // paper" is the first thing anybody asks and the answer is not a secret.
+          questionCount: countExamQuestions(exam.paperSnapshot as ExamPaperSnapshot | null)
         }
       });
     } catch (error) {

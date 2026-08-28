@@ -5757,6 +5757,19 @@
       "not_frozen": "Chưa mở, nên đây là đề sẽ được đóng băng khi mở",
       "unavailable": "Đề này chưa có câu hỏi nào nên không có gì để xem.",
       "question_count": "{count} câu hỏi"
+    },
+    "start": {
+      "description": "Đọc kỹ trước khi bắt đầu.",
+      "working_minutes": "Bạn có {minutes} phút kể từ khi bắt đầu.",
+      "no_time_limit": "Đề này không giới hạn thời gian.",
+      "question_count": "{count} câu hỏi.",
+      "attempts": "Bạn được làm đề này {count} lượt.",
+      "unlimited_attempts": "Bạn được làm đề này không giới hạn số lượt.",
+      "monitoring_notice": "Trong lúc làm bài, hệ thống đếm số lần bài thi bị mất tiêu điểm — tức bạn chuyển tab hoặc chuyển ứng dụng. Thầy cô sẽ thấy con số đó. Đó là một con số, không phải một lời buộc tội.",
+      "clock_warning": "Đồng hồ chạy ngay khi bạn bấm Bắt đầu, và vẫn chạy kể cả khi bạn đóng trang.",
+      "begin": "Bắt đầu làm bài",
+      "starting": "Đang bắt đầu…",
+      "back": "Quay lại"
     }
   }
 }

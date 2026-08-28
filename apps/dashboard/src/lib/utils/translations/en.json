@@ -5747,6 +5747,19 @@
       "not_frozen": "Not open yet, so this is the paper it would freeze on opening",
       "unavailable": "This paper has no questions yet, so there is nothing to show.",
       "question_count": "{count} questions"
+    },
+    "start": {
+      "description": "Check this before you begin.",
+      "working_minutes": "You have {minutes} minutes once you begin.",
+      "no_time_limit": "There is no time limit on this paper.",
+      "question_count": "{count} questions.",
+      "attempts": "You may sit this paper {count} time(s).",
+      "unlimited_attempts": "You may sit this paper as many times as you like.",
+      "monitoring_notice": "While you are sitting, we count how often the paper loses focus — switching tabs or apps. Your teacher sees that count. It is a count, not an accusation.",
+      "clock_warning": "The clock starts the moment you press Begin, and keeps running if you close the page.",
+      "begin": "Begin",
+      "starting": "Starting…",
+      "back": "Back"
     }
   }
 }
