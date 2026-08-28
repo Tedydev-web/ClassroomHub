@@ -9,7 +9,7 @@ import {
 import type { Question } from '$features/course/types';
 import type { QuestionnaireMetaData } from './store';
 import type { TExerciseUpdate } from '@cio/utils/validation/exercise';
-import { toggleConfetti } from '$features/ui/confetti/store';
+import { celebrate } from '$features/ui/confetti/store';
 
 export const isAnswerCorrect = (options, answer) => {
   return options.some((option) => option.isCorrect && option.value === answer);
@@ -44,9 +44,7 @@ export function wasCorrectAnswerSelected(currentQuestion: Question, answers, isF
   }
 
   if (isCorrect && !isFinished) {
-    toggleConfetti();
-
-    setTimeout(toggleConfetti, 100);
+    celebrate();
   }
 
   return isCorrect;

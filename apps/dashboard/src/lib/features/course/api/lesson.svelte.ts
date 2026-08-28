@@ -1,6 +1,6 @@
 import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { courseApi } from './course.svelte';
-import { toggleConfetti } from '$features/ui/confetti/store';
+import { celebrate } from '$features/ui/confetti/store';
 import { updateLessonCompletionInCourseContent } from '../utils/content-completion';
 import type {
   CourseSectionWithLessons,
@@ -662,8 +662,7 @@ export class LessonApi extends BaseApiWithErrors {
         if (!data || !this.lesson || this.lesson.id !== lessonId) return;
 
         if (data.didJustComplete) {
-          toggleConfetti();
-          setTimeout(() => toggleConfetti(), 3000);
+          celebrate();
         }
 
         if (courseApi.course?.content && data.didJustComplete) {

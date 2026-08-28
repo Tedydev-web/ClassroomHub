@@ -6,7 +6,7 @@
   import { Button } from '@cio/ui/base/button';
   import { Spinner } from '@cio/ui/base/spinner';
   import { Confetti } from '$features/ui';
-  import { setConfetti } from '$features/ui/confetti/store';
+  import { celebrate } from '$features/ui/confetti/store';
   import { ContentType } from '@cio/utils/constants/content';
   import { courseCompletionModal, closeCourseCompletionModal } from '$features/course/store/course-completion-modal';
   import { getContentRoute } from '$features/course/utils/content';
@@ -30,8 +30,7 @@
         open = true;
 
         if (v.step === 'eligible' && !v.evaluation?.certificateEarnedAt) {
-          setConfetti(true);
-          setTimeout(() => setConfetti(false), 5500);
+          celebrate();
         }
       } else {
         open = false;

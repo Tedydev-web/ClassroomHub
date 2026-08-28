@@ -782,27 +782,35 @@
       class={['ui:bg-background ui:overflow-hidden', showContainer ? '' : 'ui:border-border ui:rounded-md ui:border']}
       data-assessment-layout="passage-workspace"
     >
-      <details class="ui:border-border ui:border-b ui:px-4 ui:py-2">
-        <summary
-          class="ui:focus-visible:ring-ring ui:cursor-pointer ui:rounded-sm ui:text-sm ui:font-medium ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
-        >
-          {passageWorkspaceLabels.navigation}
-        </summary>
-        <nav class="ui:flex ui:flex-wrap ui:gap-2 ui:pt-3" aria-label={passageWorkspaceLabels.navigation}>
-          {#each passageGroupViews as group (group.id)}
-            <Button
-              type="button"
-              variant={activeQuestionGroupId === group.id ? 'secondary' : 'ghost'}
-              size="sm"
-              aria-current={activeQuestionGroupId === group.id ? 'step' : undefined}
-              onclick={() => selectPassageGroup(group.id)}
-            >
-              {passageWorkspaceLabels.formatPassage(group.passageIndex)} ·
-              {passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
-            </Button>
-          {/each}
-        </nav>
-      </details>
+      <!--
+        Only where there is a choice to make. An item holding a single passage rendered this
+        as a collapsed panel wrapping one button that moves nowhere — a control whose entire
+        content is the thing already on screen. That is the ordinary shape of an exam item,
+        so the noise was the common case and the navigation the rare one.
+      -->
+      {#if passageGroupViews.length > 1}
+        <details class="ui:border-border ui:border-b ui:px-4 ui:py-2">
+          <summary
+            class="ui:focus-visible:ring-ring ui:cursor-pointer ui:rounded-sm ui:text-sm ui:font-medium ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
+          >
+            {passageWorkspaceLabels.navigation}
+          </summary>
+          <nav class="ui:flex ui:flex-wrap ui:gap-2 ui:pt-3" aria-label={passageWorkspaceLabels.navigation}>
+            {#each passageGroupViews as group (group.id)}
+              <Button
+                type="button"
+                variant={activeQuestionGroupId === group.id ? 'secondary' : 'ghost'}
+                size="sm"
+                aria-current={activeQuestionGroupId === group.id ? 'step' : undefined}
+                onclick={() => selectPassageGroup(group.id)}
+              >
+                {passageWorkspaceLabels.formatPassage(group.passageIndex)} ·
+                {passageWorkspaceLabels.formatQuestionRange(group.questionStart, group.questionEnd)}
+              </Button>
+            {/each}
+          </nav>
+        </details>
+      {/if}
 
       <!--
         Narrow screens stack the passage above its questions and keep it there while the

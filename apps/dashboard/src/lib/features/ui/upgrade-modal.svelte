@@ -12,7 +12,7 @@
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { toggleConfetti } from './confetti/store';
+  import { celebrate } from './confetti/store';
   import { currentOrg, isFreePlan } from '$lib/utils/store/org';
   import {
     UPGRADE_CONFIRMATION_PARAM,
@@ -90,11 +90,7 @@
     untrack(() => {
       upgraded = true;
     });
-    toggleConfetti();
-
-    setTimeout(() => {
-      toggleConfetti();
-    }, 1000);
+    celebrate();
   }
 
   function handleClose() {

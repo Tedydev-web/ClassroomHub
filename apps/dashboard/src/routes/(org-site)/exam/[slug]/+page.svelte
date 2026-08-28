@@ -17,6 +17,8 @@
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
   import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
+  import { Confetti } from '$features/ui';
+  import { celebrate } from '$features/ui/confetti/store';
   import { classroomhub } from '$lib/utils/services/api';
 
   /**
@@ -194,7 +196,12 @@
     saveState = 'unsaved';
   }
 
-  async function submit() {
+  /**
+   * `celebrated` is deliberate: a paper the clock ended is still finished, but a candidate
+   * who ran out of time is not in a mood to be congratulated, and confetti over that reads
+   * as the screen not understanding what just happened to them.
+   */
+  async function submit({ celebrated = true }: { celebrated?: boolean } = {}) {
     if (!attemptId || submitting) return;
 
     submitting = true;
@@ -222,6 +229,7 @@
       }
 
       stage = 'submitted';
+      if (celebrated) celebrate();
     } catch (error) {
       submitError = serverMessage(error, $t('exam.sitting.submit_failed'));
     } finally {
@@ -234,7 +242,7 @@
    * saved, so a failure here costs nothing — and saying so plainly beats pretending.
    */
   async function onTimeUp() {
-    await submit();
+    await submit({ celebrated: false });
   }
 
   /**
@@ -491,6 +499,10 @@
     </footer>
   </div>
 {:else}
+  <!-- The exam is served outside the course layout, which is where the celebration canvas
+       usually lives, so it is mounted here. -->
+  <Confetti />
+
   <div class="ui:mx-auto ui:max-w-md ui:space-y-3 ui:px-4 ui:py-16 ui:text-center">
     <h1 class="ui:text-xl ui:font-semibold">{$t('exam.sitting.submitted_title')}</h1>
 

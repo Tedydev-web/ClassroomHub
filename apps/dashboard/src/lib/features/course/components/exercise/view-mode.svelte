@@ -53,7 +53,7 @@
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { toggleConfetti } from '$features/ui/confetti/store';
+  import { celebrate } from '$features/ui/confetti/store';
   import { ContentType } from '@cio/utils/constants/content';
   import { getOrderedNavigableContent } from '$features/course/utils/content';
   import { isOrgStudent } from '$lib/utils/store/app';
@@ -372,8 +372,7 @@
         courseApi.updateContentItem(exerciseId, ContentType.Exercise, { isComplete: shouldMarkComplete });
 
         if (shouldMarkComplete) {
-          toggleConfetti();
-          setTimeout(toggleConfetti, 3000);
+          celebrate();
         }
 
         const allContentItems = getOrderedNavigableContent(courseApi.course);
