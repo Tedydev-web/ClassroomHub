@@ -4747,6 +4747,15 @@ export const examAttempt = pgTable(
     displayName: varchar('display_name'),
     className: varchar('class_name'),
     candidateNumber: varchar('candidate_number'),
+    /**
+     * Optional, and asked for on every paper.
+     *
+     * Two students in one class sharing a name is ordinary rather than rare, and the
+     * results list has no other way to tell them apart where the school does not issue
+     * candidate numbers. It is never required: a candidate with an unambiguous name should
+     * not be made to invent one.
+     */
+    nickname: varchar(),
     /** The resume cookie, hashed. The cookie carries the raw value. */
     tokenHash: text('token_hash').notNull(),
     startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }).notNull(),

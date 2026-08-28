@@ -1,0 +1,1 @@
+ALTER TABLE "exam_attempt" ADD COLUMN "nickname" varchar;

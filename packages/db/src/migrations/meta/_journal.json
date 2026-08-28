@@ -169,6 +169,13 @@
       "when": 1787906195652,
       "tag": "0023_friendly_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1787909163592,
+      "tag": "0024_flimsy_master_mold",
+      "breakpoints": true
     }
   ]
 }

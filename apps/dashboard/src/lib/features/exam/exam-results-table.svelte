@@ -22,6 +22,7 @@
   export type ExamResultRow = {
     attemptId: string;
     displayName: string | null;
+    nickname?: string | null;
     className: string | null;
     candidateNumber: string | null;
     status: 'in_progress' | 'submitted' | 'expired';
@@ -160,6 +161,7 @@
   function exportCsv() {
     const header = [
       $t('exam.entry.full_name'),
+      $t('exam.entry.nickname'),
       $t('exam.entry.class_name'),
       $t('exam.entry.candidate_number'),
       $t('exam.results.status_column'),
@@ -184,6 +186,7 @@
       ...shown.map((row) =>
         [
           row.displayName ?? '',
+          row.nickname ?? '',
           row.className ?? '',
           row.candidateNumber ?? '',
           statusLabel(row),
@@ -349,6 +352,11 @@
             <Table.Row>
               <Table.Cell class="ui:font-medium">
                 <span class="ui:align-middle">{row.displayName ?? '—'}</span>
+                {#if row.nickname}
+                  <!-- Beside the name rather than instead of it: it exists to separate two
+                       identical names, so both have to be readable at once. -->
+                  <span class="ui:text-muted-foreground ui:align-middle ui:text-xs">({row.nickname})</span>
+                {/if}
                 <!--
                   Surfaced, never blocked. Two sitters may legitimately share a name, and
                   a person is better placed to judge than a rule is.

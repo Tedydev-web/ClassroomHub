@@ -151,7 +151,14 @@
     return refusalMessage(error) || fallback;
   }
 
-  type EntryDetails = { displayName: string; className: string; candidateNumber: string; password: string };
+  type EntryDetails = {
+    displayName: string;
+    className: string;
+    candidateNumber: string;
+    nickname: string;
+    password: string;
+    sameDeviceDifferentPerson: boolean;
+  };
 
   /**
    * Held between the form and the confirmation. The clock starts on the request the
@@ -193,6 +200,8 @@
         if ('code' in body && body.code === 'EXAM_PASSWORD_REQUIRED') {
           needsPassword = true;
         }
+
+        if (refusalKey(body) === 'attempts_used') attemptsUsed = true;
 
         entryError = serverMessage(body, $t('exam.manage.open_failed'));
         return;
@@ -585,6 +594,7 @@
     requiresClass={data.exam.requiresClass}
     requiresCandidateNumber={data.exam.requiresCandidateNumber}
     requiresPassword={needsPassword}
+    {attemptsUsed}
     workingMinutes={data.exam.workingSeconds ? Math.round(data.exam.workingSeconds / 60) : null}
     {starting}
     error={entryError}

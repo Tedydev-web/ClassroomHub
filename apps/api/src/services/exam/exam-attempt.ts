@@ -50,6 +50,8 @@ export type DeclaredIdentity = {
   displayName?: string | null;
   className?: string | null;
   candidateNumber?: string | null;
+  /** Never required, so it is never validated as missing. */
+  nickname?: string | null;
 };
 
 const MAX_DECLARED_LENGTH = 120;
@@ -200,6 +202,7 @@ export async function startAttemptService(input: StartAttemptInput) {
       displayName: identity.displayName?.trim() ?? null,
       className: identity.className?.trim() ?? null,
       candidateNumber: identity.candidateNumber?.trim() ?? null,
+      nickname: identity.nickname?.trim() || null,
       tokenHash: token.hash,
       startedAt: now.toISOString(),
       expiresAt: expiresAt?.toISOString() ?? null,

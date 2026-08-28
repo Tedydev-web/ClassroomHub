@@ -51,6 +51,15 @@ const startSchema = z.object({
   displayName: z.string().max(120).optional(),
   className: z.string().max(120).optional(),
   candidateNumber: z.string().max(120).optional(),
+  // Optional on every paper: two candidates in one class may share a name, and a nickname
+  // is the only thing that tells them apart where the school issues no candidate numbers.
+  nickname: z.string().max(120).optional(),
+  /**
+   * Set when a candidate says this device belongs to somebody else who has already sat.
+   * It skips the per-cookie attempt count and nothing else; the attempt is recorded like
+   * any other, so a teacher reading the results sees both sittings.
+   */
+  sameDeviceDifferentPerson: z.boolean().optional(),
   password: z.string().max(200).optional()
 });
 
@@ -183,8 +192,16 @@ export const examSittingRouter = new Hono()
       const body = c.req.valid('json');
       const now = new Date();
 
+      // Counted per cookie, and only per cookie: the limit never reads a name, a class or a
+      // network address, so a room full of candidates on one school wifi — several of whom
+      // share a name, which is ordinary — are counted separately and correctly.
+      //
+      // What one cookie cannot tell apart is one person sitting twice from one device that
+      // two people share. A candidate who says the device is not theirs is believed: the
+      // limit is a courtesy, not a gate, and anybody minded to defeat it can clear a cookie
+      // without being offered the button. Refusing them would only stop the honest ones.
       const existingToken = getCookie(c, resumeCookieName(exam.id));
-      if (existingToken && exam.maxAttempts !== null) {
+      if (existingToken && exam.maxAttempts !== null && !body.sameDeviceDifferentPerson) {
         const taken = await countAttemptsForToken(exam.id, hashResumeToken(existingToken));
         if (taken >= exam.maxAttempts) {
           throw new AppError('You have used all your attempts at this paper', ErrorCodes.FORBIDDEN, 403);

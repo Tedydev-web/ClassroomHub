@@ -5479,7 +5479,11 @@
       "working_time": "Working time: {minutes} minutes",
       "no_history_notice": "You are sitting this without signing in, so no record of the result is kept for you. Once submitted, you can only see it again if your teacher allows it in this session.",
       "start": "Start",
-      "starting": "Opening the paper…"
+      "starting": "Opening the paper…",
+      "nickname": "Nickname (optional)",
+      "nickname_placeholder": "Only if someone in your class shares your name",
+      "nickname_help": "Shown to your teacher beside your name, so two people with the same name are not confused.",
+      "shared_device": "This phone or computer belongs to someone else who already sat this paper. I have not sat it yet."
     },
     "sitting": {
       "saved": "Saved",

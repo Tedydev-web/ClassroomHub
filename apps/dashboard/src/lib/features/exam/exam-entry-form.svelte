@@ -27,6 +27,7 @@
     workingMinutes = null,
     starting = false,
     error = null,
+    attemptsUsed = false,
     onstart
   }: {
     title: string;
@@ -37,13 +38,24 @@
     workingMinutes?: number | null;
     starting?: boolean;
     error?: string | null;
-    onstart: (details: { displayName: string; className: string; candidateNumber: string; password: string }) => void;
+    /** Set when the candidate says the device belongs to somebody who has already sat. */
+    attemptsUsed?: boolean;
+    onstart: (details: {
+      displayName: string;
+      className: string;
+      candidateNumber: string;
+      nickname: string;
+      password: string;
+      sameDeviceDifferentPerson: boolean;
+    }) => void;
   } = $props();
 
   let displayName = $state('');
   let className = $state('');
   let candidateNumber = $state('');
+  let nickname = $state('');
   let password = $state('');
+  let sameDeviceDifferentPerson = $state(false);
 
   const missing = $derived(
     (requiresName && displayName.trim().length === 0) ||
@@ -59,7 +71,9 @@
       displayName: displayName.trim(),
       className: className.trim(),
       candidateNumber: candidateNumber.trim(),
-      password
+      nickname: nickname.trim(),
+      password,
+      sameDeviceDifferentPerson
     });
   }
 </script>
@@ -92,6 +106,25 @@
         </Field.Content>
       </Field.Field>
     {/if}
+
+    <!--
+      Always offered, never required. Two candidates in one class sharing a name is
+      ordinary, and where the school issues no candidate numbers this is the only thing
+      that tells their two rows apart on the teacher's list.
+    -->
+    <Field.Field>
+      <Field.Label for="exam-nickname">{$t('exam.entry.nickname')}</Field.Label>
+      <Field.Content>
+        <Input
+          id="exam-nickname"
+          bind:value={nickname}
+          maxlength={120}
+          disabled={starting}
+          placeholder={$t('exam.entry.nickname_placeholder')}
+        />
+        <Field.Description>{$t('exam.entry.nickname_help')}</Field.Description>
+      </Field.Content>
+    </Field.Field>
 
     {#if requiresCandidateNumber}
       <Field.Field>
@@ -128,6 +161,20 @@
 
     {#if error}
       <p class="ui:text-destructive ui:text-sm" role="alert">{error}</p>
+    {/if}
+
+    <!--
+      The one case the per-device count cannot see: two candidates taking turns on one
+      phone. The second is told they have used their attempts, which is true of the device
+      and false of them, and without a way past it they simply cannot sit the paper.
+      Believing them costs nothing — anybody minded to defeat a cookie can clear it without
+      being offered a button — and refusing them would stop only the honest.
+    -->
+    {#if attemptsUsed}
+      <label class="ui:border-border ui:flex ui:items-start ui:gap-2 ui:rounded-md ui:border ui:p-3 ui:text-sm">
+        <input type="checkbox" bind:checked={sameDeviceDifferentPerson} class="ui:mt-0.5" />
+        <span>{$t('exam.entry.shared_device')}</span>
+      </label>
     {/if}
 
     <Button type="submit" class="ui:min-h-11 ui:w-full" disabled={missing || starting}>

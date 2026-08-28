@@ -5489,7 +5489,11 @@
       "working_time": "Thời gian làm bài: {minutes} phút",
       "no_history_notice": "Bạn đang làm bài mà không đăng nhập, nên hệ thống không lưu lịch sử bài thi cho bạn. Sau khi nộp, bạn chỉ xem lại được nếu giáo viên cho phép ngay trong lần này.",
       "start": "Bắt đầu làm bài",
-      "starting": "Đang mở đề…"
+      "starting": "Đang mở đề…",
+      "nickname": "Biệt danh (không bắt buộc)",
+      "nickname_placeholder": "Chỉ cần điền nếu lớp bạn có người trùng tên",
+      "nickname_help": "Hiện cho thầy cô ngay cạnh tên bạn, để hai người trùng tên không bị lẫn.",
+      "shared_device": "Máy này là của bạn khác đã thi rồi. Tôi chưa thi lần nào."
     },
     "sitting": {
       "saved": "Đã lưu",

@@ -103,6 +103,7 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
     .select({
       attemptId: schema.examAttempt.id,
       displayName: schema.examAttempt.displayName,
+      nickname: schema.examAttempt.nickname,
       className: schema.examAttempt.className,
       candidateNumber: schema.examAttempt.candidateNumber,
       status: schema.examAttempt.status,
