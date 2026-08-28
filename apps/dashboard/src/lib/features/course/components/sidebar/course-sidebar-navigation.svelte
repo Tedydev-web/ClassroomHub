@@ -28,6 +28,7 @@
   import { contentCreateStoreUtils, contentEditingStore } from '$features/course/components/content/store';
   import { getCourseContent } from '$features/course/utils/content';
   import CourseContentTree from './course-content-tree.svelte';
+  import CourseExamTree from './course-exam-tree.svelte';
   import ContentCountBadges from '../content-count-badges.svelte';
 
   import { NAV_IDS } from './constants';
@@ -393,6 +394,15 @@
               onOpenContentModal={isStudent ? undefined : (sectionId) => openContentModal(id, sectionId)}
               onEditSection={isStudent ? undefined : (sectionId) => openSectionEditor(id, sectionId)}
             />
+
+            <!--
+              Exams sit beside the course's content for a teacher, because that is where a
+              teacher looks for them, and nowhere at all for a student: the paper is reached
+              by its own link under a clock, never from the course tree.
+            -->
+            {#if !isStudent}
+              <CourseExamTree courseId={id} />
+            {/if}
           {/if}
         </Sidebar.MenuItem>
       {:else}

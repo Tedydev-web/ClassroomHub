@@ -76,6 +76,12 @@ const createExamSchema = z.object({
  * `exerciseId` is absent on purpose. It names which questions the exam delivers, and
  * changing that is a different exam rather than an edit of this one.
  */
+/**
+ * Every caller but the "show deleted" toggle omits this entirely, so it has to parse an
+ * absent query rather than require an explicit one.
+ */
+export const listExamsQuerySchema = z.object({ includeDeleted: z.enum(['0', '1']).optional() });
+
 export const updateExamSchema = z.object({
   title: z.string().min(1).max(300).optional(),
   mode: z.enum(['public', 'private']).optional(),
@@ -133,7 +139,7 @@ export const examRouter = new Hono()
     '/course/:courseId',
     authMiddleware,
     courseTeamMemberMiddleware,
-    zValidator('query', z.object({ includeDeleted: z.enum(['0', '1']).optional() })),
+    zValidator('query', listExamsQuerySchema),
     async (c) => {
       try {
         const exams = await listExamsService(c.req.param('courseId'), c.req.valid('query').includeDeleted === '1');

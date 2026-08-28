@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { updateExamSchema } from './exam';
+import { listExamsQuerySchema, updateExamSchema } from './exam';
 
 /**
  * A patch must carry only what the caller sent.
@@ -28,5 +28,24 @@ describe('the shape of an exam settings patch', () => {
     const parsed = updateExamSchema.parse({ title: 'x', exerciseId: 'something' } as never);
 
     expect(parsed).not.toHaveProperty('exerciseId');
+  });
+});
+
+/**
+ * The exam list is asked for from four places and only one of them passes a query. A
+ * validator that required the key would have turned the other three into 400s, and no
+ * typecheck in this repo would have said so — the dashboard's view of the API type is
+ * degraded, so a wrong call shape builds cleanly.
+ */
+describe('the query an exam list accepts', () => {
+  it('parses a request that names no query at all', () => {
+    const parsed = listExamsQuerySchema.parse({});
+
+    expect(parsed.includeDeleted).toBeUndefined();
+  });
+
+  it('takes the toggle when it is passed, and refuses anything else', () => {
+    expect(listExamsQuerySchema.parse({ includeDeleted: '1' }).includeDeleted).toBe('1');
+    expect(() => listExamsQuerySchema.parse({ includeDeleted: 'yes' })).toThrow();
   });
 });
