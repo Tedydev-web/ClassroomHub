@@ -128,6 +128,7 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
     expect(question.effectiveKey).toEqual(['1']);
     expect(question.options.map((option: { label: string }) => option.label)).toEqual(['A', 'B']);
     expect(question.keyFixable).toBe(true);
+    expect(question.cardinality).toBe('single');
     expect(question.hasSeveralChoiceParts).toBe(false);
     expect(question.corrected).toBe(false);
   });
@@ -162,6 +163,36 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
     expect(Number(attempt.score)).toBe(1);
   });
 
+  it('refuses a key the grader would read as nobody being right', async () => {
+    const { db, schema, results } = await load();
+    const { examId, by } = await seedSatExam(db, schema);
+
+    // The question lets a candidate pick one option, so every stored response names one.
+    // A key naming two can never equal a response of one, and the grader compares them by
+    // size first — so this would mark the entire class wrong on this question.
+    await expect(
+      results.addCorrectionService(examId, {
+        kind: 'keyFix',
+        questionId: 1,
+        previousKey: ['1'],
+        correctedKey: ['1', '2'],
+        by,
+        at: new Date().toISOString()
+      })
+    ).rejects.toThrow(/must name exactly one/);
+
+    await expect(
+      results.addCorrectionService(examId, {
+        kind: 'keyFix',
+        questionId: 1,
+        previousKey: ['1'],
+        correctedKey: [],
+        by,
+        at: new Date().toISOString()
+      })
+    ).rejects.toThrow(/at least one option/);
+  });
+
   it('refuses a correction measured against a key that has since moved', async () => {
     const { db, schema, results } = await load();
     const { examId, by } = await seedSatExam(db, schema);
@@ -182,7 +213,7 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
         kind: 'keyFix',
         questionId: 1,
         previousKey: ['1'],
-        correctedKey: ['1', '2'],
+        correctedKey: ['1'],
         by,
         at
       })

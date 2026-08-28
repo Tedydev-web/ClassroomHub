@@ -33,6 +33,12 @@ export type ExamAnswerKeyQuestion = {
   options: ExamAnswerKeyOption[];
   /** The key in force right now: the frozen one, or the last correction to replace it. */
   effectiveKey: string[];
+  /**
+   * How many options a candidate could pick. On a `single` question the grader compares
+   * the key against a response of exactly one option and requires the two to be the same
+   * length, so a two-option key marks every candidate wrong. The screen must not offer it.
+   */
+  cardinality: 'single' | 'multiple';
   /** A key can only be replaced where there is a key to replace. */
   keyFixable: boolean;
   /**
@@ -48,6 +54,7 @@ export type ExamAnswerKeyQuestion = {
 type ChoiceConfig = {
   options?: Array<{ id: string; html?: string }>;
   correctOptionIds?: string[];
+  cardinality?: 'single' | 'multiple';
 };
 
 export async function listExamAnswerKeysService(examId: string): Promise<ExamAnswerKeyQuestion[]> {
@@ -93,6 +100,7 @@ export async function listExamAnswerKeysService(examId: string): Promise<ExamAns
           html: option.html ?? ''
         })),
         effectiveKey: [...(config.correctOptionIds ?? [])],
+        cardinality: config.cardinality === 'multiple' ? 'multiple' : 'single',
         keyFixable: choiceBlocks.length > 0,
         hasSeveralChoiceParts: choiceBlocks.length > 1,
         awarded: kinds?.has('award') ?? false,

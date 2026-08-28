@@ -270,6 +270,22 @@ function currentKeyOf(snapshot: ExamPaperSnapshot, questionId: number): string[]
   return null;
 }
 
+/** How many options the question lets a candidate pick, which bounds what a key may name. */
+function cardinalityOf(snapshot: ExamPaperSnapshot, questionId: number): 'single' | 'multiple' | null {
+  const question = snapshot.questions.find((candidate) => candidate.questionId === questionId);
+  if (!question) return null;
+
+  for (const block of getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition)) {
+    if (block.interaction.kind !== 'choice') continue;
+
+    return (block.interaction.config as { cardinality?: 'single' | 'multiple' }).cardinality === 'multiple'
+      ? 'multiple'
+      : 'single';
+  }
+
+  return null;
+}
+
 /** Two keys are the same key whatever order the options were listed in. */
 function sameKey(left: string[], right: string[]): boolean {
   if (left.length !== right.length) return false;
@@ -302,6 +318,23 @@ export async function addCorrectionService(examId: string, correction: ExamCorre
 
     if (inForce === null) {
       throw new AppError('That question has no answer key to correct', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    if (correction.correctedKey.length === 0) {
+      throw new AppError('A corrected key must name at least one option', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    // The grader scores a choice by comparing the key against the response option for
+    // option, and it requires the two to be the same size. A candidate answering a
+    // single-choice question sends exactly one option, so a key naming two marks the whole
+    // class wrong — the opposite of what correcting a key is for. Refused here rather than
+    // stored, because by the time it is stored every finished sitting has been re-marked.
+    if (cardinalityOf(snapshot, correction.questionId) === 'single' && correction.correctedKey.length !== 1) {
+      throw new AppError(
+        'This question lets a candidate pick one option, so its key must name exactly one',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
     }
 
     if (!sameKey(inForce, correction.previousKey)) {

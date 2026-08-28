@@ -7,6 +7,7 @@
   import { Label } from '@cio/ui/base/label';
   import * as Card from '@cio/ui/base/card';
   import * as Dialog from '@cio/ui/base/dialog';
+  import * as RadioGroup from '@cio/ui/base/radio-group';
   import * as Empty from '@cio/ui/base/empty';
 
   /**
@@ -32,6 +33,7 @@
     promptHtml: string;
     options: AnswerKeyOption[];
     effectiveKey: string[];
+    cardinality: 'single' | 'multiple';
     keyFixable: boolean;
     hasSeveralChoiceParts: boolean;
     awarded: boolean;
@@ -115,19 +117,44 @@
           {#if editing === question.questionId}
             <fieldset class="ui:space-y-2">
               <legend class="ui:text-sm ui:font-medium">{$t('exam.corrections.pick_correct')}</legend>
-              {#each question.options as option (option.id)}
-                <div class="ui:flex ui:items-start ui:gap-2">
-                  <Checkbox
-                    id={`key-${question.questionId}-${option.id}`}
-                    checked={draft.includes(option.id)}
-                    onCheckedChange={(checked) => toggle(option.id, checked === true)}
-                  />
-                  <Label for={`key-${question.questionId}-${option.id}`} class="ui:font-normal">
-                    <span class="ui:font-medium">{option.label}.</span>
-                    <SafeHtmlContent content={option.html} />
-                  </Label>
-                </div>
-              {/each}
+              {#if question.cardinality === 'single'}
+                <!--
+                  One option, not a free choice of several. A candidate answering this
+                  question sent exactly one option, and the grader compares the key against
+                  what they sent by size before it compares by value — so a key naming two
+                  would mark every candidate wrong on this question. The control that cannot
+                  express that key is the honest way to say so.
+                -->
+                <RadioGroup.Root
+                  value={draft[0] ?? ''}
+                  onValueChange={(value) => (draft = [value])}
+                  class="ui:space-y-2"
+                >
+                  {#each question.options as option (option.id)}
+                    <div class="ui:flex ui:items-start ui:gap-2">
+                      <RadioGroup.Item value={option.id} id={`key-${question.questionId}-${option.id}`} />
+                      <Label for={`key-${question.questionId}-${option.id}`} class="ui:font-normal">
+                        <span class="ui:font-medium">{option.label}.</span>
+                        <SafeHtmlContent content={option.html} />
+                      </Label>
+                    </div>
+                  {/each}
+                </RadioGroup.Root>
+              {:else}
+                {#each question.options as option (option.id)}
+                  <div class="ui:flex ui:items-start ui:gap-2">
+                    <Checkbox
+                      id={`key-${question.questionId}-${option.id}`}
+                      checked={draft.includes(option.id)}
+                      onCheckedChange={(checked) => toggle(option.id, checked === true)}
+                    />
+                    <Label for={`key-${question.questionId}-${option.id}`} class="ui:font-normal">
+                      <span class="ui:font-medium">{option.label}.</span>
+                      <SafeHtmlContent content={option.html} />
+                    </Label>
+                  </div>
+                {/each}
+              {/if}
             </fieldset>
 
             <div class="ui:flex ui:flex-wrap ui:gap-2">

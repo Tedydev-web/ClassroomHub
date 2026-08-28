@@ -13,6 +13,7 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 
+  import { goto } from '$app/navigation';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -391,12 +392,8 @@
                       {$t('exam.manage.restore_exam')}
                     </DropdownMenu.Item>
                   {:else}
-                    <DropdownMenu.Item>
-                      {#snippet child({ props })}
-                        <a {...props} href={`/courses/${courseId}/exams/${exam.id}/edit`}>
-                          {$t('exam.manage.edit')}
-                        </a>
-                      {/snippet}
+                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}/edit`)}>
+                      {$t('exam.manage.edit')}
                     </DropdownMenu.Item>
                     <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>
                       {$t('exam.manage.check_paper')}
