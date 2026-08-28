@@ -191,9 +191,11 @@
 
     await start(pendingEntry);
 
-    // Left open on failure so the message is read against the same screen that produced
-    // it; a refused password re-opens the form underneath with its field showing.
-    if (stage === 'sitting') confirming = false;
+    // Closed either way. Every refusal is shown on the form underneath — the password box,
+    // the shared-device way past the attempt limit, the message itself — and this dialog
+    // shows none of them. Left open, it hid all three behind a button that had gone back to
+    // reading "begin", which is exactly a candidate confirming and nothing happening.
+    confirming = false;
   }
 
   async function start(details: EntryDetails) {
