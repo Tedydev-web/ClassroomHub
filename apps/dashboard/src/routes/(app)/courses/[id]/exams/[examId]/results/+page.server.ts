@@ -24,10 +24,15 @@ export const load = async ({ params, cookies }) => {
     throw error(404, 'Không tìm thấy đề thi này');
   }
 
+  const exam = examResult.body.data;
+
   return {
     courseId: params.id,
     examId: params.examId,
-    exam: examResult.body.data,
+    // Named fields, not the row. The row carries the frozen paper with every answer key
+    // on it, and this page renders on the server, so returning it wrote forty kilobytes
+    // of answer key into the HTML of a screen that shows a title.
+    exam: { id: exam.id, title: exam.title, status: exam.status },
     rows: rowsResult.body.data
   };
 };

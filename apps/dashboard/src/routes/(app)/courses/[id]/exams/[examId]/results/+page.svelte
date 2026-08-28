@@ -87,6 +87,12 @@
       <Page.Subtitle>{$t('exam.manage.results')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
+      <!-- Reached from here because this is the screen where a wrong key becomes obvious:
+           a teacher notices the whole class missed one question, and the remedy is one
+           click away rather than in a menu somewhere else. -->
+      <Button variant="outline" href={`/courses/${data.courseId}/exams/${data.examId}/corrections`}>
+        {$t('exam.corrections.title')}
+      </Button>
       <Button variant="outline" disabled={refreshing} onclick={refresh}>
         {refreshing ? $t('exam.results.loading') : $t('exam.results.reload')}
       </Button>

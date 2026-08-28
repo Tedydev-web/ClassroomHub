@@ -82,11 +82,15 @@
   let scoreVisibility = $state<Reveal>(initial?.scoreVisibility ?? 'never');
   let answerVisibility = $state<Reveal>(initial?.answerVisibility ?? 'never');
 
-  // Not offered as fields yet, but carried through unchanged. Sending the defaults back
-  // would silently overwrite whatever an exam already holds every time a teacher edited
-  // its title.
-  const commentVisibility = initial?.commentVisibility ?? 'never';
-  const revealThreshold = initial?.revealThreshold ?? null;
+  let commentVisibility = $state<Reveal>(initial?.commentVisibility ?? 'never');
+
+  // Stored as the fraction the grader compares against — `score / total` — and typed as
+  // the percentage a teacher actually says out loud.
+  let thresholdPercent = $state(
+    initial?.revealThreshold ? String(Math.round(Number(initial.revealThreshold) * 100)) : ''
+  );
+
+  const needsThreshold = $derived([scoreVisibility, answerVisibility, commentVisibility].includes('above_threshold'));
 
   const REVEAL_OPTIONS = [
     { value: 'never', label: $t('exam.settings.reveal_never') },
@@ -102,10 +106,21 @@
 
     for (const [label, value] of [
       [$t('exam.settings.score_visibility'), scoreVisibility],
-      [$t('exam.settings.answer_visibility'), answerVisibility]
+      [$t('exam.settings.answer_visibility'), answerVisibility],
+      [$t('exam.settings.comment_visibility'), commentVisibility]
     ] as const) {
       if (value === 'after_everyone' && (!closesAt || workingMinutes.trim().length === 0)) {
         found.push($t('exam.settings.after_everyone_needs_times', { label }));
+      }
+    }
+
+    // The server refuses `above_threshold` without a threshold. Saying so here is what
+    // stops a teacher choosing it, being refused, and having nowhere to go: until this
+    // field existed the setting could be picked and never saved.
+    if (needsThreshold) {
+      const percent = Number(thresholdPercent);
+      if (!thresholdPercent.trim() || !Number.isFinite(percent) || percent <= 0 || percent > 100) {
+        found.push($t('exam.settings.threshold_needs_percent'));
       }
     }
 
@@ -136,7 +151,7 @@
       scoreVisibility,
       answerVisibility,
       commentVisibility,
-      revealThreshold
+      revealThreshold: needsThreshold ? String(Number(thresholdPercent) / 100) : null
     });
   }
 </script>
@@ -263,6 +278,28 @@
           </Select.Content>
         </Select.Root>
       </div>
+
+      <div class="ui:space-y-2">
+        <Label for="exam-comment-visibility">{$t('exam.settings.comment_visibility')}</Label>
+        <Select.Root type="single" bind:value={commentVisibility}>
+          <Select.Trigger id="exam-comment-visibility" class="ui:w-full">
+            {REVEAL_OPTIONS.find((option) => option.value === commentVisibility)?.label ?? ''}
+          </Select.Trigger>
+          <Select.Content>
+            {#each REVEAL_OPTIONS as option (option.value)}
+              <Select.Item value={option.value}>{option.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+
+      {#if needsThreshold}
+        <div class="ui:space-y-2">
+          <Label for="exam-threshold">{$t('exam.settings.reveal_threshold')}</Label>
+          <Input id="exam-threshold" inputmode="numeric" bind:value={thresholdPercent} placeholder="50" />
+          <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.threshold_help')}</p>
+        </div>
+      {/if}
     </Card.Content>
   </Card.Root>
 

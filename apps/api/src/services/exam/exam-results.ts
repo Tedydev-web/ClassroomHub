@@ -13,6 +13,7 @@ import {
   type StoredExamAnswer
 } from './exam-grading';
 import { isRevealed, type ExamRevealValue } from './exam-reveal-policy';
+import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 
 /**
@@ -254,6 +255,29 @@ export async function deleteAttemptService(attemptId: string) {
   return deleted;
 }
 
+/** The choice key a question currently carries, or `null` where it has no choice part. */
+function currentKeyOf(snapshot: ExamPaperSnapshot, questionId: number): string[] | null {
+  const question = snapshot.questions.find((candidate) => candidate.questionId === questionId);
+  if (!question) return null;
+
+  for (const block of getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition)) {
+    if (block.interaction.kind !== 'choice') continue;
+
+    const config = block.interaction.config as { correctOptionIds?: string[] };
+    return [...(config.correctOptionIds ?? [])];
+  }
+
+  return null;
+}
+
+/** Two keys are the same key whatever order the options were listed in. */
+function sameKey(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+
+  const sortedRight = [...right].sort();
+  return [...left].sort().every((value, index) => value === sortedRight[index]);
+}
+
 /**
  * Records a correction and re-scores everything already finished. Attempts still in
  * progress are left alone on purpose: grading reads the corrections, so they pick it up
@@ -263,7 +287,33 @@ export async function addCorrectionService(examId: string, correction: ExamCorre
   const exam = await getExamById(examId);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
-  const corrections = [...((exam.corrections as ExamCorrection[]) ?? []), correction];
+  const existing = (exam.corrections as ExamCorrection[]) ?? [];
+
+  // A key fix names the key it is replacing, and that is checked rather than filed. Two
+  // teachers looking at the same question at the same time would otherwise both submit a
+  // correction against the key they each read, and the second would silently overwrite the
+  // first — with every finished attempt re-scored to match, and nothing on screen to say
+  // it had happened.
+  if (correction.kind === 'keyFix') {
+    const snapshot = exam.paperSnapshot as ExamPaperSnapshot | null;
+    if (!snapshot) throw new AppError('This exam has no frozen paper', ErrorCodes.VALIDATION_ERROR, 409);
+
+    const inForce = currentKeyOf(applyCorrections(snapshot, existing), correction.questionId);
+
+    if (inForce === null) {
+      throw new AppError('That question has no answer key to correct', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    if (!sameKey(inForce, correction.previousKey)) {
+      throw new AppError(
+        'The answer key changed while you were reading it. Reload and check the key before correcting it again.',
+        ErrorCodes.CONFLICT,
+        409
+      );
+    }
+  }
+
+  const corrections = [...existing, correction];
 
   await db
     .update(schema.exam)

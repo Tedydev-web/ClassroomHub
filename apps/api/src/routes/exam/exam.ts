@@ -18,6 +18,7 @@ import {
   summariseExamPaperService,
   updateExamSettingsService
 } from '@api/services/exam/exam';
+import { listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
 import {
   copyExerciseIntoContainer,
   listAvailableContainersService,
@@ -225,6 +226,18 @@ export const examRouter = new Hono()
   })
   // Reading the list finalises expired attempts. A GET that writes is deliberate: it is
   // what makes a closed tab harmless. Do not "fix" it into a pure read.
+  // The answer key of the paper that was actually sat, with every correction already
+  // applied. Behind the same guard as the results: it is the answer key, and only the
+  // people who may read a candidate's marks may read it.
+  .get('/:examId/answer-keys', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const questions = await listExamAnswerKeysService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: questions });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .get('/:examId/results', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const rows = await listExamResultsService(c.req.param('examId'));

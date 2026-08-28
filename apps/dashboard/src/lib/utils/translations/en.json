@@ -5664,7 +5664,11 @@
       "updated": "Exam updated",
       "update_failed": "Could not update the exam",
       "live_notice": "Working time, attempts allowed and the fields a candidate must declare are read when a sitting starts, so changing them leaves anyone already sitting alone. What a candidate is shown afterwards is read when they open their results, so changing that reaches sittings already finished.",
-      "paper_is_fixed": "The questions themselves are not edited here. Once anybody has sat this exam its paper stays exactly as it was sat, so that every sitting is scored against the same one."
+      "paper_is_fixed": "The questions themselves are not edited here. Once anybody has sat this exam its paper stays exactly as it was sat, so that every sitting is scored against the same one.",
+      "comment_visibility": "Teacher comments",
+      "reveal_threshold": "Threshold (%)",
+      "threshold_help": "Only candidates scoring at or above this share of the total are shown it.",
+      "threshold_needs_percent": "Showing something above a threshold needs a threshold between 1 and 100"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
@@ -5674,6 +5678,28 @@
       "name_required": "Please enter your full name.",
       "class_required": "Please enter your class.",
       "candidate_required": "Please enter your candidate number."
+    },
+    "corrections": {
+      "title": "Answer keys",
+      "help": "Correcting a key here re-marks every sitting that has already finished. The paper itself is not changed — candidates have read it, and the sittings already marked were measured against it.",
+      "question_number": "Question {position}",
+      "current_key": "Correct answer:",
+      "no_key": "none",
+      "pick_correct": "Which options are correct",
+      "fix_key": "Correct the key",
+      "save_key": "Apply and re-mark",
+      "saving": "Re-marking…",
+      "cancel": "Cancel",
+      "award": "Award to everyone",
+      "award_confirm": "Award and re-mark",
+      "award_explainer": "Question {position} will be marked correct for every candidate, whatever they answered. Use this where the question cannot be answered correctly — no option is right, or more than one is.",
+      "applied": "Applied. {count} results re-marked.",
+      "failed": "Could not apply that correction",
+      "corrected_badge": "Key corrected",
+      "awarded_badge": "Awarded to everyone",
+      "several_parts": "This question is answered in more than one part, and a key correction would rewrite all of them. Award it instead, or mark it by hand.",
+      "not_choice": "This question is not answered by choosing options, so it has no key to correct. Award it instead, or mark it by hand.",
+      "empty": "This exam has no frozen paper yet. Open it first — the paper freezes when it opens."
     }
   }
 }

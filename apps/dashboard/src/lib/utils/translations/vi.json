@@ -5674,7 +5674,11 @@
       "updated": "Đã cập nhật bài thi",
       "update_failed": "Không cập nhật được bài thi",
       "live_notice": "Thời gian làm bài, số lượt cho phép và các mục thí sinh phải khai được đọc lúc bắt đầu lượt thi, nên sửa chúng không ảnh hưởng người đang làm. Còn phần thí sinh được xem sau khi thi thì đọc lúc họ mở kết quả, nên sửa nó áp dụng cho cả những lượt đã xong.",
-      "paper_is_fixed": "Câu hỏi không sửa ở đây. Khi đã có người thi thì đề giữ nguyên đúng như lúc họ làm, để mọi lượt thi đều được chấm trên cùng một đề."
+      "paper_is_fixed": "Câu hỏi không sửa ở đây. Khi đã có người thi thì đề giữ nguyên đúng như lúc họ làm, để mọi lượt thi đều được chấm trên cùng một đề.",
+      "comment_visibility": "Nhận xét của giáo viên",
+      "reveal_threshold": "Ngưỡng (%)",
+      "threshold_help": "Chỉ thí sinh đạt từ tỉ lệ này trở lên trên tổng điểm mới được xem.",
+      "threshold_needs_percent": "Muốn hiện theo ngưỡng thì phải nhập ngưỡng từ 1 đến 100"
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
@@ -5684,6 +5688,28 @@
       "name_required": "Vui lòng nhập họ và tên.",
       "class_required": "Vui lòng nhập lớp.",
       "candidate_required": "Vui lòng nhập số báo danh."
+    },
+    "corrections": {
+      "title": "Đáp án",
+      "help": "Sửa đáp án ở đây sẽ chấm lại toàn bộ những lượt thi đã xong. Đề thi không đổi — thí sinh đã đọc đề đó, và những lượt đã chấm cũng được chấm trên đề đó.",
+      "question_number": "Câu {position}",
+      "current_key": "Đáp án đúng:",
+      "no_key": "chưa có",
+      "pick_correct": "Chọn (những) phương án đúng",
+      "fix_key": "Sửa đáp án",
+      "save_key": "Lưu và chấm lại",
+      "saving": "Đang chấm lại…",
+      "cancel": "Huỷ",
+      "award": "Cho cả lớp điểm câu này",
+      "award_confirm": "Cho điểm và chấm lại",
+      "award_explainer": "Câu {position} sẽ được tính đúng cho mọi thí sinh, bất kể họ chọn gì. Dùng khi câu hỏi không thể trả lời đúng — không phương án nào đúng, hoặc có nhiều hơn một phương án đúng.",
+      "applied": "Đã áp dụng. Chấm lại {count} bài.",
+      "failed": "Không áp dụng được sửa đổi này",
+      "corrected_badge": "Đã sửa đáp án",
+      "awarded_badge": "Đã cho cả lớp điểm",
+      "several_parts": "Câu này có nhiều phần trả lời bằng cách chọn phương án, sửa đáp án sẽ ghi đè lên tất cả các phần. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
+      "not_choice": "Câu này không trả lời bằng cách chọn phương án nên không có đáp án để sửa. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
+      "empty": "Đề này chưa đóng băng đề thi. Mở đề trước — đề được đóng băng lúc mở."
     }
   }
 }
