@@ -5,6 +5,9 @@
   import * as Item from '@cio/ui/base/item';
   import * as Empty from '@cio/ui/base/empty';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
+  import * as Dialog from '@cio/ui/base/dialog';
+  import { Switch } from '@cio/ui/base/switch';
+  import { Label } from '@cio/ui/base/label';
   import { Spinner } from '@cio/ui/base/spinner';
   import { SvelteSet } from 'svelte/reactivity';
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -31,6 +34,8 @@
     sat?: number;
     inProgress?: number;
     awaitingManual?: number;
+    /** Set only on a deleted exam, and only when the list was asked for deleted ones. */
+    deletedAt?: string | null;
   };
 
   /**
@@ -58,6 +63,11 @@
    * request was still open.
    */
   let busyIds = $state(new SvelteSet<string>());
+  // Deleted exams are hidden by default and fetched on demand. Keeping them out of the
+  // ordinary list is the point of deleting one; being unable to reach them at all is what
+  // made deleting one irreversible in practice.
+  let showDeleted = $state(false);
+  let deleting = $state<ExamRow | null>(null);
   let summary = $state<{
     examId: string;
     questionCount: number;
@@ -65,7 +75,10 @@
   } | null>(null);
 
   async function refresh() {
-    const response = await classroomhub.exam.course[':courseId'].$get({ param: { courseId } });
+    const response = await classroomhub.exam.course[':courseId'].$get({
+      param: { courseId },
+      query: showDeleted ? { includeDeleted: '1' } : {}
+    });
     const body = await response.json();
 
     // A silent failure here left the list showing what it showed before, which then
@@ -77,6 +90,51 @@
     }
 
     snackbar.error($t('exam.manage.refresh_failed'));
+  }
+
+  async function toggleDeleted(next: boolean) {
+    showDeleted = next;
+    await refresh();
+  }
+
+  async function remove(exam: ExamRow) {
+    busyIds.add(exam.id);
+
+    try {
+      const response = await classroomhub.exam[':examId'].$delete({ param: { examId: exam.id } });
+
+      if (!response.ok) {
+        const body = await response.json();
+        snackbar.error('error' in body ? String(body.error) : $t('exam.manage.delete_failed'));
+
+        return;
+      }
+
+      snackbar.success($t('exam.manage.deleted_notice'));
+      await refresh();
+    } finally {
+      busyIds.delete(exam.id);
+    }
+  }
+
+  async function restore(examId: string) {
+    busyIds.add(examId);
+
+    try {
+      const response = await classroomhub.exam[':examId'].restore.$post({ param: { examId } });
+
+      if (!response.ok) {
+        const body = await response.json();
+        snackbar.error('error' in body ? String(body.error) : $t('exam.manage.restore_failed'));
+
+        return;
+      }
+
+      snackbar.success($t('exam.manage.restored_notice'));
+      await refresh();
+    } finally {
+      busyIds.delete(examId);
+    }
   }
 
   /** Shown before opening, never as a gate. It reports; the teacher decides. */
@@ -232,6 +290,11 @@
 </script>
 
 <div class="ui:space-y-4">
+  <div class="ui:flex ui:items-center ui:gap-2">
+    <Switch id="exam-show-deleted" checked={showDeleted} onCheckedChange={toggleDeleted} />
+    <Label for="exam-show-deleted" class="ui:font-normal">{$t('exam.manage.show_deleted')}</Label>
+  </div>
+
   {#if exams.length === 0}
     <!--
       The empty state carries the explanation that used to sit as a permanent footnote
@@ -258,6 +321,9 @@
           <div class="ui:flex ui:flex-wrap ui:items-start ui:justify-between ui:gap-3">
             <Item.Content class="ui:min-w-0 ui:gap-1">
               <div class="ui:flex ui:min-w-0 ui:flex-wrap ui:items-center ui:gap-2">
+                {#if exam.deletedAt}
+                  <Badge variant="destructive">{$t('exam.manage.deleted')}</Badge>
+                {/if}
                 <Badge variant={STATUS_VARIANT[exam.status] ?? 'secondary'}>
                   {STATUS_LABEL[exam.status] ?? exam.status}
                 </Badge>
@@ -320,19 +386,28 @@
                   </IconButton>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="end">
-                  <DropdownMenu.Item>
-                    {#snippet child({ props })}
-                      <a {...props} href={`/courses/${courseId}/exams/${exam.id}/edit`}>
-                        {$t('exam.manage.edit')}
-                      </a>
-                    {/snippet}
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>
-                    {$t('exam.manage.check_paper')}
-                  </DropdownMenu.Item>
-                  {#if exam.status === 'open'}
-                    <DropdownMenu.Item disabled={checking} onclick={() => close(exam.id)}>
-                      {$t('exam.manage.close_exam')}
+                  {#if exam.deletedAt}
+                    <DropdownMenu.Item disabled={checking} onclick={() => restore(exam.id)}>
+                      {$t('exam.manage.restore_exam')}
+                    </DropdownMenu.Item>
+                  {:else}
+                    <DropdownMenu.Item>
+                      {#snippet child({ props })}
+                        <a {...props} href={`/courses/${courseId}/exams/${exam.id}/edit`}>
+                          {$t('exam.manage.edit')}
+                        </a>
+                      {/snippet}
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>
+                      {$t('exam.manage.check_paper')}
+                    </DropdownMenu.Item>
+                    {#if exam.status === 'open'}
+                      <DropdownMenu.Item disabled={checking} onclick={() => close(exam.id)}>
+                        {$t('exam.manage.close_exam')}
+                      </DropdownMenu.Item>
+                    {/if}
+                    <DropdownMenu.Item variant="destructive" disabled={checking} onclick={() => (deleting = exam)}>
+                      {$t('exam.manage.delete_exam')}
                     </DropdownMenu.Item>
                   {/if}
                 </DropdownMenu.Content>
@@ -385,3 +460,40 @@
     </Item.Group>
   {/if}
 </div>
+
+<!--
+  Deleting an exam is not deleting an attempt. An attempt is destroyed outright; an exam
+  is hidden and can be brought back, and the confirmation says which of the two this is —
+  along with how many results go out of sight with it, which is the part a teacher would
+  otherwise discover afterwards.
+-->
+<Dialog.Root open={deleting !== null} onOpenChange={(open) => !open && (deleting = null)}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>{$t('exam.manage.delete_exam')}</Dialog.Title>
+      <Dialog.Description>
+        {#if (deleting?.sat ?? 0) > 0}
+          {$t('exam.manage.delete_explainer_with_attempts', {
+            title: deleting?.title ?? '',
+            count: String(deleting?.sat ?? 0)
+          })}
+        {:else}
+          {$t('exam.manage.delete_explainer', { title: deleting?.title ?? '' })}
+        {/if}
+      </Dialog.Description>
+    </Dialog.Header>
+    <Dialog.Footer>
+      <Button variant="ghost" onclick={() => (deleting = null)}>{$t('exam.manage.cancel')}</Button>
+      <Button
+        variant="destructive"
+        onclick={() => {
+          const exam = deleting;
+          deleting = null;
+          if (exam) remove(exam);
+        }}
+      >
+        {$t('exam.manage.delete_confirm')}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

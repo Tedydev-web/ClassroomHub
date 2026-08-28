@@ -5611,7 +5611,19 @@
       "close_failed": "Could not close the exam",
       "refresh_failed": "Could not reload the exam list",
       "check_failed": "Could not check the paper",
-      "edit": "Edit"
+      "edit": "Edit",
+      "show_deleted": "Show deleted exams",
+      "deleted": "Deleted",
+      "delete_exam": "Delete exam",
+      "delete_confirm": "Delete",
+      "cancel": "Cancel",
+      "delete_explainer": "\"{title}\" will be hidden from this list and its link will stop working. You can bring it back with \"Show deleted exams\".",
+      "delete_explainer_with_attempts": "\"{title}\" has {count} sittings. Deleting it hides the exam and every one of those results, and its link stops working. Nothing is destroyed — you can bring it back with \"Show deleted exams\".",
+      "delete_failed": "Could not delete that exam",
+      "deleted_notice": "Exam deleted. Find it again under \"Show deleted exams\".",
+      "restore_exam": "Restore",
+      "restore_failed": "Could not restore that exam",
+      "restored_notice": "Exam restored"
     },
     "settings": {
       "title": "Exam title",

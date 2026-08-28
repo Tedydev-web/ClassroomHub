@@ -117,15 +117,24 @@ export const examRouter = new Hono()
       }
     }
   )
-  .get('/course/:courseId', authMiddleware, courseTeamMemberMiddleware, async (c) => {
-    try {
-      const exams = await listExamsService(c.req.param('courseId'));
+  // `includeDeleted` is what makes a soft-deleted exam findable again. Without it the
+  // delete was one-way in practice: the row survived, but nothing could ever list it, so
+  // the restore endpoint had no reachable caller.
+  .get(
+    '/course/:courseId',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('query', z.object({ includeDeleted: z.enum(['0', '1']).optional() })),
+    async (c) => {
+      try {
+        const exams = await listExamsService(c.req.param('courseId'), c.req.valid('query').includeDeleted === '1');
 
-      return c.json({ success: true as const, data: exams });
-    } catch (error) {
-      return handleError(c, error);
+        return c.json({ success: true as const, data: exams });
+      } catch (error) {
+        return handleError(c, error);
+      }
     }
-  })
+  )
   // Papers this course can deliver: detached containers only. A working exercise is not
   // offered, because an exam must never deliver something enrolled students can already
   // open without a clock.

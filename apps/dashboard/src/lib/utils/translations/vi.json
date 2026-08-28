@@ -5621,7 +5621,19 @@
       "close_failed": "Không đóng được đề",
       "refresh_failed": "Không tải lại được danh sách đề",
       "check_failed": "Không kiểm tra được đề",
-      "edit": "Sửa"
+      "edit": "Sửa",
+      "show_deleted": "Hiện đề đã xoá",
+      "deleted": "Đã xoá",
+      "delete_exam": "Xoá đề thi",
+      "delete_confirm": "Xoá",
+      "cancel": "Huỷ",
+      "delete_explainer": "\"{title}\" sẽ bị ẩn khỏi danh sách và link vào thi ngừng hoạt động. Bạn lấy lại được bằng \"Hiện đề đã xoá\".",
+      "delete_explainer_with_attempts": "\"{title}\" đã có {count} lượt thi. Xoá sẽ ẩn cả đề lẫn toàn bộ kết quả đó, và link vào thi ngừng hoạt động. Không mất dữ liệu — bạn lấy lại được bằng \"Hiện đề đã xoá\".",
+      "delete_failed": "Không xoá được đề này",
+      "deleted_notice": "Đã xoá đề. Tìm lại ở \"Hiện đề đã xoá\".",
+      "restore_exam": "Khôi phục",
+      "restore_failed": "Không khôi phục được đề này",
+      "restored_notice": "Đã khôi phục đề"
     },
     "settings": {
       "title": "Tiêu đề đề thi",

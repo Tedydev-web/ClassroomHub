@@ -270,10 +270,10 @@ export async function getPublicExamService(slug: string) {
   return exam;
 }
 
-export async function listExamsService(courseId: string) {
+export async function listExamsService(courseId: string, includeDeleted = false) {
   requireExamsEnabled();
 
-  return listExamsByCourseId(courseId);
+  return listExamsByCourseId(courseId, { includeDeleted });
 }
 
 /**

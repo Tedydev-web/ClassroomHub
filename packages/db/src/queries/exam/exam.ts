@@ -45,7 +45,11 @@ export async function getExamBySlug(slug: string, dbClient: DbOrTxClient = db) {
  * `exam_id` uses `idx_exam_attempt_exam_id` instead, which is the shape that keeps working
  * as the table grows.
  */
-export async function listExamsByCourseId(courseId: string, dbClient: DbOrTxClient = db) {
+export async function listExamsByCourseId(
+  courseId: string,
+  options: { includeDeleted?: boolean } = {},
+  dbClient: DbOrTxClient = db
+) {
   const countWhere = (condition?: SQL) =>
     sql<number>`(
       select count(*)::int from ${schema.examAttempt}
@@ -72,12 +76,19 @@ export async function listExamsByCourseId(courseId: string, dbClient: DbOrTxClie
       requiresClass: schema.exam.requiresClass,
       requiresCandidateNumber: schema.exam.requiresCandidateNumber,
       createdAt: schema.exam.createdAt,
+      // Carried so the list can tell a deleted exam from a live one. It is only ever
+      // non-null when the caller asked for deleted exams.
+      deletedAt: schema.exam.deletedAt,
       sat: countWhere(),
       inProgress: countWhere(sql`${schema.examAttempt.status} = 'in_progress'`),
       awaitingManual: countWhere(sql`${schema.examAttempt.gradingState} = 'awaiting_manual'`)
     })
     .from(schema.exam)
-    .where(and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt)))
+    .where(
+      options.includeDeleted
+        ? eq(schema.exam.courseId, courseId)
+        : and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt))
+    )
     .orderBy(desc(schema.exam.createdAt));
 }
 
