@@ -5792,6 +5792,23 @@
       "saved_note": "Mọi câu bạn đã trả lời đều đã được lưu trên máy chủ. Đóng trang hay mất mạng cũng không mất bài.",
       "no_contact": "Thầy cô chưa để lại liên hệ cho đề này. Hãy báo người đang coi thi.",
       "clock_note": "Đồng hồ vẫn chạy. Chỉ thầy cô mới bù giờ được, và có thể bù sau khi thi xong."
+    },
+    "activity": {
+      "title": "Trong lúc làm bài",
+      "help": "Những lúc bài thi không còn là cửa sổ đang hiển thị trên máy thí sinh, và họ trả lời gì quanh những lúc đó.",
+      "never_left": "Bài thi luôn hiển thị trong suốt thời gian làm.",
+      "leaves": "Rời {count} lần",
+      "total_away": "Vắng tổng cộng {duration}",
+      "longest_away": "Lâu nhất {duration}",
+      "ended_away": "Rời đi và không quay lại",
+      "not_proof": "Đây là bản ghi những gì trình duyệt báo về, không phải một kết luận. Điện thoại tự khoá màn hình sinh ra đúng mục giống hệt lúc tra cứu đáp án, còn một thiết bị thứ hai đặt cạnh bàn thì không sinh mục nào cả. Hãy đọc cùng với bài làm, và hỏi thí sinh trước khi kết luận.",
+      "show_timeline": "Xem dòng thời gian",
+      "entry_left": "Rời khỏi bài thi",
+      "entry_returned": "Quay lại",
+      "entry_returned_after": "Quay lại sau {duration}",
+      "entry_answered": "Trả lời câu {question}",
+      "seconds": "{count} giây",
+      "minutes": "{count} phút"
     }
   }
 }

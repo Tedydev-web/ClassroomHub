@@ -5782,6 +5782,23 @@
       "saved_note": "Every answer you have given is already saved on the server. Closing this page or losing your connection does not lose them.",
       "no_contact": "Your teacher has not left a contact for this paper. Tell whoever is invigilating.",
       "clock_note": "The clock keeps running. Only your teacher can give time back, and they can do it after the paper."
+    },
+    "activity": {
+      "title": "While they were sitting",
+      "help": "When the paper stopped being the visible window on their device, and what they answered around it.",
+      "never_left": "The paper stayed visible throughout.",
+      "leaves": "Left {count} time(s)",
+      "total_away": "Away {duration} in total",
+      "longest_away": "Longest {duration}",
+      "ended_away": "Left and did not come back",
+      "not_proof": "This is a record of what the browser reported, not a finding. A phone locking its own screen produces the same entry as an answer being looked up, and a second device beside the desk produces none at all. Read it alongside the answers, and ask before concluding.",
+      "show_timeline": "Show the timeline",
+      "entry_left": "Left the paper",
+      "entry_returned": "Came back",
+      "entry_returned_after": "Came back after {duration}",
+      "entry_answered": "Answered question {question}",
+      "seconds": "{count}s",
+      "minutes": "{count} min"
     }
   }
 }

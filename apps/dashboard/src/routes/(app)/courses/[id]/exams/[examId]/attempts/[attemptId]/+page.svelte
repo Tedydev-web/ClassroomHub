@@ -7,6 +7,7 @@
   import { Badge } from '@cio/ui/base/badge';
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import { markAttemptPaper } from '$features/exam/attempt-marking';
+  import AttemptActivityPanel from '$features/exam/attempt-activity-panel.svelte';
 
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -128,6 +129,14 @@
 
   <Page.Body>
     {#snippet child()}
+      <!--
+        Above the paper, because it frames how the paper is read — and because a teacher
+        who scrolls past forty questions to find it will not find it.
+      -->
+      <div class="ui:mb-6">
+        <AttemptActivityPanel activityLog={data.attempt.activityLog} answerLog={data.attempt.answerLog} />
+      </div>
+
       <ol class="ui:space-y-4">
         {#each markedItems as item (item.questionId)}
           {@const trail = trailByQuestion.get(item.questionId) ?? []}
