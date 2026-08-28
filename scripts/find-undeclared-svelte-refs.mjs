@@ -122,12 +122,24 @@ function declaredNames(script) {
 function referencedNames(markup) {
   const names = new Set();
 
+  // Class attributes are stripped first. They are mostly Tailwind, whose fragments look
+  // exactly like identifiers to a regex, and every name reported from one so far has been
+  // noise. A component is never referenced from inside a class string, so nothing real is
+  // lost — and a check that cries wolf is a check nobody runs.
+  markup = markup.replace(/class=(?:"[^"]*"|'[^']*'|\{(?:[^{}]|\{[^{}]*\})*\})/g, 'class=""');
+
   // Components: <Foo> and <Foo.Bar>, which need the root name in scope.
   for (const match of markup.matchAll(/<([A-Z][\w$]*)/g)) names.add(match[1]);
 
   // Expressions in braces, plus the parameters snippets introduce inside the markup.
   const local = new Set();
   for (const match of markup.matchAll(/\{#(?:each|snippet|await)\s+([\s\S]*?)\}/g)) {
+    for (const name of match[1].matchAll(/([A-Za-z_$][\w$]*)/g)) local.add(name[1]);
+  }
+  // `{@const x = …}` declares x for the rest of the block, in the markup rather than the script.
+  for (const match of markup.matchAll(/\{@const\s+([A-Za-z_$][\w$]*)/g)) local.add(match[1]);
+  // Callbacks written inline in an attribute bring their own parameters with them.
+  for (const match of markup.matchAll(/\(([^()]*)\)\s*=>/g)) {
     for (const name of match[1].matchAll(/([A-Za-z_$][\w$]*)/g)) local.add(name[1]);
   }
 
@@ -157,7 +169,9 @@ for (const file of process.argv.slice(2)) {
 
   const declared = declaredNames(script);
   const missing = [...referencedNames(markup)]
-    .filter((name) => !declared.has(name) && !AMBIENT.has(name) && !name.startsWith('$'))
+    .filter(
+      (name) => !declared.has(name) && !AMBIENT.has(name) && !name.startsWith('$') && !/^HTML\w*Element$/.test(name)
+    )
     // Class-name fragments arrive lowercase and unquoted from `class={[...]}`; a real
     // reference is either capitalised (a component) or appears in the script somewhere.
     .filter((name) => /^[A-Z]/.test(name) || new RegExp(`\\b${name}\\b`).test(script))
