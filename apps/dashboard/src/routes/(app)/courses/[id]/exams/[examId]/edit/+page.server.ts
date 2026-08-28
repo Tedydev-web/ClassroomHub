@@ -21,16 +21,27 @@ export const load = async ({ params, cookies }) => {
 
   const exam = result.body.data;
 
+  /**
+   * Postgres returns a `timestamptz` as `2026-08-28 01:38:04+00` — a space, not a `T`.
+   * V8 reads that, but a space-separated datetime is outside what the ECMAScript grammar
+   * requires any engine to parse, so the browser is handed a plain ISO string instead.
+   */
+  const asIso = (value: string | null) => {
+    if (!value) return null;
+
+    const at = new Date(value);
+    return Number.isNaN(at.getTime()) ? null : at.toISOString();
+  };
+
   return {
     courseId: params.id,
     examId: params.examId,
-    status: exam.status,
     settings: {
       title: exam.title,
       mode: exam.mode,
       workingSeconds: exam.workingSeconds,
-      opensAt: exam.opensAt,
-      closesAt: exam.closesAt,
+      opensAt: asIso(exam.opensAt),
+      closesAt: asIso(exam.closesAt),
       maxAttempts: exam.maxAttempts,
       requiresName: exam.requiresName,
       requiresClass: exam.requiresClass,

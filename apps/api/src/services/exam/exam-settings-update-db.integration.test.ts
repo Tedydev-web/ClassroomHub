@@ -85,13 +85,30 @@ describe.runIf(runDatabaseIntegration)('editing an exam', () => {
 
   it('changes only the settings named in the patch', async () => {
     const { db, schema, service } = await load();
-    const { examId } = await seedExam(db, schema);
+    const opensAt = new Date('2026-08-28T01:00:00.000Z').toISOString();
+    const { examId } = await seedExam(db, schema, { opensAt, mode: 'private' });
 
     const updated = await service.updateExamSettingsService(examId, { title: 'Corrected title' });
 
     expect(updated.title).toBe('Corrected title');
     expect(updated.workingSeconds).toBe(900);
     expect(updated.maxAttempts).toBe(1);
+    expect(updated.mode).toBe('private');
+    // The window survives a patch that never mentioned it, and survives it as the same
+    // instant — the stored form carries an offset rather than a zone-less local time.
+    expect(new Date(updated.opensAt as string).toISOString()).toBe(opensAt);
+  });
+
+  it('does not hand the frozen paper back to whoever changed a title', async () => {
+    const { db, schema, service } = await load();
+    const { examId } = await seedExam(db, schema, {
+      paperSnapshot: { frozenAt: new Date().toISOString(), questions: [] }
+    });
+
+    const updated = await service.updateExamSettingsService(examId, { title: 'Corrected title' });
+
+    expect(updated).not.toHaveProperty('paperSnapshot');
+    expect(updated).not.toHaveProperty('passwordHash');
   });
 
   it('refuses a patch that breaks an invariant it never mentions', async () => {

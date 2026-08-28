@@ -61,9 +61,30 @@ const createExamSchema = z.object({
   revealThreshold: z.string().nullable().default(null)
 });
 
-// The paper is not in here. `exerciseId` names which questions the exam delivers, and
-// changing that is a different exam rather than an edit of this one.
-const updateExamSchema = createExamSchema.omit({ exerciseId: true }).partial();
+/**
+ * The settings a patch may carry. Written out rather than derived from the create schema:
+ * `.partial()` over a field that carries `.default()` still materialises the default when
+ * the key is absent, so a patch naming only the title would arrive holding every other
+ * field at its default and quietly reset the exam's mode, attempt limit and visibility.
+ *
+ * `exerciseId` is absent on purpose. It names which questions the exam delivers, and
+ * changing that is a different exam rather than an edit of this one.
+ */
+export const updateExamSchema = z.object({
+  title: z.string().min(1).max(300).optional(),
+  mode: z.enum(['public', 'private']).optional(),
+  workingSeconds: z.number().int().positive().nullable().optional(),
+  opensAt: z.string().datetime().nullable().optional(),
+  closesAt: z.string().datetime().nullable().optional(),
+  maxAttempts: z.number().int().positive().nullable().optional(),
+  requiresName: z.boolean().optional(),
+  requiresClass: z.boolean().optional(),
+  requiresCandidateNumber: z.boolean().optional(),
+  scoreVisibility: revealValue.optional(),
+  answerVisibility: revealValue.optional(),
+  commentVisibility: revealValue.optional(),
+  revealThreshold: z.string().nullable().optional()
+});
 
 export const examRouter = new Hono()
   .use('*', async (c, next) => {

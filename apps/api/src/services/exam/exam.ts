@@ -238,12 +238,16 @@ export async function updateExamSettingsService(id: string, patch: ExamSettingsP
     throw new AppError(issues.join('; '), ErrorCodes.VALIDATION_ERROR, 400);
   }
 
-  const { exerciseId: _paper, ...settings } = merged;
+  const { exerciseId: _container, ...settings } = merged;
 
   const updated = await updateExam(id, settings);
   if (!updated) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
-  return updated;
+  // The settings back, not the row. The row carries the frozen paper with every answer
+  // key on it, and none of that is what a caller asked to change.
+  const { paperSnapshot: _paper, corrections: _corrections, passwordHash: _password, ...rest } = updated;
+
+  return rest;
 }
 
 export async function getExamService(id: string) {
