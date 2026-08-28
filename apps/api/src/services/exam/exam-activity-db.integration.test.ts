@@ -23,6 +23,13 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
   }
 
   async function seedSitting(db: any, schema: any, autoSubmitAfterLeaves: number | null) {
+    return seedSittings(db, schema, autoSubmitAfterLeaves, 1).then((seed) => ({
+      attemptId: seed.attemptIds[0],
+      examId: seed.examId
+    }));
+  }
+
+  async function seedSittings(db: any, schema: any, autoSubmitAfterLeaves: number | null, sittings: number) {
     const suffix = randomUUID().slice(0, 8);
 
     const [organization] = await db
@@ -64,19 +71,23 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
       })
       .returning({ id: schema.exam.id });
 
-    const [sitting] = await db
-      .insert(schema.examAttempt)
-      .values({
-        examId: exam.id,
-        displayName: 'Nguyễn Văn A',
-        tokenHash: randomUUID(),
-        startedAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 600_000).toISOString(),
-        answers: []
-      })
-      .returning({ id: schema.examAttempt.id });
+    const attemptIds: string[] = [];
+    for (let index = 0; index < sittings; index += 1) {
+      const [sitting] = await db
+        .insert(schema.examAttempt)
+        .values({
+          examId: exam.id,
+          displayName: `Thí sinh ${index + 1}`,
+          tokenHash: randomUUID(),
+          startedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 600_000).toISOString(),
+          answers: []
+        })
+        .returning({ id: schema.examAttempt.id });
+      attemptIds.push(sitting.id as string);
+    }
 
-    return { attemptId: sitting.id as string };
+    return { attemptIds, examId: exam.id as string, createdBy: user.id as string };
   }
 
   const leaving = (seconds: number) => ({
@@ -150,5 +161,40 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
     const outcome = await attempt.recordActivityService(attemptId, [leaving(0)], new Date());
 
     expect(outcome.submitted).toBe(true);
+  });
+
+  it('tells the teacher once, on the first paper handed in, and not again', async () => {
+    const { db, schema, attempt } = await load();
+    const seed = await seedSittings(db, schema, 1, 3);
+
+    const notifications = async () => {
+      const rows = await db
+        .select({ id: schema.notification.id })
+        .from(schema.notification)
+        .where(eq(schema.notification.profileId, seed.createdBy));
+
+      return rows.length;
+    };
+
+    expect(await notifications()).toBe(0);
+
+    // Two departures each, which passes a limit of one and hands each paper in.
+    for (const attemptId of seed.attemptIds) {
+      await attempt.recordActivityService(
+        attemptId,
+        [leaving(0), returning(20), leaving(60), returning(80)],
+        new Date()
+      );
+    }
+
+    const [submitted] = await db
+      .select({ count: schema.examAttempt.id })
+      .from(schema.examAttempt)
+      .where(eq(schema.examAttempt.examId, seed.examId));
+    expect(submitted).toBeDefined();
+
+    // Three papers in, one notification: the useful moment is that the sitting is really
+    // happening, and the results screen counts the rest.
+    expect(await notifications()).toBe(1);
   });
 });

@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, sql } from 'drizzle-orm';
 
 import { canStartNow, computeExpiry, isWithinWritingWindow, secondsRemaining } from './exam-attempt-clock';
 import { getAttemptByToken } from '@cio/db/queries/exam/exam-attempt';
@@ -247,7 +247,7 @@ export async function recordActivityService(
   events: ActivityEventPayload[],
   now: Date
 ): Promise<ActivityOutcome> {
-  return db.transaction(async (tx) => {
+  const outcome = await db.transaction(async (tx) => {
     const [attempt] = await tx
       .select()
       .from(schema.examAttempt)
@@ -263,7 +263,9 @@ export async function recordActivityService(
       return {
         leaves: existing.filter((event) => event.kind === 'left').length,
         autoSubmitAfterLeaves: null,
-        submitted: true
+        submitted: true,
+        // Already finished, and finished elsewhere: whoever ended it sent the notification.
+        examId: null as string | null
       };
     }
 
@@ -288,8 +290,14 @@ export async function recordActivityService(
       })
       .where(eq(schema.examAttempt.id, attemptId));
 
-    return { leaves, autoSubmitAfterLeaves: limit, submitted };
+    return { leaves, autoSubmitAfterLeaves: limit, submitted, examId: attempt.examId };
   });
+
+  // After the transaction, never inside it: a notification is not worth holding a row lock
+  // for, and a failure writing one must not roll back the record it followed.
+  if (outcome.submitted && outcome.examId) await notifyFirstSubmission(outcome.examId);
+
+  return { leaves: outcome.leaves, autoSubmitAfterLeaves: outcome.autoSubmitAfterLeaves, submitted: outcome.submitted };
 }
 
 /**
@@ -349,7 +357,58 @@ export async function submitAttemptService(attemptId: string, now: Date) {
     throw new AppError('This attempt is already finished', ErrorCodes.VALIDATION_ERROR, 409);
   }
 
+  await notifyFirstSubmission(attempt.examId);
+
   return attempt;
+}
+
+/**
+ * Tells the teacher their exam has started being handed in — once, on the first paper.
+ *
+ * Once, deliberately. A class of forty produces forty submissions and one useful moment:
+ * the one where a teacher learns the sitting is really happening. Forty notifications would
+ * bury that moment among thirty-nine repetitions of it, and the results screen already
+ * counts the rest.
+ *
+ * Never allowed to affect the submission. A candidate handing in their paper must not meet
+ * an error because a notification could not be written, so this runs after the attempt is
+ * safely stored and swallows whatever it hits.
+ */
+async function notifyFirstSubmission(examId: string): Promise<void> {
+  try {
+    const [exam] = await db
+      .select({
+        title: schema.exam.title,
+        createdBy: schema.exam.createdBy,
+        organizationId: schema.exam.organizationId,
+        courseId: schema.exam.courseId
+      })
+      .from(schema.exam)
+      .where(eq(schema.exam.id, examId))
+      .limit(1);
+
+    if (!exam?.createdBy) return;
+
+    // Counted rather than flagged on the exam: the count is the thing that decides, and a
+    // flag would need its own column and its own way of going wrong.
+    const [handed] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(schema.examAttempt)
+      .where(and(eq(schema.examAttempt.examId, examId), isNotNull(schema.examAttempt.submittedAt)));
+
+    if ((handed?.count ?? 0) !== 1) return;
+
+    await db.insert(schema.notification).values({
+      profileId: exam.createdBy,
+      organizationId: exam.organizationId,
+      courseId: exam.courseId,
+      type: 'EXAM_SUBMITTED',
+      title: exam.title,
+      metadata: { examId }
+    });
+  } catch (error) {
+    console.error('notifyFirstSubmission failed', { examId, error });
+  }
 }
 
 /** Counted per cookie, so it is an honest limit rather than an enforced one. */

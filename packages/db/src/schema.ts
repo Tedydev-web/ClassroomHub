@@ -104,7 +104,8 @@ export const notificationType = pgEnum('NOTIFICATION_TYPE', [
   'CERTIFICATE_EARNED',
   'SUBMISSION_GRADED',
   'COURSE_INVITE',
-  'ORGANIZATION_INVITE'
+  'ORGANIZATION_INVITE',
+  'EXAM_SUBMITTED'
 ]);
 export const webhookDeliveryStatus = pgEnum('WEBHOOK_DELIVERY_STATUS', [
   'PENDING',

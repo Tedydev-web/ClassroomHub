@@ -162,6 +162,13 @@
       "when": 1787905330654,
       "tag": "0022_ancient_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1787906195652,
+      "tag": "0023_friendly_whiplash",
+      "breakpoints": true
     }
   ]
 }
