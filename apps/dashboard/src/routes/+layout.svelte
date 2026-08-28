@@ -13,7 +13,6 @@
   import { user } from '$lib/utils/store/user';
   import { setTheme } from '$lib/utils/functions/theme';
   import { authClient } from '$lib/utils/services/auth/client';
-  import merge from 'lodash/merge';
   import { MetaTags } from 'svelte-meta-tags';
   import AppModeWatcher from '$features/app/app-mode-watcher.svelte';
   import OrgSiteFavicon from '$features/app/org-site-favicon.svelte';
@@ -21,12 +20,13 @@
   import '../app.css';
 
   import { setUploadLimitsContext } from '$lib/utils/config/upload-limits-context';
+  import { resolveMetaTags } from '$lib/utils/functions/metaTags';
 
   let { data, children } = $props();
 
   setUploadLimitsContext(data.uploadLimits);
 
-  const metaTags = $derived(merge(data.baseMetaTags, page.data.pageMetaTags));
+  const metaTags = $derived(resolveMetaTags(data.baseMetaTags, page.data.pageMetaTags));
 
   onMount(() => {
     console.log('Layout', data);
