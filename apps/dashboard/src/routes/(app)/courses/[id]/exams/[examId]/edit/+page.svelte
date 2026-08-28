@@ -1,6 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
   import ExamSettingsForm from '$features/exam/exam-settings-form.svelte';
+  import ExamTabs from '$features/exam/exam-tabs.svelte';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import * as Alert from '@cio/ui/base/alert';
@@ -54,6 +55,8 @@
   <Page.Body>
     {#snippet child()}
       <div class="ui:space-y-6">
+        <ExamTabs courseId={data.courseId} examId={data.examId} />
+
         <!-- Said once, plainly, instead of disabling fields that are in fact safe to
              change: what a teacher needs to know is which edits reach a sitting that has
              already happened, and only the visibility settings do. -->

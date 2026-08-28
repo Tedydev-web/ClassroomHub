@@ -3,6 +3,7 @@
   import { Button } from '@cio/ui/base/button';
   import * as Page from '@cio/ui/base/page';
 
+  import ExamTabs from '$features/exam/exam-tabs.svelte';
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -87,12 +88,6 @@
       <Page.Subtitle>{$t('exam.manage.results')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
-      <!-- Reached from here because this is the screen where a wrong key becomes obvious:
-           a teacher notices the whole class missed one question, and the remedy is one
-           click away rather than in a menu somewhere else. -->
-      <Button variant="outline" href={`/courses/${data.courseId}/exams/${data.examId}/corrections`}>
-        {$t('exam.corrections.title')}
-      </Button>
       <Button variant="outline" disabled={refreshing} onclick={refresh}>
         {refreshing ? $t('exam.results.loading') : $t('exam.results.reload')}
       </Button>
@@ -101,6 +96,7 @@
 
   <Page.Body>
     {#snippet child()}
+      <ExamTabs courseId={data.courseId} examId={data.examId} />
       <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} ondelete={remove} />
     {/snippet}
   </Page.Body>

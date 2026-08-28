@@ -1,5 +1,5 @@
 import type { Course, CourseContentItem, CourseContentSection } from './types';
-import { ExerciseIcon, LessonIcon } from '@cio/ui/custom/moving-icons';
+import { ExamIcon, ExerciseIcon, LessonIcon } from '@cio/ui/custom/moving-icons';
 
 import { ContentType as CourseContentType } from '@cio/utils/constants/content';
 import { flattenNavigableItems } from '@cio/utils/functions/course-progression';
@@ -26,6 +26,10 @@ export const CONTENT_DEFINITIONS = {
   [CourseContentType.Exercise]: {
     label: 'Exercise',
     icon: ExerciseIcon
+  },
+  [CourseContentType.Exam]: {
+    label: 'Exam',
+    icon: ExamIcon
   }
 } as const;
 

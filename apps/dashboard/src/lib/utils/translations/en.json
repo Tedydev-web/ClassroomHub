@@ -2059,7 +2059,8 @@
       },
       "content_count": {
         "lessons": "{count} lessons",
-        "exercises": "{count} exercises"
+        "exercises": "{count} exercises",
+        "exams": "{count} exams"
       },
       "progress": {
         "title": "Your progress",
@@ -5628,7 +5629,8 @@
       "duplicate": "Duplicate",
       "copy_of": "{title} (copy)",
       "duplicate_failed": "Could not duplicate that exam",
-      "duplicated_notice": "Copied. Set its window and password before sending the link."
+      "duplicated_notice": "Copied. Set its window and password before sending the link.",
+      "settings_tab": "Settings"
     },
     "settings": {
       "title": "Exam title",

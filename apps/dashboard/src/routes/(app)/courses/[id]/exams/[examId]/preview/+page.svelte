@@ -12,6 +12,7 @@
   import * as Page from '@cio/ui/base/page';
   import { getAssessmentPassageWorkspaceLabels } from '$features/course/components/exercise/question-labels';
   import { buildOutlineGroups, questionNumberStarts, type PaperQuestion } from '$features/exam/paper-outline';
+  import ExamTabs from '$features/exam/exam-tabs.svelte';
 
   /**
    * Reading the paper before the link goes out, laid out the way a candidate meets it.
@@ -74,6 +75,8 @@
   <Page.Body>
     {#snippet child()}
       <div class="ui:space-y-6">
+        <ExamTabs courseId={data.courseId} examId={data.examId} />
+
         {#if data.preview === null || questions.length === 0}
           <Empty.Root>
             <Empty.Content>

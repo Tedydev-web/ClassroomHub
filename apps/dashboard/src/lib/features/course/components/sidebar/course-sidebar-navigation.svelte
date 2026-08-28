@@ -33,6 +33,7 @@
 
   import { NAV_IDS } from './constants';
   import { complianceApi, courseApi } from '$features/course/api';
+  import { courseExams } from '$features/course/api/exams.svelte';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg, isFreePlan, isStudentLimitReached, currentOrgPath } from '$lib/utils/store/org';
   import { isStudentExperience } from '$lib/utils/store/app';
@@ -54,6 +55,14 @@
 
   const contentData = $derived(getCourseContent(courseApi.course));
   const sidebar = useSidebar();
+
+  // Loaded here rather than in the list below it, because the count is drawn whether or
+  // not the list is expanded, and two fetches would disagree while one was in flight.
+  $effect(() => {
+    if (isStudent) return;
+
+    void courseExams.load(id);
+  });
   const contentCount = $derived.by(() => {
     const contentItems = contentData.grouped
       ? contentData.sections.flatMap((section) => section.items)
@@ -370,7 +379,11 @@
                         </IconButton>
                       {/if}
                       {#if showContentCount}
-                        <ContentCountBadges lessons={contentCount.lessons} exercises={contentCount.exercises} />
+                        <ContentCountBadges
+                          lessons={contentCount.lessons}
+                          exercises={contentCount.exercises}
+                          exams={!isStudent && courseExams.available ? courseExams.exams.length : null}
+                        />
                       {/if}
 
                       <IconButton variant="ghost" size="icon-xs">

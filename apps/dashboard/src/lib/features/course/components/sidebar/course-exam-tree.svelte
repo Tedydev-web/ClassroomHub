@@ -3,13 +3,14 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-  import FileCheckIcon from '@lucide/svelte/icons/file-check';
   import Plus from '@lucide/svelte/icons/plus';
   import * as Collapsible from '@cio/ui/base/collapsible';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { IconButton } from '@cio/ui/custom/icon-button';
 
-  import { classroomhub } from '$lib/utils/services/api';
+  import { ContentType } from '@cio/utils/constants/content';
+  import CourseContentIcon from '$features/course/components/course-content-icon.svelte';
+  import { courseExams } from '$features/course/api/exams.svelte';
   import { t } from '$lib/utils/functions/translations';
 
   /**
@@ -27,14 +28,6 @@
    */
   let { courseId }: { courseId: string } = $props();
 
-  type ExamRow = { id: string; title: string; status: string };
-
-  let exams = $state<ExamRow[]>([]);
-  // Exams are behind a server flag. Where it is off every route answers 404, and this group
-  // must then be absent rather than empty: an empty "Exams" group reads as "you have none",
-  // which is a different and untrue statement.
-  let available = $state(true);
-
   const STATUS_LABEL: Record<string, string> = $derived({
     draft: $t('exam.manage.draft'),
     open: $t('exam.manage.open'),
@@ -42,33 +35,11 @@
   });
 
   $effect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const response = await classroomhub.exam.course[':courseId'].$get({ param: { courseId } });
-        const body = await response.json();
-
-        if (cancelled) return;
-
-        if ('success' in body && body.success) {
-          exams = body.data.map((exam) => ({ id: exam.id, title: exam.title, status: exam.status }));
-          available = true;
-        } else {
-          available = false;
-        }
-      } catch {
-        if (!cancelled) available = false;
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    void courseExams.load(courseId);
   });
 </script>
 
-{#if available}
+{#if courseExams.available}
   <Sidebar.MenuSub class="mt-1 ml-2">
     <Collapsible.Root open class="group/exams">
       {#snippet child({ props })}
@@ -76,7 +47,7 @@
           <Collapsible.Trigger>
             {#snippet child({ props })}
               <Sidebar.MenuSubButton {...props} class="flex w-full items-center gap-2 font-medium">
-                <FileCheckIcon size={12} />
+                <CourseContentIcon type={ContentType.Exam} size={12} />
 
                 <span class="flex-1 truncate">{$t('course.navItem.submissions.tab_exams')}</span>
 
@@ -106,7 +77,7 @@
 
           <Collapsible.Content>
             <Sidebar.MenuSub class="ml-2">
-              {#each exams as exam (exam.id)}
+              {#each courseExams.exams as exam (exam.id)}
                 <Sidebar.MenuSubItem>
                   <Sidebar.MenuSubButton isActive={page.url.pathname.includes(`/exams/${exam.id}`)}>
                     {#snippet child({ props })}
@@ -116,7 +87,7 @@
                         class="flex w-full items-center gap-2"
                         {...props}
                       >
-                        <FileCheckIcon size={14} />
+                        <CourseContentIcon type={ContentType.Exam} size={14} />
                         <span class="flex-1 truncate">{exam.title}</span>
                         <span class="ui:text-muted-foreground ml-auto shrink-0 text-[10px] leading-none">
                           {STATUS_LABEL[exam.status] ?? exam.status}

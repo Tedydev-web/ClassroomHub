@@ -2575,7 +2575,8 @@
       "back_to_course": "Quay lại khóa học",
       "content_count": {
         "lessons": "{count} bài học",
-        "exercises": "bài tập {count}"
+        "exercises": "bài tập {count}",
+        "exams": "bài thi {count}"
       },
       "compliance": {
         "title": "Tuân thủ",
@@ -5638,7 +5639,8 @@
       "duplicate": "Nhân bản",
       "copy_of": "{title} (bản sao)",
       "duplicate_failed": "Không nhân bản được đề này",
-      "duplicated_notice": "Đã nhân bản. Đặt lại thời gian và mật khẩu trước khi gửi link."
+      "duplicated_notice": "Đã nhân bản. Đặt lại thời gian và mật khẩu trước khi gửi link.",
+      "settings_tab": "Cài đặt"
     },
     "settings": {
       "title": "Tiêu đề đề thi",

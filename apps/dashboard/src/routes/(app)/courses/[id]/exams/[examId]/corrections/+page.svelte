@@ -1,9 +1,9 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
   import ExamAnswerKeyEditor from '$features/exam/exam-answer-key-editor.svelte';
+  import ExamTabs from '$features/exam/exam-tabs.svelte';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { Button } from '@cio/ui/base/button';
   import * as Alert from '@cio/ui/base/alert';
   import * as Page from '@cio/ui/base/page';
 
@@ -78,14 +78,13 @@
       <Page.Title>{data.title}</Page.Title>
       <Page.Subtitle>{$t('exam.corrections.title')}</Page.Subtitle>
     </Page.HeaderContent>
-    <Button variant="outline" href={`/courses/${data.courseId}/exams/${data.examId}/results`}>
-      {$t('exam.manage.results')}
-    </Button>
   </Page.Header>
 
   <Page.Body>
     {#snippet child()}
       <div class="ui:space-y-6">
+        <ExamTabs courseId={data.courseId} examId={data.examId} />
+
         <Alert.Root>
           <Alert.Description>{$t('exam.corrections.help')}</Alert.Description>
         </Alert.Root>
