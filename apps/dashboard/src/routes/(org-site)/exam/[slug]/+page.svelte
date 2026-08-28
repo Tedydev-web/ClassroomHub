@@ -151,6 +151,19 @@
     return refusalMessage(error) || fallback;
   }
 
+  /**
+   * Seeded from the loader, then raised if the server refuses a start for want of one. A
+   * teacher can protect an exam after this page was loaded, in which case the entry form
+   * drew no password box and the refusal is the first anybody hears of it.
+   */
+  let needsPassword = $state(data.exam.requiresPassword);
+  /**
+   * Raised when the server counted this device as having sat already. It is the one refusal
+   * a candidate may honestly disagree with — two people sharing one phone — so the form
+   * offers them a way to say so rather than a dead end.
+   */
+  let attemptsUsed = $state(false);
+
   type EntryDetails = {
     displayName: string;
     className: string;
