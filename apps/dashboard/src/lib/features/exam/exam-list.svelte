@@ -320,6 +320,13 @@
                   </IconButton>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="end">
+                  <DropdownMenu.Item>
+                    {#snippet child({ props })}
+                      <a {...props} href={`/courses/${courseId}/exams/${exam.id}/edit`}>
+                        {$t('exam.manage.edit')}
+                      </a>
+                    {/snippet}
+                  </DropdownMenu.Item>
                   <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>
                     {$t('exam.manage.check_paper')}
                   </DropdownMenu.Item>

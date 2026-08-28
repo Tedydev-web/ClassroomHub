@@ -4,12 +4,14 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { env } from '@cio/core/config/env';
 import { db } from '@cio/db/drizzle';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
+import { examHasAttempts } from '@cio/db/queries/exam/exam-attempt';
 import {
   getExamById,
   getExamBySlug,
   listExamsByCourseId,
   restoreExam,
-  softDeleteExam
+  softDeleteExam,
+  updateExam
 } from '@cio/db/queries/exam/exam';
 import * as schema from '@cio/db/schema';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -184,6 +186,66 @@ export async function createExamService(input: ExamSettingsInput, courseId: stri
   return exam;
 }
 
+/**
+ * The settings a teacher may change after the exam exists. `exerciseId` is absent
+ * deliberately: that field names the paper, and swapping it is not an edit, it is a
+ * different exam. `slug` is absent because it is the credential on a link already handed
+ * out, and `status` because opening and closing own that transition.
+ */
+export type ExamSettingsPatch = Partial<Omit<ExamSettingsInput, 'exerciseId'>>;
+
+/**
+ * Applies a patch to an exam's settings.
+ *
+ * The patch is merged onto the stored row and the whole result is validated, never the
+ * submitted keys alone. The rules are cross-field — showing answers on submit is only
+ * safe at one attempt, a reveal threshold needs a close time or a clock — so a patch
+ * that touches one half of a pair can break an invariant it never mentions. Validating
+ * the merged settings is what makes a partial update as safe as a create.
+ *
+ * Timing and entry fields are read once when a sitting starts and stored on the attempt,
+ * so changing them here cannot move the clock or the requirements of anybody already
+ * sitting. The visibility fields are different: they are read when a candidate looks at
+ * their results, so changing them applies to sittings already finished. That is the
+ * point of them — it is how a teacher releases results — but it is also the one edit
+ * here that a candidate can notice after the fact.
+ */
+export async function updateExamSettingsService(id: string, patch: ExamSettingsPatch) {
+  requireExamsEnabled();
+
+  const exam = await getExamById(id);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  const merged: ExamSettingsInput = {
+    exerciseId: exam.exerciseId,
+    title: patch.title ?? exam.title,
+    mode: patch.mode ?? exam.mode,
+    workingSeconds: patch.workingSeconds !== undefined ? patch.workingSeconds : exam.workingSeconds,
+    opensAt: patch.opensAt !== undefined ? patch.opensAt : exam.opensAt,
+    closesAt: patch.closesAt !== undefined ? patch.closesAt : exam.closesAt,
+    maxAttempts: patch.maxAttempts !== undefined ? patch.maxAttempts : exam.maxAttempts,
+    requiresName: patch.requiresName ?? exam.requiresName,
+    requiresClass: patch.requiresClass ?? exam.requiresClass,
+    requiresCandidateNumber: patch.requiresCandidateNumber ?? exam.requiresCandidateNumber,
+    scoreVisibility: patch.scoreVisibility ?? exam.scoreVisibility,
+    answerVisibility: patch.answerVisibility ?? exam.answerVisibility,
+    commentVisibility: patch.commentVisibility ?? exam.commentVisibility,
+    revealThreshold: patch.revealThreshold !== undefined ? patch.revealThreshold : exam.revealThreshold
+  };
+
+  const issues = validateExamSettings(merged);
+  if (issues.length > 0) {
+    throw new AppError(issues.join('; '), ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  const { exerciseId: _paper, ...settings } = merged;
+
+  const updated = await updateExam(id, settings);
+  if (!updated) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  return updated;
+}
+
 export async function getExamService(id: string) {
   requireExamsEnabled();
 
@@ -238,8 +300,18 @@ export async function openExamService(id: string) {
 
   if (exam.status === 'open') return exam;
 
-  await assertIsContainer(exam.exerciseId);
-  const paperSnapshot = await freezeExamPaper(exam.exerciseId);
+  // Re-opening a closed exam must not replace a paper somebody has already been marked
+  // against. Editing the container between a close and a re-open used to swap the
+  // snapshot out from under the attempts already scored, leaving one exam holding
+  // attempts whose totals came from different papers. Once anybody has sat it, the paper
+  // it was sat on is the paper it keeps; a new paper needs a new exam.
+  const reuseSnapshot = Boolean(exam.paperSnapshot) && (await examHasAttempts(id));
+
+  let paperSnapshot = exam.paperSnapshot;
+  if (!reuseSnapshot) {
+    await assertIsContainer(exam.exerciseId);
+    paperSnapshot = await freezeExamPaper(exam.exerciseId);
+  }
 
   const [opened] = await db
     .update(schema.exam)

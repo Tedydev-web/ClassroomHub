@@ -15,7 +15,8 @@ import {
   openExamService,
   requireExamsEnabled,
   restoreExamService,
-  summariseExamPaperService
+  summariseExamPaperService,
+  updateExamSettingsService
 } from '@api/services/exam/exam';
 import {
   copyExerciseIntoContainer,
@@ -59,6 +60,10 @@ const createExamSchema = z.object({
   commentVisibility: revealValue.default('never'),
   revealThreshold: z.string().nullable().default(null)
 });
+
+// The paper is not in here. `exerciseId` names which questions the exam delivers, and
+// changing that is a different exam rather than an edit of this one.
+const updateExamSchema = createExamSchema.omit({ exerciseId: true }).partial();
 
 export const examRouter = new Hono()
   .use('*', async (c, next) => {
@@ -148,6 +153,19 @@ export const examRouter = new Hono()
     }
   })
   // The paper is frozen here, so this is the last moment its questions can change.
+  // Editing an exam after it exists. Timing and entry settings are read once when a
+  // sitting starts, so changing them leaves anybody mid-paper alone; the visibility
+  // settings are read when results are viewed, so those do reach sittings already
+  // finished. Both are stated on the form rather than forbidden here.
+  .patch('/:examId', authMiddleware, examTeamMemberMiddleware, zValidator('json', updateExamSchema), async (c) => {
+    try {
+      const exam = await updateExamSettingsService(c.req.param('examId'), c.req.valid('json'));
+
+      return c.json({ success: true as const, data: exam });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .post('/:examId/open', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const exam = await openExamService(c.req.param('examId'));

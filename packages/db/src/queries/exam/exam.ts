@@ -115,3 +115,23 @@ export async function restoreExam(id: string, dbClient: DbOrTxClient = db) {
 
   return exam ?? null;
 }
+
+/**
+ * Writes a subset of the exam's settings. The caller decides which keys reach this
+ * function: it applies whatever it is handed, so `status`, `paperSnapshot`, `slug`, and
+ * `exerciseId` must never be included by the caller — those are not settings, they are
+ * the identity of the paper and the state machine around it.
+ */
+export async function updateExam(
+  id: string,
+  values: Partial<typeof schema.exam.$inferInsert>,
+  dbClient: DbOrTxClient = db
+) {
+  const [exam] = await dbClient
+    .update(schema.exam)
+    .set({ ...values, updatedAt: new Date().toISOString() })
+    .where(and(eq(schema.exam.id, id), isNull(schema.exam.deletedAt)))
+    .returning();
+
+  return exam ?? null;
+}

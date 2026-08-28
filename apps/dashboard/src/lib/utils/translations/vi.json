@@ -5620,7 +5620,8 @@
       "view_paper_check": "Kiểm tra đề trước khi mở",
       "close_failed": "Không đóng được đề",
       "refresh_failed": "Không tải lại được danh sách đề",
-      "check_failed": "Không kiểm tra được đề"
+      "check_failed": "Không kiểm tra được đề",
+      "edit": "Sửa"
     },
     "settings": {
       "title": "Tiêu đề đề thi",
@@ -5667,7 +5668,13 @@
       "timing_help": "Để trống giờ mở và giờ đóng nếu bạn tự mở và đóng đề bằng tay.",
       "reveal_help": "Hai mục này quyết định học sinh thấy gì sau khi nộp. Cho xem đáp án ngay khi nộp chỉ an toàn khi mỗi em chỉ được làm một lượt.",
       "issues_heading": "Còn {count} chỗ cần sửa",
-      "unlimited_attempts": "Không giới hạn lượt"
+      "unlimited_attempts": "Không giới hạn lượt",
+      "edit_title": "Sửa bài thi",
+      "save_changes": "Lưu thay đổi",
+      "updated": "Đã cập nhật bài thi",
+      "update_failed": "Không cập nhật được bài thi",
+      "live_notice": "Thời gian làm bài, số lượt cho phép và các mục thí sinh phải khai được đọc lúc bắt đầu lượt thi, nên sửa chúng không ảnh hưởng người đang làm. Còn phần thí sinh được xem sau khi thi thì đọc lúc họ mở kết quả, nên sửa nó áp dụng cho cả những lượt đã xong.",
+      "paper_is_fixed": "Câu hỏi không sửa ở đây. Khi đã có người thi thì đề giữ nguyên đúng như lúc họ làm, để mọi lượt thi đều được chấm trên cùng một đề."
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",

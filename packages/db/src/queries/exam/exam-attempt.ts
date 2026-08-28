@@ -87,3 +87,18 @@ export async function finaliseExpiredAttempt(
 
   return attempt ?? null;
 }
+
+/**
+ * Whether anybody has sat this exam yet. Read before re-freezing the paper: once one
+ * attempt exists, replacing the snapshot would leave that attempt scored against a paper
+ * the exam no longer has.
+ */
+export async function examHasAttempts(examId: string, dbClient: DbOrTxClient = db) {
+  const [row] = await dbClient
+    .select({ id: schema.examAttempt.id })
+    .from(schema.examAttempt)
+    .where(eq(schema.examAttempt.examId, examId))
+    .limit(1);
+
+  return Boolean(row);
+}

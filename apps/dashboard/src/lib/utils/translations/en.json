@@ -5610,7 +5610,8 @@
       "view_paper_check": "Check the paper before opening",
       "close_failed": "Could not close the exam",
       "refresh_failed": "Could not reload the exam list",
-      "check_failed": "Could not check the paper"
+      "check_failed": "Could not check the paper",
+      "edit": "Edit"
     },
     "settings": {
       "title": "Exam title",
@@ -5657,7 +5658,13 @@
       "timing_help": "Leave the window empty if you would rather open and close the exam by hand.",
       "reveal_help": "These decide what a candidate sees after submitting. Showing the answers on submit is only safe when each person gets a single attempt.",
       "issues_heading": "{count} things to fix",
-      "unlimited_attempts": "Unlimited attempts"
+      "unlimited_attempts": "Unlimited attempts",
+      "edit_title": "Edit exam",
+      "save_changes": "Save changes",
+      "updated": "Exam updated",
+      "update_failed": "Could not update the exam",
+      "live_notice": "Working time, attempts allowed and the fields a candidate must declare are read when a sitting starts, so changing them leaves anyone already sitting alone. What a candidate is shown afterwards is read when they open their results, so changing that reaches sittings already finished.",
+      "paper_is_fixed": "The questions themselves are not edited here. Once anybody has sat this exam its paper stays exactly as it was sat, so that every sitting is scored against the same one."
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",

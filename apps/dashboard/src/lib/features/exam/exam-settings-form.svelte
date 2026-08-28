@@ -21,25 +21,72 @@
    *
    * The server refuses the same combinations. This only says so earlier.
    */
+  type Reveal = 'never' | 'on_submit' | 'after_everyone' | 'above_threshold';
+
+  /** An exam already stored, when this form is editing one rather than creating one. */
+  type ExamSettingsInitial = {
+    title: string;
+    mode: 'public' | 'private';
+    workingSeconds: number | null;
+    opensAt: string | null;
+    closesAt: string | null;
+    maxAttempts: number | null;
+    requiresName: boolean;
+    requiresClass: boolean;
+    requiresCandidateNumber: boolean;
+    scoreVisibility: Reveal;
+    answerVisibility: Reveal;
+    commentVisibility: Reveal;
+    revealThreshold: string | null;
+  };
+
   let {
     submitting = false,
+    initial,
+    submitLabel,
     onsubmit
   }: {
     submitting?: boolean;
+    initial?: ExamSettingsInitial;
+    submitLabel?: string;
     onsubmit: (settings: Record<string, unknown>) => void;
   } = $props();
 
-  let title = $state('');
-  let mode = $state<'public' | 'private'>('public');
-  let workingMinutes = $state('');
-  let opensAt = $state('');
-  let closesAt = $state('');
-  let maxAttempts = $state('1');
-  let requiresName = $state(true);
-  let requiresClass = $state(true);
-  let requiresCandidateNumber = $state(false);
-  let scoreVisibility = $state<'never' | 'on_submit' | 'after_everyone' | 'above_threshold'>('never');
-  let answerVisibility = $state<'never' | 'on_submit' | 'after_everyone' | 'above_threshold'>('never');
+  /**
+   * The stored value formatted for `datetime-local`, which reads neither an ISO string
+   * with a zone nor a trailing `Z`. Local time is also what a teacher typed in the first
+   * place, so this is the value they expect to see again.
+   */
+  function toLocalInput(value: string | null | undefined): string {
+    if (!value) return '';
+
+    const at = new Date(value);
+    if (Number.isNaN(at.getTime())) return '';
+
+    const pad = (part: number) => String(part).padStart(2, '0');
+    return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}T${pad(at.getHours())}:${pad(at.getMinutes())}`;
+  }
+
+  // Seeded once. The exam being edited is loaded on the server before this mounts, so
+  // there is nothing later to re-seed from, and re-seeding would discard what the teacher
+  // has typed.
+  let title = $state(initial?.title ?? '');
+  let mode = $state<'public' | 'private'>(initial?.mode ?? 'public');
+  let workingMinutes = $state(initial?.workingSeconds ? String(Math.round(initial.workingSeconds / 60)) : '');
+  let opensAt = $state(toLocalInput(initial?.opensAt));
+  let closesAt = $state(toLocalInput(initial?.closesAt));
+  let maxAttempts = $state(initial?.maxAttempts === null ? '' : String(initial?.maxAttempts ?? 1));
+  let requiresName = $state(initial?.requiresName ?? true);
+  let requiresClass = $state(initial?.requiresClass ?? true);
+  let requiresCandidateNumber = $state(initial?.requiresCandidateNumber ?? false);
+  let scoreVisibility = $state<Reveal>(initial?.scoreVisibility ?? 'never');
+  let answerVisibility = $state<Reveal>(initial?.answerVisibility ?? 'never');
+
+  // Not offered as fields yet, but carried through unchanged. Sending the defaults back
+  // would silently overwrite whatever an exam already holds every time a teacher edited
+  // its title.
+  const commentVisibility = initial?.commentVisibility ?? 'never';
+  const revealThreshold = initial?.revealThreshold ?? null;
 
   const REVEAL_OPTIONS = [
     { value: 'never', label: $t('exam.settings.reveal_never') },
@@ -88,8 +135,8 @@
       requiresCandidateNumber,
       scoreVisibility,
       answerVisibility,
-      commentVisibility: 'never',
-      revealThreshold: null
+      commentVisibility,
+      revealThreshold
     });
   }
 </script>
@@ -238,6 +285,6 @@
   {/if}
 
   <Button class="ui:min-h-11 ui:w-full sm:w-auto" disabled={issues.length > 0 || submitting} onclick={save}>
-    {submitting ? $t('exam.settings.saving') : $t('exam.settings.save')}
+    {submitting ? $t('exam.settings.saving') : (submitLabel ?? $t('exam.settings.save'))}
   </Button>
 </div>
