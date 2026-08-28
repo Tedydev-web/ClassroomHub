@@ -70,16 +70,39 @@
   isCurrent: boolean;
   isAnswered: boolean;
   isBookmarked: boolean;
+  hasNote: boolean;
 })}
   <button type="button" class={chipClass(question)} onclick={() => go(question.label)}>
     {question.label}
+
+    <!--
+      Each mark carries its own ground rather than inheriting the chip's.
+      Drawn in the chip's own text colour, a bookmark came out near-black on an unanswered
+      chip and vanished into the fill on the current one — the two chips a candidate most
+      needs to tell apart. A badge on `bg-background` looks the same on all three states,
+      which is the only way one glance can be trusted.
+    -->
     {#if question.isBookmarked}
-      <!-- A corner mark rather than a colour, so it reads on top of any of the three states. -->
-      <BookmarkIcon
-        size={10}
-        class="ui:absolute ui:fill-current -top-1 -right-1"
+      <span
+        class="ui:bg-background ui:absolute ui:flex ui:size-4 ui:items-center ui:justify-center ui:rounded-full -top-1.5 -right-1.5"
         aria-label={$t('exam.navigator.bookmarked')}
-      />
+      >
+        <BookmarkIcon size={11} class="ui:fill-amber-400 ui:text-amber-500" />
+      </span>
+    {/if}
+
+    <!--
+      A dot, not the note icon: at this size a sticky-note glyph is a smudge, while a dot of
+      a different colour in a different corner is unmistakable. The drawer below spells out
+      in words and full-size icons what the two marks mean.
+    -->
+    {#if question.hasNote}
+      <span
+        class="ui:bg-background ui:absolute ui:flex ui:size-3 ui:items-center ui:justify-center ui:rounded-full -right-1 -bottom-1"
+        aria-label={$t('exam.navigator.has_note')}
+      >
+        <span class="ui:bg-emerald-500 ui:size-2 ui:rounded-full"></span>
+      </span>
     {/if}
   </button>
 {/snippet}
@@ -117,7 +140,7 @@
       {#if bookmarked.length > 0}
         <div class="ui:space-y-2">
           <p class="ui:flex ui:items-center ui:gap-1.5 ui:text-xs ui:font-semibold">
-            <BookmarkIcon size={14} aria-hidden="true" />
+            <BookmarkIcon size={14} class="ui:fill-amber-400 ui:text-amber-500" aria-hidden="true" />
             {$t('exam.navigator.bookmarks')}
           </p>
           <div class="ui:flex ui:flex-wrap ui:gap-2">
@@ -131,7 +154,7 @@
       {#if notes.length > 0}
         <div class="ui:space-y-2">
           <p class="ui:flex ui:items-center ui:gap-1.5 ui:text-xs ui:font-semibold">
-            <StickyNoteIcon size={14} aria-hidden="true" />
+            <StickyNoteIcon size={14} class="ui:text-emerald-600" aria-hidden="true" />
             {$t('exam.navigator.notes')}
           </p>
           <ul class="ui:space-y-2">

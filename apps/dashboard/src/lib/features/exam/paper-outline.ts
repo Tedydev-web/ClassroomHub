@@ -27,6 +27,8 @@ export type OutlineQuestion = {
   isAnswered: boolean;
   /** Marked by the candidate to come back to. Never sent anywhere; it is their own note. */
   isBookmarked: boolean;
+  /** Whether the candidate wrote something down against this number. */
+  hasNote: boolean;
 };
 
 export type OutlineGroup = {
@@ -86,6 +88,8 @@ export function buildOutlineGroups(
     currentNumber?: number | null;
     /** Numbers the candidate marked to come back to. */
     bookmarked?: ReadonlySet<number>;
+    /** Numbers the candidate wrote a note against. */
+    noted?: ReadonlySet<number>;
   }
 ): OutlineGroup[] {
   let number = 1;
@@ -114,7 +118,8 @@ export function buildOutlineGroups(
         // panel still shows where they are.
         isCurrent: isCurrentGroup && (options.currentNumber == null || options.currentNumber === value),
         isAnswered: answeredIds.has(block.id),
-        isBookmarked: options.bookmarked?.has(value) ?? false
+        isBookmarked: options.bookmarked?.has(value) ?? false,
+        hasNote: options.noted?.has(value) ?? false
       };
     });
 

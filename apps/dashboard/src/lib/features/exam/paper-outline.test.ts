@@ -166,4 +166,26 @@ describe('the outline of an exam paper', () => {
 
     expect(bookmarked).toEqual(['2', '33']);
   });
+
+  it('marks the numbers a candidate wrote a note against, independently of bookmarks', () => {
+    // The two marks are drawn in different corners and different colours, so a number can
+    // carry either, both, or neither, and the outline has to keep them apart.
+    const groups = buildOutlineGroups(PAPER, {
+      currentIndex: 1,
+      labels,
+      bookmarked: new Set([2]),
+      noted: new Set([2, 33])
+    });
+
+    const questions = groups.flatMap((group) => group.questions);
+
+    expect(questions.filter((question) => question.hasNote).map((question) => question.label)).toEqual(['2', '33']);
+    expect(questions.filter((question) => question.isBookmarked).map((question) => question.label)).toEqual(['2']);
+  });
+
+  it('leaves every number unmarked when nothing was bookmarked or noted', () => {
+    const groups = buildOutlineGroups(PAPER, { currentIndex: 1, labels });
+
+    expect(groups.flatMap((group) => group.questions).some((question) => question.hasNote)).toBe(false);
+  });
 });

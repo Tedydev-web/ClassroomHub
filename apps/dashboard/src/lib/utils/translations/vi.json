@@ -5798,6 +5798,18 @@
       "starting": "Đang bắt đầu…",
       "back": "Quay lại"
     },
+    "submit_confirm": {
+      "title": "Nộp bài thi?",
+      "answered_of": "Bạn đã trả lời {answered} trên {total} câu.",
+      "unanswered": "Còn {count} câu chưa trả lời:",
+      "jump_hint": "Bấm vào số câu để quay lại làm tiếp.",
+      "all_answered": "Bạn đã trả lời hết các câu.",
+      "time_left": "Bạn vẫn còn khoảng {minutes} phút làm bài.",
+      "final": "Nộp rồi thì không sửa lại được nữa.",
+      "keep_working": "Quay lại làm tiếp",
+      "submit": "Nộp bài",
+      "submitting": "Đang nộp…"
+    },
     "left": {
       "title": "Bạn vừa rời khỏi bài thi",
       "recorded": "Việc này được ghi lại. Số lần bạn đã rời: {count}. Thầy cô sẽ thấy sau khi bài thi kết thúc.",
@@ -5831,13 +5843,15 @@
     "navigator": {
       "title": "Danh sách câu hỏi",
       "answered_of": "Đã trả lời {answered}/{total}",
-      "legend": "Ô tô đậm là đã trả lời, ô viền là chưa, ô đặc là câu bạn đang làm. Dấu ở góc là câu bạn đã đánh dấu.",
+      "legend": "Ô tô đậm là đã trả lời, ô viền là chưa, ô đặc là câu bạn đang làm. Cờ vàng ở góc trên là câu bạn đã đánh dấu, chấm xanh ở góc dưới là câu có ghi chú.",
       "bookmarks": "Đã đánh dấu",
       "bookmarked": "Đã đánh dấu",
       "bookmark_this": "Đánh dấu câu {number}",
       "notes": "Ghi chú của bạn",
       "note_on": "Câu {number}",
-      "remove_note": "Xoá ghi chú này"
+      "remove_note": "Xoá ghi chú này",
+      "open_at": "Câu {number}/{total}",
+      "has_note": "Câu này có ghi chú"
     },
     "notes": {
       "title": "Ghi chú cho câu {number}",

@@ -25,6 +25,7 @@
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
+  import ExamSubmitConfirm from '$features/exam/exam-submit-confirm.svelte';
   import ExamResumeOffer from '$features/exam/exam-resume-offer.svelte';
   import type { ResumeOwner } from '$features/exam/exam-resume-owner';
   import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
@@ -33,7 +34,7 @@
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus } from '$features/exam/exam-activity';
-  import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
+  import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
   import { isSittingOver, refusalKey, refusalMessage } from '$features/exam/exam-refusals';
@@ -552,6 +553,7 @@
       currentIndex,
       currentNumber,
       bookmarked: bookmarkedNumbers,
+      noted: notedNumbers,
       answered: (question) => (responses[question.questionId] ?? null) as AssessmentResponseEnvelope | null,
       labels: {
         range: (start, end) =>
@@ -581,7 +583,18 @@
     }
   }
 
-  async function goNext() {
+  /**
+   * Whether the candidate has been asked to confirm handing in.
+   *
+   * Only ever raised by the candidate pressing the finish button. The clock running out
+   * submits without asking, which is right: that submit is not theirs to agree to, and a
+   * dialog waiting for an answer nobody is there to give would stand between their work and
+   * the server.
+   */
+  let confirmingSubmit = $state(false);
+  let submitMinutesLeft = $state<number | null>(null);
+
+  function goNext() {
     if (!isLastItem) {
       currentIndex += 1;
       currentNumber = null;
@@ -589,12 +602,34 @@
       return;
     }
 
-    await submit();
+    // Read once, as the dialog opens. A ticking figure in a dialog is a second clock
+    // competing with the one in the header, and the candidate is being asked a question
+    // whose answer does not change between one second and the next.
+    const left = remainingSeconds(expiresAt, offset);
+    submitMinutesLeft = left === null ? null : Math.ceil(left / 60);
+
+    confirmingSubmit = true;
   }
+
+  async function confirmSubmit() {
+    await submit();
+
+    if (stage === 'submitted') confirmingSubmit = false;
+  }
+
+  /** Every number still blank, read off the same outline the drawer draws. */
+  const unansweredNumbers = $derived(
+    outlineGroups.flatMap((group) =>
+      group.questions.filter((question) => !question.isAnswered).map((question) => Number(question.label))
+    )
+  );
 
   const numberStartByQuestionId = $derived(questionNumberStarts(paper?.questions ?? []));
 
   const bookmarkedNumbers = $derived(new Set(annotations.bookmarks));
+
+  /** The numbers carrying a note, so the outline can mark them the way it marks bookmarks. */
+  const notedNumbers = $derived(new Set(annotations.notes.map((note) => note.questionNumber)));
 
   /** The number a bookmark button acts on: the one jumped to, or the item's first. */
   const currentPageNumber = $derived(
@@ -745,6 +780,22 @@
     </Dialog.Content>
   </Dialog.Root>
 
+  <ExamSubmitConfirm
+    open={confirmingSubmit}
+    answered={progress.answered}
+    total={progress.total}
+    {unansweredNumbers}
+    minutesLeft={submitMinutesLeft}
+    {submitting}
+    error={submitError}
+    oncancel={() => (confirmingSubmit = false)}
+    onconfirm={confirmSubmit}
+    onjump={(number) => {
+      confirmingSubmit = false;
+      goToQuestion(number);
+    }}
+  />
+
   <ExamLeftWarning open={warningOpen} {leaves} {autoSubmitAfterLeaves} onacknowledge={() => (warningOpen = false)} />
 
   <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {actionBarHeight}px">
@@ -854,66 +905,96 @@
         <p class="ui:text-destructive ui:text-sm" role="alert">{submitError}</p>
       {/if}
 
-      <div class="ui:flex ui:items-center ui:justify-between ui:gap-3">
-        <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:gap-3">
-          <Progress
-            value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
-            class="ui:h-2 max-w-48"
-          />
-          <span class="ui:text-muted-foreground ui:shrink-0 ui:text-xs">
-            {unansweredCount > 0
-              ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
-              : $t('exam.sitting.all_answered')}
+      <!--
+        Progress runs the width of the bar rather than sharing a row with the controls. It
+        is the one thing here that is read and never touched, so it costs a hairline instead
+        of a column, and the room it gives back goes to the targets a thumb has to hit.
+      -->
+      <Progress
+        value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
+        class="ui:h-1.5 ui:w-full"
+      />
+
+      <!--
+        The three controls a candidate reaches for without looking, in the bar their thumb
+        already rests on: where am I in the paper, mark this one, write this down.
+
+        Getting to another question is the most valuable of the three and was the smallest —
+        an unlabelled icon in a row of identical icons. It is now the wide one, and it says
+        where the candidate is standing, so the control that moves them through the paper
+        also answers the question that makes them want to move.
+      -->
+      <div class="ui:flex ui:items-center ui:gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          class="ui:min-h-11 ui:min-w-0 ui:flex-1 ui:justify-start ui:gap-2"
+          onclick={() => (navigatorOpen = true)}
+        >
+          <LayoutGridIcon size={18} class="ui:shrink-0" />
+          <span class="ui:truncate">
+            {$t('exam.navigator.open_at', {
+              number: String(currentPageNumber),
+              total: String(progress.total)
+            })}
+            <span class="ui:text-muted-foreground">
+              ·
+              {unansweredCount > 0
+                ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
+                : $t('exam.sitting.all_answered')}
+            </span>
           </span>
-        </div>
-        <!--
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          class="ui:min-h-11 ui:shrink-0"
+          aria-pressed={bookmarkedNumbers.has(currentPageNumber)}
+          aria-label={$t('exam.navigator.bookmark_this', { number: String(currentPageNumber) })}
+          onclick={() => persist(toggleBookmark(annotations, currentPageNumber))}
+        >
+          <!--
+            Amber when set, and the same amber the outline uses. It used to go to the
+            button's `secondary` fill, which on this bar is a grey barely distinguishable
+            from the outline beside it — so the one control whose whole job is to be
+            noticeable afterwards was the hardest to tell the state of.
+          -->
+          <BookmarkIcon
+            size={18}
+            class={bookmarkedNumbers.has(currentPageNumber) ? 'ui:fill-amber-400 ui:text-amber-500' : ''}
+          />
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          class="ui:min-h-11 ui:shrink-0"
+          aria-label={$t('exam.notes.add')}
+          onclick={beginNote}
+        >
+          <StickyNoteIcon size={18} class={notedNumbers.has(currentPageNumber) ? 'ui:text-emerald-600' : ''} />
+        </Button>
+      </div>
+
+      <!--
         Paging between items lives here rather than under the paper. The passage workspace
         already carries its own previous/next for the questions inside one passage, and a
         second pair directly beneath it read as a broken duplicate of the first.
       -->
-        <!--
-          The three controls a candidate reaches for without looking, in the bar their thumb
-          already rests on: where am I in the paper, mark this one, write this down.
-        -->
-        <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label={$t('exam.navigator.title')}
-            onclick={() => (navigatorOpen = true)}
-          >
-            <LayoutGridIcon size={18} />
-          </Button>
-
-          <Button
-            type="button"
-            variant={bookmarkedNumbers.has(currentPageNumber) ? 'secondary' : 'outline'}
-            size="icon"
-            aria-pressed={bookmarkedNumbers.has(currentPageNumber)}
-            aria-label={$t('exam.navigator.bookmark_this', { number: String(currentPageNumber) })}
-            onclick={() => persist(toggleBookmark(annotations, currentPageNumber))}
-          >
-            <BookmarkIcon size={18} class={bookmarkedNumbers.has(currentPageNumber) ? 'ui:fill-current' : ''} />
-          </Button>
-
-          <Button type="button" variant="outline" size="icon" aria-label={$t('exam.notes.add')} onclick={beginNote}>
-            <StickyNoteIcon size={18} />
-          </Button>
-        </div>
-
-        <QuestionNavigation
-          canGoBack={currentIndex > 1 && !timeUp}
-          canGoNext={!submitting && !timeUp}
-          isLast={isLastItem}
-          isSubmitting={submitting}
-          previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
-          nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
-          finishLabel={$t('exam.sitting.submit')}
-          onPrevious={goPrevious}
-          onNext={goNext}
-        />
-      </div>
+      <QuestionNavigation
+        canGoBack={currentIndex > 1 && !timeUp}
+        canGoNext={!submitting && !timeUp}
+        isLast={isLastItem}
+        isSubmitting={submitting}
+        previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
+        nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
+        finishLabel={$t('exam.sitting.submit')}
+        onPrevious={goPrevious}
+        onNext={goNext}
+      />
     </footer>
   </div>
 {:else}

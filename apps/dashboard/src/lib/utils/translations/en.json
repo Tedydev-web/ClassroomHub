@@ -5788,6 +5788,18 @@
       "starting": "Starting…",
       "back": "Back"
     },
+    "submit_confirm": {
+      "title": "Hand in your paper?",
+      "answered_of": "You have answered {answered} of {total} questions.",
+      "unanswered": "{count} questions are still blank:",
+      "jump_hint": "Tap a number to go back to that question.",
+      "all_answered": "You have answered every question.",
+      "time_left": "You still have about {minutes} minutes left.",
+      "final": "Once handed in, the paper cannot be changed.",
+      "keep_working": "Keep working",
+      "submit": "Hand in",
+      "submitting": "Handing in…"
+    },
     "left": {
       "title": "You left the exam",
       "recorded": "This is recorded. Times you have left so far: {count}. Your teacher sees this after the paper.",
@@ -5821,13 +5833,15 @@
     "navigator": {
       "title": "Questions",
       "answered_of": "{answered} of {total} answered",
-      "legend": "Filled is answered, outlined is not, and the solid one is where you are. A corner mark means you bookmarked it.",
+      "legend": "Filled is answered, outlined is not, and the solid one is where you are. An amber flag at the top corner means you bookmarked it; a green dot at the bottom means you left a note.",
       "bookmarks": "Bookmarked",
       "bookmarked": "Bookmarked",
       "bookmark_this": "Bookmark question {number}",
       "notes": "Your notes",
       "note_on": "Question {number}",
-      "remove_note": "Delete this note"
+      "remove_note": "Delete this note",
+      "open_at": "Question {number}/{total}",
+      "has_note": "This question has a note"
     },
     "notes": {
       "title": "Note on question {number}",
