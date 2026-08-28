@@ -11,6 +11,7 @@
   import { buildOrgLandingPageProps, normalizeLandingPageSettings } from '$features/org/utils/landing-page';
   import { basePath } from '$lib/utils/store/app';
   import { t } from '$lib/utils/functions/translations';
+  import LanguagePicker from '$features/ui/language-picker.svelte';
   import { user } from '$lib/utils/store/user';
   import { OPERATOR_EMAIL, PRODUCT_NAME } from '@cio/utils/constants';
 
@@ -64,14 +65,23 @@
   <title>{pageTitle}</title>
 </svelte:head>
 
+<!--
+  The organisation's own landing page renders a theme component that knows nothing about
+  this, so the switcher is floated over it here — the same corner every other chrome-less
+  public page uses.
+-->
+<div class="fixed top-3 right-3 z-30">
+  <LanguagePicker variant="outline" />
+</div>
+
 {#if data.isOrgSite && data.org}
   {#if data.ThemeComponent && landingPageProps}
     <svelte:component this={data.ThemeComponent} {...landingPageProps} />
   {/if}
 {:else if hasSetupError}
   <Empty
-    title="Something Went Wrong"
-    description="We encountered an unexpected error. Please reload the page or contact us for support."
+    title={$t('error_page.setup_failed_title')}
+    description={$t('error_page.setup_failed_description')}
     icon={FrownIcon}
     variant="page"
     layout="full-page"
@@ -79,8 +89,8 @@
   >
     <p class="my-2 text-red-500">{appInitApi.error}</p>
     <div class="flex gap-2">
-      <Button variant="secondary" onclick={() => window.location.reload()}>Reload Page</Button>
-      <Button variant="default" href={`mailto:${OPERATOR_EMAIL}`}>Contact Us</Button>
+      <Button variant="secondary" onclick={() => window.location.reload()}>{$t('error_page.reload_page')}</Button>
+      <Button variant="default" href={`mailto:${OPERATOR_EMAIL}`}>{$t('error_page.contact_us')}</Button>
     </div>
   </Empty>
 {:else}

@@ -5,6 +5,16 @@ import { writable } from 'svelte/store';
 
 export const config = {
   parser: parser(),
+  /**
+   * English stands in wherever a locale has no wording of its own.
+   *
+   * Eight of the ten locales are missing the same 366 keys — the whole exam feature, which
+   * shipped in English and Vietnamese only. Without a fallback, `$t` returns the key path,
+   * so a candidate who switched to French met `exam.sitting.submit` printed on the button
+   * they had to press. It also covers the moment after a switch, while the new locale's
+   * file is still being fetched.
+   */
+  fallbackLocale: 'en',
   loaders: [
     {
       locale: 'en',

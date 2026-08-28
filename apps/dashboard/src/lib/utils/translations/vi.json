@@ -5859,5 +5859,17 @@
       "save": "Lưu ghi chú",
       "add": "Viết ghi chú"
     }
+  },
+  "error_page": {
+    "not_found_title": "Không tìm thấy trang",
+    "not_found_description": "Trang bạn tìm không tồn tại, hoặc bạn không có quyền xem trang này.",
+    "unexpected_title": "Có lỗi ngoài dự tính.",
+    "unexpected_description": "Bạn yên tâm, dữ liệu học tập của bạn vẫn an toàn. Lỗi này là ở phía chúng tôi, không phải ở bạn. Chúng tôi đã nhận được báo lỗi và sẽ sửa sớm nhất có thể. Bạn nghỉ một lát rồi quay lại giúp nhé.",
+    "go_home": "Về trang chủ",
+    "try_free_tools": "Dùng thử công cụ miễn phí",
+    "setup_failed_title": "Đã có lỗi xảy ra",
+    "setup_failed_description": "Chúng tôi gặp một lỗi ngoài dự tính. Bạn tải lại trang giúp, hoặc liên hệ với chúng tôi để được hỗ trợ.",
+    "reload_page": "Tải lại trang",
+    "contact_us": "Liên hệ chúng tôi"
   }
 }

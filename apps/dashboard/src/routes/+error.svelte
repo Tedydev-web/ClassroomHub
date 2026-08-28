@@ -5,6 +5,8 @@
   import { ExternalLinkIcon, HomeIcon, HoverableItem } from '@cio/ui/custom/moving-icons';
   import HeartCrack from '@lucide/svelte/icons/heart-crack';
   import { PRODUCT_HOSTS } from '@cio/utils/constants';
+  import { t } from '$lib/utils/functions/translations';
+  import LanguagePicker from '$features/ui/language-picker.svelte';
 
   const isNotFound = $derived(page.status === 404);
 
@@ -17,13 +19,21 @@
 </script>
 
 <svelte:head>
-  <title>{isNotFound ? 'Page not found' : 'Something unexpected occurred'}</title>
+  <title>{isNotFound ? $t('error_page.not_found_title') : $t('error_page.unexpected_title')}</title>
 </svelte:head>
+
+<!--
+  The page a lost visitor lands on is the worst one to be unable to read, and until now it
+  was the only screen in the product hardcoded to English.
+-->
+<div class="fixed top-3 right-3 z-30">
+  <LanguagePicker variant="outline" />
+</div>
 
 {#if isNotFound}
   <Empty
-    title="Page not found"
-    description="The page you're looking for doesn't exist or you don't have permission to view it."
+    title={$t('error_page.not_found_title')}
+    description={$t('error_page.not_found_description')}
     icon={HeartCrack}
     variant="page"
     layout="full-page"
@@ -34,7 +44,7 @@
         {#snippet children(isHovered)}
           <Button onclick={goHome}>
             <HomeIcon {isHovered} size={16} ariaHidden={true} />
-            Go Home
+            {$t('error_page.go_home')}
           </Button>
         {/snippet}
       </HoverableItem>
@@ -42,8 +52,8 @@
   </Empty>
 {:else}
   <Empty
-    title="Something unexpected occurred."
-    description="Don't worry, your learning is safe. It isn't your fault, it is ours. We have gotten the error notification and will push a fix ASAP. In the meantime, take a short break and come back a bit later."
+    title={$t('error_page.unexpected_title')}
+    description={$t('error_page.unexpected_description')}
     icon={HeartCrack}
     variant="page"
     layout="full-page"
@@ -54,7 +64,7 @@
         {#snippet children(isHovered)}
           <Button href={`https://${PRODUCT_HOSTS.marketing}`} variant="secondary">
             <ExternalLinkIcon {isHovered} size={16} ariaHidden={true} />
-            Try Free Tools
+            {$t('error_page.try_free_tools')}
           </Button>
         {/snippet}
       </HoverableItem>
@@ -62,7 +72,7 @@
         {#snippet children(isHovered)}
           <Button onclick={goHome}>
             <HomeIcon {isHovered} size={16} ariaHidden={true} />
-            Go Home
+            {$t('error_page.go_home')}
           </Button>
         {/snippet}
       </HoverableItem>

@@ -27,6 +27,7 @@
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
   import ExamSubmitConfirm from '$features/exam/exam-submit-confirm.svelte';
   import ExamResumeOffer from '$features/exam/exam-resume-offer.svelte';
+  import LanguagePicker from '$features/ui/language-picker.svelte';
   import type { ResumeOwner } from '$features/exam/exam-resume-owner';
   import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
   import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
@@ -806,6 +807,12 @@
            header has one thing worth reading at a glance. -->
       <p class="ui:text-muted-foreground ui:truncate ui:text-sm">{data.exam.title}</p>
       <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-2">
+        <!--
+          In the header rather than only on the entry screen. A candidate discovers they
+          cannot read the interface once they are already sitting the paper, and leaving to
+          change it is not on offer: the clock is running.
+        -->
+        <LanguagePicker />
         <!--
           Never says "saved" while anything is outstanding. The reassurance folds away on a
           narrow header to leave the clock room; the warning never does, because a candidate

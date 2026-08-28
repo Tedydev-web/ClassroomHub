@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import LanguagePicker from '$features/ui/language-picker.svelte';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import * as Avatar from '@cio/ui/base/avatar';
@@ -72,6 +73,15 @@
 </script>
 
 <div class="auth-ui-background relative flex min-h-screen w-full items-center justify-center overflow-hidden p-4">
+  <!--
+    Top corner, above the card and clear of it. Every screen wearing this shell is one a
+    person can arrive at cold — a sign-in link, an invitation, an exam link from a group
+    chat — with no sidebar to change the language from and no account that remembers it.
+  -->
+  <div class="absolute top-3 right-3 z-20">
+    <LanguagePicker variant="outline" />
+  </div>
+
   {#if authBackgroundUrl}
     <div class="absolute inset-0 z-0">
       <img src={authBackgroundUrl} alt="" class="h-full w-full object-cover" decoding="async" />
