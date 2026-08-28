@@ -33,6 +33,8 @@
     submittedAt: string | null;
     duplicateName: boolean;
     duplicateAddress: boolean;
+    /** How many times the paper stopped being the visible window on their device. */
+    leaves: number;
   };
 
   let {
@@ -50,7 +52,7 @@
   type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual';
   let filter = $state<Filter>('all');
 
-  type SortKey = 'name' | 'score' | 'time';
+  type SortKey = 'name' | 'score' | 'time' | 'leaves';
   let sortKey = $state<SortKey>('name');
   let sortDescending = $state(false);
 
@@ -126,6 +128,7 @@
         );
       }
       if (sortKey === 'time') return compareNumbers(minutesOf(left), minutesOf(right));
+      if (sortKey === 'leaves') return compareNumbers(left.leaves ?? 0, right.leaves ?? 0);
 
       // Compared in the reader's language, and unnamed sittings go last like every other
       // missing value. `undefined` here meant the order followed whichever locale the
@@ -166,7 +169,8 @@
       $t('exam.entry.candidate_number'),
       $t('exam.results.status_column'),
       $t('exam.results.score_column'),
-      $t('exam.results.time_taken_column')
+      $t('exam.results.time_taken_column'),
+      $t('exam.results.leaves_column')
     ];
     /**
      * Quoted, and defused.
@@ -191,7 +195,8 @@
           row.candidateNumber ?? '',
           statusLabel(row),
           row.score === null ? '' : `${row.score}/${row.total ?? ''}`,
-          minutesOf(row) === null ? '' : String(minutesOf(row))
+          minutesOf(row) === null ? '' : String(minutesOf(row)),
+          String(row.leaves ?? 0)
         ]
           .map(escape)
           .join(',')
@@ -299,6 +304,15 @@
     {/if}
   </div>
 
+  <!--
+    Beside the table rather than in a tooltip on one column, because the sentence has to be
+    read once by everybody who reads the numbers — and the numbers are what somebody will
+    quote later.
+  -->
+  {#if shown.some((row) => row.leaves > 0)}
+    <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.results.conduct_note')}</p>
+  {/if}
+
   {#if shown.length === 0}
     <Empty.Root class="ui:border-border ui:rounded-lg ui:border ui:border-dashed">
       <Empty.Header>
@@ -344,6 +358,23 @@
                 >
               </button>
             </Table.Head>
+            <!--
+              Sortable so a teacher can choose who to read first, and nothing more than
+              that. There is no colour, no threshold and no ranking of its own: a number
+              that arrives pre-judged is read as a verdict, and this one cannot support
+              being read that way — a phone locking its own screen produces the same count
+              as an answer being looked up.
+            -->
+            <Table.Head
+              class="ui:text-right"
+              aria-sort={sortKey === 'leaves' ? (sortDescending ? 'descending' : 'ascending') : 'none'}
+            >
+              <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('leaves')}>
+                {$t('exam.results.leaves_column')}<span aria-hidden="true"
+                  >{sortKey === 'leaves' ? (sortDescending ? ' ↓' : ' ↑') : ''}</span
+                >
+              </button>
+            </Table.Head>
             <Table.Head class="ui:w-0"></Table.Head>
           </Table.Row>
         </Table.Header>
@@ -365,7 +396,11 @@
                   <Badge variant="secondary" class="ui:ml-2">{$t('exam.results.duplicate_name')}</Badge>
                 {/if}
                 {#if row.duplicateAddress}
-                  <Badge variant="secondary" class="ui:ml-1">{$t('exam.results.duplicate_address')}</Badge>
+                  <!-- With the context, because without it a whole class on one school
+                       wifi reads as a whole class under suspicion. -->
+                  <Badge variant="secondary" class="ui:ml-1" title={$t('exam.results.duplicate_address_help')}>
+                    {$t('exam.results.duplicate_address')}
+                  </Badge>
                 {/if}
               </Table.Cell>
               <Table.Cell class="ui:text-muted-foreground">{row.className ?? '—'}</Table.Cell>
@@ -377,6 +412,13 @@
               <Table.Cell class="ui:text-right ui:font-medium ui:tabular-nums">{scoreLabel(row)}</Table.Cell>
               <Table.Cell class="ui:text-muted-foreground ui:text-right ui:tabular-nums">{minutesTaken(row)}</Table.Cell
               >
+              <Table.Cell class="ui:text-right ui:tabular-nums">
+                <!-- A dash rather than a nought where the paper never lost focus: nought is
+                     a measurement and this is the absence of anything to measure. -->
+                <span class={row.leaves > 0 ? '' : 'ui:text-muted-foreground'}>
+                  {row.leaves > 0 ? row.leaves : '—'}
+                </span>
+              </Table.Cell>
               <Table.Cell class="ui:text-right">
                 <div class="ui:flex ui:items-center ui:justify-end ui:gap-1">
                   <Button size="sm" variant="ghost" onclick={() => onopen(row.attemptId)}>

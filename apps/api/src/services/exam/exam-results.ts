@@ -27,6 +27,8 @@ import type { ExamPaperSnapshot } from './exam-paper-serializer';
 export type ExamResultRow = {
   attemptId: string;
   displayName: string | null;
+  /** Optional, and only ever there to separate two candidates who share a name. */
+  nickname: string | null;
   className: string | null;
   candidateNumber: string | null;
   status: 'in_progress' | 'submitted' | 'expired';
@@ -38,6 +40,13 @@ export type ExamResultRow = {
   /** Someone else on this paper typed the same name, or came from the same network. */
   duplicateName: boolean;
   duplicateAddress: boolean;
+  /**
+   * How many times the paper stopped being the visible window on this candidate's device.
+   *
+   * A count and nothing more. It exists so a teacher can choose whose sitting to read
+   * first, which is the only thing a number this ambiguous can honestly be used for.
+   */
+  leaves: number;
 };
 
 /**
@@ -112,7 +121,16 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
       total: schema.examAttempt.total,
       startedAt: schema.examAttempt.startedAt,
       submittedAt: schema.examAttempt.submittedAt,
-      ipHash: schema.examAttempt.ipHash
+      ipHash: schema.examAttempt.ipHash,
+      // Counted in the database rather than sent and counted here. The list deliberately
+      // carries no `answers` and no `answerLog`; the activity log is far smaller but the
+      // same argument applies at four hundred sittings, and two integers are all the list
+      // needs to let a teacher choose who to read first.
+      leaves: sql<number>`(
+        select count(*)::int
+        from jsonb_array_elements(${schema.examAttempt.activityLog}) as event
+        where event->>'kind' = 'left'
+      )`
     })
     .from(schema.examAttempt)
     .where(eq(schema.examAttempt.examId, examId))

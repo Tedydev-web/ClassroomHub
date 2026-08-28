@@ -5528,7 +5528,7 @@
       "deleted": "Deleted",
       "delete_failed": "Could not delete that attempt",
       "duplicate_name": "same name",
-      "duplicate_address": "same network",
+      "duplicate_address": "Same network as another sitting",
       "minutes_taken": "{minutes} min",
       "partial_score": "not fully marked",
       "save_mark": "Save mark",
@@ -5577,7 +5577,10 @@
       "expected_answer": "Expected: {answer}",
       "awaiting_hand_mark": "Awaiting a hand mark",
       "no_extra_details": "Nothing else declared",
-      "summary_awaiting": "{count} awaiting marking"
+      "summary_awaiting": "{count} awaiting marking",
+      "leaves_column": "Left the paper",
+      "conduct_note": "The \"left the paper\" column counts how often a candidate device stopped showing the exam. It is a count, not a finding: a phone locking its own screen produces the same entry as an answer being looked up, and a second device beside the desk produces none at all. Open a sitting to see when, and for how long.",
+      "duplicate_address_help": "Candidates on one school wifi always share an address, so this is expected in a classroom and only worth a look when a sitting was meant to happen elsewhere."
     },
     "manage": {
       "title": "Exams",

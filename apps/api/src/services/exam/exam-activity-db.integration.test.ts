@@ -197,4 +197,26 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
     // happening, and the results screen counts the rest.
     expect(await notifications()).toBe(1);
   });
+
+  it('counts departures for the results list without shipping the log to do it', async () => {
+    const { db, schema, attempt } = await load();
+    const seed = await seedSittings(db, schema, null, 2);
+    const { listExamResultsService } = await import('./exam-results');
+
+    // One candidate leaves twice, the other never does.
+    await attempt.recordActivityService(
+      seed.attemptIds[0],
+      [leaving(0), returning(30), leaving(90), returning(120)],
+      new Date()
+    );
+
+    const rows = await listExamResultsService(seed.examId);
+    const byAttempt = new Map(rows.map((row: { attemptId: string; leaves: number }) => [row.attemptId, row.leaves]));
+
+    expect(byAttempt.get(seed.attemptIds[0])).toBe(2);
+    expect(byAttempt.get(seed.attemptIds[1])).toBe(0);
+
+    // The log itself stays in the database; the list carries the number and nothing else.
+    expect(rows[0]).not.toHaveProperty('activityLog');
+  });
 });
