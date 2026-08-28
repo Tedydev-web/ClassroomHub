@@ -5504,7 +5504,13 @@
       "submitted_body": "Bài của bạn đã được ghi nhận. Vì bạn làm bài không đăng nhập nên hệ thống không lưu lịch sử cho bạn xem lại sau.",
       "unsaved_blocks_submit": "Một số câu chưa lưu được. Kiểm tra kết nối rồi thử lại.",
       "submit_failed": "Không nộp được bài. Thử lại sau ít giây.",
-      "start_failed": "Không kết nối được tới máy chủ"
+      "start_failed": "Không kết nối được tới máy chủ",
+      "time_left": "Còn {time}",
+      "five_minutes_left": "Còn năm phút.",
+      "one_minute_left": "Còn một phút. Hết giờ bài của bạn sẽ tự động được nộp.",
+      "go_to_question": "Tới câu {number}",
+      "timed_out_title": "Đã hết giờ",
+      "timed_out_offline_body": "Không kết nối được tới máy chủ để nộp bài, nhưng những câu bạn đã lưu thì đã nằm trên máy chủ rồi và sẽ được chấm. Bạn không cần làm gì thêm."
     },
     "status": {
       "in_progress": "Đang thi",

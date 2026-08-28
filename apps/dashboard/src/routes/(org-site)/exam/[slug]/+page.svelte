@@ -81,6 +81,8 @@
   let saveState = $state<'saved' | 'saving' | 'unsaved'>('saved');
   let submitting = $state(false);
   let submitError = $state<string | null>(null);
+  /** The clock ended the paper and the server could not be reached to say so. */
+  let timedOutOffline = $state(false);
   // Only ever set when the teacher chose to show it; the server decides, not this page.
   let revealedResult = $state<{ score: string; total: string } | null>(null);
 
@@ -238,11 +240,30 @@
   }
 
   /**
-   * The convenience path only. Phase 4 finalises an expired attempt from whatever was
-   * saved, so a failure here costs nothing — and saying so plainly beats pretending.
+   * The clock ran out. This is the one submit the candidate cannot retry themselves, so it
+   * retries for them, across the same thirty seconds of grace the server allows.
+   *
+   * It used to try exactly once. A candidate whose connection dropped in the last minute
+   * got a red error saying their unsaved work blocked the submit, and then nothing — the
+   * clock was gone and the screen was a dead end. What that error did not say is that the
+   * server grades an expired attempt from whatever was saved: `finaliseExpiredAttempts`
+   * scores `attempt.answers` against the frozen paper and stamps the submission at the
+   * moment the clock ended. Their paper was never in danger; only the message was.
    */
   async function onTimeUp() {
-    await submit({ celebrated: false });
+    const until = Date.now() + 30_000;
+
+    while (Date.now() < until) {
+      await submit({ celebrated: false });
+      if (stage === 'submitted') return;
+
+      await new Promise((resolve) => setTimeout(resolve, 3_000));
+    }
+
+    // Still unreachable. Say what is true rather than what failed.
+    timedOutOffline = true;
+    submitError = null;
+    stage = 'submitted';
   }
 
   /**
@@ -365,6 +386,12 @@
     if (currentIndex > 1) currentIndex -= 1;
   }
 
+  /** The outline names items by question id; paging is by position, so translate once. */
+  function goToItem(groupId: string) {
+    const index = items.findIndex((item) => String(item.questionId) === groupId);
+    if (index >= 0) currentIndex = index + 1;
+  }
+
   async function goNext() {
     if (!isLastItem) {
       currentIndex += 1;
@@ -423,9 +450,16 @@
       class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:sm:px-6 ui:lg:px-8 2xl:px-16"
       style="padding-bottom: calc({actionBarHeight}px + 1rem)"
     >
+      <!--
+        The numbers are the way around the paper, not a picture of it. Jumping lands on the
+        item holding that question — for a passage of ten, that is the passage, and its own
+        pager covers the last step.
+      -->
       <SectionNavigationSidebar
         sections={outlineGroups}
         navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
+        selectLabel={(label) => $t('exam.sitting.go_to_question', { number: label })}
+        onSelect={goToItem}
       />
 
       {#if currentItem}
@@ -501,10 +535,14 @@
 {:else}
   <!-- The exam is served outside the course layout, which is where the celebration canvas
        usually lives, so it is mounted here. -->
-  <Confetti />
+  {#if !timedOutOffline}
+    <Confetti />
+  {/if}
 
   <div class="ui:mx-auto ui:max-w-md ui:space-y-3 ui:px-4 ui:py-16 ui:text-center">
-    <h1 class="ui:text-xl ui:font-semibold">{$t('exam.sitting.submitted_title')}</h1>
+    <h1 class="ui:text-xl ui:font-semibold">
+      {timedOutOffline ? $t('exam.sitting.timed_out_title') : $t('exam.sitting.submitted_title')}
+    </h1>
 
     {#if revealedResult}
       <p class="ui:tabular-nums ui:text-3xl ui:font-semibold">
@@ -513,7 +551,7 @@
     {/if}
 
     <p class="ui:text-muted-foreground ui:text-sm">
-      {$t('exam.sitting.submitted_body')}
+      {timedOutOffline ? $t('exam.sitting.timed_out_offline_body') : $t('exam.sitting.submitted_body')}
     </p>
   </div>
 {/if}

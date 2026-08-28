@@ -101,6 +101,11 @@
           <SectionNavigationSidebar
             sections={outlineGroups}
             navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
+            selectLabel={(label) => $t('exam.sitting.go_to_question', { number: label })}
+            onSelect={(groupId) => {
+              const index = questions.findIndex((question) => String(question.questionId) === groupId);
+              if (index >= 0) currentIndex = index + 1;
+            }}
           />
 
           {#if currentItem}

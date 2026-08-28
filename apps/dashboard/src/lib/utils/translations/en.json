@@ -5494,7 +5494,13 @@
       "submitted_body": "Your paper has been recorded. Because you sat it without signing in, no record is kept for you to return to.",
       "unsaved_blocks_submit": "Some answers have not saved. Check your connection and try again.",
       "submit_failed": "Could not submit. Try again in a moment.",
-      "start_failed": "Could not reach the server"
+      "start_failed": "Could not reach the server",
+      "time_left": "{time} remaining",
+      "five_minutes_left": "Five minutes remaining.",
+      "one_minute_left": "One minute remaining. Your paper is handed in automatically when the time ends.",
+      "go_to_question": "Go to question {number}",
+      "timed_out_title": "Time is up",
+      "timed_out_offline_body": "We could not reach the server to hand your paper in, but the answers you had saved are already on it. They will be marked. You do not need to do anything else."
     },
     "status": {
       "in_progress": "Sitting",
