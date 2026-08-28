@@ -2,6 +2,9 @@ import { createHash } from 'node:crypto';
 
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
 import { Hono } from '@api/utils/hono';
+import { db } from '@cio/db/drizzle';
+import * as schema from '@cio/db/schema';
+import { eq } from 'drizzle-orm';
 import { env } from '@cio/core/config/env';
 import { zValidator } from '@hono/zod-validator';
 import { getCookie, setCookie } from 'hono/cookie';
@@ -78,6 +81,24 @@ function countExamQuestions(snapshot: ExamPaperSnapshot | null): number {
   );
 }
 
+/**
+ * The course an exam belongs to, by name, for the link preview.
+ *
+ * An exam need not belong to one — a container-only paper has no course — so this answers
+ * `null` rather than failing, and the preview leaves the line out.
+ */
+async function courseNameFor(courseId: string | null): Promise<string | null> {
+  if (!courseId) return null;
+
+  const [row] = await db
+    .select({ title: schema.course.title })
+    .from(schema.course)
+    .where(eq(schema.course.id, courseId))
+    .limit(1);
+
+  return row?.title ?? null;
+}
+
 export const examSittingRouter = new Hono()
   .use('*', async (c, next) => {
     requireExamsEnabled();
@@ -99,7 +120,12 @@ export const examSittingRouter = new Hono()
           requiresCandidateNumber: exam.requiresCandidateNumber,
           requiresPassword: Boolean(exam.passwordHash),
           workingSeconds: exam.workingSeconds,
+          // Both ends of the window, so a link pasted into a chat can say when the paper
+          // opens as well as when it shuts. Neither is a secret: anybody holding the link
+          // can already read both on the page it opens.
+          opensAt: exam.opensAt,
           closesAt: exam.closesAt,
+          course: await courseNameFor(exam.courseId),
           maxAttempts: exam.maxAttempts,
           // Told before the clock starts so the warning a candidate meets later can say what
           // will actually happen, rather than a threat nobody configured.
