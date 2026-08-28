@@ -5809,6 +5809,23 @@
       "entry_answered": "Trả lời câu {question}",
       "seconds": "{count} giây",
       "minutes": "{count} phút"
+    },
+    "navigator": {
+      "title": "Danh sách câu hỏi",
+      "answered_of": "Đã trả lời {answered}/{total}",
+      "legend": "Ô tô đậm là đã trả lời, ô viền là chưa, ô đặc là câu bạn đang làm. Dấu ở góc là câu bạn đã đánh dấu.",
+      "bookmarks": "Đã đánh dấu",
+      "bookmarked": "Đã đánh dấu",
+      "bookmark_this": "Đánh dấu câu {number}",
+      "notes": "Ghi chú của bạn",
+      "note_on": "Câu {number}",
+      "remove_note": "Xoá ghi chú này"
+    },
+    "notes": {
+      "title": "Ghi chú cho câu {number}",
+      "placeholder": "Chỉ mình bạn thấy. Ghi chú nằm trên máy này.",
+      "save": "Lưu ghi chú",
+      "add": "Viết ghi chú"
     }
   }
 }

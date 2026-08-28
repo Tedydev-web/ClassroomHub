@@ -5799,6 +5799,23 @@
       "entry_answered": "Answered question {question}",
       "seconds": "{count}s",
       "minutes": "{count} min"
+    },
+    "navigator": {
+      "title": "Questions",
+      "answered_of": "{answered} of {total} answered",
+      "legend": "Filled is answered, outlined is not, and the solid one is where you are. A corner mark means you bookmarked it.",
+      "bookmarks": "Bookmarked",
+      "bookmarked": "Bookmarked",
+      "bookmark_this": "Bookmark question {number}",
+      "notes": "Your notes",
+      "note_on": "Question {number}",
+      "remove_note": "Delete this note"
+    },
+    "notes": {
+      "title": "Note on question {number}",
+      "placeholder": "Only you see this. It stays on this device.",
+      "save": "Save note",
+      "add": "Write a note"
     }
   }
 }

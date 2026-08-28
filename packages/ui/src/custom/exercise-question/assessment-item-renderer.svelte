@@ -458,7 +458,15 @@
 {/snippet}
 
 {#snippet renderInteractionBlock(block: DeliveryInteractionBlock, interactionIndex: number)}
-  <div class="ui:flex ui:min-w-0 ui:items-start ui:gap-3">
+  <!--
+    Tagged with the number the candidate sees, so anything outside this component can bring
+    them to one question rather than to the passage holding it. A passage of ten questions
+    is one page; without an anchor per question, "go to 14" can only mean "go to 12 to 17".
+  -->
+  <div
+    class="ui:flex ui:min-w-0 ui:items-start ui:gap-3 ui:scroll-mt-24"
+    data-question-number={interactionNumberStart + interactionIndex}
+  >
     {#if showsInteractionNumbers}
       <span class="ui:min-w-6 ui:font-semibold ui:tabular-nums">{interactionNumberStart + interactionIndex}.</span>
     {/if}

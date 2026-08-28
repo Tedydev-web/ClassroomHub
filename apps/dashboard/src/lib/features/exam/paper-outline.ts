@@ -25,6 +25,8 @@ export type OutlineQuestion = {
   label: string;
   isCurrent: boolean;
   isAnswered: boolean;
+  /** Marked by the candidate to come back to. Never sent anywhere; it is their own note. */
+  isBookmarked: boolean;
 };
 
 export type OutlineGroup = {
@@ -76,6 +78,14 @@ export function buildOutlineGroups(
     currentIndex: number;
     labels: OutlineLabels;
     answered?: (question: PaperQuestion) => AssessmentResponseEnvelope | null;
+    /**
+     * The one number the candidate is on. Without it a passage of ten lights all ten as
+     * current, which tells them where the passage is and not where they are — and makes a
+     * jump to question 14 look identical to a jump to question 12.
+     */
+    currentNumber?: number | null;
+    /** Numbers the candidate marked to come back to. */
+    bookmarked?: ReadonlySet<number>;
   }
 ): OutlineGroup[] {
   let number = 1;
@@ -89,17 +99,22 @@ export function buildOutlineGroups(
       (block: { kind?: string }) => block.kind === 'interaction'
     );
 
-    const isCurrent = index + 1 === options.currentIndex;
+    const isCurrentGroup = index + 1 === options.currentIndex;
 
     const outlineQuestions = interactions.map((block: { id: string }) => {
-      const label = String(number);
+      const value = number;
+      const label = String(value);
       number += 1;
 
       return {
         key: `${question.questionId}-${block.id}`,
         label,
-        isCurrent,
-        isAnswered: answeredIds.has(block.id)
+        // Where a number is named, only that one is current. Where none is — the candidate
+        // paged here rather than jumping — the group's first question stands in, so the
+        // panel still shows where they are.
+        isCurrent: isCurrentGroup && (options.currentNumber == null || options.currentNumber === value),
+        isAnswered: answeredIds.has(block.id),
+        isBookmarked: options.bookmarked?.has(value) ?? false
       };
     });
 
@@ -112,7 +127,7 @@ export function buildOutlineGroups(
               outlineQuestions[outlineQuestions.length - 1]?.label ?? ''
             )
           : options.labels.single(outlineQuestions[0]?.label ?? ''),
-      isCurrent,
+      isCurrent: isCurrentGroup,
       questions: outlineQuestions
     };
   });

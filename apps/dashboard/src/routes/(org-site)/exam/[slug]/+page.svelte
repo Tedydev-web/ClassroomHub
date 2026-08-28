@@ -1,10 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/utils/functions/translations';
-  import {
-    AssessmentItemRenderer,
-    QuestionNavigation,
-    SectionNavigationSidebar
-  } from '@cio/ui/custom/exercise-question';
+  import { AssessmentItemRenderer, QuestionNavigation } from '@cio/ui/custom/exercise-question';
   import { Progress } from '@cio/ui/base/progress';
   import {
     getAssessmentVerticalSliceResponseProgress,
@@ -13,6 +9,18 @@
   } from '@cio/question-types';
   import { getAssessmentPassageWorkspaceLabels } from '$features/course/components/exercise/question-labels';
   import { buildOutlineGroups, questionNumberStarts } from '$features/exam/paper-outline';
+  import ExamPaperNavigator from '$features/exam/exam-paper-navigator.svelte';
+  import BookmarkIcon from '@lucide/svelte/icons/bookmark';
+  import LayoutGridIcon from '@lucide/svelte/icons/layout-grid';
+  import StickyNoteIcon from '@lucide/svelte/icons/sticky-note';
+  import {
+    addNote,
+    readAnnotations,
+    removeNote,
+    toggleBookmark,
+    writeAnnotations,
+    type PaperAnnotations
+  } from '$features/exam/exam-annotations';
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
@@ -20,6 +28,7 @@
   import ExamLeftWarning from '$features/exam/exam-left-warning.svelte';
   import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
   import * as Dialog from '@cio/ui/base/dialog';
+  import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus } from '$features/exam/exam-activity';
   import { clockOffsetMs, createAutosaveQueue } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
@@ -428,6 +437,29 @@
   // Declared before the outline that reads it: the outline is lazy, so the order does not
   // change behaviour, but a reader should not have to prove that to themselves.
   let currentIndex = $state(1);
+  /**
+   * The number the candidate is on, which is not the same as the item they are on: a
+   * passage of ten questions is one item and ten numbers. Null after paging, where no
+   * particular number was asked for.
+   */
+  let currentNumber = $state<number | null>(null);
+  let navigatorOpen = $state(false);
+  let annotations = $state<PaperAnnotations>({ bookmarks: [], notes: [] });
+  let pendingQuote = $state<string | null>(null);
+  let noteBody = $state('');
+
+  // Read once the attempt exists, because the marks belong to this sitting and not to the
+  // paper. A refresh mid-exam finds them again.
+  $effect(() => {
+    if (!attemptId) return;
+
+    annotations = readAnnotations(attemptId);
+  });
+
+  function persist(next: PaperAnnotations) {
+    annotations = next;
+    if (attemptId) writeAnnotations(attemptId, next);
+  }
 
   /**
    * The question outline the exercise page carries, fed from the paper instead of from
@@ -440,6 +472,8 @@
   const outlineGroups = $derived(
     buildOutlineGroups(paper?.questions ?? [], {
       currentIndex,
+      currentNumber,
+      bookmarked: bookmarkedNumbers,
       answered: (question) => (responses[question.questionId] ?? null) as AssessmentResponseEnvelope | null,
       labels: {
         range: (start, end) =>
@@ -463,18 +497,17 @@
   const isLastItem = $derived(currentIndex >= items.length);
 
   function goPrevious() {
-    if (currentIndex > 1) currentIndex -= 1;
-  }
-
-  /** The outline names items by question id; paging is by position, so translate once. */
-  function goToItem(groupId: string) {
-    const index = items.findIndex((item) => String(item.questionId) === groupId);
-    if (index >= 0) currentIndex = index + 1;
+    if (currentIndex > 1) {
+      currentIndex -= 1;
+      currentNumber = null;
+    }
   }
 
   async function goNext() {
     if (!isLastItem) {
       currentIndex += 1;
+      currentNumber = null;
+
       return;
     }
 
@@ -482,6 +515,64 @@
   }
 
   const numberStartByQuestionId = $derived(questionNumberStarts(paper?.questions ?? []));
+
+  const bookmarkedNumbers = $derived(new Set(annotations.bookmarks));
+
+  /** The number a bookmark button acts on: the one jumped to, or the item's first. */
+  const currentPageNumber = $derived(
+    currentNumber ?? (currentItem ? (numberStartByQuestionId[currentItem.questionId] ?? 1) : 1)
+  );
+
+  /**
+   * Brings the candidate to one question rather than to the passage holding it.
+   *
+   * The item has to change first so the question exists in the document, and the scroll
+   * waits a frame for that render. Where the anchor is missing — a renderer that does not
+   * number its interactions — landing on the item is still the right outcome, so the
+   * failure is silent and harmless.
+   */
+  function goToQuestion(number: number) {
+    const target = (paper?.questions ?? []).findIndex((question) => {
+      const start = numberStartByQuestionId[question.questionId] ?? 1;
+      const count = (question.definition?.blocks ?? []).filter(
+        (block: { kind?: string }) => block.kind === 'interaction'
+      ).length;
+
+      return number >= start && number < start + count;
+    });
+
+    if (target < 0) return;
+
+    currentIndex = target + 1;
+    currentNumber = number;
+
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-question-number="${number}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  /**
+   * Turns whatever the candidate has selected into the start of a note.
+   *
+   * The selection is captured at the moment they ask for a note, not held as they drag:
+   * a selection that survives being tapped away is a selection that fights the paper.
+   */
+  function beginNote() {
+    const selected = typeof window === 'undefined' ? '' : (window.getSelection()?.toString() ?? '');
+
+    pendingQuote = selected.trim();
+    noteBody = '';
+  }
+
+  function saveNote() {
+    if (!noteBody.trim()) return;
+
+    persist(addNote(annotations, { questionNumber: currentPageNumber, quote: pendingQuote ?? '', body: noteBody }));
+    pendingQuote = null;
+    noteBody = '';
+  }
 </script>
 
 {#if stage === 'entry'}
@@ -525,6 +616,39 @@
 
       <Dialog.Footer>
         <Button onclick={() => (helpOpen = false)}>{$t('exam.left.continue')}</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+
+  <ExamPaperNavigator
+    groups={outlineGroups}
+    notes={annotations.notes}
+    answered={progress.answered}
+    total={progress.total}
+    open={navigatorOpen}
+    onOpenChange={(next) => (navigatorOpen = next)}
+    onSelect={goToQuestion}
+    onRemoveNote={(id) => persist(removeNote(annotations, id))}
+  />
+
+  <!--
+    Written against whatever was selected, and against the question on screen when nothing
+    was. A note is the candidate's own; it is never sent anywhere.
+  -->
+  <Dialog.Root open={pendingQuote !== null} onOpenChange={(next) => !next && (pendingQuote = null)}>
+    <Dialog.Content class="ui:max-w-sm">
+      <Dialog.Header>
+        <Dialog.Title>{$t('exam.notes.title', { number: String(currentPageNumber) })}</Dialog.Title>
+        {#if pendingQuote}
+          <Dialog.Description class="ui:italic">“{pendingQuote}”</Dialog.Description>
+        {/if}
+      </Dialog.Header>
+
+      <Textarea bind:value={noteBody} rows={4} placeholder={$t('exam.notes.placeholder')} />
+
+      <Dialog.Footer>
+        <Button variant="ghost" onclick={() => (pendingQuote = null)}>{$t('exam.left.continue')}</Button>
+        <Button disabled={!noteBody.trim()} onclick={saveNote}>{$t('exam.notes.save')}</Button>
       </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Root>
@@ -590,18 +714,6 @@
       class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:sm:px-6 ui:lg:px-8 2xl:px-16"
       style="padding-bottom: calc({actionBarHeight}px + 1rem)"
     >
-      <!--
-        The numbers are the way around the paper, not a picture of it. Jumping lands on the
-        item holding that question — for a passage of ten, that is the passage, and its own
-        pager covers the last step.
-      -->
-      <SectionNavigationSidebar
-        sections={outlineGroups}
-        navigationLabel={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_outline')}
-        selectLabel={(label) => $t('exam.sitting.go_to_question', { number: label })}
-        onSelect={goToItem}
-      />
-
       {#if currentItem}
         {#key currentItem.questionId}
           <AssessmentItemRenderer
@@ -658,6 +770,37 @@
         already carries its own previous/next for the questions inside one passage, and a
         second pair directly beneath it read as a broken duplicate of the first.
       -->
+        <!--
+          The three controls a candidate reaches for without looking, in the bar their thumb
+          already rests on: where am I in the paper, mark this one, write this down.
+        -->
+        <div class="ui:flex ui:shrink-0 ui:items-center ui:gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label={$t('exam.navigator.title')}
+            onclick={() => (navigatorOpen = true)}
+          >
+            <LayoutGridIcon size={18} />
+          </Button>
+
+          <Button
+            type="button"
+            variant={bookmarkedNumbers.has(currentPageNumber) ? 'secondary' : 'outline'}
+            size="icon"
+            aria-pressed={bookmarkedNumbers.has(currentPageNumber)}
+            aria-label={$t('exam.navigator.bookmark_this', { number: String(currentPageNumber) })}
+            onclick={() => persist(toggleBookmark(annotations, currentPageNumber))}
+          >
+            <BookmarkIcon size={18} class={bookmarkedNumbers.has(currentPageNumber) ? 'ui:fill-current' : ''} />
+          </Button>
+
+          <Button type="button" variant="outline" size="icon" aria-label={$t('exam.notes.add')} onclick={beginNote}>
+            <StickyNoteIcon size={18} />
+          </Button>
+        </div>
+
         <QuestionNavigation
           canGoBack={currentIndex > 1}
           canGoNext={!submitting}

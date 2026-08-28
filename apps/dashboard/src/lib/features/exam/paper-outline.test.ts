@@ -134,4 +134,36 @@ describe('the outline of an exam paper', () => {
       false
     ]);
   });
+
+  it('lights only the question that was jumped to, not the whole passage', () => {
+    // The complaint this fixes: bouncing to 14 inside a passage of 12-17 used to light all
+    // six, so arriving at 14 looked exactly like arriving at 12.
+    const groups = buildOutlineGroups(PAPER, { currentIndex: 1, currentNumber: 4, labels });
+
+    const current = groups.flatMap((group) => group.questions).filter((question) => question.isCurrent);
+    expect(current.map((question) => question.label)).toEqual(['4']);
+  });
+
+  it('falls back to the whole group when no question was named', () => {
+    // Paging with Next names no number, and the panel should still show where they are.
+    const groups = buildOutlineGroups(PAPER, { currentIndex: 1, labels });
+
+    expect(groups[0].questions.every((question) => question.isCurrent)).toBe(true);
+    expect(groups[1].questions.every((question) => !question.isCurrent)).toBe(true);
+  });
+
+  it('marks the numbers a candidate bookmarked, wherever they sit', () => {
+    const groups = buildOutlineGroups(PAPER, {
+      currentIndex: 1,
+      labels,
+      bookmarked: new Set([2, 33])
+    });
+
+    const bookmarked = groups
+      .flatMap((group) => group.questions)
+      .filter((question) => question.isBookmarked)
+      .map((question) => question.label);
+
+    expect(bookmarked).toEqual(['2', '33']);
+  });
 });
