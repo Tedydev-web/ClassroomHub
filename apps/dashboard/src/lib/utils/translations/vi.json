@@ -5701,7 +5701,13 @@
       "password_set_placeholder": "Nhập mật khẩu mới, hoặc để trống để bỏ mật khẩu",
       "password_help": "Thí sinh phải nhập mật khẩu này trước khi vào đề. Đọc mật khẩu lúc bắt đầu giờ thi.",
       "password_kept": "Đề này đang có mật khẩu. Để trống ô này thì mật khẩu giữ nguyên.",
-      "password_clear_hint": "Lưu bây giờ sẽ thay mật khẩu. Lưu khi ô trống thì mật khẩu bị bỏ hẳn."
+      "password_clear_hint": "Lưu bây giờ sẽ thay mật khẩu. Lưu khi ô trống thì mật khẩu bị bỏ hẳn.",
+      "close_at_moment": "Vào giờ cụ thể",
+      "close_after_days": "Sau số ngày kể từ khi mở",
+      "after_days_help": "Tính từ giờ mở đề, nên mở sáng thứ Sáu và để ba ngày thì đóng vào sáng thứ Hai.",
+      "closes_on": "Đóng lúc {at}",
+      "after_days_needs_open": "Muốn đóng sau số ngày thì phải có giờ mở đề để tính từ đó",
+      "after_days_needs_number": "Nhập số ngày đề mở"
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
@@ -5741,7 +5747,8 @@
       "help": "Đây là đề đúng như thí sinh nhận được, đã bỏ đáp án. Đọc trước khi gửi link — phương án bị dồn thành một đoạn chữ, hay công thức mất khi import, chỉ lộ ra ở đây.",
       "frozen": "Đề đang mở, nên đây chính là đề thí sinh đang làm",
       "not_frozen": "Chưa mở, nên đây là đề sẽ được đóng băng khi mở",
-      "unavailable": "Đề này chưa có câu hỏi nào nên không có gì để xem."
+      "unavailable": "Đề này chưa có câu hỏi nào nên không có gì để xem.",
+      "question_count": "{count} câu hỏi"
     }
   }
 }

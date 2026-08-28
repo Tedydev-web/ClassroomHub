@@ -12,6 +12,7 @@
     type AssessmentResponseEnvelope
   } from '@cio/question-types';
   import { getAssessmentPassageWorkspaceLabels } from '$features/course/components/exercise/question-labels';
+  import { buildOutlineGroups, questionNumberStarts } from '$features/exam/paper-outline';
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
@@ -315,58 +316,39 @@
    * A passage holding six questions advances the count by six, so question seven really
    * is the seventh question rather than the second item.
    */
+  // Declared before the outline that reads it: the outline is lazy, so the order does not
+  // change behaviour, but a reader should not have to prove that to themselves.
+  let currentIndex = $state(1);
+
   /**
    * The question outline the exercise page carries, fed from the paper instead of from
    * sections — an exam has none. Forty questions across ten passages is exactly where a
    * candidate needs to see, at a glance, which ones they have not answered yet.
+   *
+   * Built by the same module the teacher's preview uses, so the two cannot number one
+   * paper two different ways.
    */
-  const outlineGroups = $derived.by(() => {
-    let number = 1;
-
-    return (paper?.questions ?? []).map((question, index) => {
-      const envelope = responses[question.questionId];
-      const answered = new Set(
-        (envelope?.responses ?? []).map((entry: { interactionId: string }) => entry.interactionId)
-      );
-      const interactions = (question.definition?.blocks ?? []).filter(
-        (block: { kind?: string }) => block.kind === 'interaction'
-      );
-
-      const questions = interactions.map((block: { id: string }) => {
-        const label = String(number);
-        number += 1;
-
-        return {
-          key: `${question.questionId}-${block.id}`,
-          label,
-          isCurrent: index + 1 === currentIndex,
-          isAnswered: answered.has(block.id)
-        };
-      });
-
-      return {
-        id: String(question.questionId),
-        title:
-          questions.length > 1
-            ? $t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_question_range', {
-                start: questions[0]?.label ?? '',
-                end: questions[questions.length - 1]?.label ?? ''
-              })
-            : $t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', {
-                index: questions[0]?.label ?? ''
-              }),
-        isCurrent: index + 1 === currentIndex,
-        questions
-      };
-    });
-  });
+  const outlineGroups = $derived(
+    buildOutlineGroups(paper?.questions ?? [], {
+      currentIndex,
+      answered: (question) => (responses[question.questionId] ?? null) as AssessmentResponseEnvelope | null,
+      labels: {
+        range: (start, end) =>
+          $t('course.navItem.lessons.exercises.all_exercises.assessment_item.passage_workspace_question_range', {
+            start,
+            end
+          }),
+        single: (index) =>
+          $t('course.navItem.lessons.exercises.all_exercises.assessment_item.question_number', { index })
+      }
+    })
+  );
 
   /**
    * One item at a time, with the same Previous/Next/Finish control the exercise page uses.
    * A paper of forty questions in one scroll is a different product from the one the
    * course already teaches with, and the passage workspace is built to own the viewport.
    */
-  let currentIndex = $state(1);
   const items = $derived(paper?.questions ?? []);
   const currentItem = $derived(items[currentIndex - 1]);
   const isLastItem = $derived(currentIndex >= items.length);
@@ -384,17 +366,7 @@
     await submit();
   }
 
-  const numberStartByQuestionId = $derived.by(() => {
-    const starts: Record<number, number> = {};
-    let next = 1;
-
-    for (const question of paper?.questions ?? []) {
-      starts[question.questionId] = next;
-      next += getAssessmentVerticalSliceResponseModelProgress(question).total;
-    }
-
-    return starts;
-  });
+  const numberStartByQuestionId = $derived(questionNumberStarts(paper?.questions ?? []));
 </script>
 
 {#if stage === 'entry'}

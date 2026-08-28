@@ -5691,7 +5691,13 @@
       "password_set_placeholder": "Type a new password, or leave empty to remove it",
       "password_help": "Candidates must type this before the paper opens. Give it out at the start of the sitting.",
       "password_kept": "This exam has a password. Leave this empty to keep it as it is.",
-      "password_clear_hint": "Saving now replaces the password. Save it empty to remove the password entirely."
+      "password_clear_hint": "Saving now replaces the password. Save it empty to remove the password entirely.",
+      "close_at_moment": "At a set time",
+      "close_after_days": "A number of days after it opens",
+      "after_days_help": "Counted from the opening time, so three days opening Friday morning closes Monday morning.",
+      "closes_on": "Closes {at}",
+      "after_days_needs_open": "Closing after a number of days needs an opening time to count from",
+      "after_days_needs_number": "Enter how many days the exam stays open"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
@@ -5731,7 +5737,8 @@
       "help": "This is the paper as a candidate is served it, with the answer keys removed. Read it before the link goes out — an option that came through as plain text, or an equation lost in an import, shows here and nowhere else.",
       "frozen": "This exam is open, so this is the paper its candidates are sitting",
       "not_frozen": "Not open yet, so this is the paper it would freeze on opening",
-      "unavailable": "This paper has no questions yet, so there is nothing to show."
+      "unavailable": "This paper has no questions yet, so there is nothing to show.",
+      "question_count": "{count} questions"
     }
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from '$lib/utils/functions/translations';
+  import { locale, t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { Input } from '@cio/ui/base/input';
@@ -8,6 +8,8 @@
   import * as Select from '@cio/ui/base/select';
   import * as Card from '@cio/ui/base/card';
   import * as Alert from '@cio/ui/base/alert';
+
+  import { closingTimeAfterDays } from './exam-closing-time';
 
   /**
    * Configuring an exam, using the vocabulary Vietnamese teachers already read.
@@ -94,6 +96,27 @@
   let password = $state('');
   let passwordTouched = $state(false);
 
+  /**
+   * Two ways to say the same closing time. A teacher who knows "it runs for three days"
+   * should not have to work out which date that lands on, especially across the end of a
+   * month — but one who knows the exact moment still types it, so this is an extra way in
+   * rather than a replacement. Only `closesAt` is ever stored.
+   */
+  let closeMode = $state<'at' | 'after'>('at');
+  let closeAfterDays = $state('');
+
+  const closesAtIso = $derived.by(() => {
+    if (closeMode === 'after')
+      return opensAt ? closingTimeAfterDays(new Date(opensAt).toISOString(), Number(closeAfterDays)) : null;
+
+    return closesAt ? new Date(closesAt).toISOString() : null;
+  });
+
+  /** The computed date, shown back so the teacher can check it before saving. */
+  const closesAtPreview = $derived(
+    closeMode === 'after' && closesAtIso ? new Date(closesAtIso).toLocaleString($locale ?? 'vi') : ''
+  );
+
   let thresholdPercent = $state(
     initial?.revealThreshold ? String(Math.round(Number(initial.revealThreshold) * 100)) : ''
   );
@@ -117,7 +140,7 @@
       [$t('exam.settings.answer_visibility'), answerVisibility],
       [$t('exam.settings.comment_visibility'), commentVisibility]
     ] as const) {
-      if (value === 'after_everyone' && (!closesAt || workingMinutes.trim().length === 0)) {
+      if (value === 'after_everyone' && (!closesAtIso || workingMinutes.trim().length === 0)) {
         found.push($t('exam.settings.after_everyone_needs_times', { label }));
       }
     }
@@ -136,8 +159,18 @@
       found.push($t('exam.settings.on_submit_needs_single_attempt'));
     }
 
-    if (opensAt && closesAt && new Date(opensAt) >= new Date(closesAt)) {
+    if (opensAt && closesAtIso && new Date(opensAt) >= new Date(closesAtIso)) {
       found.push($t('exam.settings.opens_before_closes'));
+    }
+
+    if (closeMode === 'after') {
+      const days = Number(closeAfterDays);
+
+      if (!opensAt) {
+        found.push($t('exam.settings.after_days_needs_open'));
+      } else if (!closeAfterDays.trim() || !Number.isFinite(days) || days <= 0) {
+        found.push($t('exam.settings.after_days_needs_number'));
+      }
     }
 
     return found;
@@ -151,7 +184,7 @@
       mode,
       workingSeconds: workingMinutes.trim() ? Math.round(Number(workingMinutes) * 60) : null,
       opensAt: opensAt ? new Date(opensAt).toISOString() : null,
-      closesAt: closesAt ? new Date(closesAt).toISOString() : null,
+      closesAt: closesAtIso,
       maxAttempts: maxAttempts.trim() ? Number(maxAttempts) : null,
       requiresName,
       requiresClass,
@@ -274,8 +307,32 @@
         <Input id="exam-opens" type="datetime-local" bind:value={opensAt} />
       </div>
       <div class="ui:space-y-2">
-        <Label for="exam-closes">{$t('exam.settings.closes_at')}</Label>
-        <Input id="exam-closes" type="datetime-local" bind:value={closesAt} />
+        <fieldset class="ui:space-y-2">
+          <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.closes_at')}</legend>
+          <RadioGroup.Root bind:value={closeMode} class="ui:flex ui:flex-wrap ui:gap-4">
+            <div class="ui:flex ui:items-center ui:gap-2">
+              <RadioGroup.Item value="at" id="exam-close-at" />
+              <Label for="exam-close-at" class="ui:font-normal">{$t('exam.settings.close_at_moment')}</Label>
+            </div>
+            <div class="ui:flex ui:items-center ui:gap-2">
+              <RadioGroup.Item value="after" id="exam-close-after" />
+              <Label for="exam-close-after" class="ui:font-normal">{$t('exam.settings.close_after_days')}</Label>
+            </div>
+          </RadioGroup.Root>
+        </fieldset>
+
+        {#if closeMode === 'at'}
+          <Input id="exam-closes" type="datetime-local" bind:value={closesAt} />
+        {:else}
+          <Input id="exam-close-days" inputmode="numeric" bind:value={closeAfterDays} placeholder="3" />
+          <p class="ui:text-muted-foreground ui:text-xs">
+            {#if closesAtPreview}
+              {$t('exam.settings.closes_on', { at: closesAtPreview })}
+            {:else}
+              {$t('exam.settings.after_days_help')}
+            {/if}
+          </p>
+        {/if}
       </div>
     </Card.Content>
   </Card.Root>
