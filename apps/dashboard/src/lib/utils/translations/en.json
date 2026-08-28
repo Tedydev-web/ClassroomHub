@@ -5680,7 +5680,13 @@
       "comment_visibility": "Teacher comments",
       "reveal_threshold": "Threshold (%)",
       "threshold_help": "Only candidates scoring at or above this share of the total are shown it.",
-      "threshold_needs_percent": "Showing something above a threshold needs a threshold between 1 and 100"
+      "threshold_needs_percent": "Showing something above a threshold needs a threshold between 1 and 100",
+      "password": "Password (optional)",
+      "password_placeholder": "Leave empty for no password",
+      "password_set_placeholder": "Type a new password, or leave empty to remove it",
+      "password_help": "Candidates must type this before the paper opens. Give it out at the start of the sitting.",
+      "password_kept": "This exam has a password. Leave this empty to keep it as it is.",
+      "password_clear_hint": "Saving now replaces the password. Save it empty to remove the password entirely."
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
@@ -5689,7 +5695,8 @@
       "already_finished": "This attempt is already finished.",
       "name_required": "Please enter your full name.",
       "class_required": "Please enter your class.",
-      "candidate_required": "Please enter your candidate number."
+      "candidate_required": "Please enter your candidate number.",
+      "password_required": "This exam needs the password your teacher gave you."
     },
     "corrections": {
       "title": "Answer keys",

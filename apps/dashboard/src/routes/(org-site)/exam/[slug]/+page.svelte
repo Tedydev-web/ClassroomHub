@@ -113,7 +113,8 @@
     'This attempt is already finished': 'already_finished',
     'Your full name is required': 'name_required',
     'Your class is required': 'class_required',
-    'Your candidate number is required': 'candidate_required'
+    'Your candidate number is required': 'candidate_required',
+    'This exam needs the password your teacher gave you': 'password_required'
   };
 
   /**
@@ -145,6 +146,9 @@
     return fallback;
   }
 
+  // Seeded from the loader, then raised if the server refuses a start for want of one.
+  let needsPassword = $state(data.exam.requiresPassword);
+
   async function start(details: { displayName: string; className: string; candidateNumber: string; password: string }) {
     starting = true;
     entryError = null;
@@ -157,7 +161,16 @@
       const body = await response.json();
 
       if (!('success' in body) || !body.success) {
-        entryError = 'error' in body ? String(body.error) : $t('exam.manage.open_failed');
+        // A teacher can protect an exam after this page was loaded, in which case the entry
+        // form never drew a password box. Asking for one now is the difference between a
+        // sitter who can go on and a sitter stuck on a refusal they cannot act on.
+        if ('code' in body && body.code === 'EXAM_PASSWORD_REQUIRED') {
+          needsPassword = true;
+        }
+
+        const message = 'error' in body ? String(body.error) : '';
+        const key = SERVER_REFUSALS[message];
+        entryError = key ? $t(`exam.refusal.${key}`) : message || $t('exam.manage.open_failed');
         return;
       }
 
@@ -390,7 +403,7 @@
     requiresName={data.exam.requiresName}
     requiresClass={data.exam.requiresClass}
     requiresCandidateNumber={data.exam.requiresCandidateNumber}
-    requiresPassword={data.exam.requiresPassword}
+    requiresPassword={needsPassword}
     workingMinutes={data.exam.workingSeconds ? Math.round(data.exam.workingSeconds / 60) : null}
     {starting}
     error={entryError}

@@ -49,7 +49,8 @@ export const load = async ({ params, cookies }) => {
       scoreVisibility: exam.scoreVisibility,
       answerVisibility: exam.answerVisibility,
       commentVisibility: exam.commentVisibility,
-      revealThreshold: exam.revealThreshold
+      revealThreshold: exam.revealThreshold,
+      hasPassword: exam.hasPassword
     }
   };
 };

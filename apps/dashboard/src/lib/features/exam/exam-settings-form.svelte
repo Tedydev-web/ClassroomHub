@@ -38,6 +38,8 @@
     answerVisibility: Reveal;
     commentVisibility: Reveal;
     revealThreshold: string | null;
+    /** Whether one is set. The password itself never comes back from the server. */
+    hasPassword: boolean;
   };
 
   let {
@@ -86,6 +88,12 @@
 
   // Stored as the fraction the grader compares against — `score / total` — and typed as
   // the percentage a teacher actually says out loud.
+  // The stored password is never readable, so editing an exam that has one starts from
+  // "leave it alone" and only sends anything once the teacher says otherwise. Without this
+  // the field would arrive empty and saving a changed title would clear the password.
+  let password = $state('');
+  let passwordTouched = $state(false);
+
   let thresholdPercent = $state(
     initial?.revealThreshold ? String(Math.round(Number(initial.revealThreshold) * 100)) : ''
   );
@@ -151,7 +159,10 @@
       scoreVisibility,
       answerVisibility,
       commentVisibility,
-      revealThreshold: needsThreshold ? String(Number(thresholdPercent) / 100) : null
+      revealThreshold: needsThreshold ? String(Number(thresholdPercent) / 100) : null,
+      // Omitted entirely unless it was touched, which is what tells the server to keep the
+      // password it already has. An empty box that was touched removes it.
+      ...(initial && !passwordTouched ? {} : { password: password.trim() || null })
     });
   }
 </script>
@@ -192,6 +203,29 @@
           </div>
         </RadioGroup.Root>
       </fieldset>
+
+      <div class="ui:space-y-2">
+        <Label for="exam-password">{$t('exam.settings.password')}</Label>
+        <Input
+          id="exam-password"
+          type="text"
+          autocomplete="off"
+          bind:value={password}
+          oninput={() => (passwordTouched = true)}
+          placeholder={initial?.hasPassword
+            ? $t('exam.settings.password_set_placeholder')
+            : $t('exam.settings.password_placeholder')}
+        />
+        <p class="ui:text-muted-foreground ui:text-xs">
+          {#if initial?.hasPassword && !passwordTouched}
+            {$t('exam.settings.password_kept')}
+          {:else if initial?.hasPassword}
+            {$t('exam.settings.password_clear_hint')}
+          {:else}
+            {$t('exam.settings.password_help')}
+          {/if}
+        </p>
+      </div>
 
       <fieldset class="ui:space-y-2">
         <legend class="ui:text-sm ui:font-medium">{$t('exam.settings.declared_fields')}</legend>

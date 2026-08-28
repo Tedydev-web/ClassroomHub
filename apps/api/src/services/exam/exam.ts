@@ -17,6 +17,7 @@ import * as schema from '@cio/db/schema';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { assertIsContainer, freezeExamPaper, summariseContainer } from './exam-container';
+import { hashExamPassword } from './exam-password';
 import { revealConfigurationIssue, type ExamRevealValue } from './exam-reveal-policy';
 
 /**
@@ -54,6 +55,8 @@ export type ExamSettingsInput = {
   answerVisibility: ExamRevealValue;
   commentVisibility: ExamRevealValue;
   revealThreshold: string | null;
+  /** Plain text, hashed here. Absent or `null` means the exam has no password. */
+  password?: string | null;
 };
 
 /**
@@ -179,6 +182,7 @@ export async function createExamService(input: ExamSettingsInput, courseId: stri
       answerVisibility: input.answerVisibility,
       commentVisibility: input.commentVisibility,
       revealThreshold: input.revealThreshold,
+      passwordHash: input.password ? await hashExamPassword(input.password) : null,
       createdBy
     })
     .returning();
@@ -216,21 +220,23 @@ export async function updateExamSettingsService(id: string, patch: ExamSettingsP
   const exam = await getExamById(id);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
+  const { password, ...settingsPatch } = patch;
+
   const merged: ExamSettingsInput = {
     exerciseId: exam.exerciseId,
-    title: patch.title ?? exam.title,
-    mode: patch.mode ?? exam.mode,
-    workingSeconds: patch.workingSeconds !== undefined ? patch.workingSeconds : exam.workingSeconds,
-    opensAt: patch.opensAt !== undefined ? patch.opensAt : exam.opensAt,
-    closesAt: patch.closesAt !== undefined ? patch.closesAt : exam.closesAt,
-    maxAttempts: patch.maxAttempts !== undefined ? patch.maxAttempts : exam.maxAttempts,
-    requiresName: patch.requiresName ?? exam.requiresName,
-    requiresClass: patch.requiresClass ?? exam.requiresClass,
-    requiresCandidateNumber: patch.requiresCandidateNumber ?? exam.requiresCandidateNumber,
-    scoreVisibility: patch.scoreVisibility ?? exam.scoreVisibility,
-    answerVisibility: patch.answerVisibility ?? exam.answerVisibility,
-    commentVisibility: patch.commentVisibility ?? exam.commentVisibility,
-    revealThreshold: patch.revealThreshold !== undefined ? patch.revealThreshold : exam.revealThreshold
+    title: settingsPatch.title ?? exam.title,
+    mode: settingsPatch.mode ?? exam.mode,
+    workingSeconds: settingsPatch.workingSeconds !== undefined ? settingsPatch.workingSeconds : exam.workingSeconds,
+    opensAt: settingsPatch.opensAt !== undefined ? settingsPatch.opensAt : exam.opensAt,
+    closesAt: settingsPatch.closesAt !== undefined ? settingsPatch.closesAt : exam.closesAt,
+    maxAttempts: settingsPatch.maxAttempts !== undefined ? settingsPatch.maxAttempts : exam.maxAttempts,
+    requiresName: settingsPatch.requiresName ?? exam.requiresName,
+    requiresClass: settingsPatch.requiresClass ?? exam.requiresClass,
+    requiresCandidateNumber: settingsPatch.requiresCandidateNumber ?? exam.requiresCandidateNumber,
+    scoreVisibility: settingsPatch.scoreVisibility ?? exam.scoreVisibility,
+    answerVisibility: settingsPatch.answerVisibility ?? exam.answerVisibility,
+    commentVisibility: settingsPatch.commentVisibility ?? exam.commentVisibility,
+    revealThreshold: settingsPatch.revealThreshold !== undefined ? settingsPatch.revealThreshold : exam.revealThreshold
   };
 
   const issues = validateExamSettings(merged);
@@ -238,9 +244,14 @@ export async function updateExamSettingsService(id: string, patch: ExamSettingsP
     throw new AppError(issues.join('; '), ErrorCodes.VALIDATION_ERROR, 400);
   }
 
-  const { exerciseId: _container, ...settings } = merged;
+  const { exerciseId: _container, password: _plain, ...settings } = merged;
 
-  const updated = await updateExam(id, settings);
+  const updated = await updateExam(id, {
+    ...settings,
+    // Only when the caller said something about it. `undefined` leaves the stored hash
+    // alone; `null` is a deliberate removal.
+    ...(password === undefined ? {} : { passwordHash: password === null ? null : await hashExamPassword(password) })
+  });
   if (!updated) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
   // The settings back, not the row. The row carries the frozen paper with every answer
@@ -256,7 +267,11 @@ export async function getExamService(id: string) {
   const exam = await getExamById(id);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
-  return exam;
+  // Whether there is a password, never the hash. A teacher's screen needs to say the exam
+  // is protected; nothing it draws needs the value that protects it.
+  const { passwordHash, ...rest } = exam;
+
+  return { ...rest, hasPassword: Boolean(passwordHash) };
 }
 
 export async function getPublicExamService(slug: string) {

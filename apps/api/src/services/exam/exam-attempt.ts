@@ -7,6 +7,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { canStartNow, computeExpiry, isWithinWritingWindow, secondsRemaining } from './exam-attempt-clock';
 import { getAttemptByToken } from '@cio/db/queries/exam/exam-attempt';
+import { verifyExamPassword } from './exam-password';
 import {
   paperQuestionIds,
   revisionForQuestion,
@@ -142,6 +143,18 @@ export type StartAttemptInput = {
 
 export async function startAttemptService(input: StartAttemptInput) {
   const { exam, identity, profileId, now } = input;
+
+  // The password was accepted as a parameter and never compared. Anybody who reached the
+  // link could sit a protected exam by typing anything into the box, and the box itself
+  // implied otherwise. Checked before anything else, so a wrong password costs a refusal
+  // rather than a row.
+  if (exam.passwordHash) {
+    const supplied = input.password ?? '';
+
+    if (!supplied || !(await verifyExamPassword(supplied, exam.passwordHash))) {
+      throw new AppError('This exam needs the password your teacher gave you', ErrorCodes.EXAM_PASSWORD_REQUIRED, 403);
+    }
+  }
 
   if (
     !canStartNow(

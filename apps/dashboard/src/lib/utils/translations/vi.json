@@ -5690,7 +5690,13 @@
       "comment_visibility": "Nhận xét của giáo viên",
       "reveal_threshold": "Ngưỡng (%)",
       "threshold_help": "Chỉ thí sinh đạt từ tỉ lệ này trở lên trên tổng điểm mới được xem.",
-      "threshold_needs_percent": "Muốn hiện theo ngưỡng thì phải nhập ngưỡng từ 1 đến 100"
+      "threshold_needs_percent": "Muốn hiện theo ngưỡng thì phải nhập ngưỡng từ 1 đến 100",
+      "password": "Mật khẩu (không bắt buộc)",
+      "password_placeholder": "Để trống nếu không cần mật khẩu",
+      "password_set_placeholder": "Nhập mật khẩu mới, hoặc để trống để bỏ mật khẩu",
+      "password_help": "Thí sinh phải nhập mật khẩu này trước khi vào đề. Đọc mật khẩu lúc bắt đầu giờ thi.",
+      "password_kept": "Đề này đang có mật khẩu. Để trống ô này thì mật khẩu giữ nguyên.",
+      "password_clear_hint": "Lưu bây giờ sẽ thay mật khẩu. Lưu khi ô trống thì mật khẩu bị bỏ hẳn."
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
@@ -5699,7 +5705,8 @@
       "already_finished": "Bài này đã kết thúc.",
       "name_required": "Vui lòng nhập họ và tên.",
       "class_required": "Vui lòng nhập lớp.",
-      "candidate_required": "Vui lòng nhập số báo danh."
+      "candidate_required": "Vui lòng nhập số báo danh.",
+      "password_required": "Đề này cần mật khẩu giáo viên đọc cho bạn."
     },
     "corrections": {
       "title": "Đáp án",

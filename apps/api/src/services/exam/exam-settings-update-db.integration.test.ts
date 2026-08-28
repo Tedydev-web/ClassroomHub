@@ -99,6 +99,36 @@ describe.runIf(runDatabaseIntegration)('editing an exam', () => {
     expect(new Date(updated.opensAt as string).toISOString()).toBe(opensAt);
   });
 
+  it('sets, keeps and removes the password without being asked twice', async () => {
+    const { db, schema, service } = await load();
+    const { examId } = await seedExam(db, schema);
+
+    await service.updateExamSettingsService(examId, { password: 'ca-mot' });
+
+    const stored = async () => {
+      const [row] = await db
+        .select({ passwordHash: schema.exam.passwordHash })
+        .from(schema.exam)
+        .where(eq(schema.exam.id, examId));
+      return row.passwordHash as string | null;
+    };
+
+    const afterSetting = await stored();
+    expect(afterSetting).toBeTruthy();
+
+    const { verifyExamPassword } = await import('./exam-password');
+    await expect(verifyExamPassword('ca-mot', afterSetting as string)).resolves.toBe(true);
+
+    // Editing something else must not disarm the exam. The patch says nothing about the
+    // password, so the password stays exactly as it was.
+    await service.updateExamSettingsService(examId, { title: 'Corrected title' });
+    expect(await stored()).toBe(afterSetting);
+
+    // An explicit null is the only thing that removes it.
+    await service.updateExamSettingsService(examId, { password: null });
+    expect(await stored()).toBeNull();
+  });
+
   it('does not hand the frozen paper back to whoever changed a title', async () => {
     const { db, schema, service } = await load();
     const { examId } = await seedExam(db, schema, {
