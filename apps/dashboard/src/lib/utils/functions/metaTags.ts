@@ -66,3 +66,33 @@ export function absoluteImageUrl(imageUrl: string, requestUrl: URL): string {
     return imageUrl;
   }
 }
+
+/**
+ * The media type of the image being pointed at, read off its address.
+ *
+ * The default card declared the same PNG twice, once as `image/jpeg` and once as
+ * `image/webp`. Neither was true, and the pair was not offering a scraper a choice of
+ * formats either — both entries carried the identical URL. A scraper that checks the type it
+ * was promised against the bytes it receives has grounds to discard the image on both.
+ *
+ * Unknown extensions get no type at all, which is a tag left out rather than a wrong answer.
+ */
+export function imageMediaType(imageUrl: string): string | undefined {
+  const extension = imageUrl.split('?')[0].split('#')[0].split('.').pop()?.toLowerCase();
+
+  switch (extension) {
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'webp':
+      return 'image/webp';
+    case 'gif':
+      return 'image/gif';
+    case 'svg':
+      return 'image/svg+xml';
+    default:
+      return undefined;
+  }
+}

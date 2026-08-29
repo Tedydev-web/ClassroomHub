@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { absoluteImageUrl, resolveMetaTags } from './metaTags';
+import { absoluteImageUrl, imageMediaType, resolveMetaTags } from './metaTags';
 
 /** The shape `getBaseMetaTags` actually returns: frozen at the top, plain objects inside. */
 function siteDefaults() {
@@ -109,5 +109,25 @@ describe('absoluteImageUrl', () => {
   it('returns the original string when it cannot be resolved at all', () => {
     // Better a tag a tolerant scraper might still use than an exception during render.
     expect(absoluteImageUrl('', new URL('https://msna.classroom.io.vn/'))).toBe('https://msna.classroom.io.vn/');
+  });
+});
+
+describe('imageMediaType', () => {
+  it('reads the type off the address', () => {
+    // The bundled default is a PNG that was being declared as JPEG and as WebP.
+    expect(imageMediaType('https://msna.classroom.io.vn/classroomhub-opengraph.png')).toBe('image/png');
+    expect(imageMediaType('/banner.JPG')).toBe('image/jpeg');
+    expect(imageMediaType('/card.webp')).toBe('image/webp');
+  });
+
+  it('ignores a query string or fragment on the way to the extension', () => {
+    expect(imageMediaType('https://cdn.example.com/og.png?v=2')).toBe('image/png');
+    expect(imageMediaType('https://cdn.example.com/og.png#top')).toBe('image/png');
+  });
+
+  it('says nothing rather than guessing wrong', () => {
+    // A missing tag costs a scraper nothing; a wrong one gives it grounds to drop the image.
+    expect(imageMediaType('https://cdn.example.com/render/og')).toBeUndefined();
+    expect(imageMediaType('')).toBeUndefined();
   });
 });

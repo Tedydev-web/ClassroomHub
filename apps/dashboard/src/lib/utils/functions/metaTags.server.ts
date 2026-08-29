@@ -1,5 +1,5 @@
 import { PRODUCT_NAME } from '@cio/utils/constants';
-import { absoluteImageUrl } from './metaTags';
+import { absoluteImageUrl, imageMediaType } from './metaTags';
 import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { OrgSiteInfo } from '$features/app/layout-setup';
 import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
@@ -65,7 +65,7 @@ function buildOrgOpenGraphImages(ogImageUrl: string, orgName: string) {
       width: ORG_OG_WIDTH,
       height: ORG_OG_HEIGHT,
       secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
-      type: 'image/png'
+      type: imageMediaType(ogImageUrl)
     }
   ];
 }
@@ -148,6 +148,9 @@ export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: O
   const usesDynamicOrgOg =
     orgSiteInfo.isOrgSite && Boolean(orgSiteInfo.org?.siteName) && !publicEnv.PUBLIC_OG_IMAGE_URL?.trim();
 
+  // One entry, and its type read off the address. The pair that used to sit here declared
+  // the same PNG as both JPEG and WebP — not two formats a scraper could choose between,
+  // just one file described wrongly twice.
   const openGraphImages = usesDynamicOrgOg
     ? buildOrgOpenGraphImages(ogImageUrl, siteName)
     : [
@@ -157,15 +160,7 @@ export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: O
           width: 1920,
           height: 1080,
           secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
-          type: 'image/jpeg'
-        },
-        {
-          url: ogImageUrl,
-          alt: `${siteName} platform for customer, partner, and employee education`,
-          width: 1920,
-          height: 1080,
-          secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
-          type: 'image/webp'
+          type: imageMediaType(ogImageUrl)
         }
       ];
 
