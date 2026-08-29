@@ -35,6 +35,7 @@
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus } from '$features/exam/exam-activity';
+  import { workspaceChromeCorrection } from '$features/exam/exam-workspace-chrome';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
@@ -65,6 +66,11 @@
    * makes the guarantee "the bar never covers an option" hold everywhere.
    */
   let actionBarHeight = $state(0);
+
+  /** The sticky header above the paper, measured for the same reason the bar is. */
+  let headerHeight = $state(0);
+
+  const chromeCorrection = $derived(workspaceChromeCorrection(headerHeight, actionBarHeight));
 
   let stage = $state<Stage>('entry');
 
@@ -799,8 +805,9 @@
 
   <ExamLeftWarning open={warningOpen} {leaves} {autoSubmitAfterLeaves} onacknowledge={() => (warningOpen = false)} />
 
-  <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {actionBarHeight}px">
+  <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {chromeCorrection}px">
     <header
+      bind:clientHeight={headerHeight}
       class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
     >
       <!-- Quiet on purpose: the candidate knows which paper they are sitting, and the
@@ -891,7 +898,7 @@
     -->
     <footer
       bind:clientHeight={actionBarHeight}
-      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] 2xl:px-16"
+      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:relative ui:sm:px-6 ui:lg:px-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] 2xl:px-16"
     >
       <!--
         Inside the bar, not after it. The bar is pinned, so anything following it in the
@@ -913,13 +920,15 @@
       {/if}
 
       <!--
-        Progress runs the width of the bar rather than sharing a row with the controls. It
-        is the one thing here that is read and never touched, so it costs a hairline instead
-        of a column, and the room it gives back goes to the targets a thumb has to hit.
+        Along the bar's own top edge, out of the flow entirely.
+        As a row of its own it cost real height, and every pixel this bar takes is taken
+        from the paper above it: the workspace is sized `100dvh` less the chrome, and this
+        bar's measured height is part of that subtraction. Progress is read and never
+        touched, so it is the one thing here that can give its height back.
       -->
       <Progress
         value={progress.total > 0 ? (progress.answered / progress.total) * 100 : 0}
-        class="ui:h-1.5 ui:w-full"
+        class="ui:absolute ui:inset-x-0 ui:top-0 ui:h-1 ui:rounded-none"
       />
 
       <!--
@@ -931,11 +940,12 @@
         where the candidate is standing, so the control that moves them through the paper
         also answers the question that makes them want to move.
       -->
-      <div class="ui:flex ui:items-center ui:gap-2">
+      <div class="ui:flex ui:flex-wrap ui:items-center ui:gap-2">
         <Button
           type="button"
           variant="outline"
-          class="ui:min-h-11 ui:min-w-0 ui:flex-1 ui:justify-start ui:gap-2"
+          size="sm"
+          class="ui:h-9 ui:min-w-0 ui:flex-1 ui:justify-start ui:gap-2"
           onclick={() => (navigatorOpen = true)}
         >
           <LayoutGridIcon size={18} class="ui:shrink-0" />
@@ -944,7 +954,8 @@
               number: String(currentPageNumber),
               total: String(progress.total)
             })}
-            <span class="ui:text-muted-foreground">
+            <!-- Only where there is room for it; the number is the part that must always fit. -->
+            <span class="ui:text-muted-foreground ui:hidden ui:sm:inline">
               ·
               {unansweredCount > 0
                 ? $t('exam.sitting.unanswered', { count: String(unansweredCount) })
@@ -957,7 +968,7 @@
           type="button"
           variant="outline"
           size="icon"
-          class="ui:min-h-11 ui:shrink-0"
+          class="ui:size-9 ui:shrink-0"
           aria-pressed={bookmarkedNumbers.has(currentPageNumber)}
           aria-label={$t('exam.navigator.bookmark_this', { number: String(currentPageNumber) })}
           onclick={() => persist(toggleBookmark(annotations, currentPageNumber))}
@@ -978,30 +989,33 @@
           type="button"
           variant="outline"
           size="icon"
-          class="ui:min-h-11 ui:shrink-0"
+          class="ui:size-9 ui:shrink-0"
           aria-label={$t('exam.notes.add')}
           onclick={beginNote}
         >
           <StickyNoteIcon size={18} class={notedNumbers.has(currentPageNumber) ? 'ui:text-emerald-600' : ''} />
         </Button>
-      </div>
 
-      <!--
-        Paging between items lives here rather than under the paper. The passage workspace
-        already carries its own previous/next for the questions inside one passage, and a
-        second pair directly beneath it read as a broken duplicate of the first.
-      -->
-      <QuestionNavigation
-        canGoBack={currentIndex > 1 && !timeUp}
-        canGoNext={!submitting && !timeUp}
-        isLast={isLastItem}
-        isSubmitting={submitting}
-        previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
-        nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
-        finishLabel={$t('exam.sitting.submit')}
-        onPrevious={goPrevious}
-        onNext={goNext}
-      />
+        <!--
+          Paging shares this row rather than taking one of its own. It had a row to itself
+          for a while, and the paper above lost that height directly — the questions pane
+          gets three fifths of whatever the bar leaves, so a row here costs several lines of
+          the thing a candidate is actually trying to read.
+        -->
+        <div class="ui:ml-auto ui:shrink-0">
+          <QuestionNavigation
+            canGoBack={currentIndex > 1 && !timeUp}
+            canGoNext={!submitting && !timeUp}
+            isLast={isLastItem}
+            isSubmitting={submitting}
+            previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
+            nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}
+            finishLabel={$t('exam.sitting.submit')}
+            onPrevious={goPrevious}
+            onNext={goNext}
+          />
+        </div>
+      </div>
     </footer>
   </div>
 {:else}
