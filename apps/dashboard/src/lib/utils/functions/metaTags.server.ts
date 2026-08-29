@@ -1,5 +1,5 @@
 import { PRODUCT_NAME } from '@cio/utils/constants';
-import { absoluteImageUrl, imageMediaType } from './metaTags';
+import { absoluteImageUrl, imageMediaType, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from './metaTags';
 import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { OrgSiteInfo } from '$features/app/layout-setup';
 import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
@@ -13,8 +13,6 @@ const DEFAULT_TITLE = `${PRODUCT_NAME} | One Platform for Customer, Partner, and
 const DEFAULT_DESCRIPTION =
   'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
 const CLOUD_OG_IMAGE = '/classroomhub-opengraph.png';
-const ORG_OG_WIDTH = 1200;
-const ORG_OG_HEIGHT = 630;
 
 async function resolveOgImageUrl(url: URL, orgSiteInfo: OrgSiteInfo): Promise<string> {
   const envUrl = publicEnv.PUBLIC_OG_IMAGE_URL?.trim();
@@ -62,8 +60,8 @@ function buildOrgOpenGraphImages(ogImageUrl: string, orgName: string) {
     {
       url: ogImageUrl,
       alt: `${orgName} learning platform`,
-      width: ORG_OG_WIDTH,
-      height: ORG_OG_HEIGHT,
+      width: OG_IMAGE_WIDTH,
+      height: OG_IMAGE_HEIGHT,
       secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
       type: imageMediaType(ogImageUrl)
     }
@@ -157,8 +155,8 @@ export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: O
         {
           url: ogImageUrl,
           alt: `${siteName} platform for customer, partner, and employee education`,
-          width: 1920,
-          height: 1080,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
           secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
           type: imageMediaType(ogImageUrl)
         }

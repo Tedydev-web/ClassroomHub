@@ -96,3 +96,17 @@ export function imageMediaType(imageUrl: string): string | undefined {
       return undefined;
   }
 }
+
+/**
+ * The size of the card image, and the size it actually is.
+ *
+ * The bundled default measures 1200x630 — the standard card ratio — while these tags
+ * announced 1920x1080. Scrapers lay out a card from the dimensions they are promised and
+ * check them against the file they fetch, so the numbers being decorative rather than true
+ * is the sort of thing that ends with no picture and no error anywhere.
+ *
+ * They are asserted against the file in `static/` by a test, so swapping the image without
+ * revisiting them fails rather than quietly misdescribing the new one.
+ */
+export const OG_IMAGE_WIDTH = 1200;
+export const OG_IMAGE_HEIGHT = 630;

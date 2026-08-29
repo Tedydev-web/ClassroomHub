@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { absoluteImageUrl, imageMediaType, resolveMetaTags } from './metaTags';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import { absoluteImageUrl, imageMediaType, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, resolveMetaTags } from './metaTags';
 
 /** The shape `getBaseMetaTags` actually returns: frozen at the top, plain objects inside. */
 function siteDefaults() {
@@ -129,5 +132,29 @@ describe('imageMediaType', () => {
     // A missing tag costs a scraper nothing; a wrong one gives it grounds to drop the image.
     expect(imageMediaType('https://cdn.example.com/render/og')).toBeUndefined();
     expect(imageMediaType('')).toBeUndefined();
+  });
+});
+
+describe('the card image tags describe the file that is actually served', () => {
+  /** Width and height straight out of the PNG header, which is the only account that counts. */
+  function pngSize(path: string) {
+    const bytes = readFileSync(path);
+
+    expect(bytes.subarray(0, 8)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+
+    return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+  }
+
+  it('announces the dimensions the bundled image really has', () => {
+    // These tags claimed 1920x1080 for a 1200x630 file. Scrapers lay a card out from the
+    // numbers they are promised and check them against what they fetch, so being wrong here
+    // ends with no picture and no error anywhere.
+    const asset = fileURLToPath(new URL('../../../../static/classroomhub-opengraph.png', import.meta.url));
+
+    expect(pngSize(asset)).toEqual({ width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT });
+  });
+
+  it('announces the media type the bundled image really is', () => {
+    expect(imageMediaType('/classroomhub-opengraph.png')).toBe('image/png');
   });
 });
