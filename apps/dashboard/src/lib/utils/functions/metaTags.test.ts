@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveMetaTags } from './metaTags';
+import { absoluteImageUrl, resolveMetaTags } from './metaTags';
 
 /** The shape `getBaseMetaTags` actually returns: frozen at the top, plain objects inside. */
 function siteDefaults() {
@@ -71,5 +71,43 @@ describe('resolveMetaTags', () => {
 
   it('survives a page that sets nothing at all', () => {
     expect(resolveMetaTags(siteDefaults(), undefined).title).toBe('ClassroomHub');
+  });
+});
+
+/**
+ * `og:image` must be absolute. The bundled default is written as a site-root path, and a
+ * scraper reading the tag holds a string with no document to resolve it against — so the
+ * card came back with its picture missing.
+ */
+describe('absoluteImageUrl', () => {
+  const request = new URL('https://msna.classroom.io.vn/exam/abc123');
+
+  it('resolves the bundled default against the site it is being served from', () => {
+    expect(absoluteImageUrl('/classroomhub-opengraph.png', request)).toBe(
+      'https://msna.classroom.io.vn/classroomhub-opengraph.png'
+    );
+  });
+
+  it('resolves against the origin, never the page path', () => {
+    // The exam page lives at /exam/<slug>; resolving relative to it would ask the scraper
+    // for /exam/classroomhub-opengraph.png, which does not exist.
+    expect(absoluteImageUrl('/classroomhub-opengraph.png', request)).not.toContain('/exam/');
+  });
+
+  it('leaves an address that is already absolute alone', () => {
+    const cdn = 'https://cdn.example.com/og/course.png';
+
+    expect(absoluteImageUrl(cdn, request)).toBe(cdn);
+  });
+
+  it('carries the origin of the site actually asked for, not a hardcoded one', () => {
+    expect(absoluteImageUrl('/og.png', new URL('https://school.example.com/'))).toBe(
+      'https://school.example.com/og.png'
+    );
+  });
+
+  it('returns the original string when it cannot be resolved at all', () => {
+    // Better a tag a tolerant scraper might still use than an exception during render.
+    expect(absoluteImageUrl('', new URL('https://msna.classroom.io.vn/'))).toBe('https://msna.classroom.io.vn/');
   });
 });

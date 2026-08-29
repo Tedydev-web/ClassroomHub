@@ -46,3 +46,23 @@ function withoutEmptyValues<T>(tags: T): T {
 
   return kept as T;
 }
+
+/**
+ * An image address a scraper can actually fetch.
+ *
+ * `og:image` is required to be absolute, and the bundled default is written as a site-root
+ * path. A scraper reading the tag has no page to resolve that against — it holds a string,
+ * not a document — so the tolerant ones guessed and the strict ones showed no image at all.
+ *
+ * It also silently emptied `og:image:secure_url`, which is only set when the address already
+ * begins with `https://`; a root-relative path never does, so the tag was omitted from every
+ * page using the default image.
+ */
+export function absoluteImageUrl(imageUrl: string, requestUrl: URL): string {
+  try {
+    return new URL(imageUrl, requestUrl.origin).href;
+  } catch {
+    // Not a resolvable address at all. Better the original string than nothing.
+    return imageUrl;
+  }
+}

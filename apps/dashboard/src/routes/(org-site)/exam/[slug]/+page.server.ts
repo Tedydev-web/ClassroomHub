@@ -42,15 +42,25 @@ export const load = async ({ params, url, request }) => {
    * and nothing about which exam it was. A class receiving that in a group chat had to open
    * it to learn whether it was theirs.
    *
-   * `noindex` because the address is the credential: the paper is reachable by anybody who
-   * has the link, and a search engine that has it would hand it to everybody who does not.
-   * A chat app scraping the page to draw a card is welcome; an index of open exams is not.
+   * It deliberately sets no `robots` directive. It carried `noindex, nofollow` for a while,
+   * on the reasoning that the address is the credential — but that reasoning weighed a
+   * theoretical exposure against a certain cost, and got the trade the wrong way round.
+   *
+   * A crawler can only index an address it has found, and this one lives in the group chat a
+   * teacher pasted it into. Where somebody does paste it somewhere public, it is public
+   * already and no meta tag recalls it. Meanwhile several link scrapers refuse to draw a
+   * picture for a page marked `noindex`, so the card lost its image the moment the directive
+   * first took effect — a preview a whole class actually looks at, traded for a search result
+   * nobody was going to get.
+   *
+   * Worth stating plainly: the directive never reached production. A frozen-object merge
+   * swallowed every top-level tag from the day this shipped, so the pages have served
+   * `index,follow` throughout. Leaving it out is the state that has been running all along.
    */
   const pageMetaTags = Object.freeze({
     title,
     description,
     canonical,
-    robots: 'noindex, nofollow',
     openGraph: {
       type: 'website',
       url: canonical,

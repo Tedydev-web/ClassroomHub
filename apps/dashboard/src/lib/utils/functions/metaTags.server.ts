@@ -1,4 +1,5 @@
 import { PRODUCT_NAME } from '@cio/utils/constants';
+import { absoluteImageUrl } from './metaTags';
 import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { OrgSiteInfo } from '$features/app/layout-setup';
 import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
@@ -143,7 +144,7 @@ export async function getBaseMetaTags(url: URL, headers: Headers, orgSiteInfo: O
     (isSelfHosted && orgSiteInfo.org?.name ? orgSiteInfo.org.name : null) ||
     PRODUCT_NAME;
 
-  const ogImageUrl = await resolveOgImageUrl(publicRequestUrl, orgSiteInfo);
+  const ogImageUrl = absoluteImageUrl(await resolveOgImageUrl(publicRequestUrl, orgSiteInfo), publicRequestUrl);
   const usesDynamicOrgOg =
     orgSiteInfo.isOrgSite && Boolean(orgSiteInfo.org?.siteName) && !publicEnv.PUBLIC_OG_IMAGE_URL?.trim();
 
