@@ -35,7 +35,6 @@
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus } from '$features/exam/exam-activity';
-  import { workspaceChromeCorrection } from '$features/exam/exam-workspace-chrome';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
@@ -57,20 +56,6 @@
   let { data } = $props();
 
   type Stage = 'entry' | 'sitting' | 'submitted';
-
-  /**
-   * The height of the pinned action bar, measured rather than assumed.
-   *
-   * The bar wraps to two lines on a narrow phone and grows by the safe-area inset on a
-   * notched one, so any hard-coded padding is wrong on some device. Measuring it is what
-   * makes the guarantee "the bar never covers an option" hold everywhere.
-   */
-  let actionBarHeight = $state(0);
-
-  /** The sticky header above the paper, measured for the same reason the bar is. */
-  let headerHeight = $state(0);
-
-  const chromeCorrection = $derived(workspaceChromeCorrection(headerHeight, actionBarHeight));
 
   let stage = $state<Stage>('entry');
 
@@ -805,10 +790,16 @@
 
   <ExamLeftWarning open={warningOpen} {leaves} {autoSubmitAfterLeaves} onacknowledge={() => (warningOpen = false)} />
 
-  <div class="ui:flex ui:min-h-dvh ui:flex-col" style="--exercise-chrome-extra: {chromeCorrection}px">
+  <!--
+    A column exactly the height of the viewport, and the only thing on the page that is not
+    allowed to scroll. Everything that scrolls does so inside a pane with its own frame: the
+    passage, and the questions. That is what keeps the header and the action bar where a
+    candidate left them, and what makes the paper fit a tall phone and a short laptop
+    without anybody predicting either — the middle simply takes what is left over.
+  -->
+  <div class="ui:flex ui:flex-col ui:overflow-hidden h-dvh">
     <header
-      bind:clientHeight={headerHeight}
-      class="ui:border-border ui:bg-background ui:sticky ui:top-0 ui:z-20 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
+      class="ui:border-border ui:bg-background ui:z-20 ui:shrink-0 ui:flex ui:items-center ui:justify-between ui:gap-3 ui:border-b ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] 2xl:px-16"
     >
       <!-- Quiet on purpose: the candidate knows which paper they are sitting, and the
            header has one thing worth reading at a glance. -->
@@ -862,18 +853,13 @@
       column squeezed both into the middle while a third of a laptop screen sat empty.
       Padding grows with the viewport instead, so a phone still gets its margins.
     -->
-    <!--
-      The action bar is pinned over the paper, so the paper has to end above it. Padding by
-      the bar's own height is what lets the last option scroll clear; without it the bar sits
-      on top of the final answers and a candidate cannot see what they are choosing.
-    -->
     <main
-      class="ui:w-full ui:flex-1 ui:space-y-4 ui:px-3 ui:pt-6 ui:sm:px-6 ui:lg:px-8 2xl:px-16"
-      style="padding-bottom: calc({actionBarHeight}px + 1rem)"
+      class="ui:flex ui:min-h-0 ui:w-full ui:flex-1 ui:flex-col ui:overflow-y-auto ui:px-3 ui:py-4 ui:sm:px-6 ui:lg:px-8 2xl:px-16"
     >
       {#if currentItem}
         {#key currentItem.questionId}
           <AssessmentItemRenderer
+            fillsParent
             definition={currentItem.definition}
             response={responses[currentItem.questionId]}
             disabled={submitting || timeUp}
@@ -897,8 +883,7 @@
       padding on the paper above, means the two never occupy the same pixels.
     -->
     <footer
-      bind:clientHeight={actionBarHeight}
-      class="ui:border-border ui:bg-background ui:fixed ui:inset-x-0 ui:bottom-0 ui:z-20 ui:flex ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:relative ui:sm:px-6 ui:lg:px-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] 2xl:px-16"
+      class="ui:border-border ui:bg-background ui:relative ui:z-20 ui:flex ui:shrink-0 ui:flex-col ui:gap-2 ui:border-t ui:px-3 ui:py-3 ui:sm:px-6 ui:lg:px-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] 2xl:px-16"
     >
       <!--
         Inside the bar, not after it. The bar is pinned, so anything following it in the

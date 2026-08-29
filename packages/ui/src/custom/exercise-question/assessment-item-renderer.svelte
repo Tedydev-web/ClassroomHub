@@ -46,6 +46,16 @@
     falseLabel: string;
     focusRequestKey?: number;
     passageWorkspaceLabels?: PassageWorkspaceLabels | null;
+    /**
+     * Take the height of whatever contains this instead of working it out from the viewport.
+     *
+     * The default sizes the workspace at `100dvh` less an assumed `14rem` of chrome, which
+     * is the course page this was built for. A host that already lays itself out to the
+     * viewport — a fixed column with its own header and action bar — knows the exact height
+     * available and can simply hand it over, which fits every screen shape without anybody
+     * predicting them.
+     */
+    fillsParent?: boolean;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
   }
 
@@ -83,6 +93,7 @@
     falseLabel,
     focusRequestKey,
     passageWorkspaceLabels = null,
+    fillsParent = false,
     onResponseChange = () => {}
   }: Props = $props();
   const rendererId = $props.id();
@@ -787,7 +798,11 @@
 
   {#if usesPassageWorkspace && passageWorkspaceLabels}
     <div
-      class={['ui:bg-background ui:overflow-hidden', showContainer ? '' : 'ui:border-border ui:rounded-md ui:border']}
+      class={[
+        'ui:bg-background ui:overflow-hidden',
+        showContainer ? '' : 'ui:border-border ui:rounded-md ui:border',
+        fillsParent ? 'ui:flex ui:h-full ui:min-h-0 ui:flex-col' : ''
+      ]}
       data-assessment-layout="passage-workspace"
     >
       <!--
@@ -797,7 +812,7 @@
         so the noise was the common case and the navigation the rare one.
       -->
       {#if passageGroupViews.length > 1}
-        <details class="ui:border-border ui:border-b ui:px-4 ui:py-2">
+        <details class="ui:border-border ui:shrink-0 ui:border-b ui:px-4 ui:py-2">
           <summary
             class="ui:focus-visible:ring-ring ui:cursor-pointer ui:rounded-sm ui:text-sm ui:font-medium ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
           >
@@ -839,7 +854,12 @@
         caller keeps the height it has today.
       -->
       <div
-        class="ui:grid ui:h-[calc(100dvh-14rem-var(--exercise-chrome-extra,0px))] ui:min-h-[28rem] ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:h-[calc(100dvh-11rem-var(--exercise-chrome-extra,0px))] ui:lg:min-h-[36rem] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1"
+        class={[
+          'ui:grid ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1',
+          fillsParent
+            ? 'ui:min-h-0 ui:flex-1'
+            : 'ui:h-[calc(100dvh-14rem-var(--exercise-chrome-extra,0px))] ui:min-h-[28rem] ui:lg:h-[calc(100dvh-11rem-var(--exercise-chrome-extra,0px))] ui:lg:min-h-[36rem]'
+        ]}
       >
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <section
@@ -1048,7 +1068,21 @@
 {/snippet}
 
 {#if showContainer}
-  <QuestionSurface class={usesPassageWorkspace ? 'ui:overflow-hidden ui:p-0' : ''}>
+  <!--
+    `fillsParent` has to reach the grid, and a percentage height only resolves through
+    ancestors that have one. Every wrapper between here and the workspace therefore becomes a
+    full-height column, and the workspace takes what is left of it.
+
+    Only for the split workspace, which is the layout that scrolls inside itself. An ordinary
+    item is a stack that has to be free to grow and let the page scroll it; pinning that to
+    the viewport's height would clip the bottom of a long question with nowhere to scroll to.
+  -->
+  <QuestionSurface
+    class={[
+      usesPassageWorkspace ? 'ui:overflow-hidden ui:p-0' : '',
+      fillsParent && usesPassageWorkspace ? 'ui:flex ui:h-full ui:min-h-0 ui:flex-col' : ''
+    ].join(' ')}
+  >
     {@render content()}
   </QuestionSurface>
 {:else}
