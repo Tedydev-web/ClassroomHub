@@ -85,6 +85,32 @@ export function questionNumberRanges(questions: PaperQuestion[]): Record<number,
   return ranges;
 }
 
+/**
+ * The number printed beside each interaction, keyed by the id the answer log records.
+ *
+ * This is the mapping that turns a stored answer back into something a teacher can look up
+ * on the paper in front of them. An item id cannot do it — a passage is one item and six
+ * numbers — but an interaction is exactly one number, which is the whole reason the answer
+ * envelope records interactions rather than items.
+ */
+export function interactionQuestionNumbers(questions: PaperQuestion[]): Record<string, number> {
+  const numbers: Record<string, number> = {};
+  let next = 1;
+
+  for (const question of questions) {
+    const blocks = (question.definition?.blocks ?? []) as Array<{ kind?: string; id?: string }>;
+
+    for (const block of blocks) {
+      if (block.kind !== 'interaction' || !block.id) continue;
+
+      numbers[block.id] = next;
+      next += 1;
+    }
+  }
+
+  return numbers;
+}
+
 export type OutlineLabels = {
   /** A passage covering questions `start` to `end`. */
   range: (start: string, end: string) => string;

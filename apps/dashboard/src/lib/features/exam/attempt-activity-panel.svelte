@@ -27,7 +27,8 @@
   let {
     activityLog,
     answerLog,
-    numberRanges = {}
+    numberRanges = {},
+    questionNumbers = {}
   }: {
     activityLog: ActivityEvent[] | null | undefined;
     answerLog: AnswerLogEntry[] | null | undefined;
@@ -40,11 +41,28 @@
      * for a paper that only goes up to forty.
      */
     numberRanges?: Record<number, { start: number; end: number }>;
+    /** Interaction id to the number on the paper, which is what makes an exact answer exact. */
+    questionNumbers?: Record<string, number>;
   } = $props();
 
-  /** Says which questions were written to, or says nothing rather than saying a row id. */
-  function answeredLabel(questionId: number): string {
-    const range = numberRanges[questionId];
+  /**
+   * The questions this moment actually changed, named the way the paper names them.
+   *
+   * Three rungs, and it takes the highest it can reach. The numbers themselves are what a
+   * teacher wants; the item's span is what remains when a log entry is too old to carry its
+   * answers; and where the paper no longer holds the item, saying so beats printing an id
+   * that looks like a question number and is not one.
+   */
+  function answeredLabel(entry: { questionId: number; questionNumbers: number[] }): string {
+    if (entry.questionNumbers.length === 1) {
+      return $t('exam.activity.entry_answered', { question: String(entry.questionNumbers[0]) });
+    }
+
+    if (entry.questionNumbers.length > 1) {
+      return $t('exam.activity.entry_answered_several', { questions: entry.questionNumbers.join(', ') });
+    }
+
+    const range = numberRanges[entry.questionId];
     if (!range) return $t('exam.activity.entry_answered_unknown');
 
     return range.start === range.end
@@ -52,7 +70,7 @@
       : $t('exam.activity.entry_answered_range', { start: String(range.start), end: String(range.end) });
   }
 
-  const timeline = $derived(buildAttemptTimeline(activityLog, answerLog));
+  const timeline = $derived(buildAttemptTimeline(activityLog, answerLog, questionNumbers));
 
   const clock = $derived(
     new Intl.DateTimeFormat($locale ?? 'vi', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -126,7 +144,7 @@
                 {:else}
                   <PencilIcon size={14} class="ui:text-muted-foreground ui:mt-1 ui:shrink-0" aria-hidden="true" />
                   <span class="ui:text-muted-foreground">
-                    {answeredLabel(entry.questionId)}
+                    {answeredLabel(entry)}
                   </span>
                 {/if}
               </li>

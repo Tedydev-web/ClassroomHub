@@ -83,6 +83,98 @@ describe('one sitting in the order it happened', () => {
       ]
     );
 
-    expect(timeline.entries).toEqual([{ kind: 'answered', at: at(10), questionId: 1 }]);
+    expect(timeline.entries).toEqual([{ kind: 'answered', at: at(10), questionId: 1, questionNumbers: [] }]);
+  });
+});
+
+describe('naming the question a moment answered', () => {
+  /** Interaction ids as the paper numbers them: a passage of three, then a single. */
+  const numbers = { 'i-1': 1, 'i-2': 2, 'i-3': 3, 'i-4': 4 };
+
+  function answer(at: string, questionId: number, responses: Array<[string, unknown]>) {
+    return {
+      at,
+      questionId,
+      answerData: { responses: responses.map(([interactionId, response]) => ({ interactionId, response })) }
+    };
+  }
+
+  it('names only the question that changed, not everything the save carried', () => {
+    // A save sends the item's whole answer, so without the comparison every save would
+    // report all three questions again — which is how "answered question 160" got its shape.
+    const timeline = buildAttemptTimeline(
+      [],
+      [
+        answer('2026-08-28T00:00:00.000Z', 160, [['i-1', 'a']]),
+        answer('2026-08-28T00:00:10.000Z', 160, [
+          ['i-1', 'a'],
+          ['i-2', 'b']
+        ])
+      ],
+      numbers
+    );
+
+    const answered = timeline.entries.filter((entry) => entry.kind === 'answered');
+
+    expect(answered[0]).toMatchObject({ questionNumbers: [1] });
+    expect(answered[1]).toMatchObject({ questionNumbers: [2] });
+  });
+
+  it('names a changed mind, not just a first answer', () => {
+    const timeline = buildAttemptTimeline(
+      [],
+      [
+        answer('2026-08-28T00:00:00.000Z', 160, [['i-1', 'a']]),
+        answer('2026-08-28T00:00:10.000Z', 160, [['i-1', 'b']])
+      ],
+      numbers
+    );
+
+    expect(timeline.entries.filter((entry) => entry.kind === 'answered')[1]).toMatchObject({ questionNumbers: [1] });
+  });
+
+  it('names every question when several arrive together', () => {
+    const timeline = buildAttemptTimeline(
+      [],
+      [
+        answer('2026-08-28T00:00:00.000Z', 160, [
+          ['i-3', 'c'],
+          ['i-1', 'a']
+        ])
+      ],
+      numbers
+    );
+
+    // In paper order, not in the order the envelope happened to list them.
+    expect(timeline.entries[0]).toMatchObject({ questionNumbers: [1, 3] });
+  });
+
+  it('keeps items apart, so one item cannot mask another', () => {
+    const timeline = buildAttemptTimeline(
+      [],
+      [
+        answer('2026-08-28T00:00:00.000Z', 160, [['i-1', 'a']]),
+        answer('2026-08-28T00:00:05.000Z', 161, [['i-4', 'd']])
+      ],
+      numbers
+    );
+
+    const answered = timeline.entries.filter((entry) => entry.kind === 'answered');
+
+    expect(answered[0]).toMatchObject({ questionNumbers: [1] });
+    expect(answered[1]).toMatchObject({ questionNumbers: [4] });
+  });
+
+  it('leaves the numbers empty rather than guessing', () => {
+    // An entry with no answers to read, and an interaction the paper no longer holds.
+    const timeline = buildAttemptTimeline(
+      [],
+      [{ at: '2026-08-28T00:00:00.000Z', questionId: 160 }, answer('2026-08-28T00:00:05.000Z', 160, [['gone', 'x']])],
+      numbers
+    );
+
+    for (const entry of timeline.entries) {
+      expect(entry).toMatchObject({ questionNumbers: [] });
+    }
   });
 });

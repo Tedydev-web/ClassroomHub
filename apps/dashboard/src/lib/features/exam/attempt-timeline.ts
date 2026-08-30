@@ -15,12 +15,27 @@ import { summariseFocus, type ActivityEvent, type FocusSummary } from './exam-ac
 export type AnswerLogEntry = {
   at: string;
   questionId: number;
+  /**
+   * The item's whole answer as it stood at that moment, which is what the sitting page sends
+   * and the server stores verbatim. Comparing one against the previous one for the same item
+   * is what turns "this item was written to" into "question 14 was answered".
+   */
+  answerData?: unknown;
 };
 
 export type TimelineEntry =
   | { kind: 'left'; at: string }
   | { kind: 'returned'; at: string; awaySeconds: number | null }
-  | { kind: 'answered'; at: string; questionId: number };
+  | {
+      kind: 'answered';
+      at: string;
+      questionId: number;
+      /**
+       * The numbers on the paper that changed at this moment. Empty where the paper cannot
+       * resolve them — an item no longer on it, or a log entry too old to carry its answers.
+       */
+      questionNumbers: number[];
+    };
 
 export type AttemptTimeline = {
   entries: TimelineEntry[];
@@ -34,9 +49,30 @@ export type AttemptTimeline = {
  * Where no departure precedes it — a log that begins mid-absence, a device that slept
  * through one — the duration is `null` rather than a number nobody can stand behind.
  */
+/** The responses inside one stored answer, keyed by interaction. Shape-checked, not trusted. */
+function responsesOf(answerData: unknown): Map<string, string> {
+  const responses = (answerData as { responses?: unknown } | null)?.responses;
+  if (!Array.isArray(responses)) return new Map();
+
+  const byInteraction = new Map<string, string>();
+
+  for (const entry of responses) {
+    const interactionId = (entry as { interactionId?: unknown })?.interactionId;
+    if (typeof interactionId !== 'string') continue;
+
+    // Compared as text: the responses are small JSON values, and a stable string is enough
+    // to answer "is this the same answer as a moment ago" without a deep-equality helper.
+    byInteraction.set(interactionId, JSON.stringify((entry as { response?: unknown }).response ?? null));
+  }
+
+  return byInteraction;
+}
+
 export function buildAttemptTimeline(
   activityLog: ActivityEvent[] | null | undefined,
-  answerLog: AnswerLogEntry[] | null | undefined
+  answerLog: AnswerLogEntry[] | null | undefined,
+  /** Interaction id to the number printed on the paper. Without it, numbers stay empty. */
+  questionNumbers: Record<string, number> = {}
 ): AttemptTimeline {
   const activity = (activityLog ?? []).filter((event) => !Number.isNaN(Date.parse(event.at)));
   const answers = (answerLog ?? []).filter((entry) => entry && !Number.isNaN(Date.parse(entry.at)));
@@ -59,10 +95,38 @@ export function buildAttemptTimeline(
     merged.push({ at, entry: { kind: 'returned', at: event.at, awaySeconds } });
   }
 
-  for (const entry of answers) {
+  /**
+   * What each item's answer looked like the last time it was saved.
+   *
+   * A save carries the item's whole answer, not the one field that changed, so the changed
+   * questions are the difference between this save and the one before it. The first save of
+   * an item has nothing to compare against, and every answer in it is new by definition.
+   */
+  const seen = new Map<number, Map<string, string>>();
+
+  for (const entry of [...answers].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+    const current = responsesOf(entry.answerData);
+    const previous = seen.get(entry.questionId) ?? new Map<string, string>();
+
+    const changed: number[] = [];
+
+    for (const [interactionId, value] of current) {
+      if (previous.get(interactionId) === value) continue;
+
+      const number = questionNumbers[interactionId];
+      if (number !== undefined) changed.push(number);
+    }
+
+    seen.set(entry.questionId, current);
+
     merged.push({
       at: Date.parse(entry.at),
-      entry: { kind: 'answered', at: entry.at, questionId: entry.questionId }
+      entry: {
+        kind: 'answered',
+        at: entry.at,
+        questionId: entry.questionId,
+        questionNumbers: changed.sort((a, b) => a - b)
+      }
     });
   }
 

@@ -5830,7 +5830,8 @@
       "seconds": "{count}s",
       "minutes": "{count} min",
       "entry_answered_range": "Answered questions {start}–{end}",
-      "entry_answered_unknown": "Answered a question that is no longer on this paper"
+      "entry_answered_unknown": "Answered a question that is no longer on this paper",
+      "entry_answered_several": "Answered questions {questions}"
     },
     "navigator": {
       "title": "Questions",
