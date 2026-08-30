@@ -39,15 +39,35 @@ function escapeHtmlAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * Whether an address can actually resolve inside an email.
+ *
+ * A message has no document to resolve a relative path against, and no session to send with
+ * the request: whatever the reader's client fetches, it fetches cold, from an address that
+ * has to stand entirely on its own. A root-relative path therefore cannot load anywhere, in
+ * any client, ever — it renders as a broken-image box beside the organisation's name.
+ *
+ * `mailto:` and `data:` are excluded for the same reason from the other direction: some
+ * clients refuse them outright, and a masthead that reads as the organisation's name is
+ * better than one that might not draw at all.
+ */
+function isFetchableImageUrl(value: string): boolean {
+  try {
+    return ['http:', 'https:'].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
 function buildMasthead(branding: EmailBranding): string {
-  const logoUrl = branding?.logoUrl;
+  const logoUrl = branding?.logoUrl && isFetchableImageUrl(branding.logoUrl) ? branding.logoUrl : undefined;
   const orgName = branding?.orgName ? escapeHtmlAttr(branding.orgName) : '';
 
   if (logoUrl) {
     const nameHtml = orgName
       ? `<span style="margin-left:10px;font-size:15px;font-weight:600;color:${TEXT};vertical-align:middle;">${orgName}</span>`
       : '';
-    return `<img src="${logoUrl}" alt="${orgName || 'Logo'}" style="max-height:32px;width:auto;display:inline-block;vertical-align:middle;" />${nameHtml}`;
+    return `<img src="${escapeHtmlAttr(logoUrl)}" alt="${orgName || 'Logo'}" style="max-height:32px;width:auto;display:inline-block;vertical-align:middle;" />${nameHtml}`;
   }
 
   if (orgName) {
