@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildOutlineGroups, countInteractions, questionNumberStarts, type PaperQuestion } from './paper-outline';
+import {
+  buildOutlineGroups,
+  countInteractions,
+  questionNumberStarts,
+  type PaperQuestion,
+  questionNumberRanges
+} from './paper-outline';
 
 /**
  * The shape under test is the one that was actually in production: ten items carrying
@@ -187,5 +193,26 @@ describe('the outline of an exam paper', () => {
     const groups = buildOutlineGroups(PAPER, { currentIndex: 1, labels });
 
     expect(groups.flatMap((group) => group.questions).some((question) => question.hasNote)).toBe(false);
+  });
+});
+
+describe('questionNumberRanges', () => {
+  it('gives a passage the span of numbers it actually covers', () => {
+    // The activity log records which item was answered. An item holding six questions is one
+    // row and six numbers, so reporting it to a teacher means the span, never the row id.
+    const ranges = questionNumberRanges(PAPER);
+    const spans = Object.values(ranges);
+
+    expect(spans[0].start).toBe(1);
+    expect(spans[0].end).toBeGreaterThanOrEqual(spans[0].start);
+    expect(spans[1].start).toBe(spans[0].end + 1);
+  });
+
+  it('agrees with the starts the rest of the paper is numbered by', () => {
+    const ranges = questionNumberRanges(PAPER);
+
+    for (const [questionId, start] of Object.entries(questionNumberStarts(PAPER))) {
+      expect(ranges[Number(questionId)].start).toBe(start);
+    }
   });
 });

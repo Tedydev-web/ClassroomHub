@@ -26,11 +26,31 @@
    */
   let {
     activityLog,
-    answerLog
+    answerLog,
+    numberRanges = {}
   }: {
     activityLog: ActivityEvent[] | null | undefined;
     answerLog: AnswerLogEntry[] | null | undefined;
+    /**
+     * The numbers each item covers on the paper, keyed by the id the log records.
+     *
+     * The log can only name the item that was written to, and an item is not a question: a
+     * passage of six is one row and six numbers. Without this the line read "answered
+     * question 160" — a database key printed nowhere on the paper the teacher is holding,
+     * for a paper that only goes up to forty.
+     */
+    numberRanges?: Record<number, { start: number; end: number }>;
   } = $props();
+
+  /** Says which questions were written to, or says nothing rather than saying a row id. */
+  function answeredLabel(questionId: number): string {
+    const range = numberRanges[questionId];
+    if (!range) return $t('exam.activity.entry_answered_unknown');
+
+    return range.start === range.end
+      ? $t('exam.activity.entry_answered', { question: String(range.start) })
+      : $t('exam.activity.entry_answered_range', { start: String(range.start), end: String(range.end) });
+  }
 
   const timeline = $derived(buildAttemptTimeline(activityLog, answerLog));
 
@@ -106,7 +126,7 @@
                 {:else}
                   <PencilIcon size={14} class="ui:text-muted-foreground ui:mt-1 ui:shrink-0" aria-hidden="true" />
                   <span class="ui:text-muted-foreground">
-                    {$t('exam.activity.entry_answered', { question: String(entry.questionId) })}
+                    {answeredLabel(entry.questionId)}
                   </span>
                 {/if}
               </li>

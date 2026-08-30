@@ -7,6 +7,7 @@
   import { Badge } from '@cio/ui/base/badge';
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import { markAttemptPaper } from '$features/exam/attempt-marking';
+  import { questionNumberRanges } from '$features/exam/paper-outline';
   import AttemptActivityPanel from '$features/exam/attempt-activity-panel.svelte';
 
   import { classroomhub } from '$lib/utils/services/api';
@@ -105,6 +106,12 @@
 
   /** The paper as a marker reads it. Derived in a module so it can be tested without a browser. */
   const markedItems = $derived(markAttemptPaper(data.paper?.questions ?? [], answerByQuestion));
+
+  /**
+   * Which numbers each item covers, read off the same paper the marking below is read off.
+   * The activity log records item ids, and an id means nothing to somebody holding the paper.
+   */
+  const numberRanges = $derived(questionNumberRanges(data.paper?.questions ?? []));
 </script>
 
 <Page.Root class="mx-auto flex w-[90%] px-4 lg:max-w-4xl">
@@ -134,7 +141,11 @@
         who scrolls past forty questions to find it will not find it.
       -->
       <div class="ui:mb-6">
-        <AttemptActivityPanel activityLog={data.attempt.activityLog} answerLog={data.attempt.answerLog} />
+        <AttemptActivityPanel
+          activityLog={data.attempt.activityLog}
+          answerLog={data.attempt.answerLog}
+          {numberRanges}
+        />
       </div>
 
       <ol class="ui:space-y-4">

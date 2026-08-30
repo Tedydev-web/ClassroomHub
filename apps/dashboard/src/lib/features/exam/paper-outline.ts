@@ -61,6 +61,30 @@ export function questionNumberStarts(questions: PaperQuestion[]): Record<number,
   return starts;
 }
 
+/**
+ * The span of numbers each item covers, keyed by question id.
+ *
+ * An item is not a question: a passage holding six is one row in the database and six
+ * numbers on the paper. Anything reporting on an item to a person therefore has to say the
+ * numbers rather than the id, and a span rather than a single figure — the activity log
+ * records which item was answered, and "question 160" is a database key that appears
+ * nowhere on the paper a teacher is holding.
+ */
+export function questionNumberRanges(questions: PaperQuestion[]): Record<number, { start: number; end: number }> {
+  const ranges: Record<number, { start: number; end: number }> = {};
+  let next = 1;
+
+  for (const question of questions) {
+    const count = countInteractions(question);
+    // An item contributing nothing still gets a span, so a caller never has to guess whether
+    // a missing entry means "no questions" or "not on this paper".
+    ranges[question.questionId] = { start: next, end: next + Math.max(0, count - 1) };
+    next += count;
+  }
+
+  return ranges;
+}
+
 export type OutlineLabels = {
   /** A passage covering questions `start` to `end`. */
   range: (start: string, end: string) => string;
