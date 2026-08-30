@@ -853,9 +853,22 @@
         so no constant here can be right for it. Unset it resolves to `0px` and every other
         caller keeps the height it has today.
       -->
+      <!--
+        The passage takes the room, and the answers take what they need.
+        Both tracks used to be fractions, with the answers given the larger share — so a
+        paper whose options are single words left a column of white beside them while the
+        passage wrapped narrowly next door. `fit-content` sizes the answers to their own
+        content instead, up to a ceiling, and the passage absorbs everything else. The
+        ceiling matters: options are sometimes whole clauses, and without it a long one
+        would take the passage's room back.
+
+        The same rule governs height where the two are stacked. A row of four short options
+        asks for a few lines and leaves the rest to the passage; a row of long ones grows
+        until it hits its share and then scrolls inside itself.
+      -->
       <div
         class={[
-          'ui:grid ui:min-w-0 ui:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] ui:lg:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)] ui:lg:grid-rows-1',
+          'ui:grid ui:min-w-0 ui:grid-rows-[minmax(0,1fr)_fit-content(58%)] ui:lg:grid-cols-[minmax(0,1fr)_fit-content(30rem)] ui:lg:grid-rows-1',
           fillsParent
             ? 'ui:min-h-0 ui:flex-1'
             : 'ui:h-[calc(100dvh-14rem-var(--exercise-chrome-extra,0px))] ui:min-h-[28rem] ui:lg:h-[calc(100dvh-11rem-var(--exercise-chrome-extra,0px))] ui:lg:min-h-[36rem]'
@@ -897,7 +910,7 @@
         -->
         <section
           id={`${rendererId}-questions-panel`}
-          class="ui:flex ui:min-h-0 ui:min-w-0 ui:flex-col"
+          class="ui:flex ui:min-h-0 ui:min-w-0 ui:flex-col ui:lg:min-w-[22rem]"
           aria-label={passageWorkspaceLabels.questions}
         >
           <header
