@@ -566,13 +566,18 @@
    */
   const items = $derived(paper?.questions ?? []);
   const currentItem = $derived(items[currentIndex - 1]);
-  const isLastItem = $derived(currentIndex >= items.length);
 
+  /**
+   * One step through the paper, counted in questions rather than in passages.
+   *
+   * There used to be two of these: this pair moved between passages while a second pair
+   * inside the workspace moved between the questions of one. A candidate met both at once
+   * and neither of them alone did what they wanted, which is to get to the next question
+   * wherever it lives. Stepping the number crosses a passage boundary on its own, because
+   * `goToQuestion` already resolves a number to the item holding it.
+   */
   function goPrevious() {
-    if (currentIndex > 1) {
-      currentIndex -= 1;
-      currentNumber = null;
-    }
+    if (currentPageNumber > 1) goToQuestion(currentPageNumber - 1);
   }
 
   /**
@@ -587,9 +592,8 @@
   let submitMinutesLeft = $state<number | null>(null);
 
   function goNext() {
-    if (!isLastItem) {
-      currentIndex += 1;
-      currentNumber = null;
+    if (currentPageNumber < progress.total) {
+      goToQuestion(currentPageNumber + 1);
 
       return;
     }
@@ -860,6 +864,9 @@
         {#key currentItem.questionId}
           <AssessmentItemRenderer
             fillsParent
+            showQuestionStepper={false}
+            activeQuestionNumber={currentPageNumber}
+            onQuestionChange={goToQuestion}
             definition={currentItem.definition}
             response={responses[currentItem.questionId]}
             disabled={submitting || timeUp}
@@ -989,9 +996,9 @@
         -->
         <div class="ui:ml-auto ui:shrink-0">
           <QuestionNavigation
-            canGoBack={currentIndex > 1 && !timeUp}
+            canGoBack={currentPageNumber > 1 && !timeUp}
             canGoNext={!submitting && !timeUp}
-            isLast={isLastItem}
+            isLast={currentPageNumber >= progress.total}
             isSubmitting={submitting}
             previousLabel={$t('course.navItem.lessons.exercises.all_exercises.previous')}
             nextLabel={$t('course.navItem.lessons.exercises.all_exercises.next')}

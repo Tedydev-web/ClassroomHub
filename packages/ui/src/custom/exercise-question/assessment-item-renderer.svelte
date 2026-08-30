@@ -56,6 +56,23 @@
      * predicting them.
      */
     fillsParent?: boolean;
+    /**
+     * The question to show, by the number printed on the paper, when a host owns the choice.
+     *
+     * Left unset this component decides for itself, which is right where it is the only thing
+     * navigating. A host with its own controls has to be able to say "show number 14", and
+     * until now it could only change the item and hope: paging shows one question at a time,
+     * and the one it showed was always the item's first.
+     */
+    activeQuestionNumber?: number | null;
+    /** Reports the question this component moved to, so a controlling host stays in step. */
+    onQuestionChange?: (questionNumber: number) => void;
+    /**
+     * The previous/next pair under the questions. A host that steps through the paper itself
+     * turns it off rather than showing a candidate two of them; the numbered strip above
+     * stays either way, because jumping to a number is a different act from stepping.
+     */
+    showQuestionStepper?: boolean;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
   }
 
@@ -94,6 +111,9 @@
     focusRequestKey,
     passageWorkspaceLabels = null,
     fillsParent = false,
+    activeQuestionNumber = null,
+    showQuestionStepper = true,
+    onQuestionChange,
     onResponseChange = () => {}
   }: Props = $props();
   const rendererId = $props.id();
@@ -183,32 +203,72 @@
     )
   );
 
+  /**
+   * The interaction a controlling host has asked for, if any.
+   *
+   * Resolved against the numbers the candidate reads rather than any internal index, because
+   * that number is the only thing a host and this component both understand: a drawer that
+   * says "go to 14" means the fourteenth question of the paper, wherever it happens to sit.
+   */
+  const requestedInteractionId = $derived.by(() => {
+    if (activeQuestionNumber == null) return null;
+
+    for (const group of passageGroupViews) {
+      if (activeQuestionNumber >= group.questionStart && activeQuestionNumber <= group.questionEnd) {
+        return group.interactions[activeQuestionNumber - group.questionStart]?.id ?? null;
+      }
+    }
+
+    return null;
+  });
+
+  /** What is actually on screen: the host's choice where there is one, otherwise our own. */
+  const shownInteractionId = $derived(requestedInteractionId ?? activeInteractionId);
+
   const pagerGroup = $derived(activePassageGroupView ?? passageGroupViews[0]);
   const pagerInteractions = $derived(pagerGroup?.interactions ?? []);
   const activeInteractionIndex = $derived(
     Math.max(
       0,
-      pagerInteractions.findIndex((block) => block.id === activeInteractionId)
+      pagerInteractions.findIndex((block) => block.id === shownInteractionId)
     )
   );
   const effectiveViewMode = $derived(questionViewMode ?? (isCompactViewport ? 'single' : 'all'));
   const pagesOneQuestion = $derived(effectiveViewMode === 'single');
-  const activeQuestionNumber = $derived(
-    pagerGroup && activeInteractionId ? pagerGroup.questionStart + activeInteractionIndex : null
+  const shownQuestionNumber = $derived(
+    pagerGroup && shownInteractionId ? pagerGroup.questionStart + activeInteractionIndex : null
   );
 
   // Keep the shown question inside the active group when the group changes.
   $effect(() => {
     const [firstInteraction] = pagerInteractions;
     if (!firstInteraction) return;
-    if (pagerInteractions.some((block) => block.id === activeInteractionId)) return;
+    if (pagerInteractions.some((block) => block.id === shownInteractionId)) return;
 
     activeInteractionId = firstInteraction.id;
   });
 
   function goToInteraction(interactionId: string) {
-    activeInteractionId = interactionId;
+    // Under control, the host holds the truth and this would fight it: set our own copy and
+    // the two disagree for a frame, and permanently if the host declines the move.
+    if (activeQuestionNumber != null) {
+      const number = questionNumberOf(interactionId);
+      if (number !== null) onQuestionChange?.(number);
+    } else {
+      activeInteractionId = interactionId;
+    }
+
     questionPanel?.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+  }
+
+  /** The number printed beside an interaction, found the same way the host would find it. */
+  function questionNumberOf(interactionId: string): number | null {
+    for (const group of passageGroupViews) {
+      const index = group.interactions.findIndex((block) => block.id === interactionId);
+      if (index >= 0) return group.questionStart + index;
+    }
+
+    return null;
   }
 
   function stepInteraction(offset: number) {
@@ -344,7 +404,7 @@
       return;
     }
 
-    highlightPassageBlank(activeQuestionNumber);
+    highlightPassageBlank(shownQuestionNumber);
     return clearPassageBlankHighlight;
   });
 
@@ -963,9 +1023,9 @@
                 <Button
                   type="button"
                   size="sm"
-                  variant={block.id === activeInteractionId ? 'default' : isAnswered ? 'secondary' : 'outline'}
+                  variant={block.id === shownInteractionId ? 'default' : isAnswered ? 'secondary' : 'outline'}
                   class="ui:size-9 ui:shrink-0 ui:p-0 ui:tabular-nums"
-                  aria-current={block.id === activeInteractionId ? 'true' : undefined}
+                  aria-current={block.id === shownInteractionId ? 'true' : undefined}
                   aria-label={isAnswered
                     ? passageWorkspaceLabels.formatAnsweredQuestion(questionNumber)
                     : passageWorkspaceLabels.formatUnansweredQuestion(questionNumber)}
@@ -996,7 +1056,7 @@
                       {@const interactionIndex = interactionBlocks.findIndex(
                         (interactionBlock) => interactionBlock.id === block.id
                       )}
-                      {#if !pagesOneQuestion || block.id === activeInteractionId}
+                      {#if !pagesOneQuestion || block.id === shownInteractionId}
                         {@render renderInteractionBlock(block, interactionIndex)}
                       {/if}
                     {/each}
@@ -1006,7 +1066,7 @@
             {/each}
           </div>
 
-          {#if pagesOneQuestion && pagerInteractions.length > 1}
+          {#if showQuestionStepper && pagesOneQuestion && pagerInteractions.length > 1}
             <div
               class="ui:border-border ui:bg-background ui:flex ui:shrink-0 ui:items-center ui:justify-between ui:gap-3 ui:border-t ui:px-4 ui:py-3"
             >
