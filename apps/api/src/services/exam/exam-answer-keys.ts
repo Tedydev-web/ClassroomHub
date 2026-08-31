@@ -27,7 +27,16 @@ export type ExamAnswerKeyOption = { id: string; label: string; html: string };
 export type ExamAnswerKeyQuestion = {
   questionId: number;
   /** Position in delivery order, one-based, which is the number on the candidate's paper. */
+  /**
+   * The number the paper prints beside this question, counted across the whole paper.
+   *
+   * It used to be the item's place in the list, which on a paper of passages is a different
+   * number entirely: forty questions across ten passages numbered one to ten here and one to
+   * forty everywhere else, so a teacher could not match a row to the question they meant.
+   */
   position: number;
+  /** The interaction this row is about. An item can hold several; each is one question. */
+  interactionId: string;
   points: number;
   promptHtml: string;
   options: ExamAnswerKeyOption[];
@@ -57,6 +66,64 @@ type ChoiceConfig = {
   cardinality?: 'single' | 'multiple';
 };
 
+/**
+ * One row per question, not per item.
+ *
+ * An item is a container: a passage holding six questions is one row in the paper snapshot
+ * and six numbers on the paper the class sat. Listing items meant every passage appeared
+ * once, showing the prompt, the options and the key of its *first* part while the other
+ * five were not on the screen at all — and the single letter printed as "the answer" was
+ * the answer to a question the teacher could not see they were looking at.
+ *
+ * Numbering counts every interaction, choice or not, because that is how the paper numbers
+ * them. A written answer occupies a number even though it has no key to correct, and
+ * skipping it here would shift every number after it.
+ */
+export function buildAnswerKeyRows(
+  questions: Array<{ questionId: number; order: number; points: number; definition: unknown }>,
+  kindsByQuestion: Map<number, Set<ExamCorrection['kind']>>
+): ExamAnswerKeyQuestion[] {
+  const rows: ExamAnswerKeyQuestion[] = [];
+  let position = 0;
+
+  for (const question of questions.slice().sort((a, b) => a.order - b.order)) {
+    const kinds = kindsByQuestion.get(question.questionId);
+    const blocks = getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition);
+    const choiceParts = blocks.filter((block) => block.interaction.kind === 'choice').length;
+
+    for (const block of blocks) {
+      position += 1;
+
+      const interaction = block.interaction as { kind?: string; prompt?: { html?: string }; config?: ChoiceConfig };
+      const isChoice = interaction.kind === 'choice';
+      const config = isChoice ? (interaction.config ?? {}) : {};
+
+      rows.push({
+        questionId: question.questionId,
+        interactionId: block.id,
+        position,
+        points: question.points,
+        promptHtml: interaction.prompt?.html ?? '',
+        options: (config.options ?? []).map((option, index) => ({
+          id: option.id,
+          label: OPTION_LABELS[index] ?? String(index + 1),
+          html: option.html ?? ''
+        })),
+        effectiveKey: [...(config.correctOptionIds ?? [])],
+        cardinality: config.cardinality === 'multiple' ? 'multiple' : 'single',
+        keyFixable: isChoice,
+        // Still true of the item, and still the reason a key fix is withheld here: the write
+        // path replaces the key in every choice part of the item it is given.
+        hasSeveralChoiceParts: choiceParts > 1,
+        awarded: kinds?.has('award') ?? false,
+        corrected: kinds?.has('keyFix') ?? false
+      });
+    }
+  }
+
+  return rows;
+}
+
 export async function listExamAnswerKeysService(examId: string): Promise<ExamAnswerKeyQuestion[]> {
   requireExamsEnabled();
 
@@ -78,33 +145,5 @@ export async function listExamAnswerKeysService(examId: string): Promise<ExamAns
     kindsByQuestion.set(correction.questionId, kinds);
   }
 
-  return corrected.questions
-    .slice()
-    .sort((a, b) => a.order - b.order)
-    .map((question, index) => {
-      const blocks = getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition);
-      const choiceBlocks = blocks.filter((block) => block.interaction.kind === 'choice');
-      const first = choiceBlocks[0]?.interaction as { prompt?: { html?: string }; config?: ChoiceConfig } | undefined;
-      const config = first?.config ?? {};
-
-      const kinds = kindsByQuestion.get(question.questionId);
-
-      return {
-        questionId: question.questionId,
-        position: index + 1,
-        points: question.points,
-        promptHtml: first?.prompt?.html ?? '',
-        options: (config.options ?? []).map((option, position) => ({
-          id: option.id,
-          label: OPTION_LABELS[position] ?? String(position + 1),
-          html: option.html ?? ''
-        })),
-        effectiveKey: [...(config.correctOptionIds ?? [])],
-        cardinality: config.cardinality === 'multiple' ? 'multiple' : 'single',
-        keyFixable: choiceBlocks.length > 0,
-        hasSeveralChoiceParts: choiceBlocks.length > 1,
-        awarded: kinds?.has('award') ?? false,
-        corrected: kinds?.has('keyFix') ?? false
-      };
-    });
+  return buildAnswerKeyRows(corrected.questions, kindsByQuestion);
 }

@@ -28,6 +28,8 @@
 
   export type AnswerKeyQuestion = {
     questionId: number;
+    /** One row is one question; an item can contribute several, each with its own key. */
+    interactionId: string;
     position: number;
     points: number;
     promptHtml: string;
@@ -52,12 +54,12 @@
     onaward: (question: AnswerKeyQuestion) => void;
   } = $props();
 
-  let editing = $state<number | null>(null);
+  let editing = $state<string | null>(null);
   let draft = $state<string[]>([]);
   let awarding = $state<AnswerKeyQuestion | null>(null);
 
   function beginEdit(question: AnswerKeyQuestion) {
-    editing = question.questionId;
+    editing = question.interactionId;
     draft = [...question.effectiveKey];
   }
 
@@ -91,7 +93,7 @@
   </Empty.Root>
 {:else}
   <div class="ui:space-y-4">
-    {#each questions as question (question.questionId)}
+    {#each questions as question (question.interactionId)}
       {@const busy = busyQuestionId === question.questionId}
       <Card.Root>
         <Card.Header>
@@ -114,7 +116,7 @@
         </Card.Header>
 
         <Card.Content class="ui:space-y-4">
-          {#if editing === question.questionId}
+          {#if editing === question.interactionId}
             <fieldset class="ui:space-y-2">
               <legend class="ui:text-sm ui:font-medium">{$t('exam.corrections.pick_correct')}</legend>
               {#if question.cardinality === 'single'}
@@ -132,8 +134,8 @@
                 >
                   {#each question.options as option (option.id)}
                     <div class="ui:flex ui:items-start ui:gap-2">
-                      <RadioGroup.Item value={option.id} id={`key-${question.questionId}-${option.id}`} />
-                      <Label for={`key-${question.questionId}-${option.id}`} class="ui:font-normal">
+                      <RadioGroup.Item value={option.id} id={`key-${question.interactionId}-${option.id}`} />
+                      <Label for={`key-${question.interactionId}-${option.id}`} class="ui:font-normal">
                         <span class="ui:font-medium">{option.label}.</span>
                         <SafeHtmlContent content={option.html} />
                       </Label>
@@ -144,11 +146,11 @@
                 {#each question.options as option (option.id)}
                   <div class="ui:flex ui:items-start ui:gap-2">
                     <Checkbox
-                      id={`key-${question.questionId}-${option.id}`}
+                      id={`key-${question.interactionId}-${option.id}`}
                       checked={draft.includes(option.id)}
                       onCheckedChange={(checked) => toggle(option.id, checked === true)}
                     />
-                    <Label for={`key-${question.questionId}-${option.id}`} class="ui:font-normal">
+                    <Label for={`key-${question.interactionId}-${option.id}`} class="ui:font-normal">
                       <span class="ui:font-medium">{option.label}.</span>
                       <SafeHtmlContent content={option.html} />
                     </Label>
