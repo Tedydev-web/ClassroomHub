@@ -111,6 +111,19 @@ describe('buildAnswerKeyRows', () => {
     expect(rows.every((row) => row.corrected)).toBe(false);
   });
 
+  it('says how many questions the item holds, because an award reaches all of them', () => {
+    const rows = buildAnswerKeyRows(
+      [
+        item(160, 1, [choice('a', 'one', ['o1']), choice('b', 'two', ['o2']), written('c', 'essay')]),
+        item(161, 2, [choice('d', 'alone', ['o1'])])
+      ],
+      NO_CORRECTIONS
+    );
+
+    // Every question of the passage, including the written one an award also covers.
+    expect(rows.map((row) => row.questionsInItem)).toEqual([3, 3, 3, 1]);
+  });
+
   it('labels options by letter, in the order the paper prints them', () => {
     const rows = buildAnswerKeyRows([item(160, 1, [choice('a', 'one', ['o2'])])], NO_CORRECTIONS);
 

@@ -5762,9 +5762,10 @@
       "failed": "Could not apply that correction",
       "corrected_badge": "Key corrected",
       "awarded_badge": "Awarded to everyone",
-      "several_parts": "This question is answered in more than one part, and a key correction would rewrite all of them. Award it instead, or mark it by hand.",
+      "several_parts": "This question shares an item with others. Fixing the key here would overwrite the key of every question in that item, so it is turned off. Award the question instead, or mark by hand.",
       "not_choice": "This question is not answered by choosing options, so it has no key to correct. Award it instead, or mark it by hand.",
-      "empty": "This exam has no frozen paper yet. Open it first — the paper freezes when it opens."
+      "empty": "This exam has no frozen paper yet. Open it first — the paper freezes when it opens.",
+      "award_explainer_group": "Question {position} shares an item with {count} other questions, and awarding applies to the whole item — every question in it is counted correct for every candidate. Use this where the question cannot be answered correctly: no option is right, or more than one is."
     },
     "preview": {
       "title": "Preview",

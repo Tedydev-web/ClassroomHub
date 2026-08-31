@@ -37,6 +37,8 @@
     effectiveKey: string[];
     cardinality: 'single' | 'multiple';
     keyFixable: boolean;
+    /** How many questions the item holding this one contains; an award reaches all of them. */
+    questionsInItem: number;
     hasSeveralChoiceParts: boolean;
     awarded: boolean;
     corrected: boolean;
@@ -205,8 +207,18 @@
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>{$t('exam.corrections.award')}</Dialog.Title>
+      <!--
+        An award is recorded against the item, so on a passage it reaches every question in
+        it. Now that each question has its own row, the old wording named one number and
+        quietly moved five others — a teacher would have found out from the results.
+      -->
       <Dialog.Description>
-        {$t('exam.corrections.award_explainer', { position: String(awarding?.position ?? '') })}
+        {(awarding?.questionsInItem ?? 1) > 1
+          ? $t('exam.corrections.award_explainer_group', {
+              position: String(awarding?.position ?? ''),
+              count: String((awarding?.questionsInItem ?? 1) - 1)
+            })
+          : $t('exam.corrections.award_explainer', { position: String(awarding?.position ?? '') })}
       </Dialog.Description>
     </Dialog.Header>
     <Dialog.Footer>

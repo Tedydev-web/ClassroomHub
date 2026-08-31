@@ -5772,9 +5772,10 @@
       "failed": "Không áp dụng được sửa đổi này",
       "corrected_badge": "Đã sửa đáp án",
       "awarded_badge": "Đã cho cả lớp điểm",
-      "several_parts": "Câu này có nhiều phần trả lời bằng cách chọn phương án, sửa đáp án sẽ ghi đè lên tất cả các phần. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
+      "several_parts": "Câu này nằm chung một mục với các câu khác. Sửa đáp án ở đây sẽ ghi đè lên đáp án của tất cả các câu trong mục, nên chức năng đó bị tắt. Hãy cho cả lớp điểm, hoặc chấm tay.",
       "not_choice": "Câu này không trả lời bằng cách chọn phương án nên không có đáp án để sửa. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
-      "empty": "Đề này chưa đóng băng đề thi. Mở đề trước — đề được đóng băng lúc mở."
+      "empty": "Đề này chưa đóng băng đề thi. Mở đề trước — đề được đóng băng lúc mở.",
+      "award_explainer_group": "Câu {position} nằm chung một mục với {count} câu khác, và cho điểm sẽ áp dụng cho cả mục — tất cả các câu trong mục đều được tính đúng cho mọi thí sinh. Dùng khi câu hỏi không thể trả lời đúng: không phương án nào đúng, hoặc có nhiều hơn một phương án đúng."
     },
     "preview": {
       "title": "Xem thử đề",

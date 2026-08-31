@@ -51,6 +51,14 @@ export type ExamAnswerKeyQuestion = {
   /** A key can only be replaced where there is a key to replace. */
   keyFixable: boolean;
   /**
+   * How many questions the item holding this one contains.
+   *
+   * An award is recorded against the item, so on a passage it reaches every question in it.
+   * The screen has to be able to say that in numbers rather than leave a teacher to discover
+   * it from the results.
+   */
+  questionsInItem: number;
+  /**
    * Whether more than one part of this question is answered by choosing options. A key fix
    * writes the corrected key into every one of them, so where this is true the teacher is
    * offered the award instead — correcting one part would silently rewrite the others.
@@ -112,6 +120,7 @@ export function buildAnswerKeyRows(
         effectiveKey: [...(config.correctOptionIds ?? [])],
         cardinality: config.cardinality === 'multiple' ? 'multiple' : 'single',
         keyFixable: isChoice,
+        questionsInItem: blocks.length,
         // Still true of the item, and still the reason a key fix is withheld here: the write
         // path replaces the key in every choice part of the item it is given.
         hasSeveralChoiceParts: choiceParts > 1,
