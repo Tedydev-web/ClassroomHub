@@ -20,7 +20,7 @@
 </script>
 
 <RoleBasedSecurity allowedRoles={[1, 2]}>
-  <Page.Root class="mx-auto flex w-[calc(95vw-var(--sidebar-width))]!">
+  <Page.Root class="mx-auto flex w-full md:w-[calc(95vw-var(--sidebar-width))]!">
     <Page.Header>
       <Page.HeaderContent>
         <Page.Title>

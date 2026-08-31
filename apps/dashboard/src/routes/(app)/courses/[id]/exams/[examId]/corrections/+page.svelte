@@ -72,7 +72,7 @@
   }
 </script>
 
-<Page.Root class="mx-auto flex w-[90%] px-4 md:max-w-3xl lg:max-w-4xl">
+<Page.Root class="mx-auto flex w-full px-4 md:w-[90%] md:max-w-3xl lg:max-w-4xl">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{data.title}</Page.Title>

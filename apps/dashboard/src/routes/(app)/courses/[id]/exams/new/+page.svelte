@@ -87,7 +87,7 @@
   }
 </script>
 
-<Page.Root class="mx-auto flex w-[90%] px-4 md:max-w-2xl lg:max-w-3xl">
+<Page.Root class="mx-auto flex w-full px-4 md:w-[90%] md:max-w-2xl lg:max-w-3xl">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{$t('exam.manage.create')}</Page.Title>
