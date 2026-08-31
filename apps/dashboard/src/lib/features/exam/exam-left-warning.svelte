@@ -31,7 +31,14 @@
     onacknowledge: () => void;
   } = $props();
 
-  const remaining = $derived(autoSubmitAfterLeaves === null ? null : Math.max(0, autoSubmitAfterLeaves - leaves + 1));
+  /**
+   * Departures left before the paper is taken, counted the way the server counts them.
+   *
+   * It read one higher, matching a rule that let the limit be passed once. Promising a
+   * candidate a departure they do not have is the worse half of that mistake: they would
+   * have spent it believing the warning.
+   */
+  const remaining = $derived(autoSubmitAfterLeaves === null ? null : Math.max(0, autoSubmitAfterLeaves - leaves));
 </script>
 
 <Dialog.Root {open} onOpenChange={(next) => !next && onacknowledge()}>
@@ -46,9 +53,9 @@
       </Dialog.Description>
     </Dialog.Header>
 
-    {#if remaining !== null}
+    {#if remaining !== null && remaining > 0}
       <p class="ui:text-destructive ui:text-sm ui:font-medium">
-        {remaining > 0 ? $t('exam.left.remaining', { count: String(remaining) }) : $t('exam.left.last_chance')}
+        {remaining > 1 ? $t('exam.left.remaining', { count: String(remaining) }) : $t('exam.left.last_chance')}
       </p>
     {/if}
 

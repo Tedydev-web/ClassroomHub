@@ -245,6 +245,22 @@ export type ActivityOutcome = {
  * page that may not yet know it was submitted, and a candidate should never meet an error
  * because their browser reported something a moment too late.
  */
+/**
+ * Whether this many departures has reached the limit a teacher set.
+ *
+ * Counted to the number, not past it. The setting reads "auto-submit after this many
+ * departures", so two means the second departure ends the paper. It had meant the third,
+ * which is a teacher setting a limit and watching it be exceeded once for free — and a
+ * candidate being told they had one more departure than they did.
+ *
+ * Its own function because the rule around it only runs against a live database, and a
+ * comparison that is wrong by one is exactly what never gets noticed without a test that
+ * runs every time.
+ */
+export function reachedLeaveLimit(leaves: number, limit: number | null): boolean {
+  return limit !== null && leaves >= limit;
+}
+
 export async function recordActivityService(
   attemptId: string,
   events: ActivityEventPayload[],
@@ -282,7 +298,7 @@ export async function recordActivityService(
       .limit(1);
 
     const limit = exam?.autoSubmitAfterLeaves ?? null;
-    const submitted = limit !== null && leaves > limit;
+    const submitted = reachedLeaveLimit(leaves, limit);
 
     await tx
       .update(schema.examAttempt)

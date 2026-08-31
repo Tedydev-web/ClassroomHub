@@ -123,7 +123,7 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
     expect((row.activityLog as unknown[]).length).toBe(10);
   });
 
-  it('ends the paper only after the limit a teacher set is passed', async () => {
+  it('ends the paper on the departure a teacher counted to, not the one after it', async () => {
     const { db, schema, attempt } = await load();
     const { attemptId } = await seedSitting(db, schema, 2);
 
@@ -131,14 +131,11 @@ describe.runIf(runDatabaseIntegration)('recording a candidate leaving the paper'
     expect(first.submitted).toBe(false);
     expect(first.leaves).toBe(1);
 
-    // The second departure reaches the limit without passing it.
+    // Two means the second, because the setting reads "after this many departures". It used
+    // to mean the third, which let a teacher's limit be exceeded once before it did anything.
     const second = await attempt.recordActivityService(attemptId, [leaving(60), returning(80)], new Date());
-    expect(second.submitted).toBe(false);
+    expect(second.submitted).toBe(true);
     expect(second.leaves).toBe(2);
-
-    const third = await attempt.recordActivityService(attemptId, [leaving(120)], new Date());
-    expect(third.submitted).toBe(true);
-    expect(third.leaves).toBe(3);
 
     const [row] = await db
       .select({ status: schema.examAttempt.status, submittedAt: schema.examAttempt.submittedAt })
