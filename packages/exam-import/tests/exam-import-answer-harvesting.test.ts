@@ -99,6 +99,32 @@ describe('exam import answer harvesting', () => {
     expect(harvested.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('ANSWER_KEY_COUNT_MISMATCH');
   });
 
+  it('reads a key by its numbers, not by the order the entries arrived in', () => {
+    /**
+     * A two-column answer table exports in reading order, so the numbers come out
+     * interleaved — and the count still matches the paper exactly. Assigning by position
+     * there puts every answer on the wrong question, and nothing afterwards can tell: a
+     * wrong key is a valid key, so the paper marks, and marks the class incorrectly.
+     */
+    const runs = [
+      ...choiceQuestion(0, 1),
+      ...choiceQuestion(2, 2),
+      ...choiceQuestion(4, 3),
+      ...choiceQuestion(6, 4),
+      block(8, 'HẾT'),
+      block(9, 'Đáp án: 1A 3C 2B 4D')
+    ];
+    const harvested = harvestExamImportAnswerCandidates(draftFor(runs), runs);
+
+    expect([0, 1, 2, 3].map((index) => choiceCandidates(harvested, index)[0]?.correctOptionIds[0])).toEqual([
+      'question-1-option-a',
+      'question-2-option-b',
+      'question-3-option-c',
+      'question-4-option-d'
+    ]);
+    expect(harvested.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('ANSWER_KEY_COUNT_MISMATCH');
+  });
+
   it('blocks a partial compact key instead of silently truncating by matching numbers', () => {
     const runs = [...choiceQuestion(0, 1), ...choiceQuestion(2, 2), block(4, 'HẾT'), block(5, 'Đáp án: 1A')];
     const harvested = harvestExamImportAnswerCandidates(draftFor(runs), runs);

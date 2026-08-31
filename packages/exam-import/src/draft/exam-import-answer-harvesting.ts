@@ -358,31 +358,6 @@ function applyOrderedEntries(
   if (entries.length === 0) return;
 
   const provenance = entries.flatMap((entry) => entry.provenance);
-  if (entries.length === questions.length) {
-    entries.forEach((entry, index) => {
-      const question = questions[index]!;
-      const added = addCandidate(
-        question,
-        entry.value,
-        source,
-        `harvest-${source}-${index + 1}`,
-        entry.provenance,
-        diagnostics
-      );
-      if (!added) {
-        diagnostics.push(
-          diagnostic(
-            'ANSWER_TOKEN_UNRESOLVED',
-            `The ${source} value could not be mapped to question ${index + 1}`,
-            entry.provenance,
-            question
-          )
-        );
-      }
-    });
-    return;
-  }
-
   const entriesByNumber = new Map<number, AnswerEntry[]>();
   for (const entry of entries) {
     const numbered = entriesByNumber.get(entry.number);
@@ -414,6 +389,44 @@ function applyOrderedEntries(
           );
         }
       });
+    });
+    return;
+  }
+
+  /**
+   * Position, only once the numbers have failed to say anything.
+   *
+   * This used to run first whenever the counts matched, and matching counts are exactly what
+   * a two-column answer table produces: a document exports it in reading order, so forty
+   * questions arrive as `1 21 2 22 …` — forty entries for forty questions, every one of them
+   * carrying the number it belongs to, and every one of them assigned to the wrong question
+   * anyway. Nothing about that is detectable afterwards, because a wrong key is still a
+   * valid key: the paper marks, and marks a class incorrectly.
+   *
+   * It stays as the fallback because numbering that restarts per section genuinely cannot be
+   * matched by number, and there position is the only thing left to go on.
+   */
+  if (entries.length === questions.length) {
+    entries.forEach((entry, index) => {
+      const question = questions[index]!;
+      const added = addCandidate(
+        question,
+        entry.value,
+        source,
+        `harvest-${source}-${index + 1}`,
+        entry.provenance,
+        diagnostics
+      );
+      if (!added) {
+        diagnostics.push(
+          diagnostic(
+            'ANSWER_TOKEN_UNRESOLVED',
+            `The ${source} value could not be mapped to question ${index + 1}`,
+            entry.provenance,
+            question
+          )
+        );
+      }
     });
     return;
   }
