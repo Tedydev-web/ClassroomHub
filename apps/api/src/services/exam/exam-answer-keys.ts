@@ -37,6 +37,16 @@ export type ExamAnswerKeyQuestion = {
   position: number;
   /** The interaction this row is about. An item can hold several; each is one question. */
   interactionId: string;
+  /**
+   * The passage, table or dialogue the question is asked about, shared by every question of
+   * its item.
+   *
+   * Without it a teacher reading this screen is asked to judge a key against a prompt that
+   * often says nothing on its own — "Question 5" — while the text the question is really
+   * about sits in the item and was never sent. Deciding whether A is the right answer is not
+   * possible from the letter A.
+   */
+  contextHtml: string | null;
   points: number;
   promptHtml: string;
   options: ExamAnswerKeyOption[];
@@ -99,6 +109,13 @@ export function buildAnswerKeyRows(
     const blocks = getAssessmentInteractionBlocks(question.definition as AssessmentItemDefinition);
     const choiceParts = blocks.filter((block) => block.interaction.kind === 'choice').length;
 
+    const context = (
+      (question.definition as { blocks?: Array<{ kind: string; content?: { html?: string } }> })?.blocks ?? []
+    )
+      .filter((block) => block.kind === 'content')
+      .map((block) => block.content?.html ?? '')
+      .join('');
+
     for (const block of blocks) {
       position += 1;
 
@@ -121,6 +138,7 @@ export function buildAnswerKeyRows(
         cardinality: config.cardinality === 'multiple' ? 'multiple' : 'single',
         keyFixable: isChoice,
         questionsInItem: blocks.length,
+        contextHtml: context.length > 0 ? context : null,
         // Still true of the item, and still the reason a key fix is withheld here: the write
         // path replaces the key in every choice part of the item it is given.
         hasSeveralChoiceParts: choiceParts > 1,

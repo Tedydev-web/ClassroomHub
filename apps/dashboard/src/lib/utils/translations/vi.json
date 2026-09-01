@@ -5775,7 +5775,10 @@
       "several_parts": "Câu này nằm chung một mục với các câu khác. Sửa đáp án ở đây sẽ ghi đè lên đáp án của tất cả các câu trong mục, nên chức năng đó bị tắt. Hãy cho cả lớp điểm, hoặc chấm tay.",
       "not_choice": "Câu này không trả lời bằng cách chọn phương án nên không có đáp án để sửa. Hãy cho cả lớp điểm câu này, hoặc chấm tay.",
       "empty": "Đề này chưa đóng băng đề thi. Mở đề trước — đề được đóng băng lúc mở.",
-      "award_explainer_group": "Câu {position} nằm chung một mục với {count} câu khác, và cho điểm sẽ áp dụng cho cả mục — tất cả các câu trong mục đều được tính đúng cho mọi thí sinh. Dùng khi câu hỏi không thể trả lời đúng: không phương án nào đúng, hoặc có nhiều hơn một phương án đúng."
+      "award_explainer_group": "Câu {position} nằm chung một mục với {count} câu khác, và cho điểm sẽ áp dụng cho cả mục — tất cả các câu trong mục đều được tính đúng cho mọi thí sinh. Dùng khi câu hỏi không thể trả lời đúng: không phương án nào đúng, hoặc có nhiều hơn một phương án đúng.",
+      "context": "Đoạn đọc / ngữ liệu cho câu {from}–{to}",
+      "is_key": "Đây là đáp án đúng",
+      "no_key_warning": "Câu này chưa có đáp án đúng nào được đánh dấu — mọi thí sinh sẽ bị tính sai. Hãy sửa đáp án, hoặc cho cả lớp điểm."
     },
     "preview": {
       "title": "Xem thử đề",

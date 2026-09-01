@@ -5765,7 +5765,10 @@
       "several_parts": "This question shares an item with others. Fixing the key here would overwrite the key of every question in that item, so it is turned off. Award the question instead, or mark by hand.",
       "not_choice": "This question is not answered by choosing options, so it has no key to correct. Award it instead, or mark it by hand.",
       "empty": "This exam has no frozen paper yet. Open it first — the paper freezes when it opens.",
-      "award_explainer_group": "Question {position} shares an item with {count} other questions, and awarding applies to the whole item — every question in it is counted correct for every candidate. Use this where the question cannot be answered correctly: no option is right, or more than one is."
+      "award_explainer_group": "Question {position} shares an item with {count} other questions, and awarding applies to the whole item — every question in it is counted correct for every candidate. Use this where the question cannot be answered correctly: no option is right, or more than one is.",
+      "context": "Passage or material for questions {from}–{to}",
+      "is_key": "This is the correct answer",
+      "no_key_warning": "No correct answer is marked for this question, so every candidate is counted wrong. Fix the key, or award the question."
     },
     "preview": {
       "title": "Preview",

@@ -9,6 +9,7 @@
   import * as Dialog from '@cio/ui/base/dialog';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import * as Empty from '@cio/ui/base/empty';
+  import CheckIcon from '@lucide/svelte/icons/check';
 
   /**
    * Correcting the answer key of a paper people have already sat.
@@ -39,6 +40,8 @@
     keyFixable: boolean;
     /** How many questions the item holding this one contains; an award reaches all of them. */
     questionsInItem: number;
+    /** The passage the question is asked about, shared by every question of its item. */
+    contextHtml: string | null;
     hasSeveralChoiceParts: boolean;
     awarded: boolean;
     corrected: boolean;
@@ -55,6 +58,27 @@
     onfix: (question: AnswerKeyQuestion, correctedKey: string[]) => void;
     onaward: (question: AnswerKeyQuestion) => void;
   } = $props();
+
+  /**
+   * Questions gathered back into the items they were printed in.
+   *
+   * The list is one row per question, which is what a teacher needs to correct a key. But a
+   * passage is read once and asked about six times, so repeating it six times would bury the
+   * questions under it. Rows arrive in paper order, so an item is simply a run of rows that
+   * share a question id.
+   */
+  const groups = $derived.by(() => {
+    const built: Array<{ questionId: number; contextHtml: string | null; questions: AnswerKeyQuestion[] }> = [];
+
+    for (const question of questions) {
+      const last = built.at(-1);
+
+      if (last && last.questionId === question.questionId) last.questions.push(question);
+      else built.push({ questionId: question.questionId, contextHtml: question.contextHtml, questions: [question] });
+    }
+
+    return built;
+  });
 
   let editing = $state<string | null>(null);
   let draft = $state<string[]>([]);
@@ -94,111 +118,165 @@
     </Empty.Content>
   </Empty.Root>
 {:else}
-  <div class="ui:space-y-4">
-    {#each questions as question (question.interactionId)}
-      {@const busy = busyQuestionId === question.questionId}
-      <Card.Root>
-        <Card.Header>
-          <div class="ui:flex ui:flex-wrap ui:items-center ui:gap-2">
-            <Card.Title class="ui:text-base">
-              {$t('exam.corrections.question_number', { position: String(question.position) })}
-            </Card.Title>
-            {#if question.corrected}
-              <Badge variant="secondary">{$t('exam.corrections.corrected_badge')}</Badge>
-            {/if}
-            {#if question.awarded}
-              <Badge variant="secondary">{$t('exam.corrections.awarded_badge')}</Badge>
-            {/if}
+  <div class="ui:space-y-6">
+    {#each groups as group (group.questionId)}
+      {#if group.contextHtml}
+        <!--
+          Once per item, and collapsed. A teacher needs the passage to judge whether a key is
+          right and almost never otherwise, and repeating it above each of six questions
+          would bury the questions it is there to serve.
+        -->
+        <details class="ui:border-border ui:bg-muted/30 ui:rounded-lg ui:border ui:px-4 ui:py-3">
+          <summary class="ui:text-muted-foreground ui:cursor-pointer ui:text-sm ui:font-medium">
+            {$t('exam.corrections.context', {
+              from: String(group.questions[0]?.position ?? ''),
+              to: String(group.questions.at(-1)?.position ?? '')
+            })}
+          </summary>
+          <div class="ui:mt-3 ui:text-sm">
+            <SafeHtmlContent content={group.contextHtml} />
           </div>
-          {#if question.promptHtml}
-            <Card.Description>
-              <SafeHtmlContent content={question.promptHtml} />
-            </Card.Description>
-          {/if}
-        </Card.Header>
+        </details>
+      {/if}
 
-        <Card.Content class="ui:space-y-4">
-          {#if editing === question.interactionId}
-            <fieldset class="ui:space-y-2">
-              <legend class="ui:text-sm ui:font-medium">{$t('exam.corrections.pick_correct')}</legend>
-              {#if question.cardinality === 'single'}
-                <!--
+      {#each group.questions as question (question.interactionId)}
+        {@const busy = busyQuestionId === question.questionId}
+        <Card.Root>
+          <Card.Header>
+            <div class="ui:flex ui:flex-wrap ui:items-center ui:gap-2">
+              <Card.Title class="ui:text-base">
+                {$t('exam.corrections.question_number', { position: String(question.position) })}
+              </Card.Title>
+              {#if question.corrected}
+                <Badge variant="secondary">{$t('exam.corrections.corrected_badge')}</Badge>
+              {/if}
+              {#if question.awarded}
+                <Badge variant="secondary">{$t('exam.corrections.awarded_badge')}</Badge>
+              {/if}
+            </div>
+            {#if question.promptHtml}
+              <Card.Description>
+                <SafeHtmlContent content={question.promptHtml} />
+              </Card.Description>
+            {/if}
+          </Card.Header>
+
+          <Card.Content class="ui:space-y-4">
+            {#if editing === question.interactionId}
+              <fieldset class="ui:space-y-2">
+                <legend class="ui:text-sm ui:font-medium">{$t('exam.corrections.pick_correct')}</legend>
+                {#if question.cardinality === 'single'}
+                  <!--
                   One option, not a free choice of several. A candidate answering this
                   question sent exactly one option, and the grader compares the key against
                   what they sent by size before it compares by value — so a key naming two
                   would mark every candidate wrong on this question. The control that cannot
                   express that key is the honest way to say so.
                 -->
-                <RadioGroup.Root
-                  value={draft[0] ?? ''}
-                  onValueChange={(value) => (draft = [value])}
-                  class="ui:space-y-2"
-                >
+                  <RadioGroup.Root
+                    value={draft[0] ?? ''}
+                    onValueChange={(value) => (draft = [value])}
+                    class="ui:space-y-2"
+                  >
+                    {#each question.options as option (option.id)}
+                      <div class="ui:flex ui:items-start ui:gap-2">
+                        <RadioGroup.Item value={option.id} id={`key-${question.interactionId}-${option.id}`} />
+                        <Label for={`key-${question.interactionId}-${option.id}`} class="ui:font-normal">
+                          <span class="ui:font-medium">{option.label}.</span>
+                          <SafeHtmlContent content={option.html} />
+                        </Label>
+                      </div>
+                    {/each}
+                  </RadioGroup.Root>
+                {:else}
                   {#each question.options as option (option.id)}
                     <div class="ui:flex ui:items-start ui:gap-2">
-                      <RadioGroup.Item value={option.id} id={`key-${question.interactionId}-${option.id}`} />
+                      <Checkbox
+                        id={`key-${question.interactionId}-${option.id}`}
+                        checked={draft.includes(option.id)}
+                        onCheckedChange={(checked) => toggle(option.id, checked === true)}
+                      />
                       <Label for={`key-${question.interactionId}-${option.id}`} class="ui:font-normal">
                         <span class="ui:font-medium">{option.label}.</span>
                         <SafeHtmlContent content={option.html} />
                       </Label>
                     </div>
                   {/each}
-                </RadioGroup.Root>
-              {:else}
-                {#each question.options as option (option.id)}
-                  <div class="ui:flex ui:items-start ui:gap-2">
-                    <Checkbox
-                      id={`key-${question.interactionId}-${option.id}`}
-                      checked={draft.includes(option.id)}
-                      onCheckedChange={(checked) => toggle(option.id, checked === true)}
-                    />
-                    <Label for={`key-${question.interactionId}-${option.id}`} class="ui:font-normal">
-                      <span class="ui:font-medium">{option.label}.</span>
-                      <SafeHtmlContent content={option.html} />
-                    </Label>
-                  </div>
-                {/each}
-              {/if}
-            </fieldset>
+                {/if}
+              </fieldset>
 
-            <div class="ui:flex ui:flex-wrap ui:gap-2">
-              <Button size="sm" disabled={busy || !changed(question)} onclick={() => onfix(question, draft)}>
-                {busy ? $t('exam.corrections.saving') : $t('exam.corrections.save_key')}
-              </Button>
-              <Button size="sm" variant="ghost" disabled={busy} onclick={() => (editing = null)}>
-                {$t('exam.corrections.cancel')}
-              </Button>
-            </div>
-          {:else}
-            <p class="ui:text-sm">
-              <span class="ui:text-muted-foreground">{$t('exam.corrections.current_key')}</span>
-              <span class="ui:font-medium">{labelsOf(question, question.effectiveKey)}</span>
-            </p>
-
-            <div class="ui:flex ui:flex-wrap ui:gap-2">
-              {#if question.keyFixable && !question.hasSeveralChoiceParts}
-                <Button size="sm" variant="outline" disabled={busy} onclick={() => beginEdit(question)}>
-                  {$t('exam.corrections.fix_key')}
+              <div class="ui:flex ui:flex-wrap ui:gap-2">
+                <Button size="sm" disabled={busy || !changed(question)} onclick={() => onfix(question, draft)}>
+                  {busy ? $t('exam.corrections.saving') : $t('exam.corrections.save_key')}
                 </Button>
-              {/if}
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={busy || question.awarded}
-                onclick={() => (awarding = question)}
-              >
-                {$t('exam.corrections.award')}
-              </Button>
-            </div>
+                <Button size="sm" variant="ghost" disabled={busy} onclick={() => (editing = null)}>
+                  {$t('exam.corrections.cancel')}
+                </Button>
+              </div>
+            {:else}
+              <!--
+              Every option, with the key marked among them.
+              A letter on its own asks a teacher to judge a key they cannot see: whether A is
+              the right answer to question five is not a question the character "A" can
+              answer. This is the paper as the class read it, with the marking on top.
+            -->
+              {#if question.options.length > 0}
+                <ul class="ui:space-y-1.5">
+                  {#each question.options as option (option.id)}
+                    {@const isKey = question.effectiveKey.includes(option.id)}
+                    <li
+                      class={[
+                        'ui:flex ui:items-start ui:gap-2 ui:rounded-md ui:px-2 ui:py-1.5 ui:text-sm',
+                        isKey ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : ''
+                      ]}
+                    >
+                      <span class="ui:flex ui:size-5 ui:shrink-0 ui:items-center ui:justify-center">
+                        {#if isKey}
+                          <CheckIcon size={16} aria-label={$t('exam.corrections.is_key')} />
+                        {/if}
+                      </span>
+                      <span class="ui:font-medium">{option.label}.</span>
+                      <span class="ui:min-w-0"><SafeHtmlContent content={option.html} /></span>
+                    </li>
+                  {/each}
+                </ul>
 
-            {#if question.hasSeveralChoiceParts}
-              <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.corrections.several_parts')}</p>
-            {:else if !question.keyFixable}
-              <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.corrections.not_choice')}</p>
+                {#if question.effectiveKey.length === 0}
+                  <!-- Nothing is marked above, which is a fact about the paper rather than a gap here. -->
+                  <p class="ui:text-destructive ui:text-xs">{$t('exam.corrections.no_key_warning')}</p>
+                {/if}
+              {:else}
+                <p class="ui:text-sm">
+                  <span class="ui:text-muted-foreground">{$t('exam.corrections.current_key')}</span>
+                  <span class="ui:font-medium">{labelsOf(question, question.effectiveKey)}</span>
+                </p>
+              {/if}
+
+              <div class="ui:flex ui:flex-wrap ui:gap-2">
+                {#if question.keyFixable && !question.hasSeveralChoiceParts}
+                  <Button size="sm" variant="outline" disabled={busy} onclick={() => beginEdit(question)}>
+                    {$t('exam.corrections.fix_key')}
+                  </Button>
+                {/if}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy || question.awarded}
+                  onclick={() => (awarding = question)}
+                >
+                  {$t('exam.corrections.award')}
+                </Button>
+              </div>
+
+              {#if question.hasSeveralChoiceParts}
+                <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.corrections.several_parts')}</p>
+              {:else if !question.keyFixable}
+                <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.corrections.not_choice')}</p>
+              {/if}
             {/if}
-          {/if}
-        </Card.Content>
-      </Card.Root>
+          </Card.Content>
+        </Card.Root>
+      {/each}
     {/each}
   </div>
 {/if}
