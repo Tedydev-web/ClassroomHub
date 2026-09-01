@@ -9,6 +9,8 @@
   import { markAttemptPaper } from '$features/exam/attempt-marking';
   import { interactionQuestionNumbers, questionNumberRanges } from '$features/exam/paper-outline';
   import AttemptActivityPanel from '$features/exam/attempt-activity-panel.svelte';
+  import { AssessmentItemRenderer } from '@cio/ui/custom/exercise-question';
+  import { getAssessmentPassageWorkspaceLabels } from '$features/course/components/exercise/question-labels';
 
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -115,7 +117,66 @@
 
   /** The exact number behind each stored answer, so the log can name the question itself. */
   const questionNumbers = $derived(interactionQuestionNumbers(data.paper?.questions ?? []));
+
+  const passageWorkspaceLabels = $derived(getAssessmentPassageWorkspaceLabels());
+
+  /**
+   * The marking of each question, reachable by the interaction the renderer names.
+   *
+   * The paper is drawn by the renderer and the verdict is this page's, so the two meet on the
+   * interaction id — the only name they both know. Deriving it from the marked items rather
+   * than recomputing keeps one marking on the screen instead of two that can disagree.
+   */
+  const verdictByInteractionId = $derived(
+    new Map(
+      markedItems.flatMap((item) => item.interactions.map((interaction) => [interaction.interactionId, interaction]))
+    )
+  );
 </script>
+
+{#snippet answerVerdict({ interactionId }: { interactionId: string; questionNumber: number })}
+  {@const interaction = verdictByInteractionId.get(interactionId)}
+  {#if interaction}
+    <div class="ui:text-xs">
+      <!--
+        The verdict reaches a screen reader as a word. The colour and the glyph are the only
+        other carriers, and neither is available to one.
+      -->
+      {#if !interaction.answered}
+        <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
+      {:else if interaction.outcome === 'correct'}
+        <span class="ui:font-medium text-emerald-600 dark:text-emerald-400">
+          <span aria-hidden="true">✓ </span>{$t('exam.results.marked_correct')}
+        </span>
+      {:else if interaction.outcome === 'incorrect'}
+        <span class="ui:text-destructive ui:font-medium">
+          <span aria-hidden="true">✗ </span>{$t('exam.results.marked_incorrect')}
+        </span>
+      {:else if interaction.outcome === 'partial'}
+        <span class="ui:font-medium text-amber-600 dark:text-amber-400">
+          {$t('exam.results.marked_partial')} ({$t('exam.results.interaction_score', {
+            score: String(interaction.score ?? 0),
+            max: String(interaction.maxScore)
+          })})
+        </span>
+      {:else if interaction.outcome === 'manual'}
+        <span class="ui:text-muted-foreground">{$t('exam.results.awaiting_hand_mark')}</span>
+      {:else}
+        <span class="ui:text-muted-foreground">{$t('exam.results.marked_unscored')}</span>
+      {/if}
+
+      <!--
+        Only where the key is not already visible on the options above: a written answer has
+        no option to tint, so the expected text has to be said.
+      -->
+      {#if interaction.outcome !== 'correct' && interaction.outcome !== 'manual' && interaction.correct.length === 0 && interaction.expectedText}
+        <span class="ui:text-muted-foreground ui:ml-2">
+          {$t('exam.results.expected_answer', { answer: interaction.expectedText })}
+        </span>
+      {/if}
+    </div>
+  {/if}
+{/snippet}
 
 <Page.Root class="mx-auto flex w-full px-4 md:w-[90%] lg:max-w-4xl">
   <Page.Header>
@@ -188,98 +249,28 @@
               </p>
             {/if}
 
-            {#if item.sharedHtml}
-              <!--
-                Collapsed. A marker needs the passage to settle a disputed answer and almost
-                never otherwise, and ten passages opened at once bury the forty answers this
-                page exists to show.
-              -->
-              <details class="ui:border-border ui:rounded-md ui:border ui:px-3 ui:py-2">
-                <summary class="ui:text-muted-foreground ui:cursor-pointer ui:text-xs">
-                  {$t('exam.results.passage')}
-                </summary>
-                <div class="ui:mt-2 ui:text-sm">
-                  <SafeHtmlContent content={item.sharedHtml} />
-                </div>
-              </details>
-            {/if}
-
-            <ol class="ui:divide-border ui:divide-y">
-              {#each item.interactions as interaction (interaction.interactionId)}
-                {@const tone =
-                  interaction.outcome === 'correct'
-                    ? 'ui:text-emerald-600 dark:text-emerald-400'
-                    : interaction.outcome === 'incorrect'
-                      ? 'ui:text-destructive'
-                      : interaction.outcome === 'partial'
-                        ? 'ui:text-amber-600 ui:dark:text-amber-400'
-                        : ''}
-                <li class="ui:flex ui:flex-wrap ui:items-baseline ui:gap-x-3 ui:gap-y-1 ui:py-2 ui:text-sm">
-                  <span class="ui:text-muted-foreground ui:w-8 ui:shrink-0 ui:tabular-nums">
-                    {interaction.number}.
-                  </span>
-
-                  {#if !interaction.answered}
-                    <span class="ui:text-muted-foreground ui:italic">{$t('exam.results.not_answered')}</span>
-                  {:else}
-                    <span class="ui:min-w-0 ui:flex-1 ui:[&_p]:m-0 ui:[&_p]:inline {tone}">
-                      <!--
-                        Keyed by position, not by label. An option id the paper no longer
-                        contains resolves to "?", and two of them in one answer would be two
-                        identical keys, which Svelte rejects — taking the whole page down
-                        rather than the one row.
-                      -->
-                      {#each interaction.chosen as option, position (position)}
-                        <span class="ui:font-semibold">{option.label}.</span>
-                        <SafeHtmlContent content={option.html} />
-                      {/each}
-                      {#if interaction.givenText}{interaction.givenText}{/if}
-                      <!--
-                        The verdict reaches a screen reader as a word. The glyph and the
-                        colour are the only other carriers, and neither is available to one.
-                      -->
-                      {#if interaction.outcome === 'correct'}
-                        <span class="ui:sr-only">{$t('exam.results.marked_correct')}</span>
-                        <span aria-hidden="true"> ✓</span>
-                      {:else if interaction.outcome === 'incorrect'}
-                        <span class="ui:sr-only">{$t('exam.results.marked_incorrect')}</span>
-                        <span aria-hidden="true"> ✗</span>
-                      {:else if interaction.outcome === 'partial'}
-                        <span class="ui:sr-only">{$t('exam.results.marked_partial')}</span>
-                        <span class="ui:text-xs ui:tabular-nums">
-                          ({$t('exam.results.interaction_score', {
-                            score: String(interaction.score ?? 0),
-                            max: String(interaction.maxScore)
-                          })})
-                        </span>
-                      {:else if interaction.outcome === 'manual'}
-                        <span class="ui:text-muted-foreground ui:text-xs">
-                          — {$t('exam.results.awaiting_hand_mark')}
-                        </span>
-                      {:else}
-                        <span class="ui:text-muted-foreground ui:text-xs">
-                          — {$t('exam.results.marked_unscored')}
-                        </span>
-                      {/if}
-                    </span>
-                  {/if}
-
-                  {#if interaction.outcome !== 'correct' && interaction.outcome !== 'manual'}
-                    {#if interaction.correct.length > 0}
-                      <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
-                        {$t('exam.results.correct_answer', {
-                          answer: interaction.correct.map((option) => option.label).join(', ')
-                        })}
-                      </span>
-                    {:else if interaction.expectedText}
-                      <span class="ui:text-muted-foreground ui:basis-full ui:pl-8 ui:text-xs">
-                        {$t('exam.results.expected_answer', { answer: interaction.expectedText })}
-                      </span>
-                    {/if}
-                  {/if}
-                </li>
-              {/each}
-            </ol>
+            <!--
+              The paper as the candidate saw it, with their answers in place and the key
+              beside them. It used to be a compact list — "3. B ✗, correct answer C" — which
+              is readable but is not the paper: a marker settling a dispute needs the passage,
+              the wording and the options that were on the screen, and had to open another tab
+              to see any of it.
+            -->
+            {#key item.questionId}
+              <AssessmentItemRenderer
+                definition={item.definition}
+                response={answerByQuestion.get(item.questionId)}
+                disabled
+                revealsKey
+                questionNumber={item.firstNumber}
+                interactionNumberStart={item.firstNumber}
+                showItemHeader={item.definition?.presentation?.layout !== 'passage_split'}
+                trueLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.true_label')}
+                falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
+                {passageWorkspaceLabels}
+                questionActions={answerVerdict}
+              />
+            {/key}
 
             {#if trail.length > 1}
               <!-- Settles a dispute about a result, and shows a paper answered all at once. -->

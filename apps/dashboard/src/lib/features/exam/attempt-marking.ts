@@ -46,6 +46,12 @@ export type MarkedItem = {
   questionId: number;
   firstNumber: number;
   lastNumber: number;
+  /**
+   * The item as the paper holds it, so a marker can be shown the question rather than a
+   * summary of it. Carried through rather than looked up again: the marking and the drawing
+   * have to be of the same paper, and two lookups are two chances to disagree.
+   */
+  definition: AssessmentItemDefinition;
   sharedHtml: string | null;
   interactions: MarkedInteraction[];
   autoScore: number | null;
@@ -255,6 +261,7 @@ export function markAttemptPaper(
       questionId: question.questionId,
       firstNumber,
       lastNumber: next - 1,
+      definition,
       sharedHtml: shared.length > 0 ? shared : null,
       interactions,
       autoScore: scored?.autoScore ?? null,

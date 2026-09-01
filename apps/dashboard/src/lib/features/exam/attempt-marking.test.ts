@@ -372,3 +372,14 @@ describe('markAttemptPaper', () => {
     expect(marked[0]!.interactions[0]!.outcome).toBe('correct');
   });
 });
+
+describe('the item a marker is shown', () => {
+  it('carries the paper\u2019s own definition, so the question can be drawn rather than summarised', () => {
+    // Without it the page hands the renderer `undefined` and dies on render — which builds
+    // and tests green, because neither of those draws anything.
+    const paper = [item(1, ['q1'], 'a')];
+    const [marked] = markAttemptPaper(paper, new Map());
+
+    expect(marked.definition).toBe(paper[0].definition);
+  });
+});
