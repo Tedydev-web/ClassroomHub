@@ -3,8 +3,12 @@ import { getExamById } from '@cio/db/queries/exam/exam';
 import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
 
 import { applyCorrections, type ExamCorrection } from './exam-grading';
+import { buildAnswerMatrix, type MatrixAttempt } from './exam-answer-matrix';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 import { requireExamsEnabled } from './exam';
+import { db } from '@cio/db/drizzle';
+import * as schema from '@cio/db/schema';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 
 /**
  * The answer key of a frozen paper, as the teacher who has to fix one needs to read it.
@@ -173,4 +177,44 @@ export async function listExamAnswerKeysService(examId: string): Promise<ExamAns
   }
 
   return buildAnswerKeyRows(corrected.questions, kindsByQuestion);
+}
+
+/**
+ * The class's answers as one table, for a teacher going through the paper with them.
+ *
+ * Built on the same rows the corrections screen reads, so the column headed question seven
+ * is the same question seven in both places — two ways of numbering one paper is how a
+ * marking sheet comes to be confidently wrong.
+ *
+ * `attemptIds` narrows it to the candidates the teacher picked; empty means the whole class.
+ */
+export async function buildExamAnswerMatrixService(examId: string, attemptIds: string[] = []) {
+  requireExamsEnabled();
+
+  const questions = await listExamAnswerKeysService(examId);
+
+  const rows = await db
+    .select({
+      attemptId: schema.examAttempt.id,
+      displayName: schema.examAttempt.displayName,
+      nickname: schema.examAttempt.nickname,
+      className: schema.examAttempt.className,
+      candidateNumber: schema.examAttempt.candidateNumber,
+      score: schema.examAttempt.score,
+      total: schema.examAttempt.total,
+      answers: schema.examAttempt.answers
+    })
+    .from(schema.examAttempt)
+    .where(
+      and(
+        eq(schema.examAttempt.examId, examId),
+        sql`${schema.examAttempt.status} <> 'in_progress'`,
+        attemptIds.length > 0 ? inArray(schema.examAttempt.id, attemptIds) : undefined
+      )
+    );
+
+  return buildAnswerMatrix(
+    questions,
+    rows.map((row) => ({ ...row, answers: (row.answers as MatrixAttempt['answers']) ?? [] }))
+  );
 }

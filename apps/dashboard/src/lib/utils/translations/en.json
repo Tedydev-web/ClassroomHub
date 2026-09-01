@@ -5580,7 +5580,15 @@
       "summary_awaiting": "{count} awaiting marking",
       "leaves_column": "Left the paper",
       "conduct_note": "The \"left the paper\" column counts how often a candidate device stopped showing the exam. It is a count, not a finding: a phone locking its own screen produces the same entry as an answer being looked up, and a second device beside the desk produces none at all. Open a sitting to see when, and for how long.",
-      "duplicate_address_help": "Candidates on one school wifi always share an address, so this is expected in a classroom and only worth a look when a sitting was meant to happen elsewhere."
+      "duplicate_address_help": "Candidates on one school wifi always share an address, so this is expected in a classroom and only worth a look when a sitting was meant to happen elsewhere.",
+      "correct_column": "Correct",
+      "question_short": "Q",
+      "answers_file": "answers",
+      "export_answers_all": "Download answers ({count})",
+      "export_answers_selected": "Download selected ({count})",
+      "export_failed": "Could not download the answers. Please try again.",
+      "select_all": "Select every finished paper",
+      "select_one": "Select {name}'s paper"
     },
     "manage": {
       "title": "Exams",

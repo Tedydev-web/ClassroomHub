@@ -5,6 +5,7 @@
 
   import ExamTabs from '$features/exam/exam-tabs.svelte';
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
+  import { buildAnswerMatrixCsv, downloadCsv } from '$features/exam/exam-answer-sheet-csv';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -74,6 +75,56 @@
   function openAttempt(attemptId: string) {
     window.location.href = `/courses/${data.courseId}/exams/${data.examId}/attempts/${attemptId}`;
   }
+
+  /**
+   * The class's answers, as a sheet a teacher can go through the paper from.
+   *
+   * A column per question and a row per candidate, with the key on the first row. Read down
+   * a column and it says which question the class fell for and what they chose instead; read
+   * across a row and it is one candidate's paper. The register export beside it says who sat
+   * and what they scored, which is a different question and not this one.
+   *
+   * Fetched only when asked. The results list deliberately carries no answers — four hundred
+   * sittings of them is not a page — so they are collected here and nowhere else.
+   */
+  let exportingAnswers = $state(false);
+
+  async function exportAnswers(attemptIds: string[]) {
+    exportingAnswers = true;
+
+    try {
+      const response = await classroomhub.exam[':examId']['answer-matrix'].$post({
+        param: { examId: data.examId },
+        json: { attemptIds }
+      });
+      const body = await response.json();
+
+      if (!('success' in body) || !body.success) {
+        snackbar.error($t('exam.results.export_failed'));
+        return;
+      }
+
+      downloadCsv(
+        buildAnswerMatrixCsv(body.data, {
+          name: $t('exam.entry.full_name'),
+          nickname: $t('exam.entry.nickname'),
+          className: $t('exam.entry.class_name'),
+          candidateNumber: $t('exam.entry.candidate_number'),
+          score: $t('exam.results.score_column'),
+          correct: $t('exam.results.correct_column'),
+          question: $t('exam.results.question_short'),
+          key: $t('exam.corrections.current_key')
+        }),
+        `${data.title}-${$t('exam.results.answers_file')}.csv`
+      );
+
+      snackbar.success($t('exam.results.exported'));
+    } catch {
+      snackbar.error($t('exam.results.export_failed'));
+    } finally {
+      exportingAnswers = false;
+    }
+  }
 </script>
 
 <Page.Root class="mx-auto flex w-full md:w-[calc(95vw-var(--sidebar-width))]!">
@@ -97,7 +148,14 @@
   <Page.Body>
     {#snippet child()}
       <ExamTabs courseId={data.courseId} examId={data.examId} />
-      <ExamResultsTable {rows} onopen={openAttempt} onreopen={reopen} ondelete={remove} />
+      <ExamResultsTable
+        {rows}
+        onopen={openAttempt}
+        onreopen={reopen}
+        ondelete={remove}
+        onexportanswers={exportAnswers}
+        {exportingAnswers}
+      />
     {/snippet}
   </Page.Body>
 </Page.Root>

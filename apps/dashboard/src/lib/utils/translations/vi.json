@@ -5590,7 +5590,15 @@
       "summary_awaiting": "{count} chờ chấm tay",
       "leaves_column": "Rời bài thi",
       "conduct_note": "Cột \"Rời bài thi\" đếm số lần máy của thí sinh ngừng hiển thị đề. Đó là một con số, không phải kết luận: điện thoại tự khoá màn hình sinh ra đúng mục giống hệt lúc tra cứu đáp án, còn một thiết bị thứ hai đặt cạnh bàn thì không sinh mục nào cả. Mở từng bài để xem rời lúc nào và bao lâu.",
-      "duplicate_address_help": "Thí sinh dùng chung wifi trường thì luôn trùng địa chỉ, nên điều này là bình thường trong một lớp học; chỉ đáng xem khi lượt thi lẽ ra phải diễn ra ở nơi khác."
+      "duplicate_address_help": "Thí sinh dùng chung wifi trường thì luôn trùng địa chỉ, nên điều này là bình thường trong một lớp học; chỉ đáng xem khi lượt thi lẽ ra phải diễn ra ở nơi khác.",
+      "correct_column": "Số câu đúng",
+      "question_short": "Câu ",
+      "answers_file": "bai-lam",
+      "export_answers_all": "Tải bài làm ({count})",
+      "export_answers_selected": "Tải bài làm đã chọn ({count})",
+      "export_failed": "Chưa tải được bài làm. Thử lại giúp mình.",
+      "select_all": "Chọn tất cả bài đã nộp",
+      "select_one": "Chọn bài của {name}"
     },
     "manage": {
       "title": "Đề thi",

@@ -20,7 +20,7 @@ import {
   summariseExamPaperService,
   updateExamSettingsService
 } from '@api/services/exam/exam';
-import { listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
+import { buildExamAnswerMatrixService, listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
 import {
   copyExerciseIntoContainer,
   listAvailableContainersService,
@@ -287,6 +287,27 @@ export const examRouter = new Hono()
   // The answer key of the paper that was actually sat, with every correction already
   // applied. Behind the same guard as the results: it is the answer key, and only the
   // people who may read a candidate's marks may read it.
+  /**
+   * The class's answers as one table, for going through the paper with them.
+   *
+   * A `GET` with a list of candidates would put names in a URL that gets logged, so the
+   * selection is sent in a body. Behind the same guard as the results and the key: this is
+   * every answer every candidate gave.
+   */
+  .post('/:examId/answer-matrix', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const body = await c.req.json().catch(() => ({}));
+      const attemptIds = Array.isArray(body?.attemptIds)
+        ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
+        : [];
+
+      const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
+
+      return c.json({ success: true as const, data: matrix });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .get('/:examId/answer-keys', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const questions = await listExamAnswerKeysService(c.req.param('examId'));

@@ -8,6 +8,7 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
   import DownloadIcon from '@lucide/svelte/icons/download';
+  import { Checkbox } from '@cio/ui/base/checkbox';
   import { snackbar } from '$features/ui/snackbar/store';
 
   /**
@@ -41,13 +42,49 @@
     rows,
     onopen,
     onreopen,
-    ondelete
+    ondelete,
+    onexportanswers,
+    exportingAnswers = false
   }: {
     rows: ExamResultRow[];
     onopen: (attemptId: string) => void;
     onreopen: (attemptId: string) => void;
     ondelete: (attemptId: string, displayName: string | null) => void;
+    /** The papers to fetch answers for; empty means every finished sitting shown. */
+    onexportanswers?: (attemptIds: string[]) => void;
+    exportingAnswers?: boolean;
   } = $props();
+
+  /**
+   * The candidates a teacher picked to take away, by attempt.
+   *
+   * Empty is not "nobody" but "whoever is on screen": a teacher who has filtered to the
+   * papers awaiting a hand mark and pressed download meant those, and making them tick
+   * forty boxes to say so would be a worse answer than reading the filter they already set.
+   */
+  let picked = $state<Set<string>>(new Set());
+
+  const pickable = $derived(shown.filter((row) => row.status !== 'in_progress'));
+  const allPicked = $derived(pickable.length > 0 && pickable.every((row) => picked.has(row.attemptId)));
+
+  function pick(attemptId: string, checked: boolean) {
+    const next = new Set(picked);
+
+    if (checked) next.add(attemptId);
+    else next.delete(attemptId);
+
+    picked = next;
+  }
+
+  function pickAll(checked: boolean) {
+    picked = checked ? new Set(pickable.map((row) => row.attemptId)) : new Set();
+  }
+
+  function exportAnswers() {
+    const chosen = pickable.filter((row) => picked.has(row.attemptId)).map((row) => row.attemptId);
+
+    onexportanswers?.(chosen.length > 0 ? chosen : pickable.map((row) => row.attemptId));
+  }
 
   type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual';
   let filter = $state<Filter>('all');
@@ -296,12 +333,28 @@
       {/each}
     </div>
 
-    {#if shown.length > 0}
-      <Button size="sm" variant="outline" onclick={exportCsv}>
-        <DownloadIcon size={14} />
-        {$t('exam.results.export_csv')}
-      </Button>
-    {/if}
+    <div class="ui:flex ui:flex-wrap ui:gap-2">
+      {#if pickable.length > 0 && onexportanswers}
+        <!--
+          The papers themselves, not the register. The other button takes away who sat and
+          what they scored; this one takes away what they answered, which is the only one of
+          the two a teacher can go through the paper with.
+        -->
+        <Button size="sm" disabled={exportingAnswers} onclick={exportAnswers}>
+          <DownloadIcon size={14} />
+          {picked.size > 0
+            ? $t('exam.results.export_answers_selected', { count: String(picked.size) })
+            : $t('exam.results.export_answers_all', { count: String(pickable.length) })}
+        </Button>
+      {/if}
+
+      {#if shown.length > 0}
+        <Button size="sm" variant="outline" onclick={exportCsv}>
+          <DownloadIcon size={14} />
+          {$t('exam.results.export_csv')}
+        </Button>
+      {/if}
+    </div>
   </div>
 
   <!--
@@ -328,6 +381,18 @@
               Sortable where sorting answers a question a teacher actually asks: who is at
               the bottom, who took longest, and where is a name in a class list.
             -->
+            <!--
+              Picking papers to take away. A sitting still in progress has nothing to take,
+              so it offers no box rather than an inert one.
+            -->
+            <Table.Head class="ui:w-10">
+              <Checkbox
+                checked={allPicked}
+                disabled={pickable.length === 0}
+                aria-label={$t('exam.results.select_all')}
+                onCheckedChange={(checked) => pickAll(checked === true)}
+              />
+            </Table.Head>
             <Table.Head aria-sort={sortKey === 'name' ? (sortDescending ? 'descending' : 'ascending') : 'none'}>
               <button type="button" class="ui:font-medium ui:hover:underline" onclick={() => sortBy('name')}>
                 {$t('exam.entry.full_name')}<span aria-hidden="true"
@@ -381,6 +446,15 @@
         <Table.Body>
           {#each shown as row (row.attemptId)}
             <Table.Row>
+              <Table.Cell>
+                {#if row.status !== 'in_progress'}
+                  <Checkbox
+                    checked={picked.has(row.attemptId)}
+                    aria-label={$t('exam.results.select_one', { name: row.displayName ?? '' })}
+                    onCheckedChange={(checked) => pick(row.attemptId, checked === true)}
+                  />
+                {/if}
+              </Table.Cell>
               <Table.Cell class="ui:font-medium">
                 <span class="ui:align-middle">{row.displayName ?? '—'}</span>
                 {#if row.nickname}
