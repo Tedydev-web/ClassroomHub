@@ -4,6 +4,8 @@ import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@
 
 import { applyCorrections, type ExamCorrection } from './exam-grading';
 import { buildAnswerMatrix, type MatrixAttempt } from './exam-answer-matrix';
+import { buildAnswerWorkbookSheets, type WorkbookLabels } from './exam-answer-workbook';
+import { buildXlsx } from './exam-workbook-xlsx';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 import { requireExamsEnabled } from './exam';
 import { db } from '@cio/db/drizzle';
@@ -217,4 +219,79 @@ export async function buildExamAnswerMatrixService(examId: string, attemptIds: s
     questions,
     rows.map((row) => ({ ...row, answers: (row.answers as MatrixAttempt['answers']) ?? [] }))
   );
+}
+
+/**
+ * The workbook itself, named so a folder of them stays sortable.
+ *
+ * Built on the server because the file is a zip of XML and the browser has no reason to
+ * carry a spreadsheet writer for one screen.
+ */
+export async function buildExamAnswerWorkbookService(
+  examId: string,
+  attemptIds: string[],
+  labels: WorkbookLabels,
+  now = new Date()
+) {
+  const exam = await getExamById(examId);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  const matrix = await buildExamAnswerMatrixService(examId, attemptIds);
+  const stamp = examWorkbookStamp(now);
+
+  const sheets = buildAnswerWorkbookSheets(matrix, labels, exam.title, stamp.readable);
+  const file = await buildXlsx(sheets);
+
+  return { file, fileName: examWorkbookFileName(exam.title, matrix, stamp.compact) };
+}
+
+/** The moment the file was made, in both the shapes it is needed in. */
+function examWorkbookStamp(now: Date) {
+  const parts = new Intl.DateTimeFormat('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour12: false
+  }).formatToParts(now);
+
+  const at = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+
+  return {
+    readable: `${at('hour')}:${at('minute')} ${at('day')}/${at('month')}/${at('year')}`,
+    compact: `${at('year')}${at('month')}${at('day')}-${at('hour')}${at('minute')}`
+  };
+}
+
+/**
+ * A file name that survives a download folder.
+ *
+ * The paper, then who it is for, then when it was taken — in that order, because a teacher
+ * looking for one file is looking for the paper first. The date is written so that sorting
+ * by name sorts by time.
+ *
+ * Diacritics are folded and spaces become hyphens: the same name has to survive a Windows
+ * folder, an email attachment and a chat app, and each of those breaks something different.
+ */
+function examWorkbookFileName(title: string, matrix: { rows: Array<{ displayName: string | null }> }, stamp: string) {
+  const only = matrix.rows.length === 1 ? matrix.rows[0]?.displayName : null;
+  const parts = [title, only ?? `${matrix.rows.length}-hs`, stamp]
+    .map(toFileNamePart)
+    .filter((part) => part.length > 0);
+
+  return `${parts.join('_') || 'bai-lam'}.xlsx`;
+}
+
+function toFileNamePart(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/gu, '')
+    .replace(/đ/gu, 'd')
+    .replace(/Đ/gu, 'D')
+    .replace(/[^a-zA-Z0-9]+/gu, '-')
+    .replace(/^-+|-+$/gu, '')
+    .toLowerCase()
+    .slice(0, 60);
 }

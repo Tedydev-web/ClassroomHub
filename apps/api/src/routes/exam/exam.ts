@@ -20,7 +20,7 @@ import {
   summariseExamPaperService,
   updateExamSettingsService
 } from '@api/services/exam/exam';
-import { buildExamAnswerMatrixService, listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
+import { buildExamAnswerWorkbookService, listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
 import {
   copyExerciseIntoContainer,
   listAvailableContainersService,
@@ -294,16 +294,34 @@ export const examRouter = new Hono()
    * selection is sent in a body. Behind the same guard as the results and the key: this is
    * every answer every candidate gave.
    */
-  .post('/:examId/answer-matrix', authMiddleware, examTeamMemberMiddleware, async (c) => {
+  .post('/:examId/answer-workbook', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const body = await c.req.json().catch(() => ({}));
       const attemptIds = Array.isArray(body?.attemptIds)
         ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
         : [];
 
-      const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
+      /**
+       * The wording travels with the request.
+       *
+       * The file is read by a teacher and their class, in their language, and the server has
+       * no idea which that is. Sending the labels is what keeps the sheet in the same
+       * language as the screen it was asked for from.
+       */
+      const { file, fileName } = await buildExamAnswerWorkbookService(
+        c.req.param('examId'),
+        attemptIds,
+        body?.labels ?? {}
+      );
 
-      return c.json({ success: true as const, data: matrix });
+      return new Response(new Uint8Array(file), {
+        headers: {
+          'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          // Both spellings: the plain one for what every client understands, and the encoded
+          // one so a Vietnamese title survives the header intact where it is understood.
+          'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+        }
+      });
     } catch (error) {
       return handleError(c, error);
     }

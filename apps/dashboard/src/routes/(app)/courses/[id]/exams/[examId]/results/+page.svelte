@@ -5,7 +5,7 @@
 
   import ExamTabs from '$features/exam/exam-tabs.svelte';
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
-  import { buildAnswerMatrixCsv, downloadCsv } from '$features/exam/exam-answer-sheet-csv';
+  import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -77,15 +77,16 @@
   }
 
   /**
-   * The class's answers, as a sheet a teacher can go through the paper from.
+   * The class's answers, as a workbook a teacher takes into the room.
    *
-   * A column per question and a row per candidate, with the key on the first row. Read down
-   * a column and it says which question the class fell for and what they chose instead; read
-   * across a row and it is one candidate's paper. The register export beside it says who sat
-   * and what they scored, which is a different question and not this one.
+   * Built and formatted on the server: the file is a zip of XML, and the browser has no
+   * reason to carry a spreadsheet writer for one screen. The wording travels with the
+   * request, because the sheet is read by a teacher and their class and the server has no
+   * idea which language that is.
    *
-   * Fetched only when asked. The results list deliberately carries no answers — four hundred
-   * sittings of them is not a page — so they are collected here and nowhere else.
+   * The name comes back with the file rather than being composed here — the server knows the
+   * paper's title, which this page does not, and a folder full of files named after the
+   * wrong thing is how the last attempt at this went.
    */
   let exportingAnswers = $state(false);
 
@@ -93,31 +94,35 @@
     exportingAnswers = true;
 
     try {
-      const response = await classroomhub.exam[':examId']['answer-matrix'].$post({
+      const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
         param: { examId: data.examId },
-        json: { attemptIds }
+        json: {
+          attemptIds,
+          labels: {
+            paper: $t('exam.results.workbook_paper'),
+            classSheet: $t('exam.results.workbook_class_sheet'),
+            student: $t('exam.results.workbook_student'),
+            className: $t('exam.entry.class_name'),
+            score: $t('exam.results.score_column'),
+            correctCount: $t('exam.results.correct_column'),
+            question: $t('exam.results.question_short'),
+            key: $t('exam.results.workbook_key'),
+            theirAnswer: $t('exam.results.workbook_their_answer'),
+            outcome: $t('exam.results.workbook_outcome'),
+            right: $t('exam.results.workbook_right'),
+            wrong: $t('exam.results.workbook_wrong'),
+            blank: $t('exam.results.workbook_blank'),
+            generatedAt: $t('exam.results.workbook_generated_at')
+          }
+        }
       });
-      const body = await response.json();
 
-      if (!('success' in body) || !body.success) {
+      if (!response.ok) {
         snackbar.error($t('exam.results.export_failed'));
         return;
       }
 
-      downloadCsv(
-        buildAnswerMatrixCsv(body.data, {
-          name: $t('exam.entry.full_name'),
-          nickname: $t('exam.entry.nickname'),
-          className: $t('exam.entry.class_name'),
-          candidateNumber: $t('exam.entry.candidate_number'),
-          score: $t('exam.results.score_column'),
-          correct: $t('exam.results.correct_column'),
-          question: $t('exam.results.question_short'),
-          key: $t('exam.corrections.current_key')
-        }),
-        `${data.title}-${$t('exam.results.answers_file')}.csv`
-      );
-
+      downloadFile(await response.blob(), fileNameFromResponse(response, $t('exam.results.answers_file')));
       snackbar.success($t('exam.results.exported'));
     } catch {
       snackbar.error($t('exam.results.export_failed'));
