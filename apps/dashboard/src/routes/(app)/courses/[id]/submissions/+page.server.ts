@@ -11,14 +11,16 @@ export const load = async ({ params, cookies }) => {
       courseId: '',
       sections: [],
       submissionIdData: {},
-      exams: []
+      attempts: []
     };
   }
 
   // Exams sit beside the exercise submissions rather than in a section of their own:
   // both are "what the learners handed in", and a teacher looking for one is usually
-  // willing to see the other. A failure here empties that tab and leaves grading alone.
-  const [result, exams] = await Promise.all([
+  // willing to see the other. What is fetched is the sittings, not the papers — the papers
+  // have their own page, and listing them here made this tab a copy of it. A failure here
+  // empties that tab and leaves grading alone.
+  const [result, attempts] = await Promise.all([
     safeServerApi<ListSubmissionsForGradingSuccess>(() =>
       classroomhub.course[':courseId'].submission['for-grading'].$get(
         {
@@ -27,13 +29,15 @@ export const load = async ({ params, cookies }) => {
         getApiHeaders(cookies)
       )
     ),
-    safeServerApi(() => classroomhub.exam.course[':courseId'].$get({ param: { courseId } }, getApiHeaders(cookies, '')))
+    safeServerApi(() =>
+      classroomhub.exam.course[':courseId'].attempts.$get({ param: { courseId } }, getApiHeaders(cookies, ''))
+    )
   ]);
 
   return {
     courseId,
     sections: result.ok && result.body.data ? result.body.data.sections || [] : [],
     submissionIdData: result.ok && result.body.data ? result.body.data.submissionIdData || {} : {},
-    exams: exams.ok ? exams.body.data : []
+    attempts: attempts.ok ? attempts.body.data : []
   };
 };

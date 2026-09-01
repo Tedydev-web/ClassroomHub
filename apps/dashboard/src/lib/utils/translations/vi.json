@@ -5608,7 +5608,13 @@
       "workbook_right": "Đúng",
       "workbook_wrong": "Sai",
       "workbook_blank": "Bỏ trống",
-      "workbook_generated_at": "Xuất lúc"
+      "workbook_generated_at": "Xuất lúc",
+      "exam_column": "Đề thi",
+      "submitted_at_column": "Nộp lúc",
+      "search_placeholder": "Tìm học sinh",
+      "all_exams": "Tất cả đề",
+      "manage_exams": "Quản lý đề thi",
+      "course_empty": "Chưa có học sinh nào trong khoá này làm bài thi."
     },
     "manage": {
       "title": "Đề thi",

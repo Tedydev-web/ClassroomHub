@@ -5598,7 +5598,13 @@
       "workbook_right": "Right",
       "workbook_wrong": "Wrong",
       "workbook_blank": "Blank",
-      "workbook_generated_at": "Exported"
+      "workbook_generated_at": "Exported",
+      "exam_column": "Exam",
+      "submitted_at_column": "Handed in",
+      "search_placeholder": "Find a student",
+      "all_exams": "All exams",
+      "manage_exams": "Manage exams",
+      "course_empty": "Nobody in this course has sat an exam yet."
     },
     "manage": {
       "title": "Exams",

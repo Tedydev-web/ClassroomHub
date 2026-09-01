@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SubmissionsPage } from '$features/course/pages';
-  import ExamList from '$features/exam/exam-list.svelte';
+  import CourseExamAttempts from '$features/exam/course-exam-attempts.svelte';
   import { RefreshPageData, RoleBasedSecurity } from '$features/ui';
   import { Button } from '@cio/ui/base/button';
   import * as Page from '@cio/ui/base/page';
@@ -13,6 +13,10 @@
    * Exams used to be a section of their own in the sidebar, which split "what did they
    * hand in" across two places a teacher had to remember. They are a tab here instead;
    * the route still exists for links that were already copied.
+   *
+   * The exam tab lists sittings, not papers. It listed the papers for a while, which made
+   * it the exams page rendered twice — and left the question this page exists to answer
+   * unanswered on the exam half.
    */
   let { data } = $props();
 
@@ -54,7 +58,7 @@
           </Tabs.Content>
 
           <Tabs.Content value="exams" class="mt-4">
-            <ExamList courseId={data.courseId} exams={data.exams ?? []} />
+            <CourseExamAttempts courseId={data.courseId} attempts={data.attempts ?? []} />
           </Tabs.Content>
         </Tabs.Root>
       {/snippet}
