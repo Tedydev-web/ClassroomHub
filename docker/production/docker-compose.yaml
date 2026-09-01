@@ -21,7 +21,19 @@
 #     split exists because Coolify hardcodes `build --pull --no-cache` for
 #     compose deployments: building on this machine meant a full rebuild of four
 #     images on every push, on the machine that also serves the site.
-#   - CLASSROOM_IMAGE_TAG is the commit being run. The deploy job exports it for
+#   - CLASSROOM_API_TAG, CLASSROOM_DASHBOARD_TAG and CLASSROOM_JOBS_TAG are the
+#     commit each service is running. One tag per service, not one for the stack:
+#     a shared tag changed on every deploy, so compose recreated every container
+#     every time and a change to the teacher's screen restarted the API in the
+#     middle of an exam — the process a candidate's autosaves, activity reports
+#     and submission all go through. A service the deploy did not rebuild is
+#     handed the tag it is already running, so its resolved config is unchanged
+#     and compose leaves it alone.
+#
+#     `:?` rather than a default. The old default was `current`, a tag nothing
+#     has ever published, so an unset variable would have failed at the pull with
+#     a message about a missing image rather than about the missing variable.
+#   - the deploy job exports them for
 #     the one `up` command, so `docker ps` names the commit each container came
 #     from. `current` is only the fallback for a hand-run `up`.
 #     The dashboard topology is baked into its image at build time.
@@ -135,7 +147,7 @@ services:
   # `restart: "no"` also tells Coolify this container is not part of stack health.
   db-migrate:
     # The API image, so the applied schema always matches the API that serves it.
-    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-current}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_API_TAG:?set by the deploy}
     labels:
       io.classroom.stack: production
       io.classroom.role: db-migrate
@@ -160,7 +172,7 @@ services:
           memory: 1G
 
   api:
-    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_IMAGE_TAG:-current}
+    image: ghcr.io/tedydev-web/classroom-api:${CLASSROOM_API_TAG:?set by the deploy}
     labels:
       io.classroom.stack: production
       io.classroom.role: api
@@ -271,7 +283,7 @@ services:
           memory: 1536M
 
   dashboard:
-    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_IMAGE_TAG:-current}
+    image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_DASHBOARD_TAG:?set by the deploy}
     labels:
       io.classroom.stack: production
       io.classroom.role: dashboard
@@ -354,7 +366,7 @@ services:
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.
   jobs:
-    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_IMAGE_TAG:-current}
+    image: ghcr.io/tedydev-web/classroom-jobs:${CLASSROOM_JOBS_TAG:?set by the deploy}
     labels:
       io.classroom.stack: production
       io.classroom.role: jobs

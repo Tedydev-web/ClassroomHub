@@ -39,28 +39,83 @@ env:
   HOST_ENV_DIR: /home/tedydev/.config/classroomhub
 
 jobs:
+  # Which services this push actually touched.
+  #
+  # Everything used to be rebuilt and restarted on every commit, because the compose file
+  # gave all three one shared image tag. A change to the teacher's screen therefore restarted
+  # the API in the middle of an exam — the process a candidate's autosaves, activity reports
+  # and submission all go through — and paid twelve minutes to do it.
+  #
+  # The rule lives in a script with tests rather than in a `paths:` filter here, because
+  # being wrong in the narrowing direction ships a dashboard against an API that does not
+  # have the endpoint it calls.
+  changes:
+    name: Decide what to build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      services: ${{ steps.decide.outputs.services }}
+      matrix: ${{ steps.decide.outputs.matrix }}
+      any: ${{ steps.decide.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Both ends of the range have to be present to diff them.
+          fetch-depth: 0
+
+      - id: decide
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          # A manual run, a first push, or a force-push leaves no usable previous commit.
+          # Rebuilding everything is the answer that cannot be wrong.
+          if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            files=""
+          else
+            files="$(git diff --name-only "${BEFORE}" "${GITHUB_SHA}")"
+          fi
+
+          if [ -z "${files}" ]; then
+            services="api dashboard jobs"
+          else
+            # `-d '\n'` so a path with a space is one argument, and `sort -u` because xargs
+            # may split a long list across several runs, each answering for its own share.
+            services="$(printf '%s\n' "${files}" | xargs -d '\n' node scripts/changed-deploy-services.mjs | sort -u | tr '\n' ' ')"
+          fi
+
+          services="$(echo "${services}" | xargs || true)"
+          echo "Services to build: ${services:-<none>}"
+          echo "services=${services}" >> "${GITHUB_OUTPUT}"
+          echo "any=$([ -n "${services}" ] && echo true || echo false)" >> "${GITHUB_OUTPUT}"
+
+          matrix="$(node -e '
+            const wanted = new Set(process.argv[1].split(" ").filter(Boolean));
+            const all = [
+              { name: "api", dockerfile: "./docker/Dockerfile.api", image: "classroom-api", build_args: "" },
+              {
+                name: "dashboard",
+                dockerfile: "./docker/Dockerfile.dashboard",
+                image: "classroom-dashboard",
+                build_args: "PUBLIC_IS_SELFHOSTED=false\nPUBLIC_IS_SELF_OWNED=true"
+              },
+              { name: "jobs", dockerfile: "./docker/Dockerfile.jobs", image: "classroom-jobs", build_args: "" }
+            ];
+            console.log(JSON.stringify({ include: all.filter((entry) => wanted.has(entry.name)) }));
+          ' "${services}")"
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
+
   images:
     name: Build ${{ matrix.name }}
+    needs: changes
+    if: needs.changes.outputs.any == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      matrix:
-        include:
-          - name: api
-            dockerfile: ./docker/Dockerfile.api
-            image: classroom-api
-            build_args: ''
-          - name: dashboard
-            dockerfile: ./docker/Dockerfile.dashboard
-            image: classroom-dashboard
-            build_args: |
-              PUBLIC_IS_SELFHOSTED=false
-              PUBLIC_IS_SELF_OWNED=true
-          - name: jobs
-            dockerfile: ./docker/Dockerfile.jobs
-            image: classroom-jobs
-            build_args: ''
+      matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -88,7 +143,8 @@ jobs:
 
   deploy:
     name: Start the new stack
-    needs: images
+    needs: [changes, images]
+    if: needs.changes.outputs.any == 'true'
     runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 30
     steps:
@@ -97,6 +153,7 @@ jobs:
       - name: Pull this commit's images
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED_SERVICES: ${{ needs.changes.outputs.services }}
         run: |
           set -euo pipefail
 
@@ -108,7 +165,8 @@ jobs:
           # .../ingest/... no such file or directory`. That is what a concurrent
           # docker cleanup did to this deploy, and a second attempt succeeds
           # because the ingest starts again from nothing.
-          for image in classroom-api classroom-dashboard classroom-jobs; do
+          for service in ${CHANGED_SERVICES}; do
+            image="classroom-${service}"
             ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
 
             if ! docker pull --quiet "${ref}"; then
@@ -121,6 +179,8 @@ jobs:
           docker logout "${REGISTRY}"
 
       - name: Start the stack
+        env:
+          CHANGED_SERVICES: ${{ needs.changes.outputs.services }}
         run: |
           set -euo pipefail
 
@@ -133,12 +193,58 @@ jobs:
 
           test -s "${env_file}"
 
-          # The tag is exported rather than written anywhere: for interpolation the
-          # shell environment beats --env-file, so the commit is pinned for this
-          # one command. Containers then report their own commit in `docker ps`,
-          # which a tag that moves between deploys cannot do — once it moves, the
-          # running container shows a bare image id and nothing says what it is.
-          CLASSROOM_IMAGE_TAG="sha-${GITHUB_SHA}" docker compose \
+          # One tag per service, resolved here.
+          #
+          # A service this push did not change is handed the tag it is already running, so
+          # its resolved config is identical and compose leaves the container alone. That is
+          # the whole point: a change to the teacher's screen must not restart the API a
+          # candidate is sitting an exam through.
+          #
+          # The tags are exported rather than written into the env file: for interpolation
+          # the shell environment beats --env-file. Each container then reports its own
+          # commit in `docker ps`, which a tag that moves between deploys cannot do.
+          resolve_tag() {
+            service="$1"
+            container="zj19oe40izga1bnpymfz5z55-${service}-1"
+
+            for changed in ${CHANGED_SERVICES}; do
+              if [ "${changed}" = "${service}" ]; then
+                echo "sha-${GITHUB_SHA}"
+                return
+              fi
+            done
+
+            # Unchanged: keep exactly what is running, so compose sees an identical config
+            # and leaves the container alone.
+            running="$(docker inspect --format '{{.Config.Image}}' "${container}" 2>/dev/null || true)"
+            case "${running}" in
+              *:*) echo "${running##*:}"; return ;;
+            esac
+
+            # No container to read a tag from. This commit's tag would be wrong: nothing was
+            # built for a service this push did not change, so the pull would fail on a
+            # manifest that does not exist. The newest image already on the host is the only
+            # honest answer.
+            local_tag="$(docker images "${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}" \
+              --filter 'reference=*:sha-*' --format '{{.CreatedAt}}|{{.Tag}}' | sort -r | head -1 | cut -d'|' -f2)"
+
+            if [ -n "${local_tag}" ]; then
+              echo "${local_tag}"
+              return
+            fi
+
+            echo "::error::No container and no image for ${service}; run this workflow manually to rebuild everything." >&2
+            exit 1
+          }
+
+          CLASSROOM_API_TAG="$(resolve_tag api)"
+          CLASSROOM_DASHBOARD_TAG="$(resolve_tag dashboard)"
+          CLASSROOM_JOBS_TAG="$(resolve_tag jobs)"
+          export CLASSROOM_API_TAG CLASSROOM_DASHBOARD_TAG CLASSROOM_JOBS_TAG
+
+          echo "api=${CLASSROOM_API_TAG} dashboard=${CLASSROOM_DASHBOARD_TAG} jobs=${CLASSROOM_JOBS_TAG}"
+
+          docker compose \
             --env-file "${env_file}" \
             -f docker/production/docker-compose.yaml \
             --project-directory . \
