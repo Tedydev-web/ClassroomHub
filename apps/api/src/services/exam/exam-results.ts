@@ -4,7 +4,12 @@ import { getExamById } from '@cio/db/queries/exam/exam';
 import * as schema from '@cio/db/schema';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
-import { finaliseExpiredAttempts, rescoreFinishedAttempts } from './exam-finalisation';
+import {
+  finaliseExpiredAttempts,
+  rescoreFinishedAttempts,
+  scoreSubmittedAttempt,
+  scoreUnscoredFinishedAttempts
+} from './exam-finalisation';
 import {
   applyCorrections,
   gradeAttempt,
@@ -107,6 +112,8 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
   await finaliseExpiredAttempts(examId);
+  // And the ones already closed but never marked. Nothing else looks at those.
+  await scoreUnscoredFinishedAttempts(examId);
 
   const rows = await db
     .select({
@@ -156,6 +163,16 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
 
 /** One attempt in full, including the answer trail a dispute would need. */
 export async function getExamAttemptDetailService(attemptId: string) {
+  const [existing] = await db.select().from(schema.examAttempt).where(eq(schema.examAttempt.id, attemptId)).limit(1);
+  if (!existing) throw new AppError('Attempt not found', ErrorCodes.NOT_FOUND, 404);
+
+  // A closed paper with no mark is a paper some path forgot to score, and this page is
+  // usually where a teacher first notices. Scoring it here costs one read when there is
+  // nothing to fix and repairs the row when there is, rather than reporting the gap.
+  if (existing.status !== 'in_progress' && existing.score === null) {
+    await scoreSubmittedAttempt(attemptId);
+  }
+
   const [attempt] = await db.select().from(schema.examAttempt).where(eq(schema.examAttempt.id, attemptId)).limit(1);
   if (!attempt) throw new AppError('Attempt not found', ErrorCodes.NOT_FOUND, 404);
 

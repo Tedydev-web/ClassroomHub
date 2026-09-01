@@ -153,6 +153,47 @@ describe.runIf(runDatabaseIntegration)('scoring a submitted attempt', () => {
     expect(row.state).toBe('complete');
   });
 
+  it('scores the paper when the leave rule takes it, not only when the sitter presses the button', async () => {
+    /**
+     * The same fault as the one this file was written for, on the other path that ends a
+     * paper. Nothing scores a closed attempt afterwards — the finalisation pass only looks
+     * at attempts still in progress — so a paper taken by this rule kept a null score for
+     * good while the teacher's page called its grading complete.
+     */
+    const { db, schema, attempt: attemptService } = await load();
+    const { attemptId, examId } = await seed(db, schema, 'never');
+
+    await db.update(schema.exam).set({ autoSubmitAfterLeaves: 1 }).where(eq(schema.exam.id, examId));
+
+    await attemptService.recordActivityService(attemptId, [{ kind: 'left', at: new Date().toISOString() }], new Date());
+
+    const [row] = await db
+      .select({
+        status: schema.examAttempt.status,
+        score: schema.examAttempt.score,
+        state: schema.examAttempt.gradingState
+      })
+      .from(schema.examAttempt)
+      .where(eq(schema.examAttempt.id, attemptId));
+
+    expect(row.status).toBe('submitted');
+    expect(Number(row.score)).toBe(2);
+    expect(row.state).toBe('complete');
+  });
+
+  it('marks a closed paper that no path scored, the next time anybody reads it', async () => {
+    const { db, schema, results, attempt: attemptService } = await load();
+    const { attemptId } = await seed(db, schema, 'never');
+
+    await attemptService.submitAttemptService(attemptId, new Date());
+    // Closed and never scored: the state every attempt taken by the leave rule was left in.
+    await db.update(schema.examAttempt).set({ score: null }).where(eq(schema.examAttempt.id, attemptId));
+
+    const detail = await results.getExamAttemptDetailService(attemptId);
+
+    expect(Number(detail.attempt.score)).toBe(2);
+  });
+
   it('shows the sitter their score when the teacher chose to', async () => {
     const { db, schema, finalisation, results, attempt: attemptService } = await load();
     const { attemptId } = await seed(db, schema, 'on_submit');

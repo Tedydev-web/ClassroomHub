@@ -8,6 +8,7 @@ import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { canStartNow, computeExpiry, isWithinWritingWindow, secondsRemaining } from './exam-attempt-clock';
 import { getAttemptByToken } from '@cio/db/queries/exam/exam-attempt';
 import { verifyExamPassword } from './exam-password';
+import { scoreSubmittedAttempt } from './exam-finalisation';
 import {
   paperQuestionIds,
   revisionForQuestion,
@@ -312,9 +313,21 @@ export async function recordActivityService(
     return { leaves, autoSubmitAfterLeaves: limit, submitted, examId: attempt.examId };
   });
 
-  // After the transaction, never inside it: a notification is not worth holding a row lock
-  // for, and a failure writing one must not roll back the record it followed.
-  if (outcome.submitted && outcome.examId) await notifyFirstSubmission(outcome.examId);
+  /**
+   * After the transaction, never inside it: neither of these is worth holding a row lock
+   * for, and a failure in either must not roll back the record it followed.
+   *
+   * The scoring is not optional. Setting the status is what ends a paper; scoring it is what
+   * gives it a mark, and nothing else will do it later — the finalisation pass only picks up
+   * attempts whose clock ran out while they were still open, and this one is already closed.
+   * Left out, a paper taken by this rule sat submitted with no score for good, while the
+   * teacher's page reported its grading as complete. That exact fault shipped once before on
+   * the button a candidate presses.
+   */
+  if (outcome.submitted) {
+    await scoreSubmittedAttempt(attemptId, now);
+    if (outcome.examId) await notifyFirstSubmission(outcome.examId);
+  }
 
   return { leaves: outcome.leaves, autoSubmitAfterLeaves: outcome.autoSubmitAfterLeaves, submitted: outcome.submitted };
 }

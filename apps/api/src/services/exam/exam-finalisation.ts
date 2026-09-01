@@ -126,6 +126,37 @@ export async function scoreSubmittedAttempt(attemptId: string, now = new Date())
 }
 
 /**
+ * Scores finished attempts that somehow have no score.
+ *
+ * A paper is scored by whichever path ended it, and a path that forgets leaves a mark that
+ * nothing else will ever supply: the finalisation pass above only looks at attempts still in
+ * progress, so a closed one is invisible to it. That has now happened twice — once on the
+ * button a candidate presses, and once on the rule that takes the paper after too many
+ * departures — and both times the teacher's page reported the grading as complete.
+ *
+ * So the read paths repair it. Cheap when there is nothing to do, which is the ordinary
+ * case: it selects only the rows that are actually missing a score.
+ */
+export async function scoreUnscoredFinishedAttempts(examId: string, now = new Date()): Promise<number> {
+  const stranded = await db
+    .select({ id: schema.examAttempt.id })
+    .from(schema.examAttempt)
+    .where(
+      and(
+        eq(schema.examAttempt.examId, examId),
+        sql`${schema.examAttempt.status} <> 'in_progress'`,
+        sql`${schema.examAttempt.score} is null`
+      )
+    );
+
+  for (const attempt of stranded) {
+    await scoreSubmittedAttempt(attempt.id, now);
+  }
+
+  return stranded.length;
+}
+
+/**
  * Re-scores every finished attempt of an exam after a correction. Attempts still in
  * progress are deliberately left alone: they pick the correction up when they finalise,
  * because grading reads the corrections rather than a stored decision.
