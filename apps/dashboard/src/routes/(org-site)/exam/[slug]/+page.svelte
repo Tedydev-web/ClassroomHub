@@ -34,7 +34,8 @@
   import { Button } from '@cio/ui/base/button';
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
-  import { watchFocus } from '$features/exam/exam-activity';
+  import { watchFocus, type ActivityEvent } from '$features/exam/exam-activity';
+  import { queueActivity, settleActivity } from '$features/exam/exam-activity-outbox';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
@@ -261,16 +262,37 @@
   let helpOpen = $state(false);
   let autoSubmitAfterLeaves = $state<number | null>(null);
 
-  async function reportActivity(events: Array<{ kind: 'left' | 'returned'; at: string }>) {
+  /**
+   * Departures that have happened and have not been accepted by the server yet.
+   *
+   * A departure is reported at the moment the paper stops being the visible window, which is
+   * the moment a browser is most willing to throttle the request that reports it and the
+   * moment a restarting server would sever it. This used to be fire-and-forget: a failed
+   * send dropped its events, and the comment claimed the next report would carry the count.
+   * It would not — each report carried only what it was handed — so a departure that failed
+   * to arrive was gone from a record whose whole purpose is to be complete.
+   */
+  let pendingActivity = $state<ActivityEvent[]>([]);
+
+  async function reportActivity(events: ActivityEvent[] = []) {
     if (!attemptId) return;
+
+    const sending = queueActivity(pendingActivity, events);
+    if (sending.length === 0) return;
+
+    // Held before the request rather than after it: a failure must find them still here, and
+    // an event that happens while this is in flight must not be cleared by its answer.
+    pendingActivity = sending;
 
     try {
       const response = await classroomhub['exam-sitting'].attempt[':attemptId'].activity.$post(
-        { param: { attemptId }, json: { events } },
+        { param: { attemptId }, json: { events: sending } },
         { headers: { 'x-exam-sitting': '1' } }
       );
       const body = await response.json();
       if (!('success' in body) || !body.success) return;
+
+      pendingActivity = settleActivity(pendingActivity, sending);
 
       leaves = body.data.leaves;
       autoSubmitAfterLeaves = body.data.autoSubmitAfterLeaves;
@@ -282,10 +304,28 @@
         stage = 'submitted';
       }
     } catch {
-      // A report that did not arrive is not worth interrupting a candidate over. The
-      // absence itself is what the record is for, and the next one will carry the count.
+      // Kept, not dropped. A report that did not arrive is not worth interrupting a candidate
+      // over, and the log is append-only with a timestamp on every event, so arriving late
+      // costs nothing: the record reads the same whether it took one attempt or twenty.
     }
   }
+
+  /**
+   * Offers whatever is still owed, on the same beat the answers are saved on.
+   *
+   * The candidate is already on the page and the request is empty when there is nothing to
+   * send, so this costs nothing in the ordinary case and is the only thing that recovers a
+   * departure reported while the server happened to be restarting.
+   */
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    const timer = setInterval(() => {
+      if (pendingActivity.length > 0) void reportActivity();
+    }, AUTOSAVE_EVERY_MS);
+
+    return () => clearInterval(timer);
+  });
 
   $effect(() => {
     if (stage !== 'sitting') return;
