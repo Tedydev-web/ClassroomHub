@@ -15,7 +15,6 @@ function question(position: number, questionId: number, interactionId: string, k
     position,
     points: 1,
     promptHtml: '',
-    contextHtml: null,
     options: [
       { id: 'o1', label: 'A', html: 'one' },
       { id: 'o2', label: 'B', html: 'two' },

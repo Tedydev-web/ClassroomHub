@@ -30,6 +30,8 @@ export const load = async ({ params, cookies }) => {
     title: examResult.body.data.title,
     // An exam that never opened has no frozen paper, and the endpoint says so with a 409
     // rather than an empty list. The screen states that instead of failing to load.
-    questions: keysResult.ok ? keysResult.body.data : []
+    questions: keysResult.ok ? keysResult.body.data.questions : [],
+    // The paper itself, corrected, so this screen draws it the way every other screen does.
+    paper: keysResult.ok ? keysResult.body.data.paper : null
   };
 };

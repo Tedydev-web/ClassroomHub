@@ -122,7 +122,8 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
     const { db, schema, keys } = await load();
     const { examId } = await seedSatExam(db, schema);
 
-    const [question] = await keys.listExamAnswerKeysService(examId);
+    const { questions } = await keys.listExamAnswerKeysService(examId);
+    const [question] = questions;
 
     expect(question.position).toBe(1);
     expect(question.effectiveKey).toEqual(['1']);
@@ -148,7 +149,8 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
 
     expect(outcome.rescored).toBe(1);
 
-    const [question] = await keys.listExamAnswerKeysService(examId);
+    const { questions } = await keys.listExamAnswerKeysService(examId);
+    const [question] = questions;
     expect(question.effectiveKey).toEqual(['2']);
     expect(question.corrected).toBe(true);
 

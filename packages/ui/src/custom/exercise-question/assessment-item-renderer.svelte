@@ -57,6 +57,23 @@
      */
     fillsParent?: boolean;
     /**
+     * Mark the key on the options, for a screen whose reader is allowed to see it.
+     *
+     * Read from the definition's own `correctOptionIds` rather than passed in beside it: a
+     * second source for one fact is how a screen comes to print the answer to a question it is
+     * not showing. A definition that went through delivery has no key to reveal, which is
+     * correct — that is the copy a candidate receives.
+     */
+    revealsKey?: boolean;
+    /**
+     * Drawn under each question, for a host that has something to offer about it.
+     *
+     * It receives the question's number as well as its id, because the number is this
+     * component's to compute; making a caller derive it again is how two numberings of one
+     * paper come to disagree.
+     */
+    questionActions?: import('svelte').Snippet<[{ interactionId: string; questionNumber: number }]>;
+    /**
      * The question to show, by the number printed on the paper, when a host owns the choice.
      *
      * Left unset this component decides for itself, which is right where it is the only thing
@@ -111,6 +128,8 @@
     focusRequestKey,
     passageWorkspaceLabels = null,
     fillsParent = false,
+    revealsKey = false,
+    questionActions,
     activeQuestionNumber = null,
     showQuestionStepper = true,
     onQuestionChange,
@@ -487,6 +506,20 @@
     return sanitizeHtml(html);
   }
 
+  /**
+   * Whether this option is the key, for a screen allowed to show it.
+   *
+   * Read off the definition the caller passed. A delivery definition has no key in it at
+   * all, so a candidate's copy cannot leak one however this is set.
+   */
+  function isKeyOption(block: DeliveryInteractionBlock, optionId: string): boolean {
+    if (!revealsKey) return false;
+
+    const key = (block.interaction as { config?: { correctOptionIds?: unknown } }).config?.correctOptionIds;
+
+    return Array.isArray(key) && key.includes(optionId);
+  }
+
   function getOptionFeedback(interactionId: string, optionId: string) {
     return optionFeedback.filter((entry) => entry.interactionId === interactionId && entry.optionId === optionId);
   }
@@ -573,7 +606,8 @@
                   {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
                   {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
                   {@const feedbackElementId = `${optionElementId}-feedback`}
-                  <div class="ui:space-y-1">
+                  {@const isKey = isKeyOption(block, option.id)}
+                  <div class={['ui:space-y-1', isKey ? 'ui:bg-emerald-500/10 ui:rounded-md ui:px-2 ui:py-1' : '']}>
                     <div class="ui:flex ui:items-start ui:gap-2">
                       <RadioGroup.Item
                         id={optionElementId}
@@ -612,7 +646,8 @@
                 {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
                 {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
                 {@const feedbackElementId = `${optionElementId}-feedback`}
-                <div class="ui:space-y-1">
+                {@const isKey = isKeyOption(block, option.id)}
+                <div class={['ui:space-y-1', isKey ? 'ui:bg-emerald-500/10 ui:rounded-md ui:px-2 ui:py-1' : '']}>
                   <div class="ui:flex ui:items-start ui:gap-2">
                     <Checkbox
                       id={optionElementId}
@@ -839,6 +874,19 @@
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
         </fieldset>
+      {/if}
+
+      <!--
+        Whatever the host has to offer about this question, under it. Nothing is drawn where
+        nothing was given, so every existing caller renders exactly what it did before.
+      -->
+      {#if questionActions}
+        <div class="ui:mt-3">
+          {@render questionActions({
+            interactionId: block.id,
+            questionNumber: interactionNumberStart + interactionIndex
+          })}
+        </div>
       {/if}
     </div>
   </div>
