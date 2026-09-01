@@ -58,7 +58,11 @@
           </Tabs.Content>
 
           <Tabs.Content value="exams" class="mt-4">
-            <CourseExamAttempts courseId={data.courseId} attempts={data.attempts ?? []} />
+            <CourseExamAttempts
+              courseId={data.courseId}
+              attempts={data.attempts ?? []}
+              failed={data.attemptsFailed ?? false}
+            />
           </Tabs.Content>
         </Tabs.Root>
       {/snippet}

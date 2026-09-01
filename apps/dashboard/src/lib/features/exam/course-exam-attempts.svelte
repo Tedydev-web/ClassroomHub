@@ -25,6 +25,7 @@
     className: string | null;
     candidateNumber: string | null;
     status: 'in_progress' | 'submitted' | 'expired';
+    expiresAt: string | null;
     gradingState: 'complete' | 'awaiting_manual' | 'unscoreable';
     score: string | null;
     total: string | null;
@@ -32,7 +33,16 @@
     submittedAt: string | null;
   };
 
-  let { courseId, attempts }: { courseId: string; attempts: CourseAttemptRow[] } = $props();
+  let {
+    courseId,
+    attempts,
+    failed = false
+  }: {
+    courseId: string;
+    attempts: CourseAttemptRow[];
+    /** The list could not be fetched. Saying nothing was sat would be a lie, not a default. */
+    failed?: boolean;
+  } = $props();
 
   let search = $state('');
   let examId = $state<'all' | string>('all');
@@ -59,9 +69,22 @@
     });
   });
 
+  /**
+   * Whether the clock has run out on a sitting still stored as ongoing.
+   *
+   * This list does not finalise — see the service — so an attempt abandoned last week is
+   * still `in_progress` in the database until somebody opens that exam. Calling it ongoing
+   * here would put this page and the exam's own results page in visible disagreement about
+   * one student, which is precisely the kind of thing a teacher then has to distrust.
+   */
+  function ranOut(row: CourseAttemptRow): boolean {
+    return row.status === 'in_progress' && row.expiresAt !== null && new Date(row.expiresAt).getTime() < Date.now();
+  }
+
   function statusLabel(row: CourseAttemptRow): string {
     if (row.gradingState === 'unscoreable') return $t('exam.status.unscoreable');
     if (row.gradingState === 'awaiting_manual') return $t('exam.status.awaiting_manual');
+    if (ranOut(row)) return $t('exam.status.expired');
     if (row.status === 'in_progress') return $t('exam.status.in_progress');
     if (row.status === 'expired') return $t('exam.status.expired');
 
@@ -71,7 +94,7 @@
   function statusVariant(row: CourseAttemptRow): 'default' | 'secondary' | 'outline' | 'destructive' {
     if (row.gradingState === 'unscoreable') return 'destructive';
     if (row.gradingState === 'awaiting_manual') return 'default';
-    if (row.status === 'in_progress') return 'outline';
+    if (row.status === 'in_progress' && !ranOut(row)) return 'outline';
 
     return 'secondary';
   }
@@ -117,7 +140,13 @@
     </Button>
   </div>
 
-  {#if shown.length === 0}
+  {#if failed}
+    <Empty.Root>
+      <Empty.Content>
+        <Empty.Description>{$t('exam.results.course_failed')}</Empty.Description>
+      </Empty.Content>
+    </Empty.Root>
+  {:else if shown.length === 0}
     <Empty.Root>
       <Empty.Content>
         <Empty.Description>{$t('exam.results.course_empty')}</Empty.Description>

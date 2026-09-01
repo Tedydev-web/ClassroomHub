@@ -16,6 +16,10 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
  * still `in_progress` here is shown as such, and opening the exam does the authoritative
  * pass. Do not add finalisation to this.
  *
+ * Because it does not finalise, a sitting whose clock ran out is still stored as
+ * `in_progress` until somebody opens that exam. `expiresAt` comes with each row so the
+ * reader can say so honestly instead of calling a paper from last week ongoing.
+ *
  * It also carries no `duplicateName` or `duplicateAddress`. Those are computed by
  * comparing candidates against each other within a single sitting; across a course they
  * would flag two people who never sat the same paper.
@@ -30,6 +34,8 @@ export type CourseAttemptRow = {
   className: string | null;
   candidateNumber: string | null;
   status: 'in_progress' | 'submitted' | 'expired';
+  /** Null when the paper was untimed. Carried so a reader can tell a stale row apart. */
+  expiresAt: string | null;
   gradingState: 'complete' | 'awaiting_manual' | 'unscoreable';
   score: string | null;
   total: string | null;
@@ -48,6 +54,7 @@ export async function listCourseAttemptsService(courseId: string): Promise<Cours
       className: schema.examAttempt.className,
       candidateNumber: schema.examAttempt.candidateNumber,
       status: schema.examAttempt.status,
+      expiresAt: schema.examAttempt.expiresAt,
       gradingState: schema.examAttempt.gradingState,
       score: schema.examAttempt.score,
       total: schema.examAttempt.total,

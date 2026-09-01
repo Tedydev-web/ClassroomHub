@@ -11,7 +11,8 @@ export const load = async ({ params, cookies }) => {
       courseId: '',
       sections: [],
       submissionIdData: {},
-      attempts: []
+      attempts: [],
+      attemptsFailed: false
     };
   }
 
@@ -38,6 +39,9 @@ export const load = async ({ params, cookies }) => {
     courseId,
     sections: result.ok && result.body.data ? result.body.data.sections || [] : [],
     submissionIdData: result.ok && result.body.data ? result.body.data.submissionIdData || {} : {},
-    attempts: attempts.ok ? attempts.body.data : []
+    attempts: attempts.ok ? attempts.body.data : [],
+    // Told apart from "nobody sat anything", which is what an empty list on a failed fetch
+    // would otherwise claim to a teacher who has no way to know the difference.
+    attemptsFailed: !attempts.ok
   };
 };
