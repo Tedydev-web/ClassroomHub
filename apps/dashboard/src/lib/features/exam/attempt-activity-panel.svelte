@@ -90,6 +90,13 @@
   </Card.Header>
 
   <Card.Content class="ui:space-y-4">
+    <!--
+      Two separate things, and they used to be one.
+      A candidate who never left produced no departures, and the whole panel stopped there —
+      taking the timeline with it, so the forty-odd answers this paper did record were on
+      screen for nobody. Leaving is the exceptional half; answering is the half that always
+      exists, and it is now rendered whether or not the other one happened.
+    -->
     {#if timeline.focus.leaves === 0}
       <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.activity.never_left')}</p>
     {:else}
@@ -115,7 +122,11 @@
       <Alert.Root>
         <Alert.Description class="ui:text-xs">{$t('exam.activity.not_proof')}</Alert.Description>
       </Alert.Root>
+    {/if}
 
+    {#if timeline.entries.length === 0}
+      <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.activity.empty')}</p>
+    {:else}
       <Collapsible.Root>
         <Collapsible.Trigger>
           {#snippet child({ props })}

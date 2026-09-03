@@ -5863,7 +5863,8 @@
       "minutes": "{count} phút",
       "entry_answered_range": "Trả lời câu {start}–{end}",
       "entry_answered_unknown": "Trả lời một câu (không còn trên đề hiện tại)",
-      "entry_answered_several": "Trả lời câu {questions}"
+      "entry_answered_several": "Trả lời câu {questions}",
+      "empty": "Lượt làm bài này không ghi nhận được gì."
     },
     "navigator": {
       "title": "Danh sách câu hỏi",
