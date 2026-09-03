@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "vite dev --host :: --port 8000",
+    "dev:prod-api": "PRIVATE_SERVER_URL=https://api.classroom.io.vn PRIVATE_APP_HOST=localhost PRIVATE_APP_SUBDOMAINS=hub ENFORCE_TENANT_HOST=false VITE_ALLOWED_HOST=localhost,msna.localhost,.localhost vite dev --host :: --port 8000",
     "prebuild": "node scripts/guard-build-port.mjs && pnpm --filter @cio/ui run build",
     "build": "vite build",
     "preview": "vite preview --port 8023",
