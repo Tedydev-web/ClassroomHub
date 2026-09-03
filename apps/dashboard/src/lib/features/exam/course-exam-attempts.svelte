@@ -1,5 +1,8 @@
 <script lang="ts">
   import { locale, t } from '$lib/utils/functions/translations';
+  import ExamAttemptsTab from '$features/exam/exam-attempts-tab.svelte';
+  import type { ExamResultRow } from '$features/exam/exam-result-row';
+  import { classroomhub } from '$lib/utils/services/api';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
@@ -46,6 +49,40 @@
 
   let search = $state('');
   let examId = $state<'all' | string>('all');
+
+  /**
+   * Choosing one paper hands the tab over to the exam's own submissions view — the same
+   * four numbers, filters, selection and downloads a teacher gets on the exam's page.
+   *
+   * "All exams" cannot show those: the average of two different papers is a number that
+   * means nothing, and a workbook is built from one paper's key. So that mode stays the
+   * plain cross-course list, which answers the different question of who handed in what.
+   */
+  let rows = $state<ExamResultRow[] | null>(null);
+  let loadingRows = $state(false);
+  let rowsFailed = $state(false);
+
+  async function chooseExam(id: 'all' | string) {
+    examId = id;
+    rows = null;
+    rowsFailed = false;
+
+    if (id === 'all') return;
+
+    loadingRows = true;
+
+    try {
+      const response = await classroomhub.exam[':examId'].results.$get({ param: { examId: id } });
+      const body = await response.json();
+
+      if ('success' in body && body.success) rows = body.data;
+      else rowsFailed = true;
+    } catch {
+      rowsFailed = true;
+    } finally {
+      loadingRows = false;
+    }
+  }
 
   /** The papers that actually have a sitting, in the order the rows arrive (newest first). */
   const exams = $derived(
@@ -123,13 +160,15 @@
 <div class="space-y-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex flex-wrap items-center gap-2">
-      <Input class="w-56" placeholder={$t('exam.results.search_placeholder')} bind:value={search} />
+      {#if examId === 'all'}
+        <Input class="w-56" placeholder={$t('exam.results.search_placeholder')} bind:value={search} />
+      {/if}
 
-      <Button size="sm" variant={examId === 'all' ? 'default' : 'outline'} onclick={() => (examId = 'all')}>
+      <Button size="sm" variant={examId === 'all' ? 'default' : 'outline'} onclick={() => chooseExam('all')}>
         {$t('exam.results.all_exams')}
       </Button>
       {#each exams as exam (exam.id)}
-        <Button size="sm" variant={examId === exam.id ? 'default' : 'outline'} onclick={() => (examId = exam.id)}>
+        <Button size="sm" variant={examId === exam.id ? 'default' : 'outline'} onclick={() => chooseExam(exam.id)}>
           {exam.title}
         </Button>
       {/each}
@@ -140,7 +179,13 @@
     </Button>
   </div>
 
-  {#if failed}
+  {#if examId !== 'all'}
+    {#if loadingRows}
+      <p class="text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
+    {:else}
+      <ExamAttemptsTab {courseId} {examId} rows={rows ?? []} failed={rowsFailed} />
+    {/if}
+  {:else if failed}
     <Empty.Root>
       <Empty.Content>
         <Empty.Description>{$t('exam.results.course_failed')}</Empty.Description>

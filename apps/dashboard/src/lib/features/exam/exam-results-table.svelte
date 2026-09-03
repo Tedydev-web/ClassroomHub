@@ -18,7 +18,8 @@
     onreopen,
     ondelete,
     onexportanswers,
-    exportingAnswers = false
+    exportingAnswers = false,
+    showSummary = true
   }: {
     rows: ExamResultRow[];
     onopen: (attemptId: string) => void;
@@ -27,6 +28,8 @@
     /** The papers to fetch answers for; empty means every finished sitting shown. */
     onexportanswers?: (attemptIds: string[]) => void;
     exportingAnswers?: boolean;
+    /** Off where the screen already states them above the table, so they are not said twice. */
+    showSummary?: boolean;
   } = $props();
 
   /**
@@ -271,28 +274,30 @@
     What the class did, before any individual did it. Four numbers, and the only one that
     can require action is the one that takes a colour.
   -->
-  <div class="ui:grid ui:gap-3 ui:grid-cols-2 ui:lg:grid-cols-4">
-    {#snippet stat(label: string, value: string, accent = false)}
-      <div class="ui:border-border ui:rounded-lg ui:border ui:px-3 ui:py-2">
-        <p class="ui:text-muted-foreground ui:text-xs">{label}</p>
-        <p
-          class={accent
-            ? 'ui:text-lg ui:font-semibold ui:tabular-nums ui:text-amber-600 ui:dark:text-amber-400'
-            : 'ui:text-lg ui:font-semibold ui:tabular-nums'}
-        >
-          {value}
-        </p>
-      </div>
-    {/snippet}
+  {#if showSummary}
+    <div class="ui:grid ui:gap-3 ui:grid-cols-2 ui:lg:grid-cols-4">
+      {#snippet stat(label: string, value: string, accent = false)}
+        <div class="ui:border-border ui:rounded-lg ui:border ui:px-3 ui:py-2">
+          <p class="ui:text-muted-foreground ui:text-xs">{label}</p>
+          <p
+            class={accent
+              ? 'ui:text-lg ui:font-semibold ui:tabular-nums ui:text-amber-600 ui:dark:text-amber-400'
+              : 'ui:text-lg ui:font-semibold ui:tabular-nums'}
+          >
+            {value}
+          </p>
+        </div>
+      {/snippet}
 
-    {@render stat($t('exam.results.summary_sat'), String(summary.sat))}
-    {@render stat($t('exam.results.summary_marked'), String(summary.marked))}
-    {@render stat($t('exam.results.awaiting_label'), String(summary.awaiting), summary.awaiting > 0)}
-    {@render stat(
-      $t('exam.results.summary_average'),
-      summary.average === null ? '—' : summary.outOf ? `${summary.average}/${summary.outOf}` : summary.average
-    )}
-  </div>
+      {@render stat($t('exam.results.summary_sat'), String(summary.sat))}
+      {@render stat($t('exam.results.summary_marked'), String(summary.marked))}
+      {@render stat($t('exam.results.awaiting_label'), String(summary.awaiting), summary.awaiting > 0)}
+      {@render stat(
+        $t('exam.results.summary_average'),
+        summary.average === null ? '—' : summary.outOf ? `${summary.average}/${summary.outOf}` : summary.average
+      )}
+    </div>
+  {/if}
 
   <div class="ui:flex ui:flex-wrap ui:items-center ui:justify-between ui:gap-3">
     <div class="ui:flex ui:flex-wrap ui:gap-2">

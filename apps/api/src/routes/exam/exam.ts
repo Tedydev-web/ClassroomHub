@@ -20,7 +20,11 @@ import {
   summariseExamPaperService,
   updateExamSettingsService
 } from '@api/services/exam/exam';
-import { buildExamAnswerWorkbookService, listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
+import {
+  buildExamAnswerDistributionService,
+  buildExamAnswerWorkbookService,
+  listExamAnswerKeysService
+} from '@api/services/exam/exam-answer-keys';
 import { listCourseAttemptsService } from '@api/services/exam/exam-course-attempts';
 import {
   copyExerciseIntoContainer,
@@ -343,6 +347,16 @@ export const examRouter = new Hono()
       const questions = await listExamAnswerKeysService(c.req.param('examId'));
 
       return c.json({ success: true as const, data: questions });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // What the class chose, per question. Read on the exam's own page, beside the marks.
+  .get('/:examId/answer-distribution', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const distribution = await buildExamAnswerDistributionService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: distribution });
     } catch (error) {
       return handleError(c, error);
     }

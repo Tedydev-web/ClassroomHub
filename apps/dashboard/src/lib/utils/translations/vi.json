@@ -5615,7 +5615,12 @@
       "submitted_at_column": "Nộp lúc",
       "search_placeholder": "Tìm học sinh",
       "all_exams": "Tất cả đề",
-      "course_empty": "Chưa có học sinh nào trong khoá này làm bài thi."
+      "course_empty": "Chưa có học sinh nào trong khoá này làm bài thi.",
+      "right_count": "{count}/{total} đúng",
+      "wrong_count": "{count} sai",
+      "blank_count": "{count} bỏ trống",
+      "summary_mode": "Tóm tắt",
+      "individual_mode": "Cá nhân"
     },
     "manage": {
       "title": "Đề thi",

@@ -4,6 +4,7 @@ import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@
 
 import { applyCorrections, type ExamCorrection } from './exam-grading';
 import { buildAnswerMatrix, type MatrixAttempt } from './exam-answer-matrix';
+import { buildAnswerDistribution } from './exam-answer-distribution';
 import { buildAnswerWorkbookSheets, type WorkbookLabels } from './exam-answer-workbook';
 import { buildXlsx } from './exam-workbook-xlsx';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
@@ -219,6 +220,16 @@ export async function buildExamAnswerMatrixService(examId: string, attemptIds: s
     questions,
     rows.map((row) => ({ ...row, answers: (row.answers as MatrixAttempt['answers']) ?? [] }))
   );
+}
+
+/**
+ * What the class chose, per question, for the screen a teacher reads before going through
+ * the paper in the room. Built from the same matrix as the workbook so the two agree.
+ */
+export async function buildExamAnswerDistributionService(examId: string) {
+  requireExamsEnabled();
+
+  return buildAnswerDistribution(await buildExamAnswerMatrixService(examId));
 }
 
 /**

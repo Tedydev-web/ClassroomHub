@@ -5605,7 +5605,12 @@
       "submitted_at_column": "Handed in",
       "search_placeholder": "Find a student",
       "all_exams": "All exams",
-      "course_empty": "Nobody in this course has sat an exam yet."
+      "course_empty": "Nobody in this course has sat an exam yet.",
+      "right_count": "{count}/{total} correct",
+      "wrong_count": "{count} wrong",
+      "blank_count": "{count} blank",
+      "summary_mode": "Summary",
+      "individual_mode": "Individual"
     },
     "manage": {
       "title": "Exams",
