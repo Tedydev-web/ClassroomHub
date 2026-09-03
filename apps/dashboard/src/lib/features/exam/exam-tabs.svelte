@@ -19,6 +19,12 @@
    */
   let { courseId, examId }: { courseId: string; examId: string } = $props();
 
+  /**
+   * The results are no longer one of this exam's own routes — they live on the course's
+   * Submissions page beside the exercises' submissions — so that tab leaves the exam scope
+   * on purpose. It stays in the row because it is where a teacher goes next, and hiding it
+   * would mean the only way back to the marks is the sidebar.
+   */
   const TABS = [
     { value: 'results', label: () => $t('exam.manage.results') },
     { value: 'corrections', label: () => $t('exam.corrections.title') },
@@ -30,12 +36,14 @@
 
   // Read from the address rather than held as state: arriving by link, by tab, or by the
   // browser's own back button all have to agree on which tab is the current one.
-  const active = $derived(TABS.find((tab) => page.url.pathname.endsWith(`/${tab.value}`))?.value ?? 'results');
+  // No fallback to `results`: this bar is rendered on three exam routes and the results are
+  // not one of them any more, so defaulting would light up a tab the teacher is not on.
+  const active = $derived(TABS.find((tab) => page.url.pathname.endsWith(`/${tab.value}`))?.value ?? '');
 
   function select(value: string) {
     if (value === active) return;
 
-    goto(`${base}/${value}`);
+    goto(value === 'results' ? `/courses/${courseId}/submissions?exam=${examId}` : `${base}/${value}`);
   }
 </script>
 

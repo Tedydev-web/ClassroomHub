@@ -406,7 +406,7 @@
                 </Button>
               {/if}
 
-              <Button size="sm" variant="ghost" href={`/courses/${courseId}/exams/${exam.id}/results`}>
+              <Button size="sm" variant="ghost" href={`/courses/${courseId}/submissions?exam=${exam.id}`}>
                 {$t('exam.manage.results')}
               </Button>
 

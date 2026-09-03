@@ -10,33 +10,7 @@
   import DownloadIcon from '@lucide/svelte/icons/download';
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { snackbar } from '$features/ui/snackbar/store';
-
-  /**
-   * Who sat the paper, how far they got, and what they scored.
-   *
-   * The status words are the ones Vietnamese teachers already read in Azota, with one
-   * deliberate exception. Azota's `chưa nộp bài` means a student who left **before** time
-   * was up and may still come back; ours would mean the clock ran out, which is the
-   * opposite situation. Borrowing the phrase would teach the wrong thing precisely because
-   * it is already familiar, so the expired case says `hết giờ (chưa nộp)` instead.
-   */
-  export type ExamResultRow = {
-    attemptId: string;
-    displayName: string | null;
-    nickname?: string | null;
-    className: string | null;
-    candidateNumber: string | null;
-    status: 'in_progress' | 'submitted' | 'expired';
-    gradingState: 'complete' | 'awaiting_manual' | 'unscoreable';
-    score: string | null;
-    total: string | null;
-    startedAt: string;
-    submittedAt: string | null;
-    duplicateName: boolean;
-    duplicateAddress: boolean;
-    /** How many times the paper stopped being the visible window on their device. */
-    leaves: number;
-  };
+  import type { ExamResultRow } from '$features/exam/exam-result-row';
 
   let {
     rows,

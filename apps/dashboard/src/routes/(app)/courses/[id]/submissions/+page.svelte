@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SubmissionsPage } from '$features/course/pages';
-  import CourseExamAttempts from '$features/exam/course-exam-attempts.svelte';
+  import ExamSubmissionsTab from '$features/exam/exam-submissions-tab.svelte';
   import { RefreshPageData, RoleBasedSecurity } from '$features/ui';
   import { Button } from '@cio/ui/base/button';
   import * as Page from '@cio/ui/base/page';
@@ -14,9 +14,9 @@
    * hand in" across two places a teacher had to remember. They are a tab here instead;
    * the route still exists for links that were already copied.
    *
-   * The exam tab lists sittings, not papers. It listed the papers for a while, which made
-   * it the exams page rendered twice — and left the question this page exists to answer
-   * unanswered on the exam half.
+   * The exam tab is the results screen itself — the same table, the same marking states,
+   * the same reopen, delete and workbook download. It was a page of its own and a thinner
+   * list here at the same time: two screens for one question, disagreeing in the details.
    */
   let { data } = $props();
 
@@ -58,10 +58,12 @@
           </Tabs.Content>
 
           <Tabs.Content value="exams" class="mt-4">
-            <CourseExamAttempts
+            <ExamSubmissionsTab
               courseId={data.courseId}
-              attempts={data.attempts ?? []}
-              failed={data.attemptsFailed ?? false}
+              exams={data.exams ?? []}
+              examId={data.examId ?? null}
+              rows={data.rows ?? []}
+              failed={data.examsFailed ?? false}
             />
           </Tabs.Content>
         </Tabs.Root>
