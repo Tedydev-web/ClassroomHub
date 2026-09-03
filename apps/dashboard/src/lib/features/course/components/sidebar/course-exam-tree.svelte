@@ -79,17 +79,10 @@
             <Sidebar.MenuSub class="ml-2">
               {#each courseExams.exams as exam (exam.id)}
                 <Sidebar.MenuSubItem>
-                  <!--
-                    Marked current on the exam's own routes and on the submissions tab it
-                    now links to, which is a different path carrying the exam in a query.
-                  -->
-                  <Sidebar.MenuSubButton
-                    isActive={page.url.pathname.includes(`/exams/${exam.id}`) ||
-                      (page.url.pathname.endsWith('/submissions') && page.url.searchParams.get('exam') === exam.id)}
-                  >
+                  <Sidebar.MenuSubButton isActive={page.url.pathname.includes(`/exams/${exam.id}`)}>
                     {#snippet child({ props })}
                       <a
-                        href={`${resolve(`/courses/${courseId}/submissions`, {})}?exam=${exam.id}`}
+                        href={resolve(`/courses/${courseId}/exams/${exam.id}`, {})}
                         title={exam.title}
                         class="flex w-full items-center gap-2"
                         {...props}

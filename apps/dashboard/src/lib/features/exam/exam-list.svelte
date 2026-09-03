@@ -162,7 +162,7 @@
       }
 
       snackbar.success($t('exam.manage.duplicated_notice'));
-      goto(`/courses/${courseId}/exams/${body.data.id}/edit`);
+      goto(`/courses/${courseId}/exams/${body.data.id}?tab=settings`);
     } finally {
       busyIds.delete(exam.id);
     }
@@ -406,7 +406,7 @@
                 </Button>
               {/if}
 
-              <Button size="sm" variant="ghost" href={`/courses/${courseId}/submissions?exam=${exam.id}`}>
+              <Button size="sm" variant="ghost" href={`/courses/${courseId}/exams/${exam.id}`}>
                 {$t('exam.manage.results')}
               </Button>
 
@@ -422,10 +422,10 @@
                       {$t('exam.manage.restore_exam')}
                     </DropdownMenu.Item>
                   {:else}
-                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}/edit`)}>
+                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}?tab=settings`)}>
                       {$t('exam.manage.edit')}
                     </DropdownMenu.Item>
-                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}/preview`)}>
+                    <DropdownMenu.Item onclick={() => goto(`/courses/${courseId}/exams/${exam.id}?tab=paper`)}>
                       {$t('exam.manage.preview_paper')}
                     </DropdownMenu.Item>
                     <DropdownMenu.Item disabled={checking} onclick={() => checkPaper(exam.id)}>

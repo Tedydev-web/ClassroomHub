@@ -5610,7 +5610,12 @@
       "workbook_blank": "Bỏ trống",
       "workbook_generated_at": "Xuất lúc",
       "manage_exams": "Quản lý đề thi",
-      "course_failed": "Không tải được danh sách bài thi của khoá này. Hãy tải lại trang."
+      "course_failed": "Không tải được danh sách bài thi của khoá này. Hãy tải lại trang.",
+      "exam_column": "Đề thi",
+      "submitted_at_column": "Nộp lúc",
+      "search_placeholder": "Tìm học sinh",
+      "all_exams": "Tất cả đề",
+      "course_empty": "Chưa có học sinh nào trong khoá này làm bài thi."
     },
     "manage": {
       "title": "Đề thi",
@@ -5674,7 +5679,8 @@
       "copy_of": "{title} (bản sao)",
       "duplicate_failed": "Không nhân bản được đề này",
       "duplicated_notice": "Đã nhân bản. Đặt lại thời gian và mật khẩu trước khi gửi link.",
-      "settings_tab": "Cài đặt"
+      "settings_tab": "Cài đặt",
+      "paper_tab": "Đề thi"
     },
     "settings": {
       "title": "Tiêu đề đề thi",

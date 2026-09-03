@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { replaceState } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
   import * as Empty from '@cio/ui/base/empty';
@@ -11,52 +11,41 @@
   import { snackbar } from '$features/ui/snackbar/store';
 
   /**
-   * What the class handed in, one paper at a time.
+   * What this class handed in, on the exam's own page.
    *
-   * This is the exam results screen itself, not a summary of it: the same table, the same
-   * marking states, the same reopen, delete and workbook download. It used to live on a
-   * page of its own, reached from the sidebar, while this tab showed a thinner list built
-   * for the same purpose — two screens answering one question and disagreeing in the
-   * details. The thin one is gone and the real one moved here.
-   *
-   * A paper is chosen rather than merged: the numbers above the table — how many sat, how
-   * many are marked, the average out of what — are properties of one paper, and averaging
-   * two different papers' marks together produces a figure that means nothing.
+   * The whole results screen, not a summary of it: the same table, the same marking states,
+   * the same reopen, delete and workbook download. It belongs beside the paper and its
+   * settings for the same reason an exercise's submissions belong beside its questions —
+   * they are three views of one thing, and splitting them across pages is what made a
+   * teacher hunt for the marks of the paper they were already looking at.
    */
-  type ExamOption = { id: string; title: string };
-
   let {
     courseId,
-    exams,
-    examId: initialExamId,
+    examId,
     rows: initialRows,
     failed = false
   }: {
     courseId: string;
-    exams: ExamOption[];
-    /** The paper the address named, or the newest one. Null when the course has no exams. */
-    examId: string | null;
+    examId: string;
     rows: ExamResultRow[];
     /** The list could not be fetched. Saying nobody sat it would be a lie, not a default. */
     failed?: boolean;
   } = $props();
-
-  let examId = $state(initialExamId);
   /**
    * The loader's rows until something is fetched here. Seeding plain state from the loader
    * and leaving it would freeze at mount, so a teacher returning to this tab would read
    * whatever was true the first time they opened it.
    */
   let fetched = $state<ExamResultRow[] | null>(null);
-  const rows = $derived(examId === initialExamId && fetched === null ? initialRows : (fetched ?? []));
+  const rows = $derived(fetched ?? initialRows);
   let loading = $state(false);
   let loadFailed = $state(false);
 
-  async function load(id: string) {
+  async function refresh() {
     loading = true;
 
     try {
-      const response = await classroomhub.exam[':examId'].results.$get({ param: { examId: id } });
+      const response = await classroomhub.exam[':examId'].results.$get({ param: { examId } });
       const body = await response.json();
 
       if ('success' in body && body.success) {
@@ -70,23 +59,6 @@
     } finally {
       loading = false;
     }
-  }
-
-  /**
-   * The chosen paper goes in the address, so the tab can be linked to and so the old
-   * per-exam results URL has somewhere to redirect to that shows the same thing.
-   */
-  function choose(id: string) {
-    if (id === examId) return;
-
-    examId = id;
-    fetched = null;
-    replaceState(`/courses/${courseId}/submissions?exam=${id}`, {});
-    load(id);
-  }
-
-  async function refresh() {
-    if (examId) await load(examId);
   }
 
   async function reopen(attemptId: string) {
@@ -122,7 +94,9 @@
   }
 
   function openAttempt(attemptId: string) {
-    window.location.href = `/courses/${courseId}/exams/${examId}/attempts/${attemptId}`;
+    // A navigation, not a page load: the rest of the dashboard moves between screens
+    // without dropping client state, and a full reload here was the one place it did not.
+    goto(`/courses/${courseId}/exams/${examId}/attempts/${attemptId}`);
   }
 
   /**
@@ -140,8 +114,6 @@
   let exportingAnswers = $state(false);
 
   async function exportAnswers(attemptIds: string[]) {
-    if (!examId) return;
-
     exportingAnswers = true;
 
     try {
@@ -184,32 +156,13 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex flex-wrap gap-2">
-      {#each exams as exam (exam.id)}
-        <Button size="sm" variant={examId === exam.id ? 'default' : 'outline'} onclick={() => choose(exam.id)}>
-          {exam.title}
-        </Button>
-      {/each}
-    </div>
-
-    <div class="flex items-center gap-2">
-      <Button variant="outline" size="sm" disabled={loading} onclick={refresh}>
-        {loading ? $t('exam.results.loading') : $t('exam.results.reload')}
-      </Button>
-      <Button variant="outline" size="sm" href={`/courses/${courseId}/exams`}>
-        {$t('exam.results.manage_exams')}
-      </Button>
-    </div>
+  <div class="flex items-center justify-end">
+    <Button variant="outline" size="sm" disabled={loading} onclick={refresh}>
+      {loading ? $t('exam.results.loading') : $t('exam.results.reload')}
+    </Button>
   </div>
 
-  {#if examId === null}
-    <Empty.Root>
-      <Empty.Content>
-        <Empty.Description>{$t('exam.manage.empty')}</Empty.Description>
-      </Empty.Content>
-    </Empty.Root>
-  {:else if failed || loadFailed}
+  {#if failed || loadFailed}
     <Empty.Root>
       <Empty.Content>
         <Empty.Description>{$t('exam.results.course_failed')}</Empty.Description>

@@ -21,6 +21,7 @@ import {
   updateExamSettingsService
 } from '@api/services/exam/exam';
 import { buildExamAnswerWorkbookService, listExamAnswerKeysService } from '@api/services/exam/exam-answer-keys';
+import { listCourseAttemptsService } from '@api/services/exam/exam-course-attempts';
 import {
   copyExerciseIntoContainer,
   listAvailableContainersService,
@@ -163,6 +164,17 @@ export const examRouter = new Hono()
       const containers = await listAvailableContainersService(c.req.param('courseId'));
 
       return c.json({ success: true as const, data: containers });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // Every sitting handed in across the course, for the Submissions page's exam tab. A pure
+  // read — see the service for why finalisation must not be added here.
+  .get('/course/:courseId/attempts', authMiddleware, courseTeamMemberMiddleware, async (c) => {
+    try {
+      const attempts = await listCourseAttemptsService(c.req.param('courseId'));
+
+      return c.json({ success: true as const, data: attempts });
     } catch (error) {
       return handleError(c, error);
     }

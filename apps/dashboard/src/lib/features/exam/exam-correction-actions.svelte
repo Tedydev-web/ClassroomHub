@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { AnswerKeyQuestion } from '$features/exam/exam-answer-key-question';
   import { t } from '$lib/utils/functions/translations';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
@@ -20,24 +21,6 @@
    * all — no option is right, or two are — nobody can be asked to have chosen correctly, so
    * the question is awarded to everyone.
    */
-
-  export type AnswerKeyOption = { id: string; label: string; html: string };
-
-  export type AnswerKeyQuestion = {
-    questionId: number;
-    interactionId: string;
-    position: number;
-    points: number;
-    promptHtml: string;
-    options: AnswerKeyOption[];
-    effectiveKey: string[];
-    cardinality: 'single' | 'multiple';
-    keyFixable: boolean;
-    questionsInItem: number;
-    hasSeveralChoiceParts: boolean;
-    awarded: boolean;
-    corrected: boolean;
-  };
 
   let {
     question,

@@ -5600,7 +5600,12 @@
       "workbook_blank": "Blank",
       "workbook_generated_at": "Exported",
       "manage_exams": "Manage exams",
-      "course_failed": "Could not load the sittings for this course. Refresh to try again."
+      "course_failed": "Could not load the sittings for this course. Refresh to try again.",
+      "exam_column": "Exam",
+      "submitted_at_column": "Handed in",
+      "search_placeholder": "Find a student",
+      "all_exams": "All exams",
+      "course_empty": "Nobody in this course has sat an exam yet."
     },
     "manage": {
       "title": "Exams",
@@ -5664,7 +5669,8 @@
       "copy_of": "{title} (copy)",
       "duplicate_failed": "Could not duplicate that exam",
       "duplicated_notice": "Copied. Set its window and password before sending the link.",
-      "settings_tab": "Settings"
+      "settings_tab": "Settings",
+      "paper_tab": "Paper"
     },
     "settings": {
       "title": "Exam title",
