@@ -95,17 +95,6 @@ class AppInitApi extends BaseApi {
 
         if (pendingInvite) {
           this.showPendingOrgInvite(pendingInvite);
-          this.applyAccountData(accountData, params);
-          return;
-        }
-
-        const joined = await this.autoJoinOnTenantSite(orgId);
-        if (joined) {
-          const refreshedAccount = await this.fetchAccountData();
-          if (refreshedAccount) {
-            this.applyAccountData(refreshedAccount, params);
-            return;
-          }
         }
 
         this.applyAccountData(accountData, params);
@@ -143,7 +132,8 @@ class AppInitApi extends BaseApi {
     setupAnalyticsBasedOnLicense(
       accountData.profile?.id
         ? { id: accountData.profile.id, email: accountData.profile.email, name: accountData.profile.fullname }
-        : undefined
+        : undefined,
+      params.isOrgSite
     );
     this.setUserAnalytics();
     this.routeUserToNextPage(params);
@@ -174,28 +164,6 @@ class AppInitApi extends BaseApi {
     this.showPendingInviteModal = true;
   }
 
-  /**
-   * On tenant sites, link an existing roster row or auto-join the org as STUDENT —
-   * unless the user has a pending org invite, in which case we surface accept UI.
-   * Returns true when a new membership was created or an email-only row was linked.
-   */
-  private async ensureTenantMembership(
-    orgId: string,
-    options?: { knownPendingInvite?: PendingOrgInvite | null }
-  ): Promise<boolean> {
-    const pendingInvite =
-      options && 'knownPendingInvite' in options
-        ? (options.knownPendingInvite ?? null)
-        : await this.fetchPendingOrgInvite(orgId);
-
-    if (pendingInvite) {
-      this.showPendingOrgInvite(pendingInvite);
-      return false;
-    }
-
-    return this.autoJoinOnTenantSite(orgId);
-  }
-
   private async fetchPendingOrgInvite(orgId: string): Promise<PendingOrgInvite | null> {
     try {
       const response = await classroomhub.invite.organization.pending.$get({}, { headers: { 'cio-org-id': orgId } });
@@ -213,7 +181,7 @@ class AppInitApi extends BaseApi {
 
   private async autoJoinOnTenantSite(orgId: string): Promise<boolean> {
     try {
-      const response = await classroomhub.organization['auto-join'].$post({}, { headers: { 'cio-org-id': orgId } });
+      const response = await classroomhub.organization.join.$post({}, { headers: { 'cio-org-id': orgId } });
 
       if (!response.ok) {
         // 403 is expected for invite-only / disabled-signup orgs — the user
@@ -249,7 +217,7 @@ class AppInitApi extends BaseApi {
    *
    * setupApp only runs once per session; tenant subdomains and `/org/[slug]`
    * routes can change without another /account fetch. This keeps `currentOrg`
-   * aligned with the URL and attempts auto-join on org sites when needed.
+   * aligned with the URL and surfaces pending invitations when needed.
    */
   async syncOrgContext(params: AppSetupParams): Promise<void> {
     if (!this.data?.success || !params.orgSiteName) {
@@ -264,12 +232,8 @@ class AppInitApi extends BaseApi {
     const isMember = this.data.organizations.some((org) => org.siteName === params.orgSiteName);
     if (params.isOrgSite && params.orgId && !isMember) {
       const pendingInvite = await this.fetchPendingOrgInvite(params.orgId);
-      const enrolled = await this.ensureTenantMembership(params.orgId, { knownPendingInvite: pendingInvite });
-      if (enrolled) {
-        const accountData = await this.fetchAccountData();
-        if (accountData) {
-          this.data = accountData;
-        }
+      if (pendingInvite) {
+        this.showPendingOrgInvite(pendingInvite);
       }
     }
 
@@ -339,6 +303,14 @@ class AppInitApi extends BaseApi {
       }
 
       if (params.isOrgSite) {
+        if (PUBLIC_IS_SELFHOSTED === 'true') {
+          const managedOrganizations = organizations.filter((org) => isOrgManagerRole(org.roleId));
+          const accountOrganization = managedOrganizations[0] ?? organizations[0];
+          if (accountOrganization) {
+            return accountOrganization;
+          }
+        }
+
         // Keep the server-resolved tenant org (set from URL in +layout.svelte) instead
         // of switching to another membership from /account.
         if (urlResolvedOrg.siteName === params.orgSiteName && urlResolvedOrg.id) {
@@ -367,13 +339,33 @@ class AppInitApi extends BaseApi {
     );
   }
 
-  routeUserToNextPage({ isOrgSite }: AppSetupParams) {
+  routeUserToNextPage(params: AppSetupParams) {
     console.log('routeUserToNextPage', window.location.pathname);
     if (!this.data?.success) {
       return;
     }
 
+    const { isOrgSite, orgId, orgSiteName } = params;
+    const path = window.location.pathname;
+    if (path === '/join-academy') {
+      return;
+    }
+
+    const isCloud = PUBLIC_IS_SELFHOSTED !== 'true';
+    const isCurrentOrgMember = this.data.organizations.some(
+      (organization) => organization.id === orgId || organization.siteName === orgSiteName
+    );
+    const isCloudOrgSiteNonMember = isCloud && isOrgSite && !isCurrentOrgMember;
     const redirect = page.url.searchParams.get('redirect');
+    const redirectTargetsLms = redirect === '/lms' || redirect?.startsWith('/lms?');
+    if (isCloudOrgSiteNonMember && (path.startsWith('/lms') || redirectTargetsLms)) {
+      if (path !== '/') {
+        window.location.href = '/';
+      }
+
+      return;
+    }
+
     if (redirect) {
       console.log('redirecting to', redirect);
       // goto redirect won't accept dynamic url so we need to use window.location.href
@@ -382,15 +374,21 @@ class AppInitApi extends BaseApi {
     }
 
     // This allows you to be on the landing page of an organization site and not be redirected
-    const path = window.location.pathname;
     if (isPublicRoute(path) && (path !== '/' || isOrgSite)) {
       console.log('no redirect is needed');
       return;
     }
 
+    if (isCloudOrgSiteNonMember) {
+      if (path !== '/') {
+        window.location.href = '/';
+      }
+
+      return;
+    }
+
     const isStudent = get(isOrgStudent);
     const userHasOrganizations = this.data.organizations.length > 0;
-    const isCloud = PUBLIC_IS_SELFHOSTED !== 'true';
 
     // CLOUD: when user has no orgs and isOrgSite is false, route to /onboarding
     // isOrgSite - means the user is on a multi tenant organization site, we don't want to redirect to /onboarding in this case
@@ -469,9 +467,9 @@ class AppInitApi extends BaseApi {
 
     identifyUserJotUser({
       id: profileStore.id,
-      email: profileStore.email,
+      email: profileStore.email ?? undefined,
       fullname: profileStore.fullname,
-      avatarUrl: profileStore.avatarUrl
+      avatarUrl: profileStore.avatarUrl ?? undefined
     });
   }
 

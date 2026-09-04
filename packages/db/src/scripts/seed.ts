@@ -16,6 +16,7 @@ import { seedEarlyAdopterOrganizationPlan, seedEnterpriseOrganizationPlan } from
 import { seedProfile } from '@db/utils/seed/profile';
 import { seedQuestionTypes } from '@db/utils/seed/questionType';
 import { seedQuestions } from '@db/utils/seed/question';
+import { seedReactCoursePeopleProgress } from '@db/utils/seed/reactCoursePeopleProgress';
 import { seedRoles } from '@db/utils/seed/role';
 import { seedSubmissions } from '@db/utils/seed/submission';
 import { seedUsers } from '@db/utils/seed/users';
@@ -85,6 +86,7 @@ Flags:
   --templates                Seed exercise templates
   --compliance               Seed compliance demo data (coursera-test org)
   --newsfeed-threads         Seed nested newsfeed comment threads (coursera-test org)
+  --react-people-progress    Seed React course students with varied progress (udemy-test)
   --help, -h                  Show this help message
 
 Examples:
@@ -240,6 +242,15 @@ const seedFunctions = {
   'newsfeed-threads': async () => {
     console.log('📝 Seeding nested newsfeed comment threads (coursera-test)...');
     await seedNewsfeedThreads({ enterpriseOrgId: ENTERPRISE_ORG_ID });
+  },
+  'react-people-progress': async () => {
+    console.log('📝 Seeding React course people progress demo (udemy-test)...');
+    await seedReactCoursePeopleProgress({
+      testOrgId: TEST_ORG_ID,
+      reactGroupId: REACT_GROUP_ID,
+      reactCourseId: REACT_COURSE_ID,
+      existingStudentUserId: STUDENT_USER_ID
+    });
   }
 };
 

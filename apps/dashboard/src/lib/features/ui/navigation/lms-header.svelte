@@ -11,6 +11,7 @@
   import NotificationList from '$features/notification/components/notification-list.svelte';
   import { notificationApi } from '$features/notification/api/notification.svelte';
   import { onMount } from 'svelte';
+  import VisitOrgSiteBtn from '../visit-org-site-btn.svelte';
 
   interface Props {
     hideSearch?: boolean;
@@ -24,7 +25,7 @@
 </script>
 
 <header
-  class="border-border ui:bg-background bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
+  class="ui:border-border ui:bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
 >
   <div class="flex w-full items-center gap-2 px-4">
     <Sidebar.Trigger />
@@ -38,6 +39,8 @@
     <span class="grow"></span>
 
     {#if !hideSearch}
+      <VisitOrgSiteBtn variant="outline" labelKey="lms.view_landing_page" pathname="/" />
+
       <Search scope="lms" />
 
       <Popover.Root>

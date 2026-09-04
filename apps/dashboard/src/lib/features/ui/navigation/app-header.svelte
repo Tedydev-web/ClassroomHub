@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import BellIcon from '@lucide/svelte/icons/bell';
@@ -6,17 +7,17 @@
   import * as Popover from '@cio/ui/base/popover';
   import Search from '$features/ui/search.svelte';
   import AppBreadcrumbs from './app-breadcrumbs.svelte';
-  import RefreshCcwIcon from '@lucide/svelte/icons/refresh-ccw';
-  import * as Empty from '@cio/ui/base/empty';
   import { currentOrg } from '$lib/utils/store/org';
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
+  import { notificationsApi } from '$features/notifications/api/notifications.svelte';
+  import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
   import AppSetup from './app-setup.svelte';
   import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
   import NotificationList from '$features/notification/components/notification-list.svelte';
   import { notificationApi } from '$features/notification/api/notification.svelte';
-  import { onMount } from 'svelte';
 
   const siteName = $derived($currentOrg.siteName);
+  const notificationCount = $derived(notificationsApi.unreadCount);
 
   onMount(() => {
     notificationApi.getNotifications();
@@ -27,13 +28,17 @@
 
     setupProgressApi.fetchSetupProgress(siteName);
   });
+
+  onMount(() => {
+    notificationsApi.fetchOnce();
+  });
 </script>
 
 <header
-  class="border-border ui:bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
+  class="ui:border-border ui:bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
 >
   <div class="flex w-full items-center gap-2 px-4">
-    <Sidebar.Trigger />
+    <Sidebar.Trigger testId="app-sidebar-trigger" />
 
     <div class="h-4 w-2">
       <Separator orientation="vertical" />

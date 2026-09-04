@@ -31,7 +31,6 @@ import { isHtmlValueEmpty } from '$lib/utils/functions/toHtml';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
 import { profile } from '$lib/utils/store/user';
 import { snackbar } from '$features/ui/snackbar/store';
-import { t } from '$lib/utils/functions/translations';
 
 /**
  * API class for newsfeed operations

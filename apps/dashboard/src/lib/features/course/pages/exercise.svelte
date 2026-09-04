@@ -34,7 +34,7 @@
   import { ZExerciseUpdate } from '@cio/utils/validation/exercise';
   import { mapZodErrorsToTranslations } from '$lib/utils/validation';
   import { transformQuestionsToApiFormat } from '$features/course/components/exercise/functions';
-  import { isOrgStudent, isCourseLearnerView, isStudentExperience } from '$lib/utils/store/app';
+  import { isOrgStudent, isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';

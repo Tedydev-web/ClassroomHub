@@ -1,4 +1,6 @@
-import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
+import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
+import type { TLocale } from '@cio/db/types';
 
 // List lessons types
 export type ListLessonsRequest = (typeof classroomhub.course)[':courseId']['lesson']['$get'];
@@ -161,6 +163,33 @@ export type GetLessonHistoryRequest =
 export type GetLessonHistoryResponse = InferResponseType<GetLessonHistoryRequest> | null;
 export type GetLessonHistorySuccess = Extract<InferResponseType<GetLessonHistoryRequest>, { success: true }>;
 export type LessonHistory = GetLessonHistorySuccess['data'];
+export type LessonHistoryRow = LessonHistory[number];
+
+/**
+ * A history row with its timestamps parsed, as the version history panel renders
+ * it. One entry is one *editing session*, not one save — `editCount` says how
+ * many saves the API coalesced into it.
+ */
+export interface LessonVersionEntry {
+  id: number;
+  newContent: string;
+  oldContent: string;
+  kind: NonNullable<LessonHistoryRow['kind']>;
+  label: string | null;
+  sessionStartedAt: Date;
+  timestamp: Date;
+  editCount: number;
+  authorName: string | null;
+  locale: TLocale;
+  lessonId: string;
+}
+
+/** Version entries bucketed into calendar days, newest day first. */
+export interface LessonVersionDayGroup {
+  /** Midnight of the day, used as the group key. */
+  dayKey: number;
+  versions: LessonVersionEntry[];
+}
 
 // Lesson language types
 export type GetLessonLanguageRequest =
@@ -422,8 +451,16 @@ export type CourseProgress = GetCourseProgressSuccess['data'];
 export type ListPeopleRequest = (typeof classroomhub.course)[':courseId']['members']['$get'];
 export type ListPeopleResponse = InferResponseType<ListPeopleRequest> | null;
 export type ListPeopleSuccess = Extract<InferResponseType<ListPeopleRequest>, { success: true }>;
+export type ListPeopleRequestQuery = NonNullable<InferRequestType<ListPeopleRequest>['query']>;
 export type CourseMembers = ListPeopleSuccess['data'];
 export type CourseMember = CourseMembers[number];
+export type CourseMembersPagination = ListPeopleSuccess['pagination'];
+export type ListPeopleQuery = {
+  page: number;
+  limit: number;
+  search?: string;
+  roleId?: number;
+};
 
 export type AddPeopleRequest = (typeof classroomhub.course)[':courseId']['members']['$post'];
 export type AddPeopleResponse = InferResponseType<AddPeopleRequest>;
@@ -434,6 +471,25 @@ export type CreateStudentInviteRequest = (typeof classroomhub.course)[':courseId
 export type CreateStudentInviteResponse = InferResponseType<CreateStudentInviteRequest>;
 export type CreateStudentInviteSuccess = Extract<CreateStudentInviteResponse, { success: true }>;
 export type CreateStudentInviteData = CreateStudentInviteSuccess['data'];
+
+/** Payload accepted by `POST /course/:courseId/invites` (the email-invite path). */
+export type CreateStudentInvitePayload = {
+  preset?: TCourseInvitePreset;
+  expiresAt?: string;
+  maxUses?: number;
+  allowedEmails?: string[];
+  allowedDomains?: string[];
+  recipientEmails?: string[];
+  recipientCsv?: string;
+  sendEmail?: boolean;
+  metadata?: Record<string, unknown>;
+};
+
+export type GetCourseInviteLinkRequest = (typeof classroomhub.course)[':courseId']['invites']['link']['$get'];
+export type CreateCourseInviteLinkRequest = (typeof classroomhub.course)[':courseId']['invites']['link']['$post'];
+export type ToggleCourseInviteLinkRequest = (typeof classroomhub.course)[':courseId']['invites']['link']['$patch'];
+type GetCourseInviteLinkSuccess = Extract<InferResponseType<GetCourseInviteLinkRequest>, { success: true }>;
+export type CourseInviteLink = GetCourseInviteLinkSuccess['data'];
 
 export type ListStudentInvitesRequest = (typeof classroomhub.course)[':courseId']['invites']['$get'];
 export type ListStudentInvitesResponse = InferResponseType<ListStudentInvitesRequest>;

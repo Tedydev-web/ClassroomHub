@@ -78,10 +78,7 @@
 
 {#await loadEditor()}
   <div
-    class={cn(
-      'ui:relative ui:bg-background ui:flex ui:w-full ui:flex-col ui:rounded-md ui:border ui:border-dashed',
-      className
-    )}
+    class={cn('ui:bg-background relative flex w-full flex-col rounded-md border border-dashed', className)}
     aria-busy="true"
     aria-hidden="true"
   >

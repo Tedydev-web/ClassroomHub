@@ -52,7 +52,7 @@ export async function getOrgSiteInfo(url: URL, cookies: Cookies): Promise<OrgSit
   const subdomain = getSubdomain(url) || '';
 
   // Custom domain
-  if (isURLCustomDomain(url)) {
+  if (isCustomDomainHost(url)) {
     console.log('it is custom domain');
     const apiKeyHeaders = getApiKeyHeaders();
     const orgs = await getOrgsByCustomDomain(url.hostname, true, apiKeyHeaders);
