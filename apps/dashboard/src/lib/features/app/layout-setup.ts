@@ -51,8 +51,9 @@ export async function getOrgSiteInfo(url: URL, cookies: Cookies): Promise<OrgSit
 
   const subdomain = getSubdomain(url) || '';
 
-  // Custom domain
-  if (isCustomDomainHost(url)) {
+  // Custom domain — judged against this deployment's own hosts, which is what
+  // `isURLCustomDomain` below knows and upstream's helper does not.
+  if (isURLCustomDomain(url)) {
     console.log('it is custom domain');
     const apiKeyHeaders = getApiKeyHeaders();
     const orgs = await getOrgsByCustomDomain(url.hostname, true, apiKeyHeaders);
