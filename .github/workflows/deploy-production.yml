@@ -20,6 +20,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      rebuild_all:
+        description: Rebuild every service, whatever the host is already serving
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-production
@@ -39,7 +44,45 @@ env:
   HOST_ENV_DIR: /home/tedydev/.config/classroomhub
 
 jobs:
-  # Which services this push actually touched.
+  # What each service is actually serving right now.
+  #
+  # The narrowing below used to diff `github.event.before` against this commit, which is only
+  # the right range when the previous deploy succeeded. When one fails, its services keep
+  # serving an older image, and the next push — touching only some other service — leaves
+  # them there. That is exactly what happened on the upstream sync: a failed jobs build left
+  # the API and dashboard three commits behind while every run reported success.
+  #
+  # Asking the host what it is running makes the range true by construction.
+  running:
+    name: What is running
+    runs-on: [self-hosted, Linux, deploy]
+    timeout-minutes: 5
+    outputs:
+      api: ${{ steps.read.outputs.api }}
+      dashboard: ${{ steps.read.outputs.dashboard }}
+      jobs: ${{ steps.read.outputs.jobs }}
+    steps:
+      - id: read
+        run: |
+          set -euo pipefail
+
+          for service in api dashboard jobs; do
+            container="zj19oe40izga1bnpymfz5z55-${service}-1"
+            image="$(docker inspect --format '{{.Config.Image}}' "${container}" 2>/dev/null || true)"
+            sha="${image##*:sha-}"
+
+            # An unreadable container, a tag that is not a sha, or no container at all: say
+            # nothing and let the decider rebuild that service rather than guess.
+            case "${sha}" in
+              [0-9a-f]*) : ;;
+              *) sha="" ;;
+            esac
+
+            echo "${service}=${sha}" >> "${GITHUB_OUTPUT}"
+            echo "${service} is serving ${sha:-<unknown>}"
+          done
+
+  # Which services are behind this commit.
   #
   # Everything used to be rebuilt and restarted on every commit, because the compose file
   # gave all three one shared image tag. A change to the teacher's screen therefore restarted
@@ -51,6 +94,7 @@ jobs:
   # have the endpoint it calls.
   changes:
     name: Decide what to build
+    needs: running
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -65,7 +109,10 @@ jobs:
 
       - id: decide
         env:
-          BEFORE: ${{ github.event.before }}
+          RUNNING_API: ${{ needs.running.outputs.api }}
+          RUNNING_DASHBOARD: ${{ needs.running.outputs.dashboard }}
+          RUNNING_JOBS: ${{ needs.running.outputs.jobs }}
+          REBUILD_ALL: ${{ inputs.rebuild_all }}
         run: |
           set -euo pipefail
 
@@ -74,22 +121,60 @@ jobs:
           # a dashboard against an API that does not have the endpoint it calls.
           node --test scripts/changed-deploy-services.test.mjs
 
-          # A manual run, a first push, or a force-push leaves no usable previous commit.
-          # Rebuilding everything is the answer that cannot be wrong.
-          if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ] \
-             || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
-            files=""
-          else
-            files="$(git diff --name-only "${BEFORE}" "${GITHUB_SHA}")"
+          # One range per service: from the commit it is serving to this one. A service
+          # already on this commit has an empty range and is left alone; one left behind by a
+          # failed deploy has a range that still contains its own changes, so it is rebuilt.
+          services=""
+
+          if [ "${REBUILD_ALL}" = "true" ]; then
+            echo "Manual rebuild requested: building everything."
+            services="api dashboard jobs"
           fi
 
-          if [ -z "${files}" ]; then
-            services="api dashboard jobs"
-          else
+          for service in api dashboard jobs; do
+            # `if`, not `[ ... ] && continue`: under `set -e` the latter exits the script on
+            # the ordinary path, where the test is false.
+            if [ "${REBUILD_ALL}" = "true" ]; then continue; fi
+
+            case "${service}" in
+              api) running="${RUNNING_API}" ;;
+              dashboard) running="${RUNNING_DASHBOARD}" ;;
+              jobs) running="${RUNNING_JOBS}" ;;
+            esac
+
+            # Nothing known, or a commit this clone does not have (a force-push, a rebuilt
+            # host): rebuild. Being wrong in the narrowing direction ships a dashboard against
+            # an API that does not have the endpoint it calls.
+            if [ -z "${running}" ] || ! git cat-file -e "${running}^{commit}" 2>/dev/null; then
+              services="${services} ${service}"
+              echo "${service}: serving an unknown commit, rebuilding"
+              continue
+            fi
+
+            if [ "${running}" = "${GITHUB_SHA}" ]; then
+              echo "${service}: already on this commit"
+              continue
+            fi
+
+            files="$(git diff --name-only "${running}" "${GITHUB_SHA}")"
+
+            if [ -z "${files}" ]; then
+              echo "${service}: no file changed since ${running}"
+              continue
+            fi
+
             # `-d '\n'` so a path with a space is one argument, and `sort -u` because xargs
             # may split a long list across several runs, each answering for its own share.
-            services="$(printf '%s\n' "${files}" | xargs -d '\n' node scripts/changed-deploy-services.mjs | sort -u | tr '\n' ' ')"
-          fi
+            touched="$(printf '%s\n' "${files}" | xargs -d '\n' node scripts/changed-deploy-services.mjs | sort -u | tr '\n' ' ')"
+
+            case " ${touched} " in
+              *" ${service} "*)
+                services="${services} ${service}"
+                echo "${service}: changed since ${running}"
+                ;;
+              *) echo "${service}: unaffected by changes since ${running}" ;;
+            esac
+          done
 
           services="$(echo "${services}" | xargs || true)"
           echo "Services to build: ${services:-<none>}"

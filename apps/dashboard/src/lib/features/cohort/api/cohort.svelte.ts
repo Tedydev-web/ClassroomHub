@@ -384,7 +384,7 @@ class CohortApi extends BaseApiWithErrors {
     const seq = this.beginInviteLinkRequest(cohortId);
 
     await this.execute<GetCohortInviteLinkRequest>({
-      requestFn: () => classroomio.cohort[':cohortId']['invite-link'].$get({ param: { cohortId } }),
+      requestFn: () => classroomhub.cohort[':cohortId']['invite-link'].$get({ param: { cohortId } }),
       onSuccess: (result) => this.applyInviteLink(cohortId, seq, result.data),
       onError: () => snackbar.error('invite_link.load_failed'),
       logContext: 'getCohortInviteLink'
@@ -396,7 +396,7 @@ class CohortApi extends BaseApiWithErrors {
     const seq = this.beginInviteLinkRequest(cohortId);
 
     await this.execute<CreateCohortInviteLinkRequest>({
-      requestFn: () => classroomio.cohort[':cohortId']['invite-link'].$post({ param: { cohortId } }),
+      requestFn: () => classroomhub.cohort[':cohortId']['invite-link'].$post({ param: { cohortId } }),
       onSuccess: (result) => this.applyInviteLink(cohortId, seq, result.data),
       onError: () => snackbar.error('invite_link.generate_failed'),
       logContext: 'generateCohortInviteLink'
@@ -409,7 +409,7 @@ class CohortApi extends BaseApiWithErrors {
 
     await this.execute<ToggleCohortInviteLinkRequest>({
       requestFn: () =>
-        classroomio.cohort[':cohortId']['invite-link'].$patch({ param: { cohortId }, json: { isRevoked } }),
+        classroomhub.cohort[':cohortId']['invite-link'].$patch({ param: { cohortId }, json: { isRevoked } }),
       onSuccess: (result) => {
         this.applyInviteLink(cohortId, seq, result.data);
         snackbar.success(isRevoked ? 'invite_link.snackbar.disabled' : 'invite_link.snackbar.enabled');

@@ -3,6 +3,8 @@
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import BellIcon from '@lucide/svelte/icons/bell';
+  import RefreshCcwIcon from '@lucide/svelte/icons/refresh-ccw';
+  import * as Empty from '@cio/ui/base/empty';
   import { Button } from '@cio/ui/base/button';
   import * as Popover from '@cio/ui/base/popover';
   import Search from '$features/ui/search.svelte';

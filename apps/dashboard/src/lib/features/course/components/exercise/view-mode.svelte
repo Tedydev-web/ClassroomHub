@@ -33,6 +33,7 @@
   import { filterOutDeleted } from './functions';
   import { formatAnswers } from '$features/course/utils/functions';
   import {
+    getTextareaAnswerCharacterCount,
     hasMeaningfulAnswerData,
     resolveCanonicalFileUploadMimeType,
     toApiPayload,

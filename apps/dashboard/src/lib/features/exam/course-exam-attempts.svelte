@@ -122,6 +122,30 @@
         .some((value) => value.toLowerCase().includes(needle));
     });
   });
+
+  /** The course's sittings in the shape the shared results table reads, each naming its paper. */
+  const courseRows = $derived(
+    shown.map(
+      (row): ExamResultRow => ({
+        attemptId: row.attemptId,
+        displayName: row.displayName,
+        nickname: row.nickname,
+        className: row.className,
+        candidateNumber: row.candidateNumber,
+        status: row.status,
+        gradingState: row.gradingState,
+        score: row.score,
+        total: row.total,
+        startedAt: row.startedAt,
+        submittedAt: row.submittedAt,
+        duplicateName: row.duplicateName,
+        duplicateAddress: row.duplicateAddress,
+        leaves: row.leaves,
+        examId: row.examId,
+        examTitle: row.examTitle
+      })
+    )
+  );
 </script>
 
 <div class="space-y-4">

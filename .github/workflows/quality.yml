@@ -102,6 +102,13 @@ jobs:
           pnpm --filter @cio/api lint
           pnpm --filter @cio/dashboard lint
 
+      # The dashboard is the one app with no typecheck: `vite build` compiles a reference to
+      # an undeclared name, and Svelte only fails at render. This gates on the class of error
+      # that is always a crash — a name, module or export that is not there — rather than on
+      # svelte-check's full report, which still carries several hundred pre-existing ones.
+      - name: Check the dashboard references things that exist
+        run: node scripts/dashboard-reference-check.mjs
+
   selective-assignment-integration:
     if: >-
       github.event_name != 'pull_request' ||

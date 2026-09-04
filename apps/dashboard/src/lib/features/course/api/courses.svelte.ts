@@ -1,4 +1,7 @@
 import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
+
+/** The page envelope the courses endpoints return. */
+type CoursePagination = { page: number; limit: number; total: number; totalPages: number };
 import type {
   GetOrgCoursesRequest,
   GetOrgCoursesRequestQuery,
@@ -21,9 +24,7 @@ export class CoursesApi extends BaseApiWithErrors {
   orgCoursesPagination = $state<OrgCoursesPagination | null>(null);
   enrolledCourses = $state<UserEnrolledCourses>([]);
   recommendedCourses = $state<RecommendedCourses>([]);
-  recommendedCoursesPagination = $state<{ page: number; limit: number; total: number; totalPages: number } | null>(
-    null
-  );
+  recommendedCoursesPagination = $state<CoursePagination | null>(null);
   private activeOrgCoursesRequestController: AbortController | null = null;
 
   cancelOrgCoursesRequest() {
@@ -154,7 +155,7 @@ export class CoursesApi extends BaseApiWithErrors {
           this.recommendedCourses = response.data;
         }
         if ('pagination' in response && response.pagination) {
-          this.recommendedCoursesPagination = response.pagination as typeof this.recommendedCoursesPagination;
+          this.recommendedCoursesPagination = response.pagination as CoursePagination;
         }
         this.errors = {};
       },

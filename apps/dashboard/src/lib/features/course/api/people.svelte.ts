@@ -227,7 +227,7 @@ export class PeopleApi extends BaseApiWithErrors {
     const seq = this.beginInviteLinkRequest(courseId);
 
     await this.execute<GetCourseInviteLinkRequest>({
-      requestFn: () => classroomio.course[':courseId']['invites']['link'].$get({ param: { courseId } }),
+      requestFn: () => classroomhub.course[':courseId']['invites']['link'].$get({ param: { courseId } }),
       logContext: 'loading course invite link',
       onSuccess: (result) => this.applyInviteLink(courseId, seq, result.data),
       onError: () => snackbar.error('invite_link.load_failed')
@@ -239,7 +239,7 @@ export class PeopleApi extends BaseApiWithErrors {
     const seq = this.beginInviteLinkRequest(courseId);
 
     await this.execute<CreateCourseInviteLinkRequest>({
-      requestFn: () => classroomio.course[':courseId']['invites']['link'].$post({ param: { courseId } }),
+      requestFn: () => classroomhub.course[':courseId']['invites']['link'].$post({ param: { courseId } }),
       logContext: 'creating course invite link',
       onSuccess: (result) => this.applyInviteLink(courseId, seq, result.data),
       onError: () => snackbar.error('invite_link.generate_failed')
@@ -252,7 +252,7 @@ export class PeopleApi extends BaseApiWithErrors {
 
     await this.execute<ToggleCourseInviteLinkRequest>({
       requestFn: () =>
-        classroomio.course[':courseId']['invites']['link'].$patch({ param: { courseId }, json: { isRevoked } }),
+        classroomhub.course[':courseId']['invites']['link'].$patch({ param: { courseId }, json: { isRevoked } }),
       logContext: 'updating course invite link',
       onSuccess: (result) => {
         this.applyInviteLink(courseId, seq, result.data);
