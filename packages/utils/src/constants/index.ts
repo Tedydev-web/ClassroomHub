@@ -6,5 +6,6 @@ export * from './course-type';
 export * from './domains';
 export * from './embeds';
 export * from './product-identity';
+export * from './lesson-version';
 export * from './error-codes';
 export * from './b64-envelope';

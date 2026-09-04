@@ -50,11 +50,13 @@ export const JOB_NAMES = {
   },
   maintenance: {
     retentionCompact: 'retention-compact',
+    lessonVersionRetention: 'lesson-version-retention',
     deadLetterCleanup: 'dead-letter-cleanup',
     mediaJobReap: 'media-job-reap',
     examImportReconcile: 'exam-import-reconcile',
     analyticsDailyRollup: 'analytics-daily-rollup',
     assetStorageCleanup: 'asset-storage-cleanup',
-    storageHealthCheck: 'storage-health-check'
+    storageHealthCheck: 'storage-health-check',
+    courseRoleReconcile: 'course-role-reconcile'
   }
 } as const;

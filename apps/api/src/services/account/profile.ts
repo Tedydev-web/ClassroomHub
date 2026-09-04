@@ -1,11 +1,9 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   countActiveStudents,
-  createOrganizationMember,
-  getFirstOrganization,
+  ensureSelfHostedStudentMembership,
   getOrganizationByProfileId,
-  getUserOrgRolesMap,
-  hasOrgMemberByProfileIdOrEmail
+  getUserOrgRolesMap
 } from '@cio/db/queries/organization';
 import { getPlanLimit, toResourceUsage } from '@cio/utils/plans';
 import {
@@ -61,19 +59,12 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
     const isTeamMember = Object.values(orgRoles).some((roleId) => roleId === ROLE.ADMIN || roleId === ROLE.TUTOR);
 
     if (!isTeamMember) {
-      const firstOrg = await getFirstOrganization();
-      if (firstOrg) {
-        const alreadyInOrg = await hasOrgMemberByProfileIdOrEmail(firstOrg.id, userId, profile.email ?? undefined);
+      const membershipEnsured = await ensureSelfHostedStudentMembership({
+        profileId: userId,
+        email: profile.email
+      });
 
-        if (!alreadyInOrg) {
-          await createOrganizationMember({
-            organizationId: firstOrg.id,
-            profileId: userId,
-            roleId: ROLE.STUDENT,
-            verified: true
-          });
-        }
-
+      if (membershipEnsured) {
         organizations = await getOrganizationByProfileId(userId);
       }
     }

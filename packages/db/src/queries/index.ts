@@ -24,3 +24,4 @@ export * from './notifications';
 export * from './webhook';
 export * from './scorm';
 export * from './admin';
+export * from './invite-link';

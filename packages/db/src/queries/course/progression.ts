@@ -13,6 +13,7 @@ export type ExerciseCompletionMember = { profileId: string } | { groupMemberId: 
 
 /** Allowed aliases for the exercise table in queries embedding the completion predicate. */
 export type ExerciseAlias = 'exercise' | 'ex';
+export type SubmissionAlias = 'cs' | 'submission';
 
 /**
  * Single source of truth for whether an exercise counts as completed for a student.
@@ -57,6 +58,43 @@ export function isExerciseCompletedSql(exerciseAlias: ExerciseAlias, member: Exe
           )
         )
       )
+  )`;
+}
+
+/**
+ * Whether one submission row satisfies its exercise's completion policy.
+ *
+ * Upstream's version of this divides by `SUM(question.points)` — the exercise's points as
+ * they stand today. This one divides by the points the paper carried when the submission was
+ * made, the same figure `isExerciseCompletedSql` uses, because an exercise whose questions
+ * were edited after a class sat it would otherwise re-mark every old submission against a
+ * paper nobody answered.
+ *
+ * Embed where both tables are in scope under `exerciseAlias` / `submissionAlias`. Batched
+ * queries that already join submission apply it directly; per-exercise callers get it
+ * wrapped in an EXISTS by `isExerciseCompletedSql`, so completion reads the same either way.
+ */
+export function submissionMeetsCompletionPolicySql(
+  exerciseAlias: ExerciseAlias,
+  submissionAlias: SubmissionAlias
+): SQL<boolean> {
+  const exercise = sql.raw(exerciseAlias);
+  const submission = sql.raw(submissionAlias);
+  const historicalMaxPoints = submissionHistoricalMaxPointsSql(sql.raw(`${submissionAlias}.id`));
+
+  return sql<boolean>`(
+    ${exercise}.completion_policy != 'passed'
+    OR (
+      ${submission}.grading_state = 'completed'
+      AND (
+        SELECT CASE
+          WHEN COALESCE(historical.max_points, 0) <= 0 THEN false
+          ELSE (COALESCE(${submission}.score, ${submission}.total::numeric, 0) / historical.max_points) * 100
+            >= COALESCE(${exercise}.pass_threshold, 100)
+        END
+        FROM (SELECT ${historicalMaxPoints} AS max_points) AS historical
+      )
+    )
   )`;
 }
 

@@ -34,7 +34,12 @@
       "label": "Cambios sin guardar"
     },
     "discard": "Descartar",
-    "save_changes": "Guardar cambios"
+    "save_changes": "Guardar cambios",
+    "app_update": {
+      "title": "Hay una nueva versión disponible.",
+      "description": "Vuelve a cargar para obtener las últimas funciones y correcciones.",
+      "reload": "Recargar"
+    }
   },
   "validations": {
     "generic": {
@@ -83,12 +88,12 @@
     },
     "reset": {
       "password": {
-        "min_char": "Debe tener 6 o más caracteres"
+        "min_char": "Debe tener 8 o más caracteres"
       }
     },
     "auth": {
       "password": {
-        "min_char": "Debe tener 6 o más caracteres"
+        "min_char": "Debe tener 8 o más caracteres"
       },
       "email": {
         "invalid_email": "Dirección de correo electrónico no válida"
@@ -249,7 +254,8 @@
       "success": {
         "complete_marked": "Marcado como completo",
         "complete_download": "Descarga Completa",
-        "version_restored": "Versión restaurada exitosamente"
+        "version_restored": "Versión restaurada exitosamente",
+        "complete_unmarked": "Marcado como incompleto"
       },
       "section_deleted": "Sección del curso eliminada exitosamente"
     },
@@ -904,7 +910,13 @@
         "copy_link": "Copiar enlace",
         "go_to_completion_deadline": "Ir a la fecha límite de finalización",
         "completion_deadline_label": "Fecha límite de finalización del curso",
-        "completion_deadline_helper": "Los estudiantes deben alcanzar el porcentaje de finalización antes de esta fecha (hora local). Déjelo vacío sin fecha límite."
+        "completion_deadline_helper": "Los estudiantes deben alcanzar el porcentaje de finalización antes de esta fecha (hora local). Déjelo vacío sin fecha límite.",
+        "comments": {
+          "title": "Comentarios de las lecciones",
+          "description": "Permite que los estudiantes vean y añadan comentarios en las lecciones de este curso. También puedes desactivar los comentarios en lecciones individuales.",
+          "enabled": "Comentarios activados para este curso",
+          "disabled": "Comentarios desactivados para este curso"
+        }
       },
       "analytics": {
         "title": "Analíticas"
@@ -991,7 +1003,13 @@
             "yes": "si",
             "percent": "Porcentaje de descuento",
             "gift": "Acerca del regalo",
-            "payment_required": "Se requiere un enlace de pago para los cursos pagos"
+            "payment_required": "Se requiere un enlace de pago para los cursos pagos",
+            "enable_paid": "Habilitar pago",
+            "payment_invalid_url": "Ingrese una URL válida (por ejemplo, https://pay.example.com)",
+            "payment_helper": "Stripe, Lemon Squeezy o cualquier enlace de pago",
+            "percentage_helper": "En porcentaje %",
+            "gift_on_completion": "Regalo al finalizar",
+            "payment_cost_required": "Los cursos de pago deben tener un coste superior a 0"
           },
           "instructor_form": {
             "upload": "Logotipo del instructor",
@@ -1303,7 +1321,14 @@
             "send_invite": "Enviar invitación"
           },
           "classroomio_brand": "ClassroomIO.com"
-        }
+        },
+        "learner": "Estudiante",
+        "progress": "Progreso",
+        "stage": "Etapa",
+        "last_login_at": "Último inicio de sesión",
+        "enrolled_at": "Inscrito el",
+        "certificate_earned": "Certificado obtenido",
+        "not_started": "No iniciado"
       },
       "marks": {
         "title": "marcas",
@@ -1411,7 +1436,17 @@
           "title": "Historial de versiones",
           "fetch_more_versions": "Obtener más versiones",
           "current_version": "Versión actual",
-          "restore_version": "Restaurar esta versión"
+          "restore_version": "Restaurar esta versión",
+          "edit_count": "{count, plural, one {# edición} other {# ediciones}}",
+          "today": "Hoy",
+          "yesterday": "Ayer",
+          "by_author": "por {name}",
+          "empty": "Aún no hay versiones",
+          "kind": {
+            "auto": "Guardado automático",
+            "manual": "Versión guardada",
+            "publish": "Publicado"
+          }
         },
         "poll": {
           "voted": "Votado",
@@ -2349,6 +2384,14 @@
             "watch_videos_empty": "Añade un video subido en la pestaña Video para usar el seguimiento de visualización.",
             "watch_videos_required": "Selecciona al menos un video para el seguimiento de visualización.",
             "students_only_note": "Estas reglas aplican solo a estudiantes. Puedes previsualizar y navegar libremente al enseñar."
+          },
+          "comments": {
+            "title": "Comentarios de la lección",
+            "description": "Elige si los estudiantes pueden ver y añadir comentarios en esta lección.",
+            "enabled": "Comentarios activados",
+            "disabled": "Comentarios desactivados",
+            "disabled_by_course": "Los comentarios están desactivados para todo el curso, por lo que no se puede cambiar esta configuración de la lección.",
+            "change_course_setting": "Cambiar en la configuración del curso"
           }
         },
         "watch_progress": {
@@ -2399,7 +2442,9 @@
           "starts_in": "Comienza en",
           "session_ended": "Sesión finalizada",
           "link_copied": "Enlace copiado"
-        }
+        },
+        "student_share_your_knowledge": "Aún no se han añadido lecciones a este curso. Vuelve a intentarlo más tarde.",
+        "student_body_content": "Aún no se han añadido lecciones a este curso. Vuelve a intentarlo más tarde."
       },
       "news_feed": {
         "heading": "Noticias",
@@ -2467,7 +2512,8 @@
           "description": "¿Estás seguro de que deseas eliminar este feed?",
           "no": "No",
           "yes": "si"
-        }
+        },
+        "student_body_content": "Aún no se han publicado entradas en esta clase."
       },
       "compliance": {
         "title": "Cumplimiento",
@@ -2602,7 +2648,8 @@
       "nav_landing_page": "Página de destino",
       "nav_settings": "Configuración",
       "nav_ai_assistant": "Asistente",
-      "nav_ai_tutor": "Tutor de IA"
+      "nav_ai_tutor": "Tutor de IA",
+      "exit_course": "Salir del curso"
     },
     "completion": {
       "modal": {
@@ -2770,7 +2817,12 @@
         "copy_course_url": "Copiar URL del curso"
       },
       "due_date": "Vence",
-      "valid_until": "Válido hasta"
+      "valid_until": "Válido hasta",
+      "student_empty_title": "Aún no hay cursos disponibles.",
+      "student_empty_description": "Aún no hay cursos disponibles en esta organización. Vuelve a intentarlo más tarde.",
+      "updated_at": "Actualizado el {date}",
+      "lessons_count": "{count, plural, one {# lección} other {# lecciones}}",
+      "exercises_count": "{count, plural, one {# ejercicio} other {# ejercicios}}"
     },
     "course_filter": {
       "date_created_newest": "Fecha de creación: más recientes primero",
@@ -3021,7 +3073,8 @@
     "org_loading_state": "Llevándote a tu organización...",
     "add_organization": "+ Agregar organización",
     "goto_dashboard": "Panel",
-    "classroomio_home": "Inicio de ClassroomIO"
+    "classroomio_home": "Inicio de ClassroomIO",
+    "join_academy": "Unirse a la academia"
   },
   "add_org": {
     "create_org": "Crear organización",
@@ -3988,7 +4041,7 @@
       "full_name": "Nombre completo",
       "password": "Tu Contraseña",
       "confirm_password": "Confirmar contraseña",
-      "password_helper_message": "La contraseña debe tener más de 8 caracteres.",
+      "password_helper_message": "La contraseña debe tener 8 o más caracteres.",
       "create_account": "Crear cuenta"
     },
     "signup_disabled": {
@@ -3996,7 +4049,11 @@
       "invite_only_message": "El registro es sólo por invitación. Utilice un enlace de invitación para crear una cuenta.",
       "go_to_login": "Ir a Iniciar sesión"
     },
-    "continue_with": "O continuar con"
+    "continue_with": "O continuar con",
+    "reset_password": {
+      "heading": "Nueva contraseña",
+      "description": "Ingrese los detalles de su nueva contraseña"
+    }
   },
   "app": {
     "search": {
@@ -4120,7 +4177,11 @@
     "resend": "Reenviar código de verificación",
     "resend_in": "Reenviar verificación en",
     "seconds": "segundos",
-    "snackbar_error": "error al enviar código"
+    "snackbar_error": "error al enviar código",
+    "wrong_address": "¿Se registró con la dirección incorrecta?",
+    "switch_account": "Cambiar de cuenta",
+    "confirm_link_prefix": "Haga clic en el enlace que le enviamos",
+    "confirm_link_suffix": "para confirmar tu correo electrónico"
   },
   "public_courses": {
     "page_title": "Cursos - ClassroomHub",
@@ -4219,8 +4280,11 @@
         "accepted": "Esta invitación ya ha sido utilizada.",
         "invalid": "Este enlace de invitación no es válido.",
         "joined": "Organización unida",
-        "join_failed": "No se pudo unir a la organización"
-      }
+        "join_failed": "No se pudo unir a la organización",
+        "try_again": "Intentar de nuevo"
+      },
+      "not_found": "Esta invitación ya no está disponible.",
+      "loading": "Cargando invitación..."
     },
     "link": {
       "page_title": "Únase a {orgName} en ClassroomHub",
@@ -4769,7 +4833,11 @@
         "mobile": "Móvil",
         "tablet": "Tableta",
         "desktop": "Escritorio"
-      }
+      },
+      "current_version": "Versión actual",
+      "active_badge": "Activo",
+      "active_badge_description": "Esta versión está actualmente disponible en tu inserción.",
+      "upgrade_callout": "Actualiza tu cuenta para desbloquear temas, colores, tipografías y estilos personalizados."
     },
     "tabs": {
       "select_courses": "Seleccionar cursos",
@@ -5454,6 +5522,62 @@
       "option_set_incomplete": "The detected option set appears incomplete.",
       "option_ownership_ambiguous": "An option could belong to more than one question.",
       "option_continuation_attached": "A continuation line was attached to an option and should be verified."
+    }
+  },
+  "invite_link": {
+    "tab_label": "Enlace de invitación",
+    "title": "Enlace de invitación",
+    "description": "Cualquiera con este enlace puede unirse. Compártelo en lugar de ingresar los correos electrónicos uno por uno.",
+    "course_description": "Cualquiera con este enlace puede unirse a este curso como estudiante. Compártelo en lugar de ingresar los correos electrónicos uno por uno.",
+    "cohort_description": "Cualquiera con este enlace puede unirse a este grupo y a todos los cursos que lo componen. Compártelo en lugar de ingresar los correos electrónicos uno por uno.",
+    "generate": "Crear enlace de invitación",
+    "copy": "Copiar enlace de invitación",
+    "copied": "Enlace de invitación copiado",
+    "copy_failed": "No se pudo copiar el enlace de invitación",
+    "toggle_label": "El enlace está activo",
+    "disabled_notice": "Este enlace está desactivado. Nadie puede unirse con él hasta que lo actives.",
+    "join_count": "{count} personas se han unido con este enlace",
+    "snackbar": {
+      "enabled": "Enlace de invitación habilitado",
+      "disabled": "Enlace de invitación deshabilitado"
+    },
+    "join": {
+      "page_title": "Únete a {resourceName} en ClassroomIO",
+      "invitation": "Te han invitado a unirte a {resourceName} en {orgName}.",
+      "course_button": "Unirse al curso",
+      "cohort_button": "Unirse al grupo",
+      "disabled": "Este enlace de invitación se ha deshabilitado.",
+      "closed": "Ya no se aceptan nuevos miembros.",
+      "succeeded": "Te has unido",
+      "failed": "No se pudo unir. Inténtalo de nuevo."
+    },
+    "load_failed": "No se pudo cargar el enlace de invitación",
+    "generate_failed": "No se pudo crear el enlace de invitación",
+    "toggle_failed": "No se pudo actualizar el enlace de invitación"
+  },
+  "lms": {
+    "view_landing_page": "Ver página de inicio"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty_title": "Sin notificaciones",
+    "empty_description": "Ya estás al día. Las nuevas notificaciones aparecerán aquí.",
+    "refresh": "Actualizar",
+    "pending_invite": {
+      "heading": "Invitación a la organización",
+      "body": "{orgName} te invitó a unirte como {role}.",
+      "action": "Ver invitación"
+    },
+    "latest": "Últimos",
+    "only_show_unread": "Mostrar solo los no leídos",
+    "unread": "No leídos",
+    "more_options": "Más opciones",
+    "give_feedback": "Enviar comentarios",
+    "watching_empty_title": "Aún no hay nada que ver",
+    "watching_empty_description": "Las actualizaciones de los elementos que sigues aparecerán aquí.",
+    "tabs": {
+      "direct": "Directo",
+      "watching": "Siguiendo"
     }
   }
 }

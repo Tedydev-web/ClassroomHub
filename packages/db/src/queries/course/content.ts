@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 
 import { ContentType } from '@cio/utils/constants';
-import { and, db, eq, sql as drizzleSql } from '@db/drizzle';
+import { and, db, eq, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 import { isExerciseCompletedSql } from './progression';
@@ -30,7 +30,11 @@ export type CourseContentItemRow = {
  * @param courseId Course ID
  * @param profileId Optional profile ID for completion state
  */
-export async function getCourseContentItems(courseId: string, profileId?: string): Promise<CourseContentItemRow[]> {
+export async function getCourseContentItems(
+  courseId: string,
+  profileId?: string,
+  dbClient: DbOrTxClient = db
+): Promise<CourseContentItemRow[]> {
   try {
     const [viewerMember] = profileId
       ? await db
@@ -56,7 +60,7 @@ export async function getCourseContentItems(courseId: string, profileId?: string
       ? drizzleSql`AND ${viewerMember ? getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId) : drizzleSql`false`}`
       : drizzleSql``;
 
-    const result = await db.execute(drizzleSql`
+    const result = await dbClient.execute(drizzleSql`
       SELECT
         id,
         ${ContentType.Section}::text AS type,

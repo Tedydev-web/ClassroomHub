@@ -25,3 +25,4 @@ export * from './jobs';
 export * from './notification';
 export * from './webhook';
 export * from './scorm';
+export * from './invite-link';

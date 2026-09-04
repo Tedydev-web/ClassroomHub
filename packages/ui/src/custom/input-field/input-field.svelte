@@ -4,7 +4,6 @@
   import { Input, type InputProps } from '../../base/input';
 
   type InputOnChangeEvent = Parameters<NonNullable<InputProps['onchange']>>[0];
-  type InputOnInputEvent = Parameters<NonNullable<InputProps['oninput']>>[0];
 
   interface Props {
     label?: string;
@@ -26,8 +25,8 @@
     errorMessage?: string;
     helperMessage?: string;
     autoComplete?: boolean;
-    'aria-label'?: string;
-    oninput?: (e: InputOnInputEvent) => void;
+    /** Stable hook for Playwright (`data-testid`). Prefer over CSS classes or translated labels. */
+    testId?: string;
     onchange?: (e: InputOnChangeEvent) => void;
     onInputChange?: (e: InputOnChangeEvent) => void;
     labelAction?: import('svelte').Snippet;
@@ -53,18 +52,13 @@
     errorMessage = '',
     helperMessage = '',
     autoComplete = true,
-    'aria-label': ariaLabel,
-    oninput = () => {},
+    testId,
     onchange = () => {},
     onInputChange = () => {},
     labelAction
   }: Props = $props();
 
   let inputRef: HTMLInputElement | null = $state(null);
-  const generatedInputId = $props.id();
-  const inputId = $derived(name || generatedInputId);
-  const messageId = $derived(`${inputId}-message`);
-  const describedBy = $derived(errorMessage || helperMessage ? messageId : undefined);
 
   onMount(() => {
     if (autoFocus && inputRef) {
@@ -86,11 +80,8 @@
 <Field.Field class={className}>
   {#if label}
     <div class="ui:flex ui:items-center ui:justify-between">
-      <Field.Label for={inputId} class={labelClassName}>
+      <Field.Label for={name || 'input-field'} class={labelClassName} required={isRequired}>
         {label}
-        {#if isRequired}
-          <span class="ui:text-red-700">*</span>
-        {/if}
       </Field.Label>
       {@render labelAction?.()}
     </div>
@@ -99,7 +90,8 @@
   <Input
     class={inputClassName}
     bind:ref={inputRef}
-    id={inputId}
+    id={name || 'input-field'}
+    data-testid={testId}
     {type}
     {placeholder}
     bind:value
@@ -111,18 +103,15 @@
     required={isRequired}
     disabled={isDisabled}
     autocomplete={autoComplete ? 'on' : 'off'}
-    aria-label={ariaLabel}
-    aria-describedby={describedBy}
     aria-invalid={errorMessage ? 'true' : undefined}
     onkeydown={onKeyDown}
-    {oninput}
     onchange={handleInputChange}
     onblur={handleBlur}
   />
 
   {#if errorMessage}
-    <Field.Error id={messageId}>{errorMessage}</Field.Error>
+    <Field.Error>{errorMessage}</Field.Error>
   {:else if helperMessage}
-    <Field.Description id={messageId}>{helperMessage}</Field.Description>
+    <Field.Description>{helperMessage}</Field.Description>
   {/if}
 </Field.Field>

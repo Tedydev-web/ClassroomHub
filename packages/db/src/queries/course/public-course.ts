@@ -521,7 +521,8 @@ export async function getTakenItemSlugs(courseId: string, dbClient: DbOrTxClient
  */
 export async function findNonAutoGradableQuestionsInCourse(
   courseId: string,
-  autoGradableTypeIds: readonly number[]
+  autoGradableTypeIds: readonly number[],
+  dbClient: DbOrTxClient = db
 ): Promise<
   Array<{
     questionId: number;
@@ -532,7 +533,7 @@ export async function findNonAutoGradableQuestionsInCourse(
   }>
 > {
   try {
-    const rows = await db
+    const rows = await dbClient
       .select({
         questionId: schema.question.id,
         questionTitle: schema.question.title,

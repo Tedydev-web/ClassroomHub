@@ -1,37 +1,23 @@
-<script>
+<script lang="ts">
   import * as Dialog from '@cio/ui/base/dialog';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { currentOrgPath } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
-  import { classroomhub } from '$lib/utils/services/api';
-  import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
 
-  let query = new URLSearchParams(page.url.search);
-  let welcomePopup = query.get('welcomePopup');
-  let open = $derived(welcomePopup === 'true' && !!$profile.isEmailVerified);
+  const open = $derived(page.url.searchParams.get('welcomePopup') === 'true' && !!$profile.isEmailVerified);
 
-  let isLoading = $state(false);
-
-  const closeModal = async () => {
-    if (isLoading) return;
-
-    try {
-      isLoading = true;
-      await classroomhub.onboarding.complete.$post({});
-
-      goto($currentOrgPath + '/courses?create=true');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  function closeModal() {
+    goto(resolve(`${$currentOrgPath}/courses?create=true`, {}));
+  }
 </script>
 
 <Dialog.Root
   {open}
   onOpenChange={(isOpen) => {
-    if (!isOpen && !isLoading) closeModal();
+    if (!isOpen) closeModal();
   }}
 >
   <Dialog.Content class="w-[700px]! max-w-none!">
@@ -40,9 +26,7 @@
     </Dialog.Header>
     <p class="text-md text-black dark:text-white">
       {$t('welcome_modal.we_at')}
-      <a href={`https://${PRODUCT_HOSTS.dashboard}`} class="ui:text-primary no-underline hover:no-underline"
-        >{PRODUCT_NAME}</a
-      >
+      <a href="https://app.classroomhub.com/" class="ui:text-primary no-underline hover:no-underline">ClassroomIO</a>
       {$t('welcome_modal.small_team')}
       <span class="ui:text-primary">{$t('welcome_modal.thank_you')};</span>
       {$t('welcome_modal.deeply_appreciate')}

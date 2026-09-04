@@ -3,6 +3,7 @@ import { getActiveOrganizationPlan, getOrganizationById } from '@cio/db/queries/
 import { getCourseTagsByCourseIdsForOrganization, getTagGroupsWithTags } from '@cio/db/queries/tag';
 import { listWidgetCourses } from '@cio/db/queries/widget';
 import { PLAN } from '@cio/utils/plans';
+import { isCoursePaid } from '@cio/utils/validation/course';
 import {
   EMBED_PUBLIC_BASE_URL,
   getEmbedBaseUrl,
@@ -185,6 +186,11 @@ export function formatCourseForWidget(
   course: OrgCourse,
   tags: BuildWidgetPayloadCourse['tags']
 ): BuildWidgetPayloadCourse {
+  const isPaidCourse = isCoursePaid(
+    course.cost as number | null | undefined,
+    course.metadata as { paymentEnabled?: boolean; paymentLink?: string | null } | null | undefined
+  );
+
   return {
     id: course.id,
     slug: course.slug ?? course.id,
@@ -192,7 +198,7 @@ export function formatCourseForWidget(
     description: course.description,
     imageUrl: course.bannerImage || course.logo || null,
     isPublished: course.isPublished,
-    price: course.cost ? `${course.currency} ${course.cost}` : 'Free',
+    price: isPaidCourse && course.cost ? `${course.currency} ${course.cost}` : 'Free',
     lessonCount: course.lessonCount,
     exerciseCount: course.exerciseCount ?? 0,
     courseType: course.type,

@@ -12,6 +12,13 @@
   import { isStudentLimitReached } from '$lib/utils/store/org';
   import { UpgradeBanner } from '$features/ui';
 
+  interface Props {
+    /** Called after the course roster changes so the caller can refresh its list. */
+    onMembersChanged?: () => void;
+  }
+
+  let { onMembersChanged }: Props = $props();
+
   const GRANT_ACCESS_PARAM = 'grantAccess';
 
   let courseId = $derived(courseApi.course?.id ?? '');
@@ -47,6 +54,7 @@
       }
 
       await courseApi.refreshCourse(courseId, $profile.id);
+      onMembersChanged?.();
       closeModal();
     } finally {
       isSubmitting = false;

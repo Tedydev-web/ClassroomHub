@@ -313,9 +313,9 @@ export const getCoursesBySiteNameForSetup = async (siteName: string) => {
     ...row.course
   }));
 };
-export async function getCourseById(courseId: string) {
+export async function getCourseById(courseId: string, dbClient: DbOrTxClient = db) {
   try {
-    return await db.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1);
+    return await dbClient.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1);
   } catch (error) {
     console.error('getCourseById error:', error);
     throw new Error(
@@ -505,9 +505,9 @@ export async function createCourseNewsfeed(newsfeed: TNewCourseNewsfeed, dbClien
  * @param data Partial course data to update
  * @returns Updated course
  */
-export async function updateCourse(courseId: string, data: Partial<TCourse>) {
+export async function updateCourse(courseId: string, data: Partial<TCourse>, dbClient: DbOrTxClient = db) {
   try {
-    const [updated] = await db
+    const [updated] = await dbClient
       .update(schema.course)
       .set({ ...data, updatedAt: new Date().toISOString() })
       .where(eq(schema.course.id, courseId))
@@ -1175,9 +1175,9 @@ export const getExploreCourses = async ({
 /**
  * Resolves the organization ID for a course via its group.
  */
-export async function getOrgIdByCourseId(courseId: string): Promise<string | null> {
+export async function getOrgIdByCourseId(courseId: string, dbClient: DbOrTxClient = db): Promise<string | null> {
   try {
-    const [row] = await db
+    const [row] = await dbClient
       .select({ orgId: schema.group.organizationId })
       .from(schema.course)
       .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
@@ -1288,10 +1288,10 @@ export async function getOrganizationByCourseId(courseId: string): Promise<{ org
 export async function updateLessonsSectionId(
   courseId: string,
   sectionId: string,
-  tx?: Parameters<Parameters<typeof db.transaction>[0]>[0]
+  dbClient?: DbOrTxClient
 ): Promise<number> {
   try {
-    const dbInstance = tx || db;
+    const dbInstance = dbClient || db;
     const updated = await dbInstance
       .update(schema.lesson)
       .set({ sectionId })
@@ -1403,17 +1403,37 @@ export async function deleteCourseSection(sectionId: string, dbClient: DbOrTxCli
  * @param courseIds Array of course IDs
  * @returns Array of { courseId, groupId } mappings
  */
-export async function getCourseGroupIds(courseIds: string[]) {
+export async function getCourseGroupIds(courseIds: string[], dbClient: DbOrTxClient = db) {
   try {
     if (courseIds.length === 0) return [];
 
-    return db
+    return dbClient
       .select({ courseId: schema.course.id, groupId: schema.course.groupId })
       .from(schema.course)
       .where(inArray(schema.course.id, courseIds));
   } catch (error) {
     console.error('getCourseGroupIds error:', error);
     throw new Error(`Failed to get course group IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/** Locks the course row so a concurrent status change can't slip past an accept in progress. */
+export async function lockCourseStatusForAccept(
+  dbClient: DbOrTxClient,
+  courseId: string
+): Promise<{ status: string; groupId: string | null } | null> {
+  try {
+    const [row] = await dbClient
+      .select({ status: schema.course.status, groupId: schema.course.groupId })
+      .from(schema.course)
+      .where(eq(schema.course.id, courseId))
+      .limit(1)
+      .for('update');
+
+    return row ?? null;
+  } catch (error) {
+    console.error('lockCourseStatusForAccept error:', error);
+    throw new Error(`Failed to lock course: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

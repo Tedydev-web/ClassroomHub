@@ -1,7 +1,7 @@
 import type { QuestionnaireState } from '$features/course/components/exercise/store';
 import { questionnaire } from '$features/course/components/exercise/store';
 
-const EXERCISE_DRAFT_STORAGE_PREFIX = 'classroomio:exercise-draft';
+const EXERCISE_DRAFT_STORAGE_PREFIX = 'classroomhub:exercise-draft';
 
 /** A draft only bridges a redirect out of the app and back, so it goes stale quickly. */
 const EXERCISE_DRAFT_MAX_AGE_MS = 60 * 60 * 1000;

@@ -55,6 +55,8 @@ export async function guardCourseTypeTransition(params: {
   courseId: string;
   currentType: string | null;
   nextType: string | null | undefined;
+  /** The caller's transaction, so the guard reads the same rows the write will change. */
+  dbClient?: DbOrTxClient;
 }): Promise<void> {
   if (!params.nextType) return;
   if (params.nextType !== 'PUBLIC') return;
@@ -69,7 +71,11 @@ export async function guardCourseTypeTransition(params: {
     );
   }
 
-  const offenders = await findNonAutoGradableQuestionsInCourse(params.courseId, AUTO_GRADABLE_QUESTION_TYPE_IDS);
+  const offenders = await findNonAutoGradableQuestionsInCourse(
+    params.courseId,
+    AUTO_GRADABLE_QUESTION_TYPE_IDS,
+    params.dbClient
+  );
   if (offenders.length === 0) return;
 
   const preview = offenders.slice(0, 5).map((item) => `"${item.questionTitle}" in "${item.exerciseTitle}"`);

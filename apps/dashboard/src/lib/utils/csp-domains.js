@@ -29,6 +29,7 @@ const saasDefaults = {
     'wss://*.classroom.tedydev.io.vn',
     'https://classroom-assets.tedydev.io.vn',
     'https://cdn.plyr.io',
+    'https://widget.userjot.com',
     'https://*.posthog.com',
     // Optional analytics origins are appended from deployment environment variables.
     'https://*.r2.cloudflarestorage.com',
@@ -45,7 +46,8 @@ const saasDefaults = {
     'https://www.google.com',
     'https://google.com',
     'https://drive.google.com',
-    'https://docs.google.com'
+    'https://docs.google.com',
+    'https://widget.userjot.com'
   ],
   fontSrc: ['https://fonts.gstatic.com', 'https://cdn.plyr.io'],
   mediaSrc: ['https:']

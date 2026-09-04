@@ -176,7 +176,11 @@
     "resend": "Resend Verification Code",
     "resend_in": "Resend verification in",
     "seconds": "seconds",
-    "snackbar_error": "error while sending code"
+    "snackbar_error": "Error while sending code",
+    "wrong_address": "Signed up with the wrong address?",
+    "switch_account": "Switch Account",
+    "confirm_link_prefix": "Click the link we sent to",
+    "confirm_link_suffix": "to confirm your account"
   },
   "email_verification": {
     "errors": {
@@ -322,7 +326,12 @@
     },
     "discard": "Discard",
     "save_changes": "Save changes",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "app_update": {
+      "title": "A new version is available.",
+      "description": "Reload to get the latest features and fixes.",
+      "reload": "Reload"
+    }
   },
   "compliance": {
     "title": "Compliance",
@@ -396,7 +405,7 @@
       "full_name": "Full Name",
       "password": "Your Password",
       "confirm_password": "Confirm Password",
-      "password_helper_message": "Password must be more than 8 characters",
+      "password_helper_message": "Password must be 8 or more characters",
       "create_account": "Create Account"
     },
     "validation": {
@@ -408,7 +417,11 @@
       "invite_only_message": "Signup is invite-only. Please use an invite link to create an account.",
       "go_to_login": "Go to Login"
     },
-    "continue_with": "Or continue With"
+    "continue_with": "Or continue With",
+    "reset_password": {
+      "heading": "New Password",
+      "description": "Enter your new password details"
+    }
   },
   "profileMenu": {
     "profile": "PROFILE",
@@ -1446,7 +1459,11 @@
         "layout": "Layout",
         "design": "Design",
         "embed": "Embed"
-      }
+      },
+      "current_version": "Current Version",
+      "active_badge": "Active",
+      "active_badge_description": "This version is currently live on your embed",
+      "upgrade_callout": "Upgrade to unlock custom themes, colors, typography, and styling."
     },
     "selection": {
       "manual": "Manual selection",
@@ -1678,7 +1695,8 @@
     "loading_state": "Taking you to the next page, please wait.",
     "org_loading_state": "Taking you to your organization...",
     "add_organization": "+ Add Organization",
-    "classroomio_home": "ClassroomIO Home"
+    "classroomio_home": "ClassroomIO Home",
+    "join_academy": "Join Academy"
   },
   "markdown_editor": {
     "write": "Write",
@@ -1950,7 +1968,12 @@
         "students": "Students",
         "published": "Published",
         "type": "Type"
-      }
+      },
+      "student_empty_title": "No Courses Yet",
+      "student_empty_description": "There are no courses available in this organization yet. Please check back later.",
+      "updated_at": "Updated {date}",
+      "lessons_count": "{count, plural, one {# lesson} other {# lessons}}",
+      "exercises_count": "{count, plural, one {# exercise} other {# exercises}}"
     },
     "new_course_modal": {
       "heading": "Create a Course",
@@ -2048,7 +2071,8 @@
       "nav_landing_page": "Landing Page",
       "nav_settings": "Settings",
       "nav_ai_assistant": "Assistant",
-      "nav_ai_tutor": "AI Tutor"
+      "nav_ai_tutor": "AI Tutor",
+      "exit_course": "Exit course"
     },
     "sidebar": {
       "back_to_course": "Back to course",
@@ -2203,7 +2227,8 @@
           "fetch_feed_fail": "Failed to fetch news feeds",
           "fetching_error": "An error occured while fetching feed",
           "fetch_replies_fail": "Failed to fetch replies"
-        }
+        },
+        "student_body_content": "No posts have been made to this class yet."
       },
       "lessons": {
         "heading": "Lessons",
@@ -2241,6 +2266,14 @@
             "watch_videos_empty": "Add an uploaded video in the Video tab to use watch enforcement.",
             "watch_videos_required": "Select at least one video when using video watch.",
             "students_only_note": "These rules apply to students only. You can preview and navigate freely while teaching."
+          },
+          "comments": {
+            "title": "Lesson comments",
+            "description": "Choose whether students can view and add comments on this lesson.",
+            "enabled": "Comments enabled",
+            "disabled": "Comments disabled",
+            "disabled_by_course": "Comments are disabled for the entire course, so this lesson setting cannot be changed.",
+            "change_course_setting": "Change this in course settings"
           }
         },
         "watch_progress": {
@@ -3243,8 +3276,20 @@
           "title": "Version history",
           "fetch_more_versions": "Fetch more versions",
           "current_version": "Current version",
-          "restore_version": "Restore this version"
-        }
+          "restore_version": "Restore this version",
+          "edit_count": "{count, plural, one {# edit} other {# edits}}",
+          "today": "Today",
+          "yesterday": "Yesterday",
+          "kind": {
+            "auto": "Autosave",
+            "manual": "Saved version",
+            "publish": "Published"
+          },
+          "by_author": "by {name}",
+          "empty": "No versions yet"
+        },
+        "student_share_your_knowledge": "No lessons have been added to this course yet. Please check back later.",
+        "student_body_content": "No lessons have been added to this course yet. Check back later."
       },
       "attendance": {
         "title": "Attendance",
@@ -3543,7 +3588,14 @@
             "disabled_notice": "This link is disabled. Enable it to allow new members to join via link.",
             "select_role": "Select a role"
           }
-        }
+        },
+        "learner": "Learner",
+        "progress": "Progress",
+        "stage": "Stage",
+        "last_login_at": "Last Login At",
+        "enrolled_at": "Enrolled At",
+        "certificate_earned": "Certificate earned",
+        "not_started": "Not started"
       },
       "certificates": {
         "title": "Certificates",
@@ -3711,7 +3763,13 @@
             "no": "No",
             "yes": "Yes",
             "percent": "Discount Percent",
-            "gift": "About Gift"
+            "gift": "About Gift",
+            "enable_paid": "Enable Paid",
+            "payment_invalid_url": "Please enter a valid URL (e.g. https://pay.example.com)",
+            "payment_helper": "Stripe, Lemon Squeezy or any payment link",
+            "payment_cost_required": "Paid courses must have a cost greater than 0",
+            "percentage_helper": "In Percentage %",
+            "gift_on_completion": "Gift on Completion"
           }
         },
         "upload_widget": {
@@ -3885,8 +3943,14 @@
         "delete_text": "Delete this course,this action cannot be undone",
         "save": "Save Changes",
         "go_to_completion_deadline": "Go to Completion Deadline",
-        "completion_deadline_label": "Course completion deadline",
-        "completion_deadline_helper": "Students must meet the completion percentage before this datetime (local time). Leave empty for no deadline."
+        "completion_deadline_label": "Course Completion Deadline",
+        "completion_deadline_helper": "Students must meet the completion percentage before this datetime (local time). Leave empty for no deadline.",
+        "comments": {
+          "title": "Lesson comments",
+          "description": "Allow students to view and add comments across lessons in this course. Individual lessons can still disable comments.",
+          "enabled": "Comments enabled for this course",
+          "disabled": "Comments disabled for this course"
+        }
       }
     },
     "not_permitted": {
@@ -4582,7 +4646,8 @@
       "success": {
         "complete_marked": "Marked as complete",
         "complete_download": "Download Complete",
-        "version_restored": "Version restored sucessfully"
+        "version_restored": "Version restored sucessfully",
+        "complete_unmarked": "Marked as incomplete"
       },
       "error": {
         "try_later": "Something's not right - Please try later",
@@ -4676,8 +4741,11 @@
         "accepted": "This invite has already been used.",
         "invalid": "This invite link is not valid.",
         "joined": "Joined organization",
-        "join_failed": "Failed to join organization"
-      }
+        "join_failed": "Failed to join organization",
+        "try_again": "Try again"
+      },
+      "not_found": "This invite is no longer available.",
+      "loading": "Loading invite..."
     },
     "link": {
       "page_title": "Join {orgName} on ClassroomHub",
@@ -4760,12 +4828,12 @@
         "invalid_email": "Invalid email address"
       },
       "password": {
-        "min_char": "Must be 6 or more characters long"
+        "min_char": "Must be 8 or more characters long"
       }
     },
     "reset": {
       "password": {
-        "min_char": "Must be 6 or more characters long"
+        "min_char": "Must be 8 or more characters long"
       }
     },
     "onboarding": {
@@ -5899,5 +5967,61 @@
     "setup_failed_description": "We encountered an unexpected error. Please reload the page or contact us for support.",
     "reload_page": "Reload Page",
     "contact_us": "Contact Us"
+  },
+  "lms": {
+    "view_landing_page": "View landing page"
+  },
+  "invite_link": {
+    "tab_label": "Invite link",
+    "title": "Invite link",
+    "description": "Anyone with this link can join. Share it instead of entering emails one by one.",
+    "course_description": "Anyone with this link can join this course as a student. Share it instead of entering emails one by one.",
+    "cohort_description": "Anyone with this link can join this cohort and every course in it. Share it instead of entering emails one by one.",
+    "generate": "Create invite link",
+    "copy": "Copy invite link",
+    "copied": "Invite link copied",
+    "copy_failed": "Could not copy the invite link",
+    "toggle_label": "Link is active",
+    "disabled_notice": "This link is disabled. Nobody can join with it until you turn it back on.",
+    "join_count": "{count} people have joined with this link",
+    "load_failed": "Could not load the invite link",
+    "generate_failed": "Could not create the invite link",
+    "toggle_failed": "Could not update the invite link",
+    "join": {
+      "page_title": "Join {resourceName} on ClassroomIO",
+      "invitation": "You've been invited to join {resourceName} at {orgName}.",
+      "course_button": "Join course",
+      "cohort_button": "Join cohort",
+      "disabled": "This invite link has been disabled.",
+      "closed": "This is no longer accepting new members.",
+      "succeeded": "You have joined",
+      "failed": "Could not join. Please try again."
+    },
+    "snackbar": {
+      "enabled": "Invite link enabled",
+      "disabled": "Invite link disabled"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty_title": "No Notifications",
+    "empty_description": "You're all caught up. New notifications will appear here.",
+    "refresh": "Refresh",
+    "pending_invite": {
+      "heading": "Organization invite",
+      "body": "{orgName} invited you to join as {role}.",
+      "action": "View invite"
+    },
+    "latest": "Latest",
+    "only_show_unread": "Only show unread",
+    "unread": "Unread",
+    "more_options": "More options",
+    "give_feedback": "Give feedback",
+    "tabs": {
+      "direct": "Direct",
+      "watching": "Watching"
+    },
+    "watching_empty_title": "Nothing to watch yet",
+    "watching_empty_description": "Updates on items you follow will show up here."
   }
 }

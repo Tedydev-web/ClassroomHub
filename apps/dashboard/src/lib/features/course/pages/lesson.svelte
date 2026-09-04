@@ -10,7 +10,7 @@
   import { fade } from 'svelte/transition';
   import Save from '@lucide/svelte/icons/save';
   import Pencil from '@lucide/svelte/icons/pencil';
-  // import HistoryIcon from '@lucide/svelte/icons/history';
+  import HistoryIcon from '@lucide/svelte/icons/history';
   import VideoIcon from '@lucide/svelte/icons/video';
   import SettingsIcon from '@lucide/svelte/icons/settings';
 
@@ -56,6 +56,7 @@
     LessonMaterialActions
   } from '$features/course/components/lesson';
 
+  import type { TLessonVersionIntentRequest } from '@cio/utils/validation/lesson';
   import type { TLocale } from '@cio/db/types';
   import { orderedTabs, SETTINGS_TAB_VALUE, tabs as materialTabs } from '$features/course/components/lesson/constants';
   import { getViewModeComponents } from '$features/course/components/lesson/utils';
@@ -98,6 +99,11 @@
     )
   );
   const lessonTitle = $derived(currentLessonContentItem?.title || lessonApi.lesson?.title || 'Lesson');
+  const showLessonComments = $derived(
+    Boolean($currentOrg.customization?.apps?.comments) &&
+      (courseApi.course?.metadata?.commentsEnabled ?? true) &&
+      (lessonApi.lesson?.commentsEnabled ?? true)
+  );
   const contentLockReason = $derived(getStudentContentLockReason(courseApi.course, lessonId, ContentType.Lesson));
   const isStudentLessonStateReady = $derived.by(() => {
     if (!$isCourseLearnerView) {
@@ -141,7 +147,7 @@
     if (mode === MODES.edit && lessonApi.isDirty) {
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = undefined;
-      saveLesson();
+      queueSave('manual');
     }
     hasUnsavedChanges = false;
     setModeQueryParam(mode === MODES.edit ? MODES.view : MODES.edit);
@@ -225,6 +231,16 @@
 
   let timeoutId: NodeJS.Timeout | undefined;
 
+  // Saves run one at a time: clearing the debounce only cancels a save that has
+  // not started, so an in-flight autosave could still land after a manual one.
+  let saveQueue: Promise<unknown> = Promise.resolve();
+
+  function queueSave(versionIntent: TLessonVersionIntentRequest) {
+    saveQueue = saveQueue.catch(() => undefined).then(() => saveLesson(versionIntent));
+
+    return saveQueue;
+  }
+
   let isLoading = writable(false);
 
   function callAI(_type = '') {}
@@ -234,13 +250,17 @@
     return tabValue;
   };
 
-  async function saveOrUpdateTranslation(locale: TLocale, lessonId: string) {
+  async function saveOrUpdateTranslation(
+    locale: TLocale,
+    lessonId: string,
+    versionIntent: TLessonVersionIntentRequest
+  ) {
     const content = lessonApi.translations[lessonId]?.[locale] || '';
 
     if (!courseApi.course?.id) return;
 
     // Use API to upsert lesson language (creates if doesn't exist, updates if exists)
-    await lessonApi.upsertLanguage(courseApi.course.id, lessonId, locale, content);
+    await lessonApi.upsertLanguage(courseApi.course.id, lessonId, locale, content, versionIntent);
   }
 
   function hasLessonNoteContent(targetLessonId: string) {
@@ -265,7 +285,7 @@
     });
   }
 
-  async function saveLesson() {
+  async function saveLesson(versionIntent: TLessonVersionIntentRequest = 'auto') {
     if (!lessonApi.lesson) return false;
 
     const [isLessonUpdated] = await Promise.all([
@@ -274,12 +294,13 @@
         isUnlocked: lessonApi.lesson.isUnlocked ?? undefined,
         completionPolicy: lessonApi.lesson.completionPolicy ?? undefined,
         videoWatchThreshold: lessonApi.lesson.videoWatchThreshold ?? undefined,
+        commentsEnabled: lessonApi.lesson.commentsEnabled ?? true,
         slideUrl: lessonApi.lesson.slideUrl || undefined,
         videos: lessonApi.lesson.videos || [],
         documents: lessonApi.lesson.documents || [],
         slug: isPublicCourse && lessonApi.lesson.slug ? lessonApi.lesson.slug : undefined
       }),
-      saveOrUpdateTranslation(lessonApi.currentLocale, lessonId)
+      saveOrUpdateTranslation(lessonApi.currentLocale, lessonId, versionIntent)
     ]);
 
     if (isLessonUpdated) {
@@ -321,7 +342,7 @@
       if (prevMode === MODES.edit) {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = undefined;
-        saveLesson();
+        queueSave('manual');
       }
     });
   }
@@ -333,8 +354,8 @@
     if (timeoutId) clearTimeout(timeoutId);
 
     untrack(() => {
-      timeoutId = setTimeout(async () => {
-        await saveLesson();
+      timeoutId = setTimeout(() => {
+        void queueSave('auto');
       }, 2000);
     });
   }
@@ -454,14 +475,6 @@
 
       <RoleBasedSecurity allowedRoles={[1, 2]}>
         <div class="flex flex-row items-center gap-2 lg:flex">
-          <!--
-          {#if mode === MODES.edit && window.innerWidth >= 1024}
-            <IconButton onclick={() => (isVersionDrawerOpen = true)}>
-              <HistoryIcon size={20} />
-            </IconButton>
-          {/if}
-          -->
-
           {#if mode === MODES.edit}
             <span class="ui:text-muted-foreground text-sm" aria-live="polite">
               {#if lessonApi.isSaving}
@@ -479,6 +492,16 @@
             {/if}
           </IconButton>
         </div>
+
+        <IconButton
+          class="hidden lg:inline-flex"
+          onclick={() => (isVersionDrawerOpen = true)}
+          aria-label={$t('course.navItem.lessons.version_history.title')}
+          tooltip={$t('course.navItem.lessons.version_history.title')}
+          tooltipSide="bottom"
+        >
+          <HistoryIcon size={20} />
+        </IconButton>
 
         <RefreshPageData onRefresh={() => lessonApi.get(courseId, lessonId)} />
       </RoleBasedSecurity>
@@ -524,7 +547,7 @@
                 <Component {mode} {lessonId} {courseId} />
               {/each}
 
-              {#if $currentOrg.customization?.apps?.comments}
+              {#if showLessonComments}
                 <hr class="my-2" />
 
                 <Comments {lessonId} />
@@ -611,7 +634,7 @@
               <Component {mode} {lessonId} {courseId} />
             {/each}
 
-            {#if $currentOrg.customization?.apps?.comments}
+            {#if showLessonComments}
               <hr class="my-2" />
 
               <Comments {lessonId} />
@@ -642,7 +665,7 @@
 
 <UnsavedChanges bind:hasUnsavedChanges />
 
-{#if isVersionDrawerOpen && window.innerWidth >= 1024}
+{#if isVersionDrawerOpen}
   <LessonVersionHistory
     open={isVersionDrawerOpen}
     on:close={() => (isVersionDrawerOpen = false)}

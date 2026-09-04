@@ -104,7 +104,7 @@
 
 <Story name="Basic Plan">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={BASIC_PLAN}
         planName="BASIC"
@@ -119,7 +119,7 @@
 
 <Story name="Early Adopter Plan (Popular)">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={EARLY_ADOPTER_PLAN}
         planName="EARLY_ADOPTER"
@@ -134,7 +134,7 @@
 
 <Story name="Enterprise Plan">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={ENTERPRISE_PLAN}
         planName="ENTERPRISE"
@@ -149,7 +149,7 @@
 
 <Story name="Monthly Pricing">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={EARLY_ADOPTER_PLAN}
         planName="EARLY_ADOPTER"
@@ -164,7 +164,7 @@
 
 <Story name="Yearly Pricing">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={EARLY_ADOPTER_PLAN}
         planName="EARLY_ADOPTER"
@@ -179,7 +179,7 @@
 
 <Story name="Loading State">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={EARLY_ADOPTER_PLAN}
         planName="EARLY_ADOPTER"
@@ -194,7 +194,7 @@
 
 <Story name="Custom Labels">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={EARLY_ADOPTER_PLAN}
         planName="EARLY_ADOPTER"
@@ -211,7 +211,7 @@
 
 <Story name="All Plans Comparison">
   {#snippet template()}
-    <div class="ui:grid ui:grid-cols-1 ui:gap-6 md:ui:grid-cols-3 ui:p-4">
+    <div class="grid grid-cols-1 gap-6 p-4 md:grid-cols-3">
       <PricingCard
         plan={BASIC_PLAN}
         planName="BASIC"
@@ -242,10 +242,10 @@
 
 <Story name="Monthly vs Yearly Toggle">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-6 ui:p-4">
-      <div class="ui:flex ui:items-center ui:justify-center ui:gap-4">
+    <div class="flex flex-col gap-6 p-4">
+      <div class="flex items-center justify-center gap-4">
         <button
-          class="ui:rounded-md ui:bg-primary ui:px-4 ui:py-2 ui:text-primary-foreground ui:hover:bg-primary/90"
+          class="ui:bg-primary ui:text-primary-foreground ui:hover:bg-primary/90 rounded-md px-4 py-2"
           onclick={() => {
             const isYearly = $state.snapshot(isYearlyPlan);
             isYearlyPlan = !isYearly;
@@ -253,11 +253,11 @@
         >
           Toggle to {isYearlyPlan ? 'Monthly' : 'Yearly'}
         </button>
-        <span class="ui:text-sm ui:text-muted-foreground">
+        <span class="ui:text-muted-foreground text-sm">
           Current: {isYearlyPlan ? 'Yearly' : 'Monthly'}
         </span>
       </div>
-      <div class="ui:grid ui:grid-cols-1 ui:gap-6 md:ui:grid-cols-3">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <PricingCard
           plan={BASIC_PLAN}
           planName="BASIC"
@@ -289,7 +289,7 @@
 
 <Story name="Website Version">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={BASIC_PLAN}
         planName="BASIC"
@@ -300,16 +300,14 @@
         ctaLabel="Signup Now"
         isDisabled={false}
       />
-      <p class="ui:text-sm ui:text-muted-foreground ui:text-center">
-        Website version uses "Signup Now" and is enabled.
-      </p>
+      <p class="ui:text-muted-foreground text-center text-sm">Website version uses "Signup Now" and is enabled.</p>
     </div>
   {/snippet}
 </Story>
 
 <Story name="Disabled CTA">
   {#snippet template()}
-    <div class="ui:flex ui:flex-col ui:gap-4 ui:w-96">
+    <div class="flex w-96 flex-col gap-4">
       <PricingCard
         plan={BASIC_PLAN}
         planName="BASIC"
@@ -318,7 +316,7 @@
         {isLoadingPlan}
         {handleClick}
       />
-      <p class="ui:text-sm ui:text-muted-foreground ui:text-center">The CTA button is disabled (current plan)</p>
+      <p class="ui:text-muted-foreground text-center text-sm">The CTA button is disabled (current plan)</p>
     </div>
   {/snippet}
 </Story>

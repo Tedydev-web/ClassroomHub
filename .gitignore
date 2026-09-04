@@ -7,6 +7,9 @@ node_modules
 
 # testing
 coverage
+e2e/test-results/
+e2e/playwright-report/
+.github/demo-runs/pr-*.spec.ts
 
 # next.js
 .next/
@@ -65,6 +68,7 @@ company/
 # Claude Code local artifacts
 .claude/skills
 .claude/scheduled_tasks.lock
+.claude/settings.local.json
 
 # Local db-agent playground (not committed)
 apps/db-agent
@@ -124,3 +128,5 @@ fixtures/exams/large/
 # Upstream's UI CSS output is generated. The fork keeps its checked-in artifact
 # because the self-hosted build path consumes it; Git continues tracking it.
 output.css
+
+/reports

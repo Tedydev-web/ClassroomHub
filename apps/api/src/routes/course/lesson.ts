@@ -42,7 +42,7 @@ import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { notifyCourseSessionUpdateService } from '@api/services/course/notify-session';
 import { generateLessonPdf } from '@api/utils/lesson';
-import { getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
+import { ensureCourseGroupMemberId } from '@cio/core/services/course/course';
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { emitWebhookEvent } from '@api/services/webhook';
@@ -193,7 +193,7 @@ export const lessonRouter = new Hono()
         const { lessonId } = c.req.valid('param');
         const { comment } = c.req.valid('json');
 
-        const groupMemberId = await getGroupMemberIdByCourseAndProfile(courseId, user.id);
+        const groupMemberId = await ensureCourseGroupMemberId(courseId, user.id);
         if (!groupMemberId) {
           return c.json({ success: false, error: 'User is not a member of this course' }, 403);
         }
