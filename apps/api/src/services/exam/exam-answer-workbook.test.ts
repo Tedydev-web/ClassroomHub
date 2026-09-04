@@ -89,8 +89,10 @@ describe('buildAnswerWorkbookSheets', () => {
       ['Số báo danh', '07'],
       ['Điểm', '1/3'],
       ['Thời gian làm', '33 phút'],
-      ['Bắt đầu', '04/09 08:00'],
-      ['Nộp lúc', '04/09 08:33'],
+      // ISO order, year included: a stamp read next term must not have to guess which
+      // September it was, and a text column sorts correctly this way.
+      ['Bắt đầu', '2026-09-04 08:00'],
+      ['Nộp lúc', '2026-09-04 08:33'],
       ['Rời bài thi', 2]
     ]);
 

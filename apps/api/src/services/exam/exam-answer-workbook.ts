@@ -62,6 +62,7 @@ function clockOf(value: string | null): string {
   // us with the runtime's data.
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -71,7 +72,9 @@ function clockOf(value: string | null): string {
 
   const at = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
 
-  return `${at('day')}/${at('month')} ${at('hour')}:${at('minute')}`;
+  // ISO 8601 order, and the year included: a file read next term must not have to guess
+  // which September "03/09" was, and a column that sorts as text sorts correctly this way.
+  return `${at('year')}-${at('month')}-${at('day')} ${at('hour')}:${at('minute')}`;
 }
 
 /** Whole minutes between starting and handing in, or empty while a paper is still open. */
@@ -389,9 +392,41 @@ function studentSheet(
  * class sheet in the same file would hand them everybody else's marks. More than one gets
  * the class sheet first, then a sheet each.
  */
+/**
+ * The wording of every exported file, in English.
+ *
+ * An export leaves the system: it is mailed to a parent, attached to a moderation report,
+ * opened by somebody who does not have an account here and whose spreadsheet is not in the
+ * teacher's language. One wording for every file, chosen because it is the one an
+ * international reader can be expected to have, beats a file whose column headings depend
+ * on which language the screen that asked for it happened to be in.
+ */
+export const EXPORT_LABELS: WorkbookLabels = {
+  paper: 'Paper',
+  classSheet: 'Class',
+  student: 'Candidate',
+  className: 'Class',
+  score: 'Score',
+  correctCount: 'Correct',
+  question: 'Q',
+  key: 'Answer key',
+  theirAnswer: 'Chosen',
+  outcome: 'Result',
+  right: 'Correct',
+  wrong: 'Incorrect',
+  blank: 'Blank',
+  generatedAt: 'Generated',
+  candidateNumber: 'Candidate no.',
+  timeTaken: 'Time taken',
+  startedAt: 'Started',
+  submittedAt: 'Submitted',
+  leaves: 'Times left',
+  minutes: 'min'
+};
+
 export function buildAnswerWorkbookSheets(
   matrix: AnswerMatrix,
-  labels: WorkbookLabels,
+  labels: WorkbookLabels = EXPORT_LABELS,
   title: string,
   generatedAt: string
 ): Sheet[] {

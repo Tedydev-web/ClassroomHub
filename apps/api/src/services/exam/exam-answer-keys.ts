@@ -5,7 +5,7 @@ import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@
 import { applyCorrections, type ExamCorrection } from './exam-grading';
 import { buildAnswerMatrix, type MatrixAttempt } from './exam-answer-matrix';
 import { buildAnswerDistribution } from './exam-answer-distribution';
-import { buildAnswerWorkbookSheets, type WorkbookLabels } from './exam-answer-workbook';
+import { buildAnswerWorkbookSheets, EXPORT_LABELS, type WorkbookLabels } from './exam-answer-workbook';
 import { buildXlsx } from './exam-workbook-xlsx';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 import { requireExamsEnabled } from './exam';
@@ -250,7 +250,9 @@ export async function buildExamAnswerDistributionService(examId: string) {
 export async function buildExamAnswerWorkbookService(
   examId: string,
   attemptIds: string[],
-  labels: WorkbookLabels,
+  // The wording no longer travels with the request: an export is in English whoever asked
+  // for it, so the file does not change shape with the language of the screen.
+  labels: WorkbookLabels = EXPORT_LABELS,
   now = new Date()
 ) {
   const exam = await getExamById(examId);
@@ -267,7 +269,7 @@ export async function buildExamAnswerWorkbookService(
 
 /** The moment the file was made, in both the shapes it is needed in. */
 function examWorkbookStamp(now: Date) {
-  const parts = new Intl.DateTimeFormat('vi-VN', {
+  const parts = new Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -280,7 +282,7 @@ function examWorkbookStamp(now: Date) {
   const at = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
 
   return {
-    readable: `${at('hour')}:${at('minute')} ${at('day')}/${at('month')}/${at('year')}`,
+    readable: `${at('year')}-${at('month')}-${at('day')} ${at('hour')}:${at('minute')}`,
     compact: `${at('year')}${at('month')}${at('day')}-${at('hour')}${at('minute')}`
   };
 }

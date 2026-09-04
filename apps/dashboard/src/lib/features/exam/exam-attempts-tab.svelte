@@ -196,9 +196,9 @@
    * The class's answers, as a workbook a teacher takes into the room.
    *
    * Built and formatted on the server: the file is a zip of XML, and the browser has no
-   * reason to carry a spreadsheet writer for one screen. The wording travels with the
-   * request, because the sheet is read by a teacher and their class and the server has no
-   * idea which language that is.
+   * reason to carry a spreadsheet writer for one screen. The wording is the server's and is
+   * always English — an export is mailed to a parent and opened by people who never see this
+   * screen, so the file must not change shape with the language the screen was in.
    *
    * The name comes back with the file rather than being composed here — the server knows the
    * paper's title, which this page does not, and a folder full of files named after the
@@ -212,34 +212,7 @@
     try {
       const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
         param: { examId },
-        json: {
-          attemptIds,
-          labels: {
-            paper: $t('exam.results.workbook_paper'),
-            classSheet: $t('exam.results.workbook_class_sheet'),
-            student: $t('exam.results.workbook_student'),
-            className: $t('exam.entry.class_name'),
-            score: $t('exam.results.score_column'),
-            correctCount: $t('exam.results.correct_column'),
-            question: $t('exam.results.question_short'),
-            key: $t('exam.results.workbook_key'),
-            theirAnswer: $t('exam.results.workbook_their_answer'),
-            outcome: $t('exam.results.workbook_outcome'),
-            right: $t('exam.results.workbook_right'),
-            wrong: $t('exam.results.workbook_wrong'),
-            blank: $t('exam.results.workbook_blank'),
-            generatedAt: $t('exam.results.workbook_generated_at'),
-            // The invigilation half of a sitting: who, when, and how often they left. The
-            // sheet omits any field it is not given a label for, so this list is also what
-            // decides which columns the workbook carries.
-            candidateNumber: $t('exam.entry.candidate_number'),
-            timeTaken: $t('exam.results.time_taken_column'),
-            startedAt: $t('exam.results.started_at_column'),
-            submittedAt: $t('exam.results.submitted_at_column'),
-            leaves: $t('exam.results.leaves_column'),
-            minutes: $t('exam.results.workbook_minutes')
-          }
-        }
+        json: { attemptIds }
       });
 
       if (!response.ok) {
@@ -247,7 +220,7 @@
         return;
       }
 
-      downloadFile(await response.blob(), fileNameFromResponse(response, $t('exam.results.answers_file')));
+      downloadFile(await response.blob(), fileNameFromResponse(response, 'answers.xlsx'));
       snackbar.success($t('exam.results.exported'));
     } catch {
       snackbar.error($t('exam.results.export_failed'));

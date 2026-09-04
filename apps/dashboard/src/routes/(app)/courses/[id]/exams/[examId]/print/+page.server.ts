@@ -15,6 +15,29 @@ import { safeServerApi } from '$lib/utils/services/api/server';
  * server-side writer would have had to carry and be checked glyph by glyph. What the page
  * owes in return is print CSS honest enough that the dialog's preview is the finished sheet.
  */
+/**
+ * The moment the sheet was printed, in ISO 8601 order.
+ *
+ * Same shape as the workbook's stamps and the sheet's own clocks: year first, and a space
+ * between the date and the time rather than the two run together. A sheet found in a filing
+ * cabinet next term must not have to work out which September it came from.
+ */
+function printedNow(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(now);
+
+  const at = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+
+  return `${at('year')}-${at('month')}-${at('day')} ${at('hour')}:${at('minute')}`;
+}
+
 export const load = async ({ params, url, cookies, locals }) => {
   const headers = getApiHeaders(cookies, '');
 
@@ -90,14 +113,7 @@ export const load = async ({ params, url, cookies, locals }) => {
       organizationLogo: context?.organizationLogo ?? null,
       courseTitle: context?.courseTitle ?? null,
       printedBy: locals.user?.name ?? locals.user?.email ?? null,
-      printedAt: new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(new Date())
+      printedAt: printedNow()
     },
     questions: matrix.questions.map((question) => ({
       position: question.position,

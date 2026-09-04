@@ -319,18 +319,8 @@ export const examRouter = new Hono()
         ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
         : [];
 
-      /**
-       * The wording travels with the request.
-       *
-       * The file is read by a teacher and their class, in their language, and the server has
-       * no idea which that is. Sending the labels is what keeps the sheet in the same
-       * language as the screen it was asked for from.
-       */
-      const { file, fileName } = await buildExamAnswerWorkbookService(
-        c.req.param('examId'),
-        attemptIds,
-        body?.labels ?? {}
-      );
+      // The wording is the server's: an export is in English whoever asked for it.
+      const { file, fileName } = await buildExamAnswerWorkbookService(c.req.param('examId'), attemptIds);
 
       return new Response(new Uint8Array(file), {
         headers: {
