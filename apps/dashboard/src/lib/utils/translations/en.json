@@ -5593,7 +5593,7 @@
       "workbook_class_sheet": "Class",
       "workbook_student": "Student",
       "workbook_key": "Correct answer",
-      "workbook_their_answer": "Their answer",
+      "workbook_their_answer": "Chosen",
       "workbook_outcome": "Result",
       "workbook_right": "Right",
       "workbook_wrong": "Wrong",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildAnswerWorkbookSheets, type WorkbookLabels } from './exam-answer-workbook';
+import { blockLayout, buildAnswerWorkbookSheets, type WorkbookLabels } from './exam-answer-workbook';
 import { buildXlsx } from './exam-workbook-xlsx';
 
 const LABELS: WorkbookLabels = {
@@ -106,6 +106,101 @@ describe('buildAnswerWorkbookSheets', () => {
   });
 });
 
+describe('blockLayout', () => {
+  it('puts a forty-question paper on one page as two blocks of twenty', () => {
+    // The shape the request came in as: forty questions listed straight down is a column
+    // with two thirds of an A4 page empty beside it, printed over two sheets.
+    expect(blockLayout(40)).toEqual({ blocks: 2, perBlock: 20 });
+  });
+
+  it('keeps a short paper as one block', () => {
+    expect(blockLayout(12)).toEqual({ blocks: 1, perBlock: 12 });
+    expect(blockLayout(20)).toEqual({ blocks: 1, perBlock: 20 });
+  });
+
+  it('evens the blocks out rather than leaving the last one short', () => {
+    // Fifty as 20/20/10 prints two full columns and a stub; 17/17/16 reads as one table.
+    expect(blockLayout(50)).toEqual({ blocks: 3, perBlock: 17 });
+  });
+
+  it('answers for a paper with no questions instead of dividing by zero', () => {
+    expect(blockLayout(0)).toEqual({ blocks: 1, perBlock: 1 });
+  });
+});
+
+describe('printed layout', () => {
+  const many = {
+    questions: Array.from({ length: 40 }, (_, index) => ({ position: index + 1, key: 'A' })),
+    rows: [
+      candidate(
+        'Bùi Thị Bảo Yến',
+        Array.from({ length: 40 }, () => 'A'),
+        40
+      )
+    ]
+  };
+
+  it('lays a long paper out as blocks side by side, with a gap between them', () => {
+    const [sheet] = buildAnswerWorkbookSheets(many as never, LABELS, 'TEST 1', '16:33 01/09/2026');
+    const header = sheet.rows[3];
+
+    // Four columns, a spacer, four more.
+    expect(header).toHaveLength(9);
+    expect(header[0].value).toBe('Câu');
+    expect(header[4].value).toBeNull();
+    expect(header[5].value).toBe('Câu');
+
+    // Twenty lines, not forty: question 21 sits beside question 1.
+    const answerRows = sheet.rows.slice(4);
+    expect(answerRows).toHaveLength(20);
+    expect(answerRows[0][0].value).toBe(1);
+    expect(answerRows[0][5].value).toBe(21);
+    expect(answerRows.at(-1)![0].value).toBe(20);
+    expect(answerRows.at(-1)![5].value).toBe(40);
+  });
+
+  it('declares A4 and how each sheet is meant to fit', () => {
+    const matrix = { ...MATRIX, rows: [MATRIX.rows[0], candidate('Trần Văn B', ['A', 'B', 'C'], 3)] };
+    const [classSheet, studentSheet] = buildAnswerWorkbookSheets(matrix as never, LABELS, 'TEST 1', '16:33 01/09/2026');
+
+    // The class list is wide and long: one page across, as many down as it takes.
+    expect(classSheet.page).toEqual({
+      orientation: 'landscape',
+      fitToWidth: 1,
+      fitToHeight: 0,
+      repeatHeaderRows: 5
+    });
+    // A candidate's own paper is one page, both ways.
+    expect(studentSheet.page).toEqual({
+      orientation: 'portrait',
+      fitToWidth: 1,
+      fitToHeight: 1,
+      repeatHeaderRows: 4
+    });
+  });
+
+  it('pads the last block so the table keeps its shape', () => {
+    // Seven questions across two blocks is four and three; the missing fourth line of the
+    // second block is blank cells, not a row that stops halfway.
+    const seven = {
+      questions: Array.from({ length: 21 }, (_, index) => ({ position: index + 1, key: 'A' })),
+      rows: [
+        candidate(
+          'A',
+          Array.from({ length: 21 }, () => 'A'),
+          21
+        )
+      ]
+    };
+    const [sheet] = buildAnswerWorkbookSheets(seven as never, LABELS, 'TEST 1', '16:33 01/09/2026');
+    const answerRows = sheet.rows.slice(4);
+
+    expect(answerRows).toHaveLength(11);
+    expect(answerRows.at(-1)![0].value).toBe(11);
+    expect(answerRows.at(-1)![5].value).toBeNull();
+  });
+});
+
 describe('buildXlsx', () => {
   it('writes a workbook whose parts all resolve', async () => {
     /**
@@ -142,5 +237,13 @@ describe('buildXlsx', () => {
 
     // The title carries characters XML would otherwise choke on.
     expect(sheetXml).toContain('&lt;&amp;&gt;');
+
+    // The page setup a printer needs, in the order the schema requires it.
+    expect(sheetXml).toContain('<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>');
+    expect(sheetXml).toContain('paperSize="9"');
+    expect(sheetXml.indexOf('<sheetData>')).toBeLessThan(sheetXml.indexOf('<pageSetup '));
+
+    const workbookXml = await zip.file('xl/workbook.xml')!.async('string');
+    expect(workbookXml).toContain('_xlnm.Print_Titles');
   });
 });

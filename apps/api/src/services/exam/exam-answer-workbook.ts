@@ -90,17 +90,42 @@ function classSheet(matrix: AnswerMatrix, labels: WorkbookLabels, title: string,
     // The header rows stay put: a paper of forty columns is scrolled sideways, and a letter
     // with no question number above it says nothing.
     frozenRows: 5,
-    columnWidths: [28, 10, 10, 10, ...questionColumns.map(() => 7)],
+    columnWidths: [28, 10, 10, 10, ...questionColumns.map(() => 5)],
+    // Landscape and squeezed to one page wide: this sheet is as wide as the paper is long,
+    // and a class list that prints its last eight questions on a separate sheet is a sheet
+    // nobody can read across.
+    page: { orientation: 'landscape', fitToWidth: 1, fitToHeight: 0, repeatHeaderRows: 5 },
     rows
   };
 }
 
 /**
- * One candidate's paper, the sheet they are handed.
+ * How many questions go in one printed column, and how many columns that makes.
  *
- * A row per question: what they put, what was right, and whether it counted. Long enough to
- * read down and short enough to talk through, which is what going through a paper in a room
- * actually looks like.
+ * Forty questions in a single list is a column of forty rows down the left of an A4 page
+ * with two thirds of the sheet empty beside it, and it prints across two pages for no
+ * reason. Twenty to a block puts a forty-question paper on one page as two blocks side by
+ * side, which is the shape a marked paper is actually handed over in.
+ *
+ * The blocks are evened out rather than filled to twenty and then left short: fifty
+ * questions become three blocks of seventeen, not twenty, twenty and ten.
+ */
+const MAX_QUESTIONS_PER_BLOCK = 20;
+
+export function blockLayout(questionCount: number): { blocks: number; perBlock: number } {
+  if (questionCount <= 0) return { blocks: 1, perBlock: 1 };
+
+  const blocks = Math.ceil(questionCount / MAX_QUESTIONS_PER_BLOCK);
+
+  return { blocks, perBlock: Math.ceil(questionCount / blocks) };
+}
+
+/**
+ * One candidate's paper, the sheet they are handed — and printed.
+ *
+ * A row per question: what they put, what was right, and whether it counted. Laid out in
+ * blocks side by side so the whole paper fits one A4 page, because this sheet exists to be
+ * printed and gone through in a room, not scrolled.
  */
 function studentSheet(
   row: AnswerMatrix['rows'][number],
@@ -110,6 +135,40 @@ function studentSheet(
   index: number
 ): Sheet {
   const name = displayNameOf(row, `${labels.student} ${index + 1}`);
+
+  const { blocks, perBlock } = blockLayout(matrix.questions.length);
+
+  const header: Cell[] = [
+    { value: labels.question.trim(), style: 'header' },
+    { value: labels.theirAnswer, style: 'header' },
+    { value: labels.key, style: 'header' },
+    { value: labels.outcome, style: 'header' }
+  ];
+
+  /** One question as the four cells that describe it, or four blanks where a block runs out. */
+  function questionCells(position: number): Cell[] {
+    const question = matrix.questions[position];
+    if (!question) return [{ value: null }, { value: null }, { value: null }, { value: null }];
+
+    const chosen = row.chosen[position] ?? null;
+    const isRight = chosen !== null && chosen === question.key;
+    const style = chosen === null ? 'blank' : isRight ? 'correct' : 'incorrect';
+
+    return [
+      { value: question.position, style: 'value' },
+      { value: chosen ?? '', style },
+      { value: question.key, style: 'value' },
+      { value: chosen === null ? labels.blank : isRight ? labels.right : labels.wrong, style }
+    ];
+  }
+
+  const headerRow: Cell[] = [];
+  for (let block = 0; block < blocks; block += 1) {
+    // A blank column between blocks, so two tables read as two tables rather than as one
+    // eight-column table with a repeated heading in the middle.
+    if (block > 0) headerRow.push({ value: null });
+    headerRow.push(...header);
+  }
 
   const rows: Cell[][] = [
     [{ value: name, style: 'title' }],
@@ -122,31 +181,34 @@ function studentSheet(
       }
     ],
     [],
-    [
-      { value: labels.question.trim(), style: 'header' },
-      { value: labels.theirAnswer, style: 'header' },
-      { value: labels.key, style: 'header' },
-      { value: labels.outcome, style: 'header' }
-    ]
+    headerRow
   ];
 
-  for (const [position, question] of matrix.questions.entries()) {
-    const chosen = row.chosen[position];
-    const isRight = chosen !== null && chosen === question.key;
-    const style = chosen === null ? 'blank' : isRight ? 'correct' : 'incorrect';
+  for (let line = 0; line < perBlock; line += 1) {
+    const cells: Cell[] = [];
 
-    rows.push([
-      { value: question.position, style: 'value' },
-      { value: chosen ?? '', style },
-      { value: question.key, style: 'value' },
-      { value: chosen === null ? labels.blank : isRight ? labels.right : labels.wrong, style }
-    ]);
+    for (let block = 0; block < blocks; block += 1) {
+      if (block > 0) cells.push({ value: null });
+      cells.push(...questionCells(block * perBlock + line));
+    }
+
+    rows.push(cells);
+  }
+
+  const blockWidths = [6, 10, 10, 11];
+  const columnWidths: number[] = [];
+  for (let block = 0; block < blocks; block += 1) {
+    if (block > 0) columnWidths.push(2);
+    columnWidths.push(...blockWidths);
   }
 
   return {
     name: toSheetName(name, `${labels.student} ${index + 1}`),
     frozenRows: 4,
-    columnWidths: [10, 16, 16, 14],
+    columnWidths,
+    // Portrait, because a marked paper is filed and stapled like every other sheet in the
+    // pile. The blocks are what make it fit; the fit is not left to shrinking the type.
+    page: { orientation: 'portrait', fitToWidth: 1, fitToHeight: 1, repeatHeaderRows: 4 },
     rows
   };
 }

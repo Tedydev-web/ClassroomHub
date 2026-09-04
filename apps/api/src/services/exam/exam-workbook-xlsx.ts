@@ -42,12 +42,31 @@ const STYLE_INDEX: Record<CellStyle, number> = {
 
 export type Cell = { value: string | number | null; style?: CellStyle };
 
+/**
+ * How the sheet prints.
+ *
+ * A workbook a teacher takes into a room is printed, and a spreadsheet that reads well on
+ * screen prints across three pages with two columns stranded on the third. Every sheet here
+ * declares A4 and how it should be made to fit, so the file arrives ready for a printer
+ * rather than needing somebody to fight the page setup dialog first.
+ */
+export type PageSetup = {
+  orientation: 'portrait' | 'landscape';
+  /** Pages wide the content is squeezed into. 1 means "make it fit the width". */
+  fitToWidth?: number;
+  /** Pages tall. 0 means "as many as it takes", which is right for a long class list. */
+  fitToHeight?: number;
+  /** Rows repeated at the top of every printed page, so a column keeps its heading. */
+  repeatHeaderRows?: number;
+};
+
 export type Sheet = {
   name: string;
   /** Column widths in characters. Missing entries fall back to the writer's default. */
   columnWidths?: number[];
   /** Rows above which the sheet stays put while the rest scrolls. */
   frozenRows?: number;
+  page?: PageSetup;
   rows: Cell[][];
 };
 
@@ -120,7 +139,19 @@ function sheetXml(sheet: Sheet): string {
       ? `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${sheet.frozenRows}" topLeftCell="A${sheet.frozenRows + 1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
       : '';
 
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${frozen}${columns ? `<cols>${columns}</cols>` : ''}<sheetData>${rows}</sheetData></worksheet>`;
+  // The order of these elements is fixed by the schema — `sheetPr` before the views, the
+  // print settings after the data — and a reader that finds them out of order rejects the
+  // file rather than ignoring the part it did not expect.
+  const page = sheet.page;
+  const sheetPr = page ? '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>' : '';
+  const printSettings = page
+    ? `<printOptions horizontalCentered="1"/>` +
+      `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>` +
+      // `paperSize="9"` is A4.
+      `<pageSetup paperSize="9" orientation="${page.orientation}" fitToWidth="${page.fitToWidth ?? 1}" fitToHeight="${page.fitToHeight ?? 0}"/>`
+    : '';
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${sheetPr}${frozen}${columns ? `<cols>${columns}</cols>` : ''}<sheetData>${rows}</sheetData>${printSettings}</worksheet>`;
 }
 
 /**
@@ -196,9 +227,25 @@ export async function buildXlsx(sheets: Sheet[]): Promise<Buffer> {
     .map((sheet, index) => `<sheet name="${escapeXml(sheet.name)}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`)
     .join('');
 
+  /**
+   * The heading rows, repeated at the top of every printed page.
+   *
+   * Excel expresses this as a hidden defined name per sheet rather than as a property of
+   * the sheet, which is why it is built here and not beside the rest of the print setup. A
+   * class list that runs to three pages without it leaves pages two and three as a grid of
+   * bare letters.
+   */
+  const definedNames = sheets
+    .map((sheet, index) =>
+      sheet.page?.repeatHeaderRows
+        ? `<definedName name="_xlnm.Print_Titles" localSheetId="${index}">'${sheet.name.replace(/'/gu, "''")}'!$1:$${sheet.page.repeatHeaderRows}</definedName>`
+        : ''
+    )
+    .join('');
+
   zip.file(
     'xl/workbook.xml',
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetEntries}</sheets></workbook>`
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetEntries}</sheets>${definedNames ? `<definedNames>${definedNames}</definedNames>` : ''}</workbook>`
   );
 
   const sheetRels = sheets
