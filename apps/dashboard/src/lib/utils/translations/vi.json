@@ -5910,8 +5910,7 @@
       "note": "Nhận xét",
       "question_column": "Câu",
       "printed_at": "Xuất lúc {at}",
-      "printed_by": "Người xuất: {name}",
-      "page_of": "Trang {page}/{total}"
+      "printed_by": "Người xuất: {name}"
     }
   },
   "error_page": {

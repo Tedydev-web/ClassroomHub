@@ -5900,8 +5900,7 @@
       "note": "Comment",
       "question_column": "No.",
       "printed_at": "Printed {at}",
-      "printed_by": "Printed by {name}",
-      "page_of": "Page {page}/{total}"
+      "printed_by": "Printed by {name}"
     }
   },
   "error_page": {

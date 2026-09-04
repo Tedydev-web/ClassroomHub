@@ -271,7 +271,6 @@
       {#if data.issuer.printedBy}
         <span>{$t('exam.print.printed_by', { name: data.issuer.printedBy })}</span>
       {/if}
-      <span class="page">{$t('exam.print.page_of', { page: String(index + 1), total: String(data.rows.length) })}</span>
     </footer>
   </article>
 {/each}
@@ -387,6 +386,9 @@
   }
 
   .system {
+    /* The system on one edge, when and by whom on the other, and the width of the sheet
+       between them: two marks balanced rather than three crowded to the left. */
+    margin-right: auto;
     display: inline-flex;
     align-items: center;
     gap: 1.5mm;
@@ -397,12 +399,6 @@
   .system img {
     height: 4.2mm;
     width: auto;
-  }
-
-  .colophon .page {
-    margin-left: auto;
-    font-weight: 700;
-    color: #000;
   }
 
   .head {
