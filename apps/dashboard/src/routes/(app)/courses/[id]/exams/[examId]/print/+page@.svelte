@@ -219,7 +219,9 @@
     -->
     <p class="legend">
       <span><span class="option chosen">A</span> {labels.chosen}</span>
-      <span><span class="option key">A</span> {labels.key}</span>
+      {#if data.showAnswerKey}
+        <span><span class="option key">A</span> {labels.key}</span>
+      {/if}
     </p>
 
     <section class="answers">
@@ -252,8 +254,10 @@
                           class={[
                             'option',
                             chosen?.includes(letter) && 'chosen',
-                            question.key.includes(letter) && 'key',
-                            !chosen?.includes(letter) && !question.key.includes(letter) && 'idle'
+                            data.showAnswerKey && question.key.includes(letter) && 'key',
+                            !chosen?.includes(letter) &&
+                              !(data.showAnswerKey && question.key.includes(letter)) &&
+                              'idle'
                           ]
                             .filter(Boolean)
                             .join(' ')}>{letter}</span
@@ -268,13 +272,6 @@
         {/each}
       </div>
     </section>
-
-    <!--
-      One ruled line, not a box. A sheet that lives in a system is commented on in the
-      system; the line is here for the rare hand-written word, and the signature that used
-      to sit under it was ceremony nobody performs.
-    -->
-    <p class="note"><span>{labels.note}</span></p>
 
     <!--
       The foot. Printed per sheet rather than in a page margin because Chrome will not put
@@ -417,7 +414,7 @@
   }
 
   .system img {
-    height: 4.2mm;
+    height: 6.5mm;
     width: auto;
   }
 

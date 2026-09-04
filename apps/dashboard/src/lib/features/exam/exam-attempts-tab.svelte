@@ -194,7 +194,10 @@
   function printAnswers(attemptIds: string[]) {
     // The choice rides on the URL: the sheet opens in its own tab, where what this screen
     // remembered in `localStorage` cannot be read.
-    const query = `?lang=${exportLocale}${attemptIds.length > 0 ? `&attempts=${attemptIds.join(',')}` : ''}`;
+    const query =
+      `?lang=${exportLocale}` +
+      (includeAnswerKey ? '' : '&key=off') +
+      (attemptIds.length > 0 ? `&attempts=${attemptIds.join(',')}` : '');
 
     window.open(`/courses/${courseId}/exams/${examId}/print${query}`, '_blank', 'noopener');
   }
@@ -232,6 +235,7 @@
    */
   const EXPORT_LOCALES = ['vi', 'en'] as const;
   const EXPORT_LOCALE_KEY = 'classroomhub_export_locale';
+  const EXPORT_KEYS_KEY = 'classroomhub_export_answer_keys';
 
   function rememberedExportLocale(): 'vi' | 'en' {
     const stored = typeof window === 'undefined' ? null : window.localStorage.getItem(EXPORT_LOCALE_KEY);
@@ -247,6 +251,36 @@
   onMount(() => {
     exportLocale = rememberedExportLocale();
   });
+
+  /**
+   * Whether the printed sheets carry the answer key.
+   *
+   * A sheet handed back after marking should say what the right answer was; one handed out
+   * before a re-sit, or to a class about to see the paper again, must not. Same paper, two
+   * different documents, and the teacher is the only one who knows which afternoon it is.
+   *
+   * Remembered like the language, because a teacher who wants one usually wants it every
+   * time.
+   */
+  let includeAnswerKey = $state(true);
+
+  onMount(() => {
+    try {
+      includeAnswerKey = window.localStorage.getItem(EXPORT_KEYS_KEY) !== 'off';
+    } catch {
+      // A browser that refuses storage still prints; it just asks again next time.
+    }
+  });
+
+  function toggleAnswerKey() {
+    includeAnswerKey = !includeAnswerKey;
+
+    try {
+      window.localStorage.setItem(EXPORT_KEYS_KEY, includeAnswerKey ? 'on' : 'off');
+    } catch {
+      // As above.
+    }
+  }
 
   function chooseExportLocale(locale: 'vi' | 'en') {
     exportLocale = locale;
@@ -300,6 +334,15 @@
         </Button>
       {/each}
     </div>
+
+    <!--
+      Beside the language, because both are decisions about the file rather than about the
+      class: a sheet with the key is a correction sheet, one without it is a paper a teacher
+      can hand out before going through the answers.
+    -->
+    <Button size="sm" variant={includeAnswerKey ? 'default' : 'outline'} onclick={toggleAnswerKey}>
+      {includeAnswerKey ? $t('exam.results.print_with_key') : $t('exam.results.print_without_key')}
+    </Button>
 
     <Button variant="outline" size="sm" disabled={loading} onclick={refresh}>
       {loading ? $t('exam.results.loading') : $t('exam.results.reload')}

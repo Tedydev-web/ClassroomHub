@@ -5683,7 +5683,9 @@
       "print_all": "In phiếu ({count})",
       "export_language": "Ngôn ngữ file xuất",
       "export_language_vi": "Tiếng Việt",
-      "export_language_en": "English"
+      "export_language_en": "English",
+      "print_with_key": "Phiếu có đáp án",
+      "print_without_key": "Phiếu không đáp án"
     },
     "manage": {
       "title": "Đề thi",
@@ -5964,6 +5966,16 @@
       "back": "Quay lại khoá học",
       "print": "In / Lưu PDF",
       "hint": "Hộp thoại in có mục “Lưu thành PDF”. Chọn khổ A4, bỏ tuỳ chọn thu nhỏ."
+    },
+    "window": {
+      "not_open_yet": "Đề thi chưa mở",
+      "not_open_yet_body": "Đề này chưa tới giờ làm bài. Hãy quay lại đúng giờ ghi bên dưới.",
+      "closed": "Đề thi đã đóng",
+      "closed_body": "Đã hết thời gian nộp bài cho đề này. Không thể bắt đầu làm bài nữa.",
+      "opens_label": "Mở lúc",
+      "closed_label": "Đã đóng lúc",
+      "check_again": "Kiểm tra lại",
+      "support": "Cần hỗ trợ, liên hệ: {contact}"
     }
   },
   "error_page": {

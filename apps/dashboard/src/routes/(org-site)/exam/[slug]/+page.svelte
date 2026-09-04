@@ -24,6 +24,8 @@
 
   import ExamCountdown from '$features/exam/exam-countdown.svelte';
   import ExamEntryForm from '$features/exam/exam-entry-form.svelte';
+  import ExamWindowNotice from '$features/exam/exam-window-notice.svelte';
+  import { examWindowState } from '$features/exam/exam-window';
   import ExamStartConfirm from '$features/exam/exam-start-confirm.svelte';
   import ExamSubmitConfirm from '$features/exam/exam-submit-confirm.svelte';
   import ExamResumeOffer from '$features/exam/exam-resume-offer.svelte';
@@ -59,6 +61,28 @@
   type Stage = 'entry' | 'sitting' | 'submitted';
 
   let stage = $state<Stage>('entry');
+
+  /**
+   * Whether the paper can be started at all, checked on arrival rather than on Start.
+   *
+   * The server refuses a start outside the window either way; this only decides which screen
+   * a candidate meets. `windowNow` ticks so a candidate waiting for the hour sees the form
+   * appear rather than having to know to refresh — a minute is close enough for a boundary
+   * measured in hours, and cheap enough to leave running on an idle entry screen.
+   */
+  let windowNow = $state(new Date());
+
+  $effect(() => {
+    if (stage !== 'entry') return;
+
+    const tick = setInterval(() => (windowNow = new Date()), 30_000);
+
+    return () => clearInterval(tick);
+  });
+
+  const windowState = $derived(
+    examWindowState({ opensAt: data.exam.opensAt ?? null, closesAt: data.exam.closesAt ?? null }, windowNow)
+  );
 
   /**
    * Stops a pull-to-refresh from reloading the paper mid-sitting.
@@ -736,7 +760,15 @@
   {/if}
 {/snippet}
 
-{#if stage === 'entry'}
+{#if stage === 'entry' && windowState !== 'open'}
+  <ExamWindowNotice
+    state={windowState}
+    title={data.exam.title}
+    opensAt={data.exam.opensAt ?? null}
+    closesAt={data.exam.closesAt ?? null}
+    supportContact={data.exam.supportContact ?? null}
+  />
+{:else if stage === 'entry'}
   <ExamEntryForm
     resumeOffer={resumable ? offerResume : undefined}
     title={data.exam.title}

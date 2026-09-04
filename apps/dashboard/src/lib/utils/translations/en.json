@@ -5673,7 +5673,9 @@
       "print_all": "Print sheets ({count})",
       "export_language": "Export language",
       "export_language_vi": "Tiếng Việt",
-      "export_language_en": "English"
+      "export_language_en": "English",
+      "print_with_key": "Sheets with answer key",
+      "print_without_key": "Sheets without answer key"
     },
     "manage": {
       "title": "Exams",
@@ -5954,6 +5956,16 @@
       "back": "Back to course",
       "print": "Print / Save as PDF",
       "hint": "The print dialog can save to PDF. Choose A4 and turn scaling off."
+    },
+    "window": {
+      "not_open_yet": "This paper is not open yet",
+      "not_open_yet_body": "It is not time to sit this paper. Come back at the time below.",
+      "closed": "This paper has closed",
+      "closed_body": "The window for sitting this paper has passed. It can no longer be started.",
+      "opens_label": "Opens",
+      "closed_label": "Closed",
+      "check_again": "Check again",
+      "support": "Need help? Contact {contact}"
     }
   },
   "error_page": {
