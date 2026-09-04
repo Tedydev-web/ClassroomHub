@@ -35,8 +35,10 @@ function candidate(name: string | null, chosen: Array<string | null>, correct: n
     candidateNumber: '07',
     score: String(correct),
     total: String(chosen.length),
-    startedAt: '2026-09-04T01:00:00.000Z',
-    submittedAt: '2026-09-04T01:33:00.000Z',
+    // The shape Postgres actually returns: a space, and an offset with no minutes. Both
+    // are outside what an engine must parse, and V8 rejects the second.
+    startedAt: '2026-09-04 01:00:00.000+00',
+    submittedAt: '2026-09-04 01:33:00.000+00',
     leaves: 2,
     chosen,
     correct
@@ -64,7 +66,7 @@ describe('buildAnswerWorkbookSheets', () => {
 
   it('marks each answer right, wrong or blank against the key beside it', () => {
     const [sheet] = buildAnswerWorkbookSheets(MATRIX as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const answerRows = sheet.rows.slice(9);
+    const answerRows = sheet.rows.slice(12);
 
     expect(answerRows.map((row) => row[1].value)).toEqual(['A', 'D', '']);
     expect(answerRows.map((row) => row[2].value)).toEqual(['A', 'B', 'C']);
@@ -76,17 +78,26 @@ describe('buildAnswerWorkbookSheets', () => {
 
   it('states the candidate in a table rather than a caption', () => {
     const [sheet] = buildAnswerWorkbookSheets(MATRIX as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    // Three questions is a four-column table, so the fields wrap two to a line rather than
-    // being cut off at the table's width.
-    const identity = sheet.rows.slice(3, 7);
+    // A three-question paper is four columns wide, too narrow for two fields to a line, so
+    // each takes the whole line rather than being squeezed into a question-number column.
+    const identity = sheet.rows.slice(2, 10);
+    const said = identity.map((line) => line.map((cell) => cell.value).filter((value) => value !== null));
 
-    expect(identity.map((line) => line.map((cell) => cell.value))).toEqual([
-      ['Học sinh', 'Bùi Thị Bảo Yến', 'Lớp', '12A1'],
-      ['Số báo danh', '07', 'Điểm', '1/3'],
-      ['Thời gian làm', '33 phút', 'Bắt đầu', '04/09 08:00'],
-      ['Nộp lúc', '04/09 08:33', 'Rời bài thi', 2]
+    expect(said).toEqual([
+      ['Học sinh', 'Bùi Thị Bảo Yến'],
+      ['Lớp', '12A1'],
+      ['Số báo danh', '07'],
+      ['Điểm', '1/3'],
+      ['Thời gian làm', '33 phút'],
+      ['Bắt đầu', '04/09 08:00'],
+      ['Nộp lúc', '04/09 08:33'],
+      ['Rời bài thi', 2]
     ]);
-    expect(identity[0].map((cell) => cell.style)).toEqual(['fieldLabel', 'fieldValue', 'fieldLabel', 'fieldValue']);
+
+    // The heading spans the table rather than sitting in a six-character column, and every
+    // cell a merge swallows keeps the style so the block does not show through.
+    expect(sheet.merges?.[0]).toBe('A1:D1');
+    expect(identity[0].every((cell) => cell.style === 'fieldLabel' || cell.style === 'fieldValue')).toBe(true);
   });
 
   it('leads with the class sheet once there is more than one paper', () => {
@@ -180,7 +191,8 @@ describe('printed layout', () => {
 
   it('lays a long paper out as one table, blocks running side by side inside it', () => {
     const [sheet] = buildAnswerWorkbookSheets(many as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const header = sheet.rows[6];
+    // Title, a gap, four lines of fields, a gap: the questions start on row eight.
+    const header = sheet.rows[7];
 
     // Eight columns with no gap: one bordered table on the page, the way an answer sheet
     // prints its columns of numbers inside a single frame.
@@ -189,7 +201,7 @@ describe('printed layout', () => {
     expect(header[4].value).toBe('Câu');
 
     // Twenty lines, not forty: question 21 sits beside question 1.
-    const answerRows = sheet.rows.slice(7);
+    const answerRows = sheet.rows.slice(8);
     expect(answerRows).toHaveLength(20);
     expect(answerRows[0][0].value).toBe(1);
     expect(answerRows[0][4].value).toBe(21);
@@ -215,7 +227,7 @@ describe('printed layout', () => {
       fitToHeight: 1,
       // Four fields to a line on an eight-column table, two on a four-column one, so the
       // heading depth follows the paper rather than being a constant to keep in step.
-      repeatHeaderRows: 9
+      repeatHeaderRows: 12
     });
   });
 
@@ -233,7 +245,7 @@ describe('printed layout', () => {
       ]
     };
     const [sheet] = buildAnswerWorkbookSheets(seven as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const answerRows = sheet.rows.slice(7);
+    const answerRows = sheet.rows.slice(8);
 
     expect(answerRows).toHaveLength(11);
     expect(answerRows.at(-1)![0].value).toBe(11);

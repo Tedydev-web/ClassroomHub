@@ -1,5 +1,5 @@
 import type { AnswerMatrix } from './exam-answer-matrix';
-import { toSheetName, type Cell, type Sheet } from './exam-workbook-xlsx';
+import { columnLetter, toSheetName, type Cell, type Sheet } from './exam-workbook-xlsx';
 
 /**
  * The workbook a teacher takes into the room to go through a paper with a class.
@@ -45,11 +45,26 @@ export type WorkbookLabels = {
  * thing to put on the page. `Asia/Ho_Chi_Minh` is fixed rather than taken from the server,
  * which runs in UTC and would otherwise print every sitting seven hours early.
  */
-function clockOf(value: string | null): string {
-  if (!value) return '';
+/**
+ * A Postgres timestamp as a `Date`, or null where it will not parse.
+ *
+ * `timestamptz` comes back as `2026-09-02 15:41:41.278+00` — a space instead of the `T`,
+ * and an offset with no minutes. Neither is in the grammar every engine must accept, and
+ * V8 rejects the second outright: every clock cell in the workbook came out empty because
+ * of the two missing characters in `+00`.
+ */
+function parseStamp(value: string | null): Date | null {
+  if (!value) return null;
 
-  const moment = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
-  if (Number.isNaN(moment.getTime())) return '';
+  const iso = value.includes('T') ? value : value.replace(' ', 'T');
+  const moment = new Date(/[+-]\d{2}$/u.test(iso) ? `${iso}:00` : iso);
+
+  return Number.isNaN(moment.getTime()) ? null : moment;
+}
+
+function clockOf(value: string | null): string {
+  const moment = parseStamp(value);
+  if (!moment) return '';
 
   // Composed rather than taken from `toLocaleString`, whose output for this locale is
   // "08:00 04-09" — a shape nobody writes on a mark sheet, and one that would change under
@@ -70,13 +85,11 @@ function clockOf(value: string | null): string {
 
 /** Whole minutes between starting and handing in, or empty while a paper is still open. */
 function minutesTaken(row: AnswerMatrix['rows'][number]): string {
-  if (!row.startedAt || !row.submittedAt) return '';
+  const started = parseStamp(row.startedAt);
+  const submitted = parseStamp(row.submittedAt);
+  if (!started || !submitted) return '';
 
-  const started = new Date(row.startedAt.replace(' ', 'T')).getTime();
-  const submitted = new Date(row.submittedAt.replace(' ', 'T')).getTime();
-  if (Number.isNaN(started) || Number.isNaN(submitted)) return '';
-
-  return String(Math.max(0, Math.round((submitted - started) / 60_000)));
+  return String(Math.max(0, Math.round((submitted.getTime() - started.getTime()) / 60_000)));
 }
 
 function displayNameOf(row: AnswerMatrix['rows'][number], fallback: string): string {
@@ -252,26 +265,59 @@ function studentSheet(
    * Laid out as label/value pairs across the same width as the table below it, so the page
    * carries one column of content rather than a heading that stops halfway.
    */
-  function fieldRows(pairs: Array<[string, string | number]>, width: number): Cell[][] {
-    // Two columns per field, and never fewer than one field to a line — a short paper is
-    // four columns wide, and truncating to fit it is how the candidate number and the mark
-    // would silently vanish from a twelve-question test.
-    const perLine = Math.max(1, Math.floor(width / 2));
+  /**
+   * The identity fields, laid out the way a printed form lays them out.
+   *
+   * Two fields to a line whatever the table's width, each one a merged label and a merged
+   * value, so "Họ và tên" is not cut to "Họ và t" by a column sized for a question number.
+   * The merges are what let this block and the table below it disagree about column widths
+   * while still lining up at the edges.
+   */
+  function fieldBlock(
+    pairs: Array<[string, string | number]>,
+    width: number,
+    firstRow: number
+  ): { lines: Cell[][]; merges: string[] } {
+    // Two fields to a line where the table is wide enough for both to be legible, one where
+    // it is not: a four-column table gives each field the whole line rather than squeezing
+    // "Thời gian làm" into a column sized for a question number.
+    const perLine = width >= 8 ? 2 : 1;
+    const half = Math.floor(width / perLine);
+    // The label takes half of its field. It is short and fixed; the value is a name.
+    const labelSpan = Math.max(1, Math.floor(half / 2));
     const lines: Cell[][] = [];
+    const merges: string[] = [];
 
-    for (let start = 0; start < pairs.length; start += perLine) {
-      const cells: Cell[] = [];
+    for (let index = 0; index < pairs.length; index += perLine) {
+      const rowNumber = firstRow + lines.length;
+      const cells: Cell[] = Array.from({ length: width }, () => ({ value: null }) as Cell);
 
-      for (const [label, value] of pairs.slice(start, start + perLine)) {
-        cells.push({ value: label, style: 'fieldLabel' }, { value, style: 'fieldValue' });
+      for (const [side, pair] of pairs.slice(index, index + perLine).entries()) {
+        const start = side * half;
+        cells[start] = { value: pair[0], style: 'fieldLabel' };
+        cells[start + labelSpan] = { value: pair[1], style: 'fieldValue' };
+
+        // The cells the merge swallows still exist and still carry the style, so the
+        // merged block keeps its fill and its border rather than showing the default
+        // through the part of it that came from an empty cell.
+        for (let offset = 1; offset < labelSpan; offset += 1)
+          cells[start + offset] = { value: null, style: 'fieldLabel' };
+        for (let offset = labelSpan + 1; offset < half; offset += 1) {
+          cells[start + offset] = { value: null, style: 'fieldValue' };
+        }
+
+        if (labelSpan > 1) {
+          merges.push(`${columnLetter(start)}${rowNumber}:${columnLetter(start + labelSpan - 1)}${rowNumber}`);
+        }
+        if (half - labelSpan > 1) {
+          merges.push(`${columnLetter(start + labelSpan)}${rowNumber}:${columnLetter(start + half - 1)}${rowNumber}`);
+        }
       }
-
-      while (cells.length < width) cells.push({ value: null });
 
       lines.push(cells);
     }
 
-    return lines;
+    return { lines, merges };
   }
 
   const width = blocks * 4;
@@ -292,15 +338,17 @@ function studentSheet(
     ...(labels.leaves ? ([[labels.leaves, row.leaves > 0 ? row.leaves : '—']] as [string, string | number][]) : [])
   ];
 
-  const identityLines = fieldRows(fields, width);
+  // The heading is centred across the table, the way a form heads itself, rather than
+  // sitting in the first column with six empty ones beside it.
+  // One heading, centred across the table the way a form heads itself, rather than a name
+  // in the first column with six empty ones beside it. The candidate is named in the block
+  // below, where the rest of their details are.
+  const identity = fieldBlock(fields, width, 3);
+  const lastColumn = columnLetter(width - 1);
 
-  const rows: Cell[][] = [
-    [{ value: name, style: 'title' }],
-    [{ value: title, style: 'subtitle' }],
-    [],
-    ...identityLines,
-    []
-  ];
+  const rows: Cell[][] = [[{ value: title, style: 'titleCentre' }], [], ...identity.lines, []];
+
+  const merges = [`A1:${lastColumn}1`, ...identity.merges];
 
   /**
    * Everything above the questions, counted rather than assumed.
@@ -333,6 +381,7 @@ function studentSheet(
 
   return {
     name: toSheetName(name, `${labels.student} ${index + 1}`),
+    merges,
     frozenRows: headingRows,
     columnWidths,
     // Portrait, because a marked paper is filed and stapled like every other sheet in the

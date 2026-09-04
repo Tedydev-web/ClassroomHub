@@ -30,7 +30,10 @@ export type CellStyle =
   /** A field's name in the identity table: bold on a light fill, bordered like the rest. */
   | 'fieldLabel'
   /** A field's value beside it. */
-  | 'fieldValue';
+  | 'fieldValue'
+  /** The sheet's name, centred across the page the way a printed form heads itself. */
+  | 'titleCentre'
+  | 'subtitleCentre';
 
 const STYLE_INDEX: Record<CellStyle, number> = {
   default: 0,
@@ -43,7 +46,9 @@ const STYLE_INDEX: Record<CellStyle, number> = {
   incorrect: 7,
   blank: 8,
   fieldLabel: 9,
-  fieldValue: 10
+  fieldValue: 10,
+  titleCentre: 11,
+  subtitleCentre: 12
 };
 
 export type Cell = { value: string | number | null; style?: CellStyle };
@@ -73,6 +78,14 @@ export type Sheet = {
   /** Rows above which the sheet stays put while the rest scrolls. */
   frozenRows?: number;
   page?: PageSetup;
+  /**
+   * Ranges joined into one cell, as `A1:H1`.
+   *
+   * A label in a six-character column is a label cut in half — "Học sin" — and widening the
+   * column would widen the question table under it. Merging is what lets the heading and
+   * the identity fields have the width they need without deciding the table's.
+   */
+  merges?: string[];
   rows: Cell[][];
 };
 
@@ -99,7 +112,7 @@ export function toSheetName(value: string, fallback: string): string {
 }
 
 /** `A`, `B` … `AA`. Columns are addressed by letter in the cell references. */
-function columnLetter(index: number): string {
+export function columnLetter(index: number): string {
   let remaining = index + 1;
   let letters = '';
 
@@ -157,7 +170,12 @@ function sheetXml(sheet: Sheet): string {
       `<pageSetup paperSize="9" orientation="${page.orientation}" fitToWidth="${page.fitToWidth ?? 1}" fitToHeight="${page.fitToHeight ?? 0}"/>`
     : '';
 
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${sheetPr}${frozen}${columns ? `<cols>${columns}</cols>` : ''}<sheetData>${rows}</sheetData>${printSettings}</worksheet>`;
+  const merges =
+    sheet.merges && sheet.merges.length > 0
+      ? `<mergeCells count="${sheet.merges.length}">${sheet.merges.map((ref) => `<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`
+      : '';
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${sheetPr}${frozen}${columns ? `<cols>${columns}</cols>` : ''}<sheetData>${rows}</sheetData>${merges}${printSettings}</worksheet>`;
 }
 
 /**
@@ -207,10 +225,12 @@ function stylesXml(): string {
     '<xf fontId="6" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
     '<xf fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
     '<xf fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>',
-    '<xf fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+    '<xf fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>',
+    '<xf fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
+    '<xf fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
   ].join('');
 
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="7">${fonts}</fonts><fills count="6">${fills}</fills><borders count="2">${borders}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11">${cellXfs}</cellXfs></styleSheet>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="7">${fonts}</fonts><fills count="6">${fills}</fills><borders count="2">${borders}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="13">${cellXfs}</cellXfs></styleSheet>`;
 }
 
 /** Writes the sheets into a real `.xlsx`, which is a zip of XML parts. */
