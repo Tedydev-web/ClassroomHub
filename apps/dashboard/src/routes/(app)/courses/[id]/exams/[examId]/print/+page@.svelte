@@ -197,6 +197,16 @@
       </tbody>
     </table>
 
+    <!--
+      The key to the two marks, small and directly above the answers. At the foot it was a
+      third block competing with the comment line and the colophon, and it was three
+      hundred millimetres from the first mark it explains.
+    -->
+    <p class="legend">
+      <span><span class="option chosen">A</span> {$t('exam.print.legend_chosen')}</span>
+      <span><span class="option key">A</span> {$t('exam.print.legend_key')}</span>
+    </p>
+
     <section class="answers">
       <div class="columns">
         {#each columns as column (column[0].position)}
@@ -250,11 +260,6 @@
       to sit under it was ceremony nobody performs.
     -->
     <p class="note"><span>{$t('exam.print.note')}</span></p>
-
-    <footer class="legend">
-      <span><span class="option chosen">A</span> {$t('exam.print.legend_chosen')}</span>
-      <span><span class="option key">A</span> {$t('exam.print.legend_key')}</span>
-    </footer>
 
     <!--
       The foot. Printed per sheet rather than in a page margin because Chrome will not put
@@ -561,13 +566,19 @@
   .legend {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 4mm;
-    margin-top: 5mm;
-    font-size: 10pt;
+    margin: 0 0 1.5mm;
+    font-size: 8.5pt;
   }
 
   .legend .option {
-    margin-right: 1mm;
+    width: 4.4mm;
+    height: 4.4mm;
+    line-height: 4.4mm;
+    margin-right: 0.8mm;
+    font-size: 8pt;
+    vertical-align: middle;
   }
 
   @media print {
