@@ -7,8 +7,8 @@
   import { Label } from '@cio/ui/base/label';
   import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
-  import { goto, invalidateAll } from '$app/navigation';
-  import { resolve } from '$app/paths';
+  import { invalidateAll } from '$app/navigation';
+  import { contentCreateStoreUtils } from '$features/course/components/content/store';
   import { page } from '$app/state';
 
   /**
@@ -55,9 +55,16 @@
     }
   }
 
-  /** The question set may still be in a file. Take the teacher to the importer. */
+  /**
+   * The question set may still be in a file, so open the importer here.
+   *
+   * It used to navigate to `/courses/<id>/content`, which is not a route in this app: the
+   * button meant to save a teacher the trip sent them to a blank page. The importer lives
+   * in the course layout's create-content dialog, and this screen is inside that layout, so
+   * it can be opened where the teacher already is.
+   */
   function goToImport() {
-    goto(resolve(`/courses/${data.courseId}/content`, {}));
+    contentCreateStoreUtils.openExercise();
   }
 
   async function create(settings: Record<string, unknown>) {

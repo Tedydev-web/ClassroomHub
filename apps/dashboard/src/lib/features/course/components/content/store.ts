@@ -25,6 +25,21 @@ export const contentCreateStoreUtils = {
       skipTypeSelection: true
     });
   },
+  /**
+   * Straight to the exercise step, where importing a document is one of the choices.
+   *
+   * The exam creation screen needs this: a teacher whose questions are still in a file has
+   * nothing to build an exam from, and sending them off to find the content screen was
+   * sending them to a route that does not exist.
+   */
+  openExercise: () => {
+    contentCreateStore.set({
+      open: true,
+      sectionId: '',
+      initialType: ContentType.Exercise,
+      skipTypeSelection: true
+    });
+  },
   openDefault: () => {
     contentCreateStore.set({
       open: true,
