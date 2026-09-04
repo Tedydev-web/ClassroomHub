@@ -5909,8 +5909,7 @@
       "legend_chosen": "Thí sinh đã chọn",
       "legend_key": "Đáp án đúng",
       "note": "Nhận xét",
-      "question_column": "Câu",
-      "outcome_column": "KQ"
+      "question_column": "Câu"
     }
   },
   "error_page": {

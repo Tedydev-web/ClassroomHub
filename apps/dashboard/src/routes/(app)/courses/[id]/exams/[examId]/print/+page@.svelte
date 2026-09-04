@@ -106,13 +106,6 @@
 
     return $t('exam.results.minutes_taken', { minutes: String(Math.round((to - from) / 60000)) });
   }
-
-  /** Right, wrong, or never answered — the three states a marked question can be in. */
-  function outcomeOf(chosen: string | null, key: string): 'right' | 'wrong' | 'blank' {
-    if (!chosen) return 'blank';
-
-    return key && chosen === key ? 'right' : 'wrong';
-  }
 </script>
 
 <svelte:head>
@@ -177,13 +170,11 @@
                 {#each alphabet as letter (letter)}
                   <th>{letter}</th>
                 {/each}
-                <th class="outcome">{$t('exam.print.outcome_column')}</th>
               </tr>
             </thead>
             <tbody>
               {#each column as question (question.position)}
                 {@const chosen = row.chosen[question.position - 1] ?? null}
-                {@const outcome = outcomeOf(chosen, question.key)}
                 {@const letters = lettersOf(question)}
                 <tr>
                   <th class="num">{question.position}</th>
@@ -208,9 +199,6 @@
                       {/if}
                     </td>
                   {/each}
-                  <td class="outcome">
-                    {#if outcome === 'right'}✓{:else if outcome === 'wrong'}✗{:else}—{/if}
-                  </td>
                 </tr>
               {/each}
             </tbody>
@@ -229,9 +217,6 @@
     <footer class="legend">
       <span><span class="option chosen">A</span> {$t('exam.print.legend_chosen')}</span>
       <span><span class="option key">A</span> {$t('exam.print.legend_key')}</span>
-      <span>✓ {$t('exam.results.workbook_right')}</span>
-      <span>✗ {$t('exam.results.workbook_wrong')}</span>
-      <span>— {$t('exam.results.workbook_blank')}</span>
     </footer>
   </article>
 {/each}
@@ -406,11 +391,6 @@
     width: 8mm;
     font-weight: 700;
     font-size: 11.5pt;
-  }
-
-  .column .outcome {
-    width: 7mm;
-    font-size: 13pt;
   }
 
   .note {

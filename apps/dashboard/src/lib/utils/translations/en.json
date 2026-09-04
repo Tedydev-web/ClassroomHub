@@ -5899,8 +5899,7 @@
       "legend_chosen": "Chosen",
       "legend_key": "Correct answer",
       "note": "Comment",
-      "question_column": "No.",
-      "outcome_column": "Result"
+      "question_column": "No."
     }
   },
   "error_page": {
