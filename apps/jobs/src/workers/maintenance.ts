@@ -21,6 +21,7 @@ import {
   ZCourseRoleReconcilePayload,
   ZDeadLetterCleanupPayload,
   ZExamImportReconcilePayload,
+  ZLessonVersionRetentionPayload,
   ZMediaJobReapPayload,
   ZRetentionCompactPayload,
   createRedisConnection
