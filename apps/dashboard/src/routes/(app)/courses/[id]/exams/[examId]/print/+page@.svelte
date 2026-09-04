@@ -199,7 +199,8 @@
                           class={[
                             'option',
                             chosen?.includes(letter) && 'chosen',
-                            question.key.includes(letter) && 'key'
+                            question.key.includes(letter) && 'key',
+                            !chosen?.includes(letter) && !question.key.includes(letter) && 'idle'
                           ]
                             .filter(Boolean)
                             .join(' ')}>{letter}</span
@@ -219,14 +220,11 @@
     </section>
 
     <!--
-      The rest of the page, spent on the one thing the data cannot supply: what the teacher
-      wants to say to this candidate, and the signature that makes the sheet theirs.
+      One ruled line, not a box. A sheet that lives in a system is commented on in the
+      system; the line is here for the rare hand-written word, and the signature that used
+      to sit under it was ceremony nobody performs.
     -->
-    <section class="note">
-      <p class="band">{$t('exam.print.note')}</p>
-      <div class="note-space"></div>
-      <p class="sign">{$t('exam.print.signature')}</p>
-    </section>
+    <p class="note"><span>{$t('exam.print.note')}</span></p>
 
     <footer class="legend">
       <span><span class="option chosen">A</span> {$t('exam.print.legend_chosen')}</span>
@@ -378,66 +376,64 @@
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-    /* The block's own frame, which is what makes four blocks read as four blocks. */
+    /*
+      The block's frame, and nothing inside it. The Ministry's sheet rules the outside of
+      each block of ten and leaves the inside to whitespace; ruling every cell as well is
+      what turned four readable blocks into a dense grid.
+    */
     border: 0.4mm solid #000;
   }
 
   .column th,
   .column td {
-    border: 0.2mm solid #000;
-    padding: 1.2mm 0;
+    border: 0;
+    /* Row height is what is left of the page divided by the rows on it: forty questions
+       ended a third of the way up an A4 and left the rest white. */
+    padding: 3.6mm 0;
     text-align: center;
     vertical-align: middle;
   }
 
   .column thead th {
-    /* Headed once, the way the Ministry's blocks are: the eye reads the column, not the
-       letters. Grey rather than the sheet's pink, because this is printed in black. */
-    background: #e5e5e5;
-    font-weight: 700;
+    /* Headed once and lightly: a rule under the row is enough to say these are columns. */
+    border-bottom: 0.3mm solid #000;
+    padding-bottom: 1.6mm;
+    font-weight: 400;
     font-size: 10.5pt;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
   .column .num {
     width: 8mm;
     font-weight: 700;
-    font-size: 10.5pt;
+    font-size: 11.5pt;
   }
 
   .column .outcome {
     width: 7mm;
-    font-size: 12pt;
+    font-size: 13pt;
   }
 
   .note {
-    margin-top: 4mm;
-    border: 0.4mm solid #000;
-    padding: 3mm;
-  }
-
-  .note-space {
-    /* Ruled space, sized to what is left of the page rather than to a guess at how much a
-       teacher writes: enough for two or three lines of comment on every sheet. */
-    height: 26mm;
-    border-bottom: 0.2mm solid #9ca3af;
-  }
-
-  .sign {
-    margin: 2mm 0 0;
-    text-align: right;
-    font-style: italic;
+    display: flex;
+    align-items: flex-end;
+    gap: 2mm;
+    margin: 5mm 0 0;
     font-size: 10.5pt;
+  }
+
+  .note::after {
+    content: '';
+    flex: 1;
+    border-bottom: 0.2mm solid #000;
   }
 
   .option {
     display: inline-block;
-    width: 5.6mm;
-    height: 5.6mm;
-    line-height: 5.6mm;
+    width: 6.4mm;
+    height: 6.4mm;
+    line-height: 6.4mm;
     text-align: center;
-    font-size: 10pt;
+    font-size: 11pt;
     border: 0.2mm solid transparent;
     border-radius: 50%;
   }
@@ -445,6 +441,14 @@
   /* Boxed, not filled: a border survives every printer, and the key must always be legible. */
   .option.key {
     border: 0.5mm solid #000;
+  }
+
+  /*
+    The letters nobody marked. Present, because a teacher has to see the question offered
+    four options; faint, because they are the only thing on the sheet that carries no news.
+  */
+  .option.idle {
+    color: #9ca3af;
   }
 
   .option.chosen {
