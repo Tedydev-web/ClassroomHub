@@ -1,4 +1,5 @@
 import type { AnswerMatrix } from './exam-answer-matrix';
+import { normaliseStamp } from './exam-clock';
 import { columnLetter, toSheetName, type Cell, type Sheet } from './exam-workbook-xlsx';
 
 /**
@@ -45,21 +46,11 @@ export type WorkbookLabels = {
  * thing to put on the page. `Asia/Ho_Chi_Minh` is fixed rather than taken from the server,
  * which runs in UTC and would otherwise print every sitting seven hours early.
  */
-/**
- * A Postgres timestamp as a `Date`, or null where it will not parse.
- *
- * `timestamptz` comes back as `2026-09-02 15:41:41.278+00` — a space instead of the `T`,
- * and an offset with no minutes. Neither is in the grammar every engine must accept, and
- * V8 rejects the second outright: every clock cell in the workbook came out empty because
- * of the two missing characters in `+00`.
- */
+/** The matrix normalises its stamps, so this only has to reject what never parsed. */
 function parseStamp(value: string | null): Date | null {
-  if (!value) return null;
+  const iso = normaliseStamp(value);
 
-  const iso = value.includes('T') ? value : value.replace(' ', 'T');
-  const moment = new Date(/[+-]\d{2}$/u.test(iso) ? `${iso}:00` : iso);
-
-  return Number.isNaN(moment.getTime()) ? null : moment;
+  return iso ? new Date(iso) : null;
 }
 
 function clockOf(value: string | null): string {

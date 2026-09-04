@@ -5622,7 +5622,9 @@
       "summary_mode": "Tóm tắt",
       "individual_mode": "Cá nhân",
       "started_at_column": "Bắt đầu",
-      "workbook_minutes": "phút"
+      "workbook_minutes": "phút",
+      "print_selected": "In phiếu đã chọn ({count})",
+      "print_all": "In phiếu ({count})"
     },
     "manage": {
       "title": "Đề thi",
@@ -5897,6 +5899,17 @@
       "placeholder": "Chỉ mình bạn thấy. Ghi chú nằm trên máy này.",
       "save": "Lưu ghi chú",
       "add": "Viết ghi chú"
+    },
+    "print": {
+      "title": "Phiếu trả lời trắc nghiệm",
+      "back": "Quay lại khoá học",
+      "print": "In / Lưu PDF",
+      "hint": "Hộp thoại in có mục “Lưu thành PDF”. Chọn khổ A4, bỏ tuỳ chọn thu nhỏ.",
+      "answers": "Phần trả lời",
+      "legend_chosen": "Thí sinh đã chọn",
+      "legend_key": "Đáp án đúng",
+      "note": "Nhận xét của giáo viên",
+      "signature": "Chữ ký giáo viên"
     }
   },
   "error_page": {

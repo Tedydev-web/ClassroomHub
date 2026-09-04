@@ -22,6 +22,7 @@ import {
 } from '@api/services/exam/exam';
 import {
   buildExamAnswerDistributionService,
+  buildExamAnswerMatrixService,
   buildExamAnswerWorkbookService,
   listExamAnswerKeysService
 } from '@api/services/exam/exam-answer-keys';
@@ -338,6 +339,26 @@ export const examRouter = new Hono()
           'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
         }
       });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  /**
+   * The same table the workbook is built from, as JSON, for the printable answer sheets.
+   *
+   * A `POST` for the same reason the workbook is one: the selection is a list of candidates,
+   * and a list of candidates in a URL is a list of candidates in every access log.
+   */
+  .post('/:examId/answer-matrix', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const body = await c.req.json().catch(() => ({}));
+      const attemptIds = Array.isArray(body?.attemptIds)
+        ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
+        : [];
+
+      const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
+
+      return c.json({ success: true as const, data: matrix });
     } catch (error) {
       return handleError(c, error);
     }

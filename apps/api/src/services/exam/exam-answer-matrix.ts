@@ -1,4 +1,5 @@
 import type { ExamAnswerKeyQuestion } from './exam-answer-keys';
+import { normaliseStamp } from './exam-clock';
 
 /**
  * The class's answers laid out as one table: a column per question, a row per candidate.
@@ -135,8 +136,10 @@ export function buildAnswerMatrix(questions: ExamAnswerKeyQuestion[], attempts: 
         candidateNumber: attempt.candidateNumber,
         score: attempt.score,
         total: attempt.total,
-        startedAt: attempt.startedAt,
-        submittedAt: attempt.submittedAt,
+        // Normalised here, once, so nothing downstream has to know what shape Postgres
+        // returns — see `exam-clock`.
+        startedAt: normaliseStamp(attempt.startedAt),
+        submittedAt: normaliseStamp(attempt.submittedAt),
         leaves: attempt.leaves,
         chosen,
         correct

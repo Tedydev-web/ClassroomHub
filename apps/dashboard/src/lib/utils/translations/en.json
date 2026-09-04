@@ -5612,7 +5612,9 @@
       "summary_mode": "Summary",
       "individual_mode": "Individual",
       "started_at_column": "Started",
-      "workbook_minutes": "min"
+      "workbook_minutes": "min",
+      "print_selected": "Print selected sheets ({count})",
+      "print_all": "Print sheets ({count})"
     },
     "manage": {
       "title": "Exams",
@@ -5887,6 +5889,17 @@
       "placeholder": "Only you see this. It stays on this device.",
       "save": "Save note",
       "add": "Write a note"
+    },
+    "print": {
+      "title": "Answer sheet",
+      "back": "Back to course",
+      "print": "Print / Save as PDF",
+      "hint": "The print dialog can save to PDF. Choose A4 and turn scaling off.",
+      "answers": "Answers",
+      "legend_chosen": "Chosen",
+      "legend_key": "Correct answer",
+      "note": "Teacher’s comments",
+      "signature": "Teacher’s signature"
     }
   },
   "error_page": {

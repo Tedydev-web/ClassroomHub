@@ -8,6 +8,7 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
   import DownloadIcon from '@lucide/svelte/icons/download';
+  import PrinterIcon from '@lucide/svelte/icons/printer';
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { ExamResultRow } from '$features/exam/exam-result-row';
@@ -18,6 +19,7 @@
     onreopen,
     ondelete,
     onexportanswers,
+    onprintanswers,
     exportingAnswers = false,
     showSummary = true
   }: {
@@ -27,6 +29,8 @@
     ondelete: (attemptId: string, displayName: string | null) => void;
     /** The papers to fetch answers for; empty means every finished sitting shown. */
     onexportanswers?: (attemptIds: string[]) => void;
+    /** The same selection, opened as printable answer sheets instead of a workbook. */
+    onprintanswers?: (attemptIds: string[]) => void;
     exportingAnswers?: boolean;
     /** Off where the screen already states them above the table, so they are not said twice. */
     showSummary?: boolean;
@@ -57,10 +61,19 @@
     picked = checked ? new Set(pickable.map((row) => row.attemptId)) : new Set();
   }
 
-  function exportAnswers() {
+  /** The papers a teacher meant: the ones ticked, or everything on screen when none are. */
+  function chosenAttempts(): string[] {
     const chosen = pickable.filter((row) => picked.has(row.attemptId)).map((row) => row.attemptId);
 
-    onexportanswers?.(chosen.length > 0 ? chosen : pickable.map((row) => row.attemptId));
+    return chosen.length > 0 ? chosen : pickable.map((row) => row.attemptId);
+  }
+
+  function exportAnswers() {
+    onexportanswers?.(chosenAttempts());
+  }
+
+  function printAnswers() {
+    onprintanswers?.(chosenAttempts());
   }
 
   type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual';
@@ -361,6 +374,19 @@
           {picked.size > 0
             ? $t('exam.results.export_answers_selected', { count: String(picked.size) })
             : $t('exam.results.export_answers_all', { count: String(pickable.length) })}
+        </Button>
+      {/if}
+
+      {#if pickable.length > 0 && onprintanswers}
+        <!--
+          The same answers as the workbook, on paper instead of in a spreadsheet: one A4
+          sheet per candidate, which is the form a teacher can hand back in the room.
+        -->
+        <Button size="sm" variant="outline" onclick={printAnswers}>
+          <PrinterIcon size={14} />
+          {picked.size > 0
+            ? $t('exam.results.print_selected', { count: String(picked.size) })
+            : $t('exam.results.print_all', { count: String(pickable.length) })}
         </Button>
       {/if}
 

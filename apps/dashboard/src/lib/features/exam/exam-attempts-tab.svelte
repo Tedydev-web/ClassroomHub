@@ -173,6 +173,19 @@
     }
   }
 
+  /**
+   * The answer sheets, opened in their own tab for the print dialog.
+   *
+   * A new tab rather than a navigation: the teacher is mid-way through reading the results
+   * when they print, and coming back to a screen they had already scrolled and filtered is
+   * the difference between printing once and printing three times.
+   */
+  function printAnswers(attemptIds: string[]) {
+    const query = attemptIds.length > 0 ? `?attempts=${attemptIds.join(',')}` : '';
+
+    window.open(`/courses/${courseId}/exams/${examId}/print${query}`, '_blank', 'noopener');
+  }
+
   function openAttempt(attemptId: string) {
     // A navigation, not a page load: the rest of the dashboard moves between screens
     // without dropping client state, and a full reload here was the one place it did not.
@@ -303,6 +316,7 @@
           onreopen={reopen}
           ondelete={remove}
           onexportanswers={exportAnswers}
+          onprintanswers={printAnswers}
           {exportingAnswers}
         />
       {/if}
