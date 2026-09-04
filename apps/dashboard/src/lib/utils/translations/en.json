@@ -5610,7 +5610,8 @@
       "wrong_count": "{count} wrong",
       "blank_count": "{count} blank",
       "summary_mode": "Summary",
-      "individual_mode": "Individual"
+      "individual_mode": "Individual",
+      "started_at_column": "Started"
     },
     "manage": {
       "title": "Exams",

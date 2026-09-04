@@ -184,6 +184,8 @@
       $t('exam.results.status_column'),
       $t('exam.results.score_column'),
       $t('exam.results.time_taken_column'),
+      $t('exam.results.started_at_column'),
+      $t('exam.results.submitted_at_column'),
       $t('exam.results.leaves_column')
     ];
     /**
@@ -210,6 +212,8 @@
           statusLabel(row),
           row.score === null ? '' : `${row.score}/${row.total ?? ''}`,
           minutesOf(row) === null ? '' : String(minutesOf(row)),
+          clockOf(row.startedAt),
+          clockOf(row.submittedAt),
           String(row.leaves ?? 0)
         ]
           .map(escape)
@@ -256,6 +260,39 @@
 
     const suffix = row.gradingState === 'awaiting_manual' ? ` (${$t('exam.results.partial_score')})` : '';
     return `${row.score}/${row.total}${suffix}`;
+  }
+
+  /**
+   * When a sitting ran, as clock times.
+   *
+   * A duration alone cannot separate two sittings by the same candidate, which is exactly
+   * the moment a teacher needs it separated: a name appearing twice is either a duplicate to
+   * remove or a legitimate second attempt, and which paper came first decides it. The date
+   * is there because papers left open across midnight are ordinary in a class that sits an
+   * exam at home.
+   */
+  function clockOf(value: string | null): string {
+    if (!value) return '';
+
+    const moment = new Date(value);
+    if (Number.isNaN(moment.getTime())) return '';
+
+    return moment.toLocaleString($locale, {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /** `started → submitted`, or just the start where the paper is still open. */
+  function ranBetween(row: ExamResultRow): string {
+    const started = clockOf(row.startedAt);
+    const submitted = clockOf(row.submittedAt);
+
+    if (!started) return submitted;
+
+    return submitted ? `${started} → ${submitted}` : started;
   }
 
   function minutesTaken(row: ExamResultRow): string {
@@ -463,8 +500,15 @@
               </Table.Cell>
               <!-- Numbers right-aligned with tabular figures, so columns of marks line up. -->
               <Table.Cell class="ui:text-right ui:font-medium ui:tabular-nums">{scoreLabel(row)}</Table.Cell>
-              <Table.Cell class="ui:text-muted-foreground ui:text-right ui:tabular-nums">{minutesTaken(row)}</Table.Cell
-              >
+              <Table.Cell class="ui:text-muted-foreground ui:text-right ui:tabular-nums">
+                <div>{minutesTaken(row)}</div>
+                <!--
+                  Underneath rather than in a column of its own: the duration is what a
+                  teacher reads at a glance, and the clock times are what they look at when
+                  two rows carry the same name.
+                -->
+                <div class="ui:text-xs ui:opacity-70">{ranBetween(row)}</div>
+              </Table.Cell>
               <Table.Cell class="ui:text-right ui:tabular-nums">
                 <!-- A dash rather than a nought where the paper never lost focus: nought is
                      a measurement and this is the absence of anything to measure. -->

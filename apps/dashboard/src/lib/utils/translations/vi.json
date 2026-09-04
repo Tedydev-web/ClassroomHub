@@ -5620,7 +5620,8 @@
       "wrong_count": "{count} sai",
       "blank_count": "{count} bỏ trống",
       "summary_mode": "Tóm tắt",
-      "individual_mode": "Cá nhân"
+      "individual_mode": "Cá nhân",
+      "started_at_column": "Bắt đầu"
     },
     "manage": {
       "title": "Đề thi",
