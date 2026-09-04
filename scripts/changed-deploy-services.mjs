@@ -29,7 +29,13 @@ const ALL = ['api', 'dashboard', 'jobs'];
 const OWNED = [
   { prefix: 'apps/api/', service: 'api' },
   { prefix: 'apps/dashboard/', service: 'dashboard' },
-  { prefix: 'apps/jobs/', service: 'jobs' }
+  { prefix: 'apps/jobs/', service: 'jobs' },
+  // A service's own Dockerfile builds that service's image and nothing else. Everything
+  // else under `docker/` — the compose file, the shared ignore rules, the entrypoints — is
+  // not narrowed, because those reach all three.
+  { prefix: 'docker/Dockerfile.api', service: 'api' },
+  { prefix: 'docker/Dockerfile.dashboard', service: 'dashboard' },
+  { prefix: 'docker/Dockerfile.jobs', service: 'jobs' }
 ];
 
 /**

@@ -69,6 +69,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The rule decides what gets rebuilt and what keeps serving, so it is checked
+          # before it is trusted. Two seconds, and it catches the narrowing that would ship
+          # a dashboard against an API that does not have the endpoint it calls.
+          node --test scripts/changed-deploy-services.test.mjs
+
           # A manual run, a first push, or a force-push leaves no usable previous commit.
           # Rebuilding everything is the answer that cannot be wrong.
           if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ] \
