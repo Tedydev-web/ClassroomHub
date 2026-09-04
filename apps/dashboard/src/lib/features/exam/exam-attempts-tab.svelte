@@ -62,7 +62,15 @@
   };
 
   type Mode = 'summary' | 'individual';
-  let mode = $state<Mode>('summary');
+  /**
+   * Individual first, and first on the strip.
+   *
+   * Summary answers "which question did the class fall for", which is a question a teacher
+   * asks once, while preparing. Individual answers "what did each of them get", which is
+   * what the screen is opened for the rest of the time — marking, invigilating, looking up
+   * one candidate. The mode that gets opened by default should be the one that gets opened.
+   */
+  let mode = $state<Mode>('individual');
 
   /**
    * The four numbers, above both modes rather than inside the table.
@@ -323,8 +331,8 @@
 
   <Tabs.Root bind:value={mode} class="w-full">
     <Tabs.List class="grid w-full max-w-sm grid-cols-2">
-      <Tabs.Trigger value="summary">{$t('exam.results.summary_mode')}</Tabs.Trigger>
       <Tabs.Trigger value="individual">{$t('exam.results.individual_mode')}</Tabs.Trigger>
+      <Tabs.Trigger value="summary">{$t('exam.results.summary_mode')}</Tabs.Trigger>
     </Tabs.List>
 
     <Tabs.Content value="summary" class="pt-4">

@@ -1,6 +1,6 @@
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 
 /**
  * Every sitting handed in across one course, newest first.
@@ -41,6 +41,10 @@ export type CourseAttemptRow = {
   total: string | null;
   startedAt: string;
   submittedAt: string | null;
+  /** How many times the paper stopped being the visible window on their device. */
+  leaves: number;
+  duplicateName: boolean;
+  duplicateAddress: boolean;
 };
 
 export async function listCourseAttemptsService(courseId: string): Promise<CourseAttemptRow[]> {
@@ -59,7 +63,15 @@ export async function listCourseAttemptsService(courseId: string): Promise<Cours
       score: schema.examAttempt.score,
       total: schema.examAttempt.total,
       startedAt: schema.examAttempt.startedAt,
-      submittedAt: schema.examAttempt.submittedAt
+      submittedAt: schema.examAttempt.submittedAt,
+      ipHash: schema.examAttempt.ipHash,
+      // Counted in the database, as the per-exam list counts it: the log itself is never
+      // selected here, and one integer is all a teacher needs to choose who to read first.
+      leaves: sql<number>`(
+        select count(*)::int
+        from jsonb_array_elements(${schema.examAttempt.activityLog}) as event
+        where event->>'kind' = 'left'
+      )`
     })
     .from(schema.examAttempt)
     .innerJoin(schema.exam, eq(schema.exam.id, schema.examAttempt.examId))
@@ -68,5 +80,29 @@ export async function listCourseAttemptsService(courseId: string): Promise<Cours
     .where(and(eq(schema.exam.courseId, courseId), isNull(schema.exam.deletedAt)))
     .orderBy(desc(schema.examAttempt.startedAt));
 
-  return rows as CourseAttemptRow[];
+  /**
+   * Duplicates are counted within a paper, never across the course.
+   *
+   * Two candidates of the same name sitting two different papers is a class with two
+   * Nguyễn Văn A in it, which is ordinary. Two of them on the *same* paper is the thing a
+   * teacher wants flagged, and the same argument holds for an address.
+   */
+  const names = new Map<string, number>();
+  const addresses = new Map<string, number>();
+
+  for (const row of rows) {
+    const name = row.displayName?.trim().toLowerCase();
+
+    if (name) names.set(`${row.examId}:${name}`, (names.get(`${row.examId}:${name}`) ?? 0) + 1);
+    if (row.ipHash)
+      addresses.set(`${row.examId}:${row.ipHash}`, (addresses.get(`${row.examId}:${row.ipHash}`) ?? 0) + 1);
+  }
+
+  return rows.map(({ ipHash, ...row }) => ({
+    ...row,
+    duplicateName: Boolean(
+      row.displayName && (names.get(`${row.examId}:${row.displayName.trim().toLowerCase()}`) ?? 0) > 1
+    ),
+    duplicateAddress: Boolean(ipHash && (addresses.get(`${row.examId}:${ipHash}`) ?? 0) > 1)
+  })) as CourseAttemptRow[];
 }

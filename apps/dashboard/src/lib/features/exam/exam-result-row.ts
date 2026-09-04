@@ -26,4 +26,13 @@ export type ExamResultRow = {
   duplicateAddress: boolean;
   /** How many times the paper stopped being the visible window on their device. */
   leaves: number;
+  /**
+   * Which paper this sitting belongs to, on the views that hold more than one.
+   *
+   * Absent on an exam's own results, where every row is the same paper and a column naming
+   * it forty times would say nothing. Present on the course's list, which is where a
+   * teacher is looking across papers and the title is the thing that tells rows apart.
+   */
+  examId?: string;
+  examTitle?: string | null;
 };

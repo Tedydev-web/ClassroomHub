@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { locale, t } from '$lib/utils/functions/translations';
+  import { goto } from '$app/navigation';
+  import { t } from '$lib/utils/functions/translations';
   import ExamAttemptsTab from '$features/exam/exam-attempts-tab.svelte';
+  import ExamResultsTable from '$features/exam/exam-results-table.svelte';
   import type { ExamResultRow } from '$features/exam/exam-result-row';
   import { classroomhub } from '$lib/utils/services/api';
-  import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
-  import * as Table from '@cio/ui/base/table';
   import * as Empty from '@cio/ui/base/empty';
 
   /**
@@ -34,6 +34,9 @@
     total: string | null;
     startedAt: string;
     submittedAt: string | null;
+    leaves: number;
+    duplicateName: boolean;
+    duplicateAddress: boolean;
   };
 
   let {
@@ -91,6 +94,20 @@
       .filter((exam, index, all) => all.findIndex((other) => other.id === exam.id) === index)
   );
 
+  /**
+   * A row here belongs to a paper of its own, so opening it needs that paper's id — which
+   * is the one thing this list has that an exam's own results do not.
+   *
+   * Reopening and deleting route to the attempt as well. Both are destructive and both live
+   * on the exam's own screen; from a list that spans papers, taking a teacher to the paper
+   * is safer than acting on a row whose context they are not looking at.
+   */
+  function openAttempt(attemptId: string) {
+    const row = attempts.find((candidate) => candidate.attemptId === attemptId);
+
+    if (row) goto(`/courses/${courseId}/exams/${row.examId}/attempts/${attemptId}`);
+  }
+
   const shown = $derived.by(() => {
     const needle = search.trim().toLowerCase();
 
@@ -105,56 +122,6 @@
         .some((value) => value.toLowerCase().includes(needle));
     });
   });
-
-  /**
-   * Whether the clock has run out on a sitting still stored as ongoing.
-   *
-   * This list does not finalise — see the service — so an attempt abandoned last week is
-   * still `in_progress` in the database until somebody opens that exam. Calling it ongoing
-   * here would put this page and the exam's own results page in visible disagreement about
-   * one student, which is precisely the kind of thing a teacher then has to distrust.
-   */
-  function ranOut(row: CourseAttemptRow): boolean {
-    return row.status === 'in_progress' && row.expiresAt !== null && new Date(row.expiresAt).getTime() < Date.now();
-  }
-
-  function statusLabel(row: CourseAttemptRow): string {
-    if (row.gradingState === 'unscoreable') return $t('exam.status.unscoreable');
-    if (row.gradingState === 'awaiting_manual') return $t('exam.status.awaiting_manual');
-    if (ranOut(row)) return $t('exam.status.expired');
-    if (row.status === 'in_progress') return $t('exam.status.in_progress');
-    if (row.status === 'expired') return $t('exam.status.expired');
-
-    return $t('exam.status.submitted');
-  }
-
-  function statusVariant(row: CourseAttemptRow): 'default' | 'secondary' | 'outline' | 'destructive' {
-    if (row.gradingState === 'unscoreable') return 'destructive';
-    if (row.gradingState === 'awaiting_manual') return 'default';
-    if (row.status === 'in_progress' && !ranOut(row)) return 'outline';
-
-    return 'secondary';
-  }
-
-  function scoreLabel(row: CourseAttemptRow): string {
-    if (row.score === null || row.total === null) return '—';
-
-    const suffix = row.gradingState === 'awaiting_manual' ? ` (${$t('exam.results.partial_score')})` : '';
-
-    return `${row.score}/${row.total}${suffix}`;
-  }
-
-  /** When they handed it in, or when they started if they have not. */
-  function whenLabel(row: CourseAttemptRow): string {
-    const moment = row.submittedAt ?? row.startedAt;
-
-    return new Date(moment).toLocaleString($locale, {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
 </script>
 
 <div class="space-y-4">
@@ -198,46 +165,15 @@
       </Empty.Content>
     </Empty.Root>
   {:else}
-    <Table.Root>
-      <Table.Header>
-        <Table.Row>
-          <Table.Head>{$t('exam.entry.full_name')}</Table.Head>
-          <Table.Head>{$t('exam.results.exam_column')}</Table.Head>
-          <Table.Head>{$t('exam.entry.class_name')}</Table.Head>
-          <Table.Head>{$t('exam.results.status_column')}</Table.Head>
-          <Table.Head>{$t('exam.results.score_column')}</Table.Head>
-          <Table.Head>{$t('exam.results.submitted_at_column')}</Table.Head>
-          <Table.Head></Table.Head>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {#each shown as row (row.attemptId)}
-          <Table.Row>
-            <Table.Cell class="font-medium">
-              {row.displayName ?? '—'}
-              {#if row.nickname}
-                <span class="text-muted-foreground text-xs">({row.nickname})</span>
-              {/if}
-            </Table.Cell>
-            <Table.Cell>
-              <a class="hover:underline" href={`/courses/${courseId}/exams/${row.examId}`}>{row.examTitle}</a>
-            </Table.Cell>
-            <Table.Cell>{row.className ?? '—'}</Table.Cell>
-            <Table.Cell><Badge variant={statusVariant(row)}>{statusLabel(row)}</Badge></Table.Cell>
-            <Table.Cell class="tabular-nums">{scoreLabel(row)}</Table.Cell>
-            <Table.Cell class="tabular-nums">{whenLabel(row)}</Table.Cell>
-            <Table.Cell class="text-right">
-              <Button
-                variant="ghost"
-                size="sm"
-                href={`/courses/${courseId}/exams/${row.examId}/attempts/${row.attemptId}`}
-              >
-                {$t('exam.results.open_attempt')}
-              </Button>
-            </Table.Cell>
-          </Table.Row>
-        {/each}
-      </Table.Body>
-    </Table.Root>
+    <!--
+      The same table the exam's own results use, with the paper's title as one more column.
+      A teacher looking across papers is doing the same work as one looking at a single
+      paper — reading who sat, what they scored, who to open first — and until now the two
+      screens answered that with two different tables.
+
+      What this mode cannot have is what belongs to one paper: no summary of what the class
+      chose per question, and no workbook or printed sheets, both built from one paper's key.
+    -->
+    <ExamResultsTable rows={courseRows} onopen={openAttempt} onreopen={openAttempt} ondelete={openAttempt} />
   {/if}
 </div>

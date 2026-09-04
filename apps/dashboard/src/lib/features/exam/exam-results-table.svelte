@@ -45,6 +45,9 @@
    */
   let picked = $state<Set<string>>(new Set());
 
+  /** Shown only when the rows span papers — see `examTitle` on the row. */
+  const showExam = $derived(rows.some((row) => Boolean(row.examTitle)));
+
   const pickable = $derived(shown.filter((row) => row.status !== 'in_progress'));
   const allPicked = $derived(pickable.length > 0 && pickable.every((row) => picked.has(row.attemptId)));
 
@@ -192,6 +195,7 @@
     const header = [
       $t('exam.entry.full_name'),
       $t('exam.entry.nickname'),
+      ...(showExam ? [$t('exam.results.exam_column')] : []),
       $t('exam.entry.class_name'),
       $t('exam.entry.candidate_number'),
       $t('exam.results.status_column'),
@@ -220,6 +224,7 @@
         [
           row.displayName ?? '',
           row.nickname ?? '',
+          ...(showExam ? [row.examTitle ?? ''] : []),
           row.className ?? '',
           row.candidateNumber ?? '',
           statusLabel(row),
@@ -442,6 +447,9 @@
                 >
               </button>
             </Table.Head>
+            {#if showExam}
+              <Table.Head>{$t('exam.results.exam_column')}</Table.Head>
+            {/if}
             <Table.Head>{$t('exam.entry.class_name')}</Table.Head>
             <Table.Head>{$t('exam.entry.candidate_number')}</Table.Head>
             <Table.Head>{$t('exam.results.status_column')}</Table.Head>
@@ -519,6 +527,9 @@
                   </Badge>
                 {/if}
               </Table.Cell>
+              {#if showExam}
+                <Table.Cell class="ui:text-muted-foreground">{row.examTitle ?? '—'}</Table.Cell>
+              {/if}
               <Table.Cell class="ui:text-muted-foreground">{row.className ?? '—'}</Table.Cell>
               <Table.Cell class="ui:text-muted-foreground ui:tabular-nums">{row.candidateNumber ?? '—'}</Table.Cell>
               <Table.Cell>
