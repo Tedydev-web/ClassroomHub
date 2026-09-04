@@ -8,8 +8,12 @@ name: Notify CI/CD
 # keeps the notification out of the deploy's critical path — a Telegram outage
 # cannot fail a deploy — and means a new workflow only has to be named here.
 #
-# Both `in_progress` and `completed` are reported: one message when a run picks
-# up so a deploy can be watched while it happens, and one with the result.
+# Two messages per run: one when it is requested, so a deploy can be watched while
+# it happens, and one with the result.
+#
+# `requested` rather than `in_progress`, because GitHub raises `in_progress` each
+# time a *job* in the run picks up. A deploy has four jobs, so the start was being
+# announced three or four times, identically, minutes apart.
 
 on:
   workflow_run:
@@ -21,7 +25,7 @@ on:
       - Deploy tenant router
       - Deploy embeds to R2
     types:
-      - in_progress
+      - requested
       - completed
   workflow_dispatch:
 
@@ -78,9 +82,10 @@ jobs:
           # so a long commit message cannot push the links out of the preview.
           subject="$(printf '%s' "${COMMIT_MESSAGE}" | head -n 1)"
 
-          # A run that has just picked up has no conclusion yet; saying "started"
-          # is what makes the first message readable instead of an empty status.
-          if [ "${EVENT_ACTION}" = "in_progress" ]; then
+          # A run that has only just been requested has no conclusion yet; saying
+          # "started" is what makes the first message readable instead of an empty
+          # status.
+          if [ "${EVENT_ACTION}" = "requested" ]; then
             status="started"
           else
             status="${CONCLUSION}"
