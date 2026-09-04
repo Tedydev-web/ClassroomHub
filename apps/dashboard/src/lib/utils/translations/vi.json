@@ -5909,7 +5909,9 @@
       "legend_chosen": "Thí sinh đã chọn",
       "legend_key": "Đáp án đúng",
       "note": "Nhận xét của giáo viên",
-      "signature": "Chữ ký giáo viên"
+      "signature": "Chữ ký giáo viên",
+      "question_column": "Câu",
+      "outcome_column": "KQ"
     }
   },
   "error_page": {

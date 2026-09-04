@@ -5899,7 +5899,9 @@
       "legend_chosen": "Chosen",
       "legend_key": "Correct answer",
       "note": "Teacher’s comments",
-      "signature": "Teacher’s signature"
+      "signature": "Teacher’s signature",
+      "question_column": "No.",
+      "outcome_column": "Result"
     }
   },
   "error_page": {

@@ -61,6 +61,22 @@
 
   const columns = $derived(columnsOf(data.questions));
 
+  /**
+   * The letters every column is ruled for.
+   *
+   * The Ministry's sheet heads each block with A B C D once and lines the bubbles up under
+   * them; that alignment is what lets an eye run down a column instead of reading every
+   * letter. Doing the same means one set of columns for the whole paper rather than a set
+   * per question — a question that offers fewer simply leaves its cells empty, which is also
+   * the honest thing to show.
+   */
+  const alphabet = $derived(
+    data.questions
+      .flatMap((question) => lettersOf(question))
+      .filter((letter, index, all) => all.indexOf(letter) === index)
+      .sort()
+  );
+
   /** `dd/MM HH:mm` in the room's own time, which is the only clock anybody there reads by. */
   function clockOf(value: string | null): string {
     if (!value) return '—';
@@ -155,26 +171,42 @@
       <div class="columns">
         {#each columns as column (column[0].position)}
           <table class="column">
+            <thead>
+              <tr>
+                <th class="num">{$t('exam.print.question_column')}</th>
+                {#each alphabet as letter (letter)}
+                  <th>{letter}</th>
+                {/each}
+                <th class="outcome">{$t('exam.print.outcome_column')}</th>
+              </tr>
+            </thead>
             <tbody>
               {#each column as question (question.position)}
                 {@const chosen = row.chosen[question.position - 1] ?? null}
                 {@const outcome = outcomeOf(chosen, question.key)}
+                {@const letters = lettersOf(question)}
                 <tr>
-                  <th>{question.position}</th>
-                  <td class="options">
-                    {#each lettersOf(question) as letter (letter)}
-                      <!--
-                        Two independent marks, because a page printed in black and white on a
-                        tired laser is not required to keep a fill. The chosen letter is
-                        inked; the key is boxed. A letter that is both is a right answer.
-                      -->
-                      <span
-                        class={['option', chosen?.includes(letter) && 'chosen', question.key.includes(letter) && 'key']
-                          .filter(Boolean)
-                          .join(' ')}>{letter}</span
-                      >
-                    {/each}
-                  </td>
+                  <th class="num">{question.position}</th>
+                  {#each alphabet as letter (letter)}
+                    <td>
+                      {#if letters.includes(letter)}
+                        <!--
+                          Two independent marks, because a page printed in black and white on
+                          a tired laser is not required to keep a fill. The chosen letter is
+                          inked; the key is boxed. A letter that is both is a right answer.
+                        -->
+                        <span
+                          class={[
+                            'option',
+                            chosen?.includes(letter) && 'chosen',
+                            question.key.includes(letter) && 'key'
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}>{letter}</span
+                        >
+                      {/if}
+                    </td>
+                  {/each}
                   <td class="outcome">
                     {#if outcome === 'right'}✓{:else if outcome === 'wrong'}✗{:else}—{/if}
                   </td>
@@ -333,70 +365,50 @@
   .columns {
     display: flex;
     /*
-      Four columns of letters plus their marks are wider than a quarter of the page each, and
-      flex will let the last one spill past the frame rather than admit it: the gap and the
-      cell widths below are what keep the fourth column's result glyph inside the border.
+      Four blocks of the same grid, sized so the last one's result column stays inside the
+      frame: flex will happily let a table overflow rather than admit it does not fit.
     */
-    gap: 2.5mm;
+    gap: 3mm;
     align-items: flex-start;
   }
 
   .column {
     flex: 1 1 0;
     min-width: 0;
+    width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
+    /* The block's own frame, which is what makes four blocks read as four blocks. */
+    border: 0.4mm solid #000;
   }
 
   .column th,
   .column td {
-    border-bottom: 0.2mm solid #9ca3af;
-    padding: 1.8mm 0.5mm;
+    border: 0.2mm solid #000;
+    padding: 1.2mm 0;
+    text-align: center;
     vertical-align: middle;
   }
 
-  .column th {
-    width: 8mm;
-    text-align: right;
-    padding-right: 1.5mm;
-    font-weight: 400;
-    font-size: 10.5pt;
-  }
-
-  .options {
-    white-space: nowrap;
-  }
-
-  .outcome {
-    width: 6mm;
-    text-align: center;
-    font-size: 12.5pt;
-  }
-
-  .option {
-    display: inline-block;
-    width: 6.2mm;
-    height: 6.2mm;
-    line-height: 6.2mm;
-    margin-right: 0.6mm;
-    text-align: center;
-    font-size: 10.5pt;
-    border: 0.2mm solid transparent;
-    border-radius: 50%;
-  }
-
-  /* Boxed, not filled: a border survives every printer, and the key must always be legible. */
-  .option.key {
-    border: 0.5mm solid #000;
-  }
-
-  .option.chosen {
-    background: #000;
-    color: #fff;
+  .column thead th {
+    /* Headed once, the way the Ministry's blocks are: the eye reads the column, not the
+       letters. Grey rather than the sheet's pink, because this is printed in black. */
+    background: #e5e5e5;
     font-weight: 700;
-    /* Browsers drop backgrounds when printing unless asked not to; without this the ink
-       that marks the candidate's own answer is the one thing missing from the paper. */
+    font-size: 10.5pt;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .column .num {
+    width: 8mm;
+    font-weight: 700;
+    font-size: 10.5pt;
+  }
+
+  .column .outcome {
+    width: 7mm;
+    font-size: 12pt;
   }
 
   .note {
@@ -417,6 +429,32 @@
     text-align: right;
     font-style: italic;
     font-size: 10.5pt;
+  }
+
+  .option {
+    display: inline-block;
+    width: 5.6mm;
+    height: 5.6mm;
+    line-height: 5.6mm;
+    text-align: center;
+    font-size: 10pt;
+    border: 0.2mm solid transparent;
+    border-radius: 50%;
+  }
+
+  /* Boxed, not filled: a border survives every printer, and the key must always be legible. */
+  .option.key {
+    border: 0.5mm solid #000;
+  }
+
+  .option.chosen {
+    background: #000;
+    color: #fff;
+    font-weight: 700;
+    /* Browsers drop backgrounds when printing unless asked not to; without this the ink
+       that marks the candidate's own answer is the one thing missing from the paper. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .legend {
