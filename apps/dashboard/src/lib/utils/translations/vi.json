@@ -5912,7 +5912,6 @@
       "question_column": "Câu",
       "printed_at": "Xuất lúc {at}",
       "printed_by": "Người xuất: {name}",
-      "confidential": "Tài liệu lưu hành nội bộ",
       "page_of": "Trang {page}/{total}"
     }
   },

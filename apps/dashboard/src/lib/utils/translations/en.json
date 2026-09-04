@@ -5902,7 +5902,6 @@
       "question_column": "No.",
       "printed_at": "Printed {at}",
       "printed_by": "Printed by {name}",
-      "confidential": "Internal document",
       "page_of": "Page {page}/{total}"
     }
   },

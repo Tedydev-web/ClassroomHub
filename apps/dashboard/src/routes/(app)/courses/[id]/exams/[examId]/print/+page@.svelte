@@ -16,6 +16,9 @@
    */
   let { data } = $props();
 
+  /** Set when the tenant's uploaded logo will not load, so the name takes its place. */
+  let logoBroken = $state(false);
+
   type Question = { position: number; key: string; letters: string[] };
 
   /**
@@ -126,6 +129,10 @@
     -->
     <div class="masthead">
       <div class="issuer">
+        <!--
+          A tenant's mark: its logo where one is uploaded, its name where none is. Only one
+          of the two, because printing both says the same thing twice in the same corner.
+        -->
         {#if data.issuer.organizationLogo}
           <!--
             An organisation's logo is a URL to a file somebody uploaded, and the file can be
@@ -135,10 +142,17 @@
           <img
             src={data.issuer.organizationLogo}
             alt=""
-            onerror={(event) => ((event.currentTarget as HTMLImageElement).hidden = true)}
+            onerror={(event) => {
+              // An uploaded file can be gone, and a broken-image icon in the masthead of a
+              // printed sheet is worse than no logo: fall back to the name it stands for.
+              (event.currentTarget as HTMLImageElement).hidden = true;
+              logoBroken = true;
+            }}
           />
         {/if}
-        <span>{data.issuer.organizationName ?? ''}</span>
+        {#if !data.issuer.organizationLogo || logoBroken}
+          <span>{data.issuer.organizationName ?? ''}</span>
+        {/if}
       </div>
       <p class="paper">
         {#if data.issuer.courseTitle}{data.issuer.courseTitle}{/if}
@@ -250,13 +264,14 @@
       candidates, which is the count a teacher checks a stack against.
     -->
     <footer class="colophon">
+      <!--
+        The system's own mark, on every sheet whoever the tenant is: a page found later in a
+        filing cabinet should say which system it came out of.
+      -->
+      <span class="system"><img src="/logo.svg" alt="" />ClassroomHub</span>
       <span>{$t('exam.print.printed_at', { at: data.issuer.printedAt })}</span>
       {#if data.issuer.printedBy}
         <span>{$t('exam.print.printed_by', { name: data.issuer.printedBy })}</span>
-      {/if}
-      <span>{$t('exam.print.confidential')}</span>
-      {#if data.issuer.organizationName}
-        <span>© {new Date().getFullYear()} {data.issuer.organizationName}</span>
       {/if}
       <span class="page">{$t('exam.print.page_of', { page: String(index + 1), total: String(data.rows.length) })}</span>
     </footer>
@@ -368,6 +383,19 @@
     border-top: 0.2mm solid #000;
     font-size: 8.5pt;
     color: #374151;
+  }
+
+  .system {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5mm;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .system img {
+    height: 4.2mm;
+    width: auto;
   }
 
   .colophon .page {
