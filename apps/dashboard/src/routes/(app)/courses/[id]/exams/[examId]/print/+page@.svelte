@@ -566,7 +566,8 @@
   .legend {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    /* On the same left edge as everything else on the sheet, and read before the answers
+       rather than after them. */
     gap: 4mm;
     margin: 0 0 1.5mm;
     font-size: 8.5pt;
