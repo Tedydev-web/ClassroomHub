@@ -5899,7 +5899,11 @@
       "legend_chosen": "Chosen",
       "legend_key": "Correct answer",
       "note": "Comment",
-      "question_column": "No."
+      "question_column": "No.",
+      "printed_at": "Printed {at}",
+      "printed_by": "Printed by {name}",
+      "confidential": "Internal document",
+      "page_of": "Page {page}/{total}"
     }
   },
   "error_page": {

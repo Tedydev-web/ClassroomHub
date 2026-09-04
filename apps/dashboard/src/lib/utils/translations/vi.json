@@ -5909,7 +5909,11 @@
       "legend_chosen": "Thí sinh đã chọn",
       "legend_key": "Đáp án đúng",
       "note": "Nhận xét",
-      "question_column": "Câu"
+      "question_column": "Câu",
+      "printed_at": "Xuất lúc {at}",
+      "printed_by": "Người xuất: {name}",
+      "confidential": "Tài liệu lưu hành nội bộ",
+      "page_of": "Trang {page}/{total}"
     }
   },
   "error_page": {

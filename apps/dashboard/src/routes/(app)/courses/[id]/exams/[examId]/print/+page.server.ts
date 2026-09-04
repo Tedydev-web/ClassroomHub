@@ -15,7 +15,7 @@ import { safeServerApi } from '$lib/utils/services/api/server';
  * server-side writer would have had to carry and be checked glyph by glyph. What the page
  * owes in return is print CSS honest enough that the dialog's preview is the finished sheet.
  */
-export const load = async ({ params, url, cookies }) => {
+export const load = async ({ params, url, cookies, locals }) => {
   const headers = getApiHeaders(cookies, '');
 
   /**
@@ -31,7 +31,7 @@ export const load = async ({ params, url, cookies }) => {
     .map((id) => id.trim())
     .filter(Boolean);
 
-  const [examResult, keysResult, matrixResult] = await Promise.all([
+  const [examResult, keysResult, matrixResult, contextResult] = await Promise.all([
     safeServerApi(() => classroomhub.exam[':examId'].$get({ param: { examId: params.examId } }, headers)),
     safeServerApi(() =>
       classroomhub.exam[':examId']['answer-keys'].$get({ param: { examId: params.examId } }, headers)
@@ -41,6 +41,9 @@ export const load = async ({ params, url, cookies }) => {
         { param: { examId: params.examId }, json: { attemptIds } },
         headers
       )
+    ),
+    safeServerApi(() =>
+      classroomhub.exam[':examId']['print-context'].$get({ param: { examId: params.examId } }, headers)
     )
   ]);
 
@@ -70,9 +73,32 @@ export const load = async ({ params, url, cookies }) => {
     }
   }
 
+  const context = contextResult.ok ? contextResult.body.data : null;
+
   return {
     courseId: params.id,
     examTitle: examResult.body.data.title,
+    /**
+     * The masthead and foot, which is what lets the page answer for itself once it is off
+     * the screen: who issued it, what it records, when it was true and who asked for it.
+     *
+     * Printed here rather than read off the clock in the browser, because the time a sheet
+     * claims to have been taken is the server's, not whatever the printing laptop believes.
+     */
+    issuer: {
+      organizationName: context?.organizationName ?? null,
+      organizationLogo: context?.organizationLogo ?? null,
+      courseTitle: context?.courseTitle ?? null,
+      printedBy: locals.user?.name ?? locals.user?.email ?? null,
+      printedAt: new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(new Date())
+    },
     questions: matrix.questions.map((question) => ({
       position: question.position,
       key: question.key,

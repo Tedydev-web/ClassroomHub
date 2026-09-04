@@ -118,8 +118,33 @@
   <span>{$t('exam.print.hint')}</span>
 </div>
 
-{#each data.rows as row (row.attemptId)}
+{#each data.rows as row, index (row.attemptId)}
   <article class="sheet">
+    <!--
+      The masthead. A sheet read months later in a staff room has to say which school issued
+      it and which paper it records without anybody having to remember.
+    -->
+    <div class="masthead">
+      <div class="issuer">
+        {#if data.issuer.organizationLogo}
+          <!--
+            An organisation's logo is a URL to a file somebody uploaded, and the file can be
+            gone; a broken image icon in the masthead of a printed sheet is worse than no
+            logo at all.
+          -->
+          <img
+            src={data.issuer.organizationLogo}
+            alt=""
+            onerror={(event) => ((event.currentTarget as HTMLImageElement).hidden = true)}
+          />
+        {/if}
+        <span>{data.issuer.organizationName ?? ''}</span>
+      </div>
+      <p class="paper">
+        {#if data.issuer.courseTitle}{data.issuer.courseTitle}{/if}
+      </p>
+    </div>
+
     <header class="head">
       <p class="kicker">{$t('exam.print.title')}</p>
       <h1>{data.examTitle}</h1>
@@ -218,6 +243,23 @@
       <span><span class="option chosen">A</span> {$t('exam.print.legend_chosen')}</span>
       <span><span class="option key">A</span> {$t('exam.print.legend_key')}</span>
     </footer>
+
+    <!--
+      The foot. Printed per sheet rather than in a page margin because Chrome will not put
+      content in one, and because each sheet is exactly one page: the page number counts
+      candidates, which is the count a teacher checks a stack against.
+    -->
+    <footer class="colophon">
+      <span>{$t('exam.print.printed_at', { at: data.issuer.printedAt })}</span>
+      {#if data.issuer.printedBy}
+        <span>{$t('exam.print.printed_by', { name: data.issuer.printedBy })}</span>
+      {/if}
+      <span>{$t('exam.print.confidential')}</span>
+      {#if data.issuer.organizationName}
+        <span>© {new Date().getFullYear()} {data.issuer.organizationName}</span>
+      {/if}
+      <span class="page">{$t('exam.print.page_of', { page: String(index + 1), total: String(data.rows.length) })}</span>
+    </footer>
   </article>
 {/each}
 
@@ -263,6 +305,13 @@
     /* Its own page, every time: one candidate per sheet is the whole point of handing it out. */
     break-after: page;
     box-sizing: border-box;
+    /*
+      As tall as the printable area, so the colophon sits on the foot of the paper rather
+      than under whatever the last block happened to end at. A4 less the page margins.
+    */
+    min-height: 262mm;
+    display: flex;
+    flex-direction: column;
     width: 190mm;
     margin: 8mm auto;
     padding: 6mm;
@@ -278,9 +327,58 @@
     break-after: auto;
   }
 
+  .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4mm;
+    padding-bottom: 2mm;
+    border-bottom: 0.3mm solid #000;
+    font-size: 10pt;
+  }
+
+  .issuer {
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .issuer img {
+    /* Height-bound, so a wide wordmark and a square badge both sit on the same line. */
+    height: 9mm;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .paper {
+    margin: 0;
+    text-align: right;
+    font-style: italic;
+  }
+
+  .colophon {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm;
+    /* Pushed to the foot of the sheet by whatever space is left above it. */
+    margin-top: auto;
+    padding-top: 1.5mm;
+    border-top: 0.2mm solid #000;
+    font-size: 8.5pt;
+    color: #374151;
+  }
+
+  .colophon .page {
+    margin-left: auto;
+    font-weight: 700;
+    color: #000;
+  }
+
   .head {
     text-align: center;
-    margin-bottom: 4mm;
+    margin: 3mm 0 4mm;
   }
 
   .kicker {
@@ -374,7 +472,7 @@
     border: 0;
     /* Row height is what is left of the page divided by the rows on it: forty questions
        ended a third of the way up an A4 and left the rest white. */
-    padding: 3.6mm 0;
+    padding: 2.4mm 0;
     text-align: center;
     vertical-align: middle;
   }

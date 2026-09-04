@@ -27,6 +27,7 @@ import {
   listExamAnswerKeysService
 } from '@api/services/exam/exam-answer-keys';
 import { listCourseAttemptsService } from '@api/services/exam/exam-course-attempts';
+import { getExamPrintContextService } from '@api/services/exam/exam-print-context';
 import {
   copyExerciseIntoContainer,
   listAvailableContainersService,
@@ -359,6 +360,16 @@ export const examRouter = new Hono()
       const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
 
       return c.json({ success: true as const, data: matrix });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  // The masthead and foot of a printed answer sheet: who issued it, and what it records.
+  .get('/:examId/print-context', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const context = await getExamPrintContextService(c.req.param('examId'));
+
+      return c.json({ success: true as const, data: context });
     } catch (error) {
       return handleError(c, error);
     }
