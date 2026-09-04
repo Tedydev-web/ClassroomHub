@@ -26,7 +26,11 @@ export type CellStyle =
   | 'value'
   | 'correct'
   | 'incorrect'
-  | 'blank';
+  | 'blank'
+  /** A field's name in the identity table: bold on a light fill, bordered like the rest. */
+  | 'fieldLabel'
+  /** A field's value beside it. */
+  | 'fieldValue';
 
 const STYLE_INDEX: Record<CellStyle, number> = {
   default: 0,
@@ -37,7 +41,9 @@ const STYLE_INDEX: Record<CellStyle, number> = {
   value: 5,
   correct: 6,
   incorrect: 7,
-  blank: 8
+  blank: 8,
+  fieldLabel: 9,
+  fieldValue: 10
 };
 
 export type Cell = { value: string | number | null; style?: CellStyle };
@@ -177,8 +183,11 @@ function stylesXml(): string {
     '<fill><patternFill patternType="gray125"/></fill>',
     '<fill><patternFill patternType="solid"><fgColor rgb="FF1D4ED8"/><bgColor indexed="64"/></patternFill></fill>',
     '<fill><patternFill patternType="solid"><fgColor rgb="FFF3F4F6"/><bgColor indexed="64"/></patternFill></fill>',
-    '<fill><patternFill patternType="solid"><fgColor rgb="FFDCFCE7"/><bgColor indexed="64"/></patternFill></fill>',
-    '<fill><patternFill patternType="solid"><fgColor rgb="FFFEE2E2"/><bgColor indexed="64"/></patternFill></fill>'
+    // Wrong answers take a fill dark enough to survive a black-and-white printer; right
+    // ones stay white. On a colour printer this still reads as red on pink, but the signal
+    // a teacher relies on in the room is bold-on-grey against plain-on-white.
+    '<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/><bgColor indexed="64"/></patternFill></fill>',
+    '<fill><patternFill patternType="solid"><fgColor rgb="FFE5E7EB"/><bgColor indexed="64"/></patternFill></fill>'
   ].join('');
 
   const borders = [
@@ -196,10 +205,12 @@ function stylesXml(): string {
     '<xf fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
     '<xf fontId="5" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
     '<xf fontId="6" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
-    '<xf fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+    '<xf fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>',
+    '<xf fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>',
+    '<xf fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
   ].join('');
 
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="7">${fonts}</fonts><fills count="6">${fills}</fills><borders count="2">${borders}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9">${cellXfs}</cellXfs></styleSheet>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="7">${fonts}</fonts><fills count="6">${fills}</fills><borders count="2">${borders}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11">${cellXfs}</cellXfs></styleSheet>`;
 }
 
 /** Writes the sheets into a real `.xlsx`, which is a zip of XML parts. */

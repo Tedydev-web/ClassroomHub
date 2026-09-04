@@ -26,6 +26,10 @@ export type MatrixAttempt = {
   candidateNumber: string | null;
   score: string | null;
   total: string | null;
+  /** When the paper opened and closed, and how often it stopped being the visible window. */
+  startedAt: string | null;
+  submittedAt: string | null;
+  leaves: number;
   answers: StoredMatrixAnswer[];
 };
 
@@ -43,6 +47,9 @@ export type AnswerMatrixRow = {
   candidateNumber: string | null;
   score: string | null;
   total: string | null;
+  startedAt: string | null;
+  submittedAt: string | null;
+  leaves: number;
   /** One entry per question, in paper order: the letters chosen, or `null` for a blank. */
   chosen: Array<string | null>;
   correct: number;
@@ -128,6 +135,9 @@ export function buildAnswerMatrix(questions: ExamAnswerKeyQuestion[], attempts: 
         candidateNumber: attempt.candidateNumber,
         score: attempt.score,
         total: attempt.total,
+        startedAt: attempt.startedAt,
+        submittedAt: attempt.submittedAt,
+        leaves: attempt.leaves,
         chosen,
         correct
       };

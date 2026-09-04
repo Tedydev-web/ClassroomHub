@@ -39,6 +39,9 @@ function sitting(answers: MatrixAttempt['answers']): MatrixAttempt {
     candidateNumber: null,
     score: '1',
     total: '2',
+    startedAt: '2026-09-04T01:00:00.000Z',
+    submittedAt: '2026-09-04T01:33:00.000Z',
+    leaves: 0,
     answers
   };
 }

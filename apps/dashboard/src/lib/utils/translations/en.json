@@ -5611,7 +5611,8 @@
       "blank_count": "{count} blank",
       "summary_mode": "Summary",
       "individual_mode": "Individual",
-      "started_at_column": "Started"
+      "started_at_column": "Started",
+      "workbook_minutes": "min"
     },
     "manage": {
       "title": "Exams",

@@ -29,7 +29,55 @@ export type WorkbookLabels = {
   wrong: string;
   blank: string;
   generatedAt: string;
+  /** Optional so an older caller keeps working; the sheet omits what it is not given. */
+  candidateNumber?: string;
+  timeTaken?: string;
+  startedAt?: string;
+  submittedAt?: string;
+  leaves?: string;
+  minutes?: string;
 };
+
+/**
+ * A moment as a teacher reads it, in the timezone the school sits in.
+ *
+ * The workbook is printed and handed over, so an ISO string with a Z on it is the wrong
+ * thing to put on the page. `Asia/Ho_Chi_Minh` is fixed rather than taken from the server,
+ * which runs in UTC and would otherwise print every sitting seven hours early.
+ */
+function clockOf(value: string | null): string {
+  if (!value) return '';
+
+  const moment = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
+  if (Number.isNaN(moment.getTime())) return '';
+
+  // Composed rather than taken from `toLocaleString`, whose output for this locale is
+  // "08:00 04-09" — a shape nobody writes on a mark sheet, and one that would change under
+  // us with the runtime's data.
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(moment);
+
+  const at = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+
+  return `${at('day')}/${at('month')} ${at('hour')}:${at('minute')}`;
+}
+
+/** Whole minutes between starting and handing in, or empty while a paper is still open. */
+function minutesTaken(row: AnswerMatrix['rows'][number]): string {
+  if (!row.startedAt || !row.submittedAt) return '';
+
+  const started = new Date(row.startedAt.replace(' ', 'T')).getTime();
+  const submitted = new Date(row.submittedAt.replace(' ', 'T')).getTime();
+  if (Number.isNaN(started) || Number.isNaN(submitted)) return '';
+
+  return String(Math.max(0, Math.round((submitted - started) / 60_000)));
+}
 
 function displayNameOf(row: AnswerMatrix['rows'][number], fallback: string): string {
   const name = row.displayName?.trim();
@@ -51,6 +99,15 @@ function displayNameOf(row: AnswerMatrix['rows'][number], fallback: string): str
 function classSheet(matrix: AnswerMatrix, labels: WorkbookLabels, title: string, generatedAt: string): Sheet {
   const questionColumns = matrix.questions.map((question) => `${labels.question}${question.position}`);
 
+  /** Name, class, and every optional field the caller gave a label for. */
+  const identityColumns =
+    4 +
+    (labels.candidateNumber ? 1 : 0) +
+    (labels.timeTaken ? 1 : 0) +
+    (labels.startedAt ? 1 : 0) +
+    (labels.submittedAt ? 1 : 0) +
+    (labels.leaves ? 1 : 0);
+
   const rows: Cell[][] = [
     [{ value: title, style: 'title' }],
     [{ value: `${labels.generatedAt}: ${generatedAt}`, style: 'subtitle' }],
@@ -58,25 +115,40 @@ function classSheet(matrix: AnswerMatrix, labels: WorkbookLabels, title: string,
     [
       { value: labels.student, style: 'header' },
       { value: labels.className, style: 'header' },
+      ...(labels.candidateNumber ? [{ value: labels.candidateNumber, style: 'header' } as Cell] : []),
       { value: labels.score, style: 'header' },
       { value: labels.correctCount, style: 'header' },
+      // What the invigilation needs, beside what the marking needs: a duplicate name is
+      // separated by when the two papers ran, and a count of departures is read next to a
+      // mark, not on another screen.
+      ...(labels.timeTaken ? [{ value: labels.timeTaken, style: 'header' } as Cell] : []),
+      ...(labels.startedAt ? [{ value: labels.startedAt, style: 'header' } as Cell] : []),
+      ...(labels.submittedAt ? [{ value: labels.submittedAt, style: 'header' } as Cell] : []),
+      ...(labels.leaves ? [{ value: labels.leaves, style: 'header' } as Cell] : []),
       ...questionColumns.map((column): Cell => ({ value: column, style: 'header' }))
     ],
     [
       { value: labels.key, style: 'label' },
-      { value: null, style: 'label' },
-      { value: null, style: 'label' },
-      { value: null, style: 'label' },
+      ...Array.from({ length: identityColumns - 1 }, (): Cell => ({ value: null, style: 'label' })),
       ...matrix.questions.map((question): Cell => ({ value: question.key, style: 'label' }))
     ]
   ];
 
   for (const row of matrix.rows) {
+    const minutes = minutesTaken(row);
+
     rows.push([
       { value: displayNameOf(row, labels.student), style: 'default' },
       { value: row.className ?? '', style: 'default' },
+      ...(labels.candidateNumber ? [{ value: row.candidateNumber ?? '', style: 'value' } as Cell] : []),
       { value: row.score === null ? '' : `${row.score}/${row.total ?? ''}`, style: 'value' },
       { value: row.correct, style: 'value' },
+      ...(labels.timeTaken ? [{ value: minutes, style: 'value' } as Cell] : []),
+      ...(labels.startedAt ? [{ value: clockOf(row.startedAt), style: 'value' } as Cell] : []),
+      ...(labels.submittedAt ? [{ value: clockOf(row.submittedAt), style: 'value' } as Cell] : []),
+      // A dash rather than a nought where the paper never lost focus: nought is a
+      // measurement, and this column is only ever a count of something that happened.
+      ...(labels.leaves ? [{ value: row.leaves > 0 ? row.leaves : '—', style: 'value' } as Cell] : []),
       ...row.chosen.map((chosen, index): Cell => {
         if (chosen === null) return { value: '', style: 'blank' };
 
@@ -90,7 +162,7 @@ function classSheet(matrix: AnswerMatrix, labels: WorkbookLabels, title: string,
     // The header rows stay put: a paper of forty columns is scrolled sideways, and a letter
     // with no question number above it says nothing.
     frozenRows: 5,
-    columnWidths: [28, 10, 10, 10, ...questionColumns.map(() => 5)],
+    columnWidths: [28, 10, ...Array.from({ length: identityColumns - 2 }, () => 12), ...questionColumns.map(() => 5)],
     // Landscape and squeezed to one page wide: this sheet is as wide as the paper is long,
     // and a class list that prints its last eight questions on a separate sheet is a sheet
     // nobody can read across.
@@ -145,7 +217,14 @@ function studentSheet(
     { value: labels.outcome, style: 'header' }
   ];
 
-  /** One question as the four cells that describe it, or four blanks where a block runs out. */
+  /**
+   * One question as the four cells that describe it, or four blanks where a block runs out.
+   *
+   * The outcome carries a mark as well as a word — `✓`, `✗`, `—` — because this is printed
+   * on a black-and-white printer, where a green fill and a red one are the same grey. The
+   * fill still helps on screen and on a colour printer; the mark and the bold are what make
+   * the sheet readable when neither is available.
+   */
   function questionCells(position: number): Cell[] {
     const question = matrix.questions[position];
     if (!question) return [{ value: null }, { value: null }, { value: null }, { value: null }];
@@ -153,62 +232,112 @@ function studentSheet(
     const chosen = row.chosen[position] ?? null;
     const isRight = chosen !== null && chosen === question.key;
     const style = chosen === null ? 'blank' : isRight ? 'correct' : 'incorrect';
+    const outcome = chosen === null ? `— ${labels.blank}` : isRight ? `✓ ${labels.right}` : `✗ ${labels.wrong}`;
 
     return [
       { value: question.position, style: 'value' },
       { value: chosen ?? '', style },
       { value: question.key, style: 'value' },
-      { value: chosen === null ? labels.blank : isRight ? labels.right : labels.wrong, style }
+      { value: outcome, style }
     ];
   }
 
-  const headerRow: Cell[] = [];
-  for (let block = 0; block < blocks; block += 1) {
-    // A blank column between blocks, so two tables read as two tables rather than as one
-    // eight-column table with a repeated heading in the middle.
-    if (block > 0) headerRow.push({ value: null });
-    headerRow.push(...header);
+  /**
+   * The candidate's details as a table rather than a line of prose.
+   *
+   * It was a title and a subtitle — a name, then "TEST 1 · 12A · 2/40" — which reads as a
+   * caption and prints as one. A teacher handing this to a student and a teacher filing it
+   * both want the fields separable, and the sheet already had the numbers.
+   *
+   * Laid out as label/value pairs across the same width as the table below it, so the page
+   * carries one column of content rather than a heading that stops halfway.
+   */
+  function fieldRows(pairs: Array<[string, string | number]>, width: number): Cell[][] {
+    // Two columns per field, and never fewer than one field to a line — a short paper is
+    // four columns wide, and truncating to fit it is how the candidate number and the mark
+    // would silently vanish from a twelve-question test.
+    const perLine = Math.max(1, Math.floor(width / 2));
+    const lines: Cell[][] = [];
+
+    for (let start = 0; start < pairs.length; start += perLine) {
+      const cells: Cell[] = [];
+
+      for (const [label, value] of pairs.slice(start, start + perLine)) {
+        cells.push({ value: label, style: 'fieldLabel' }, { value, style: 'fieldValue' });
+      }
+
+      while (cells.length < width) cells.push({ value: null });
+
+      lines.push(cells);
+    }
+
+    return lines;
   }
+
+  const width = blocks * 4;
+  const minutes = minutesTaken(row);
+
+  const fields: Array<[string, string | number]> = [
+    [labels.student, name],
+    [labels.className, row.className?.trim() ?? ''],
+    ...(labels.candidateNumber ? ([[labels.candidateNumber, row.candidateNumber ?? '']] as [string, string][]) : []),
+    [labels.score, row.score === null ? '' : `${row.score}/${row.total ?? ''}`],
+    ...(labels.timeTaken
+      ? ([[labels.timeTaken, minutes === '' ? '' : `${minutes} ${labels.minutes ?? ''}`.trim()]] as [string, string][])
+      : []),
+    ...(labels.startedAt ? ([[labels.startedAt, clockOf(row.startedAt)]] as [string, string][]) : []),
+    ...(labels.submittedAt ? ([[labels.submittedAt, clockOf(row.submittedAt)]] as [string, string][]) : []),
+    // A dash rather than a nought: nought is a measurement, and this only ever counts
+    // something that happened.
+    ...(labels.leaves ? ([[labels.leaves, row.leaves > 0 ? row.leaves : '—']] as [string, string | number][]) : [])
+  ];
+
+  const identityLines = fieldRows(fields, width);
 
   const rows: Cell[][] = [
     [{ value: name, style: 'title' }],
-    [
-      {
-        value: [title, row.className?.trim(), row.score === null ? '' : `${row.score}/${row.total ?? ''}`]
-          .filter((part) => Boolean(part))
-          .join(' · '),
-        style: 'subtitle'
-      }
-    ],
+    [{ value: title, style: 'subtitle' }],
     [],
-    headerRow
+    ...identityLines,
+    []
   ];
+
+  /**
+   * Everything above the questions, counted rather than assumed.
+   *
+   * How many lines the identity table takes depends on how wide the question table is — a
+   * short paper is four columns and fits two fields to a line, a long one is eight and fits
+   * four — so the frozen pane and the repeated print heading are derived from it instead of
+   * being a number somebody has to remember to update.
+   */
+  const headingRows = rows.length + 1;
+
+  const headerRow: Cell[] = [];
+  for (let block = 0; block < blocks; block += 1) headerRow.push(...header);
+  rows.push(headerRow);
 
   for (let line = 0; line < perBlock; line += 1) {
     const cells: Cell[] = [];
 
-    for (let block = 0; block < blocks; block += 1) {
-      if (block > 0) cells.push({ value: null });
-      cells.push(...questionCells(block * perBlock + line));
-    }
+    for (let block = 0; block < blocks; block += 1) cells.push(...questionCells(block * perBlock + line));
 
     rows.push(cells);
   }
 
-  const blockWidths = [6, 10, 10, 11];
+  // No spacer column between the blocks: they are one bordered table on the page, the way
+  // an answer sheet prints its columns of numbers inside a single frame, rather than two
+  // tables that happen to sit side by side.
+  const blockWidths = [6, 11, 11, 13];
   const columnWidths: number[] = [];
-  for (let block = 0; block < blocks; block += 1) {
-    if (block > 0) columnWidths.push(2);
-    columnWidths.push(...blockWidths);
-  }
+  for (let block = 0; block < blocks; block += 1) columnWidths.push(...blockWidths);
 
   return {
     name: toSheetName(name, `${labels.student} ${index + 1}`),
-    frozenRows: 4,
+    frozenRows: headingRows,
     columnWidths,
     // Portrait, because a marked paper is filed and stapled like every other sheet in the
     // pile. The blocks are what make it fit; the fit is not left to shrinking the type.
-    page: { orientation: 'portrait', fitToWidth: 1, fitToHeight: 1, repeatHeaderRows: 4 },
+    page: { orientation: 'portrait', fitToWidth: 1, fitToHeight: 1, repeatHeaderRows: headingRows },
     rows
   };
 }

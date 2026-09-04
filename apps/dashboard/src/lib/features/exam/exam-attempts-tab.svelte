@@ -215,7 +215,16 @@
             right: $t('exam.results.workbook_right'),
             wrong: $t('exam.results.workbook_wrong'),
             blank: $t('exam.results.workbook_blank'),
-            generatedAt: $t('exam.results.workbook_generated_at')
+            generatedAt: $t('exam.results.workbook_generated_at'),
+            // The invigilation half of a sitting: who, when, and how often they left. The
+            // sheet omits any field it is not given a label for, so this list is also what
+            // decides which columns the workbook carries.
+            candidateNumber: $t('exam.entry.candidate_number'),
+            timeTaken: $t('exam.results.time_taken_column'),
+            startedAt: $t('exam.results.started_at_column'),
+            submittedAt: $t('exam.results.submitted_at_column'),
+            leaves: $t('exam.results.leaves_column'),
+            minutes: $t('exam.results.workbook_minutes')
           }
         }
       });

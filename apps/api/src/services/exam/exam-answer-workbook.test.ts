@@ -17,7 +17,13 @@ const LABELS: WorkbookLabels = {
   right: 'Đúng',
   wrong: 'Sai',
   blank: 'Bỏ trống',
-  generatedAt: 'Xuất lúc'
+  generatedAt: 'Xuất lúc',
+  candidateNumber: 'Số báo danh',
+  timeTaken: 'Thời gian làm',
+  startedAt: 'Bắt đầu',
+  submittedAt: 'Nộp lúc',
+  leaves: 'Rời bài thi',
+  minutes: 'phút'
 };
 
 function candidate(name: string | null, chosen: Array<string | null>, correct: number) {
@@ -29,6 +35,9 @@ function candidate(name: string | null, chosen: Array<string | null>, correct: n
     candidateNumber: '07',
     score: String(correct),
     total: String(chosen.length),
+    startedAt: '2026-09-04T01:00:00.000Z',
+    submittedAt: '2026-09-04T01:33:00.000Z',
+    leaves: 2,
     chosen,
     correct
   };
@@ -55,12 +64,29 @@ describe('buildAnswerWorkbookSheets', () => {
 
   it('marks each answer right, wrong or blank against the key beside it', () => {
     const [sheet] = buildAnswerWorkbookSheets(MATRIX as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const answerRows = sheet.rows.slice(4);
+    const answerRows = sheet.rows.slice(9);
 
     expect(answerRows.map((row) => row[1].value)).toEqual(['A', 'D', '']);
     expect(answerRows.map((row) => row[2].value)).toEqual(['A', 'B', 'C']);
-    expect(answerRows.map((row) => row[3].value)).toEqual(['Đúng', 'Sai', 'Bỏ trống']);
+    // A mark as well as a word: this prints on a black-and-white printer, where the green
+    // fill and the red one are the same grey.
+    expect(answerRows.map((row) => row[3].value)).toEqual(['✓ Đúng', '✗ Sai', '— Bỏ trống']);
     expect(answerRows.map((row) => row[1].style)).toEqual(['correct', 'incorrect', 'blank']);
+  });
+
+  it('states the candidate in a table rather than a caption', () => {
+    const [sheet] = buildAnswerWorkbookSheets(MATRIX as never, LABELS, 'TEST 1', '16:33 01/09/2026');
+    // Three questions is a four-column table, so the fields wrap two to a line rather than
+    // being cut off at the table's width.
+    const identity = sheet.rows.slice(3, 7);
+
+    expect(identity.map((line) => line.map((cell) => cell.value))).toEqual([
+      ['Học sinh', 'Bùi Thị Bảo Yến', 'Lớp', '12A1'],
+      ['Số báo danh', '07', 'Điểm', '1/3'],
+      ['Thời gian làm', '33 phút', 'Bắt đầu', '04/09 08:00'],
+      ['Nộp lúc', '04/09 08:33', 'Rời bài thi', 2]
+    ]);
+    expect(identity[0].map((cell) => cell.style)).toEqual(['fieldLabel', 'fieldValue', 'fieldLabel', 'fieldValue']);
   });
 
   it('leads with the class sheet once there is more than one paper', () => {
@@ -74,10 +100,22 @@ describe('buildAnswerWorkbookSheets', () => {
     const matrix = { ...MATRIX, rows: [MATRIX.rows[0], candidate('Trần Văn B', ['A', 'B', 'C'], 3)] };
     const [classSheet] = buildAnswerWorkbookSheets(matrix as never, LABELS, 'TEST 1', '16:33 01/09/2026');
 
-    // Four identifying columns, then one per question, on both the header and the key.
-    expect(classSheet.rows[3].slice(4).map((cell) => cell.value)).toEqual(['Câu 1', 'Câu 2', 'Câu 3']);
-    expect(classSheet.rows[4].slice(4).map((cell) => cell.value)).toEqual(['A', 'B', 'C']);
-    expect(classSheet.rows[5].slice(4).map((cell) => cell.value)).toEqual(['A', 'D', '']);
+    // Nine identifying columns with every optional label supplied, then one per question,
+    // lined up on the header, the key row and each candidate's row alike.
+    expect(classSheet.rows[3].slice(9).map((cell) => cell.value)).toEqual(['Câu 1', 'Câu 2', 'Câu 3']);
+    expect(classSheet.rows[4].slice(9).map((cell) => cell.value)).toEqual(['A', 'B', 'C']);
+    expect(classSheet.rows[5].slice(9).map((cell) => cell.value)).toEqual(['A', 'D', '']);
+    expect(classSheet.rows[3].slice(0, 9).map((cell) => cell.value)).toEqual([
+      'Học sinh',
+      'Lớp',
+      'Số báo danh',
+      'Điểm',
+      'Số câu đúng',
+      'Thời gian làm',
+      'Bắt đầu',
+      'Nộp lúc',
+      'Rời bài thi'
+    ]);
   });
 
   it('renames the second tab when two candidates share a name', () => {
@@ -140,23 +178,23 @@ describe('printed layout', () => {
     ]
   };
 
-  it('lays a long paper out as blocks side by side, with a gap between them', () => {
+  it('lays a long paper out as one table, blocks running side by side inside it', () => {
     const [sheet] = buildAnswerWorkbookSheets(many as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const header = sheet.rows[3];
+    const header = sheet.rows[6];
 
-    // Four columns, a spacer, four more.
-    expect(header).toHaveLength(9);
+    // Eight columns with no gap: one bordered table on the page, the way an answer sheet
+    // prints its columns of numbers inside a single frame.
+    expect(header).toHaveLength(8);
     expect(header[0].value).toBe('Câu');
-    expect(header[4].value).toBeNull();
-    expect(header[5].value).toBe('Câu');
+    expect(header[4].value).toBe('Câu');
 
     // Twenty lines, not forty: question 21 sits beside question 1.
-    const answerRows = sheet.rows.slice(4);
+    const answerRows = sheet.rows.slice(7);
     expect(answerRows).toHaveLength(20);
     expect(answerRows[0][0].value).toBe(1);
-    expect(answerRows[0][5].value).toBe(21);
+    expect(answerRows[0][4].value).toBe(21);
     expect(answerRows.at(-1)![0].value).toBe(20);
-    expect(answerRows.at(-1)![5].value).toBe(40);
+    expect(answerRows.at(-1)![4].value).toBe(40);
   });
 
   it('declares A4 and how each sheet is meant to fit', () => {
@@ -175,7 +213,9 @@ describe('printed layout', () => {
       orientation: 'portrait',
       fitToWidth: 1,
       fitToHeight: 1,
-      repeatHeaderRows: 4
+      // Four fields to a line on an eight-column table, two on a four-column one, so the
+      // heading depth follows the paper rather than being a constant to keep in step.
+      repeatHeaderRows: 9
     });
   });
 
@@ -193,11 +233,11 @@ describe('printed layout', () => {
       ]
     };
     const [sheet] = buildAnswerWorkbookSheets(seven as never, LABELS, 'TEST 1', '16:33 01/09/2026');
-    const answerRows = sheet.rows.slice(4);
+    const answerRows = sheet.rows.slice(7);
 
     expect(answerRows).toHaveLength(11);
     expect(answerRows.at(-1)![0].value).toBe(11);
-    expect(answerRows.at(-1)![5].value).toBeNull();
+    expect(answerRows.at(-1)![4].value).toBeNull();
   });
 });
 

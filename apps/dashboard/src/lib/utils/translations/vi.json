@@ -5621,7 +5621,8 @@
       "blank_count": "{count} bỏ trống",
       "summary_mode": "Tóm tắt",
       "individual_mode": "Cá nhân",
-      "started_at_column": "Bắt đầu"
+      "started_at_column": "Bắt đầu",
+      "workbook_minutes": "phút"
     },
     "manage": {
       "title": "Đề thi",

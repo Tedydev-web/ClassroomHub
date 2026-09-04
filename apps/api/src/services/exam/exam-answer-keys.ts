@@ -205,6 +205,15 @@ export async function buildExamAnswerMatrixService(examId: string, attemptIds: s
       candidateNumber: schema.examAttempt.candidateNumber,
       score: schema.examAttempt.score,
       total: schema.examAttempt.total,
+      startedAt: schema.examAttempt.startedAt,
+      submittedAt: schema.examAttempt.submittedAt,
+      // Counted in the database, as the results list does: the workbook needs one integer,
+      // not the log it comes from.
+      leaves: sql<number>`(
+        select count(*)::int
+        from jsonb_array_elements(${schema.examAttempt.activityLog}) as event
+        where event->>'kind' = 'left'
+      )`,
       answers: schema.examAttempt.answers
     })
     .from(schema.examAttempt)
