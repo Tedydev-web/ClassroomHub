@@ -9,15 +9,12 @@
   import AppBreadcrumbs from './app-breadcrumbs.svelte';
   import { currentOrg } from '$lib/utils/store/org';
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
-  import { notificationsApi } from '$features/notifications/api/notifications.svelte';
-  import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
   import AppSetup from './app-setup.svelte';
   import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
   import NotificationList from '$features/notification/components/notification-list.svelte';
   import { notificationApi } from '$features/notification/api/notification.svelte';
 
   const siteName = $derived($currentOrg.siteName);
-  const notificationCount = $derived(notificationsApi.unreadCount);
 
   onMount(() => {
     notificationApi.getNotifications();
@@ -27,10 +24,6 @@
     if (!siteName) return;
 
     setupProgressApi.fetchSetupProgress(siteName);
-  });
-
-  onMount(() => {
-    notificationsApi.fetchOnce();
   });
 </script>
 
