@@ -5602,7 +5602,10 @@
       "individual_mode": "Individual",
       "started_at_column": "Started",
       "print_selected": "Print selected sheets ({count})",
-      "print_all": "Print sheets ({count})"
+      "print_all": "Print sheets ({count})",
+      "export_language": "Export language",
+      "export_language_vi": "Tiếng Việt",
+      "export_language_en": "English"
     },
     "manage": {
       "title": "Exams",
@@ -5877,6 +5880,12 @@
       "placeholder": "Only you see this. It stays on this device.",
       "save": "Save note",
       "add": "Write a note"
+    },
+    "print": {
+      "tab_title": "Answer sheet",
+      "back": "Back to course",
+      "print": "Print / Save as PDF",
+      "hint": "The print dialog can save to PDF. Choose A4 and turn scaling off."
     }
   },
   "error_page": {

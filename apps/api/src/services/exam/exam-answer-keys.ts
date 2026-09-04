@@ -5,7 +5,8 @@ import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@
 import { applyCorrections, type ExamCorrection } from './exam-grading';
 import { buildAnswerMatrix, type MatrixAttempt } from './exam-answer-matrix';
 import { buildAnswerDistribution } from './exam-answer-distribution';
-import { buildAnswerWorkbookSheets, EXPORT_LABELS, type WorkbookLabels } from './exam-answer-workbook';
+import { buildAnswerWorkbookSheets } from './exam-answer-workbook';
+import { resolveExportLocale, WORKBOOK_LABELS } from './exam-export-labels';
 import { buildXlsx } from './exam-workbook-xlsx';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
 import { requireExamsEnabled } from './exam';
@@ -250,11 +251,18 @@ export async function buildExamAnswerDistributionService(examId: string) {
 export async function buildExamAnswerWorkbookService(
   examId: string,
   attemptIds: string[],
-  // The wording no longer travels with the request: an export is in English whoever asked
-  // for it, so the file does not change shape with the language of the screen.
-  labels: WorkbookLabels = EXPORT_LABELS,
+  /**
+   * The language of the file, not of the caller.
+   *
+   * A request says which language to write in; the wording itself lives on the server, so
+   * a screen cannot half-translate a workbook by forgetting a label. Anything unrecognised
+   * resolves to English rather than to nothing — see `resolveExportLocale`.
+   */
+  locale: unknown = 'en',
   now = new Date()
 ) {
+  const labels = WORKBOOK_LABELS[resolveExportLocale(locale)];
+
   const exam = await getExamById(examId);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 

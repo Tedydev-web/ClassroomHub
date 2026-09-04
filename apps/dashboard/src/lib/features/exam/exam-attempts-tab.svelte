@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   import { goto } from '$app/navigation';
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
@@ -11,6 +13,7 @@
   import type { ExamResultRow } from '$features/exam/exam-result-row';
   import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
   import { classroomhub } from '$lib/utils/services/api';
+  import { getPersistedLocale } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
 
   /**
@@ -181,7 +184,9 @@
    * the difference between printing once and printing three times.
    */
   function printAnswers(attemptIds: string[]) {
-    const query = attemptIds.length > 0 ? `?attempts=${attemptIds.join(',')}` : '';
+    // The choice rides on the URL: the sheet opens in its own tab, where what this screen
+    // remembered in `localStorage` cannot be read.
+    const query = `?lang=${exportLocale}${attemptIds.length > 0 ? `&attempts=${attemptIds.join(',')}` : ''}`;
 
     window.open(`/courses/${courseId}/exams/${examId}/print${query}`, '_blank', 'noopener');
   }
@@ -206,13 +211,52 @@
    */
   let exportingAnswers = $state(false);
 
+  /**
+   * The language the files are written in, which is not the language of this screen.
+   *
+   * A default rather than a question: the teacher's own locale is right nearly every time,
+   * because a class and its teacher usually share a language. It is only a default because
+   * the system cannot know who reads the file — a sheet handed to a candidate, mailed to a
+   * parent or attached to a moderation report is read by somebody who never saw this screen.
+   *
+   * Remembered, so the teacher whose default is wrong says so once rather than every export.
+   * Only the two languages the exports are written in; the interface has more.
+   */
+  const EXPORT_LOCALES = ['vi', 'en'] as const;
+  const EXPORT_LOCALE_KEY = 'classroomhub_export_locale';
+
+  function rememberedExportLocale(): 'vi' | 'en' {
+    const stored = typeof window === 'undefined' ? null : window.localStorage.getItem(EXPORT_LOCALE_KEY);
+    if (stored === 'vi' || stored === 'en') return stored;
+
+    return getPersistedLocale() === 'vi' ? 'vi' : 'en';
+  }
+
+  // Read on mount rather than at first render: the server has no `localStorage`, and a
+  // value read during server rendering would be a guess the client immediately contradicts.
+  let exportLocale = $state<'vi' | 'en'>('en');
+
+  onMount(() => {
+    exportLocale = rememberedExportLocale();
+  });
+
+  function chooseExportLocale(locale: 'vi' | 'en') {
+    exportLocale = locale;
+
+    try {
+      window.localStorage.setItem(EXPORT_LOCALE_KEY, locale);
+    } catch {
+      // A browser that refuses storage still exports; it just asks again next time.
+    }
+  }
+
   async function exportAnswers(attemptIds: string[]) {
     exportingAnswers = true;
 
     try {
       const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
         param: { examId },
-        json: { attemptIds }
+        json: { attemptIds, locale: exportLocale }
       });
 
       if (!response.ok) {
@@ -231,7 +275,24 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex items-center justify-end">
+  <div class="flex flex-wrap items-center justify-end gap-3">
+    <!--
+      Beside the downloads rather than in a settings screen: the language of a file is a
+      decision about the file, made at the moment somebody asks for one.
+    -->
+    <div class="flex items-center gap-1.5">
+      <span class="text-muted-foreground text-xs">{$t('exam.results.export_language')}</span>
+      {#each EXPORT_LOCALES as locale (locale)}
+        <Button
+          size="sm"
+          variant={exportLocale === locale ? 'default' : 'outline'}
+          onclick={() => chooseExportLocale(locale)}
+        >
+          {$t(`exam.results.export_language_${locale}`)}
+        </Button>
+      {/each}
+    </div>
+
     <Button variant="outline" size="sm" disabled={loading} onclick={refresh}>
       {loading ? $t('exam.results.loading') : $t('exam.results.reload')}
     </Button>

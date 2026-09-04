@@ -1,5 +1,6 @@
 import type { AnswerMatrix } from './exam-answer-matrix';
 import { normaliseStamp } from './exam-clock';
+import { WORKBOOK_LABELS } from './exam-export-labels';
 import { columnLetter, toSheetName, type Cell, type Sheet } from './exam-workbook-xlsx';
 
 /**
@@ -392,41 +393,9 @@ function studentSheet(
  * class sheet in the same file would hand them everybody else's marks. More than one gets
  * the class sheet first, then a sheet each.
  */
-/**
- * The wording of every exported file, in English.
- *
- * An export leaves the system: it is mailed to a parent, attached to a moderation report,
- * opened by somebody who does not have an account here and whose spreadsheet is not in the
- * teacher's language. One wording for every file, chosen because it is the one an
- * international reader can be expected to have, beats a file whose column headings depend
- * on which language the screen that asked for it happened to be in.
- */
-export const EXPORT_LABELS: WorkbookLabels = {
-  paper: 'Paper',
-  classSheet: 'Class',
-  student: 'Candidate',
-  className: 'Class',
-  score: 'Score',
-  correctCount: 'Correct',
-  question: 'Q',
-  key: 'Answer key',
-  theirAnswer: 'Chosen',
-  outcome: 'Result',
-  right: 'Correct',
-  wrong: 'Incorrect',
-  blank: 'Blank',
-  generatedAt: 'Generated',
-  candidateNumber: 'Candidate no.',
-  timeTaken: 'Time taken',
-  startedAt: 'Started',
-  submittedAt: 'Submitted',
-  leaves: 'Times left',
-  minutes: 'min'
-};
-
 export function buildAnswerWorkbookSheets(
   matrix: AnswerMatrix,
-  labels: WorkbookLabels = EXPORT_LABELS,
+  labels: WorkbookLabels = WORKBOOK_LABELS.en,
   title: string,
   generatedAt: string
 ): Sheet[] {

@@ -319,8 +319,9 @@ export const examRouter = new Hono()
         ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
         : [];
 
-      // The wording is the server's: an export is in English whoever asked for it.
-      const { file, fileName } = await buildExamAnswerWorkbookService(c.req.param('examId'), attemptIds);
+      // The request says which language to write the file in; the wording itself is the
+      // server's, so a screen cannot half-translate a workbook by forgetting a label.
+      const { file, fileName } = await buildExamAnswerWorkbookService(c.req.param('examId'), attemptIds, body?.locale);
 
       return new Response(new Uint8Array(file), {
         headers: {
@@ -357,7 +358,7 @@ export const examRouter = new Hono()
   // The masthead and foot of a printed answer sheet: who issued it, and what it records.
   .get('/:examId/print-context', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
-      const context = await getExamPrintContextService(c.req.param('examId'));
+      const context = await getExamPrintContextService(c.req.param('examId'), c.req.query('lang'));
 
       return c.json({ success: true as const, data: context });
     } catch (error) {

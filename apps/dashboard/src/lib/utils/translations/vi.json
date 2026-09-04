@@ -5612,7 +5612,10 @@
       "individual_mode": "Cá nhân",
       "started_at_column": "Bắt đầu",
       "print_selected": "In phiếu đã chọn ({count})",
-      "print_all": "In phiếu ({count})"
+      "print_all": "In phiếu ({count})",
+      "export_language": "Ngôn ngữ file xuất",
+      "export_language_vi": "Tiếng Việt",
+      "export_language_en": "English"
     },
     "manage": {
       "title": "Đề thi",
@@ -5887,6 +5890,12 @@
       "placeholder": "Chỉ mình bạn thấy. Ghi chú nằm trên máy này.",
       "save": "Lưu ghi chú",
       "add": "Viết ghi chú"
+    },
+    "print": {
+      "tab_title": "Phiếu trả lời",
+      "back": "Quay lại khoá học",
+      "print": "In / Lưu PDF",
+      "hint": "Hộp thoại in có mục “Lưu thành PDF”. Chọn khổ A4, bỏ tuỳ chọn thu nhỏ."
     }
   },
   "error_page": {

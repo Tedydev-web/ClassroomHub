@@ -4,6 +4,8 @@ import { eq } from 'drizzle-orm';
 
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
+import { resolveExportLocale, SHEET_LABELS } from './exam-export-labels';
+
 /**
  * Who a printed sheet belongs to, and what it is a sheet of.
  *
@@ -15,7 +17,7 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
  * Read in one query beside the answers rather than assembled on the screen, because the
  * screen only knows the ids in its own URL.
  */
-export async function getExamPrintContextService(examId: string) {
+export async function getExamPrintContextService(examId: string, locale: unknown = 'en') {
   const [row] = await db
     .select({
       examTitle: schema.exam.title,
@@ -33,5 +35,8 @@ export async function getExamPrintContextService(examId: string) {
 
   if (!row) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
-  return row;
+  // The sheet's wording travels with its masthead, from the same table the workbook reads,
+  // so the two files a teacher exports on the same afternoon cannot disagree about what a
+  // column is called.
+  return { ...row, labels: SHEET_LABELS[resolveExportLocale(locale)] };
 }
