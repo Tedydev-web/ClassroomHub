@@ -198,8 +198,6 @@
     </table>
 
     <section class="answers">
-      <p class="band">{$t('exam.print.answers')}</p>
-
       <div class="columns">
         {#each columns as column (column[0].position)}
           <table class="column">
@@ -377,10 +375,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 3mm;
-    /* Pushed to the foot of the sheet by whatever space is left above it. */
+    /*
+      Pushed to the foot of the sheet by whatever space is left above it, and carrying no
+      rule of its own: the comment line and the legend already put two rules within a few
+      millimetres of here, and a third made the whole foot read as one smudged block.
+    */
     margin-top: auto;
-    padding-top: 1.5mm;
-    border-top: 0.2mm solid #000;
+    padding-top: 2mm;
     font-size: 8.5pt;
     color: #374151;
   }
@@ -456,19 +457,13 @@
     font-size: 15pt;
   }
 
-  .band {
-    margin: 0 0 2mm;
-    text-align: center;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border: 0.4mm solid #000;
-    padding: 1mm;
-  }
-
   .answers {
-    border: 0.4mm solid #000;
-    padding: 3mm;
+    /*
+      No frame and no heading. Each block of ten is already framed, and a box around the
+      four of them plus a band naming what they obviously are was two more rules than the
+      page needed — which is what made a sheet of nested boxes out of a sheet of answers.
+    */
+    padding: 1mm 0;
   }
 
   .columns {
@@ -500,7 +495,7 @@
     border: 0;
     /* Row height is what is left of the page divided by the rows on it: forty questions
        ended a third of the way up an A4 and left the rest white. */
-    padding: 2.4mm 0;
+    padding: 3mm 0;
     text-align: center;
     vertical-align: middle;
   }
@@ -523,7 +518,7 @@
     display: flex;
     align-items: flex-end;
     gap: 2mm;
-    margin: 5mm 0 0;
+    margin: 6mm 0 0;
     font-size: 10.5pt;
   }
 
@@ -571,7 +566,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4mm;
-    margin-top: 3mm;
+    margin-top: 5mm;
     font-size: 10pt;
   }
 
