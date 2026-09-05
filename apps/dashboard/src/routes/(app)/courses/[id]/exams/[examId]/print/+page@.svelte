@@ -278,6 +278,12 @@
       content in one, and because each sheet is exactly one page: the page number counts
       candidates, which is the count a teacher checks a stack against.
     -->
+    <!--
+      One ruled line at the foot of the answers: a marker writing a word on the sheet before
+      handing it back, which is a different act from the comment box the system keeps.
+    -->
+    <p class="note"><span>{labels.note}</span></p>
+
     <footer class="colophon">
       <!--
         The system's own mark, on every sheet whoever the tenant is: a page found later in a

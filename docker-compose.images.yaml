@@ -134,6 +134,12 @@ services:
       OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:-}
       OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-true}
       OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL: ${OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL:-}
+      # Browser Rendering: the certificate PDF, the course PDF and the org's OG image all go
+      # through it. Both values were in the host env file and neither reached the container,
+      # because this list is a whitelist rather than an `env_file`, so those three features
+      # have been failing on a "not configured" guard rather than on anything they did.
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_RENDERING_API_KEY: ${CLOUDFLARE_RENDERING_API_KEY:-}
       # Auth secrets — required. ./classroomio.sh generates them into .env; if you run
       # compose directly, set strong values yourself — the stack refuses to start otherwise.
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set a strong PRIVATE_SERVER_KEY in .env}
