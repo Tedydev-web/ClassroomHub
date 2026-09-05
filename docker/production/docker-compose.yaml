@@ -219,6 +219,14 @@ services:
       OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY for the R2 token}
       OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-false}
       OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL: ${OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL:?set OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL to the R2 media custom domain}
+      # Browser Rendering, which the certificate PDF, the course PDF and the organisation's
+      # OG image all go through. Both values live in the host env file; this list is a
+      # whitelist rather than an `env_file`, so a variable not named here does not exist
+      # inside the container, and those three features fail on a "not configured" guard.
+      # Optional on purpose: a deployment without them still starts, and only those three
+      # refuse.
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_RENDERING_API_KEY: ${CLOUDFLARE_RENDERING_API_KEY:-}
       OBJECT_STORAGE_BUCKET_VIDEOS: ${OBJECT_STORAGE_BUCKET_VIDEOS:-videos}
       OBJECT_STORAGE_BUCKET_DOCUMENTS: ${OBJECT_STORAGE_BUCKET_DOCUMENTS:-documents}
       OBJECT_STORAGE_BUCKET_MEDIA: ${OBJECT_STORAGE_BUCKET_MEDIA:-media}
