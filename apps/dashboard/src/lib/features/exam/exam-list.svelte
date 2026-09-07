@@ -14,6 +14,7 @@
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 
   import { goto } from '$app/navigation';
+  import { examWindowState } from '$features/exam/exam-window';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -237,6 +238,8 @@
   const STATUS_LABEL: Record<string, string> = {
     draft: $t('exam.manage.draft'),
     open: $t('exam.manage.open'),
+    scheduled: $t('exam.manage.scheduled'),
+    expired: $t('exam.manage.expired'),
     closed: $t('exam.manage.closed')
   };
 
@@ -250,8 +253,29 @@
   const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
     draft: 'outline',
     open: 'default',
+    scheduled: 'outline',
+    expired: 'secondary',
     closed: 'secondary'
   };
+
+  /**
+   * What the badge says, which is not always what the column says.
+   *
+   * `status` is the state machine: a teacher opened the paper and has not closed it. The
+   * window is what decides whether anybody can actually sit it. A paper left open with a
+   * closing time three days past read "open" on this list while the entry page — correctly
+   * — turned every candidate away, so the one screen a teacher checks disagreed with the
+   * only screen that matters. Same rule as `exam-window`, which is the server's.
+   */
+  function effectiveStatus(exam: ExamRow): string {
+    if (exam.status !== 'open') return exam.status;
+
+    const state = examWindowState({ opensAt: exam.opensAt, closesAt: exam.closesAt });
+    if (state === 'after') return 'expired';
+    if (state === 'before') return 'scheduled';
+
+    return 'open';
+  }
 
   /**
    * Derived rather than built once, so it follows the reader's language.
@@ -348,6 +372,7 @@
         {@const sitting = exam.inProgress ?? 0}
         {@const awaiting = exam.awaitingManual ?? 0}
         {@const checking = busyIds.has(exam.id)}
+        {@const shownStatus = effectiveStatus(exam)}
         <Item.Root variant="outline" class="ui:rounded-lg ui:flex-col ui:items-stretch ui:gap-3">
           <div class="ui:flex ui:flex-wrap ui:items-start ui:justify-between ui:gap-3">
             <Item.Content class="ui:min-w-0 ui:gap-1">
@@ -355,8 +380,8 @@
                 {#if exam.deletedAt}
                   <Badge variant="destructive">{$t('exam.manage.deleted')}</Badge>
                 {/if}
-                <Badge variant={STATUS_VARIANT[exam.status] ?? 'secondary'}>
-                  {STATUS_LABEL[exam.status] ?? exam.status}
+                <Badge variant={STATUS_VARIANT[shownStatus] ?? 'secondary'}>
+                  {STATUS_LABEL[shownStatus] ?? shownStatus}
                 </Badge>
                 <Item.Title class="ui:min-w-0 ui:truncate ui:text-sm ui:font-semibold">
                   {exam.title}
@@ -403,6 +428,15 @@
               {:else if exam.status === 'open'}
                 <Button size="sm" variant="outline" onclick={() => copyLink(exam.slug)}>
                   {$t('exam.manage.copy_link')}
+                </Button>
+              {:else if exam.status === 'closed' && !exam.deletedAt}
+                <!--
+                  Closing was one-way from this screen, though the server has always
+                  accepted a re-open: a paper somebody has already sat keeps the snapshot it
+                  was sat on, so re-opening cannot change what was marked.
+                -->
+                <Button size="sm" disabled={checking} onclick={() => open(exam.id)}>
+                  {$t('exam.manage.reopen_exam')}
                 </Button>
               {/if}
 

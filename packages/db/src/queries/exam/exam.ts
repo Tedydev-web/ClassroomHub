@@ -32,6 +32,25 @@ export async function getExamBySlug(slug: string, dbClient: DbOrTxClient = db) {
 }
 
 /**
+ * Attempts belonging to the exam row a query is selecting.
+ *
+ * Built through the query builder rather than as a hand-written fragment. Interpolating
+ * columns into `sql` renders them bare — `where "exam_id" = "id"` — and inside the subquery
+ * both names resolve against `exam_attempt`, so the correlation compared the attempt to
+ * itself and every exam reported that nobody had sat it. A teacher was told "no one yet"
+ * under a paper thirteen people had handed in, and the delete dialog never warned that it
+ * was about to destroy their work. The builder qualifies both sides.
+ */
+export function examAttemptCountForRow(dbClient: DbOrTxClient, condition?: SQL): SQL<number> {
+  const belongsToRow = eq(schema.examAttempt.examId, schema.exam.id);
+
+  return sql<number>`${dbClient
+    .select({ total: sql<number>`count(*)::int` })
+    .from(schema.examAttempt)
+    .where(condition ? and(belongsToRow, condition) : belongsToRow)}`;
+}
+
+/**
  * The exams of a course, each carrying how many people have sat it.
  *
  * The counts come with the list because they are what a teacher opens the page to find
@@ -50,11 +69,7 @@ export async function listExamsByCourseId(
   options: { includeDeleted?: boolean } = {},
   dbClient: DbOrTxClient = db
 ) {
-  const countWhere = (condition?: SQL) =>
-    sql<number>`(
-      select count(*)::int from ${schema.examAttempt}
-      where ${schema.examAttempt.examId} = ${schema.exam.id}${condition ? sql` and ${condition}` : sql``}
-    )`;
+  const countWhere = (condition?: SQL) => examAttemptCountForRow(dbClient, condition);
 
   return dbClient
     .select({
