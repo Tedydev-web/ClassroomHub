@@ -146,6 +146,21 @@ temp/
 # Turbo
 **/.turbo
 
+# Assets belonging to apps no production image serves.
+#
+# `COPY . .` takes the whole repo, and pnpm's filter only narrows the install, not
+# the copy — so the marketing site's 105 MB of static files and the storybook build
+# were being carried into the api, dashboard and jobs images and pulled onto the
+# production host on every deploy.
+#
+# The app directories themselves stay: `pnpm install --frozen-lockfile` reads every
+# workspace member's package.json, and removing one would fail the lockfile check.
+# Only the heavy asset folders go.
+apps/website/static
+apps/website/marketing-assets
+packages/storybook/storybook-static
+prototypes
+
 # Testing
 **/cypress
 **/cypress.config.js
