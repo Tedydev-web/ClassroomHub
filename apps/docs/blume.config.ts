@@ -47,11 +47,9 @@ export default defineConfig({
     // base, so it must be the public-relative path, not the served URL.
     og: {
       logo: '/logo.svg'
-    },
-    x: {
-      creator: '@classroomio',
-      handle: '@classroomio'
     }
+    // No `x` block: the upstream project's handle is not this deployment's, and
+    // a twitter:creator card naming someone else attributes the docs to them.
   },
   openapi: {
     enabled: true,
