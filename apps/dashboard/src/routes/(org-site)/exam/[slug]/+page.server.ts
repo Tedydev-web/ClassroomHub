@@ -3,7 +3,11 @@ import { error } from '@sveltejs/kit';
 import { classroomhub } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { examPreviewDescription, examPreviewTitle } from '$features/exam/exam-link-preview';
+import { getSubdomain } from '$features/app/layout-setup';
 import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
+import { resolveOrgSiteOgImageUrl } from '$lib/utils/functions/org-site-og-url';
+import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
+import { env as publicEnv } from '$env/dynamic/public';
 
 /**
  * Loads only what the entry screen needs: the paper's title and which details it asks a
@@ -57,6 +61,29 @@ export const load = async ({ params, url, request }) => {
    * swallowed every top-level tag from the day this shipped, so the pages have served
    * `index,follow` throughout. Leaving it out is the state that has been running all along.
    */
+  /**
+   * The school's own card, not the platform's.
+   *
+   * The base tags are the product's marketing image and blurb, and a class receiving that in
+   * a group chat sees a stranger's logo over their teacher's link. The org's rendered card
+   * already exists — the same one its site uses — so the sheet-of-paper question is only
+   * which site this address belongs to, which the forwarded host answers.
+   *
+   * The Twitter block is set beside the Open Graph one rather than left to the base. A
+   * scraper that prefers `twitter:` tags reads them first, and left alone they still carry
+   * the platform's own title and description over the paper's.
+   */
+  const siteName = getSubdomain(publicRequestUrl) ?? '';
+  const ogImage = siteName
+    ? await resolveOrgSiteOgImageUrl({
+        siteName,
+        pageOrigin: publicRequestUrl.origin,
+        isSelfHosted: PUBLIC_IS_SELFHOSTED === 'true',
+        mediaCdnUrl: publicEnv.PUBLIC_MEDIA_CDN_URL,
+        publicServerUrl: publicEnv.PUBLIC_SERVER_URL
+      })
+    : null;
+
   const pageMetaTags = Object.freeze({
     title,
     description,
@@ -65,7 +92,14 @@ export const load = async ({ params, url, request }) => {
       type: 'website',
       url: canonical,
       title,
-      description
+      description,
+      ...(ogImage ? { images: [{ url: ogImage, alt: title, width: 1200, height: 630 }] } : {})
+    },
+    twitter: {
+      cardType: 'summary_large_image' as const,
+      title,
+      description,
+      ...(ogImage ? { image: ogImage, imageAlt: title } : {})
     }
   });
 
