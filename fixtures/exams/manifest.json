@@ -191,6 +191,36 @@
         "passage-shared-by-several-questions"
       ],
       "reference": "references/2026-g12-key-to-test-2.reference.json"
+    },
+    {
+      "id": "2026-g12-mock-test-1",
+      "path": "2026-g12-mock-test-1.docx",
+      "committed": true,
+      "bytes": 47025,
+      "sha256": "92107b12c545a4822d789d86beba2e101411bbb4b6a71df92b4e989d24861a92",
+      "format": "docx",
+      "subject": "english",
+      "languages": ["en"],
+      "pageCount": null,
+      "captureKind": "native_digital",
+      "evaluationSplit": "regression",
+      "source": {
+        "locator": "internal:MOCK TEST 1.docx",
+        "usageRights": "Provided by the repository owner for exam-import benchmark use on 2026-09-07."
+      },
+      "note": "Natively authored 40-question mock test whose first instruction names a noun outside the old passage-instruction vocabulary, and whose closing line carries a farewell before the end marker. Both dropped source content until the segmenter was widened.",
+      "traits": [
+        "native-digital",
+        "answer-key-in-bold-options",
+        "six-instruction-blocks",
+        "passage-shared-by-several-questions",
+        "sentence-arrangement",
+        "unlisted-passage-instruction-noun",
+        "farewell-before-end-marker",
+        "no-tables",
+        "no-office-math"
+      ],
+      "reference": "references/2026-g12-mock-test-1.reference.json"
     }
   ]
 }

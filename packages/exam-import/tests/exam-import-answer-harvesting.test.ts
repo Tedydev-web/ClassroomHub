@@ -293,6 +293,27 @@ describe('exam import answer harvesting', () => {
     expect(question.confidence).toBe('medium');
   });
 
+  it('counts one marking once when the answer is both bold and highlighted', () => {
+    const runs = [
+      block(0, 'Question 1. Choose.'),
+      block(1, 'A. One\tB. Two\tC. ', {}),
+      block(1, 'Three', { formatting: { bold: true, highlight: '#d9d9d9' } }),
+      block(1, '\tD. Four')
+    ];
+    runs[2]!.location.runIndex = 1;
+    runs[3]!.location.runIndex = 2;
+    const harvested = harvestExamImportAnswerCandidates(draftFor(runs), runs);
+    const reconciled = reconcileExamImportDraftAnswers(harvested);
+    const question = reconciled.sections[0]?.questions[0];
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+
+    expect(question.answerCandidates).toHaveLength(1);
+    expect(question.answerKey?.agreement).toBe('single_source');
+    expect(question.answerKey?.selectedCandidateIds).toHaveLength(1);
+    expect(question.answerKey?.correctOptionIds).toEqual([question.options[2]?.id]);
+    expect(question.review).toBe('clean');
+  });
+
   it('discards an emphasis kind globally when it marks all options or inconsistent cardinalities', () => {
     const allBoldRuns = [
       block(0, 'Question 1. Choose.'),

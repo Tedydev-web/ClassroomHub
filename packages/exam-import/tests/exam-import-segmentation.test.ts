@@ -416,6 +416,42 @@ describe('exam import segmentation', () => {
     expect(question.promptHtml).toContain('data-latex="x^2"');
   });
 
+  it('opens a passage section on any noun the instruction names, not a listed few', () => {
+    const draft = segment([
+      block(0, 'Read the following piece of news and mark the letter A, B, C or D on your answer sheet.'),
+      block(1, 'Hoa Vang Commune has become the first place to make rules for phone use.'),
+      block(2, 'Question 1: A. take\tB. kick\tC. call\tD. turn')
+    ]);
+
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('UNASSIGNED_SOURCE_CONTENT');
+    expect(draft.sharedContents).toHaveLength(1);
+    expect(draft.sections[0]?.questions[0]?.passageId).toBe(draft.sharedContents[0]?.id);
+  });
+
+  it('ends the paper on a closing line that carries a farewell before the marker', () => {
+    const draft = segment([
+      block(0, 'Question 1. Choose.'),
+      block(1, 'A. OneB. TwoC. ThreeD. Four'),
+      block(2, 'GOOD LUCK & THE END!')
+    ]);
+
+    const options = draft.sections[0]?.questions[0]?.options ?? [];
+    expect(options.at(-1)?.html).not.toContain('GOOD LUCK');
+    expect(draft.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain('OPTION_CONTINUATION_ATTACHED');
+  });
+
+  it('keeps reading past prose that merely ends with the words "the end"', () => {
+    const draft = segment([
+      block(0, 'Question 1. Choose.'),
+      block(1, 'A. OneB. TwoC. ThreeD. Four'),
+      block(2, 'It all worked out in the end.'),
+      block(3, 'Question 2. Choose.'),
+      block(4, 'A. OneB. TwoC. ThreeD. Four')
+    ]);
+
+    expect(draft.sections[0]?.questions).toHaveLength(2);
+  });
+
   it('reports passage groups that must be split at publish time', () => {
     const runs = [block(0, 'Read the following passage and answer the questions.'), block(1, 'Shared content.')];
     for (let index = 0; index < 25; index++) {

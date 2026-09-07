@@ -548,6 +548,10 @@ function applyEmphasisCandidates(
     .flatMap((section) => section.questions)
     .filter((question): question is Extract<ExamImportQuestion, { kind: 'choice' }> => question.kind === 'choice');
   const emphasisKinds: EmphasisKind[] = ['underline', 'highlight', 'color', 'bold'];
+  // A paper that marks its answers by bolding *and* highlighting the same run states one
+  // answer, not two. Recording both left the question with two candidates from a single
+  // source, which reads as an agreement the schema has no name for and blocked the import.
+  const harvestedLabelByQuestionId = new Map<string, string>();
 
   for (const kind of emphasisKinds) {
     const selections = choices.flatMap((question, questionIndex) => {
@@ -585,6 +589,7 @@ function applyEmphasisCandidates(
 
     for (const { question, questionIndex, selectedOptions } of selections) {
       const option = selectedOptions[0]!;
+      if (harvestedLabelByQuestionId.get(question.id) === option.sourceLabel) continue;
       const fieldState = draft.fieldStates.find(
         (state) =>
           state.target.kind === 'option_field' &&
@@ -601,6 +606,7 @@ function applyEmphasisCandidates(
         fieldState.provenance,
         diagnostics
       );
+      harvestedLabelByQuestionId.set(question.id, option.sourceLabel);
     }
   }
 }

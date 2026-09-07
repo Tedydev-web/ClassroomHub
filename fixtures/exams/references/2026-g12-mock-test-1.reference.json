@@ -1,0 +1,413 @@
+{
+  "document": "2026-g12-mock-test-1.docx",
+  "note": "Natively authored 40-question English mock test across six instruction blocks and five shared passages, with the correct option marked in bold on the option run itself. The first instruction reads \"Read the following piece of news\", a noun the passage-instruction matcher did not previously accept, and the paper closes with \"GOOD LUCK & THE END!\" rather than a bare end marker.",
+  "coverage": {
+    "structure": "verified",
+    "answerKeys": "verified",
+    "optionText": "unlabelled",
+    "reviewRouting": "unlabelled"
+  },
+  "provenance": "Structure and grouping were read off the raw WordprocessingML paragraphs on 2026-09-07: 173 paragraphs, six instruction lines, five passage bodies, forty \"Question N:\" lines each carrying four tab-separated options. The answer key was derived independently of the extractor by taking, for each question, the bold run that carries an option's own text (bold on a separating tab is not a mark); that pass produced exactly one answer for all forty questions with no conflicts. Option wording and review routing are not labelled.",
+  "questions": [
+    {
+      "number": "1",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "2",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "3",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "4",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "5",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "6",
+      "kind": "choice",
+      "groupId": "passage-1",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "7",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "8",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "9",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "10",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "11",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "12",
+      "kind": "choice",
+      "groupId": "passage-2",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "13",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "14",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "15",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "16",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "17",
+      "kind": "choice",
+      "groupId": null,
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "18",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "19",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "20",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "21",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "22",
+      "kind": "choice",
+      "groupId": "passage-3",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "23",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "24",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "25",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "26",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "27",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "28",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "29",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "30",
+      "kind": "choice",
+      "groupId": "passage-4",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "31",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "32",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "33",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "34",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "35",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "36",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "37",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["C"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "38",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["B"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "39",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["D"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    },
+    {
+      "number": "40",
+      "kind": "choice",
+      "groupId": "passage-5",
+      "optionCount": 4,
+      "answerKey": ["A"],
+      "prompt": null,
+      "options": null,
+      "reviewRequired": null
+    }
+  ]
+}

@@ -118,8 +118,14 @@ const LOWER_ITEM_PATTERN = /^([a-z])\s*[.)]\s*/iu;
 const POINTS_PATTERN = /\(\s*(\d+(?:[.,]\d+)?)\s*(?:điểm|diem|points?)\s*\)/iu;
 const COGNITIVE_LEVEL_PATTERN = /\[\s*[0-3]\s*,\s*(NB|TH|VD|VDC)\s*\]/iu;
 const END_MARKER_PATTERN = /^(?:[-–—_=*]\s*)*(?:HẾT|THE END)\b/iu;
-const PASSAGE_MARKER_PATTERN =
-  /^Read the (?:following|foilowing) (?:passage|announcement|advertisement|leaflet|letter|text|notice|article|dialogue)\b/iu;
+// A closing line often carries a farewell before the marker — "GOOD LUCK & THE END!".
+// Matching case-sensitively on a line with no lowercase letter keeps prose such as
+// "…it worked out in the end." from ending the document early.
+const CAPITALIZED_END_MARKER_PATTERN = /^[^\p{Ll}]{0,40}\b(?:HẾT|THE END)\b[^\p{Ll}]*$/u;
+// The noun after "Read the following" is open-ended in real papers — passage, leaflet,
+// piece of news, poster. Enumerating it dropped the whole first section of any paper that
+// used a noun the list had not met, so the instruction opener alone carries the match.
+const PASSAGE_MARKER_PATTERN = /^Read the (?:following|foilowing)\b/iu;
 const RANGED_QUESTION_INSTRUCTION_PATTERN =
   /^(?:(?:Choose|Select|Complete|Read|Mark)\b.*?\b(?:numbered\s+blanks?|questions?)\s+(?:from\s+)?\d+\s*(?:to|through|[-–—])\s*\d+|(?:For\s+)?Questions?\s+\d+\s*(?:to|through|[-–—])\s*\d+)\b/iu;
 const ARRANGEMENT_INSTRUCTION_PATTERN =
@@ -1424,7 +1430,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
     }
     if (ordinaryTables.blockIndexes.has(block.index)) continue;
     if (!text && !hasRichContent) continue;
-    if (END_MARKER_PATTERN.test(text)) {
+    if (END_MARKER_PATTERN.test(text) || CAPITALIZED_END_MARKER_PATTERN.test(text)) {
       reportPendingPassageAsUnassigned();
       break;
     }

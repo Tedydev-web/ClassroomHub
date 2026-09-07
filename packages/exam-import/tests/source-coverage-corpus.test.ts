@@ -25,7 +25,8 @@ const EXPECTED: Record<string, number> = {
   '2026-g12-practice-test-2': 2,
   '2026-key-de-thi-thpt': 0,
   '2026-g12-practice-test-topic-2': 1,
-  '2026-g12-key-to-test-2': 0
+  '2026-g12-key-to-test-2': 0,
+  '2026-g12-mock-test-1': 1
 };
 
 describe('source coverage over the corpus', () => {
