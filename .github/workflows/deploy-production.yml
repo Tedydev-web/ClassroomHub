@@ -201,68 +201,60 @@ jobs:
           ' "${services}")"
           echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
 
-  # Built on the machine that runs them.
+  # Built on GitHub's runners, and the measurements that say so are worth keeping.
   #
-  # GitHub's runners built these for months, and the arithmetic never worked. An
-  # image built there has to be pushed to a registry and pulled back — 43 to 110
-  # seconds of a deploy moving bytes the host is about to have anyway — and the
-  # runners are shared, so the same api build took 4.8, 5.5, 5.9 and then 13.8
-  # minutes across four consecutive deploys. The variance alone was larger than
-  # everything else this workflow spends.
+  # Building on the production host looked obviously right: the image is needed
+  # there, so pushing it to a registry and pulling it back is 43 to 110 seconds of
+  # moving bytes the host is about to have. Measured, it did not pay.
   #
-  # This host has twelve cores, a warm layer cache that survives between deploys,
-  # and is where the image is needed. Measured on it, the dashboard image builds in
-  # 302s against 359-470s on a GitHub runner, and the pull disappears.
+  # Three images built concurrently on twelve shared cores took 330/451/469s in one
+  # deploy and 492/214/160s in the next — the same total work, trading only which
+  # one was slow, and no faster than three GitHub runners doing one each. Each build
+  # also wanted an 8 GB heap, and three at once drove the host out of memory while it
+  # was serving the site; the kernel began killing processes.
   #
-  # Building beside the running site was the objection, and it was measured rather
-  # than argued: the site answered 200 throughout a full dashboard build, between
-  # 0.27 and 0.56 seconds, indistinguishable from idle.
+  # What settled it is the network. `actions/checkout` clones from github.com, and
+  # from this machine github.com answers about seven times in eight while
+  # api.github.com, npm and Cloudflare answer every time — a route problem specific
+  # to that host. Every build job on this machine is a clone across it, so three
+  # builds succeed together about two thirds of the time. One deploy failed exactly
+  # that way, three checkout attempts timing out over seven minutes.
   #
-  # `setup-buildx-action` is deliberately absent. It creates a `docker-container`
-  # builder with an empty cache, which would throw away the warm daemon cache that
-  # makes this fast — the point of building here.
+  # GitHub's runners do not clone across that link. The pull comes back as a cost,
+  # and it is the cheaper one.
   images:
     name: Build ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.any == 'true'
-    runs-on: [self-hosted, Linux, ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      # Two at a time on a twelve-core host that is also serving the site. Three
-      # concurrent builds, each allowed an 8 GB heap, drove this machine out of
-      # memory and the kernel started killing processes; it took a background task
-      # of ours that time, and there is nothing that says it must. Two builds also
-      # leave real cores for each, where three left them thrashing — the same three
-      # images took 330/451/469s in one deploy and 492/214/160s in the next,
-      # trading which one was slow rather than finishing sooner.
-      max-parallel: 2
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
-      # Plain `docker build`, not `build-push-action`. The action drives buildx,
-      # which exports the built image and unpacks it back into the daemon; measured
-      # on this host that round trip costs 32 seconds the daemon does not need,
-      # because it is the daemon the image was built by and will be run from. The
-      # image is left where the deploy looks for it, and the registry copy is made
-      # afterwards by `publish`, off the path between a commit and the site.
-      - name: Build
-        env:
-          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
-          DOCKERFILE: ${{ matrix.dockerfile }}
-          BUILD_ARGS: ${{ matrix.build_args }}
-        run: |
-          set -euo pipefail
+      - uses: docker/setup-buildx-action@v3
 
-          args=""
-          # One `--build-arg` per line of the matrix entry; empty for services with none.
-          while IFS= read -r line; do
-            [ -n "${line}" ] && args="${args} --build-arg ${line}"
-          done <<< "${BUILD_ARGS}"
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-          # shellcheck disable=SC2086
-          docker build --file "${DOCKERFILE}" --tag "${IMAGE_REF}" ${args} .
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
+          platforms: linux/amd64
+          provenance: false
 
   deploy:
     name: Start the new stack
