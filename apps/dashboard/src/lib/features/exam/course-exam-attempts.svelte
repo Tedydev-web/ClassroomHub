@@ -5,6 +5,10 @@
   import ExamResultsTable from '$features/exam/exam-results-table.svelte';
   import type { ExamResultRow } from '$features/exam/exam-result-row';
   import { classroomhub } from '$lib/utils/services/api';
+  import ExamExportControls from '$features/exam/exam-export-controls.svelte';
+  import type { ExamExportLocale } from '$features/exam/exam-export-preferences';
+  import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
+  import { snackbar } from '$features/ui/snackbar/store';
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
   import * as Empty from '@cio/ui/base/empty';
@@ -57,9 +61,10 @@
    * Choosing one paper hands the tab over to the exam's own submissions view — the same
    * four numbers, filters, selection and downloads a teacher gets on the exam's page.
    *
-   * "All exams" cannot show those: the average of two different papers is a number that
-   * means nothing, and a workbook is built from one paper's key. So that mode stays the
-   * plain cross-course list, which answers the different question of who handed in what.
+   * "All exams" carries the same downloads, issued once per paper: a workbook is built from
+   * one paper's key, so a selection spanning two papers is two files rather than none. What
+   * it cannot carry is the per-question summary, which is a distribution over one paper's
+   * questions and has no meaning across papers that share no question.
    */
   let rows = $state<ExamResultRow[] | null>(null);
   let loadingRows = $state(false);
@@ -123,6 +128,76 @@
     });
   });
 
+  let exportLocale = $state<ExamExportLocale>('en');
+  let includeAnswerKey = $state(true);
+  let exportingAnswers = $state(false);
+
+  /**
+   * The chosen sittings, split into the paper each one belongs to.
+   *
+   * Every export is built from one paper's key, so a selection reaching across papers is not
+   * one file but one per paper. Grouping here rather than refusing the selection is what
+   * lets a teacher tick down the whole course list and get what they asked for.
+   */
+  function attemptsByExam(attemptIds: string[]): Map<string, string[]> {
+    const grouped = new Map<string, string[]>();
+
+    for (const attemptId of attemptIds) {
+      const row = attempts.find((candidate) => candidate.attemptId === attemptId);
+      if (!row) continue;
+
+      grouped.set(row.examId, [...(grouped.get(row.examId) ?? []), attemptId]);
+    }
+
+    return grouped;
+  }
+
+  async function exportAnswers(attemptIds: string[]) {
+    const grouped = attemptsByExam(attemptIds);
+    if (grouped.size === 0) return;
+
+    exportingAnswers = true;
+
+    try {
+      let failures = 0;
+
+      // One request per paper, in turn rather than at once: each response is a file the
+      // browser starts saving, and a browser handed several downloads in the same tick asks
+      // the teacher to permit them instead of saving them.
+      for (const [id, ids] of grouped) {
+        try {
+          const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
+            param: { examId: id },
+            json: { attemptIds: ids, locale: exportLocale }
+          });
+
+          if (!response.ok) {
+            failures += 1;
+            continue;
+          }
+
+          downloadFile(await response.blob(), fileNameFromResponse(response, 'answers.xlsx'));
+        } catch {
+          failures += 1;
+        }
+      }
+
+      if (failures > 0) snackbar.error($t('exam.results.export_failed'));
+      else snackbar.success($t('exam.results.exported'));
+    } finally {
+      exportingAnswers = false;
+    }
+  }
+
+  /** The sheets for each paper in the selection, one tab per paper. */
+  function printAnswers(attemptIds: string[]) {
+    for (const [id, ids] of attemptsByExam(attemptIds)) {
+      const query = `?lang=${exportLocale}` + (includeAnswerKey ? '' : '&key=off') + `&attempts=${ids.join(',')}`;
+
+      window.open(`/courses/${courseId}/exams/${id}/print${query}`, '_blank', 'noopener');
+    }
+  }
+
   /** The course's sittings in the shape the shared results table reads, each naming its paper. */
   const courseRows = $derived(
     shown.map(
@@ -170,6 +245,10 @@
     </Button>
   </div>
 
+  {#if examId === 'all' && shown.length > 0}
+    <ExamExportControls bind:locale={exportLocale} bind:includeAnswerKey />
+  {/if}
+
   {#if examId !== 'all'}
     {#if loadingRows}
       <p class="text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
@@ -195,9 +274,18 @@
       paper — reading who sat, what they scored, who to open first — and until now the two
       screens answered that with two different tables.
 
-      What this mode cannot have is what belongs to one paper: no summary of what the class
-      chose per question, and no workbook or printed sheets, both built from one paper's key.
+      What this mode cannot have is the per-question summary, which is a distribution over
+      one paper's questions. The workbook and the printed sheets it does have, issued once
+      per paper in the selection.
     -->
-    <ExamResultsTable rows={courseRows} onopen={openAttempt} onreopen={openAttempt} ondelete={openAttempt} />
+    <ExamResultsTable
+      rows={courseRows}
+      onopen={openAttempt}
+      onreopen={openAttempt}
+      ondelete={openAttempt}
+      onexportanswers={exportAnswers}
+      onprintanswers={printAnswers}
+      {exportingAnswers}
+    />
   {/if}
 </div>

@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
   import { goto } from '$app/navigation';
   import { t } from '$lib/utils/functions/translations';
-  import { Button } from '@cio/ui/base/button';
   import * as Empty from '@cio/ui/base/empty';
 
   import * as Tabs from '@cio/ui/base/tabs';
@@ -13,7 +10,8 @@
   import type { ExamResultRow } from '$features/exam/exam-result-row';
   import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
   import { classroomhub } from '$lib/utils/services/api';
-  import { getPersistedLocale } from '$lib/utils/functions/translations';
+  import ExamExportControls from '$features/exam/exam-export-controls.svelte';
+  import type { ExamExportLocale } from '$features/exam/exam-export-preferences';
   import { snackbar } from '$features/ui/snackbar/store';
 
   /**
@@ -222,75 +220,9 @@
    */
   let exportingAnswers = $state(false);
 
-  /**
-   * The language the files are written in, which is not the language of this screen.
-   *
-   * A default rather than a question: the teacher's own locale is right nearly every time,
-   * because a class and its teacher usually share a language. It is only a default because
-   * the system cannot know who reads the file — a sheet handed to a candidate, mailed to a
-   * parent or attached to a moderation report is read by somebody who never saw this screen.
-   *
-   * Remembered, so the teacher whose default is wrong says so once rather than every export.
-   * Only the two languages the exports are written in; the interface has more.
-   */
-  const EXPORT_LOCALES = ['vi', 'en'] as const;
-  const EXPORT_LOCALE_KEY = 'classroomhub_export_locale';
-  const EXPORT_KEYS_KEY = 'classroomhub_export_answer_keys';
-
-  function rememberedExportLocale(): 'vi' | 'en' {
-    const stored = typeof window === 'undefined' ? null : window.localStorage.getItem(EXPORT_LOCALE_KEY);
-    if (stored === 'vi' || stored === 'en') return stored;
-
-    return getPersistedLocale() === 'vi' ? 'vi' : 'en';
-  }
-
-  // Read on mount rather than at first render: the server has no `localStorage`, and a
-  // value read during server rendering would be a guess the client immediately contradicts.
-  let exportLocale = $state<'vi' | 'en'>('en');
-
-  onMount(() => {
-    exportLocale = rememberedExportLocale();
-  });
-
-  /**
-   * Whether the printed sheets carry the answer key.
-   *
-   * A sheet handed back after marking should say what the right answer was; one handed out
-   * before a re-sit, or to a class about to see the paper again, must not. Same paper, two
-   * different documents, and the teacher is the only one who knows which afternoon it is.
-   *
-   * Remembered like the language, because a teacher who wants one usually wants it every
-   * time.
-   */
+  /** Set by the controls above the table; see `exam-export-preferences`. */
+  let exportLocale = $state<ExamExportLocale>('en');
   let includeAnswerKey = $state(true);
-
-  onMount(() => {
-    try {
-      includeAnswerKey = window.localStorage.getItem(EXPORT_KEYS_KEY) !== 'off';
-    } catch {
-      // A browser that refuses storage still prints; it just asks again next time.
-    }
-  });
-
-  function toggleAnswerKey() {
-    includeAnswerKey = !includeAnswerKey;
-
-    try {
-      window.localStorage.setItem(EXPORT_KEYS_KEY, includeAnswerKey ? 'on' : 'off');
-    } catch {
-      // As above.
-    }
-  }
-
-  function chooseExportLocale(locale: 'vi' | 'en') {
-    exportLocale = locale;
-
-    try {
-      window.localStorage.setItem(EXPORT_LOCALE_KEY, locale);
-    } catch {
-      // A browser that refuses storage still exports; it just asks again next time.
-    }
-  }
 
   async function exportAnswers(attemptIds: string[]) {
     exportingAnswers = true;
@@ -317,37 +249,7 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-end gap-3">
-    <!--
-      Beside the downloads rather than in a settings screen: the language of a file is a
-      decision about the file, made at the moment somebody asks for one.
-    -->
-    <div class="flex items-center gap-1.5">
-      <span class="text-muted-foreground text-xs">{$t('exam.results.export_language')}</span>
-      {#each EXPORT_LOCALES as locale (locale)}
-        <Button
-          size="sm"
-          variant={exportLocale === locale ? 'default' : 'outline'}
-          onclick={() => chooseExportLocale(locale)}
-        >
-          {$t(`exam.results.export_language_${locale}`)}
-        </Button>
-      {/each}
-    </div>
-
-    <!--
-      Beside the language, because both are decisions about the file rather than about the
-      class: a sheet with the key is a correction sheet, one without it is a paper a teacher
-      can hand out before going through the answers.
-    -->
-    <Button size="sm" variant={includeAnswerKey ? 'default' : 'outline'} onclick={toggleAnswerKey}>
-      {includeAnswerKey ? $t('exam.results.print_with_key') : $t('exam.results.print_without_key')}
-    </Button>
-
-    <Button variant="outline" size="sm" disabled={loading} onclick={refresh}>
-      {loading ? $t('exam.results.loading') : $t('exam.results.reload')}
-    </Button>
-  </div>
+  <ExamExportControls bind:locale={exportLocale} bind:includeAnswerKey {loading} onreload={refresh} />
 
   <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
     {#snippet stat(label: string, value: string, accent = false)}
