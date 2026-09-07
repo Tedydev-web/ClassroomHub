@@ -197,11 +197,31 @@ jobs:
           ' "${services}")"
           echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
 
+  # Built on the machine that runs them.
+  #
+  # GitHub's runners built these for months, and the arithmetic never worked. An
+  # image built there has to be pushed to a registry and pulled back — 43 to 110
+  # seconds of a deploy moving bytes the host is about to have anyway — and the
+  # runners are shared, so the same api build took 4.8, 5.5, 5.9 and then 13.8
+  # minutes across four consecutive deploys. The variance alone was larger than
+  # everything else this workflow spends.
+  #
+  # This host has twelve cores, a warm layer cache that survives between deploys,
+  # and is where the image is needed. Measured on it, the dashboard image builds in
+  # 302s against 359-470s on a GitHub runner, and the pull disappears.
+  #
+  # Building beside the running site was the objection, and it was measured rather
+  # than argued: the site answered 200 throughout a full dashboard build, between
+  # 0.27 and 0.56 seconds, indistinguishable from idle.
+  #
+  # `setup-buildx-action` is deliberately absent. It creates a `docker-container`
+  # builder with an empty cache, which would throw away the warm daemon cache that
+  # makes this fast — the point of building here.
   images:
     name: Build ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.any == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, ci]
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -209,25 +229,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
+      # `load`, not `push`: this is the daemon the site runs on, so the image is
+      # already where the deploy needs it. The registry copy is made afterwards by
+      # `publish`, which no longer sits between a commit and the site serving it.
+      - name: Build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           build-args: ${{ matrix.build_args }}
-          push: true
+          load: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           platforms: linux/amd64
           provenance: false
 
@@ -240,12 +252,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pull this commit's images
+      - name: Have this commit's images
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGED_SERVICES: ${{ needs.changes.outputs.services }}
         run: |
           set -euo pipefail
+
+          # The build job runs on this same Docker daemon, so an image it just
+          # made is already here and there is nothing to fetch. The pull is kept
+          # for the case that is not true — a manual re-run of this job alone, or
+          # a deploy whose images were built before this workflow moved onto the
+          # host — and skipped otherwise.
+          missing=""
+
+          for service in ${CHANGED_SERVICES}; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
+
+            if docker image inspect "${ref}" >/dev/null 2>&1; then
+              echo "${service}: already on this host"
+            else
+              missing="${missing} ${service}"
+            fi
+          done
+
+          missing="$(echo "${missing}" | xargs || true)"
+          if [ -z "${missing}" ]; then exit 0; fi
 
           echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
 
@@ -255,9 +287,8 @@ jobs:
           # .../ingest/... no such file or directory`. That is what a concurrent
           # docker cleanup did to this deploy, and a second attempt succeeds
           # because the ingest starts again from nothing.
-          for service in ${CHANGED_SERVICES}; do
-            image="classroom-${service}"
-            ref="${REGISTRY}/${IMAGE_NAMESPACE}/${image}:sha-${GITHUB_SHA}"
+          for service in ${missing}; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
 
             if ! docker pull --quiet "${ref}"; then
               echo "::warning::Pulling ${ref} failed; retrying once."
@@ -415,3 +446,38 @@ jobs:
           # Layers orphaned by the removals above.
           docker image prune --force >/dev/null || true
           df -h / | tail -1
+
+  # The registry copy, made after the site is already serving.
+  #
+  # Nothing on this host needs it: the image was built here and the two most recent
+  # per service are kept on disk, which is what a rollback starts. It exists for the
+  # case the disk does not — a rebuilt host, a second machine — and for reading what
+  # a given commit actually shipped. That is worth minutes of a background job and
+  # not one second of the path between a commit and the site.
+  #
+  # A failure here is reported, not fatal. The deploy it follows has already been
+  # proven to serve.
+  publish:
+    name: Copy the images to the registry
+    needs: [changes, deploy]
+    if: needs.changes.outputs.any == 'true'
+    runs-on: [self-hosted, Linux, ci]
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - name: Push
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED_SERVICES: ${{ needs.changes.outputs.services }}
+        run: |
+          set -euo pipefail
+
+          echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
+
+          for service in ${CHANGED_SERVICES}; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
+            docker push --quiet "${ref}"
+            echo "pushed ${ref}"
+          done
+
+          docker logout "${REGISTRY}"
