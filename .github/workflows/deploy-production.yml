@@ -229,6 +229,14 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: true
+      # Two at a time on a twelve-core host that is also serving the site. Three
+      # concurrent builds, each allowed an 8 GB heap, drove this machine out of
+      # memory and the kernel started killing processes; it took a background task
+      # of ours that time, and there is nothing that says it must. Two builds also
+      # leave real cores for each, where three left them thrashing — the same three
+      # images took 330/451/469s in one deploy and 492/214/160s in the next,
+      # trading which one was slow rather than finishing sooner.
+      max-parallel: 2
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
