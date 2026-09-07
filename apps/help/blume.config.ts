@@ -2,7 +2,7 @@ import { defineConfig } from 'blume';
 import { z } from 'zod';
 
 /**
- * The site is served at classroomio.com/help, proxied to this worker by the
+ * The site is served at classroom.io.vn/help, proxied to this worker by the
  * marketing site (apps/website/src/hooks.server.ts). `deployment.base` only
  * rewrites URLs in the emitted HTML — it does not nest the build output, so
  * scripts/package-assets.mjs moves dist/ under help/ to match the served path.
@@ -13,10 +13,10 @@ import { z } from 'zod';
  * `sidebar.order` frontmatter.
  */
 export default defineConfig({
-  title: 'ClassroomIO Help Center',
-  description: 'Guides for running your ClassroomIO academy, from signup to publishing.',
+  title: 'ClassroomHub Help Center',
+  description: 'Guides for running your ClassroomHub academy, from signup to publishing.',
   logo: {
-    text: 'ClassroomIO',
+    text: 'ClassroomHub',
     image: '/help/logo-192.png',
     href: '/help'
   },
@@ -25,12 +25,12 @@ export default defineConfig({
   },
   deployment: {
     output: 'static',
-    site: 'https://classroomio.com',
+    site: 'https://classroom.io.vn',
     base: '/help'
   },
   github: {
-    owner: 'classroomio',
-    repo: 'classroomio',
+    owner: 'Tedydev-web',
+    repo: 'classroomhub',
     dir: 'apps/help'
   },
   theme: {
@@ -57,17 +57,15 @@ export default defineConfig({
     // base, so it must be the public-relative path, not the served URL.
     og: {
       logo: '/logo.svg'
-    },
-    x: {
-      creator: '@classroomio',
-      handle: '@classroomio'
     }
+    // No `x` block: the upstream project's handle is not this deployment's, and
+    // a twitter:creator card naming someone else attributes these guides to them.
   },
   navigation: {
     tabs: [
       { label: 'Help Center', path: '/', icon: 'book-open' },
-      { label: 'Developers', path: 'https://classroomio.com/docs/developers', icon: 'terminal' },
-      { label: 'API', path: 'https://classroomio.com/docs/api', icon: 'code' }
+      { label: 'Developers', path: 'https://classroom.io.vn/docs/developers', icon: 'terminal' },
+      { label: 'API', path: 'https://classroom.io.vn/docs/api', icon: 'code' }
     ],
     sidebar: [
       '/',
