@@ -4,11 +4,12 @@ import { getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
 /**
- * Everything the learners handed in: the exercises' submissions, and the exams' sittings.
+ * Everything the learners handed in, and the papers they sat.
  *
- * Both halves answer the page's one question — what did they hand in — so the exam half
- * lists sittings, not papers. Managing a paper happens on the paper's own page, which is
- * where the sidebar and the exam list lead.
+ * Two of the three tabs answer the page's one question — what did they hand in. The third
+ * is the exams themselves, which used to be a button leading off the page: a teacher who
+ * came here to look at a sitting and then wanted to close the paper had to leave and come
+ * back.
  *
  * The sittings are read without finalising anything. Asking for one exam's results
  * finalises attempts whose clock ran out and scores the unmarked ones, which is right when
@@ -19,16 +20,17 @@ export const load = async ({ params, cookies }) => {
   const courseId = params.id || '';
 
   if (!courseId) {
-    return { courseId: '', sections: [], submissionIdData: {}, attempts: [], attemptsFailed: false };
+    return { courseId: '', sections: [], submissionIdData: {}, attempts: [], attemptsFailed: false, exams: [] };
   }
 
-  const [result, attempts] = await Promise.all([
+  const [result, attempts, exams] = await Promise.all([
     safeServerApi<ListSubmissionsForGradingSuccess>(() =>
       classroomhub.course[':courseId'].submission['for-grading'].$get({ param: { courseId } }, getApiHeaders(cookies))
     ),
     safeServerApi(() =>
       classroomhub.exam.course[':courseId'].attempts.$get({ param: { courseId } }, getApiHeaders(cookies, ''))
-    )
+    ),
+    safeServerApi(() => classroomhub.exam.course[':courseId'].$get({ param: { courseId } }, getApiHeaders(cookies, '')))
   ]);
 
   return {
@@ -38,6 +40,7 @@ export const load = async ({ params, cookies }) => {
     attempts: attempts.ok ? attempts.body.data : [],
     // Told apart from "nobody sat anything", which is what an empty list on a failed fetch
     // would otherwise claim to a teacher who has no way to know the difference.
-    attemptsFailed: !attempts.ok
+    attemptsFailed: !attempts.ok,
+    exams: exams.ok ? exams.body.data : []
   };
 };

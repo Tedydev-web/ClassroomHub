@@ -1379,7 +1379,8 @@
           "invalid_transition": "Việc di chuyển trạng thái này không được phép bởi quy trình chấm điểm"
         },
         "tab_exercises": "Bài tập",
-        "tab_exams": "Bài thi"
+        "tab_exams": "Bài thi",
+        "tab_papers": "Quản lý đề thi"
       },
       "attendance": {
         "title": "Tham dự",

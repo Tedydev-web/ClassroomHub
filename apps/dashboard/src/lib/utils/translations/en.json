@@ -3338,7 +3338,8 @@
           "delete_success": "Successfully deleted submission"
         },
         "tab_exercises": "Exercises",
-        "tab_exams": "Exams"
+        "tab_exams": "Exams",
+        "tab_papers": "Manage exams"
       },
       "marks": {
         "title": "Marks",

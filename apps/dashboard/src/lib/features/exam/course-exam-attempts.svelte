@@ -252,25 +252,19 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex flex-wrap items-center gap-2">
-      {#if examId === 'all'}
-        <Input class="w-56" placeholder={$t('exam.results.search_placeholder')} bind:value={search} />
-      {/if}
+  <div class="flex flex-wrap items-center gap-2">
+    {#if examId === 'all'}
+      <Input class="w-56" placeholder={$t('exam.results.search_placeholder')} bind:value={search} />
+    {/if}
 
-      <Button size="sm" variant={examId === 'all' ? 'default' : 'outline'} onclick={() => chooseExam('all')}>
-        {$t('exam.results.all_exams')}
-      </Button>
-      {#each exams as exam (exam.id)}
-        <Button size="sm" variant={examId === exam.id ? 'default' : 'outline'} onclick={() => chooseExam(exam.id)}>
-          {exam.title}
-        </Button>
-      {/each}
-    </div>
-
-    <Button variant="outline" size="sm" href={`/courses/${courseId}/exams`}>
-      {$t('exam.results.manage_exams')}
+    <Button size="sm" variant={examId === 'all' ? 'default' : 'outline'} onclick={() => chooseExam('all')}>
+      {$t('exam.results.all_exams')}
     </Button>
+    {#each exams as exam (exam.id)}
+      <Button size="sm" variant={examId === exam.id ? 'default' : 'outline'} onclick={() => chooseExam(exam.id)}>
+        {exam.title}
+      </Button>
+    {/each}
   </div>
 
   {#if examId === 'all' && shown.length > 0}
