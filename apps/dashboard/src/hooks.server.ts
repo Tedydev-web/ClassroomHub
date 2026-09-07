@@ -12,6 +12,7 @@ import {
 } from '$lib/utils/functions/tenant-host-redirect';
 import { PRODUCT_HOSTS, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { isCustomDomainHost } from '$lib/utils/functions/custom-domain';
+import { capPreloadLinkHeader } from '$lib/utils/functions/preload-link-header';
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const err = error as Error;
@@ -162,11 +163,11 @@ export const handle: Handle = async (args) => {
 
     // SvelteKit emits `Link: rel=preload` headers for every HTML page. On BYOD
     // domains Approximated caches those per URL and replays them as `103 Early
-    // Hints`, which is what breaks a later redirect on the same URL. Dropping
-    // the header stops new URLs from being poisoned; the `<head>` link tags are
-    // untouched, so app-owned hosts keep header preloads.
+    // Hints`, which is what breaks a later redirect on the same URL.
     if (isCustomDomainHost(event.url)) {
       response.headers.delete('link');
+    } else {
+      capPreloadLinkHeader(response);
     }
   }
 
