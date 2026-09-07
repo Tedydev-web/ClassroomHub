@@ -423,12 +423,17 @@ export class ExamImportApi extends BaseApiWithErrors {
     }
   }
 
-  async publish(courseId: string, importId: string): Promise<PublishedExamImport | null> {
+  async publish(
+    courseId: string,
+    importId: string,
+    target: 'exercise' | 'exam' = 'exercise'
+  ): Promise<PublishedExamImport | null> {
     let published: PublishedExamImport | null = null;
     await this.execute<PublishExamImportRequest>({
       requestFn: () =>
         classroomhub.course[':courseId']['exam-import'][':importId'].publish.$post({
-          param: { courseId, importId }
+          param: { courseId, importId },
+          json: { target }
         }),
       logContext: 'publishing exam import',
       onSuccess: (response) => {

@@ -8,6 +8,7 @@ import {
   ZExamImportParam
 } from '@cio/utils/validation/exam-import';
 import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 
 import { authMiddleware } from '@api/middlewares/auth';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
@@ -267,12 +268,20 @@ export const examImportRouter = new Hono()
     orgMemberMiddleware,
     courseTeamMemberMiddleware,
     zValidator('param', ZExamImportParam),
+    // The target is the caller's, not a guess from where the file came from: importing on
+    // the exams screen means an exam, importing in the course content means an exercise.
+    // Absent it stays an exercise, which is what every existing caller means.
+    zValidator('json', z.object({ target: z.enum(['exercise', 'exam']).optional() }).optional()),
     async (c) => {
       try {
         const { courseId, importId } = c.req.valid('param');
         const organizationId = c.get('orgId')!;
         const user = c.get('user')!;
-        const published = await publishExamImportService({ organizationId, courseId, userId: user.id }, importId);
+        const published = await publishExamImportService(
+          { organizationId, courseId, userId: user.id },
+          importId,
+          c.req.valid('json')?.target ?? 'exercise'
+        );
 
         return c.json({ success: true, data: published }, 200);
       } catch (error) {

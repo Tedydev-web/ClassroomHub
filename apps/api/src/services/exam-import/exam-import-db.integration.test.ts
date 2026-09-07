@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@cio/core/config/env', () => ({
-  env: { EXAM_IMPORT_ENABLED: 'true' }
+  env: { EXAM_IMPORT_ENABLED: 'true', EXAM_ENABLED: 'true' }
 }));
 vi.mock('@cio/core/services/exercise/exercise', () => ({
   createExerciseFromAuthoringPlan: mocks.createExerciseFromAuthoringPlan
@@ -180,6 +180,139 @@ describe.runIf(runDatabaseIntegration)('exam import publish persistence', () => 
       await db.delete(schema.examImport).where(eq(schema.examImport.id, ids.import));
       await db.delete(schema.exercise).where(eq(schema.exercise.id, ids.exercise));
       await db.delete(schema.course).where(eq(schema.course.id, ids.course));
+      await db.delete(schema.group).where(eq(schema.group.id, ids.group));
+      await db.delete(schema.organization).where(eq(schema.organization.id, ids.organization));
+    }
+  }, 30_000);
+  it('publishes into a detached container and its exam when the target is an exam', async () => {
+    const [{ db }, schema, { publishExamImportService }] = await Promise.all([
+      import('@cio/db/drizzle'),
+      import('@cio/db/schema'),
+      import('./exam-import')
+    ]);
+    const ids = {
+      course: randomUUID(),
+      exercise: randomUUID(),
+      group: randomUUID(),
+      import: randomUUID(),
+      organization: randomUUID(),
+      user: randomUUID()
+    };
+    const startedAt = new Date().toISOString();
+    const scope = {
+      organizationId: ids.organization,
+      courseId: ids.course,
+      userId: ids.user
+    };
+
+    try {
+      await db.insert(schema.organization).values({
+        id: ids.organization,
+        name: `Exam import exam target ${ids.organization}`,
+        siteName: `exam-import-exam-${ids.organization}`
+      });
+      await db.insert(schema.group).values({
+        id: ids.group,
+        name: 'Exam import exam target group',
+        organizationId: ids.organization
+      });
+      // The exam records who created it, so the actor has to exist for the FK — and a
+      // profile is an account, so the account comes first.
+      await db.insert(schema.user).values({
+        id: ids.user,
+        name: 'Exam import integration actor',
+        email: `exam-import-${ids.user}@example.test`,
+        emailVerified: true
+      });
+      await db.insert(schema.profile).values({
+        id: ids.user,
+        fullname: 'Exam import integration actor',
+        username: `exam-import-${ids.user}`
+      });
+      await db.insert(schema.course).values({
+        id: ids.course,
+        title: 'Exam import exam target course',
+        description: 'Integration fixture',
+        groupId: ids.group,
+        slug: `exam-import-exam-${ids.course}`
+      });
+      await db.insert(schema.examImport).values({
+        id: ids.import,
+        organizationId: ids.organization,
+        courseId: ids.course,
+        actorProfileId: null,
+        sourceAssetId: null,
+        status: 'draft_ready',
+        extractor: 'docx',
+        startedAt,
+        draftReadyAt: startedAt
+      });
+      await db.insert(schema.examImportDraft).values({
+        importId: ids.import,
+        draft: { schemaVersion: 1 },
+        schemaVersion: 1,
+        expiresAt: '2999-01-01T00:00:00.000Z'
+      });
+
+      mocks.getCourseWithOrgData.mockResolvedValue({ orgId: ids.organization });
+      mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(true);
+      mocks.createExamImportPublishPlan.mockReturnValue({
+        title: 'Imported paper',
+        sections: []
+      });
+      mocks.createExerciseFromAuthoringPlan.mockImplementation(async (_plan: unknown, dbClient: DbOrTxClient) => {
+        const [exercise] = await dbClient
+          .insert(schema.exercise)
+          .values({
+            id: ids.exercise,
+            title: 'Imported paper',
+            courseId: ids.course
+          })
+          .returning();
+        if (!exercise) {
+          throw new Error('Exercise insert returned no row');
+        }
+
+        return exercise;
+      });
+      // The spies are module-level, so a count assertion here would carry the calls the
+      // test above made.
+      mocks.createExerciseFromAuthoringPlan.mockClear();
+
+      const published = await publishExamImportService(scope, ids.import, 'exam');
+
+      expect(published.exerciseId).toBe(ids.exercise);
+      expect(published.examId).toBeTruthy();
+      expect(published.replayed).toBe(false);
+
+      // Detached: an enrolled student must not be able to open the paper untimed, which is
+      // exactly what a container with no course and no lesson prevents.
+      const [container] = await db
+        .select({ courseId: schema.exercise.courseId, lessonId: schema.exercise.lessonId })
+        .from(schema.exercise)
+        .where(eq(schema.exercise.id, ids.exercise))
+        .limit(1);
+      expect(container).toEqual({ courseId: null, lessonId: null });
+
+      const [exam] = await db
+        .select({ exerciseId: schema.exam.exerciseId, courseId: schema.exam.courseId, status: schema.exam.status })
+        .from(schema.exam)
+        .where(eq(schema.exam.id, published.examId!))
+        .limit(1);
+      expect(exam).toEqual({ exerciseId: ids.exercise, courseId: ids.course, status: 'draft' });
+
+      // Replaying resolves the same exam rather than building a second one.
+      const replayed = await publishExamImportService(scope, ids.import, 'exam');
+      expect(replayed).toEqual({ exerciseId: ids.exercise, examId: published.examId, replayed: true });
+      expect(mocks.createExerciseFromAuthoringPlan).toHaveBeenCalledOnce();
+    } finally {
+      await db.delete(schema.exam).where(eq(schema.exam.exerciseId, ids.exercise));
+      await db.delete(schema.examImportDraft).where(eq(schema.examImportDraft.importId, ids.import));
+      await db.delete(schema.examImport).where(eq(schema.examImport.id, ids.import));
+      await db.delete(schema.exercise).where(eq(schema.exercise.id, ids.exercise));
+      await db.delete(schema.course).where(eq(schema.course.id, ids.course));
+      await db.delete(schema.profile).where(eq(schema.profile.id, ids.user));
+      await db.delete(schema.user).where(eq(schema.user.id, ids.user));
       await db.delete(schema.group).where(eq(schema.group.id, ids.group));
       await db.delete(schema.organization).where(eq(schema.organization.id, ids.organization));
     }

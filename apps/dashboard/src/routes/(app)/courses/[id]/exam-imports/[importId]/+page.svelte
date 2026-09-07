@@ -4,4 +4,4 @@
   let { data } = $props();
 </script>
 
-<ExamImportReview courseId={data.courseId} importId={data.importId} />
+<ExamImportReview courseId={data.courseId} importId={data.importId} target={data.target} />

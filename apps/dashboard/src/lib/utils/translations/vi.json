@@ -5746,6 +5746,7 @@
     "manage": {
       "title": "Đề thi",
       "create": "Tạo đề thi",
+      "import_document": "Nhập từ tài liệu",
       "empty": "Chưa có đề thi nào. Tạo một đề rồi gửi link cho học sinh.",
       "draft": "Nháp",
       "open": "Đang mở",

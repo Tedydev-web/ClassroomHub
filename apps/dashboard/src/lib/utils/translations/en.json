@@ -5739,6 +5739,7 @@
     "manage": {
       "title": "Exams",
       "create": "Create an exam",
+      "import_document": "Import a document",
       "empty": "No exams yet. Create one, then send the link to your students.",
       "draft": "Draft",
       "open": "Open",

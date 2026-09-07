@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { env } from '@cio/core/config/env';
-import { db } from '@cio/db/drizzle';
+import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { examHasAttempts } from '@cio/db/queries/exam/exam-attempt';
 import {
@@ -121,7 +121,8 @@ export function validateExamSettings(input: ExamSettingsInput): string[] {
  */
 async function assertContainerBelongsToOrganization(
   container: { id: string; courseId: string | null },
-  organizationId: string
+  organizationId: string,
+  dbClient: DbOrTxClient = db
 ): Promise<void> {
   if (container.courseId) {
     const owner = await getCourseWithOrgData(container.courseId);
@@ -131,7 +132,7 @@ async function assertContainerBelongsToOrganization(
     }
   }
 
-  const [claimed] = await db
+  const [claimed] = await dbClient
     .select({ organizationId: schema.exam.organizationId })
     .from(schema.exam)
     .where(eq(schema.exam.exerciseId, container.id))
@@ -153,14 +154,32 @@ export async function createExamService(input: ExamSettingsInput, courseId: stri
   if (!owner) {
     throw new AppError('Course not found', ErrorCodes.NOT_FOUND, 404);
   }
-  const organizationId = owner.orgId;
 
+  return createExamForOrganization(input, courseId, owner.orgId, createdBy);
+}
+
+/**
+ * The exam row itself, once the course and its organisation are known.
+ *
+ * Separate from the service above so a caller already inside a transaction can create an
+ * exam alongside the container it delivers — the importer does exactly that, and the
+ * container it just inserted is invisible to any query issued on another connection.
+ * Every rule stays here rather than being restated: the settings are validated, the
+ * container is checked for shape and ownership, and the password is hashed.
+ */
+export async function createExamForOrganization(
+  input: ExamSettingsInput,
+  courseId: string,
+  organizationId: string,
+  createdBy: string,
+  dbClient: DbOrTxClient = db
+) {
   const issues = validateExamSettings(input);
   if (issues.length > 0) {
     throw new AppError(issues.join('; '), ErrorCodes.VALIDATION_ERROR, 400);
   }
 
-  const [container] = await db
+  const [container] = await dbClient
     .select({ id: schema.exercise.id, courseId: schema.exercise.courseId })
     .from(schema.exercise)
     .where(eq(schema.exercise.id, input.exerciseId))
@@ -170,9 +189,9 @@ export async function createExamService(input: ExamSettingsInput, courseId: stri
     throw new AppError('That question container does not exist', ErrorCodes.NOT_FOUND, 404);
   }
 
-  await assertContainerBelongsToOrganization(container, organizationId);
+  await assertContainerBelongsToOrganization(container, organizationId, dbClient);
 
-  const [exam] = await db
+  const [exam] = await dbClient
     .insert(schema.exam)
     .values({
       organizationId,

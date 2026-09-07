@@ -14,6 +14,7 @@
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 
   import { goto } from '$app/navigation';
+  import ExamImportButton from '$features/exam/exam-import-button.svelte';
   import { examWindowState } from '$features/exam/exam-window';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -345,9 +346,19 @@
 </script>
 
 <div class="ui:space-y-4">
-  <div class="ui:flex ui:items-center ui:gap-2">
-    <Switch id="exam-show-deleted" checked={showDeleted} onCheckedChange={toggleDeleted} />
-    <Label for="exam-show-deleted" class="ui:font-normal">{$t('exam.manage.show_deleted')}</Label>
+  <!--
+    The two ways a paper comes into being, where a teacher is already looking at the
+    papers. Importing a document is first because that is how a past paper arrives; the
+    blank form is for a paper being written here.
+  -->
+  <div class="ui:flex ui:flex-wrap ui:items-center ui:gap-2">
+    <ExamImportButton {courseId} />
+    <Button variant="outline" href={`/courses/${courseId}/exams/new`}>{$t('exam.manage.create')}</Button>
+
+    <div class="ui:ml-auto ui:flex ui:items-center ui:gap-2">
+      <Switch id="exam-show-deleted" checked={showDeleted} onCheckedChange={toggleDeleted} />
+      <Label for="exam-show-deleted" class="ui:font-normal">{$t('exam.manage.show_deleted')}</Label>
+    </div>
   </div>
 
   {#if exams.length === 0}
@@ -361,9 +372,6 @@
         <Empty.Title>{$t('exam.manage.empty_title')}</Empty.Title>
         <Empty.Description>{$t('exam.manage.separation_note')}</Empty.Description>
       </Empty.Header>
-      <Empty.Content>
-        <Button href={`/courses/${courseId}/exams/new`}>{$t('exam.manage.create')}</Button>
-      </Empty.Content>
     </Empty.Root>
   {:else}
     <Item.Group class="ui:space-y-3">

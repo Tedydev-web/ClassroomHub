@@ -45,6 +45,10 @@ import {
 } from '@cio/exam-import';
 import { enqueueExamImport, enqueueExamImportAiSuggestion } from '@cio/jobs';
 
+import * as schema from '@cio/db/schema';
+import { eq } from 'drizzle-orm';
+
+import { createExamForOrganization, requireExamsEnabled, type ExamSettingsInput } from '@api/services/exam/exam';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 const ENABLED_QUESTION_KINDS = new Set(EXAM_IMPORT_PUBLISHABLE_QUESTION_KINDS);
@@ -110,8 +114,21 @@ export type ExamImportAiSuggestionEstimate = {
   model: string | null;
 };
 
+/**
+ * What an import may become when it is published.
+ *
+ * `exercise` puts the questions in the course, where enrolled students can open them
+ * untimed — that is what an exercise is. `exam` puts them in a detached container and
+ * builds the exam that delivers it, which is the whole of the paper's life: a teacher
+ * importing a past paper never wanted a course exercise on the way there, and the one
+ * they got stayed behind in the course tree afterwards.
+ */
+export type ExamImportPublishTarget = 'exercise' | 'exam';
+
 export type ExamImportPublishResult = {
   exerciseId: string;
+  /** Present when the import was published as an exam; the exam that delivers the container. */
+  examId?: string;
   replayed: boolean;
 };
 
@@ -656,10 +673,40 @@ export async function requestExamImportAiSuggestionService(
   return { queuedCount: questionIds.length };
 }
 
+/**
+ * The settings a freshly imported paper starts on, which are the ones the create-exam form
+ * already defaults to: nothing revealed, one attempt, name and class asked for, no clock
+ * and no window. The exam is created `draft`, so importing never opens anything — the
+ * teacher opens it from the exam's own screen once the timing is set.
+ */
+function examSettingsForImport(title: string, exerciseId: string): ExamSettingsInput {
+  return {
+    title,
+    exerciseId,
+    mode: 'public',
+    workingSeconds: null,
+    opensAt: null,
+    closesAt: null,
+    maxAttempts: 1,
+    requiresName: true,
+    requiresClass: true,
+    requiresCandidateNumber: false,
+    scoreVisibility: 'never',
+    answerVisibility: 'never',
+    commentVisibility: 'never',
+    revealThreshold: null,
+    autoSubmitAfterLeaves: null,
+    supportContact: null
+  };
+}
+
 export async function publishExamImportService(
   scope: ExamImportRequestScope,
-  importId: string
+  importId: string,
+  target: ExamImportPublishTarget = 'exercise'
 ): Promise<ExamImportPublishResult> {
+  if (target === 'exam') requireExamsEnabled();
+
   requireExamImportWritesEnabled();
   return db
     .transaction(async (tx) => {
@@ -670,7 +717,24 @@ export async function publishExamImportService(
           throw new AppError('Published exam import has no exercise', ErrorCodes.EXAM_IMPORT_PUBLISH_CONFLICT, 409);
         }
 
-        return { exerciseId: examImport.publishedExerciseId, replayed: true };
+        // The exam is not recorded on the import row: the container it delivers is, and
+        // an exam names its container. Resolving it here is what makes a replayed publish
+        // return the same exam rather than a second one. Only asked for when an exam was
+        // what the caller wanted — publishing an exercise has none to find.
+        const [existing] =
+          target === 'exam'
+            ? await tx
+                .select({ id: schema.exam.id })
+                .from(schema.exam)
+                .where(eq(schema.exam.exerciseId, examImport.publishedExerciseId))
+                .limit(1)
+            : [];
+
+        return {
+          exerciseId: examImport.publishedExerciseId,
+          ...(existing ? { examId: existing.id } : {}),
+          replayed: true
+        };
       }
 
       requireDraftReady(examImport);
@@ -695,6 +759,31 @@ export async function publishExamImportService(
         },
         tx
       );
+
+      // Published as an exam, the questions belong to a detached container: no course and
+      // no lesson, so nobody enrolled can open the paper untimed. It is built through the
+      // course and detached here rather than created detached, because the authoring plan
+      // needs the course to check the question kinds against the course's type — and
+      // because the row never exists outside this transaction, nothing ever sees it in
+      // the course tree. This is the shape `copyExerciseIntoContainer` produces, reached
+      // without first leaving behind the course exercise that copy exists to get away from.
+      if (target === 'exam') {
+        await tx
+          .update(schema.exercise)
+          .set({ courseId: null, lessonId: null, sectionId: null, assignmentMode: 'SELECTED_STUDENTS' })
+          .where(eq(schema.exercise.id, exercise.id));
+      }
+
+      const exam =
+        target === 'exam'
+          ? await createExamForOrganization(
+              examSettingsForImport(publishPlan.title, exercise.id),
+              scope.courseId,
+              scope.organizationId,
+              scope.userId,
+              tx as DbOrTxClient
+            )
+          : null;
       const publishedAt = new Date().toISOString();
       const publishedImport = await markExamImportPublished(
         scopedImport,
@@ -708,7 +797,7 @@ export async function publishExamImportService(
         throw new AppError('Exam import publish state changed', ErrorCodes.EXAM_IMPORT_PUBLISH_CONFLICT, 409);
       }
 
-      return { exerciseId: exercise.id, replayed: false };
+      return { exerciseId: exercise.id, ...(exam ? { examId: exam.id } : {}), replayed: false };
     })
     .catch((error: unknown) => {
       if (error instanceof ExamImportPublishPlanError) {

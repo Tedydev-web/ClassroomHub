@@ -33,9 +33,15 @@
   interface Props {
     courseId: string;
     importId: string;
+    /**
+     * What publishing this import produces. An import started from the exams screen makes
+     * the exam directly — questions into a detached paper, exam around it — rather than a
+     * course exercise the teacher then has to copy and clean up after.
+     */
+    target?: 'exercise' | 'exam';
   }
 
-  let { courseId, importId }: Props = $props();
+  let { courseId, importId, target = 'exercise' }: Props = $props();
 
   let sortMode = $state<'review' | 'document'>('review');
   let answerKey = $state('');
@@ -137,7 +143,8 @@
   });
 
   function goBack() {
-    goto(resolve(`/courses/${courseId}/lessons`, {}));
+    // Back to where the import was started from, not always the lesson list.
+    goto(resolve(target === 'exam' ? `/courses/${courseId}/exams` : `/courses/${courseId}/lessons`, {}));
   }
 
   function selectQuestion(questionId: string) {
@@ -168,8 +175,15 @@
   }
 
   async function publish() {
-    const published = await examImportApi.publish(courseId, importId);
+    const published = await examImportApi.publish(courseId, importId, target);
     if (!published) return;
+
+    // Landing on the thing that was made: the exam's own screen carries the timing,
+    // the link and the results, which is what a teacher does next with a paper.
+    if (published.examId) {
+      await goto(resolve(`/courses/${courseId}/exams/${published.examId}`, {}));
+      return;
+    }
 
     await goto(resolve(`/courses/${courseId}/exercises/${published.exerciseId}`, {}));
   }
