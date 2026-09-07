@@ -1,6 +1,6 @@
 import './../bootstrap';
 
-import { Queue, Worker } from 'bullmq';
+import { Worker } from 'bullmq';
 
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
@@ -16,6 +16,7 @@ import { capAutoLessonVersionsPerLanguage, pruneAutoLessonVersions } from '@cio/
 import {
   JOB_NAMES,
   QUEUE_NAMES,
+  createQueueOnConnection,
   ZAnalyticsDailyRollupPayload,
   ZAssetStorageCleanupPayload,
   ZCourseRoleReconcilePayload,
@@ -143,10 +144,12 @@ const worker = new Worker(
  * BullMQ repeatable schedulers. `upsertJobScheduler` is idempotent on the scheduler id, so
  * it is safe to call on every worker boot. The cadences live in `maintenance-schedule`.
  */
-// BullMQ requires a dedicated connection per Worker; give the Queue its own
-// so the scheduler upsert doesn't piggyback on the worker's blocking client.
+// BullMQ requires a dedicated connection per Worker; give the queue its own so
+// the scheduler upsert doesn't piggyback on the worker's blocking client.
+// `createQueueOnConnection` is how it gets that connection without also losing
+// the queue defaults — see its comment for what losing them cost.
 const schedulerConnection = createRedisConnection();
-const maintenanceQueue = new Queue(QUEUE_NAMES.maintenance, { connection: schedulerConnection });
+const maintenanceQueue = createQueueOnConnection(QUEUE_NAMES.maintenance, schedulerConnection);
 
 async function registerSchedulers(): Promise<void> {
   try {

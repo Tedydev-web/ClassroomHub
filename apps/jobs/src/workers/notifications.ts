@@ -1,9 +1,9 @@
 import './../bootstrap';
 
-import { Queue, Worker } from 'bullmq';
+import { Worker } from 'bullmq';
 
 import { recordDeadLetterJob } from '@cio/db/queries';
-import { JOB_NAMES, QUEUE_NAMES, createRedisConnection } from '@cio/jobs';
+import { JOB_NAMES, QUEUE_NAMES, createQueueOnConnection, createRedisConnection } from '@cio/jobs';
 
 import { errorMessage } from '../utils/cancel';
 import { env } from '../config/env';
@@ -43,7 +43,7 @@ const worker = new Worker(
 // Repeatable scheduler: run the session-reminder scan every 15 minutes.
 const SESSION_REMINDER_SCAN_INTERVAL_MS = 15 * 60 * 1_000;
 const schedulerConnection = createRedisConnection();
-const notificationsQueue = new Queue(QUEUE_NAMES.notifications, { connection: schedulerConnection });
+const notificationsQueue = createQueueOnConnection(QUEUE_NAMES.notifications, schedulerConnection);
 
 async function registerSchedulers(): Promise<void> {
   try {

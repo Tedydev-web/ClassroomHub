@@ -1,4 +1,4 @@
-import { FlowProducer, Queue } from 'bullmq';
+import { FlowProducer, Queue, type QueueOptions } from 'bullmq';
 
 import { getSharedRedisConnection } from '../connection';
 import { QUEUE_NAMES, type QueueName } from './names';
@@ -25,6 +25,31 @@ export function getQueue(name: QueueName): Queue {
     });
     queues.set(name, queue);
   }
+
+  return queue;
+}
+
+/**
+ * A queue on a connection the caller owns, for a process that also runs a Worker.
+ *
+ * BullMQ needs a Worker's connection to itself — it blocks on it — so a worker
+ * process that also enqueues cannot use `getQueue` above and its shared client.
+ * The two that could not reach for the shared queue reached past its options as
+ * well: both were built with `new Queue(name, { connection })` and no
+ * `defaultJobOptions`, which is where `removeOnComplete` lives.
+ *
+ * Nothing then removed a finished job. The maintenance queue accumulated 453,000
+ * completed jobs and 477,000 Redis keys of which five had any expiry; Redis is
+ * configured `noeviction`, so the queue was on course to stop accepting writes
+ * rather than shed history. The defaults were never wrong — they were bypassed,
+ * so the fix is a way of asking for a queue that cannot bypass them.
+ */
+export function createQueueOnConnection(name: QueueName, connection: QueueOptions['connection']): Queue {
+  const queue = new Queue(name, { ...buildQueueOptions(name), connection });
+
+  queue.on('error', (error) => {
+    console.error(`BullMQ queue error (${name}):`, error);
+  });
 
   return queue;
 }
