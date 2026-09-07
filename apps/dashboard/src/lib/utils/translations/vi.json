@@ -287,14 +287,16 @@
     },
     "landing_page_settings": {
       "success": {
-        "complete": "Hoàn thành :)"
+        "complete": "Hoàn thành :)",
+        "courses_reordered": "Đã cập nhật thứ tự khóa học"
       },
       "error": {
         "file_size": "Kích thước tệp không được lớn hơn 500kb",
         "try_again": "Thử lại",
         "label": "Tải hình ảnh lên",
         "fetch_error": "Lỗi tìm nạp hình ảnh từ Unsplash",
-        "upload_failed": "Không thể tải lên hình ảnh. Vui lòng thử lại."
+        "upload_failed": "Không thể tải lên hình ảnh. Vui lòng thử lại.",
+        "courses_reorder_failed": "Không thể cập nhật thứ tự khóa học. Vui lòng thử lại."
       }
     },
     "team_members": {
@@ -536,7 +538,7 @@
     "go_to_my_learning": "Đi tới Học tập của tôi"
   },
   "lms_navigation": {
-    "home": "Trang chủ",
+    "home": "Bảng điều khiển",
     "my_learning": "Học tập của tôi",
     "certificates": "Chứng chỉ",
     "exercise": "Bài tập",
@@ -632,6 +634,14 @@
         "COMPLIANCE": "Tuân thủ",
         "PUBLIC": "công cộng"
       }
+    },
+    "topCourses": {
+      "heading": "Khóa học hàng đầu theo lượt xem",
+      "description": "Khóa học xếp hạng theo lượt xem trang",
+      "subtitle": "Xếp hạng theo lượt xem trang trong khoảng này",
+      "empty": "Chưa có lượt xem trang khóa học",
+      "course": "Khóa học",
+      "views": "Lượt xem"
     },
     "countries": {
       "heading": "Các quốc gia hàng đầu",
@@ -841,7 +851,8 @@
         "course_avail": "Cung cấp Khóa học để tải xuống cho sinh viên đã đăng ký",
         "download": "Tải xuống",
         "allow": "Học viên có thể tự đăng ký",
-        "access": "Khi tắt, học viên chỉ có thể tham gia qua liên kết mời hoặc khi được thêm từ mục Mọi người.",
+        "access": "Khi tắt, học viên chỉ có thể tham gia qua liên kết mời hoặc khi được thêm từ mục {people}.",
+        "access_people": "Mọi người",
         "publish": "Xuất bản khóa học",
         "determines": "Điều này xác định xem khóa học của bạn có hiển thị trên trang đích hay không",
         "published": "Đã xuất bản",
@@ -859,7 +870,11 @@
           "empty": "Không có thẻ nào được chọn",
           "add": "Thêm thẻ",
           "popover_title": "Chọn thẻ",
-          "empty_groups": "Chưa có thẻ nào"
+          "empty_groups": "Chưa có thẻ nào",
+          "create_tag": "Tạo thẻ",
+          "none_created": "Chưa có thẻ nào được tạo",
+          "search_placeholder": "Tìm kiếm thẻ...",
+          "no_results": "Không tìm thấy thẻ nào"
         },
         "compliance": "Tuân thủ",
         "public": "công cộng",
@@ -3532,6 +3547,9 @@
           "remove": "Xóa liên kết điều hướng"
         },
         "hero": {
+          "eyebrow": "Nhãn phụ",
+          "eyebrow_placeholder": "// engineering academy",
+          "eyebrow_description": "Nhãn tùy chọn phía trên tiêu đề (dùng bởi các mẫu hỗ trợ, ví dụ Tech). Để trống để ẩn.",
           "heading": "tiêu đề",
           "subheading": "Tiêu đề phụ",
           "primary_label": "Nhãn nút chính",
@@ -3565,7 +3583,9 @@
           "footer": "Chân trang",
           "footer_desc": "Dòng thương hiệu, mạng xã hội, liên kết nhiều cột và hàng pháp lý ở dưới cùng.",
           "links": "Liên kết",
-          "links_desc": "Khối liên kết bên ngoài tùy chọn (trung tâm trợ giúp, cộng đồng, hội thảo trên web) được hiển thị sau các khóa học."
+          "links_desc": "Khối liên kết bên ngoài tùy chọn (trung tâm trợ giúp, cộng đồng, hội thảo trên web) được hiển thị sau các khóa học.",
+          "courses": "Các khóa học",
+          "courses_desc": "Kéo để thiết lập thứ tự các khóa học đã xuất bản trên trang chủ."
         },
         "links": {
           "toggle": "Hiển thị phần liên kết",
@@ -3603,6 +3623,16 @@
             "calendar": "Sự kiện",
             "mail": "Email"
           }
+        },
+        "courses": {
+          "drag_hint": "Kéo các khóa học để sắp xếp lại thứ tự trên trang chủ.",
+          "empty": "Chưa có khóa học nào được xuất bản — hãy xuất bản một khóa học để xem trước tại đây.",
+          "load_failed": "Không thể tải các khóa học đã xuất bản.",
+          "add_button": "Thêm",
+          "popover_title": "Chọn khóa học",
+          "popover_empty": "Hiện không có khóa học nào được đăng tải.",
+          "search_no_results": "Không có khóa học nào khớp với tìm kiếm của bạn.",
+          "search_placeholder": "Tìm khóa học..."
         }
       },
       "content": {
@@ -3653,6 +3683,10 @@
           "editorial": {
             "title": "biên tập",
             "description": "Bảng màu kem ấm áp, anh hùng họa sĩ, cảm giác tạp chí tinh tế"
+          },
+          "quartz": {
+            "title": "Thạch anh",
+            "description": "Lưới kẻ ô đơn sắc, hàng kẻ ô, thanh ghi danh dính"
           }
         }
       },
@@ -4233,7 +4267,9 @@
       "color": "Màu",
       "color_help": "Chọn một trong 10 màu",
       "select_category": "Chọn một danh mục",
-      "no_groups": "Tạo nhóm thẻ trước khi tạo thẻ"
+      "no_groups": "Tạo nhóm thẻ trước khi tạo thẻ",
+      "search_category": "Tìm kiếm danh mục",
+      "no_results": "Không tìm thấy danh mục nào"
     },
     "group_modal": {
       "create_title": "Tạo nhóm thẻ",
@@ -4647,6 +4683,11 @@
     "heading": "Widget",
     "subtitle": "Xuất bản bộ sưu tập khóa học có thương hiệu cho các trang web bên ngoài.",
     "empty_state": "Chưa có vật dụng nào. Tạo một cái để tạo khối khóa học có thể nhúng.",
+    "archived": {
+      "heading": "Tiện ích đã lưu trữ",
+      "empty": "Không có tiện ích đã lưu trữ",
+      "empty_description": "Các tiện ích bạn lưu trữ sẽ xuất hiện ở đây. Bạn có thể khôi phục chúng bất cứ lúc nào."
+    },
     "filter": {
       "status": "Trạng thái",
       "all": "Tất cả",
@@ -4658,8 +4699,14 @@
       "saved": "Đã lưu tiện ích",
       "published": "Đã xuất bản tiện ích",
       "rolled_back": "Đã khôi phục tiện ích",
-      "deleted": "Đã lưu trữ tiện ích",
-      "validation_failed": "Một số trường không hợp lệ. Kiểm tra các đầu vào được đánh dấu."
+      "restored": "Đã khôi phục tiện ích",
+      "archived_load_failed": "Không thể tải tiện ích đã lưu trữ",
+      "restore_failed": "Không thể khôi phục tiện ích",
+      "validation_failed": "Một số trường không hợp lệ. Kiểm tra các đầu vào được đánh dấu.",
+      "archived": "Tiện ích đã được lưu trữ",
+      "archive_failed": "Không thể lưu trữ tiện ích",
+      "permanently_deleted": "Tiện ích đã bị xóa vĩnh viễn",
+      "delete_failed": "Không thể xóa tiện ích"
     },
     "form": {
       "name": "Tên tiện ích",
@@ -4709,7 +4756,7 @@
       "copy_embed": "Sao chép nhúng",
       "copy_url": "Sao chép URL",
       "rename": "Đổi tên",
-      "delete": "Xóa"
+      "delete_permanently": "Xóa vĩnh viễn"
     },
     "embed": {
       "tabs": {
@@ -4851,7 +4898,9 @@
       "select_courses": "Chọn khóa học",
       "layout": "Bố cục",
       "design": "Thiết kế",
-      "embed": "Mã nhúng"
+      "embed": "Mã nhúng",
+      "active": "Đang hoạt động",
+      "archived": "Đã lưu trữ"
     },
     "defaults": {
       "name_prefix": "Tiện ích khóa học"
@@ -4859,6 +4908,10 @@
     "empty": {
       "heading": "Chưa có tiện ích nào",
       "description": "Tạo một tiện ích để tạo khối khóa học có thể nhúng cho các trang web bên ngoài."
+    },
+    "delete_modal": {
+      "title": "Xóa tiện ích vĩnh viễn",
+      "description": "Bạn có chắc chắn muốn xóa vĩnh viễn \"{name}\" không? Hành động này không thể hoàn tác."
     }
   },
   "side_panel": {
@@ -6028,7 +6081,7 @@
     "toggle_failed": "Không thể cập nhật liên kết mời"
   },
   "lms": {
-    "view_landing_page": "Xem trang đích"
+    "view_landing_page": "Trang chủ"
   },
   "notifications": {
     "title": "Thông báo",

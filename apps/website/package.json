@@ -7,6 +7,7 @@
     "build": "vite build",
     "preview": "wrangler dev --port 8012",
     "start": "wrangler dev --port 8013",
+    "kv:create": "wrangler kv namespace create CACHE",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
     "format": "prettier --write .",

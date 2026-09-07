@@ -12,6 +12,12 @@ export type UpdateTagGroupRequest = (typeof classroomhub.organization)['tags']['
 export type CreateTagRequest = (typeof classroomhub.organization)['tags']['$post'];
 export type UpdateTagRequest = (typeof classroomhub.organization)['tags'][':tagId']['$put'];
 
+export type CreateTagGroupResponse = InferResponseType<CreateTagGroupRequest>;
+export type CreatedTagGroup = Extract<CreateTagGroupResponse, { success: true }>['data'];
+
+export type CreateTagResponse = InferResponseType<CreateTagRequest>;
+export type CreatedTag = Extract<CreateTagResponse, { success: true }>['data'];
+
 export type GetCourseTagsRequest = (typeof classroomhub.course)[':courseId']['tags']['$get'];
 export type UpdateCourseTagsRequest = (typeof classroomhub.course)[':courseId']['tags']['$put'];
 export type GetCourseTagsResponse = InferResponseType<GetCourseTagsRequest>;

@@ -8,15 +8,21 @@ import type {
 } from '@cio/utils/validation/widget';
 
 export type GetWidgetsRequest = (typeof classroomhub.organization)['widgets']['$get'];
+export type GetArchivedWidgetsRequest = (typeof classroomhub.organization)['widgets']['archived']['$get'];
 export type GetWidgetDetailRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['$get'];
 export type CreateWidgetRequest = (typeof classroomhub.organization)['widgets']['$post'];
 export type UpdateWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['$put'];
 export type PublishWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['publish']['$post'];
 export type RollbackWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['rollback']['$post'];
+export type ArchiveWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['archive']['$post'];
+export type RestoreWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['restore']['$post'];
 export type DeleteWidgetRequest = (typeof classroomhub.organization)['widgets'][':widgetId']['$delete'];
 
 export type GetWidgetsSuccess = Extract<InferResponseType<GetWidgetsRequest>, { success: true }>;
 export type WidgetListItem = GetWidgetsSuccess['data'][number];
+
+export type GetArchivedWidgetsSuccess = Extract<InferResponseType<GetArchivedWidgetsRequest>, { success: true }>;
+export type RestoreWidgetSuccess = Extract<InferResponseType<RestoreWidgetRequest>, { success: true }>;
 
 export type GetWidgetDetailSuccess = Extract<InferResponseType<GetWidgetDetailRequest>, { success: true }>;
 export type WidgetDetailResponse = GetWidgetDetailSuccess['data'];

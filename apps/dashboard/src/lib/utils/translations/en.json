@@ -773,6 +773,10 @@
           "vibrant": {
             "title": "Vibrant",
             "description": "Bold primary panels, sunset gradient hero, energetic poster look"
+          },
+          "quartz": {
+            "title": "Quartz",
+            "description": "Monochrome hairline grid, ruled course rows, sticky enrolment rail"
           }
         }
       },
@@ -824,9 +828,14 @@
           "links": "Links",
           "links_desc": "Optional block of external links (help center, community, webinars) shown after courses.",
           "footer": "Footer",
-          "footer_desc": "Brand line, socials, multi-column links, and bottom legal row."
+          "footer_desc": "Brand line, socials, multi-column links, and bottom legal row.",
+          "courses": "Courses",
+          "courses_desc": "Drag to set the order of published courses on the landing page."
         },
         "hero": {
+          "eyebrow": "Eyebrow",
+          "eyebrow_placeholder": "// engineering academy",
+          "eyebrow_description": "Optional label above the heading (used by templates that support it, e.g. Tech). Leave blank to hide.",
           "heading": "Heading",
           "subheading": "Subheading",
           "primary_label": "Primary Button Label",
@@ -969,6 +978,16 @@
             "legend": "Bottom row",
             "add_link": "Add bottom link"
           }
+        },
+        "courses": {
+          "drag_hint": "Drag to reorder the courses shown on your landing page.",
+          "empty": "No courses selected.",
+          "load_failed": "Failed to load courses.",
+          "add_button": "Add",
+          "popover_title": "Select courses",
+          "popover_empty": "No published courses available.",
+          "search_no_results": "No courses match your search.",
+          "search_placeholder": "Search courses..."
         }
       },
       "title": "Title",
@@ -1335,6 +1354,8 @@
       "color": "Color",
       "color_help": "Pick one of 10 colors",
       "select_category": "Select a category",
+      "search_category": "Search category",
+      "no_results": "No categories found",
       "no_groups": "Create a tag group before creating tags"
     }
   },
@@ -1425,6 +1446,8 @@
       "name_prefix": "Course Widget"
     },
     "tabs": {
+      "active": "Active",
+      "archived": "Archived",
       "select_courses": "Select Courses",
       "layout": "Layout",
       "design": "Design",
@@ -1570,7 +1593,11 @@
       "copy_embed": "Copy embed",
       "copy_url": "Copy URL",
       "rename": "Rename",
-      "delete": "Delete"
+      "delete_permanently": "Delete permanently"
+    },
+    "delete_modal": {
+      "title": "Delete widget permanently",
+      "description": "Are you sure you want to permanently delete \"{name}\"? This action cannot be undone."
     },
     "embed": {
       "tabs": {
@@ -1621,8 +1648,19 @@
       "saved": "Widget saved",
       "published": "Widget published",
       "rolled_back": "Widget restored",
-      "deleted": "Widget archived",
+      "archived": "Widget archived",
+      "archive_failed": "Couldn't archive widget",
+      "permanently_deleted": "Widget permanently deleted",
+      "delete_failed": "Couldn't delete widget",
+      "restored": "Widget restored",
+      "archived_load_failed": "Couldn't load archived widgets",
+      "restore_failed": "Couldn't restore widget",
       "validation_failed": "Some fields are invalid. Check the highlighted inputs."
+    },
+    "archived": {
+      "heading": "Archived widgets",
+      "empty": "No archived widgets",
+      "empty_description": "Widgets you archive will appear here. You can restore them at any time."
     },
     "filter": {
       "status": "Status",
@@ -3884,7 +3922,8 @@
         "course_avail": "Make the Course available for Download for registered students",
         "download": "Download",
         "allow": "Students can enroll themselves",
-        "access": "When off, students can only join through an invite link or by being added from People.",
+        "access": "When off, students can only join through an invite link or by being added from {people}.",
+        "access_people": "People",
         "publish": "Publish Course",
         "determines": "This determines if your course displays on your landing page",
         "published": "Published",
@@ -3936,9 +3975,13 @@
           "title": "Tags",
           "description": "Assign tags so students can discover this course with filters.",
           "empty": "No tags selected",
+          "none_created": "No tags created yet",
           "add": "Add tag",
           "popover_title": "Select tags",
-          "empty_groups": "No tags available yet"
+          "empty_groups": "No tags available yet",
+          "create_tag": "Create Tag",
+          "search_placeholder": "Search tags...",
+          "no_results": "No tags found"
         },
         "delete": "Delete Course",
         "delete_text": "Delete this course,this action cannot be undone",
@@ -4201,6 +4244,14 @@
         "COMPLIANCE": "Compliance",
         "PUBLIC": "Public"
       }
+    },
+    "topCourses": {
+      "heading": "Top courses by views",
+      "description": "Courses ranked by page views",
+      "subtitle": "Ranked by page views in this range",
+      "empty": "No course page views yet",
+      "course": "Course",
+      "views": "Views"
     }
   },
   "upgrade": {
@@ -4361,7 +4412,7 @@
     }
   },
   "lms_navigation": {
-    "home": "Home",
+    "home": "Dashboard",
     "my_learning": "My Learning",
     "certificates": "Certificates",
     "exercise": "Exercise",
@@ -4370,6 +4421,9 @@
     "help": "Help",
     "settings": "Settings",
     "cohorts": "Cohorts"
+  },
+  "lms": {
+    "view_landing_page": "Home"
   },
   "my_learning": {
     "heading": "My Learning",
@@ -4611,10 +4665,12 @@
         "try_again": "Try Again",
         "label": "Upload Image",
         "fetch_error": "Error fetching images from Unsplash",
-        "upload_failed": "Failed to upload image. Please try again."
+        "upload_failed": "Failed to upload image. Please try again.",
+        "courses_reorder_failed": "Failed to update course order. Please try again."
       },
       "success": {
-        "complete": "Complete :)"
+        "complete": "Complete :)",
+        "courses_reordered": "Course order updated"
       }
     },
     "attendance": {

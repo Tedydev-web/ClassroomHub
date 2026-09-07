@@ -120,8 +120,6 @@ export const handle: Handle = async (args) => {
     return proxyRequestToApi(event.request);
   }
 
-  const cookieNames = event.cookies.getAll().map((cookie) => cookie.name);
-  console.log('event.cookieNames', cookieNames);
   console.log('page path', event.url.pathname);
   const sessionData = await getSessionData(event.cookies);
 
@@ -137,6 +135,7 @@ export const handle: Handle = async (args) => {
   }
 
   let response: Response;
+  const resolveStart = performance.now();
 
   try {
     response = isApiRequest ? await handleAPIRoutes(args) : await handlePagesRoutes(args);
@@ -152,6 +151,9 @@ export const handle: Handle = async (args) => {
       response.headers.append('set-cookie', analyticsSetCookie);
     }
   }
+
+  const resolveMs = Math.round((performance.now() - resolveStart) * 100) / 100;
+  console.log(`[handle] resolved ${event.url.pathname} -> ${response.status} in ${resolveMs}ms`);
 
   response = withRedirectFallbackBody(response, event.request);
 

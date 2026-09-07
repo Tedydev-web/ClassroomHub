@@ -183,6 +183,13 @@
       "when": 1788506074553,
       "tag": "0025_wide_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1788763782034,
+      "tag": "0026_course_display_order",
+      "breakpoints": true
     }
   ]
 }

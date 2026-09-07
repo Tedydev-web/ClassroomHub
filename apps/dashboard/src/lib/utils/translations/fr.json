@@ -287,14 +287,16 @@
     },
     "landing_page_settings": {
       "success": {
-        "complete": "Complet :)"
+        "complete": "Complet :)",
+        "courses_reordered": "Ordre des cours mis à jour"
       },
       "error": {
         "file_size": "La taille du fichier ne doit pas dépasser 500 Ko",
         "try_again": "Réessayez",
         "label": "Télécharger une image",
         "fetch_error": "Erreur lors de la récupération des images depuis Unsplash",
-        "upload_failed": "Échec du téléchargement de l'image. Veuillez réessayer."
+        "upload_failed": "Échec du téléchargement de l'image. Veuillez réessayer.",
+        "courses_reorder_failed": "Échec de la mise à jour de l'ordre des cours. Veuillez réessayer."
       }
     },
     "team_members": {
@@ -536,7 +538,7 @@
     "go_to_my_learning": "Aller à Mon apprentissage"
   },
   "lms_navigation": {
-    "home": "Accueil",
+    "home": "Tableau de bord",
     "my_learning": "Mon apprentissage",
     "certificates": "Certificats",
     "exercise": "Exercice",
@@ -632,6 +634,14 @@
         "COMPLIANCE": "Conformité",
         "PUBLIC": "Publique"
       }
+    },
+    "topCourses": {
+      "heading": "Meilleurs cours par vues",
+      "description": "Cours classés par pages vues",
+      "subtitle": "Classés par pages vues sur cette période",
+      "empty": "Aucune consultation de page de cours pour l'instant",
+      "course": "Cours",
+      "views": "Vues"
     },
     "countries": {
       "heading": "Principaux pays",
@@ -841,7 +851,8 @@
         "course_avail": "Rendre le cours disponible en téléchargement pour les étudiants inscrits",
         "download": "Télécharger",
         "allow": "Les étudiants peuvent s'inscrire eux-mêmes",
-        "access": "Lorsque cette option est désactivée, les étudiants ne peuvent rejoindre le cours que via un lien d'invitation ou en étant ajoutés depuis Personnes.",
+        "access": "Lorsque cette option est désactivée, les étudiants ne peuvent rejoindre le cours que via un lien d'invitation ou en étant ajoutés depuis {people}.",
+        "access_people": "Personnes",
         "publish": "Publier un cours",
         "determines": "Cela détermine si votre cours s'affiche sur votre page de destination",
         "published": "Publié",
@@ -859,7 +870,11 @@
           "empty": "Aucune balise sélectionnée",
           "add": "Ajouter une balise",
           "popover_title": "Sélectionnez les balises",
-          "empty_groups": "Aucun tag disponible pour l'instant"
+          "empty_groups": "Aucun tag disponible pour l'instant",
+          "create_tag": "Créer une balise",
+          "none_created": "Aucune balise créée pour l'instant",
+          "search_placeholder": "Rechercher des balises...",
+          "no_results": "Aucune balise trouvée"
         },
         "compliance": "Conformité",
         "public": "Publique",
@@ -3524,6 +3539,9 @@
           "remove": "Supprimer le lien de navigation"
         },
         "hero": {
+          "eyebrow": "Surtitre",
+          "eyebrow_placeholder": "// engineering academy",
+          "eyebrow_description": "Libellé facultatif au-dessus du titre (utilisé par les modèles qui le prennent en charge, p. ex. Tech). Laissez vide pour le masquer.",
           "heading": "Rubrique",
           "subheading": "Sous-titre",
           "primary_label": "Étiquette du bouton principal",
@@ -3557,7 +3575,9 @@
           "footer": "Pied de page",
           "footer_desc": "Ligne de marque, réseaux sociaux, liens multi-colonnes et ligne légale en bas.",
           "links": "Liens",
-          "links_desc": "Bloc optionnel de liens externes (centre d'aide, communauté, webinaires) affichés après les cours."
+          "links_desc": "Bloc optionnel de liens externes (centre d'aide, communauté, webinaires) affichés après les cours.",
+          "courses": "Cours",
+          "courses_desc": "Faites glisser pour définir l'ordre des cours publiés sur la page d'accueil."
         },
         "links": {
           "toggle": "Afficher la section des liens",
@@ -3595,6 +3615,16 @@
             "calendar": "Événements",
             "mail": "E-mail"
           }
+        },
+        "courses": {
+          "drag_hint": "Faites glisser les cours pour les réorganiser sur la page d'accueil.",
+          "empty": "Aucun cours publié pour le moment. Publiez un cours pour le prévisualiser ici.",
+          "load_failed": "Échec du chargement des cours publiés.",
+          "add_button": "Ajouter",
+          "popover_title": "Sélectionner des cours",
+          "popover_empty": "Aucun cours publié disponible.",
+          "search_no_results": "Aucun cours ne correspond à votre recherche.",
+          "search_placeholder": "Rechercher des cours..."
         }
       },
       "content": {
@@ -3645,6 +3675,10 @@
           "editorial": {
             "title": "Éditorial",
             "description": "Palette de crème chaude, héros pictural, sensation de magazine raffinée"
+          },
+          "quartz": {
+            "title": "Quartz",
+            "description": "Grille monochrome à traits fins, rangées de cours lignées, rail d'inscription adhésif"
           }
         }
       },
@@ -4225,7 +4259,9 @@
       "color": "Couleur",
       "color_help": "Choisissez une des 10 couleurs",
       "select_category": "Sélectionnez une catégorie",
-      "no_groups": "Créez un groupe de balises avant de créer des balises"
+      "no_groups": "Créez un groupe de balises avant de créer des balises",
+      "search_category": "Catégorie de recherche",
+      "no_results": "Aucune catégorie trouvée"
     },
     "group_modal": {
       "create_title": "Créer un groupe de balises",
@@ -4639,6 +4675,11 @@
     "heading": "Widgets",
     "subtitle": "Publiez des collections de cours de marque pour des sites Web externes.",
     "empty_state": "Aucun widget pour l'instant. Créez-en un pour générer un bloc de cours intégrable.",
+    "archived": {
+      "heading": "Widgets archivés",
+      "empty": "Aucun widget archivé",
+      "empty_description": "Les widgets archivés apparaîtront ici. Vous pouvez les restaurer à tout moment."
+    },
     "filter": {
       "status": "Statut",
       "all": "Tout",
@@ -4650,8 +4691,14 @@
       "saved": "Widget enregistré",
       "published": "Widget publié",
       "rolled_back": "Widget restauré",
-      "deleted": "Widget archivé",
-      "validation_failed": "Certains champs ne sont pas valides. Vérifiez les entrées en surbrillance."
+      "restored": "Widget restauré",
+      "archived_load_failed": "Impossible de charger les widgets archivés",
+      "restore_failed": "Impossible de restaurer le widget",
+      "validation_failed": "Certains champs ne sont pas valides. Vérifiez les entrées en surbrillance.",
+      "archived": "Widget archivé",
+      "archive_failed": "Impossible d'archiver le widget",
+      "permanently_deleted": "Widget supprimé définitivement",
+      "delete_failed": "Impossible de supprimer le widget"
     },
     "form": {
       "name": "Nom du widget",
@@ -4701,7 +4748,7 @@
       "copy_embed": "Copier l'intégration",
       "copy_url": "Copier l'URL",
       "rename": "Renommer",
-      "delete": "Supprimer"
+      "delete_permanently": "Supprimer définitivement"
     },
     "embed": {
       "tabs": {
@@ -4843,7 +4890,9 @@
       "select_courses": "Sélectionnez des cours",
       "layout": "Mise en page",
       "design": "Design",
-      "embed": "Code intégré"
+      "embed": "Code intégré",
+      "active": "Actifs",
+      "archived": "Archivés"
     },
     "defaults": {
       "name_prefix": "Widget de cours"
@@ -4851,6 +4900,10 @@
     "empty": {
       "heading": "Pas encore de widget",
       "description": "Créez un widget pour générer un bloc de cours intégrable pour les sites Web externes."
+    },
+    "delete_modal": {
+      "title": "Supprimer définitivement le widget",
+      "description": "Êtes-vous sûr de vouloir supprimer définitivement « {name} » ? Cette action est irréversible."
     }
   },
   "side_panel": {
@@ -5556,7 +5609,7 @@
     "toggle_failed": "Impossible de mettre à jour le lien d'invitation"
   },
   "lms": {
-    "view_landing_page": "Afficher la page d'accueil"
+    "view_landing_page": "Accueil"
   },
   "notifications": {
     "title": "Notifications",
