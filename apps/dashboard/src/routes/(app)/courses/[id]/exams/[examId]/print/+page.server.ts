@@ -37,10 +37,11 @@ const FALLBACK_LABELS = {
  * they chose, what the key says, and where the two differ. The workbook already carries all
  * of that, but a spreadsheet is not something anybody hands to a sixteen-year-old.
  *
- * There is no PDF writer behind this. The browser already has one — every print dialog can
- * save to PDF — and it renders Vietnamese correctly without an embedded font, which a
- * server-side writer would have had to carry and be checked glyph by glyph. What the page
- * owes in return is print CSS honest enough that the dialog's preview is the finished sheet.
+ * There is no PDF writer behind this, and there is no need for one: this page is the layout,
+ * and the `print/pdf` endpoint beside it renders exactly what this page produces. A headless
+ * browser draws Vietnamese correctly without an embedded font, which a server-side writer
+ * would have had to carry and have checked glyph by glyph. What the page owes in return is
+ * print CSS honest enough that what a teacher saves is what they saw.
  */
 /**
  * The moment the sheet was printed, in ISO 8601 order.

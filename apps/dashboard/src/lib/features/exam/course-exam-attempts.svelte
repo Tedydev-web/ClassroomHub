@@ -131,6 +131,7 @@
   let exportLocale = $state<ExamExportLocale>('en');
   let includeAnswerKey = $state(true);
   let exportingAnswers = $state(false);
+  let printingAnswers = $state(false);
 
   /**
    * The chosen sittings, split into the paper each one belongs to.
@@ -189,12 +190,39 @@
     }
   }
 
-  /** The sheets for each paper in the selection, one tab per paper. */
-  function printAnswers(attemptIds: string[]) {
-    for (const [id, ids] of attemptsByExam(attemptIds)) {
-      const query = `?lang=${exportLocale}` + (includeAnswerKey ? '' : '&key=off') + `&attempts=${ids.join(',')}`;
+  /** The sheets for each paper in the selection, one file per paper. */
+  async function printAnswers(attemptIds: string[]) {
+    const grouped = attemptsByExam(attemptIds);
+    if (grouped.size === 0) return;
 
-      window.open(`/courses/${courseId}/exams/${id}/print${query}`, '_blank', 'noopener');
+    printingAnswers = true;
+
+    try {
+      let failures = 0;
+
+      for (const [id, ids] of grouped) {
+        try {
+          const response = await fetch(`/courses/${courseId}/exams/${id}/print/pdf`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ attemptIds: ids, locale: exportLocale, includeAnswerKey })
+          });
+
+          if (!response.ok) {
+            failures += 1;
+            continue;
+          }
+
+          downloadFile(await response.blob(), fileNameFromResponse(response, 'answer-sheets.pdf'));
+        } catch {
+          failures += 1;
+        }
+      }
+
+      if (failures > 0) snackbar.error($t('exam.results.print_failed'));
+      else snackbar.success($t('exam.results.printed'));
+    } finally {
+      printingAnswers = false;
     }
   }
 
@@ -286,6 +314,7 @@
       onexportanswers={exportAnswers}
       onprintanswers={printAnswers}
       {exportingAnswers}
+      {printingAnswers}
     />
   {/if}
 </div>

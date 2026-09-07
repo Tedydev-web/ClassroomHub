@@ -183,21 +183,35 @@
   }
 
   /**
-   * The answer sheets, opened in their own tab for the print dialog.
+   * The answer sheets, as a file rather than as the browser's print dialog.
    *
-   * A new tab rather than a navigation: the teacher is mid-way through reading the results
-   * when they print, and coming back to a screen they had already scrolled and filtered is
-   * the difference between printing once and printing three times.
+   * The dialog was a second screen to read and a set of margins to correct for a document
+   * that was already finished; the workbook button beside this one has always downloaded on
+   * one click. The sheet page still renders the layout — see the `print/pdf` endpoint.
    */
-  function printAnswers(attemptIds: string[]) {
-    // The choice rides on the URL: the sheet opens in its own tab, where what this screen
-    // remembered in `localStorage` cannot be read.
-    const query =
-      `?lang=${exportLocale}` +
-      (includeAnswerKey ? '' : '&key=off') +
-      (attemptIds.length > 0 ? `&attempts=${attemptIds.join(',')}` : '');
+  async function printAnswers(attemptIds: string[]) {
+    printingAnswers = true;
 
-    window.open(`/courses/${courseId}/exams/${examId}/print${query}`, '_blank', 'noopener');
+    try {
+      const response = await fetch(`/courses/${courseId}/exams/${examId}/print/pdf`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ attemptIds, locale: exportLocale, includeAnswerKey })
+      });
+
+      if (!response.ok) {
+        snackbar.error($t('exam.results.print_failed'));
+
+        return;
+      }
+
+      downloadFile(await response.blob(), fileNameFromResponse(response, 'answer-sheets.pdf'));
+      snackbar.success($t('exam.results.printed'));
+    } catch {
+      snackbar.error($t('exam.results.print_failed'));
+    } finally {
+      printingAnswers = false;
+    }
   }
 
   function openAttempt(attemptId: string) {
@@ -219,6 +233,7 @@
    * wrong thing is how the last attempt at this went.
    */
   let exportingAnswers = $state(false);
+  let printingAnswers = $state(false);
 
   /** Set by the controls above the table; see `exam-export-preferences`. */
   let exportLocale = $state<ExamExportLocale>('en');
@@ -305,6 +320,7 @@
           onexportanswers={exportAnswers}
           onprintanswers={printAnswers}
           {exportingAnswers}
+          {printingAnswers}
         />
       {/if}
     </Tabs.Content>

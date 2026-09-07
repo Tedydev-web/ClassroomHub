@@ -21,6 +21,7 @@
     onexportanswers,
     onprintanswers,
     exportingAnswers = false,
+    printingAnswers = false,
     showSummary = true
   }: {
     rows: ExamResultRow[];
@@ -32,6 +33,7 @@
     /** The same selection, opened as printable answer sheets instead of a workbook. */
     onprintanswers?: (attemptIds: string[]) => void;
     exportingAnswers?: boolean;
+    printingAnswers?: boolean;
     /** Off where the screen already states them above the table, so they are not said twice. */
     showSummary?: boolean;
   } = $props();
@@ -387,7 +389,7 @@
           The same answers as the workbook, on paper instead of in a spreadsheet: one A4
           sheet per candidate, which is the form a teacher can hand back in the room.
         -->
-        <Button size="sm" variant="outline" onclick={printAnswers}>
+        <Button size="sm" variant="outline" disabled={printingAnswers} onclick={printAnswers}>
           <PrinterIcon size={14} />
           {picked.size > 0
             ? $t('exam.results.print_selected', { count: String(picked.size) })

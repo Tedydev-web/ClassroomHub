@@ -5664,6 +5664,8 @@
       "export_answers_all": "Tải bài làm ({count})",
       "export_answers_selected": "Tải bài làm đã chọn ({count})",
       "export_failed": "Chưa tải được bài làm. Thử lại giúp mình.",
+      "printed": "Đã tải phiếu trả lời",
+      "print_failed": "Chưa tải được phiếu trả lời. Thử lại giúp mình.",
       "select_all": "Chọn tất cả bài đã nộp",
       "select_one": "Chọn bài của {name}",
       "manage_exams": "Quản lý đề thi",

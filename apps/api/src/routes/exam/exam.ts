@@ -23,6 +23,7 @@ import {
 import {
   buildExamAnswerDistributionService,
   buildExamAnswerMatrixService,
+  buildExamAnswerSheetPdfService,
   buildExamAnswerWorkbookService,
   listExamAnswerKeysService
 } from '@api/services/exam/exam-answer-keys';
@@ -328,6 +329,38 @@ export const examRouter = new Hono()
           'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           // Both spellings: the plain one for what every client understands, and the encoded
           // one so a Vietnamese title survives the header intact where it is understood.
+          'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+        }
+      });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  /**
+   * The printed answer sheets as a PDF the browser saves, rather than a print dialog.
+   *
+   * The markup arrives from the dashboard's own sheet page. That page is the only
+   * description of the layout — a teacher approved it line by line — so rendering it here
+   * from a second copy would be two designs pretending to be one. The dashboard renders the
+   * page it already has and hands the result over; this turns it into a file.
+   */
+  .post('/:examId/answer-sheets', authMiddleware, examTeamMemberMiddleware, async (c) => {
+    try {
+      const body = await c.req.json().catch(() => ({}));
+      const attemptIds = Array.isArray(body?.attemptIds)
+        ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
+        : [];
+
+      const { file, fileName } = await buildExamAnswerSheetPdfService(
+        c.req.param('examId'),
+        attemptIds,
+        typeof body?.html === 'string' ? body.html : '',
+        typeof body?.styles === 'string' ? body.styles : undefined
+      );
+
+      return new Response(new Uint8Array(file), {
+        headers: {
+          'content-type': 'application/pdf',
           'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
         }
       });

@@ -1,3 +1,4 @@
+import { getCloudflarePdfBuffer } from '@api/utils/cloudflare';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getExamById } from '@cio/db/queries/exam/exam';
 import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
@@ -275,6 +276,50 @@ export async function buildExamAnswerWorkbookService(
   return { file, fileName: examWorkbookFileName(exam.title, matrix, stamp.compact) };
 }
 
+/** The largest sheet document worth rendering, so one request cannot hand Cloudflare a book. */
+const MAX_ANSWER_SHEET_HTML_BYTES = 4_000_000;
+
+/**
+ * The printed answer sheets as a file, rather than as a browser print dialog.
+ *
+ * The markup is the sheet page's own, rendered by the dashboard and handed here: that page
+ * is the only description of the layout, and generating a second copy of it on this side is
+ * how an approved design drifts from the one a teacher signed off. This turns it into a PDF
+ * and names it the way the workbook is named, so both land in a folder that stays sortable.
+ */
+export async function buildExamAnswerSheetPdfService(
+  examId: string,
+  attemptIds: string[],
+  html: string,
+  styles: string | undefined,
+  now = new Date()
+) {
+  requireExamsEnabled();
+
+  if (typeof html !== 'string' || html.trim().length === 0) {
+    throw new AppError('Answer sheet markup is required', ErrorCodes.VALIDATION_ERROR, 400, 'html');
+  }
+  if (Buffer.byteLength(html, 'utf8') > MAX_ANSWER_SHEET_HTML_BYTES) {
+    throw new AppError('Answer sheet markup is too large to render', ErrorCodes.VALIDATION_ERROR, 400, 'html');
+  }
+
+  const exam = await getExamById(examId);
+  if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
+
+  const matrix = await buildExamAnswerMatrixService(examId, attemptIds);
+  const stamp = examWorkbookStamp(now);
+
+  // The sheet states its own page size and margins, and those were settled by eye against a
+  // printed Ministry form. `preferCSSPageSize` is what makes the renderer read them instead
+  // of imposing its own.
+  const file = await getCloudflarePdfBuffer(html, styles, undefined, {
+    preferCSSPageSize: true,
+    printBackground: true
+  });
+
+  return { file, fileName: examAnswerSheetFileName(exam.title, matrix, stamp.compact) };
+}
+
 /** The moment the file was made, in both the shapes it is needed in. */
 function examWorkbookStamp(now: Date) {
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -312,6 +357,19 @@ function examWorkbookFileName(title: string, matrix: { rows: Array<{ displayName
     .filter((part) => part.length > 0);
 
   return `${parts.join('_') || 'bai-lam'}.xlsx`;
+}
+
+function examAnswerSheetFileName(
+  title: string,
+  matrix: { rows: Array<{ displayName: string | null }> },
+  stamp: string
+) {
+  const only = matrix.rows.length === 1 ? matrix.rows[0]?.displayName : null;
+  const parts = [title, only ?? `${matrix.rows.length}-hs`, stamp]
+    .map(toFileNamePart)
+    .filter((part) => part.length > 0);
+
+  return `${parts.join('_') || 'phieu-tra-loi'}.pdf`;
 }
 
 function toFileNamePart(value: string): string {
