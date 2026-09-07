@@ -183,14 +183,18 @@ jobs:
 
           matrix="$(node -e '
             const wanted = new Set(process.argv[1].split(" ").filter(Boolean));
+            // Dashboard first: it is the longest build by two minutes, so whichever
+            // runner frees up first should take it. Runners are handed jobs in matrix
+            // order, and when this list started with api the dashboard waited behind
+            // two shorter builds and set the critical path on its own.
             const all = [
-              { name: "api", dockerfile: "./docker/Dockerfile.api", image: "classroom-api", build_args: "" },
               {
                 name: "dashboard",
                 dockerfile: "./docker/Dockerfile.dashboard",
                 image: "classroom-dashboard",
                 build_args: "PUBLIC_IS_SELFHOSTED=false\nPUBLIC_IS_SELF_OWNED=true"
               },
+              { name: "api", dockerfile: "./docker/Dockerfile.api", image: "classroom-api", build_args: "" },
               { name: "jobs", dockerfile: "./docker/Dockerfile.jobs", image: "classroom-jobs", build_args: "" }
             ];
             console.log(JSON.stringify({ include: all.filter((entry) => wanted.has(entry.name)) }));
@@ -229,19 +233,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # `load`, not `push`: this is the daemon the site runs on, so the image is
-      # already where the deploy needs it. The registry copy is made afterwards by
-      # `publish`, which no longer sits between a commit and the site serving it.
+      # Plain `docker build`, not `build-push-action`. The action drives buildx,
+      # which exports the built image and unpacks it back into the daemon; measured
+      # on this host that round trip costs 32 seconds the daemon does not need,
+      # because it is the daemon the image was built by and will be run from. The
+      # image is left where the deploy looks for it, and the registry copy is made
+      # afterwards by `publish`, off the path between a commit and the site.
       - name: Build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          build-args: ${{ matrix.build_args }}
-          load: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
-          platforms: linux/amd64
-          provenance: false
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
+          DOCKERFILE: ${{ matrix.dockerfile }}
+          BUILD_ARGS: ${{ matrix.build_args }}
+        run: |
+          set -euo pipefail
+
+          args=""
+          # One `--build-arg` per line of the matrix entry; empty for services with none.
+          while IFS= read -r line; do
+            [ -n "${line}" ] && args="${args} --build-arg ${line}"
+          done <<< "${BUILD_ARGS}"
+
+          # shellcheck disable=SC2086
+          docker build --file "${DOCKERFILE}" --tag "${IMAGE_REF}" ${args} .
 
   deploy:
     name: Start the new stack
@@ -394,7 +407,20 @@ jobs:
           done
 
           # Healthy containers are not the same as a served page; ask the tunnel.
-          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 https://msna.classroom.io.vn/)"
+          #
+          # Retried, because those two facts are seconds apart. A container reports
+          # healthy as soon as it answers on localhost, while the tunnel still has to
+          # notice the old one is gone and route to the new one. Asking once, four
+          # seconds after the dashboard went healthy, failed a deploy that had in fact
+          # succeeded — the site was serving the new image by the time anyone looked.
+          code=000
+          for attempt in $(seq 1 12); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 https://msna.classroom.io.vn/ || echo 000)"
+            [ "${code}" = "200" ] && break
+            echo "attempt ${attempt}: HTTP ${code}"
+            sleep 5
+          done
+
           if [ "${code}" != "200" ]; then
             echo "::error::The site answered HTTP ${code} after the deploy"
             exit 1
