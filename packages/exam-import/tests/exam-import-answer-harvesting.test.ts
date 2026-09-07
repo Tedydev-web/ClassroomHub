@@ -293,6 +293,38 @@ describe('exam import answer harvesting', () => {
     expect(question.confidence).toBe('medium');
   });
 
+  it('takes the marking back out of the option a candidate reads', () => {
+    const runs = [
+      block(0, 'Question 1. Choose.'),
+      block(1, 'A. One\tB. Two\tC. '),
+      block(1, 'Three', { formatting: { bold: true } }),
+      block(1, '\tD. Four'),
+      block(2, 'Question 2. Choose.'),
+      block(3, 'A. Alpha\tB. '),
+      block(3, 'Beta', { formatting: { bold: true } }),
+      block(3, '\tC. Gamma\tD. Delta')
+    ];
+    runs[2]!.location.runIndex = 1;
+    runs[3]!.location.runIndex = 2;
+    runs[5]!.location.runIndex = 1;
+    runs[6]!.location.runIndex = 2;
+    const harvested = harvestExamImportAnswerCandidates(draftFor(runs), runs);
+    const questions = harvested.sections.flatMap((section) => section.questions);
+
+    for (const question of questions) {
+      if (question.kind !== 'choice') throw new Error('Expected a choice question');
+      for (const option of question.options) {
+        expect(option.html).not.toContain('<strong>');
+      }
+    }
+
+    const first = questions[0];
+    if (first?.kind !== 'choice') throw new Error('Expected a choice question');
+    // The key is still read; only the styling that gave it away is gone.
+    expect(first.answerCandidates[0]?.correctOptionIds).toEqual([first.options[2]?.id]);
+    expect(first.options[2]?.html).toBe('<p>Three</p>');
+  });
+
   it('counts one marking once when the answer is both bold and highlighted', () => {
     const runs = [
       block(0, 'Question 1. Choose.'),

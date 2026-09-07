@@ -538,6 +538,61 @@ function isEmphasized(formatting: RunFormatting, kind: EmphasisKind): boolean {
   return false;
 }
 
+/**
+ * Takes one kind of emphasis back out of the rendered option text.
+ *
+ * A paper marks its answer key by styling the right option — bold, underlined, a colour.
+ * Harvesting reads that styling into the answer key, and carrying it through into the
+ * option a candidate reads hands them the answer. Highlight is already dropped where the
+ * HTML is written; these three are not, because outside an answer key they are ordinary
+ * formatting a paper is entitled to.
+ */
+function withoutEmphasis(html: string, kind: EmphasisKind): string {
+  switch (kind) {
+    case 'bold':
+      return html.replace(/<\/?strong>/gu, '');
+    case 'underline':
+      return html.replace(/<\/?u>/gu, '');
+    case 'color':
+      return withoutColourSpans(html);
+    case 'highlight':
+      // Never rendered — see the note on `formattedTextHtml`.
+      return html;
+  }
+
+  kind satisfies never;
+  return html;
+}
+
+/**
+ * Drops colour spans and the closing tags that belong to them, keeping the text inside.
+ *
+ * A blunt replace of every `</span>` would also close spans this did not open — inline maths
+ * is written as one — so the closers are matched by counting depth.
+ */
+function withoutColourSpans(html: string): string {
+  const parts = html.split(/(<span\b[^>]*>|<\/span>)/gu);
+  const openKinds: Array<'colour' | 'other'> = [];
+  let output = '';
+
+  for (const part of parts) {
+    if (/^<span\b/u.test(part)) {
+      const isColour = /style="color:/u.test(part);
+      openKinds.push(isColour ? 'colour' : 'other');
+      if (!isColour) output += part;
+      continue;
+    }
+    if (part === '</span>') {
+      if (openKinds.pop() !== 'colour') output += part;
+      continue;
+    }
+
+    output += part;
+  }
+
+  return output;
+}
+
 function applyEmphasisCandidates(
   draft: ExamImportDraft,
   blocks: ExamImportSourceBlock[],
@@ -586,6 +641,13 @@ function applyEmphasisCandidates(
           selectedOptions.length === 1 && selectedOptions.length < question.options.length
       );
     if (!validDocumentPattern) continue;
+
+    // Every option, not only the marked one: stripping just the answer would leave its
+    // absence as the tell wherever another option carried the same formatting for its own
+    // reasons.
+    for (const question of choices) {
+      for (const option of question.options) option.html = withoutEmphasis(option.html, kind);
+    }
 
     for (const { question, questionIndex, selectedOptions } of selections) {
       const option = selectedOptions[0]!;
