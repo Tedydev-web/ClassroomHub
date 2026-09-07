@@ -304,9 +304,13 @@ describe('exam import segmentation', () => {
     const question = draft.sections[0]?.questions[0];
     if (question?.kind !== 'choice') throw new Error('Expected a choice question');
 
-    expect(question.promptHtml).toContain('a. Opening sentence');
-    expect(question.promptHtml).toContain('b. Second sentence');
-    expect(question.promptHtml).toContain('c. Third sentence');
+    // The sentences to be ordered are the paper, not the question: they belong in a content
+    // block of their own so the reader can tell them from the four letter sequences below.
+    const stem = draft.sharedContents.find((content) => content.id === question.passageId);
+    expect(stem?.html).toContain('a. Opening sentence');
+    expect(stem?.html).toContain('b. Second sentence');
+    expect(stem?.html).toContain('c. Third sentence');
+    expect(question.promptHtml).toBe('<p>Question 1</p>');
     expect(question.options).toHaveLength(4);
   });
 
@@ -608,16 +612,18 @@ describe('exam import segmentation', () => {
       'Choose the correct option that best fits each of the numbered blanks from 4 to 5.',
       'Choose the correct answer to each of the questions from 6 to 7.'
     ]);
-    expect(draft.sharedContents).toHaveLength(3);
+    // Three shared passages, plus the arrangement question's own stem.
+    expect(draft.sharedContents).toHaveLength(4);
     expect(questions.map((question) => question.passageId)).toEqual([
       draft.sharedContents[0]?.id,
       draft.sharedContents[0]?.id,
-      null,
+      draft.sharedContents[3]?.id,
       draft.sharedContents[1]?.id,
       draft.sharedContents[1]?.id,
       draft.sharedContents[2]?.id,
       draft.sharedContents[2]?.id
     ]);
+    expect(draft.sharedContents[3]?.html).toContain('a. First sentence');
     expect(draft.sharedContents[0]?.html).toContain('First passage');
     expect(draft.sharedContents[1]?.html).toContain('Second passage');
     expect(draft.sharedContents[2]?.html).toContain('Reading passage');
@@ -912,6 +918,28 @@ describe('exam import segmentation', () => {
     expect(examImportDraftSchema.safeParse(draft).success).toBe(true);
   });
 
+  it('lifts a parenthesised arrangement stem out of the prompt when the section declares one', () => {
+    const draft = segment([
+      block(0, 'Mark the letter A, B, C, or D on your answer sheet to indicate the correct arrangement.'),
+      block(1, 'Question 1. Dear Minh,'),
+      block(2, '(a) It will also be a great chance to share ideas.'),
+      block(3, '(b) I am writing to invite you to a workshop.'),
+      block(4, '(c) Please let me know if you can attend.'),
+      block(5, 'Best regards,'),
+      block(6, 'A. b – a – cB. a – b – cC. c – a – bD. b – c – a')
+    ]);
+    const question = draft.sections[0]?.questions[0];
+    if (question?.kind !== 'choice') throw new Error('Expected a choice question');
+
+    const stem = draft.sharedContents.find((content) => content.id === question.passageId);
+    expect(question.promptHtml).toBe('<p>Question 1</p>');
+    expect(stem?.html).toContain('Dear Minh,');
+    // The paper writes "(a)", so the imported stem writes "(a)" too.
+    expect(stem?.html).toContain('(a) It will also be a great chance');
+    expect(stem?.html).toContain('Best regards,');
+    expect(question.options).toHaveLength(4);
+  });
+
   it('preserves lower-letter list numbering that starts at b as arrangement content', () => {
     const draft = segment([
       block(0, 'Question 1. a. First sentence'),
@@ -924,9 +952,10 @@ describe('exam import segmentation', () => {
     const question = draft.sections[0]?.questions[0];
     if (question?.kind !== 'choice') throw new Error('Expected a choice question');
 
-    expect(question.promptHtml).toContain('a. First sentence');
-    expect(question.promptHtml).toContain('b. Second sentence');
-    expect(question.promptHtml).toContain('e. Fifth sentence');
+    const stem = draft.sharedContents.find((content) => content.id === question.passageId);
+    expect(stem?.html).toContain('a. First sentence');
+    expect(stem?.html).toContain('b. Second sentence');
+    expect(stem?.html).toContain('e. Fifth sentence');
   });
 
   it('segments the verified reference into forty complete choice questions and five passage groups', async () => {
@@ -946,13 +975,18 @@ describe('exam import segmentation', () => {
     );
     expect(questions.every((question) => question.kind === 'choice')).toBe(true);
     expect(questions.every((question) => question.kind === 'choice' && question.options.length === 4)).toBe(true);
-    expect(draft.sharedContents).toHaveLength(5);
+    // Five shared passages, then one stem block per arrangement question.
+    expect(draft.sharedContents.slice(0, 5)).toHaveLength(5);
     expect(questions.slice(0, 10).every((question) => question.passageId === draft.sharedContents[0]?.id)).toBe(true);
     expect(questions.slice(10, 16).every((question) => question.passageId === draft.sharedContents[1]?.id)).toBe(true);
     expect(questions.slice(16, 21).every((question) => question.passageId === draft.sharedContents[2]?.id)).toBe(true);
     expect(questions.slice(21, 27).every((question) => question.passageId === draft.sharedContents[3]?.id)).toBe(true);
     expect(questions.slice(27, 35).every((question) => question.passageId === draft.sharedContents[4]?.id)).toBe(true);
-    expect(questions.slice(35).every((question) => question.passageId === null)).toBe(true);
+    const arrangementStemIds = questions.slice(35).map((question) => question.passageId);
+    expect(new Set(arrangementStemIds).size).toBe(arrangementStemIds.length);
+    expect(arrangementStemIds.every((id) => draft.sharedContents.slice(5).some((content) => content.id === id))).toBe(
+      true
+    );
   });
 
   it('segments the uploaded G12 practice test into its six instruction blocks', async () => {
@@ -975,10 +1009,13 @@ describe('exam import segmentation', () => {
       Array.from({ length: 40 }, (_, index) => String(index + 1))
     );
     expect(questions.every((question) => question.kind === 'choice' && question.options.length === 4)).toBe(true);
-    expect(draft.sharedContents).toHaveLength(5);
+    // Five shared passages, then one stem block per arrangement question.
+    expect(draft.sharedContents).toHaveLength(10);
     expect(questions.slice(0, 6).every((question) => question.passageId === draft.sharedContents[0]?.id)).toBe(true);
     expect(questions.slice(6, 12).every((question) => question.passageId === draft.sharedContents[1]?.id)).toBe(true);
-    expect(questions.slice(12, 17).every((question) => question.passageId === null)).toBe(true);
+    expect(questions.slice(12, 17).map((question) => question.passageId)).toEqual(
+      draft.sharedContents.slice(5).map((content) => content.id)
+    );
     expect(questions.slice(17, 22).every((question) => question.passageId === draft.sharedContents[2]?.id)).toBe(true);
     expect(questions.slice(22, 30).every((question) => question.passageId === draft.sharedContents[3]?.id)).toBe(true);
     expect(questions.slice(30).every((question) => question.passageId === draft.sharedContents[4]?.id)).toBe(true);

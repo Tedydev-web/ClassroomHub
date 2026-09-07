@@ -283,9 +283,13 @@ function toAssessmentItem(
   order: number,
   chunkIndex: number
 ): ExamImportAssessmentItemPlan {
+  // The two-column workspace earns its place when several questions share one text and the
+  // reader moves between them. A single question with its own stem reads better stacked, the
+  // text above and the options under it.
+  const usesPassageWorkspace = sharedContent !== null && questions.length > 1;
   const definition: AssessmentItemDefinition = {
     schemaVersion: 1,
-    ...(sharedContent ? { presentation: { layout: 'passage_split' as const } } : {}),
+    ...(usesPassageWorkspace ? { presentation: { layout: 'passage_split' as const } } : {}),
     blocks: [
       ...(sharedContent
         ? [

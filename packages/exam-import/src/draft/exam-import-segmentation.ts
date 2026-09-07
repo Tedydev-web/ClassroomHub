@@ -61,6 +61,8 @@ type MutableQuestion = {
   issues: QuestionIssue[];
   trueFalseAnswerEvidence: boolean;
   columnMajorGroupId: string | null;
+  /** Set once the lettered stem has been lifted out into its own content block. */
+  stemMovedToContent: boolean;
 };
 
 type MutableSection = {
@@ -70,6 +72,8 @@ type MutableSection = {
   trueFalse: boolean;
   shortAnswer: boolean;
   essay: boolean;
+  /** The section asks candidates to order sentences, so each question carries its own stem. */
+  arrangement: boolean;
   questions: MutableQuestion[];
 };
 
@@ -807,11 +811,12 @@ function includedTextRanges(end: number, excludedRanges: TextRange[]): TextRange
   return included;
 }
 
-function sectionKind(title: string): Pick<MutableSection, 'trueFalse' | 'shortAnswer' | 'essay'> {
+function sectionKind(title: string): Pick<MutableSection, 'trueFalse' | 'shortAnswer' | 'essay' | 'arrangement'> {
   return {
     trueFalse: /(?:đúng\s*[/\\-]?\s*sai|dung\s*[/\\-]?\s*sai|true\s*[/\\-]?\s*false)/iu.test(title),
     shortAnswer: /(?:trả lời ngắn|tra loi ngan|short answer)/iu.test(title),
-    essay: /(?:tự luận|tu luan|essay)/iu.test(title)
+    essay: /(?:tự luận|tu luan|essay)/iu.test(title),
+    arrangement: /(?:\barrangement\b|sắp xếp|sap xep)/iu.test(title)
   };
 }
 
@@ -983,6 +988,8 @@ function appendRegularBlock(
 }
 
 function questionHtml(question: MutableQuestion, includeLowerItems: boolean): string {
+  if (question.stemMovedToContent) return paragraphHtml(`Question ${question.sourceNumber}`);
+
   const parts = question.promptParts
     .filter((part) => includeLowerItems || part.label === null)
     .map((part) => (part.label === null ? part.html : paragraphHtml(`${part.label}. ${part.text}`)));
@@ -1366,6 +1373,7 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
       cognitiveLevel: metadata.cognitiveLevel,
       passageId: activePassageId,
       promptParts: [],
+      stemMovedToContent: false,
       options: [],
       provenance: [block.span],
       issues: [],
@@ -1543,6 +1551,46 @@ export function segmentExamImportRuns(runs: SourceRun[], source: ExamImportDraft
   }
 
   reportPendingPassageAsUnassigned();
+
+  /**
+   * Lifts a lettered stem out of the question prompt and into its own content block.
+   *
+   * An arrangement question carries the sentences to be ordered — "a." to "e." — above four
+   * options that are themselves letter sequences. Left in the prompt the two run together on
+   * screen as one twelve-line block, and a reader cannot see where the paper stops and the
+   * answers start. A content block of its own is the same shape a shared passage already
+   * takes, so the question renders with the text above and the options below it.
+   */
+  for (const section of sections) {
+    for (const question of section.questions) {
+      if (question.passageId !== null || question.options.length < 2) continue;
+      const stemParts = question.promptParts;
+      // Either the source labelled the sentences itself, or the section instruction said this
+      // is an arrangement — papers write the labels as "a." or as "(a)", and only the second
+      // reading survives both.
+      const carriesStem =
+        stemParts.some((part) => part.label !== null) || (section.arrangement && stemParts.length > 1);
+      if (!carriesStem) continue;
+      if (sharedContents.length >= MAX_EXAM_IMPORT_SHARED_CONTENTS) break;
+
+      const contentId = `shared-content-${sharedContents.length + 1}`;
+      const provenance = mergeProvenance(stemParts.map((part) => part.span));
+      sharedContents.push({
+        id: contentId,
+        kind: 'passage',
+        html: questionHtml(question, true),
+        provenance
+      });
+      fieldStates.push({
+        target: { kind: 'shared_content_field', contentId, field: 'html' },
+        confidence: 'high',
+        origin: 'deterministic',
+        provenance
+      });
+      question.passageId = contentId;
+      question.stemMovedToContent = true;
+    }
+  }
 
   const outputSections = sections
     .filter((section) => section.questions.length > 0)

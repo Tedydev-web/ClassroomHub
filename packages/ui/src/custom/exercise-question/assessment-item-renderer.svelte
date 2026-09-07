@@ -520,6 +520,17 @@
     return Array.isArray(key) && key.includes(optionId);
   }
 
+  /**
+   * The letter a printed paper gives this option.
+   *
+   * Read off the position rather than off any label carried in the data, so it always agrees
+   * with the answer sheet, which numbers the same way. Past the alphabet there is no letter
+   * to give and the option keeps its bullet alone.
+   */
+  function optionLetter(index: number): string | null {
+    return index < 26 ? String.fromCharCode(65 + index) : null;
+  }
+
   function getOptionFeedback(interactionId: string, optionId: string) {
     return optionFeedback.filter((entry) => entry.interactionId === interactionId && entry.optionId === optionId);
   }
@@ -602,11 +613,12 @@
               onValueChange={(optionId) => updateResponse(block.id, { kind: 'choice', selectedOptionIds: [optionId] })}
             >
               <div class="ui:space-y-2">
-                {#each interaction.config.options as option}
+                {#each interaction.config.options as option, optionIndex}
                   {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
                   {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
                   {@const feedbackElementId = `${optionElementId}-feedback`}
                   {@const isKey = isKeyOption(block, option.id)}
+                  {@const letter = optionLetter(optionIndex)}
                   <div class={['ui:space-y-1', isKey ? 'ui:bg-emerald-500/10 ui:rounded-md ui:px-2 ui:py-1' : '']}>
                     <div class="ui:flex ui:items-start ui:gap-2">
                       <RadioGroup.Item
@@ -620,9 +632,15 @@
                           .filter(Boolean)
                           .join(' ') || undefined}
                       />
-                      <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
-                        >{@html renderAuthoredHtml(option.html)}</Label
+                      <Label
+                        class="ui:flex ui:cursor-pointer ui:items-start ui:gap-2 ui:font-normal"
+                        for={optionElementId}
                       >
+                        {#if letter}
+                          <span class="ui:text-muted-foreground ui:shrink-0 ui:font-medium">{letter}.</span>
+                        {/if}
+                        <span>{@html renderAuthoredHtml(option.html)}</span>
+                      </Label>
                     </div>
                     {#if feedbackEntries.length > 0}
                       <div
@@ -642,11 +660,12 @@
             </RadioGroup.Root>
           {:else}
             <div class="ui:space-y-2">
-              {#each interaction.config.options as option}
+              {#each interaction.config.options as option, optionIndex}
                 {@const optionElementId = `${rendererId}-${block.id}-${option.id}`}
                 {@const feedbackEntries = getOptionFeedback(block.id, option.id)}
                 {@const feedbackElementId = `${optionElementId}-feedback`}
                 {@const isKey = isKeyOption(block, option.id)}
+                {@const letter = optionLetter(optionIndex)}
                 <div class={['ui:space-y-1', isKey ? 'ui:bg-emerald-500/10 ui:rounded-md ui:px-2 ui:py-1' : '']}>
                   <div class="ui:flex ui:items-start ui:gap-2">
                     <Checkbox
@@ -663,9 +682,15 @@
                         .join(' ') || undefined}
                       onCheckedChange={() => toggleChoiceOption(block.id, selectedOptionIds, option.id)}
                     />
-                    <Label class="ui:cursor-pointer ui:font-normal" for={optionElementId}
-                      >{@html renderAuthoredHtml(option.html)}</Label
+                    <Label
+                      class="ui:flex ui:cursor-pointer ui:items-start ui:gap-2 ui:font-normal"
+                      for={optionElementId}
                     >
+                      {#if letter}
+                        <span class="ui:text-muted-foreground ui:shrink-0 ui:font-medium">{letter}.</span>
+                      {/if}
+                      <span>{@html renderAuthoredHtml(option.html)}</span>
+                    </Label>
                   </div>
                   {#if feedbackEntries.length > 0}
                     <div
