@@ -472,38 +472,3 @@ jobs:
           # Layers orphaned by the removals above.
           docker image prune --force >/dev/null || true
           df -h / | tail -1
-
-  # The registry copy, made after the site is already serving.
-  #
-  # Nothing on this host needs it: the image was built here and the two most recent
-  # per service are kept on disk, which is what a rollback starts. It exists for the
-  # case the disk does not — a rebuilt host, a second machine — and for reading what
-  # a given commit actually shipped. That is worth minutes of a background job and
-  # not one second of the path between a commit and the site.
-  #
-  # A failure here is reported, not fatal. The deploy it follows has already been
-  # proven to serve.
-  publish:
-    name: Copy the images to the registry
-    needs: [changes, deploy]
-    if: needs.changes.outputs.any == 'true'
-    runs-on: [self-hosted, Linux, ci]
-    timeout-minutes: 30
-    continue-on-error: true
-    steps:
-      - name: Push
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGED_SERVICES: ${{ needs.changes.outputs.services }}
-        run: |
-          set -euo pipefail
-
-          echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
-
-          for service in ${CHANGED_SERVICES}; do
-            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
-            docker push --quiet "${ref}"
-            echo "pushed ${ref}"
-          done
-
-          docker logout "${REGISTRY}"

@@ -1,0 +1,75 @@
+name: Publish images
+
+# The registry copy of what production is running, made after it is running it.
+#
+# Nothing on the host needs this. The images are built on the machine that runs
+# them, and the two most recent per service stay on disk — which is what a
+# rollback starts. This exists for the case the disk does not: a rebuilt host, a
+# second machine, or reading back what a given commit actually shipped.
+#
+# It is a separate workflow rather than a job at the end of the deploy because a
+# deploy's duration is what people read to mean "how long until the site is
+# serving the change". As a final job it added its two and a half minutes to that
+# number while the site had already been serving for two and a half minutes.
+
+on:
+  workflow_run:
+    workflows: ['Deploy production']
+    types: [completed]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-images
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: tedydev-web
+
+jobs:
+  push:
+    name: Copy the images to the registry
+    # Only for a deploy that succeeded: a failed one leaves the host serving the
+    # previous image, and that one is already in the registry.
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, Linux, ci]
+    timeout-minutes: 30
+    steps:
+      - name: Push whatever this commit built
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          # The deploy's own list of changed services is not readable from here, so
+          # the tags are: an image this commit produced exists locally, one it did
+          # not never did. A service the deploy left alone simply has no tag to find.
+          present=""
+
+          for service in api dashboard jobs; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${DEPLOYED_SHA}"
+            if docker image inspect "${ref}" >/dev/null 2>&1; then
+              present="${present} ${service}"
+            fi
+          done
+
+          present="$(echo "${present}" | xargs || true)"
+
+          if [ -z "${present}" ]; then
+            echo "Nothing was built for ${DEPLOYED_SHA} on this host."
+            exit 0
+          fi
+
+          echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
+
+          for service in ${present}; do
+            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${DEPLOYED_SHA}"
+            docker push --quiet "${ref}"
+            echo "pushed ${ref}"
+          done
+
+          docker logout "${REGISTRY}"
