@@ -63,9 +63,8 @@ export default defineConfig({
   },
   navigation: {
     tabs: [
-      { label: 'Help Center', path: '/', icon: 'book-open' },
-      { label: 'Developers', path: 'https://classroom.io.vn/docs/developers', icon: 'terminal' },
-      { label: 'API', path: 'https://classroom.io.vn/docs/api', icon: 'code' }
+      // Only one tab: the Developers and API tabs led to the retired documentation.
+      { label: 'Help Center', path: '/', icon: 'book-open' }
     ],
     sidebar: [
       '/',

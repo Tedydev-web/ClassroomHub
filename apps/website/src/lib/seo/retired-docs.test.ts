@@ -11,7 +11,7 @@ function sourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
     const path = join(directory, entry);
     if (statSync(path).isDirectory()) return sourceFiles(path);
-    return /\.(svelte|ts|md)$/.test(entry) ? [path] : [];
+    return /\.(svelte|ts|md|mdx)$/.test(entry) ? [path] : [];
   });
 }
 
@@ -24,11 +24,26 @@ function sourceFiles(directory: string): string[] {
  * had to close, so both are asserted here — a check on only the proxy would
  * have passed while every page stayed readable.
  */
-test('nothing on the site links to the retired documentation', () => {
-  const offenders = sourceFiles(join(appRoot, 'src'))
+test('nothing on the site or in the Help Center links to the retired documentation', () => {
+  // The Help Center is scanned too: its navigation carried Developers and API
+  // tabs pointing at /docs, and a check limited to this app never saw them.
+  const offenders = [
+    ...sourceFiles(join(appRoot, 'src')),
+    join(appRoot, '../help/blume.config.ts'),
+    ...sourceFiles(join(appRoot, '../help/content'))
+  ]
     // hooks.server.ts names the path in order to close it; the next test covers that.
     .filter((path) => !path.endsWith('retired-docs.test.ts') && !path.endsWith('hooks.server.ts'))
-    .filter((path) => /PRODUCT_URLS\.docs|["'`(]\/docs\//.test(readFileSync(path, 'utf8')));
+    // Any /docs path, however it is written. An earlier form of this check
+    // required a quote immediately before the slash, so an absolute URL —
+    // 'https://classroom.io.vn/docs/api' — slipped past it, which is exactly how
+    // the Help Center's Developers and API tabs survived. It is anchored to this
+    // product's own host so a link into another project's documentation — the
+    // SvelteKit reference in app.d.ts — is not mistaken for one of ours, and
+    // `/docs-vs-…`, a marketing page, does not match either.
+    .filter((path) =>
+      /PRODUCT_URLS\.docs|classroom\.io\.vn\/docs|["'`(]\/docs(\/|["'`)]|$)/m.test(readFileSync(path, 'utf8'))
+    );
 
   assert.deepEqual(offenders, [], `these still point at /docs: ${offenders.join(', ')}`);
 });
