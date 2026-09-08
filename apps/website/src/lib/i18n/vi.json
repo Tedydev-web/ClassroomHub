@@ -13,19 +13,46 @@
     "open_menu": "Mở menu",
     "close_menu": "Đóng menu",
     "items": {
-      "customer_education": { "title": "Đào tạo khách hàng", "subtitle": "Học viện dành cho khách hàng SaaS." },
+      "customer_education": {
+        "title": "Đào tạo khách hàng",
+        "subtitle": "Học viện dành cho khách hàng SaaS."
+      },
       "compliance_training": {
         "title": "Đào tạo tuân thủ",
         "subtitle": "Biến quy định và quy trình thành bằng chứng."
       },
-      "partner_training": { "title": "Đào tạo đối tác", "subtitle": "Một học viện riêng cho kênh phân phối." },
-      "public_courses": { "title": "Khoá học mở", "subtitle": "Bán khoá học cho học viên ở bất cứ đâu." },
-      "teach": { "title": "Giảng dạy cùng chúng tôi", "subtitle": "Đưa chương trình của bạn lên nền tảng." },
-      "automation": { "title": "Tự động hoá", "subtitle": "API, Webhooks và máy chủ MCP." },
-      "docs": { "title": "Tài liệu", "subtitle": "Tham chiếu API và hướng dẫn tích hợp." },
-      "help": { "title": "Trung tâm trợ giúp", "subtitle": "Hướng dẫn vận hành học viện của bạn." },
-      "mcp_recipes": { "title": "Công thức MCP", "subtitle": "Prompt cho agent, dùng được ngay." },
-      "storybook": { "title": "Storybook", "subtitle": "Xem và tái sử dụng các thành phần giao diện." }
+      "partner_training": {
+        "title": "Đào tạo đối tác",
+        "subtitle": "Một học viện riêng cho kênh phân phối."
+      },
+      "public_courses": {
+        "title": "Khoá học mở",
+        "subtitle": "Bán khoá học cho học viên ở bất cứ đâu."
+      },
+      "teach": {
+        "title": "Giảng dạy cùng chúng tôi",
+        "subtitle": "Đưa chương trình của bạn lên nền tảng."
+      },
+      "automation": {
+        "title": "Tự động hoá",
+        "subtitle": "API, Webhooks và máy chủ MCP."
+      },
+      "docs": {
+        "title": "Tài liệu",
+        "subtitle": "Tham chiếu API và hướng dẫn tích hợp."
+      },
+      "help": {
+        "title": "Trung tâm trợ giúp",
+        "subtitle": "Hướng dẫn vận hành học viện của bạn."
+      },
+      "mcp_recipes": {
+        "title": "Công thức MCP",
+        "subtitle": "Prompt cho agent, dùng được ngay."
+      },
+      "storybook": {
+        "title": "Storybook",
+        "subtitle": "Xem và tái sử dụng các thành phần giao diện."
+      }
     }
   },
   "footer": {
@@ -84,5 +111,86 @@
     "tutor_cta": "Xem học viện",
     "cta_header": "Bạn dạy gì cũng được, hãy dạy ở đây.",
     "cta_subtext": "Ra mắt học viện mang thương hiệu riêng trên tên miền của bạn chỉ trong vài ngày."
+  },
+  "ai_builds": {
+    "heading_lead": "AI biến kiến thức của doanh nghiệp thành khoá đào tạo tạo ra",
+    "heading_accent": "kết quả kinh doanh",
+    "subhead": "Đưa vào tài liệu, quy định, video và kiến thức nội bộ của bạn. AI phác thảo cấu trúc, bài học và câu hỏi. Bạn duyệt từng bước trước khi học viên nhìn thấy.",
+    "image_alt": "Trình soạn khoá học — lập kế hoạch, duyệt, triển khai. Mẫu có sẵn, trò chuyện ngay trong trình soạn, và MCP.",
+    "works_with": "Hoạt động cùng",
+    "template": {
+      "title": "Chọn một mẫu",
+      "description": "Nhập môn sản phẩm, hội nhập nhân sự, hay lộ trình chuyên sâu. Điền ba trường, nhận bản nháp khoá học."
+    },
+    "chat": {
+      "title": "Trò chuyện với trình soạn",
+      "description": "Trợ lý AI nằm ngay trong trình soạn. Nó lập dàn ý, viết nháp và ra đề. Bạn duyệt từng bước."
+    },
+    "agent": {
+      "title": "Dùng agent của riêng bạn",
+      "description": "Soạn khoá học từ Cursor, Claude Code, Codex hay OpenCode qua MCP."
+    }
+  },
+  "features": {
+    "heading_lead": "Biến nó thành của bạn,",
+    "heading_accent": "đến từng cái favicon.",
+    "subhead": "Thương hiệu của bạn, tên miền của bạn, nội dung của bạn. ClassroomHub uốn theo học viện mà bạn muốn ra mắt.",
+    "theme": {
+      "title": "Đổi giao diện toàn bộ",
+      "description": "Chọn một màu chủ đạo hoặc nhập mã hex của riêng bạn. Mọi trang đều nhận màu đó."
+    },
+    "domain": {
+      "title": "Tên miền của bạn",
+      "description": "Trỏ một bản ghi CNAME rồi bấm xác minh. SSL được lo sẵn. Không có thương hiệu ClassroomHub trên trang."
+    },
+    "embed": {
+      "title": "Nhúng ở bất cứ đâu",
+      "description": "Một thẻ script. Đưa khoá học vào trung tâm trợ giúp, vào trong sản phẩm, hay lên trang giới thiệu."
+    },
+    "stack": {
+      "title": "Nối vào hệ thống sẵn có",
+      "description": "REST API có kiểu, webhook được ký, và một máy chủ MCP. Cấp tài khoản học viên ngay từ hệ thống bạn đang chạy."
+    }
+  },
+  "multi_academy": {
+    "eyebrow": "Nhiều học viện",
+    "heading_lead": "Một nền tảng,",
+    "heading_accent": "mọi đối tượng.",
+    "subhead": "Ba không gian làm việc, ba thương hiệu, ba tên miền. Một lần đăng nhập. Một hoá đơn.",
+    "customer": "Học viện khách hàng",
+    "partner": "Học viện đối tác",
+    "internal": "Học viện nội bộ",
+    "brand": {
+      "title": "Thương hiệu tách biệt",
+      "description": "Logo, màu sắc, giao diện riêng. Khách hàng không bao giờ thấy nội dung dành cho đối tác."
+    },
+    "domain": {
+      "title": "Tên miền riêng",
+      "description": "Trỏ một bản ghi CNAME rồi bấm xác minh. SSL được lo sẵn."
+    },
+    "invoice": {
+      "title": "Một hoá đơn",
+      "description": "Thêm một học viện mới mỗi khi bạn mở thêm một nhóm đối tượng."
+    }
+  },
+  "automation": {
+    "heading": "API, Webhooks, MCP.",
+    "subhead": "Không có lớp trung gian nào ở giữa. Nối thẳng vào hệ thống bạn đang có.",
+    "reference": "Xem tài liệu cho nhà phát triển →",
+    "api": {
+      "title": "REST API",
+      "description": "Mọi đối tượng đều gọi được qua HTTP. Cấp tài khoản, lấy kết quả hoàn thành, tự dựng công cụ của bạn."
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Sự kiện được ký khi ghi danh, hoàn thành, cấp chứng chỉ. Tự gửi lại khi thất bại."
+    },
+    "mcp": {
+      "title": "Máy chủ MCP",
+      "description": "Soạn khoá học như một bộ công cụ cho agent. Dùng được với Cursor, Claude Code, Codex, OpenCode."
+    }
+  },
+  "ai_tutor": {
+    "control": "(bạn toàn quyền quyết định tôi nói gì và làm gì)"
   }
 }

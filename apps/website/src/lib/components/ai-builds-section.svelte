@@ -1,26 +1,19 @@
 <script>
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
+  import { t } from '$lib/i18n';
   import LayoutTemplate from '@lucide/svelte/icons/layout-template';
   import MessagesSquare from '@lucide/svelte/icons/messages-square';
   import Terminal from '@lucide/svelte/icons/terminal';
 
-  const lanes = [
-    {
-      Icon: LayoutTemplate,
-      title: 'Pick a template',
-      description: 'Product 101, onboarding, or expert track. Fill three fields, get a course draft.'
-    },
-    {
-      Icon: MessagesSquare,
-      title: 'Chat with the builder',
-      description: 'Claude lives in the editor. It plans, drafts, and writes quizzes. You approve each step.'
-    },
-    {
-      Icon: Terminal,
-      title: 'Use your own agent',
-      description: 'Drive course authoring from Cursor, Claude Code, Codex, or OpenCode via MCP.'
-    }
-  ];
+  const lanes = $derived([
+    { Icon: LayoutTemplate, ...lane('template') },
+    { Icon: MessagesSquare, ...lane('chat') },
+    { Icon: Terminal, ...lane('agent') }
+  ]);
+
+  function lane(key) {
+    return { title: $t(`ai_builds.${key}.title`), description: $t(`ai_builds.${key}.description`) };
+  }
 
   const agents = [
     { name: 'Cursor', logo: '/assets/assets/www/home/cursor-logo.png' },
@@ -35,13 +28,10 @@
     <BlurFade once>
       <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">AI authoring</div>
       <h2 class="max-w-[760px] text-[clamp(1.75rem,3vw,2.6rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        AI that turns company knowledge into trainings that drive <em class="text-blue-700 not-italic"
-          >business outcome</em
-        >
+        {$t('ai_builds.heading_lead')} <em class="text-blue-700 not-italic">{$t('ai_builds.heading_accent')}</em>
       </h2>
       <p class="mt-3 max-w-[560px] text-sm leading-relaxed text-gray-500">
-        Feed it your docs, policies, videos, and internal knowledge. AI drafts the structure, lessons, and quizzes. You
-        review and approve every step before learners see it.
+        {$t('ai_builds.subhead')}
       </p>
     </BlurFade>
 
@@ -50,7 +40,7 @@
         <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
           <img
             src="/assets/assets/www/home/ai-course-builder.jpeg"
-            alt="Course builder — plan, approve, implement. Templates, in-editor chat, and MCP."
+            alt={$t('ai_builds.image_alt')}
             class="block h-auto w-full"
             loading="lazy"
             decoding="async"
@@ -75,7 +65,8 @@
 
     <BlurFade delay={0.3} once>
       <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-gray-200 pt-6">
-        <span class="text-[10px] font-medium tracking-widest text-gray-500 uppercase">Works with</span>
+        <span class="text-[10px] font-medium tracking-widest text-gray-500 uppercase">{$t('ai_builds.works_with')}</span
+        >
         {#each agents as agent}
           <div class="flex items-center gap-1.5">
             <img src={agent.logo} alt="{agent.name} logo" class="h-4 w-4 rounded-full" />

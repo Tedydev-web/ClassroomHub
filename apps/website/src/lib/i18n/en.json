@@ -13,16 +13,46 @@
     "open_menu": "Open the menu",
     "close_menu": "Close the menu",
     "items": {
-      "customer_education": { "title": "Customer Education", "subtitle": "Customer academies for SaaS." },
-      "compliance_training": { "title": "Compliance Training", "subtitle": "Turn policies and SOPs into proof." },
-      "partner_training": { "title": "Partner Training", "subtitle": "A separate academy for your channel." },
-      "public_courses": { "title": "Public Courses", "subtitle": "Sell courses to learners anywhere." },
-      "teach": { "title": "Teach with us", "subtitle": "Bring your own programme to the platform." },
-      "automation": { "title": "Automation", "subtitle": "API, Webhooks, and MCP server." },
-      "docs": { "title": "Documentation", "subtitle": "API reference and integration guides." },
-      "help": { "title": "Help Center", "subtitle": "Guides for running your academy." },
-      "mcp_recipes": { "title": "MCP Recipes", "subtitle": "Ready-to-run agent prompts." },
-      "storybook": { "title": "Storybook", "subtitle": "Browse and reuse UI components." }
+      "customer_education": {
+        "title": "Customer Education",
+        "subtitle": "Customer academies for SaaS."
+      },
+      "compliance_training": {
+        "title": "Compliance Training",
+        "subtitle": "Turn policies and SOPs into proof."
+      },
+      "partner_training": {
+        "title": "Partner Training",
+        "subtitle": "A separate academy for your channel."
+      },
+      "public_courses": {
+        "title": "Public Courses",
+        "subtitle": "Sell courses to learners anywhere."
+      },
+      "teach": {
+        "title": "Teach with us",
+        "subtitle": "Bring your own programme to the platform."
+      },
+      "automation": {
+        "title": "Automation",
+        "subtitle": "API, Webhooks, and MCP server."
+      },
+      "docs": {
+        "title": "Documentation",
+        "subtitle": "API reference and integration guides."
+      },
+      "help": {
+        "title": "Help Center",
+        "subtitle": "Guides for running your academy."
+      },
+      "mcp_recipes": {
+        "title": "MCP Recipes",
+        "subtitle": "Ready-to-run agent prompts."
+      },
+      "storybook": {
+        "title": "Storybook",
+        "subtitle": "Browse and reuse UI components."
+      }
     }
   },
   "footer": {
@@ -81,5 +111,86 @@
     "tutor_cta": "See the academy",
     "cta_header": "Whatever you teach, teach it here.",
     "cta_subtext": "Launch a branded academy on your own domain in a few days."
+  },
+  "ai_builds": {
+    "heading_lead": "AI that turns company knowledge into trainings that drive",
+    "heading_accent": "business outcome",
+    "subhead": "Feed it your docs, policies, videos, and internal knowledge. AI drafts the structure, lessons, and quizzes. You review and approve every step before learners see it.",
+    "image_alt": "Course builder — plan, approve, implement. Templates, in-editor chat, and MCP.",
+    "works_with": "Works with",
+    "template": {
+      "title": "Pick a template",
+      "description": "Product 101, onboarding, or expert track. Fill three fields, get a course draft."
+    },
+    "chat": {
+      "title": "Chat with the builder",
+      "description": "The AI builder lives in the editor. It plans, drafts, and writes quizzes. You approve each step."
+    },
+    "agent": {
+      "title": "Use your own agent",
+      "description": "Drive course authoring from Cursor, Claude Code, Codex, or OpenCode via MCP."
+    }
+  },
+  "features": {
+    "heading_lead": "Make it yours,",
+    "heading_accent": "down to the favicon.",
+    "subhead": "Your brand, your domain, your content. ClassroomHub bends to fit the academy you want to ship.",
+    "theme": {
+      "title": "Theme everything",
+      "description": "Pick a theme color or drop in your own hex. Every page picks it up."
+    },
+    "domain": {
+      "title": "Your domain",
+      "description": "Map a CNAME, click verify. SSL is handled. No ClassroomHub branding on the page."
+    },
+    "embed": {
+      "title": "Embed anywhere",
+      "description": "One script tag. Drop courses into your help center, in-product, or marketing site."
+    },
+    "stack": {
+      "title": "Wire it into your stack",
+      "description": "A typed REST API, signed webhooks, and an MCP server. Provision learners from the systems you already run."
+    }
+  },
+  "multi_academy": {
+    "eyebrow": "Multi-academy",
+    "heading_lead": "One platform,",
+    "heading_accent": "every audience.",
+    "subhead": "Three workspaces, three brands, three domains. One login. One bill.",
+    "customer": "Customer Academy",
+    "partner": "Partner Academy",
+    "internal": "Internal Academy",
+    "brand": {
+      "title": "Brand isolated",
+      "description": "Own logo, colors, theme. Customers never see partner content."
+    },
+    "domain": {
+      "title": "Own domain",
+      "description": "Point a CNAME, click verify. SSL handled."
+    },
+    "invoice": {
+      "title": "One invoice",
+      "description": "Add a new academy when you launch a new audience."
+    }
+  },
+  "automation": {
+    "heading": "API, Webhooks, MCP.",
+    "subhead": "No middleware in between. Wire it into the stack you already have.",
+    "reference": "See the developer reference →",
+    "api": {
+      "title": "REST API",
+      "description": "Every object, reachable over HTTP. Provision users, pull completions, build your own tools."
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Signed events on enrollment, completion, certificate. Retries on failure."
+    },
+    "mcp": {
+      "title": "MCP server",
+      "description": "Course authoring as agent tools. Works with Cursor, Claude Code, Codex, OpenCode."
+    }
+  },
+  "ai_tutor": {
+    "control": "(you have full control over what i say and do)"
   }
 }

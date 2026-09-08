@@ -2,6 +2,7 @@
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
   import { BotIcon, BotOffIcon } from '@cio/ui/custom/moving-icons';
   import ImagePlaceholder from './image-placeholder.svelte';
+  import { t } from '$lib/i18n';
   import ArrowRight from '@lucide/svelte/icons/arrow-right';
 
   /**
@@ -89,7 +90,7 @@
           <BotOffIcon size={48} strokeWidth={1.6} color={outZoneBot} />
         </div>
       </div>
-      <p class="mb-6 text-[11px] text-gray-400">(you have full control over what i say and do)</p>
+      <p class="mb-6 text-[11px] text-gray-400">{$t('ai_tutor.control')}</p>
     </BlurFade>
 
     {#if accent}

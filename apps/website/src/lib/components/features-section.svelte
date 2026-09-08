@@ -1,5 +1,6 @@
 <script lang="ts">
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
+  import { t } from '$lib/i18n';
   import Lock from '@lucide/svelte/icons/lock';
   import { onDestroy } from 'svelte';
 
@@ -19,7 +20,7 @@
     if (intervalId) return;
 
     intervalId = setInterval(() => {
-      const currentIndex = themes.findIndex((t) => t.id === selectedTheme);
+      const currentIndex = themes.findIndex((theme) => theme.id === selectedTheme);
       const nextIndex = (currentIndex + 1) % themes.length;
       selectedTheme = themes[nextIndex].id;
     }, ROTATION_INTERVAL_MS);
@@ -50,10 +51,10 @@
       <h2
         class="max-w-[820px] text-[clamp(1.75rem,2.8vw,2.4rem)] leading-[1.1] font-medium tracking-tight text-gray-950"
       >
-        Make it yours,<br />down to the favicon.
+        {$t('features.heading_lead')}<br />{$t('features.heading_accent')}
       </h2>
       <p class="mt-3 max-w-[620px] text-sm leading-relaxed text-gray-500">
-        Your brand, your domain, your content. ClassroomHub bends to fit the academy you want to ship.
+        {$t('features.subhead')}
       </p>
     </BlurFade>
 
@@ -62,12 +63,12 @@
       <BlurFade delay={0.05} once>
         <div
           class="flex h-full flex-col rounded-2xl border border-gray-200/80 p-6 transition-colors duration-500 lg:p-7 {themes.find(
-            (t) => t.id === selectedTheme
+            (theme) => theme.id === selectedTheme
           )?.bgClass}"
         >
-          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Theme everything</h3>
+          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">{$t('features.theme.title')}</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            Pick a theme color or drop in your own hex. Every page picks it up.
+            {$t('features.theme.description')}
           </p>
 
           <!-- Visual: actual theme swatches from the app -->
@@ -100,9 +101,9 @@
       <!-- Custom domain -->
       <BlurFade delay={0.1} once>
         <div class="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-[#ecebe6] p-6 lg:p-7">
-          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Your domain</h3>
+          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">{$t('features.domain.title')}</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            Map a CNAME, click verify. SSL is handled. No ClassroomHub branding on the page.
+            {$t('features.domain.description')}
           </p>
 
           <!-- Visual: browser bar mock -->
@@ -132,9 +133,9 @@
       <!-- Embed -->
       <BlurFade delay={0.15} once>
         <div class="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-[#ecebe6] p-6 lg:p-7">
-          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Embed anywhere</h3>
+          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">{$t('features.embed.title')}</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            One script tag. Drop courses into your help center, in-product, or marketing site.
+            {$t('features.embed.description')}
           </p>
 
           <!-- Visual: code snippet -->
@@ -162,9 +163,9 @@
       <!-- Integration surface -->
       <BlurFade delay={0.2} once>
         <div class="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-[#ecebe6] p-6 lg:p-7">
-          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Wire it into your stack</h3>
+          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">{$t('features.stack.title')}</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            A typed REST API, signed webhooks, and an MCP server. Provision learners from the systems you already run.
+            {$t('features.stack.description')}
           </p>
 
           <!-- Visual: stylised file tree / stack -->

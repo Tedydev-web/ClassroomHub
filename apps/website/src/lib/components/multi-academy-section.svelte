@@ -1,14 +1,15 @@
 <script>
+  import { t } from '$lib/i18n';
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
   import BoxedGrid from './boxed-grid.svelte';
   import Palette from '@lucide/svelte/icons/palette';
   import Globe from '@lucide/svelte/icons/globe';
   import Receipt from '@lucide/svelte/icons/receipt';
 
-  const academies = [
+  const academies = $derived([
     {
       index: '01',
-      name: 'Customer Academy',
+      name: $t('multi_academy.customer'),
       domain: 'learn.acme.com',
       audience: 'Customers · onboarding · adoption',
       barWidth: '72%',
@@ -18,7 +19,7 @@
     },
     {
       index: '02',
-      name: 'Partner Academy',
+      name: $t('multi_academy.partner'),
       domain: 'partners.acme.com',
       audience: 'Resellers · agencies · integrators',
       barWidth: '54%',
@@ -28,7 +29,7 @@
     },
     {
       index: '03',
-      name: 'Internal Academy',
+      name: $t('multi_academy.internal'),
       domain: 'team.acme.com',
       audience: 'Employees · onboarding · compliance',
       barWidth: '88%',
@@ -36,45 +37,45 @@
       bar: 'bg-emerald-500',
       badge: 'bg-emerald-50 text-emerald-700'
     }
-  ];
+  ]);
 
-  const benefits = [
+  const benefits = $derived([
     {
       Icon: Palette,
-      title: 'Brand isolated',
-      description: 'Own logo, colors, theme. Customers never see partner content.'
+      title: $t('multi_academy.brand.title'),
+      description: $t('multi_academy.brand.description')
     },
     {
       Icon: Globe,
-      title: 'Own domain',
-      description: 'Point a CNAME, click verify. SSL handled.'
+      title: $t('multi_academy.domain.title'),
+      description: $t('multi_academy.domain.description')
     },
     {
       Icon: Receipt,
-      title: 'One invoice',
-      description: 'Add a new academy when you launch a new audience.'
+      title: $t('multi_academy.invoice.title'),
+      description: $t('multi_academy.invoice.description')
     }
-  ];
+  ]);
 </script>
 
 <section class="bg-white px-6 py-12 lg:px-12 lg:py-16">
   <div class="mx-auto max-w-[1100px]">
     <!-- Header: eyebrow on top, headline + supporting text in a split row -->
     <BlurFade once>
-      <div class="text-xs font-medium tracking-widest text-blue-700 uppercase">Multi-academy</div>
+      <div class="text-xs font-medium tracking-widest text-blue-700 uppercase">{$t('multi_academy.eyebrow')}</div>
     </BlurFade>
 
     <div class="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
       <BlurFade delay={0.05} once>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-          One platform,
-          <em class="text-gray-700 not-italic">every audience.</em>
+          {$t('multi_academy.heading_lead')}
+          <em class="text-gray-700 not-italic">{$t('multi_academy.heading_accent')}</em>
         </h2>
       </BlurFade>
 
       <BlurFade delay={0.1} once>
         <p class="max-w-[360px] text-sm leading-relaxed text-gray-500 lg:text-right lg:text-base">
-          Three workspaces, three brands, three domains. One login. One bill.
+          {$t('multi_academy.subhead')}
         </p>
       </BlurFade>
     </div>
