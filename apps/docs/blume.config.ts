@@ -61,7 +61,6 @@ export default defineConfig({
     tabs: [
       { label: 'Platform', path: '/', icon: 'house' },
       { label: 'Guides', path: '/guides', icon: 'book-open' },
-      { label: 'Self Hosting', path: '/self-hosted', icon: 'server' },
       { label: 'API', path: '/api', icon: 'code' }
     ],
     sidebar: [
@@ -166,55 +165,6 @@ export default defineConfig({
               '/guides/contributing/student-dashboard',
               '/guides/contributing/adding-translation-to-code'
             ]
-          }
-        ]
-      },
-      {
-        label: 'Self Hosting',
-        root: '/self-hosted',
-        items: [
-          '/self-hosted',
-          '/self-hosted/101',
-          '/self-hosted/architecture',
-          {
-            label: 'Install',
-            display: 'group',
-            // Pinned open — it's what most visitors came for. The other groups
-            // start collapsed (and auto-expand when they contain the current page).
-            collapsed: false,
-            items: [
-              '/self-hosted/docker',
-              '/self-hosted/digitalocean',
-              '/self-hosted/railway',
-              '/self-hosted/coolify',
-              '/self-hosted/dokploy'
-            ]
-          },
-          {
-            label: 'Configure',
-            display: 'group',
-            collapsed: true,
-            items: [
-              '/self-hosted/configuration',
-              '/self-hosted/configuration/secrets',
-              '/self-hosted/configuration/email',
-              '/self-hosted/configuration/storage',
-              '/self-hosted/configuration/csp',
-              '/self-hosted/configuration/integrations',
-              '/self-hosted/enterprise'
-            ]
-          },
-          {
-            label: 'Manage',
-            display: 'group',
-            collapsed: true,
-            items: ['/self-hosted/configuration/versions', '/self-hosted/backups']
-          },
-          {
-            label: 'Troubleshoot',
-            display: 'group',
-            collapsed: true,
-            items: ['/self-hosted/troubleshooting']
           }
         ]
       }
