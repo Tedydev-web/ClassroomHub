@@ -54,6 +54,11 @@
   // and must keep its block structure verbatim.
   const narrowsToPlainText = $derived(variant === 'inline');
 
+  // Which is also why a single-line field carries no toolbar. Every mark it could
+  // apply — bold, superscript, a table — is stripped by the very next keystroke,
+  // so the buttons did nothing but sit above the section titles of an imported
+  // paper, one full editor toolbar per section.
+
   const toStored = (html: string) => (narrowsToPlainText ? normalizeRichTextValue(html) : html);
   const toEditor = (stored: string) => (narrowsToPlainText ? richTextValueToEditorHtml(stored) : stored);
 
@@ -109,6 +114,7 @@
     <TextEditor
       content={editorHtml}
       {variant}
+      showToolBar={!narrowsToPlainText}
       {placeholder}
       editable={!isDisabled}
       editorClass={cn('ui:h-auto ui:min-h-11 ui:py-2', editorClass)}
