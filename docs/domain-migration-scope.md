@@ -67,28 +67,28 @@ DKIM and DMARC plus warm-up, and until that is done invites land in spam.
 Cookies are host-scoped, so changing `DASHBOARD_ORIGIN` signs every session out.
 Schedule it and say so in advance.
 
-## 4. Hardcoded literals the constant does not reach
+## 4. Hardcoded literals — resolved
 
-These are real emit sites, not comments or fixtures. Each needs a hand edit or a
-switch to the constant:
+Six emit sites printed the domain rather than reading it, and now read
+`TENANT_ROOT_DOMAIN`, `PRODUCT_URLS` or `PRODUCT_HOSTS`: the admin panel's tenant
+URL preview, the link shown after an org is created, the org host on the user
+page, the course-app attribution link, and the server URL in the published
+OpenAPI document. `apps/admin` and `apps/course-app` took a `@cio/utils`
+dependency to do it.
 
-- `apps/admin/src/routes/orgs/new/+page.svelte` — the tenant URL preview and the
-  link to the created org, twice plus a placeholder.
-- `apps/admin/src/routes/users/[userId]/+page.svelte:193` — the org's site host.
-- `apps/course-app/src/lib/components/navigation/navigation.svelte:19` — the
-  "powered by" link.
-- `packages/course-app/src/template/src/lib/components/{bootcamp,classic,examprep,minimal,posthog,webflow}/Footer.svelte`
-  — seven links across six templates.
-- `packages/course-app/src/template/src/lib/data/pages.json` — `url`, `appUrl`
-  and three nav links. Two point at `/blog`, which no longer exists.
-- `apps/api/scripts/upload-openapi-spec.ts:151` — the API server URL in the
-  published OpenAPI document.
+Two sets keep their literals deliberately.
 
-**`apps/jobs/.../notify-session-update.ts` and `session-reminder-scan.ts` build
-iCalendar UIDs as `session-<id>@classroom.io.vn`. Leave them alone.** A UID is
-the identity a calendar client uses to recognise an update to an event it
-already has; changing the domain in it turns every future reminder into a
-duplicate event rather than an update to the existing one.
+`packages/course-app/src/template/` is scaffolded into a customer's own project
+by the CLI and never updated again, so a workspace constant cannot reach it; a
+literal correct at generation time is the honest form. Its nav item labelled
+"Blog" was removed — the blog was withdrawn and that path now redirects to the
+homepage, so every generated site shipped a link that lands somewhere else.
+
+`apps/jobs/.../notify-session-update.ts` and `session-reminder-scan.ts` build
+iCalendar UIDs as `session-<id>@classroom.io.vn`. A UID is the identity a
+calendar client uses to recognise an update to an event it already holds;
+changing the domain in it turns every later reminder into a duplicate event
+rather than an update.
 
 ## 5. Third-party consoles — outside this repository
 
