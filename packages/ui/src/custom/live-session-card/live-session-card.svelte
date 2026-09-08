@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
   export interface LiveSessionLabels {
     liveNow: string;
     liveSession: string;
@@ -125,7 +126,7 @@
       'VERSION:2.0',
       'PRODID:-//ClassroomHub//Live Session//EN',
       'BEGIN:VEVENT',
-      `UID:session-${startMs}@classroom.tedydev.io.vn`,
+      `UID:session-${startMs}@${PRODUCT_ROOT_DOMAIN}`,
       `DTSTAMP:${toIcsUtc(now)}`,
       `DTSTART:${toIcsUtc(startMs)}`,
       `DTEND:${toIcsUtc(endMs)}`,

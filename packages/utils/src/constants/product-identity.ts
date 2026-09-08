@@ -62,6 +62,30 @@ export const PRODUCT_HOSTS = {
  * international form a `tel:` link needs: a Vietnamese reader looks for
  * `0869 685 621`, while a phone dialling from abroad needs `+84`.
  */
+/**
+ * The same hosts as absolute URLs, plus the two paths the marketing site proxies.
+ *
+ * Call sites had been writing these out by hand, and drifted: the website's
+ * Dashboard button pointed at `classroom-app.tedydev.io.vn` while production is
+ * configured with `hub.classroom.io.vn`, and the docs and Help Center links went
+ * to a third hostname again. Both answer today, because they are aliases of the
+ * same deployment, but a visitor saw a domain that is not the product's.
+ *
+ * Reading from here also makes moving the product to another domain a change to
+ * {@link PRODUCT_ROOT_DOMAIN} and DNS, rather than a sweep of every literal.
+ */
+export const PRODUCT_URLS = {
+  marketing: `https://${PRODUCT_HOSTS.marketing}`,
+  dashboard: `https://${PRODUCT_HOSTS.dashboard}`,
+  api: `https://${PRODUCT_HOSTS.api}`,
+  play: `https://${PRODUCT_HOSTS.play}`,
+  embed: `https://${PRODUCT_HOSTS.embed}`,
+  assets: `https://${PRODUCT_HOSTS.assets}`,
+  /** Served by their own workers, proxied under the marketing domain. */
+  docs: `https://${PRODUCT_HOSTS.marketing}/docs`,
+  help: `https://${PRODUCT_HOSTS.marketing}/help`
+} as const;
+
 export const CONTACT = {
   /** The mailbox on the product domain — also the account transactional mail is sent from. */
   email: OPERATOR_EMAIL,

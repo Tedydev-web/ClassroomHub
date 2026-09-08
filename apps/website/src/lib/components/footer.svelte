@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { CONTACT } from '@cio/utils/constants';
+  import { CONTACT, PRODUCT_URLS } from '@cio/utils/constants';
   import { DEFAULT_LOCALE, pathInLocale, t, type Locale } from '$lib/i18n';
 
   let locale = $derived((page.data.locale ?? DEFAULT_LOCALE) as Locale);
@@ -51,15 +51,15 @@
         { label: $t('footer.docs_vs_academy'), href: localHref('/docs-vs-company-academy') },
         { label: $t('footer.public_courses'), href: localHref('/public-courses') },
         { label: $t('footer.teach'), href: localHref('/teach') },
-        { label: $t('footer.help_center'), href: 'https://classroom.tedydev.io.vn/help', external: true },
-        { label: $t('footer.getting_started'), href: 'https://classroom.tedydev.io.vn/docs', external: true }
+        { label: $t('footer.help_center'), href: PRODUCT_URLS.help, external: true },
+        { label: $t('footer.getting_started'), href: PRODUCT_URLS.docs, external: true }
       ]
     },
     {
       heading: $t('footer.company'),
       links: [
         { label: $t('footer.roadmap'), href: '/roadmap' },
-        { label: $t('footer.support'), href: 'mailto:help@classroom.tedydev.io.vn' },
+        { label: $t('footer.support'), href: `mailto:${CONTACT.email}` },
         { label: $t('footer.privacy'), href: localHref('/privacy') },
         { label: $t('footer.terms'), href: localHref('/tos') }
       ]

@@ -2,22 +2,22 @@
 
 This doc explains how Google sign-in works for ClassroomHub across three different host families:
 
-- `classroom-app.tedydev.io.vn` — admin dashboard
-- `<orgSiteName>.classroom.tedydev.io.vn` — free-tier tenant sites
+- `hub.classroom.io.vn` — admin dashboard
+- `<orgSiteName>.classroom.io.vn` — free-tier tenant sites
 - `<customer-owned>.com` — BYOD custom domains via Cloudflare for SaaS
 
 All three need to sign users in via Google, set host-only auth cookies on the originating host, and land the user back on the page they started from.
 
 ## The problem
 
-Google OAuth requires every callback URL to be **registered ahead of time** in Google Cloud Console. Wildcards are not allowed in standard apps. We can't register `*.classroom.tedydev.io.vn` or every BYOD customer's domain.
+Google OAuth requires every callback URL to be **registered ahead of time** in Google Cloud Console. Wildcards are not allowed in standard apps. We can't register `*.classroom.io.vn` or every BYOD customer's domain.
 
-We also can't share auth cookies across apex domains: a cookie on `classroom-api.tedydev.io.vn` won't be sent to a request on `acme.classroom.tedydev.io.vn`. Even setting `Domain=.classroom.tedydev.io.vn` won't help — the OAuth callback always lands on `classroom-api.tedydev.io.vn` per the registered URI, and that response can only set cookies for `classroom-api.tedydev.io.vn`.
+We also can't share auth cookies across apex domains: a cookie on `api.classroom.io.vn` won't be sent to a request on `acme.classroom.io.vn`. Even setting `Domain=.classroom.io.vn` won't help — the OAuth callback always lands on `api.classroom.io.vn` per the registered URI, and that response can only set cookies for `api.classroom.io.vn`.
 
 ## The architecture
 
 ```
-acme.classroom.tedydev.io.vn                         classroom-api.tedydev.io.vn                 Google
+acme.classroom.io.vn                         api.classroom.io.vn                 Google
 ─────────────────────────                       ─────────────────────               ──────
 
 POST /proxy/api/auth/sign-in/social
@@ -29,10 +29,10 @@ POST /proxy/api/auth/sign-in/social
                                                        │ oAuthProxy plugin sees
                                                        │ currentURL ≠ productionURL,
                                                        │ rewrites callbackURL to
-                                                       │   acme.classroom.tedydev.io.vn/
+                                                       │   acme.classroom.io.vn/
                                                        │     api/auth/oauth-proxy-callback
                                                        │ and forces redirect_uri to
-                                                       │   classroom-api.tedydev.io.vn/.../callback/google
+                                                       │   api.classroom.io.vn/.../callback/google
                                                        ▼
                                               ◀───── 200 { url: google authorize URL } ─────────────
    browser navigates to Google ────────────────────────────────────────────────────────────────▶
@@ -40,7 +40,7 @@ POST /proxy/api/auth/sign-in/social
                                                                                                   │ user
                                                                                                   │ consents
                                                                                                   │
-   ◀────────────────────────────────────────── 302 redirect_uri (classroom-api.tedydev.io.vn/...) ───────
+   ◀────────────────────────────────────────── 302 redirect_uri (api.classroom.io.vn/...) ───────
                                                        │
    GET /api/auth/callback/google?state=...&code=... ──▶│
                                                        │
@@ -76,16 +76,16 @@ POST /proxy/api/auth/sign-in/social
                                                        │   tenant host)
                                                        ▼
    ◀────────────────────────────────────── 302 to original callbackURL ──────────────────────────
-   browser lands on acme.classroom.tedydev.io.vn/, logged in.
+   browser lands on acme.classroom.io.vn/, logged in.
 ```
 
-The same flow works for `classroom-app.tedydev.io.vn` (the proxy-skip branch in `oAuthProxy` kicks in when `currentURL === productionURL`) and for BYOD domains (`learn.acme.com`) routed through Cloudflare for SaaS.
+The same flow works for `hub.classroom.io.vn` (the proxy-skip branch in `oAuthProxy` kicks in when `currentURL === productionURL`) and for BYOD domains (`learn.acme.com`) routed through Cloudflare for SaaS.
 
 ## Pieces and where they live
 
 | Concern                                             | File                                                                       | Notes                                                                                                                                                                                        |
 | --------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Better Auth + `oAuthProxy` plugin registration      | `packages/db/src/auth.ts`                                                  | `productionURL: CONSTANTS.BASE_URL` makes `classroom-api.tedydev.io.vn` the canonical OAuth-callback URL.                                                                                            |
+| Better Auth + `oAuthProxy` plugin registration      | `packages/db/src/auth.ts`                                                  | `productionURL: CONSTANTS.BASE_URL` makes `api.classroom.io.vn` the canonical OAuth-callback URL.                                                                                            |
 | Auth endpoint mount in Hono                         | `apps/api/src/app.ts` (`/api/auth/*` handler)                              | Rewrites `request.url` from `X-Forwarded-Host`/`-Proto` so the plugin sees the tenant host the user actually visited.                                                                        |
 | Cookies → token swap (outbound + inbound)           | `apps/api/src/app.ts` (`/api/auth/*` handler)                              | Stashes the encrypted `cookies=…` blob in Redis under a short token, drops Location header from 10KB+ to ~150 bytes.                                                                         |
 | Redis storage helpers                               | `apps/api/src/utils/redis/oauth-handoff.ts`                                | `storeHandoffPayload` (2-minute TTL) + `consumeHandoffPayload` (single-use, GET-and-DEL).                                                                                                    |
@@ -113,10 +113,10 @@ Single-use (GET-and-DEL on read) and 2-minute TTL keep the surface small.
 
 You only ever need **one** OAuth client and **one** registered callback URI for unlimited tenants:
 
-- **Authorized JavaScript origins**: `https://classroom-api.tedydev.io.vn`
-- **Authorized redirect URIs**: `https://classroom-api.tedydev.io.vn/api/auth/callback/google`
+- **Authorized JavaScript origins**: `https://api.classroom.io.vn`
+- **Authorized redirect URIs**: `https://api.classroom.io.vn/api/auth/callback/google`
 
-Do **not** add tenant subdomains, `*.classroom.tedydev.io.vn`, or BYOD customer domains — Google rejects wildcards for standard apps and the `oAuthProxy` plugin handles the redirect to the original tenant host on its own.
+Do **not** add tenant subdomains, `*.classroom.io.vn`, or BYOD customer domains — Google rejects wildcards for standard apps and the `oAuthProxy` plugin handles the redirect to the original tenant host on its own.
 
 ### Sensitive scopes warning
 
@@ -129,7 +129,7 @@ On the **API** Render service:
 | Var                                         | Value                         | Why                                                                                                                                           |
 | ------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BETTER_AUTH_SECRET`                        | random 32+ char string        | Encrypts the oauth-proxy cookies blob and signs sessions.                                                                                     |
-| `PUBLIC_SERVER_URL`                         | `https://classroom-api.tedydev.io.vn` | Better Auth's `baseURL` and the `oAuthProxy` plugin's `productionURL`.                                                                        |
+| `PUBLIC_SERVER_URL`                         | `https://api.classroom.io.vn` | Better Auth's `baseURL` and the `oAuthProxy` plugin's `productionURL`.                                                                        |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | from Google Cloud Console     | OAuth client credentials.                                                                                                                     |
 | `REDIS_URL`                                 | Render Key Value internal URL | Required for the cookies-→-token handoff. Without it the handoff falls back to inline cookies and the OAuth flow breaks on tenant subdomains. |
 
@@ -139,8 +139,8 @@ On the **dashboard** Render service:
 | -------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `HOST_HEADER`        | `x-forwarded-host`            | SvelteKit adapter-node reads the effective host from this so `event.url.host` is the tenant/admin host the user is on.                         |
 | `PROTOCOL_HEADER`    | `x-forwarded-proto`           | Same, for protocol.                                                                                                                            |
-| `PRIVATE_APP_HOST`   | `classroom.tedydev.io.vn`           | Used by `getSubdomain` in `layout-setup.ts` to extract the org siteName.                                                                       |
-| `PUBLIC_SERVER_URL`  | `https://classroom-api.tedydev.io.vn` | Used at runtime only as a fallback / for `authClient`'s SSR-time URL constructor; browser code uses `${origin}/proxy` via `getRequestBaseUrl`. |
+| `PRIVATE_APP_HOST`   | `classroom.io.vn`           | Used by `getSubdomain` in `layout-setup.ts` to extract the org siteName.                                                                       |
+| `PUBLIC_SERVER_URL`  | `https://api.classroom.io.vn` | Used at runtime only as a fallback / for `authClient`'s SSR-time URL constructor; browser code uses `${origin}/proxy` via `getRequestBaseUrl`. |
 | `PRIVATE_SERVER_URL` | API's internal Render URL     | Server-side dashboard → API calls bypass the public edge.                                                                                      |
 
 ## Verifying the flow

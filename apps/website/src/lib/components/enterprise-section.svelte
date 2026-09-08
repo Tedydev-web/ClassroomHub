@@ -1,5 +1,5 @@
 <script>
-  import { SALES_EMAIL } from '@cio/utils/constants';
+  import { PRODUCT_URLS, SALES_EMAIL } from '@cio/utils/constants';
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
   import { DotPattern } from '@cio/ui/custom/animation/dot-pattern';
 
@@ -134,7 +134,7 @@
             </div>
 
             <a
-              href="https://classroom.tedydev.io.vn"
+              href={PRODUCT_URLS.marketing}
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 rounded-lg border border-white/[0.15] bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white no-underline transition-all duration-200 hover:border-blue-500/40 hover:bg-white/[0.1]"

@@ -1,3 +1,4 @@
+import { PRODUCT_URLS } from '@cio/utils/constants';
 import { redirect } from '@sveltejs/kit';
 import { client } from '$lib/utils/posthog';
 
@@ -9,5 +10,5 @@ export const load = ({ request }) => {
     event: 'cal.com page visited'
   });
 
-  redirect(307, 'https://classroom.tedydev.io.vn');
+  redirect(307, PRODUCT_URLS.marketing);
 };

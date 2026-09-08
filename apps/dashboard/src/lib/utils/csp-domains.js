@@ -1,9 +1,28 @@
 // SaaS default CSP domains, baked in at build time.
 // Self-hosted (adapter-node) starts with empty lists; runtime domains
 // are added via env vars in hooks.server.ts so pre-built Docker images stay configurable.
+//
+// The product's own hosts come from `@cio/utils` rather than being written out.
+// They were written out, and named an alias domain instead: `script-src` and
+// `style-src` allowed only `*.tedydev.io.vn`, and neither has anything added
+// from the environment, so the moment an asset is served from the product's own
+// `assets.` or `embed.` host the browser blocks it. The alias entries stay for
+// now, because content already published still points at them.
+import { PRODUCT_HOSTS } from '@cio/utils/constants';
+
+const ownHosts = {
+  assets: `https://${PRODUCT_HOSTS.assets}`,
+  embed: `https://${PRODUCT_HOSTS.embed}`,
+  api: `https://${PRODUCT_HOSTS.api}`,
+  root: `https://${PRODUCT_HOSTS.marketing}`,
+  tenants: `https://*.${PRODUCT_HOSTS.marketing}`,
+  tenantSockets: `wss://*.${PRODUCT_HOSTS.marketing}`
+};
 
 const saasDefaults = {
   scriptSrc: [
+    ownHosts.assets,
+    ownHosts.embed,
     'https://classroom-assets.tedydev.io.vn',
     'https://classroom-embed.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
@@ -20,10 +39,16 @@ const saasDefaults = {
   styleSrc: [
     'https://cdn.plyr.io',
     'https://unpkg.com/katex@0.12.0/dist/katex.min.css',
+    `${ownHosts.assets}/eqneditor_1.css`,
     'https://classroom-assets.tedydev.io.vn/eqneditor_1.css',
     'https://fonts.googleapis.com'
   ],
   connectSrc: [
+    ownHosts.tenants,
+    ownHosts.root,
+    ownHosts.tenantSockets,
+    ownHosts.assets,
+    ownHosts.api,
     'https://*.classroom.tedydev.io.vn',
     'https://classroom.tedydev.io.vn',
     'wss://*.classroom.tedydev.io.vn',

@@ -1,3 +1,4 @@
+import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { getCourseById, getUpcomingSessionsForCourseIds } from '@cio/db/queries/course';
 import { buildSessionIcs } from '@cio/email';
 
@@ -21,7 +22,7 @@ export async function getWelcomeSessionIcs(courseId: string): Promise<string | u
     }
 
     return buildSessionIcs({
-      uid: `session-${upcoming.lessonId}@classroom.tedydev.io.vn`,
+      uid: `session-${upcoming.lessonId}@${PRODUCT_ROOT_DOMAIN}`,
       sequence: 0,
       method: 'PUBLISH',
       start: upcoming.lessonAt,

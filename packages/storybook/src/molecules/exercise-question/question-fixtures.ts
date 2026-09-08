@@ -307,7 +307,7 @@ export const LINK_FIXTURE: QuestionStoryFixture = {
       instructions: 'Add one or more relevant links.'
     }
   },
-  answer: ['https://classroom.tedydev.io.vn/docs', 'https://www.svelte.dev']
+  answer: ['https://classroom.io.vn/docs', 'https://www.svelte.dev']
 };
 
 export const SECTIONED_EXERCISE_FIXTURE: ExerciseSectionStoryFixture[] = [

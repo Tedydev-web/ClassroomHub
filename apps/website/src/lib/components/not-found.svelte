@@ -1,4 +1,5 @@
 <script>
+  import { PRODUCT_URLS } from '@cio/utils/constants';
   import { goto } from '$app/navigation';
   import { Empty } from '@cio/ui/custom/empty';
   import SearchXIcon from '@lucide/svelte/icons/search-x';
@@ -14,7 +15,7 @@
   let { isOrg = false, className = '' } = $props();
 
   function handleClick() {
-    return goto('https://classroom.tedydev.io.vn');
+    return goto(PRODUCT_URLS.marketing);
   }
 </script>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PRODUCT_URLS } from '@cio/utils/constants';
   import { CodeBlock, HeroSubtitle, McpServerSection, PageHeader, PageSignupCTA } from '$lib/components';
   import { t } from '$lib/i18n';
   import { Badge } from '@cio/ui/base/badge';
@@ -7,7 +8,7 @@
 
   const apiCurl = [
     '<span class="text-slate-500"># Enroll a learner in a course</span>',
-    '<span class="text-pink-400">curl</span> <span class="text-emerald-300">"https://classroom-api.tedydev.io.vn/v1/enrollments"</span> \\',
+    `<span class="text-pink-400">curl</span> <span class="text-emerald-300">"${PRODUCT_URLS.api}/v1/enrollments"</span> \\`,
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Authorization: Bearer $CIO_API_KEY"</span> \\',
     '  <span class="text-sky-300">-H</span> <span class="text-emerald-300">"Content-Type: application/json"</span> \\',
     '  <span class="text-sky-300">-d</span> <span class="text-emerald-300">\'{ "courseId": "crs_…", "userId": "usr_…" }\'</span>'
@@ -56,7 +57,7 @@
         {$t('dev.subhead')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
-        <Button href="https://classroom.tedydev.io.vn/docs/api">{$t('dev.read_docs')}</Button>
+        <Button href="{PRODUCT_URLS.docs}/api">{$t('dev.read_docs')}</Button>
         <Button href="/pricing" variant="outline">{$t('dev.see_pricing')}</Button>
       </div>
     </div>
@@ -147,7 +148,7 @@
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
           <a
-            href="https://classroom.tedydev.io.vn/docs/api"
+            href="{PRODUCT_URLS.docs}/api"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-medium text-white no-underline transition-all hover:-translate-y-0.5 hover:bg-blue-700"
@@ -197,7 +198,7 @@
     header={$t('dev.cta_header')}
     subText={$t('dev.cta_subtext')}
     btnLabel={$t('dev.cta_button')}
-    link="https://classroom.tedydev.io.vn/docs/api"
+    link="{PRODUCT_URLS.docs}/api"
     demo={false}
   />
 </section>

@@ -1,3 +1,7 @@
+<script>
+  import { PRODUCT_URLS } from '@cio/utils/constants';
+</script>
+
 <section class="bg-gray-50 py-16 lg:py-24">
   <div class="mx-auto mb-10 max-w-[1100px] px-6 text-center lg:mb-14 lg:px-12">
     <div class="mb-3.5 text-xs font-medium tracking-widest text-blue-700 uppercase">Assessments & Exams</div>
@@ -16,5 +20,5 @@
 </section>
 
 <svelte:head>
-  <script type="module" src="https://classroom-embed.tedydev.io.vn/question-type-picker"></script>
+  <script type="module" src="{PRODUCT_URLS.embed}/question-type-picker"></script>
 </svelte:head>

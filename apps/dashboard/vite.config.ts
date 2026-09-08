@@ -1,3 +1,4 @@
+import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
 import { defineConfig, loadEnv } from 'vite';
 
 import fs from 'fs';
@@ -106,10 +107,10 @@ function getServer(params) {
             ...VITE_ALLOWED_HOST.split(',')
               .map((host) => host.trim())
               .filter(Boolean),
-            '.tedydev.io.vn'
+            `.${PRODUCT_ROOT_DOMAIN}`
           ])
         ]
-      : ['.tedydev.io.vn']
+      : [`.${PRODUCT_ROOT_DOMAIN}`]
   };
 }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PRODUCT_URLS } from '@cio/utils/constants';
   import BookOpen from '@lucide/svelte/icons/book-open';
   import ChevronDown from '@lucide/svelte/icons/chevron-down';
   import Globe from '@lucide/svelte/icons/globe';
@@ -92,10 +93,10 @@
 
   const developers: NavCollectionItem[] = $derived([
     { key: 'automation', href: localHref('/automation'), ...item('automation') },
-    { key: 'docs', href: 'https://classroom.tedydev.io.vn/docs', ...item('docs') },
-    { key: 'help', href: 'https://classroom.tedydev.io.vn/help', ...item('help') },
+    { key: 'docs', href: PRODUCT_URLS.docs, ...item('docs') },
+    { key: 'help', href: PRODUCT_URLS.help, ...item('help') },
     { key: 'mcp-recipes', href: localHref('/mcp-recipes'), ...item('mcp_recipes') },
-    { key: 'storybook', href: 'https://classroom.tedydev.io.vn', ...item('storybook') }
+    { key: 'storybook', href: PRODUCT_URLS.marketing, ...item('storybook') }
   ]);
 
   const navItems: NavItem[] = $derived([
@@ -244,7 +245,7 @@
       {@render language_switcher()}
       <a
         class="text-sm font-medium transition-opacity duration-200 after:ml-2 after:content-['→'] hover:opacity-80"
-        href="https://classroom-app.tedydev.io.vn"
+        href={PRODUCT_URLS.dashboard}
       >
         {$t('nav.dashboard')}
       </a>
@@ -315,7 +316,7 @@
         <div class="mt-5 flex flex-col items-start gap-y-2 border-t pt-5">
           <a
             class="w-full rounded-md px-4 py-4 text-left text-sm font-semibold transition-all duration-200 after:ml-2 after:content-['→'] hover:bg-gray-100 md:text-lg"
-            href="https://classroom-app.tedydev.io.vn"
+            href={PRODUCT_URLS.dashboard}
           >
             {$t('nav.dashboard')}
           </a>

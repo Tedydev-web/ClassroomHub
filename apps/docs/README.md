@@ -1,7 +1,7 @@
 # docs
 
 The ClassroomHub documentation site, built with [Blume](https://useblume.dev) (Astro + Vite). Served at
-[classroom.tedydev.io.vn/docs](https://classroom.tedydev.io.vn/docs).
+[classroom.io.vn/docs](https://classroom.io.vn/docs).
 
 ## Requirements
 
@@ -27,7 +27,7 @@ from Blume and never sees Cloudflare's asset server, so it cannot show you the `
 
 ## How it's served
 
-The site is fully static. `classroom.tedydev.io.vn/docs/*` is proxied by the marketing site
+The site is fully static. `classroom.io.vn/docs/*` is proxied by the marketing site
 (`apps/website/src/hooks.server.ts`) to the `cio-docs` worker, which serves the build as static
 assets — there is no server-side rendering.
 

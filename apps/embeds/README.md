@@ -136,8 +136,8 @@ The course widget uses three different URL concerns:
 1. **Embed script host**
 
 - this is where the browser downloads `course-widget.js`
-- production script URL: `https://embed.classroom.tedydev.io.vn/course-widget`
-- production hosted iframe: `https://embed.classroom.tedydev.io.vn/course-widget?key=<public-key>`
+- production script URL: `https://embed.classroom.io.vn/course-widget`
+- production hosted iframe: `https://embed.classroom.io.vn/course-widget?key=<public-key>`
 - configured on the API side with `PUBLIC_EMBED_BASE_URL`
 
 2. **Payload API host**
@@ -166,7 +166,7 @@ Generated snippet:
 
 ```html
 <div data-cio-widget="course-widget" data-widget-key="wgt_xxx"></div>
-<script async type="module" src="https://embed.classroom.tedydev.io.vn/course-widget"></script>
+<script async type="module" src="https://embed.classroom.io.vn/course-widget"></script>
 ```
 
 ### Dev server path shape

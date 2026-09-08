@@ -251,7 +251,7 @@ We may modify this Policy at any time. If we make changes to this Policy then we
 
 To request a copy of your information, unsubscribe from our email list, request for your data to be deleted, or ask a question about your data privacy:
 
-Email [help@classroom.tedydev.io.vn](mailto:help@classroom.tedydev.io.vn)
+Email [support@classroom.io.vn](mailto:support@classroom.io.vn)
 
 Write to us at:
 

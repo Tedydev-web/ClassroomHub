@@ -8,6 +8,7 @@
  * @see packages/storybook/scripts/upload-storybook.ts
  */
 
+import { PRODUCT_URLS } from '@cio/utils/constants';
 import 'dotenv/config';
 
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -30,7 +31,7 @@ const EMBED_WIDGET_TARGETS = [
 /** Cloudflare allows a limited number of URLs per purge request. */
 const PURGE_URL_BATCH = 30;
 
-const DEFAULT_CDN_BASE = 'https://classroom-embed.tedydev.io.vn';
+const DEFAULT_CDN_BASE = PRODUCT_URLS.embed;
 
 function normalizePublicBaseUrl(raw: string | undefined): string {
   const value = raw != null && raw.trim() !== '' ? raw.trim() : DEFAULT_CDN_BASE;

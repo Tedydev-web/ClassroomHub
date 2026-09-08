@@ -94,7 +94,7 @@ node packages/mcp/dist/index.js
 Published package:
 
 ```bash
-CLASSROOMHUB_API_URL=https://classroom-api.tedydev.io.vn \
+CLASSROOMHUB_API_URL=https://api.classroom.io.vn \
 CLASSROOMHUB_API_KEY=<cio_mcp_key> \
 npx -y @classroomhub/mcp
 ```
@@ -108,7 +108,7 @@ claude mcp add-json classroomhub '{
   "command": "npx",
   "args": ["-y", "@classroomhub/mcp"],
   "env": {
-    "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+    "CLASSROOMHUB_API_URL": "https://api.classroom.io.vn",
     "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
   }
 }'
@@ -118,7 +118,7 @@ claude mcp add-json classroomhub '{
 
 ```bash
 codex mcp add classroomhub \
-  --env CLASSROOMHUB_API_URL=https://classroom-api.tedydev.io.vn \
+  --env CLASSROOMHUB_API_URL=https://api.classroom.io.vn \
   --env CLASSROOMHUB_API_KEY=<cio_mcp_key> \
   -- npx -y @classroomhub/mcp
 ```
@@ -134,7 +134,7 @@ codex mcp add classroomhub \
       "command": ["npx", "-y", "@classroomhub/mcp"],
       "enabled": true,
       "environment": {
-        "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+        "CLASSROOMHUB_API_URL": "https://api.classroom.io.vn",
         "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
       }
     }
@@ -151,7 +151,7 @@ codex mcp add classroomhub \
       "command": "npx",
       "args": ["-y", "@classroomhub/mcp"],
       "env": {
-        "CLASSROOMHUB_API_URL": "https://classroom-api.tedydev.io.vn",
+        "CLASSROOMHUB_API_URL": "https://api.classroom.io.vn",
         "CLASSROOMHUB_API_KEY": "<cio_mcp_key>"
       }
     }

@@ -1,10 +1,10 @@
-<a href="https://classroom.tedydev.io.vn/">
+<a href="https://classroom.io.vn/">
   <img alt="A flexible, user-friendly platform for creating, managing, and delivering trainings for companies and training organisations" src="/assets/brand/og/classroomhub-opengraph.jpg" />
   <h1 align="center">ClassroomHub</h1>
   <p align="center">
     The Open Source Teaching Platform for Bootcamps
     <br />
-    <a href="https://classroom.tedydev.io.vn">Website</a>  |  <a href="https://dub.sh/ciodiscord">Join Discord community</a>
+    <a href="https://classroom.io.vn">Website</a>  |  <a href="https://dub.sh/ciodiscord">Join Discord community</a>
   </p>
 </a>
 
@@ -42,9 +42,9 @@ Please reach out to me on [twitter](https://x.com/rotimi_best) if you have any f
 
 ## Built With
 
-- [Svelekit](https://kit.svelte.dev/?ref=classroom.tedydev.io.vn)
-- [Better Auth](https://www.better-auth.com/?ref=classroom.tedydev.io.vn)
-- [TailwindCSS](https://tailwindcss.com/?ref=classroom.tedydev.io.vn)
+- [Svelekit](https://kit.svelte.dev/?ref=classroom.io.vn)
+- [Better Auth](https://www.better-auth.com/?ref=classroom.io.vn)
+- [TailwindCSS](https://tailwindcss.com/?ref=classroom.io.vn)
 
 ## Get a Demo
 
@@ -117,5 +117,5 @@ Here is what you need to be able to run Cal.com.
 
 You can find other repos related to classroomhub here:
 
-- Help Docs: <https://github.com/rotimi-best/classroom.tedydev.io.vn/docs>
-- ClassroomHub.com: <https://github.com/rotimi-best/classroom.tedydev.io.vn>
+- Help Docs: <https://github.com/rotimi-best/classroom.io.vn/docs>
+- ClassroomHub.com: <https://github.com/rotimi-best/classroom.io.vn>
