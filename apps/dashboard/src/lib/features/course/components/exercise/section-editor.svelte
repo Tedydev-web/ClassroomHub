@@ -98,7 +98,11 @@
   class={`overflow-hidden rounded-lg border bg-white shadow-xs dark:bg-zinc-950 ${BORDER_CLASSES[colorTheme]}`}
   aria-expanded={!sectionCollapsed}
 >
-  <div class="group/sectionhead flex items-center gap-3 border-b bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+  <!-- `items-start`: an imported paper puts its rubric in the section title — the
+       ones on this deployment run 148 to 207 characters — and a rubric that wraps
+       to five lines left the colour swatches, the count and the delete button
+       floating in the middle of it. They belong beside the first line. -->
+  <div class="group/sectionhead flex items-start gap-3 border-b bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
     {#if showReorderHandles}
       <GripVerticalIcon class="ui:text-muted-foreground h-4 w-4 shrink-0" aria-hidden="true" />
     {/if}
@@ -147,7 +151,7 @@
       oninput={handleTitleInput}
       errorMessage={titleError}
       className="min-w-0 flex-1"
-      editorClass="ui:min-h-9 ui:py-1 ui:px-1 ui:font-semibold"
+      editorClass="ui:min-h-9 ui:max-h-28 ui:overflow-y-auto ui:py-1 ui:px-1 ui:font-semibold"
     />
     <div class="hidden shrink-0 items-center gap-2 sm:flex">
       {#each COLOR_THEMES as theme (theme)}
@@ -179,6 +183,9 @@
       <!-- Imported section passages are HTML, and hand-authored passages need
            the same formatting capabilities. `full` preserves existing tables,
            lists and inline marks instead of narrowing the document schema. -->
+      <!-- Grows with its content. A fixed 16rem floor meant six sections of a paper
+           that keeps its passages on the questions themselves stacked six empty
+           editors, each taller than the questions above it. -->
       <RichTextField
         bind:value={localDescription}
         variant="full"
@@ -186,7 +193,7 @@
         placeholder={labels.descriptionPlaceholder ?? 'Describe this section'}
         errorMessage={descriptionError}
         className="m-0"
-        editorClass="ui:min-h-64 ui:h-auto"
+        editorClass="ui:min-h-24 ui:h-auto"
       />
     </div>
 
