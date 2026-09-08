@@ -22,6 +22,13 @@ Routes → Edit**, with zone resources including both `classroom.io.vn` and
 Both tokens supplied so far were pasted into a chat transcript and must be
 revoked once a scoped replacement is in place.
 
+**Set the token on the `production` environment, not only on the repository.**
+Every deploy job in `deploy-docs.yml` declares `environment: production`, and an
+environment secret shadows the repository secret of the same name. The
+environment's `CLOUDFLARE_API_TOKEN` had been sitting at its 24 Jul value; a
+repository-level update changed nothing and the deploy kept failing with
+`Invalid access token [code: 9109]` against a token that worked from a laptop.
+
 ## 1. Follows the constant — no edit needed
 
 175 references across `apps/` and `packages/` read `PRODUCT_ROOT_DOMAIN`,
