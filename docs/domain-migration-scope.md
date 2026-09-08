@@ -102,14 +102,29 @@ each is a silent failure if missed:
   domains.
 - **PostHog / Sentry** — allowed origins, so events are not dropped.
 - **Search Console / analytics** — add the new property, and submit a change of
-  address once the 301s are live.
+  address. The request is only accepted once both properties are verified *and*
+  the 301s are already serving, so it is the last step of the move, not part of
+  the preparation. Attempting it earlier fails and has to be redone.
+
+## 5b. Deferred until the apex is settled
+
+- **JSON-LD.** The marketing site emits none. `Organization` and `WebSite` are
+  the two worth having, and both carry absolute URLs and `@id` values — a second
+  surface to rewrite at flip time, for twenty-two pages with no courses, reviews
+  or events to mark up. Add them once the canonical origin has stopped moving.
+- **HSTS.** `hub.classroom.io.vn` sends no `strict-transport-security`. Adding it
+  is a commitment browsers cache, and `includeSubDomains` on the apex would cover
+  every tenant and every customer's BYOD hostname under it. That is a decision to
+  take deliberately, and after the move rather than during it.
+- **Dashboard CSP.** The live header carries no `classroomhub.io.vn` hosts. The
+  hosts in `csp-domains.js` are literals for the install-order reason recorded in
+  that file, so they change in the same commit that flips the constants — the
+  test and the deployed header have to move together.
 
 ## 6. Not domain work, still open
 
 Carried from earlier sessions so they are not lost:
 
-- The dashboard CSP fix is committed but reaches production only on the next
-  build of the dashboard image.
 - `brand.cdn.clsrio.com` — upstream's CDN — still serves two images in the Help
   Center. Replacing them needs screenshots of this deployment.
 - Two exercises with zero submissions are unresolved: `MOCK TEST 1` (`b68c4385`)
