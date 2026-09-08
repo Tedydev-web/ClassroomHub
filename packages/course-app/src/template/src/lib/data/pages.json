@@ -27,11 +27,6 @@
               "link": "/courses"
             },
             {
-              "title": "Blog",
-              "link": "https://classroom.io.vn/blog",
-              "redirect": true
-            },
-            {
               "title": "API",
               "link": "https://classroom.io.vn/docs",
               "redirect": true

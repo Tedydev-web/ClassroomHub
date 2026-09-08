@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
+  import { PRODUCT_HOSTS, PRODUCT_URLS } from '@cio/utils/constants';
 
   const getClass = (active: boolean) => (active ? 'text-foreground' : 'text-foreground/60');
 
@@ -16,10 +17,10 @@
   <p class="bg-blue-700 py-1.5 text-center text-sm font-medium text-white">
     brought to you by
     <a
-      href="https://classroom.io.vn"
+      href={PRODUCT_URLS.marketing}
       target="_blank"
       class="inline-flex items-center font-semibold underline-offset-2 hover:underline"
-      >classroom.io.vn
+      >{PRODUCT_HOSTS.marketing}
       <svg
         width="24"
         height="24"

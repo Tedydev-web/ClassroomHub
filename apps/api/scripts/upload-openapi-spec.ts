@@ -9,7 +9,7 @@ import { app } from '../src/app';
 import { env } from '@cio/core/config/env';
 import { generateSpecs } from 'hono-openapi';
 import { join } from 'path';
-import { PRODUCT_NAME, PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
+import { PRODUCT_NAME, PRODUCT_ROOT_DOMAIN, PRODUCT_URLS } from '@cio/utils/constants';
 import { enrichPublicApiOpenApiSpec, PUBLIC_API_OPENAPI_URL } from '@cio/utils/openapi/public-api';
 
 const OPENAPI_CDN_BASE_URL = PUBLIC_API_OPENAPI_URL.replace(/\/openapi-latest\.json$/, '');
@@ -148,7 +148,7 @@ class OpenAPISpecGenerator {
           },
           servers: [
             {
-              url: 'https://api.classroom.io.vn',
+              url: PRODUCT_URLS.api,
               description: 'Production environment'
             },
             {

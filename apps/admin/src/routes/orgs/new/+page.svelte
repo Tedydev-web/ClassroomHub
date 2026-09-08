@@ -2,6 +2,7 @@
   import type { CreatedOrg } from '$lib/types';
 
   import { useAdmin } from '$lib/context';
+  import { TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
   const { api } = useAdmin();
 
@@ -14,7 +15,7 @@
   let openingOwner = $state(false);
 
   const siteHint = $derived(
-    siteName.trim() ? `${siteName.trim()}.classroom.io.vn` : 'e.g. msna → msna.classroom.io.vn'
+    siteName.trim() ? `${siteName.trim()}.${TENANT_ROOT_DOMAIN}` : `e.g. msna → msna.${TENANT_ROOT_DOMAIN}`
   );
 
   async function onSubmit(event: SubmitEvent) {
@@ -66,8 +67,8 @@
       <h2 class="text-[18px]">{created.org.name}</h2>
       {#if created.org.siteName}
         <p class="mt-1 mb-4 text-[13px]">
-          <a href={`https://${created.org.siteName}.classroom.io.vn`} target="_blank" rel="noopener">
-            {created.org.siteName}.classroom.io.vn ↗
+          <a href={`https://${created.org.siteName}.${TENANT_ROOT_DOMAIN}`} target="_blank" rel="noopener">
+            {created.org.siteName}.{TENANT_ROOT_DOMAIN} ↗
           </a>
         </p>
       {/if}

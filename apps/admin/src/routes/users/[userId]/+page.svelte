@@ -4,6 +4,7 @@
 
   import { page } from '$app/stores';
   import { useAdmin } from '$lib/context';
+  import { TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
 
   const { api } = useAdmin();
   const userId = $derived($page.params.userId);
@@ -190,7 +191,7 @@
               <tr>
                 <td>
                   <span class="block font-medium">{org.name}</span>
-                  {#if org.siteName}<span class="text-muted text-[12px]">{org.siteName}.classroom.io.vn</span>{/if}
+                  {#if org.siteName}<span class="text-muted text-[12px]">{org.siteName}.{TENANT_ROOT_DOMAIN}</span>{/if}
                 </td>
                 <td><span class="badge badge-neutral">{roleLabel(org.roleId)}</span></td>
                 <td class="num">{org.creditBalance.toLocaleString()}</td>
