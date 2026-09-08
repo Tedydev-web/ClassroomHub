@@ -45,16 +45,21 @@ Two ideas do all the work:
    CI is R2-only, so nothing deploys today — the marketing site, docs and Help
    Center have not published since 27 Aug. Fix this first: everything below
    depends on being able to deploy.
-2. `classroomhub.io.vn` added as a zone on the same Cloudflare account, with
-   its nameservers live. It has no DNS records at all right now.
+2. Zone permissions on the token: **Zone → DNS → Edit** and **Zone → Workers
+   Routes → Edit**, with zone resources covering *both* `classroom.io.vn` and
+   `classroomhub.io.vn`. An account-scoped token lists the zones but cannot read
+   or write a single record in them, which is most of this runbook.
 
 ## Sequence
 
 Each step is verified against production before the next one starts.
 
-**1 — Zone and DNS.** Add the zone. Create the proxied records mirroring
-`classroom.io.vn`: apex, `hub`, `api`, `play`, `embed`, `assets`. Verify each
-resolves and Universal SSL has issued.
+**1 — DNS.** The zone already exists and is active, and its nameservers are
+already delegated to Cloudflare (`brady`/`vida.ns.cloudflare.com`, the same pair
+as `classroom.io.vn`) — do not re-add it. What is missing is every record: the
+apex, `www`, `hub`, `api`, `play`, `embed` and `assets` all resolve to nothing
+today. Mirror them from `classroom.io.vn`, matching each record's proxied flag,
+then verify each resolves and Universal SSL has issued.
 
 **2 — Routes, before any code changes.** Add to `[env.production].routes` in
 `apps/tenant-router/wrangler.toml`:
