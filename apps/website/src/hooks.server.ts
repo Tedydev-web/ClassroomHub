@@ -1,7 +1,16 @@
 import { localeFromPath } from '$lib/i18n';
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 
-const HELP_ORIGIN = 'https://cio-help.digdippa.workers.dev';
+/**
+ * This deployment's own Help Center worker.
+ *
+ * It used to point at `cio-help.digdippa.workers.dev`, which is not this
+ * account: `digdippa` is the upstream project's workers.dev subdomain, and this
+ * account's is `tedy-dev`. So every Help Center release CI has ever published
+ * went to an address nothing read, while /help served the upstream project's
+ * pages — titled "ClassroomIO Help Center", canonical link to classroomio.com.
+ */
+const HELP_ORIGIN = 'https://cio-help.tedy-dev.workers.dev';
 
 function proxy(origin: string, pathname: string, event: RequestEvent) {
   const upstream = new URL(pathname + event.url.search, origin);

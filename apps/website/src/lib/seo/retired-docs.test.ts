@@ -48,6 +48,16 @@ test('nothing on the site or in the Help Center links to the retired documentati
   assert.deepEqual(offenders, [], `these still point at /docs: ${offenders.join(', ')}`);
 });
 
+test('the Help Center is proxied from this account, not the upstream project', () => {
+  // `digdippa` is the upstream project's workers.dev subdomain; this account's is
+  // `tedy-dev`. Proxying the wrong one served their Help Center — their title,
+  // their canonical link — under this product's domain, and hid every release CI
+  // published here.
+  const hooks = readFileSync(join(appRoot, 'src/hooks.server.ts'), 'utf8');
+
+  assert.doesNotMatch(hooks, /digdippa\\.workers\\.dev/, 'proxying an origin outside this account');
+});
+
 test('/docs is answered with 410, not left to the marketing 404', () => {
   const hooks = readFileSync(join(appRoot, 'src/hooks.server.ts'), 'utf8');
 
