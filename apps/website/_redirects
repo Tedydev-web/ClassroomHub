@@ -22,3 +22,9 @@
 # republished under this brand.
 /blog            /            301
 /blog/*          /            301
+
+# Vietnamese is the default locale and carries no prefix, so `/vi/pricing` is
+# never a real page — but it is the address a reader guesses when `/en/pricing`
+# exists, and a 404 is a worse answer than the page they asked for.
+/vi              /            301
+/vi/*            /:splat      301
