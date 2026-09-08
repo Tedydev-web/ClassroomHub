@@ -149,8 +149,24 @@ export async function getCourseContentItems(
         NULL::int AS "videosCount",
         NULL::int AS "documentsCount",
         (
-          SELECT COUNT(*)
+          -- Questions a candidate answers, not question rows. A composite item is one row
+          -- carrying a passage plus its interactions, so counting rows reported 10 for a
+          -- 40-question paper — and disagreed with the exercise editor, which counts the
+          -- interactions. A row with no interaction blocks (or no revision at all) is one
+          -- question, which is what every non-composite question is.
+          SELECT COALESCE(SUM(
+            GREATEST(1, (
+              CASE WHEN jsonb_typeof(revision.definition -> 'blocks') = 'array' THEN (
+                SELECT COUNT(*)
+                FROM jsonb_array_elements(revision.definition -> 'blocks') AS block
+                WHERE block ->> 'kind' = 'interaction'
+              ) ELSE 0 END
+            ))
+          ), 0)
           FROM question
+          LEFT JOIN question_revision AS revision
+            ON revision.id = question.current_revision_id
+           AND revision.question_id = question.id
           WHERE question.exercise_id = exercise.id
             AND question.archived_at IS NULL
         )::int AS "questionCount",
