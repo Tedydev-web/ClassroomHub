@@ -1,0 +1,24 @@
+# Pages this site used to serve. Every line here was a live URL on
+# classroom.io.vn and is indexed, so it gets a 301 to the nearest surviving
+# page rather than a 404. Cloudflare's static-asset router applies these before
+# the SvelteKit worker runs, so they cost nothing per request.
+
+# The five free tools, removed with the open-source positioning they promoted.
+/tools           /            301
+/tools/*         /            301
+
+# Upstream project pages: the OSS friends directory, its repository, community
+# and launch links, and the install script.
+/oss-friends     /            301
+/github          /            301
+/discord         /            301
+/classroomio.sh  /            301
+/ph              /            301
+/learn           /            301
+/waec            /            301
+/devanddesign    /            301
+
+# Thirteen posts written by upstream's founder, withdrawn rather than
+# republished under this brand.
+/blog            /            301
+/blog/*          /            301
