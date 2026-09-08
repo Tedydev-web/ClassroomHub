@@ -1,4 +1,4 @@
-name: Deploy marketing site, docs and help
+name: Deploy marketing site and help
 
 on:
   push:
@@ -7,10 +7,7 @@ on:
       - 'apps/docs/**'
       - 'apps/help/**'
       - 'apps/website/**'
-      - 'packages/utils/src/openapi/**'
       - '.github/workflows/deploy-docs.yml'
-  # Called by upload-openapi-spec.yml: the API reference is rendered statically
-  # at build time, so a new spec in R2 only reaches the site via a docs rebuild.
   workflow_call:
   workflow_dispatch:
 
@@ -55,19 +52,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # scripts/fetch-openapi.mjs imports @cio/utils/openapi/public-api from dist.
       - name: Build workspace dependencies
-        run: pnpm turbo run build --filter=@cio/docs^... --filter=@cio/help^...
+        run: pnpm turbo run build --filter=@cio/help^...
 
-      # Blume reports every public asset under /docs as a base-path warning, but
-      # exits non-zero for broken pages and anchors. Keep that failure fatal.
-      - name: Validate links and anchors
-        run: pnpm --filter @cio/docs validate
-
-      - name: Build docs
-        run: pnpm --filter @cio/docs build
-
-      - name: Deploy docs to Cloudflare
+      # The documentation itself is retired; what deploys here is the 410 handler
+      # that stands where it was, so there is nothing to build or link-check.
+      - name: Deploy the retired docs placeholder to Cloudflare
         run: pnpm --filter @cio/docs exec wrangler deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

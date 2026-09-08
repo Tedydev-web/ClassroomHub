@@ -41,8 +41,15 @@ test('/docs is answered with 410, not left to the marketing 404', () => {
   assert.doesNotMatch(hooks, /cio-docs/, 'the docs worker must no longer be proxied');
 });
 
-test('the docs worker no longer publishes a workers.dev address', () => {
+test('the docs worker carries a 410 handler instead of the pages', () => {
   const config = readFileSync(join(appRoot, '../docs/wrangler.jsonc'), 'utf8');
 
+  // `workers_dev: false` alone did not close the address: an hour after it was
+  // deployed the worker was still serving pages there. What actually removed
+  // them is having no assets to serve.
   assert.match(config, /"workers_dev":\s*false/);
+  assert.match(config, /"main":\s*"src\/gone\.ts"/);
+  assert.doesNotMatch(config, /"assets"/, 'the docs worker must not serve the retired pages');
+
+  assert.match(readFileSync(join(appRoot, '../docs/src/gone.ts'), 'utf8'), /status: 410/);
 });
