@@ -2,6 +2,9 @@
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
+    // `geo-locale.ts` and its test import each other with the `.ts` extension so
+    // `node --test` can run them directly, without a bundler in the way.
+    "allowImportingTsExtensions": true,
     "checkJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

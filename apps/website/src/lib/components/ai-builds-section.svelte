@@ -11,6 +11,7 @@
     { Icon: Terminal, ...lane('agent') }
   ]);
 
+  /** @param {string} key */
   function lane(key) {
     return { title: $t(`ai_builds.${key}.title`), description: $t(`ai_builds.${key}.description`) };
   }

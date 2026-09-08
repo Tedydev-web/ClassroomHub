@@ -11,6 +11,7 @@
     { Icon: Sparkles, ...lane('mcp') }
   ]);
 
+  /** @param {string} key */
   function lane(key) {
     return { title: $t(`automation.${key}.title`), description: $t(`automation.${key}.description`) };
   }
