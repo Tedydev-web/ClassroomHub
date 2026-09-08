@@ -23,5 +23,5 @@
       Book a Demo
     </a>
   </div>
-  <div class="text-sm text-gray-500">Open source · Self-hosted · No credit card required</div>
+  <div class="text-sm text-gray-500">Hosted for you · Your domain · No credit card required</div>
 </section>

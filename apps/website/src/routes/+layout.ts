@@ -2,9 +2,8 @@ import type { MetaTagsProps } from 'svelte-meta-tags';
 
 export const prerender = true;
 
-export async function load({ data, url }) {
+export async function load({ url }) {
   return {
-    stars: data.stars,
     baseMetaTags: getBaseMetaTags(url),
     url: url.pathname
   };

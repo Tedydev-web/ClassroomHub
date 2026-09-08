@@ -3,7 +3,6 @@
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import Code2 from '@lucide/svelte/icons/code-2';
-  import Github from '@lucide/svelte/icons/github';
 
   const apiCurl = [
     '<span class="text-slate-500"># Enroll a learner in a course</span>',
@@ -58,7 +57,7 @@
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <Button href="https://classroom.tedydev.io.vn/docs/api">Read the API docs</Button>
-        <Button href="/github" variant="outline">Star on GitHub</Button>
+        <Button href="/pricing" variant="outline">See pricing</Button>
       </div>
     </div>
   </PageHeader>
@@ -87,7 +86,7 @@
             <span class="mt-0.5 text-blue-700">→</span> Cursor-based pagination, rate limits documented
           </li>
           <li class="flex items-start gap-2">
-            <span class="mt-0.5 text-blue-700">→</span> Same endpoints whether you self-host or run on our cloud
+            <span class="mt-0.5 text-blue-700">→</span> Versioned endpoints with a documented deprecation window
           </li>
         </ul>
       </div>
@@ -132,36 +131,27 @@
 
   <McpServerSection />
 
-  <!-- Self-host -->
+  <!-- Stack -->
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Self-host</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Under the hood</div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Or run the whole thing in your own VPC.
+          Built on a stack your team already knows.
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          ClassroomHub is open source on GitHub. You can self-host the dashboard, the API, the AI assistant, and the MCP
-          server, and bring your own AI keys. It's the same product with the same API surface.
+          We run and operate the platform, so there is nothing for you to deploy or patch. The parts you integrate with
+          are documented in full: a typed REST API, signed webhooks, and an MCP server your agents can call directly.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
           <a
-            href="https://classroom.tedydev.io.vn/docs/self-hosted/docker"
+            href="https://classroom.tedydev.io.vn/docs/api"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-medium text-white no-underline transition-all hover:-translate-y-0.5 hover:bg-blue-700"
           >
-            Self-hosting guide →
-          </a>
-          <a
-            href="/github"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-950 no-underline transition-all hover:border-gray-950"
-          >
-            <Github size={16} />
-            View the source
+            API reference →
           </a>
         </div>
       </div>
@@ -195,7 +185,7 @@
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >MCP</span
             >
-            Open-source server, <span class="font-mono text-xs">@tedydev/classroom-mcp</span>
+            Hosted server, <span class="font-mono text-xs">@tedydev/classroom-mcp</span>
           </li>
         </ul>
       </div>
@@ -204,7 +194,7 @@
 
   <PageSignupCTA
     header="Programmable from day one."
-    subText="API, Webhooks, and an MCP server in the box. Self-host it or use the hosted version. Same surface either way."
+    subText="API, Webhooks, and an MCP server in the box. Documented, versioned, and ready on day one."
     btnLabel="Read the docs"
     link="https://classroom.tedydev.io.vn/docs/api"
     demo={false}

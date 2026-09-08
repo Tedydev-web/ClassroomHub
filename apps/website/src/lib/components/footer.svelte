@@ -1,7 +1,4 @@
 <script>
-  import Facebook from '@lucide/svelte/icons/facebook';
-  import Youtube from '@lucide/svelte/icons/youtube';
-  import Twitter from '@lucide/svelte/icons/twitter';
 </script>
 
 <footer
@@ -56,36 +53,10 @@
   <div class="relative z-10 flex flex-col gap-10 lg:flex-row lg:justify-between">
     <!-- Brand -->
     <div class="flex flex-col gap-4 lg:max-w-[220px]">
-      <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="ClassroomIO logo" />
+      <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="ClassroomHub logo" />
       <p class="ui:text-muted-foreground text-sm leading-6">
-        The Open Source LMS for compliance training and certification programs.
+        One platform for customer, partner, and employee training.
       </p>
-      <div class="flex items-center gap-2">
-        <a
-          href="https://www.facebook.com/classroomiohq"
-          target="_blank"
-          aria-label="Facebook"
-          class="ui:text-muted-foreground ui:hover:text-foreground p-1 transition-colors"
-        >
-          <Facebook size={18} />
-        </a>
-        <a
-          href="https://twitter.com/classroomio"
-          target="_blank"
-          aria-label="Twitter"
-          class="ui:text-muted-foreground ui:hover:text-foreground p-1 transition-colors"
-        >
-          <Twitter size={18} />
-        </a>
-        <a
-          href="https://www.youtube.com/@ClassroomIO"
-          target="_blank"
-          aria-label="YouTube"
-          class="ui:text-muted-foreground ui:hover:text-foreground p-1 transition-colors"
-        >
-          <Youtube size={18} />
-        </a>
-      </div>
     </div>
 
     <!-- Nav columns -->
@@ -158,21 +129,16 @@
           </li>
           <li>
             <a
-              href="https://classroomio.com/help"
+              href="https://classroom.tedydev.io.vn/help"
               target="_blank"
               class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Help Center</a
             >
           </li>
           <li>
             <a
-              href="https://classroomio.com/docs/quickstart/signup"
+              href="https://classroom.tedydev.io.vn/docs"
               target="_blank"
               class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Getting Started</a
-            >
-          </li>
-          <li>
-            <a href="/oss-friends" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >OSS Friends</a
             >
           </li>
         </ul>
@@ -183,7 +149,7 @@
         <ul class="space-y-3">
           <li>
             <a
-              href="https://feedback.classroomio.com/roadmap"
+              href="/roadmap"
               target="_blank"
               rel="noopener"
               class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Roadmap</a
@@ -191,7 +157,7 @@
           </li>
           <li>
             <a
-              href="mailto:help@classroomio.com"
+              href="mailto:help@classroom.tedydev.io.vn"
               target="_blank"
               class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Support</a
             >
@@ -214,6 +180,6 @@
   <div
     class="ui:border-border ui:text-muted-foreground relative z-10 mt-10 border-t pt-6 text-center text-xs lg:text-left"
   >
-    All rights reserved. ClassroomIO © {new Date().getFullYear()}
+    All rights reserved. ClassroomHub © {new Date().getFullYear()}
   </div>
 </footer>

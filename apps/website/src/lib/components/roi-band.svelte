@@ -14,13 +14,18 @@
     bgClass = 'bg-white',
     eyebrow = 'The case for an academy',
     heading = 'Customers who learn the product, stay.',
-    subhead = 'Numbers from teams who built one:'
+    subhead = 'What a ClassroomHub academy gives you on day one:'
   } = $props();
 
+  /**
+   * Product facts, not borrowed benchmarks. The band used to republish
+   * Forrester/Intellum/TSIA percentages this deployment has no data behind and
+   * no licence to quote, which is a claim we cannot stand behind if asked.
+   */
   const stats = [
-    { value: '+22%', label: 'Higher retention', source: 'Forrester · customer-education TEI' },
-    { value: '+38%', label: 'Product adoption', source: 'Intellum / Forrester benchmarks' },
-    { value: '−6.1%', label: 'Support costs', source: 'TSIA · education services impact' }
+    { value: 'Your domain', label: 'A branded academy', source: 'Custom domain, your logo and colours' },
+    { value: 'Every attempt', label: 'Recorded and exportable', source: 'Scores, timing, and completion per learner' },
+    { value: 'One platform', label: 'Customers, partners, employees', source: 'Separate academies, one account' }
   ];
 </script>
 
@@ -35,13 +40,11 @@
     <BoxedGrid items={stats} cols={3} padding="px-5 py-10 lg:py-12">
       {#snippet cell(stat)}
         <div class="flex h-full flex-col items-center justify-center text-center">
-          <p class="text-[clamp(2rem,3.4vw,2.8rem)] font-medium tracking-tight text-gray-950">{stat.value}</p>
+          <p class="text-[clamp(1.5rem,2.4vw,2rem)] font-medium tracking-tight text-gray-950">{stat.value}</p>
           <p class="mt-1.5 text-sm text-gray-600">{stat.label}</p>
           <p class="mt-3 text-[11px] text-gray-400">{stat.source}</p>
         </div>
       {/snippet}
     </BoxedGrid>
-
-    <p class="mt-4 text-xs text-gray-400">Industry benchmarks. Your mileage will vary.</p>
   </div>
 </section>

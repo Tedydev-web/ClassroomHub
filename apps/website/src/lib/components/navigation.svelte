@@ -1,17 +1,11 @@
 <script lang="ts">
   import BookOpen from '@lucide/svelte/icons/book-open';
   import ChevronDown from '@lucide/svelte/icons/chevron-down';
-  import Gamepad from '@lucide/svelte/icons/gamepad';
-  import Github from '@lucide/svelte/icons/github';
-  import Hourglass from '@lucide/svelte/icons/hourglass';
-  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import LocateFixed from '@lucide/svelte/icons/locate-fixed';
   import Menu from '@lucide/svelte/icons/menu';
   import MessagesSquare from '@lucide/svelte/icons/messages-square';
-  import MousePointerClick from '@lucide/svelte/icons/mouse-pointer-click';
   import Server from '@lucide/svelte/icons/server';
   import Sparkles from '@lucide/svelte/icons/sparkles';
-  import Timer from '@lucide/svelte/icons/timer';
   import Webhook from '@lucide/svelte/icons/webhook';
   import X from '@lucide/svelte/icons/x';
   import { page } from '$app/state';
@@ -20,8 +14,6 @@
   import * as NavigationMenu from '@cio/ui/base/navigation-menu';
   import LibraryBigIcon from '@lucide/svelte/icons/library-big';
   import { cn } from '@cio/ui/tools';
-
-  let { stars }: { stars: number } = $props();
 
   type ListItemProps = HTMLAttributes<HTMLAnchorElement> & {
     title: string;
@@ -94,16 +86,16 @@
       href: '/automation'
     },
     {
-      key: 'self-hosting',
-      title: 'Self-hosting & Docs',
-      subtitle: 'Run ClassroomHub in your own VPC.',
+      key: 'docs',
+      title: 'Documentation',
+      subtitle: 'API reference and integration guides.',
       href: 'https://classroom.tedydev.io.vn/docs'
     },
     {
       key: 'help',
       title: 'Help Center',
       subtitle: 'Guides for running your academy.',
-      href: 'https://classroomio.com/help'
+      href: 'https://classroom.tedydev.io.vn/help'
     },
     {
       key: 'mcp-recipes',
@@ -116,39 +108,6 @@
       title: 'Storybook',
       subtitle: 'Browse and reuse UI components.',
       href: 'https://classroom.tedydev.io.vn'
-    }
-  ];
-
-  const freeTools: NavCollectionItem[] = [
-    {
-      key: 'progress',
-      title: 'Progress Tracker',
-      subtitle: 'Monitor learning journeys.',
-      href: '/tools/progress'
-    },
-    {
-      key: 'pomodoro',
-      title: 'Pomodoro Timer',
-      subtitle: 'Boost focus and productivity.',
-      href: '/tools/pomodoro'
-    },
-    {
-      key: 'name-picker',
-      title: 'Name Picker',
-      subtitle: 'Randomly select names.',
-      href: '/tools/name-picker'
-    },
-    {
-      key: 'stopwatch',
-      title: 'Activity Stopwatch',
-      subtitle: 'Track time accurately.',
-      href: '/tools/stopwatch'
-    },
-    {
-      key: 'tic-tac-toe',
-      title: 'Tic Tac Toe',
-      subtitle: 'Play the classic game.',
-      href: '/tools/tic-tac-toe'
     }
   ];
 
@@ -166,17 +125,6 @@
       items: developers
     },
     {
-      key: 'free-tools',
-      title: 'Free Tools',
-      href: '/tools',
-      items: freeTools
-    },
-    {
-      key: 'blog',
-      title: 'Blog',
-      href: '/blog'
-    },
-    {
       key: 'pricing',
       title: 'Pricing',
       href: '/pricing'
@@ -185,7 +133,6 @@
 
   let isSolutionsActive = $derived(!!solutions.some((s) => activeLink.includes(s.key)));
   let isDevelopersActive = $derived(!!developers.some((d) => activeLink.includes(d.key)));
-  let isFreeToolsActive = $derived(activeLink.startsWith('/tools'));
 
   function isNavItemActive(navItem: NavItem) {
     if (navItem.key === 'solutions') {
@@ -194,10 +141,6 @@
 
     if (navItem.key === 'developers') {
       return isDevelopersActive;
-    }
-
-    if (navItem.key === 'free-tools') {
-      return isFreeToolsActive;
     }
 
     return navItem.href ? activeLink.startsWith(navItem.href) : false;
@@ -222,24 +165,12 @@
               <MessagesSquare size={24} />
             {:else if key === 'automation'}
               <Webhook size={24} />
-            {:else if key === 'self-hosting'}
+            {:else if key === 'docs'}
               <Server size={24} />
             {:else if key === 'help'}
               <BookOpen size={24} />
             {:else if key === 'mcp-recipes'}
               <Sparkles size={24} />
-            {:else if key === 'github'}
-              <Github size={24} />
-            {:else if key === 'progress'}
-              <LoaderCircle size={24} />
-            {:else if key === 'pomodoro'}
-              <Hourglass size={24} />
-            {:else if key === 'name-picker'}
-              <MousePointerClick size={24} />
-            {:else if key === 'stopwatch'}
-              <Timer size={24} />
-            {:else if key === 'tic-tac-toe'}
-              <Gamepad size={24} />
             {/if}
           </div>
           <div class="ml-3 text-start">
@@ -313,33 +244,6 @@
     </section>
 
     <div class="hidden! flex-row items-center justify-between gap-3 lg:flex!">
-      <a href="/discord" target="_blank" class="flex items-center transition-opacity duration-200 hover:opacity-80">
-        <img
-          loading="lazy"
-          alt="discord logo"
-          src="/assets/assets/www/home/discord-blue.png"
-          class="h-5 w-6 cursor-pointer"
-        />
-      </a>
-      <div class="flex items-center">
-        <a
-          href="/github"
-          target="_blank"
-          class="group flex items-center gap-1.5 rounded-md p-2 transition-all duration-200 ease-in-out hover:bg-gray-100"
-        >
-          <img
-            loading="lazy"
-            alt="github logo"
-            src="/assets/assets/www/home/github-mark.png"
-            class="h-5 w-5 cursor-pointer transition-transform duration-200 group-hover:scale-110"
-          />
-          <span
-            class="text-sm leading-none font-medium text-gray-600 transition-colors duration-200 group-hover:text-black"
-          >
-            {stars}
-          </span>
-        </a>
-      </div>
       <a
         class="text-sm font-medium transition-opacity duration-200 after:ml-2 after:content-['→'] hover:opacity-80"
         href="https://classroom-app.tedydev.io.vn"
@@ -411,35 +315,6 @@
           </ul>
         </nav>
         <div class="mt-5 flex flex-col items-start gap-y-2 border-t pt-5">
-          <a
-            href="/discord"
-            target="_blank"
-            class="flex w-full items-center rounded-md px-4 py-4 text-left text-sm transition-all duration-200 hover:bg-gray-100 md:text-lg"
-          >
-            <img
-              loading="lazy"
-              alt="discord logo"
-              src="/assets/assets/www/home/discord-blue.png"
-              class="mr-2 h-5 w-6 cursor-pointer"
-            />
-            <span>Discord</span>
-          </a>
-          <a
-            href="/github"
-            target="_blank"
-            class="group flex w-full items-center rounded-md px-4 py-4 text-left text-sm transition-all duration-200 hover:bg-gray-100 md:text-lg"
-          >
-            <img
-              loading="lazy"
-              alt="github logo"
-              src="/assets/assets/www/home/github-mark.png"
-              class="h-5 w-5 cursor-pointer transition-transform duration-200 group-hover:scale-110"
-            />
-            <span class="ml-3 transition-colors duration-200 group-hover:text-black">Github</span>
-            <span class="ml-1 text-sm font-medium text-gray-600 transition-colors duration-200 group-hover:text-black"
-              >({stars})</span
-            >
-          </a>
           <a
             class="w-full rounded-md px-4 py-4 text-left text-sm font-semibold transition-all duration-200 after:ml-2 after:content-['→'] hover:bg-gray-100 md:text-lg"
             href="https://classroom-app.tedydev.io.vn"

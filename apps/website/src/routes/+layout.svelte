@@ -26,7 +26,7 @@
 <MetaTags {...metaTags} />
 
 <div class="overflow-hidden bg-white">
-  <Navigation stars={data.stars} />
+  <Navigation />
 
   {#if page.status === 404}
     <NotFound className="mt-5" />

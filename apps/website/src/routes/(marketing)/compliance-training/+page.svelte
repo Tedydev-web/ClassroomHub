@@ -178,9 +178,9 @@
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
         <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> SOC 2-friendly</span>
         <span class="flex items-center gap-1.5"
-          ><span class="font-medium text-blue-700">✓</span> Self-hosted option</span
+          ><span class="font-medium text-blue-700">✓</span> Audit-ready records</span
         >
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Open source</span>
+        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Your own domain</span>
       </div>
     </div>
 

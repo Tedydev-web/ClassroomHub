@@ -70,7 +70,7 @@
         Enterprise-grade, out of the box.
       </h2>
       <p class="mb-6 max-w-[560px] text-base leading-relaxed text-gray-500 lg:text-lg">
-        Everything in the open-source core, plus the control, security, and support that compliance teams need at scale.
+        Everything in the standard plan, plus the control, security, and support that compliance teams need at scale.
       </p>
 
       <a

@@ -159,12 +159,12 @@
         </div>
       </BlurFade>
 
-      <!-- Open source / deep customization -->
+      <!-- Integration surface -->
       <BlurFade delay={0.2} once>
         <div class="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-[#ecebe6] p-6 lg:p-7">
-          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Fork the codebase</h3>
+          <h3 class="text-base font-medium tracking-tight text-gray-950 lg:text-lg">Wire it into your stack</h3>
           <p class="mt-2 max-w-[420px] text-sm leading-relaxed text-gray-500">
-            Modern stack, readable codebase, AGPL on GitHub. Change whatever you need.
+            A typed REST API, signed webhooks, and an MCP server. Provision learners from the systems you already run.
           </p>
 
           <!-- Visual: stylised file tree / stack -->
@@ -174,29 +174,29 @@
                 class="flex items-center gap-2 rounded-md bg-white/70 px-3 py-2 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200"
               >
                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                <span class="font-mono">apps/dashboard</span>
-                <span class="ml-auto text-gray-400">Svelte 5</span>
+                <span class="font-mono">REST API</span>
+                <span class="ml-auto text-gray-400">Typed · versioned</span>
               </div>
               <div
                 class="flex items-center gap-2 rounded-md bg-white/70 px-3 py-2 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200"
               >
                 <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span class="font-mono">apps/api</span>
-                <span class="ml-auto text-gray-400">Hono · Drizzle</span>
+                <span class="font-mono">Webhooks</span>
+                <span class="ml-auto text-gray-400">Signed · retried</span>
               </div>
               <div
                 class="flex items-center gap-2 rounded-md bg-white/70 px-3 py-2 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200"
               >
                 <span class="h-1.5 w-1.5 rounded-full bg-fuchsia-500"></span>
-                <span class="font-mono">packages/ai-assistant</span>
-                <span class="ml-auto text-gray-400">Claude</span>
+                <span class="font-mono">MCP server</span>
+                <span class="ml-auto text-gray-400">For your agents</span>
               </div>
               <div
                 class="flex items-center gap-2 rounded-md bg-white/70 px-3 py-2 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200"
               >
                 <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                <span class="font-mono">packages/mcp</span>
-                <span class="ml-auto text-gray-400">MCP</span>
+                <span class="font-mono">SSO</span>
+                <span class="ml-auto text-gray-400">SAML · OIDC</span>
               </div>
             </div>
           </div>
