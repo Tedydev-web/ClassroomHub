@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "ClassroomHub | Một nền tảng để dạy bất cứ điều gì, cho bất cứ ai",
+    "description": "Đào tạo nhân viên, hướng dẫn khách hàng, chứng nhận đối tác, hoặc bán khoá học ra công chúng. Soạn bài với AI, xuất bản trên tên miền của bạn, và theo dõi từng lượt hoàn thành.",
+    "og_alt": "ClassroomHub, một nền tảng để dạy bất cứ điều gì cho bất cứ ai"
+  },
+  "nav": {
+    "solutions": "Giải pháp",
+    "developers": "Nhà phát triển",
+    "pricing": "Bảng giá",
+    "dashboard": "Trang quản trị",
+    "language": "Ngôn ngữ",
+    "open_menu": "Mở menu",
+    "close_menu": "Đóng menu",
+    "items": {
+      "customer_education": { "title": "Đào tạo khách hàng", "subtitle": "Học viện dành cho khách hàng SaaS." },
+      "compliance_training": {
+        "title": "Đào tạo tuân thủ",
+        "subtitle": "Biến quy định và quy trình thành bằng chứng."
+      },
+      "partner_training": { "title": "Đào tạo đối tác", "subtitle": "Một học viện riêng cho kênh phân phối." },
+      "public_courses": { "title": "Khoá học mở", "subtitle": "Bán khoá học cho học viên ở bất cứ đâu." },
+      "teach": { "title": "Giảng dạy cùng chúng tôi", "subtitle": "Đưa chương trình của bạn lên nền tảng." },
+      "automation": { "title": "Tự động hoá", "subtitle": "API, Webhooks và máy chủ MCP." },
+      "docs": { "title": "Tài liệu", "subtitle": "Tham chiếu API và hướng dẫn tích hợp." },
+      "help": { "title": "Trung tâm trợ giúp", "subtitle": "Hướng dẫn vận hành học viện của bạn." },
+      "mcp_recipes": { "title": "Công thức MCP", "subtitle": "Prompt cho agent, dùng được ngay." },
+      "storybook": { "title": "Storybook", "subtitle": "Xem và tái sử dụng các thành phần giao diện." }
+    }
+  },
+  "footer": {
+    "tagline": "Một nền tảng cho đào tạo khách hàng, đối tác và nhân viên.",
+    "product": "Sản phẩm",
+    "solutions": "Giải pháp",
+    "resources": "Tài nguyên",
+    "company": "Công ty",
+    "mcp_recipes": "Công thức MCP",
+    "api_mcp": "API & MCP",
+    "pricing": "Bảng giá",
+    "customer_education": "Đào tạo khách hàng",
+    "compliance_training": "Đào tạo tuân thủ",
+    "partner_training": "Đào tạo đối tác",
+    "docs_vs_academy": "Tài liệu hay học viện nội bộ",
+    "public_courses": "Khoá học mở",
+    "teach": "Giảng dạy cùng chúng tôi",
+    "help_center": "Trung tâm trợ giúp",
+    "getting_started": "Bắt đầu",
+    "roadmap": "Lộ trình",
+    "support": "Hỗ trợ",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản sử dụng",
+    "rights": "Bảo lưu mọi quyền. ClassroomHub © {year}"
+  },
+  "hero": {
+    "title_lead": "Một nền tảng để dạy bất cứ điều gì,",
+    "title_accent": "cho bất cứ ai",
+    "subtitle": "Đào tạo nhân viên, hướng dẫn khách hàng, chứng nhận đối tác, hoặc bán khoá học ra công chúng — trong cùng một tài khoản, trên tên miền của bạn, kèm chứng chỉ và một trợ giảng AI trong mọi bài học.",
+    "book_demo": "Đặt lịch demo",
+    "start_free": "Dùng thử miễn phí"
+  },
+  "roi": {
+    "eyebrow": "Vì sao nên có một học viện",
+    "heading": "Khách hàng hiểu sản phẩm là khách hàng ở lại.",
+    "subhead": "Những gì một học viện ClassroomHub mang lại ngay từ ngày đầu:",
+    "domain": {
+      "value": "Tên miền của bạn",
+      "label": "Một học viện mang thương hiệu riêng",
+      "source": "Tên miền riêng, logo và màu sắc của bạn"
+    },
+    "records": {
+      "value": "Mọi lượt làm bài",
+      "label": "Được ghi lại và xuất ra được",
+      "source": "Điểm số, thời gian và mức hoàn thành của từng học viên"
+    },
+    "one_platform": {
+      "value": "Một nền tảng",
+      "label": "Khách hàng, đối tác, nhân viên",
+      "source": "Nhiều học viện riêng biệt, một tài khoản"
+    }
+  },
+  "home": {
+    "tutor_title": "Trợ giảng vận hành bằng AI",
+    "tutor_description": "Một trợ giảng AI thích ứng với từng học viên: trả lời câu hỏi bằng chính ngôn ngữ của họ, đi theo nhịp học của họ, và giữ lại những câu lẽ ra đã rơi vào hộp thư hỗ trợ của bạn.",
+    "tutor_cta": "Xem học viện",
+    "cta_header": "Bạn dạy gì cũng được, hãy dạy ở đây.",
+    "cta_subtext": "Ra mắt học viện mang thương hiệu riêng trên tên miền của bạn chỉ trong vài ngày."
+  }
+}

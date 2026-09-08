@@ -1,36 +1,15 @@
-import type { Handle, RequestEvent } from '@sveltejs/kit';
+import { localeFromPath } from '$lib/i18n';
+import type { Handle } from '@sveltejs/kit';
 
-const DOCS_ORIGIN = 'https://cio-docs.digdippa.workers.dev';
-const HELP_ORIGIN = 'https://cio-help.digdippa.workers.dev';
-
-function proxy(origin: string, pathname: string, event: RequestEvent) {
-  const upstream = new URL(pathname + event.url.search, origin);
-
-  const headers = new Headers(event.request.headers);
-  headers.delete('host');
-  headers.set('x-forwarded-host', event.url.host);
-  headers.set('x-forwarded-proto', 'https');
-
-  const hasBody = event.request.method !== 'GET' && event.request.method !== 'HEAD';
-
-  return fetch(upstream, {
-    method: event.request.method,
-    headers,
-    body: hasBody ? event.request.body : undefined,
-    redirect: 'manual'
+/**
+ * Stamp the document's language onto `<html lang>`.
+ *
+ * A screen reader picks its voice from this attribute, and a browser offers to
+ * translate the page based on it, so a Vietnamese page served as `lang="en"` is
+ * read aloud in the wrong accent and offered a translation it does not need.
+ * The prerenderer runs this hook too, so both trees are stamped at build time.
+ */
+export const handle: Handle = async ({ event, resolve }) =>
+  resolve(event, {
+    transformPageChunk: ({ html }) => html.replace('%cio.lang%', localeFromPath(event.url.pathname))
   });
-}
-
-export const handle: Handle = async ({ event, resolve }) => {
-  const { pathname } = event.url;
-
-  if (pathname === '/docs' || pathname.startsWith('/docs/')) {
-    return proxy(DOCS_ORIGIN, pathname, event);
-  }
-
-  if (pathname === '/help' || pathname.startsWith('/help/')) {
-    return proxy(HELP_ORIGIN, pathname, event);
-  }
-
-  return resolve(event);
-};

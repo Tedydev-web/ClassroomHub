@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/i18n';
   import BoxedGrid from './boxed-grid.svelte';
 
   /**
@@ -10,31 +11,30 @@
    */
 
   /** @type {Props} */
-  let {
-    bgClass = 'bg-white',
-    eyebrow = 'The case for an academy',
-    heading = 'Customers who learn the product, stay.',
-    subhead = 'What a ClassroomHub academy gives you on day one:'
-  } = $props();
+  let { bgClass = 'bg-white', eyebrow = undefined, heading = undefined, subhead = undefined } = $props();
 
   /**
    * Product facts, not borrowed benchmarks. The band used to republish
    * Forrester/Intellum/TSIA percentages this deployment has no data behind and
    * no licence to quote, which is a claim we cannot stand behind if asked.
    */
-  const stats = [
-    { value: 'Your domain', label: 'A branded academy', source: 'Custom domain, your logo and colours' },
-    { value: 'Every attempt', label: 'Recorded and exportable', source: 'Scores, timing, and completion per learner' },
-    { value: 'One platform', label: 'Customers, partners, employees', source: 'Separate academies, one account' }
-  ];
+  const stats = $derived(
+    ['domain', 'records', 'one_platform'].map((key) => ({
+      value: $t(`roi.${key}.value`),
+      label: $t(`roi.${key}.label`),
+      source: $t(`roi.${key}.source`)
+    }))
+  );
 </script>
 
 <section class="{bgClass} px-6 py-12 lg:px-12 lg:py-16">
   <div class="mx-auto max-w-[1100px]">
     <div class="mb-8 max-w-[640px]">
-      <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">{eyebrow}</div>
-      <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">{heading}</h2>
-      <p class="mt-3 text-sm leading-relaxed text-gray-500">{subhead}</p>
+      <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">{eyebrow ?? $t('roi.eyebrow')}</div>
+      <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
+        {heading ?? $t('roi.heading')}
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-gray-500">{subhead ?? $t('roi.subhead')}</p>
     </div>
 
     <BoxedGrid items={stats} cols={3} padding="px-5 py-10 lg:py-12">

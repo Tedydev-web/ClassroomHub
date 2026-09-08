@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "title": "ClassroomHub | One Platform to Teach Anything, to Anyone",
+    "description": "Train staff, educate customers, certify partners, or sell courses to the public. Build with AI, publish under your own domain, and track every completion.",
+    "og_alt": "ClassroomHub, one platform to teach anything to anyone"
+  },
+  "nav": {
+    "solutions": "Solutions",
+    "developers": "Developers",
+    "pricing": "Pricing",
+    "dashboard": "Dashboard",
+    "language": "Language",
+    "open_menu": "Open the menu",
+    "close_menu": "Close the menu",
+    "items": {
+      "customer_education": { "title": "Customer Education", "subtitle": "Customer academies for SaaS." },
+      "compliance_training": { "title": "Compliance Training", "subtitle": "Turn policies and SOPs into proof." },
+      "partner_training": { "title": "Partner Training", "subtitle": "A separate academy for your channel." },
+      "public_courses": { "title": "Public Courses", "subtitle": "Sell courses to learners anywhere." },
+      "teach": { "title": "Teach with us", "subtitle": "Bring your own programme to the platform." },
+      "automation": { "title": "Automation", "subtitle": "API, Webhooks, and MCP server." },
+      "docs": { "title": "Documentation", "subtitle": "API reference and integration guides." },
+      "help": { "title": "Help Center", "subtitle": "Guides for running your academy." },
+      "mcp_recipes": { "title": "MCP Recipes", "subtitle": "Ready-to-run agent prompts." },
+      "storybook": { "title": "Storybook", "subtitle": "Browse and reuse UI components." }
+    }
+  },
+  "footer": {
+    "tagline": "One platform for customer, partner, and employee training.",
+    "product": "Product",
+    "solutions": "Solutions",
+    "resources": "Resources",
+    "company": "Company",
+    "mcp_recipes": "MCP Recipes",
+    "api_mcp": "API & MCP",
+    "pricing": "Pricing",
+    "customer_education": "Customer Education",
+    "compliance_training": "Compliance Training",
+    "partner_training": "Partner Training",
+    "docs_vs_academy": "Docs vs Company Academy",
+    "public_courses": "Public Courses",
+    "teach": "Teach with us",
+    "help_center": "Help Center",
+    "getting_started": "Getting Started",
+    "roadmap": "Roadmap",
+    "support": "Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "rights": "All rights reserved. ClassroomHub © {year}"
+  },
+  "hero": {
+    "title_lead": "One platform to teach anything,",
+    "title_accent": "to anyone",
+    "subtitle": "Train your staff, educate your customers, certify your partners, or sell courses to the public — from one account, on your own domain, with certificates and an AI tutor in every lesson.",
+    "book_demo": "Book a Demo",
+    "start_free": "Start free"
+  },
+  "roi": {
+    "eyebrow": "The case for an academy",
+    "heading": "Customers who learn the product, stay.",
+    "subhead": "What a ClassroomHub academy gives you on day one:",
+    "domain": {
+      "value": "Your domain",
+      "label": "A branded academy",
+      "source": "Custom domain, your logo and colours"
+    },
+    "records": {
+      "value": "Every attempt",
+      "label": "Recorded and exportable",
+      "source": "Scores, timing, and completion per learner"
+    },
+    "one_platform": {
+      "value": "One platform",
+      "label": "Customers, partners, employees",
+      "source": "Separate academies, one account"
+    }
+  },
+  "home": {
+    "tutor_title": "AI-powered Teaching Assistant",
+    "tutor_description": "An AI teaching assistant that adapts to each student: answering questions in their own words, adjusting to their pace, and catching the ones that would otherwise land in your support inbox.",
+    "tutor_cta": "See the academy",
+    "cta_header": "Whatever you teach, teach it here.",
+    "cta_subtext": "Launch a branded academy on your own domain in a few days."
+  }
+}

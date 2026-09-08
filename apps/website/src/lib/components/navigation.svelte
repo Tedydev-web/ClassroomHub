@@ -11,6 +11,7 @@
   import Webhook from '@lucide/svelte/icons/webhook';
   import X from '@lucide/svelte/icons/x';
   import { page } from '$app/state';
+  import { DEFAULT_LOCALE, LOCALE_COOKIE, pathInLocale, t, type Locale } from '$lib/i18n';
   import { fly } from 'svelte/transition';
   import type { HTMLAttributes } from 'svelte/elements';
   import * as NavigationMenu from '@cio/ui/base/navigation-menu';
@@ -41,6 +42,24 @@
   let expandedMobileGroup = $state<string | null>(null);
   let showSolutions = $state(false);
   let activeLink = $derived(page.url.pathname);
+  let locale = $derived((page.data.locale ?? DEFAULT_LOCALE) as Locale);
+
+  /** An internal path in the language being read; external URLs pass through. */
+  function localHref(path: string): string {
+    return path.startsWith('http') ? path : pathInLocale(path, locale);
+  }
+
+  /**
+   * Switching language keeps the visitor on the page they are reading and records the
+   * choice, which is what stops the next visit from being guessed at again. The key is
+   * the one the dashboard reads, so the two halves of the product never disagree.
+   *
+   * A real link, not a button: it is how the prerenderer discovers the other language
+   * tree at build time, and it lets a reader open the translation in a new tab.
+   */
+  function remember(target: Locale) {
+    document.cookie = `${LOCALE_COOKIE}=${target}; path=/; max-age=31536000; samesite=lax`;
+  }
 
   function handleMobileGroupToggle(groupKey: string) {
     expandedMobileGroup = expandedMobileGroup === groupKey ? null : groupKey;
@@ -59,91 +78,32 @@
     expandedMobileGroup = null;
   }
 
-  const solutions: NavCollectionItem[] = [
-    {
-      key: 'customer-education',
-      title: 'Customer Education',
-      subtitle: 'Customer academies for SaaS.',
-      href: '/customer-education'
-    },
-    {
-      key: 'compliance-training',
-      title: 'Compliance Training',
-      subtitle: 'Turn policies and SOPs into proof.',
-      href: '/compliance-training'
-    },
-    {
-      key: 'partner-training',
-      title: 'Partner Training',
-      subtitle: 'A separate academy for your channel.',
-      href: '/partner-training'
-    },
-    {
-      key: 'public-courses',
-      title: 'Public Courses',
-      subtitle: 'Sell courses to learners anywhere.',
-      href: '/public-courses'
-    },
-    {
-      key: 'teach',
-      title: 'Teach with us',
-      subtitle: 'Bring your own programme to the platform.',
-      href: '/teach'
-    }
-  ];
+  /** The translated wording for one menu entry. */
+  function item(key: string): { title: string; subtitle: string } {
+    return { title: $t(`nav.items.${key}.title`), subtitle: $t(`nav.items.${key}.subtitle`) };
+  }
 
-  const developers: NavCollectionItem[] = [
-    {
-      key: 'automation',
-      title: 'Automation',
-      subtitle: 'API, Webhooks, and MCP server.',
-      href: '/automation'
-    },
-    {
-      key: 'docs',
-      title: 'Documentation',
-      subtitle: 'API reference and integration guides.',
-      href: 'https://classroom.tedydev.io.vn/docs'
-    },
-    {
-      key: 'help',
-      title: 'Help Center',
-      subtitle: 'Guides for running your academy.',
-      href: 'https://classroom.tedydev.io.vn/help'
-    },
-    {
-      key: 'mcp-recipes',
-      title: 'MCP Recipes',
-      subtitle: 'Ready-to-run agent prompts.',
-      href: '/mcp-recipes'
-    },
-    {
-      key: 'storybook',
-      title: 'Storybook',
-      subtitle: 'Browse and reuse UI components.',
-      href: 'https://classroom.tedydev.io.vn'
-    }
-  ];
+  const solutions: NavCollectionItem[] = $derived([
+    { key: 'customer-education', href: localHref('/customer-education'), ...item('customer_education') },
+    { key: 'compliance-training', href: localHref('/compliance-training'), ...item('compliance_training') },
+    { key: 'partner-training', href: localHref('/partner-training'), ...item('partner_training') },
+    { key: 'public-courses', href: localHref('/public-courses'), ...item('public_courses') },
+    { key: 'teach', href: localHref('/teach'), ...item('teach') }
+  ]);
 
-  const navItems: NavItem[] = [
-    {
-      key: 'solutions',
-      title: 'Solutions',
-      href: '/',
-      items: solutions
-    },
-    {
-      key: 'developers',
-      title: 'Developers',
-      href: '/automation',
-      items: developers
-    },
-    {
-      key: 'pricing',
-      title: 'Pricing',
-      href: '/pricing'
-    }
-  ];
+  const developers: NavCollectionItem[] = $derived([
+    { key: 'automation', href: localHref('/automation'), ...item('automation') },
+    { key: 'docs', href: 'https://classroom.tedydev.io.vn/docs', ...item('docs') },
+    { key: 'help', href: 'https://classroom.tedydev.io.vn/help', ...item('help') },
+    { key: 'mcp-recipes', href: localHref('/mcp-recipes'), ...item('mcp_recipes') },
+    { key: 'storybook', href: 'https://classroom.tedydev.io.vn', ...item('storybook') }
+  ]);
+
+  const navItems: NavItem[] = $derived([
+    { key: 'solutions', title: $t('nav.solutions'), href: localHref('/'), items: solutions },
+    { key: 'developers', title: $t('nav.developers'), href: localHref('/automation'), items: developers },
+    { key: 'pricing', title: $t('nav.pricing'), href: localHref('/pricing') }
+  ]);
 
   let isSolutionsActive = $derived(!!solutions.some((s) => activeLink.includes(s.key)));
   let isDevelopersActive = $derived(!!developers.some((d) => activeLink.includes(d.key)));
@@ -160,6 +120,26 @@
     return navItem.href ? activeLink.startsWith(navItem.href) : false;
   }
 </script>
+
+{#snippet language_switcher()}
+  <div class="flex items-center gap-1 rounded-md border border-gray-200 p-0.5" aria-label={$t('nav.language')}>
+    {#each ['vi', 'en'] as const as option}
+      <a
+        href={pathInLocale(activeLink, option)}
+        hreflang={option}
+        lang={option}
+        aria-current={locale === option}
+        class={cn(
+          'cursor-pointer rounded px-2 py-1 text-xs font-medium uppercase no-underline transition-colors duration-200',
+          locale === option ? 'bg-gray-950 text-white' : 'text-gray-600 hover:bg-gray-100'
+        )}
+        onclick={() => remember(option)}
+      >
+        {option}
+      </a>
+    {/each}
+  </div>
+{/snippet}
 
 {#snippet list_item({ title, subtitle, href, key, class: className, ...restProps }: ListItemProps)}
   <li>
@@ -207,7 +187,7 @@
 
 <section class="fixed top-0 z-50 w-full border-b bg-white">
   <div class="mx-auto flex w-full items-center justify-between gap-20 px-4 py-1 lg:w-[90%] lg:px-0">
-    <a href="/" class="shrink-0" aria-label="ClassroomHub home">
+    <a href={localHref('/')} class="shrink-0" aria-label="ClassroomHub home">
       <div class="flex w-full items-center">
         <img loading="lazy" width="124" height="32" src="/wordmark.svg" alt="ClassroomHub" class="h-10 w-auto" />
         <h1 class="sr-only">ClassroomHub</h1>
@@ -262,11 +242,12 @@
     </section>
 
     <div class="hidden! flex-row items-center justify-between gap-3 lg:flex!">
+      {@render language_switcher()}
       <a
         class="text-sm font-medium transition-opacity duration-200 after:ml-2 after:content-['→'] hover:opacity-80"
         href="https://classroom-app.tedydev.io.vn"
       >
-        Dashboard
+        {$t('nav.dashboard')}
       </a>
     </div>
 
@@ -337,8 +318,11 @@
             class="w-full rounded-md px-4 py-4 text-left text-sm font-semibold transition-all duration-200 after:ml-2 after:content-['→'] hover:bg-gray-100 md:text-lg"
             href="https://classroom-app.tedydev.io.vn"
           >
-            Dashboard
+            {$t('nav.dashboard')}
           </a>
+          <div class="px-4 py-2">
+            {@render language_switcher()}
+          </div>
         </div>
       </div>
     {/if}

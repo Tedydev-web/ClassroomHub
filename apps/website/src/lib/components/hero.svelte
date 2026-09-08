@@ -1,6 +1,7 @@
 <script>
   import { SALES_EMAIL } from '@cio/utils/constants';
   import { Button } from '@cio/ui/base/button';
+  import { t } from '$lib/i18n';
   import ParticleField from './particle-field.svelte';
 </script>
 
@@ -92,8 +93,8 @@
 
   <div class="relative z-10 mx-auto flex max-w-[1100px] flex-col items-center text-center">
     <h1 class="max-w-[820px] text-[clamp(2rem,4vw,3.25rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-      One platform to teach anything,
-      <em class="text-blue-700 not-italic">to anyone</em>
+      {$t('hero.title_lead')}
+      <em class="text-blue-700 not-italic">{$t('hero.title_accent')}</em>
     </h1>
 
     <p class="mt-5 max-w-[580px] text-sm leading-relaxed lg:text-base">
@@ -103,9 +104,9 @@
 
     <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
       <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-        >Book a Demo</Button
+        >{$t('hero.book_demo')}</Button
       >
-      <Button href="/signup" variant="outline">Start free</Button>
+      <Button href="/signup" variant="outline">{$t('hero.start_free')}</Button>
     </div>
   </div>
 

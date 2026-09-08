@@ -1,4 +1,57 @@
-<script>
+<script lang="ts">
+  import { page } from '$app/state';
+  import { DEFAULT_LOCALE, pathInLocale, t, type Locale } from '$lib/i18n';
+
+  let locale = $derived((page.data.locale ?? DEFAULT_LOCALE) as Locale);
+
+  /** Internal paths follow the language being read; the rest are absolute already. */
+  function localHref(path: string): string {
+    return path.startsWith('/') && !path.startsWith('//') ? pathInLocale(path, locale) : path;
+  }
+
+  /*
+    The four columns as data. Written out as markup they were 110 lines of
+    near-identical anchors, which is how the OSS Friends link survived a rebrand
+    unnoticed. Paths under `(redirects)` — /privacy, /tos, /roadmap — are not
+    translated pages, so they keep their bare path.
+  */
+  const columns = $derived([
+    {
+      heading: $t('footer.product'),
+      links: [
+        { label: $t('footer.mcp_recipes'), href: localHref('/mcp-recipes') },
+        { label: $t('footer.api_mcp'), href: localHref('/automation') },
+        { label: $t('footer.pricing'), href: localHref('/pricing') }
+      ]
+    },
+    {
+      heading: $t('footer.solutions'),
+      links: [
+        { label: $t('footer.customer_education'), href: localHref('/customer-education') },
+        { label: $t('footer.compliance_training'), href: localHref('/compliance-training') },
+        { label: $t('footer.partner_training'), href: localHref('/partner-training') }
+      ]
+    },
+    {
+      heading: $t('footer.resources'),
+      links: [
+        { label: $t('footer.docs_vs_academy'), href: localHref('/docs-vs-company-academy') },
+        { label: $t('footer.public_courses'), href: localHref('/public-courses') },
+        { label: $t('footer.teach'), href: localHref('/teach') },
+        { label: $t('footer.help_center'), href: 'https://classroom.tedydev.io.vn/help', external: true },
+        { label: $t('footer.getting_started'), href: 'https://classroom.tedydev.io.vn/docs', external: true }
+      ]
+    },
+    {
+      heading: $t('footer.company'),
+      links: [
+        { label: $t('footer.roadmap'), href: '/roadmap' },
+        { label: $t('footer.support'), href: 'mailto:help@classroom.tedydev.io.vn' },
+        { label: $t('footer.privacy'), href: '/privacy' },
+        { label: $t('footer.terms'), href: '/tos' }
+      ]
+    }
+  ]);
 </script>
 
 <footer
@@ -54,132 +107,34 @@
     <!-- Brand -->
     <div class="flex flex-col gap-4 lg:max-w-[220px]">
       <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="ClassroomHub logo" />
-      <p class="ui:text-muted-foreground text-sm leading-6">
-        One platform for customer, partner, and employee training.
-      </p>
+      <p class="ui:text-muted-foreground text-sm leading-6">{$t('footer.tagline')}</p>
     </div>
 
     <!-- Nav columns -->
     <nav class="grid grid-cols-2 gap-8 sm:grid-cols-4">
-      <div>
-        <p class="ui:text-foreground mb-4 text-sm font-semibold">Product</p>
-        <ul class="space-y-3">
-          <li>
-            <a href="/mcp-recipes" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >MCP Recipes</a
-            >
-          </li>
-          <li>
-            <a href="/automation" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >API & MCP</a
-            >
-          </li>
-          <li>
-            <a href="/pricing" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >Pricing</a
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <p class="ui:text-foreground mb-4 text-sm font-semibold">Solutions</p>
-        <ul class="space-y-3">
-          <li>
-            <a
-              href="/customer-education"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Customer Education</a
-            >
-          </li>
-          <li>
-            <a
-              href="/compliance-training"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Compliance Training</a
-            >
-          </li>
-          <li>
-            <a
-              href="/partner-training"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Partner Training</a
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <p class="ui:text-foreground mb-4 text-sm font-semibold">Resources</p>
-        <ul class="space-y-3">
-          <li>
-            <a
-              href="/docs-vs-company-academy"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >Docs vs Company Academy</a
-            >
-          </li>
-          <li>
-            <a
-              href="/public-courses"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Public Courses</a
-            >
-          </li>
-          <li>
-            <a href="/teach" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >Teach with us</a
-            >
-          </li>
-          <li>
-            <a
-              href="https://classroom.tedydev.io.vn/help"
-              target="_blank"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Help Center</a
-            >
-          </li>
-          <li>
-            <a
-              href="https://classroom.tedydev.io.vn/docs"
-              target="_blank"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Getting Started</a
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <p class="ui:text-foreground mb-4 text-sm font-semibold">Company</p>
-        <ul class="space-y-3">
-          <li>
-            <a
-              href="/roadmap"
-              target="_blank"
-              rel="noopener"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Roadmap</a
-            >
-          </li>
-          <li>
-            <a
-              href="mailto:help@classroom.tedydev.io.vn"
-              target="_blank"
-              class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">Support</a
-            >
-          </li>
-          <li>
-            <a href="/privacy" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >Privacy Policy</a
-            >
-          </li>
-          <li>
-            <a href="/tos" class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors"
-              >Terms of Use</a
-            >
-          </li>
-        </ul>
-      </div>
+      {#each columns as column}
+        <div>
+          <p class="ui:text-foreground mb-4 text-sm font-semibold">{column.heading}</p>
+          <ul class="space-y-3">
+            {#each column.links as link}
+              <li>
+                <a
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener' : undefined}
+                  class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">{link.label}</a
+                >
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/each}
     </nav>
   </div>
 
   <div
     class="ui:border-border ui:text-muted-foreground relative z-10 mt-10 border-t pt-6 text-center text-xs lg:text-left"
   >
-    All rights reserved. ClassroomHub © {new Date().getFullYear()}
+    {$t('footer.rights', { year: new Date().getFullYear() })}
   </div>
 </footer>
