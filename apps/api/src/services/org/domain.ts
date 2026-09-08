@@ -1,7 +1,7 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 import { env } from '@cio/core/config/env';
-import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
+import { isPlatformHost } from '@cio/utils/constants';
 import { parse } from 'tldts';
 
 export type DomainSetupStatus =
@@ -202,7 +202,7 @@ export function assertSupportedCustomDomain(domain: string) {
     );
   }
 
-  if (domain === PRODUCT_ROOT_DOMAIN || domain.endsWith(`.${PRODUCT_ROOT_DOMAIN}`)) {
+  if (isPlatformHost(domain)) {
     throw new AppError('Domain belongs to the ClassroomHub platform', ErrorCodes.VALIDATION_ERROR, 400, 'domain');
   }
 }

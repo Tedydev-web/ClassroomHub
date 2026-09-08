@@ -1,4 +1,4 @@
-import { DASHBOARD_HOST, TENANT_ROOT_DOMAIN } from '@cio/utils/constants/domains';
+import { DASHBOARD_HOST, isPlatformHost, TENANT_ROOT_DOMAIN } from '@cio/utils/constants/domains';
 
 import { env } from './env';
 
@@ -55,8 +55,7 @@ function dashboardOriginIsOnTenantRoot(): boolean {
   if (!env.DASHBOARD_ORIGIN) return false;
 
   try {
-    const host = new URL(env.DASHBOARD_ORIGIN).hostname;
-    return host === TENANT_ROOT_DOMAIN || host.endsWith(`.${TENANT_ROOT_DOMAIN}`);
+    return isPlatformHost(new URL(env.DASHBOARD_ORIGIN).hostname);
   } catch {
     return false;
   }

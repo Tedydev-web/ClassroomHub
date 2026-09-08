@@ -15,10 +15,7 @@ const EXAMPLES = new Map([
     'apps/api/.env.example',
     'PORT=8001\nDATABASE_URL=""\nREDIS_URL=""\nBETTER_AUTH_SECRET=""\nUNKNOWN_API_KEY="preserve-me"\n'
   ],
-  [
-    'apps/dashboard/.env.example',
-    'PUBLIC_IS_SELFHOSTED=false\nPUBLIC_SERVER_URL=\nPRIVATE_APP_HOST=classroom.tedydev.io.vn\n'
-  ],
+  ['apps/dashboard/.env.example', 'PUBLIC_IS_SELFHOSTED=false\nPUBLIC_SERVER_URL=\nPRIVATE_APP_HOST=classroom.io.vn\n'],
   ['apps/jobs/.env.example', 'REDIS_URL="redis://localhost:8003"\nDATABASE_URL=""\n'],
   ['packages/db/.env.example', 'DATABASE_URL="postgresql://postgres:postgres@localhost:8002/classroomhub"\n']
 ]);

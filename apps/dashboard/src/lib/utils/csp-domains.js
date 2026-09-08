@@ -9,11 +9,12 @@
 // `csp.test.ts` compares these against `PRODUCT_HOSTS` instead, where the built
 // package is available.
 //
-// They had been written out as an alias domain: `script-src` and `style-src`
-// allowed only `*.tedydev.io.vn`, and neither directive has anything added from
-// the environment, so an asset served from the product's own `assets.` or
-// `embed.` host was blocked by the browser. The alias entries stay until
-// published content stops pointing at them.
+// They had been written out as an alias domain, so `script-src` and `style-src`
+// allowed only that alias — and neither directive takes anything from the
+// environment, so an asset served from the product's own `assets.` or `embed.`
+// host was blocked by the browser. Nothing is served from the alias any more
+// and its entries are gone; a host added here must be one this deployment
+// actually serves, or it is an allowance granted to someone else.
 const ownHosts = {
   assets: 'https://assets.classroom.io.vn',
   embed: 'https://embed.classroom.io.vn',
@@ -27,8 +28,6 @@ const saasDefaults = {
   scriptSrc: [
     ownHosts.assets,
     ownHosts.embed,
-    'https://classroom-assets.tedydev.io.vn',
-    'https://classroom-embed.tedydev.io.vn',
     'https://cdnjs.cloudflare.com',
     'https://cdn.userjot.com',
     'https://*.posthog.com',
@@ -44,7 +43,6 @@ const saasDefaults = {
     'https://cdn.plyr.io',
     'https://unpkg.com/katex@0.12.0/dist/katex.min.css',
     `${ownHosts.assets}/eqneditor_1.css`,
-    'https://classroom-assets.tedydev.io.vn/eqneditor_1.css',
     'https://fonts.googleapis.com'
   ],
   connectSrc: [
@@ -53,10 +51,6 @@ const saasDefaults = {
     ownHosts.tenantSockets,
     ownHosts.assets,
     ownHosts.api,
-    'https://*.classroom.tedydev.io.vn',
-    'https://classroom.tedydev.io.vn',
-    'wss://*.classroom.tedydev.io.vn',
-    'https://classroom-assets.tedydev.io.vn',
     'https://cdn.plyr.io',
     'https://widget.userjot.com',
     'https://*.posthog.com',

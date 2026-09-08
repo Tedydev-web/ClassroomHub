@@ -60,7 +60,7 @@ export const GET = async ({ url, locals, cookies }: RequestEvent) => {
   });
 
   const totalPriceCents = TOKEN_PACK.PRICE_USD_CENTS * quantity;
-  const customerEmail = (accountData.profile?.email ?? user.email)?.replace('@test.com', '+test@tedydev.io.vn');
+  const customerEmail = (accountData.profile?.email ?? user.email)?.replace('@test.com', '+test@classroom.io.vn');
 
   const checkout = await polar.checkouts.create({
     products: [productId],

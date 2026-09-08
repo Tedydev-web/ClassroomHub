@@ -1,4 +1,4 @@
-import { PRODUCT_ROOT_DOMAIN } from '@cio/utils/constants';
+import { ACCEPTED_ROOT_DOMAINS } from '@cio/utils/constants';
 
 const {
   DASHBOARD_ORIGIN,
@@ -11,7 +11,7 @@ const dashboardOrigin = DASHBOARD_ORIGIN?.trim().replace(/\/$/, '');
 
 const DEFAULT_TRUSTED_ORIGINS = [
   'http://localhost:8000',
-  `https://*.${PRODUCT_ROOT_DOMAIN}`,
+  ...ACCEPTED_ROOT_DOMAINS.map((root) => `https://*.${root}`),
   // Common OIDC IdP discovery origins (SSO registration fetches .well-known/openid-configuration)
   'https://accounts.google.com',
   'https://account.google.com', // common typo for Google

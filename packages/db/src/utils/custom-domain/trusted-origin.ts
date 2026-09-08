@@ -1,7 +1,5 @@
-import { BRAND_ROOT_DOMAIN, TENANT_ROOT_DOMAIN } from '@cio/utils/constants';
+import { isPlatformHost } from '@cio/utils/constants';
 import { getVerifiedCustomDomainHostnames } from '../../queries/organization/organization';
-
-const FIRST_PARTY_ROOTS: readonly string[] = [BRAND_ROOT_DOMAIN, TENANT_ROOT_DOMAIN];
 
 /** Lowercase hostnames with verified custom domains ( warmed at API boot + updated on domain routes ). */
 const verifiedCustomDomainHostnames = new Set<string>();
@@ -21,12 +19,6 @@ function originMatchesStaticEntry(origin: string, entry: string): boolean {
   );
 
   return regex.test(origin);
-}
-
-function isClassroomhubHost(hostname: string): boolean {
-  const host = hostname.toLowerCase();
-
-  return FIRST_PARTY_ROOTS.some((root) => host === root || host.endsWith(`.${root}`));
 }
 
 export function trustCustomDomainHostname(hostname: string): void {
@@ -83,7 +75,7 @@ export function resolveTrustedBrowserOrigin(
 
   const hostname = parsed.hostname;
 
-  if (isClassroomhubHost(hostname)) {
+  if (isPlatformHost(hostname)) {
     return origin;
   }
 

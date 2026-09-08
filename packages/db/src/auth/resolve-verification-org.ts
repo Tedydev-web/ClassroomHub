@@ -1,4 +1,4 @@
-import { TENANT_ROOT_DOMAIN, BRAND_ROOT_DOMAIN } from '@cio/utils/constants/domains';
+import { getTenantSiteNameFromHost, isPlatformHost } from '@cio/utils/constants/domains';
 
 import type { TOrganization } from '../types';
 import {
@@ -22,43 +22,11 @@ function extractCallbackUrl(verificationUrl: string): URL | null {
   }
 }
 
-function isTenantSubdomainHost(hostname: string): boolean {
-  const host = hostname.replace(/^www\./, '').toLowerCase();
-  const suffix = `.${TENANT_ROOT_DOMAIN}`;
-
-  return host.endsWith(suffix) && host.length > suffix.length;
-}
-
-function getTenantSiteName(hostname: string): string | null {
-  const host = hostname.replace(/^www\./, '').toLowerCase();
-  const suffix = `.${TENANT_ROOT_DOMAIN}`;
-  if (!host.endsWith(suffix)) {
-    return null;
-  }
-
-  const siteName = host.slice(0, -suffix.length);
-  if (!siteName || siteName.includes('.')) {
-    return null;
-  }
-
-  return siteName;
-}
-
+/** A customer's own domain: anything that is not localhost and not ours. */
 function isCustomDomainHost(hostname: string): boolean {
   const host = hostname.replace(/^www\./, '').toLowerCase();
-  if (host.includes('localhost')) {
-    return false;
-  }
 
-  if (host === BRAND_ROOT_DOMAIN || host === `app.${BRAND_ROOT_DOMAIN}`) {
-    return false;
-  }
-
-  if (isTenantSubdomainHost(host)) {
-    return false;
-  }
-
-  return !host.endsWith(`.${BRAND_ROOT_DOMAIN}`);
+  return !host.includes('localhost') && !isPlatformHost(host);
 }
 
 async function resolveOrgFromCallbackUrl(callbackUrl: URL): Promise<TOrganization | null> {
@@ -79,7 +47,7 @@ async function resolveOrgFromCallbackUrl(callbackUrl: URL): Promise<TOrganizatio
     }
   }
 
-  const siteName = getTenantSiteName(hostname);
+  const siteName = getTenantSiteNameFromHost(hostname);
   if (siteName) {
     return getOrganizationBySiteName(siteName);
   }

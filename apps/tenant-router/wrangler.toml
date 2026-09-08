@@ -3,32 +3,15 @@ account_id = "da02bc7e271f6874328a990774afac5e"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
-# Two deployments from one source: the top level serves the development stack on
-# tedydev.io.vn, `[env.production]` serves classroom.io.vn as a separate Worker
-# (`classroom-tenant-router-production`).
+# Only `[env.production]` is ever deployed — see .github/workflows/deploy-tenant-router.yml,
+# which always passes `--env production`. The top level carries no routes and no
+# vars on purpose: a Worker deployed from it would answer on no hostname, which
+# is the safe shape for an environment nothing publishes.
 #
-# They cannot share one config. `wrangler deploy` reconciles routes against what
-# is listed, so a single config would strip the routes of whichever zone it did
-# not name — and each environment needs its own upstream hosts, which live in
-# `vars` and so cannot be shared either.
-
-routes = [
-  { pattern = "classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "*.classroom.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-learn.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-app.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-play.tedydev.io.vn/*", zone_name = "tedydev.io.vn" },
-  { pattern = "classroom-embed.tedydev.io.vn/*", zone_name = "tedydev.io.vn" }
-]
-
-[vars]
-DASHBOARD_UPSTREAM_HOST = "dashboard-origin.tedydev.io.vn"
-API_UPSTREAM_HOST = "api-origin.tedydev.io.vn"
-APEX_REDIRECT_HOST = "classroom-learn.tedydev.io.vn"
-APEX_REDIRECT_TARGET = "https://classroom.tedydev.io.vn"
-EMBED_HOST = "classroom-embed.tedydev.io.vn"
-ASSET_HOST = "assets.classroom.tedydev.io.vn"
-API_URL = "https://classroom-api.tedydev.io.vn"
+# `wrangler deploy` reconciles routes against what the named environment lists,
+# so a second zone is added by extending `[env.production].routes`, not by adding
+# a second top-level config — one config would strip the routes of the zone it
+# did not name.
 
 # R2 binding so /hls/* streams segments straight from Cloudflare. The bucket name
 # matches BUCKET_DEFAULTS.VIDEOS in the storage config.
