@@ -1,5 +1,6 @@
 <script lang="ts">
   import { CodeBlock, HeroSubtitle, McpServerSection, PageHeader, PageSignupCTA } from '$lib/components';
+  import { t } from '$lib/i18n';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import Code2 from '@lucide/svelte/icons/code-2';
@@ -45,19 +46,18 @@
     <div class="mx-auto max-w-[1100px]">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <Code2 size={14} class="text-blue-700" />
-        Developer reference
+        {$t('dev.badge')}
       </Badge>
       <h1 class="max-w-[820px] text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        API, Webhooks, MCP.
-        <em class="text-blue-700 not-italic">No integration tax.</em>
+        {$t('dev.heading_lead')}
+        <em class="text-blue-700 not-italic">{$t('dev.heading_accent')}</em>
       </h1>
       <HeroSubtitle>
-        ClassroomHub ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no
-        "premium connector" plans. Build the integration that fits your stack.
+        {$t('dev.subhead')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
-        <Button href="https://classroom.tedydev.io.vn/docs/api">Read the API docs</Button>
-        <Button href="/pricing" variant="outline">See pricing</Button>
+        <Button href="https://classroom.tedydev.io.vn/docs/api">{$t('dev.read_docs')}</Button>
+        <Button href="/pricing" variant="outline">{$t('dev.see_pricing')}</Button>
       </div>
     </div>
   </PageHeader>
@@ -68,25 +68,28 @@
       <div>
         <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">REST API</div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Everything in the LMS is reachable over HTTP.
+          {$t('dev.api_heading')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Bearer-token auth, JSON in, JSON out. Provision learners from your CRM, pull completion data into your
-          warehouse, or build your own admin tooling on the same surface the dashboard uses.
+          {$t('dev.api_body')}
         </p>
 
         <ul class="mt-6 space-y-3 text-sm text-gray-700">
           <li class="flex items-start gap-2">
-            <span class="mt-0.5 text-blue-700">→</span> Orgs, users, courses, lessons, exercises, submissions, certificates
+            <span class="mt-0.5 text-blue-700">→</span>
+            {$t('dev.api_point_objects')}
           </li>
           <li class="flex items-start gap-2">
-            <span class="mt-0.5 text-blue-700">→</span> Per-org API keys, scoped permissions
+            <span class="mt-0.5 text-blue-700">→</span>
+            {$t('dev.api_point_keys')}
           </li>
           <li class="flex items-start gap-2">
-            <span class="mt-0.5 text-blue-700">→</span> Cursor-based pagination, rate limits documented
+            <span class="mt-0.5 text-blue-700">→</span>
+            {$t('dev.api_point_pagination')}
           </li>
           <li class="flex items-start gap-2">
-            <span class="mt-0.5 text-blue-700">→</span> Versioned endpoints with a documented deprecation window
+            <span class="mt-0.5 text-blue-700">→</span>
+            {$t('dev.api_point_versioning')}
           </li>
         </ul>
       </div>
@@ -111,11 +114,10 @@
       <div>
         <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Webhooks</div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Subscribe to the events you care about, instead of polling.
+          {$t('dev.webhooks_heading')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Every important state change posts to your endpoint, signed with your shared secret. We retry with exponential
-          backoff, and you can replay any event from the dashboard.
+          {$t('dev.webhooks_body')}
         </p>
 
         <div class="mt-6 flex flex-wrap gap-2">
@@ -135,13 +137,12 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Under the hood</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">{$t('dev.stack_eyebrow')}</div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Built on a stack your team already knows.
+          {$t('dev.stack_heading')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          We run and operate the platform, so there is nothing for you to deploy or patch. The parts you integrate with
-          are documented in full: a typed REST API, signed webhooks, and an MCP server your agents can call directly.
+          {$t('dev.stack_body')}
         </p>
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
@@ -151,41 +152,41 @@
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-medium text-white no-underline transition-all hover:-translate-y-0.5 hover:bg-blue-700"
           >
-            API reference →
+            {$t('dev.stack_cta')}
           </a>
         </div>
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-        <p class="text-xs font-medium tracking-widest text-gray-500 uppercase">Stack</p>
+        <p class="text-xs font-medium tracking-widest text-gray-500 uppercase">{$t('dev.stack_label')}</p>
         <ul class="mt-4 space-y-3 text-sm text-gray-700">
           <li class="flex items-start gap-3">
             <span
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >API</span
             >
-            Hono on Node, Drizzle, Postgres
+            {$t('dev.stack_api')}
           </li>
           <li class="flex items-start gap-3">
             <span
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >UI</span
             >
-            SvelteKit 2, Svelte 5, Tailwind v4
+            {$t('dev.stack_ui')}
           </li>
           <li class="flex items-start gap-3">
             <span
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >AI</span
             >
-            Bring your own keys for OpenAI, Anthropic, Google Gemini, or Moonshot
+            {$t('dev.stack_ai')}
           </li>
           <li class="flex items-start gap-3">
             <span
               class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-medium text-blue-700"
               >MCP</span
             >
-            Hosted server, <span class="font-mono text-xs">@tedydev/classroom-mcp</span>
+            {$t('dev.stack_mcp')} <span class="font-mono text-xs">@tedydev/classroom-mcp</span>
           </li>
         </ul>
       </div>
@@ -193,9 +194,9 @@
   </section>
 
   <PageSignupCTA
-    header="Programmable from day one."
-    subText="API, Webhooks, and an MCP server in the box. Documented, versioned, and ready on day one."
-    btnLabel="Read the docs"
+    header={$t('dev.cta_header')}
+    subText={$t('dev.cta_subtext')}
+    btnLabel={$t('dev.cta_button')}
     link="https://classroom.tedydev.io.vn/docs/api"
     demo={false}
   />

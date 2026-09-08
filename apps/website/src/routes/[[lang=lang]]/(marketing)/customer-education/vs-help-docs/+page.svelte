@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { HeroSubtitle, PageHeader, PageSignupCTA, VsHelpDocs } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
@@ -8,32 +9,32 @@
 
   const competitors = [
     {
-      name: 'Intercom Articles',
-      good: 'Best-in-class in-app help widget. Great search. Where short-form, "right-now" answers belong.',
-      missing: 'No sequenced learning paths. No assessments. No certification. No per-learner progress.'
+      name: $t('vs_help_docs.competitors.0.name'),
+      good: $t('vs_help_docs.competitors.0.good'),
+      missing: $t('vs_help_docs.competitors.0.missing')
     },
     {
-      name: 'Zendesk Guide',
-      good: 'Mature knowledge base, deeply integrated with Zendesk tickets. Excellent for tier-1 deflection.',
-      missing: 'No course structure, no grading, no certificates. Built for support, not for learning.'
+      name: $t('vs_help_docs.competitors.1.name'),
+      good: $t('vs_help_docs.competitors.1.good'),
+      missing: $t('vs_help_docs.competitors.1.missing')
     },
     {
-      name: 'Confluence',
-      good: 'The default internal docs tool. Cheap, ubiquitous, easy to write into.',
-      missing: 'Not customer-facing by default. No course primitives. No public certs. No learner analytics.'
+      name: $t('vs_help_docs.competitors.2.name'),
+      good: $t('vs_help_docs.competitors.2.good'),
+      missing: $t('vs_help_docs.competitors.2.missing')
     }
   ];
 
   const verdicts = [
     {
       Icon: FileText,
-      title: 'Keep your help docs.',
-      body: "When a customer already knows what they need, they search. Help docs win at lookup. Don't rip out the tool that already does that job well."
+      title: $t('vs_help_docs.verdicts.0.title'),
+      body: $t('vs_help_docs.verdicts.0.body')
     },
     {
       Icon: GraduationCap,
-      title: 'Add a customer academy alongside.',
-      body: "When a customer needs to learn the product (onboarding, role-based programs, certification, adoption courses for new features), that's the job an academy was built for."
+      title: $t('vs_help_docs.verdicts.1.title'),
+      body: $t('vs_help_docs.verdicts.1.body')
     }
   ];
 </script>
@@ -41,23 +42,23 @@
 <section class="bg-white">
   <PageHeader className="px-6 lg:px-12">
     <div class="mx-auto max-w-[1100px]">
-      <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">Customer academy vs help docs</Badge>
+      <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!"
+        >{$t('vs_help_docs.customer_academy_vs_help_docs')}</Badge
+      >
 
       <h1 class="max-w-[820px] text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        Why your help center
+        {$t('vs_help_docs.why_your_help_center')}
         <em class="text-blue-700 not-italic">isn't teaching</em>
         your customers.
       </h1>
 
       <HeroSubtitle>
-        Intercom Articles, Zendesk Guide, and Confluence are excellent at one thing: answering "how do I do X?" when the
-        user already knows what they need. They were never designed to take a brand-new customer from zero to confident
-        product use. That's what a customer academy is for.
+        {$t('vs_help_docs.intercom_articles_zendesk_guide_and_confluence')}
       </HeroSubtitle>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">
-        <Button href="/signup">Launch your academy free</Button>
-        <Button href="/customer-education" variant="outline">See a live academy</Button>
+        <Button href="/signup">{$t('vs_help_docs.launch_your_academy_free')}</Button>
+        <Button href="/customer-education" variant="outline">{$t('vs_help_docs.see_a_live_academy')}</Button>
       </div>
     </div>
   </PageHeader>
@@ -66,9 +67,11 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto max-w-[1100px]">
       <div class="mb-8 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">The short answer</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('vs_help_docs.the_short_answer')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          You need both. They do different jobs.
+          {$t('vs_help_docs.you_need_both_they_do_different')}
         </h2>
       </div>
 
@@ -97,9 +100,11 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto max-w-[1100px]">
       <div class="mb-8 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Tool-by-tool</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('vs_help_docs.tool_by_tool')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          What the popular help-doc tools are great at, and what they aren't.
+          {$t('vs_help_docs.what_the_popular_help_doc_tools')}
         </h2>
       </div>
 
@@ -109,11 +114,11 @@
             <div class="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6">
               <p class="text-base font-medium text-gray-950">{competitor.name}</p>
               <div class="mt-5">
-                <p class="text-[10px] tracking-wider text-emerald-600 uppercase">Where it wins</p>
+                <p class="text-[10px] tracking-wider text-emerald-600 uppercase">{$t('vs_help_docs.where_it_wins')}</p>
                 <p class="mt-1.5 text-sm leading-relaxed text-gray-600">{competitor.good}</p>
               </div>
               <div class="mt-5">
-                <p class="text-[10px] tracking-wider text-rose-600 uppercase">Where it doesn't</p>
+                <p class="text-[10px] tracking-wider text-rose-600 uppercase">{$t('vs_help_docs.where_it_doesn_t')}</p>
                 <p class="mt-1.5 text-sm leading-relaxed text-gray-600">{competitor.missing}</p>
               </div>
             </div>
@@ -124,8 +129,8 @@
   </section>
 
   <PageSignupCTA
-    header="Stop forwarding help articles to every new customer."
-    subText="Bundle the articles into a real onboarding course, add a final assessment, issue a certificate, and watch retention move."
-    btnLabel="Book a Demo"
+    header={$t('vs_help_docs.stop_forwarding_help_articles_to_every')}
+    subText={$t('vs_help_docs.bundle_the_articles_into_a_real')}
+    btnLabel={$t('vs_help_docs.book_a_demo')}
   />
 </section>

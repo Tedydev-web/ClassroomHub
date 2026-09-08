@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/i18n';
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
   import ImagePlaceholder from './image-placeholder.svelte';
 </script>
@@ -22,7 +23,7 @@
     <BlurFade delay={0.1} once>
       <ImagePlaceholder
         suggestedFile="/static/certificate-editor.png"
-        caption="Screenshot of the certificate template editor"
+        caption={$t('shared.cert_editor_caption')}
         aspect="aspect-[16/9]"
       />
     </BlurFade>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { SALES_EMAIL } from '@cio/utils/constants';
   import { Faq, FeatureGrid, PageHeader, PageSignupCTA, TrustBand, WorkflowSteps } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
@@ -14,147 +15,131 @@
   import Zap from '@lucide/svelte/icons/zap';
 
   const creatorUseCases = [
-    'A free intro course that leads into a paid program',
-    'A public sample course people can review before they buy',
-    'A short onboarding or community course that does not need login friction',
-    'Partner or reseller training you can share with a link',
-    'A simple home for short lessons and self-graded modules'
+    $t('public_courses.creatorUseCases.0'),
+    $t('public_courses.creatorUseCases.1'),
+    $t('public_courses.creatorUseCases.2'),
+    $t('public_courses.creatorUseCases.3'),
+    $t('public_courses.creatorUseCases.4')
   ];
 
   const learnerUseCases = [
-    'Browse the full catalog without creating an account',
-    'Read in light mode or dark mode',
-    'Get immediate quiz feedback',
-    'Start on mobile and continue on desktop',
-    'Use a course page that matches the creator brand they came for'
+    $t('public_courses.learnerUseCases.0'),
+    $t('public_courses.learnerUseCases.1'),
+    $t('public_courses.learnerUseCases.2'),
+    $t('public_courses.learnerUseCases.3'),
+    $t('public_courses.learnerUseCases.4')
   ];
 
   const keyFeatures = [
     {
       Icon: Palette,
-      title: 'Branding controls',
-      description:
-        'Choose a landing theme, add your logo, set your site name, and connect a custom domain without custom development.'
+      title: $t('public_courses.keyFeatures.0.title'),
+      description: $t('public_courses.keyFeatures.0.description')
     },
     {
       Icon: MoonStar,
-      title: 'Light and dark mode',
-      description:
-        'The lesson viewer includes a built-in mode switcher, and the learner preference stays in place between visits.'
+      title: $t('public_courses.keyFeatures.1.title'),
+      description: $t('public_courses.keyFeatures.1.description')
     },
     {
       Icon: Sparkles,
-      title: 'Clean lesson pages',
-      description:
-        'Public course pages use the same design system as the rest of ClassroomHub, so they feel like part of your product instead of a separate microsite.'
+      title: $t('public_courses.keyFeatures.2.title'),
+      description: $t('public_courses.keyFeatures.2.description')
     },
     {
       Icon: Zap,
-      title: 'Auto-graded quizzes',
-      description:
-        'Support for 15 auto-gradable question types, including multiple choice, ordering, hotspot, short answer, and fill-in-the-blank, with instant feedback in the lesson.'
+      title: $t('public_courses.keyFeatures.3.title'),
+      description: $t('public_courses.keyFeatures.3.description')
     }
   ];
 
   const conversionMechanics = [
     {
-      title: 'Inline callout cards',
-      description:
-        'Add a callout card inside any lesson with a title, description, button label, and link to your paid course, checkout, or community.'
+      title: $t('public_courses.conversionMechanics.0.title'),
+      description: $t('public_courses.conversionMechanics.0.description')
     },
     {
-      title: 'Locked lesson previews',
-      description:
-        'Leave part of the course open, then replace locked lesson content with a callout that points to the next step.'
+      title: $t('public_courses.conversionMechanics.1.title'),
+      description: $t('public_courses.conversionMechanics.1.description')
     },
     {
-      title: 'Payment, discount, and invite gating',
-      description: 'Route learners into paid enrollment with payment links, discount codes, or invite-based access.'
+      title: $t('public_courses.conversionMechanics.2.title'),
+      description: $t('public_courses.conversionMechanics.2.description')
     },
     {
-      title: 'Auto-enroll after sign-up',
-      description: 'Learners who sign in can return to the lesson they were already viewing instead of starting over.'
+      title: $t('public_courses.conversionMechanics.3.title'),
+      description: $t('public_courses.conversionMechanics.3.description')
     }
   ];
 
-  const brandingItems = ['Custom domain', 'Your logo', 'Your site name', 'Dark mode built-in', 'SEO-friendly pages'];
+  const brandingItems = [
+    $t('public_courses.brandingItems.0'),
+    $t('public_courses.brandingItems.1'),
+    $t('public_courses.brandingItems.2'),
+    $t('public_courses.brandingItems.3'),
+    $t('public_courses.brandingItems.4')
+  ];
 
   const workflow = [
     {
-      title: 'Build the course',
-      description:
-        'Use the same course editor you already use for paid courses. Public courses support all 15 auto-gradable question types.',
-      label: 'Step 01'
+      title: $t('public_courses.workflow.0.title'),
+      description: $t('public_courses.workflow.0.description'),
+      label: $t('public_courses.workflow.0.label')
     },
     {
-      title: 'Switch type to PUBLIC',
-      description:
-        'Change the course type to `PUBLIC`. If a question type is not supported, ClassroomHub flags it before publish.',
-      label: 'Step 02'
+      title: $t('public_courses.workflow.1.title'),
+      description: $t('public_courses.workflow.1.description'),
+      label: $t('public_courses.workflow.1.label')
     },
     {
-      title: 'Set the page up',
-      description: 'Choose a theme, add your logo and site name, and connect a custom domain if you want one.',
-      label: 'Step 03'
+      title: $t('public_courses.workflow.2.title'),
+      description: $t('public_courses.workflow.2.description'),
+      label: $t('public_courses.workflow.2.label')
     },
     {
-      title: 'Publish',
-      description:
-        'Publish the course on your public site, then add callouts or locked lessons where you want to turn readers into enrollments.',
-      label: 'Step 04'
+      title: $t('public_courses.workflow.3.title'),
+      description: $t('public_courses.workflow.3.description'),
+      label: $t('public_courses.workflow.3.label')
     }
   ];
 
   const publicCoursesFaqs = [
     {
-      question: 'Does hosting a public course cost extra?',
-      answer:
-        'No. Public courses are part of your existing ClassroomHub workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course.'
+      question: $t('public_courses.publicCoursesFaqs.0.question'),
+      answer: $t('public_courses.publicCoursesFaqs.0.answer')
     },
     {
-      question: 'Can I require payment, or capture leads on a public course?',
-      answer:
-        'Yes. You can attach a payment link, a discount code, or an invite token to the enrollment flow. You can also place callout cards inside lessons that link to a paid course, a community, or any URL you choose.'
+      question: $t('public_courses.publicCoursesFaqs.1.question'),
+      answer: $t('public_courses.publicCoursesFaqs.1.answer')
     },
     {
-      question: 'Do I need a custom domain?',
-      answer:
-        'No. Every public course is available on your ClassroomHub public site by default. A custom domain is optional if you want the course to live at your own URL.'
+      question: $t('public_courses.publicCoursesFaqs.2.question'),
+      answer: $t('public_courses.publicCoursesFaqs.2.answer')
     },
     {
-      question: 'Can search engines index a public course?',
-      answer:
-        'Yes. Public course landing pages and lesson previews are server-rendered and include the metadata search engines need, so courses are discoverable.'
+      question: $t('public_courses.publicCoursesFaqs.3.question'),
+      answer: $t('public_courses.publicCoursesFaqs.3.answer')
     },
     {
-      question: 'How are quizzes graded?',
-      answer:
-        'Instantly in the browser. Public courses support 15 auto-gradable question types, including multiple choice, ordering, matching, hotspot, fill-in-the-blank, numeric, short answer, and file upload.'
+      question: $t('public_courses.publicCoursesFaqs.4.question'),
+      answer: $t('public_courses.publicCoursesFaqs.4.answer')
     },
     {
-      question: 'Can I gate some lessons and leave the rest public?',
-      answer:
-        'Yes. Lock the lessons you want to gate and the viewer will show a callout card in place of the content. You can use that card to send people to the paid version of the course.'
+      question: $t('public_courses.publicCoursesFaqs.5.question'),
+      answer: $t('public_courses.publicCoursesFaqs.5.answer')
     },
     {
-      question: 'Can I match the course page to my brand?',
-      answer:
-        'Yes. You can choose a landing theme, upload your logo, set a site name, and optionally connect a custom domain. Dark mode is built in for learners.'
+      question: $t('public_courses.publicCoursesFaqs.6.question'),
+      answer: $t('public_courses.publicCoursesFaqs.6.answer')
     }
   ];
 </script>
 
 <svelte:head>
-  <title>Public Courses | ClassroomHub</title>
-  <meta
-    name="description"
-    content="Publish public courses on your own branded page, with built-in quizzes, lesson callouts, and optional custom domains."
-  />
-  <meta property="og:title" content="Public Courses | ClassroomHub" />
-  <meta
-    property="og:description"
-    content="A branded public course page for sharing free lessons, quizzes, and previews before someone enrolls."
-  />
+  <title>{$t('public_courses.public_courses_classroomhub')}</title>
+  <meta name="description" content={$t('public_courses.meta_description')} />
+  <meta property="og:title" content={$t('public_courses.public_courses_classroomhub')} />
+  <meta property="og:description" content={$t('public_courses.og_description')} />
 </svelte:head>
 
 <section class="bg-white">
@@ -162,30 +147,29 @@
     <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <Globe size={14} class="text-blue-700" />
-        Public Courses
+        {$t('public_courses.public_courses')}
       </Badge>
 
       <h1 class="text-[clamp(2.4rem,4vw,3.6rem)] leading-[1.08] font-medium tracking-tight text-gray-950">
-        Publish free courses that lead to paid enrollments.
+        {$t('public_courses.publish_free_courses_that_lead_to')}
       </h1>
 
       <p class="mt-6 text-sm leading-relaxed lg:text-base">
-        Public courses let you share lessons without asking people to create an account first. You can publish free
-        course content, add quizzes, customize the page, and guide interested learners into a paid course or community.
+        {$t('public_courses.public_courses_let_you_share_lessons')}
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >Book a Demo</Button
+          >{$t('public_courses.book_a_demo')}</Button
         >
-        <Button href="/signup" variant="outline">Start free</Button>
+        <Button href="/signup" variant="outline">{$t('public_courses.start_free')}</Button>
       </div>
     </div>
 
     <div class="mx-auto mt-14 w-full max-w-[1100px]">
       <img
         src="/assets/assets/www/public-courses/public-courses-hero.jpeg"
-        alt="Public course page on desktop"
+        alt={$t('public_courses.public_course_page_on_desktop')}
         width="1920"
         height="1481"
         loading="eager"
@@ -198,21 +182,24 @@
   <section class="bg-gray-50 px-6 py-16 lg:px-12 lg:py-24">
     <div class="mx-auto max-w-[1120px]">
       <div class="mb-10 max-w-[720px]">
-        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">Why teams use it</div>
+        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('public_courses.why_teams_use_it')}
+        </div>
         <h2 class="text-[clamp(2rem,3vw,2.7rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-          Public courses are useful before someone is ready to enroll.
+          {$t('public_courses.public_courses_are_useful_before_someone')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Teams use them to share sample lessons, open training, and course previews. Learners get a low-friction way to
-          read or try the material before deciding what to do next.
+          {$t('public_courses.teams_use_them_to_share_sample')}
         </p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-gray-200">
         <div class="rounded-2xl border border-gray-200 bg-white p-8 lg:rounded-r-none lg:border-r-0">
-          <div class="text-[11px] font-medium tracking-widest text-blue-700 uppercase">For creators</div>
+          <div class="text-[11px] font-medium tracking-widest text-blue-700 uppercase">
+            {$t('public_courses.for_creators')}
+          </div>
           <h3 class="mt-4 text-[clamp(1.4rem,2.2vw,1.9rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-            A practical way to publish useful course content in public.
+            {$t('public_courses.a_practical_way_to_publish_useful')}
           </h3>
 
           <div class="my-7 border-t border-gray-200"></div>
@@ -235,15 +222,17 @@
               class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700"
             >
               <GraduationCap size={13} strokeWidth={2} />
-              Shareable by default
+              {$t('public_courses.shareable_by_default')}
             </span>
           </div>
         </div>
 
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-8 lg:mt-0 lg:rounded-l-none lg:border-l-0">
-          <div class="text-[11px] font-medium tracking-widest text-emerald-700 uppercase">For learners</div>
+          <div class="text-[11px] font-medium tracking-widest text-emerald-700 uppercase">
+            {$t('public_courses.for_learners')}
+          </div>
           <h3 class="mt-4 text-[clamp(1.4rem,2.2vw,1.9rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-            A simple course page that is easy to browse and easy to read.
+            {$t('public_courses.a_simple_course_page_that_is')}
           </h3>
 
           <div class="my-7 border-t border-gray-200"></div>
@@ -266,7 +255,7 @@
               class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700"
             >
               <Users size={13} strokeWidth={2} />
-              No login wall
+              {$t('public_courses.no_login_wall')}
             </span>
           </div>
         </div>
@@ -276,9 +265,9 @@
 
   <!-- Key features -->
   <FeatureGrid
-    eyebrow="What you get"
-    title="The essentials are already built in."
-    description="You do not need a separate website project to publish public course pages that look finished and work well."
+    eyebrow={$t('public_courses.what_you_get')}
+    title={$t('public_courses.the_essentials_are_already_built_in')}
+    description={$t('public_courses.you_do_not_need_a_separate')}
     features={keyFeatures}
     columns={4}
   />
@@ -287,13 +276,14 @@
   <section class="bg-white px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Moving people forward</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('public_courses.moving_people_forward')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          If someone wants more, you can give them a clear next step.
+          {$t('public_courses.if_someone_wants_more_you_can')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Public courses are useful on their own, but they can also lead into a paid course, a cohort, or a community.
-          Add callouts inside lessons, lock selected content, and guide people into enrollment when it makes sense.
+          {$t('public_courses.public_courses_are_useful_on_their')}
         </p>
         <ul class="mt-6 space-y-3 text-sm text-gray-700">
           {#each conversionMechanics as item, i}
@@ -311,7 +301,7 @@
       </div>
       <img
         src="/assets/assets/www/public-courses/public-course-empty-state.jpeg"
-        alt="Public course empty state in the dashboard"
+        alt={$t('public_courses.public_course_empty_state_in_the')}
         width="1920"
         height="1410"
         loading="lazy"
@@ -321,21 +311,21 @@
   </section>
 
   <!-- Custom domain + branding trust band -->
-  <TrustBand caption="Branding options" items={brandingItems} />
+  <TrustBand caption={$t('public_courses.branding_options')} items={brandingItems} />
 
   <!-- How it works -->
   <WorkflowSteps
-    eyebrow="How it works"
-    title="Set it up in the same workflow you already use."
-    description="You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of ClassroomHub."
+    eyebrow={$t('public_courses.how_it_works')}
+    title={$t('public_courses.set_it_up_in_the_same')}
+    description={$t('public_courses.you_do_not_need_a_second')}
     steps={workflow}
   />
 
   <!-- FAQ -->
   <section class="bg-white px-6 lg:px-12">
     <Faq
-      heading="Public courses, answered"
-      subheading="A few common questions before teams publish their first public course."
+      heading={$t('public_courses.faq_heading')}
+      subheading={$t('public_courses.faq_subheading')}
       items={publicCoursesFaqs}
       hideCta
     />
@@ -343,8 +333,8 @@
 
   <!-- Final CTA -->
   <PageSignupCTA
-    header="Publish a public course without spinning up a separate site."
-    subText="Use the same ClassroomHub workspace to share free lessons, add quizzes, and point interested learners toward the next step."
-    btnLabel="Book a Demo"
+    header={$t('public_courses.publish_a_public_course_without_spinning')}
+    subText={$t('public_courses.use_the_same_classroomhub_workspace_to')}
+    btnLabel={$t('public_courses.book_a_demo')}
   />
 </section>

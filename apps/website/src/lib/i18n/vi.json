@@ -362,6 +362,762 @@
         "title": "Soát mọi bản nháp trước khi xuất bản",
         "description": "Nhận một bản tóm tắt cho biết mỗi bản nháp còn thiếu gì: trang giới thiệu, câu hỏi kiểm tra, quy tắc cấp chứng chỉ, hay bài thi cuối khoá."
       }
+    },
+    "two_minutes_to_wire_it_up": "Hai phút để nối xong.",
+    "one_prompt_away_from_a_real": "Chỉ cách một prompt là có khoá học thật.",
+    "spin_up_a_free_workspace_paste": "Mở một không gian làm việc miễn phí, dán một công thức, và xem agent của bạn dựng nó.",
+    "get_started_free": "Bắt đầu miễn phí"
+  },
+  "dev": {
+    "meta_title": "API, Webhooks và máy chủ MCP cho LMS | ClassroomHub",
+    "meta_description": "Tự động hoá việc soạn khoá học và cấp tài khoản học viên bằng REST API, Webhooks và máy chủ MCP của ClassroomHub. Có tài liệu, có phiên bản, không mất phí tích hợp.",
+    "badge": "Tài liệu cho nhà phát triển",
+    "heading_lead": "API, Webhooks, MCP.",
+    "heading_accent": "Không mất phí tích hợp.",
+    "subhead": "ClassroomHub có sẵn REST API công khai, Webhooks được ký và một máy chủ MCP. Không có chợ tiện ích đóng, không có gói \"connector cao cấp\". Hãy dựng đúng tích hợp phù hợp với hệ thống của bạn.",
+    "read_docs": "Đọc tài liệu API",
+    "see_pricing": "Xem bảng giá",
+    "api_eyebrow": "REST API",
+    "api_heading": "Mọi thứ trong hệ thống đều gọi được qua HTTP.",
+    "api_body": "Xác thực bằng bearer token, JSON vào, JSON ra. Cấp tài khoản học viên từ CRM của bạn, kéo dữ liệu hoàn thành về kho dữ liệu, hoặc tự dựng công cụ quản trị riêng trên đúng bề mặt mà trang quản trị đang dùng.",
+    "api_point_objects": "Tổ chức, người dùng, khoá học, bài học, bài tập, bài nộp, chứng chỉ",
+    "api_point_keys": "Khoá API riêng cho từng tổ chức, phân quyền theo phạm vi",
+    "api_point_pagination": "Phân trang theo con trỏ, hạn mức gọi được ghi rõ trong tài liệu",
+    "api_point_versioning": "Endpoint có phiên bản, kèm thời hạn ngừng hỗ trợ được công bố",
+    "webhooks_eyebrow": "Webhooks",
+    "webhooks_heading": "Đăng ký đúng sự kiện bạn quan tâm, thay vì phải liên tục hỏi thăm.",
+    "webhooks_body": "Mọi thay đổi trạng thái quan trọng đều được gửi tới endpoint của bạn, ký bằng khoá bí mật dùng chung. Chúng tôi gửi lại theo cấp số nhân khi thất bại, và bạn có thể phát lại bất kỳ sự kiện nào từ trang quản trị.",
+    "stack_eyebrow": "Bên dưới lớp vỏ",
+    "stack_heading": "Dựng trên bộ công nghệ đội của bạn đã quen.",
+    "stack_body": "Chúng tôi vận hành nền tảng, nên bạn không phải triển khai hay vá gì cả. Những phần bạn cần tích hợp đều có tài liệu đầy đủ: REST API có kiểu, webhook được ký, và một máy chủ MCP mà agent của bạn gọi thẳng được.",
+    "stack_cta": "Tài liệu API →",
+    "stack_label": "Công nghệ",
+    "stack_api": "Hono trên Node, Drizzle, Postgres",
+    "stack_ui": "SvelteKit 2, Svelte 5, Tailwind v4",
+    "stack_ai": "Dùng khoá riêng của bạn cho OpenAI, Anthropic, Google Gemini hoặc Moonshot",
+    "stack_mcp": "Máy chủ được lưu trữ sẵn,",
+    "cta_header": "Lập trình được ngay từ ngày đầu.",
+    "cta_subtext": "API, Webhooks và một máy chủ MCP có sẵn. Có tài liệu, có phiên bản, dùng được ngay ngày đầu tiên.",
+    "cta_button": "Đọc tài liệu"
+  },
+  "public_courses": {
+    "creatorUseCases": {
+      "0": "Một khoá nhập môn miễn phí dẫn tới chương trình trả phí",
+      "1": "Một khoá học mẫu công khai để người xem cân nhắc trước khi mua",
+      "2": "Một khoá hội nhập hoặc khoá cộng đồng ngắn, không bắt phải đăng nhập",
+      "3": "Đào tạo đối tác hay đại lý mà bạn chỉ cần gửi một đường dẫn",
+      "4": "Một chỗ gọn gàng cho các bài học ngắn và bài tự chấm"
+    },
+    "learnerUseCases": {
+      "0": "Xem toàn bộ danh mục mà không cần tạo tài khoản",
+      "1": "Đọc ở chế độ sáng hoặc tối",
+      "2": "Nhận phản hồi bài kiểm tra ngay lập tức",
+      "3": "Bắt đầu trên điện thoại và học tiếp trên máy tính",
+      "4": "Dùng một trang khoá học đúng thương hiệu mà họ tìm đến"
+    },
+    "keyFeatures": {
+      "0": {
+        "title": "Tuỳ chỉnh thương hiệu",
+        "description": "Chọn giao diện trang chủ, thêm logo, đặt tên trang, và gắn tên miền riêng mà không cần lập trình thêm."
+      },
+      "1": {
+        "title": "Chế độ sáng và tối",
+        "description": "Trình xem bài học có sẵn nút chuyển chế độ, và lựa chọn của người học được giữ nguyên qua các lần truy cập."
+      },
+      "2": {
+        "title": "Trang bài học gọn gàng",
+        "description": "Trang khoá học công khai dùng cùng hệ thống thiết kế với phần còn lại của ClassroomHub, nên nó trông như một phần sản phẩm của bạn chứ không phải một trang rời."
+      },
+      "3": {
+        "title": "Bài kiểm tra tự chấm",
+        "description": "Hỗ trợ 15 dạng câu hỏi chấm tự động, gồm trắc nghiệm, sắp xếp, chọn điểm trên hình, trả lời ngắn và điền vào chỗ trống, kèm phản hồi ngay trong bài học."
+      }
+    },
+    "conversionMechanics": {
+      "0": {
+        "title": "Thẻ mời gọi ngay trong bài",
+        "description": "Chèn một thẻ mời gọi vào bất kỳ bài học nào, với tiêu đề, mô tả, nhãn nút và đường dẫn tới khoá trả phí, trang thanh toán hay cộng đồng của bạn."
+      },
+      "1": {
+        "title": "Xem trước bài học bị khoá",
+        "description": "Mở một phần khoá học, rồi thay nội dung của những bài bị khoá bằng một thẻ mời gọi chỉ ra bước tiếp theo."
+      },
+      "2": {
+        "title": "Chặn theo thanh toán, mã giảm giá và lời mời",
+        "description": "Đưa người học vào diện ghi danh trả phí bằng đường dẫn thanh toán, mã giảm giá, hoặc quyền truy cập theo lời mời."
+      },
+      "3": {
+        "title": "Tự ghi danh sau khi đăng ký",
+        "description": "Người học sau khi đăng nhập sẽ quay lại đúng bài đang xem thay vì phải bắt đầu lại."
+      }
+    },
+    "brandingItems": {
+      "0": "Tên miền riêng",
+      "1": "Logo của bạn",
+      "2": "Tên trang của bạn",
+      "3": "Có sẵn chế độ tối",
+      "4": "Trang thân thiện với công cụ tìm kiếm"
+    },
+    "publicCoursesFaqs": {
+      "0": {
+        "question": "Đăng một khoá học công khai có tốn thêm phí không?",
+        "answer": "Không. Khoá học công khai nằm trong chính không gian làm việc ClassroomHub bạn đang dùng. Mọi gói trả phí đều xuất bản được, và người học chưa bị tính vào hạn mức chỗ cho tới khi họ ghi danh vào một khoá trả phí."
+      },
+      "1": {
+        "question": "Tôi có thể thu tiền hoặc thu thông tin khách hàng trên một khoá công khai không?",
+        "answer": "Có. Bạn có thể gắn đường dẫn thanh toán, mã giảm giá, hoặc mã mời vào luồng ghi danh. Bạn cũng có thể đặt thẻ mời gọi trong bài học, trỏ tới khoá trả phí, cộng đồng, hay bất kỳ đường dẫn nào bạn muốn."
+      },
+      "2": {
+        "question": "Tôi có bắt buộc phải có tên miền riêng không?",
+        "answer": "Không. Mọi khoá học công khai đều có sẵn trên trang công khai ClassroomHub của bạn. Tên miền riêng chỉ là tuỳ chọn nếu bạn muốn khoá học nằm trên địa chỉ của mình."
+      },
+      "3": {
+        "question": "Công cụ tìm kiếm có lập chỉ mục khoá học công khai không?",
+        "answer": "Có. Trang giới thiệu khoá học công khai và phần xem trước bài học đều được kết xuất phía máy chủ và có đủ metadata mà công cụ tìm kiếm cần, nên khoá học tìm thấy được."
+      },
+      "4": {
+        "question": "Bài kiểm tra được chấm thế nào?",
+        "answer": "Chấm ngay trên trình duyệt. Khoá học công khai hỗ trợ 15 dạng câu hỏi chấm tự động, gồm trắc nghiệm, sắp xếp, nối, chọn điểm trên hình, điền vào chỗ trống, nhập số, trả lời ngắn và nộp tệp."
+      },
+      "5": {
+        "question": "Tôi có thể khoá một số bài và để công khai phần còn lại không?",
+        "answer": "Có. Khoá những bài bạn muốn giữ lại, trình xem sẽ hiển thị một thẻ mời gọi thay cho nội dung. Bạn có thể dùng thẻ đó để dẫn người xem tới bản trả phí của khoá học."
+      },
+      "6": {
+        "question": "Tôi có thể làm trang khoá học đúng thương hiệu của mình không?",
+        "answer": "Có. Bạn chọn giao diện trang chủ, tải logo lên, đặt tên trang, và gắn tên miền riêng nếu muốn. Chế độ tối có sẵn cho người học."
+      }
+    },
+    "workflow": {
+      "0": {
+        "title": "Dựng khoá học",
+        "description": "Dùng đúng trình soạn khoá học bạn vẫn dùng cho các khoá trả phí. Khoá học công khai hỗ trợ cả 15 dạng câu hỏi chấm tự động.",
+        "label": "Bước 01"
+      },
+      "1": {
+        "title": "Đổi loại sang PUBLIC",
+        "description": "Đổi loại khoá học sang `PUBLIC`. Nếu có dạng câu hỏi không được hỗ trợ, ClassroomHub sẽ báo trước khi xuất bản.",
+        "label": "Bước 02"
+      },
+      "2": {
+        "title": "Thiết lập trang",
+        "description": "Chọn giao diện, thêm logo và tên trang, và gắn tên miền riêng nếu bạn muốn.",
+        "label": "Bước 03"
+      },
+      "3": {
+        "title": "Xuất bản",
+        "description": "Xuất bản khoá học lên trang công khai của bạn, rồi thêm thẻ mời gọi hoặc bài học bị khoá ở những chỗ bạn muốn biến người đọc thành người ghi danh.",
+        "label": "Bước 04"
+      }
+    },
+    "public_course_page_on_desktop": "Trang khoá học công khai trên máy tính",
+    "what_you_get": "Bạn nhận được gì",
+    "the_essentials_are_already_built_in": "Những thứ cốt lõi đã có sẵn.",
+    "you_do_not_need_a_separate": "Bạn không cần dựng một dự án website riêng để xuất bản những trang khoá học công khai trông chỉn chu và chạy tốt.",
+    "public_course_empty_state_in_the": "Trạng thái trống của khoá học công khai trong trang quản trị",
+    "branding_options": "Tuỳ chọn thương hiệu",
+    "how_it_works": "Cách hoạt động",
+    "set_it_up_in_the_same": "Thiết lập ngay trong quy trình bạn vẫn dùng.",
+    "you_do_not_need_a_second": "Bạn không cần thêm một công cụ xuất bản thứ hai. Khoá học công khai dùng chung trình soạn và luồng xuất bản với phần còn lại của ClassroomHub.",
+    "publish_a_public_course_without_spinning": "Xuất bản một khoá học công khai mà không phải dựng thêm trang web riêng.",
+    "use_the_same_classroomhub_workspace_to": "Dùng chính không gian ClassroomHub của bạn để chia sẻ bài học miễn phí, thêm bài kiểm tra, và chỉ cho người học quan tâm bước tiếp theo.",
+    "book_a_demo": "Đặt lịch demo",
+    "public_courses_classroomhub": "Khoá học mở | ClassroomHub",
+    "public_courses": "Khoá học mở",
+    "publish_free_courses_that_lead_to": "Xuất bản khoá học miễn phí dẫn tới những lượt ghi danh trả phí.",
+    "public_courses_let_you_share_lessons": "Khoá học công khai cho phép bạn chia sẻ bài học mà không bắt người xem tạo tài khoản trước. Bạn có thể đăng nội dung khoá học miễn phí, thêm bài kiểm tra, tuỳ chỉnh trang, và dẫn người học quan tâm vào một khoá trả phí hoặc một cộng đồng.",
+    "start_free": "Dùng thử miễn phí",
+    "why_teams_use_it": "Vì sao các đội dùng nó",
+    "public_courses_are_useful_before_someone": "Khoá học công khai có ích ngay trước khi một người sẵn sàng ghi danh.",
+    "teams_use_them_to_share_sample": "Các đội dùng chúng để chia sẻ bài học mẫu, khoá đào tạo mở và bản xem trước. Người học có cách tiếp cận nhẹ nhàng để đọc hoặc thử nội dung trước khi quyết định bước tiếp theo.",
+    "for_creators": "Cho người tạo khoá học",
+    "a_practical_way_to_publish_useful": "Một cách thiết thực để xuất bản nội dung khoá học hữu ích ra công chúng.",
+    "shareable_by_default": "Chia sẻ được ngay từ đầu",
+    "for_learners": "Cho người học",
+    "a_simple_course_page_that_is": "Một trang khoá học đơn giản, dễ xem và dễ đọc.",
+    "no_login_wall": "Không có tường đăng nhập",
+    "moving_people_forward": "Đưa người học đi tiếp",
+    "if_someone_wants_more_you_can": "Nếu ai đó muốn nhiều hơn, bạn có thể chỉ cho họ một bước tiếp theo rõ ràng.",
+    "public_courses_are_useful_on_their": "Khoá học công khai tự nó đã hữu ích, nhưng nó cũng có thể dẫn vào một khoá trả phí, một lớp theo đợt, hay một cộng đồng. Thêm thẻ mời gọi trong bài học, khoá một phần nội dung, và dẫn người xem vào diện ghi danh khi thời điểm đã chín.",
+    "meta_description": "Xuất bản khoá học công khai trên trang mang thương hiệu của bạn, có sẵn bài kiểm tra, thẻ mời gọi trong bài học, và tuỳ chọn tên miền riêng.",
+    "og_description": "Một trang khoá học công khai mang thương hiệu của bạn, để chia sẻ bài học miễn phí, bài kiểm tra và bản xem trước trước khi ai đó ghi danh.",
+    "faq_heading": "Giải đáp về khoá học mở",
+    "faq_subheading": "Vài câu hỏi thường gặp trước khi một đội xuất bản khoá học công khai đầu tiên."
+  },
+  "vs_help_docs": {
+    "competitors": {
+      "0": {
+        "name": "Intercom Articles",
+        "good": "Tiện ích trợ giúp trong ứng dụng thuộc hàng tốt nhất. Tìm kiếm tốt. Đúng chỗ cho những câu trả lời ngắn, cần ngay.",
+        "missing": "Không có lộ trình học theo trình tự. Không có bài đánh giá. Không có chứng nhận. Không theo dõi tiến độ từng người học."
+      },
+      "1": {
+        "name": "Zendesk Guide",
+        "good": "Kho kiến thức đã chín, gắn chặt với hệ thống ticket của Zendesk. Rất tốt để giảm tải cho hỗ trợ tuyến một.",
+        "missing": "Không có cấu trúc khoá học, không chấm điểm, không cấp chứng chỉ. Sinh ra cho hỗ trợ, không phải cho việc học."
+      },
+      "2": {
+        "name": "Confluence",
+        "good": "Công cụ tài liệu nội bộ mặc định. Rẻ, phổ biến, dễ viết vào.",
+        "missing": "Mặc định không dành cho khách hàng. Không có khái niệm khoá học. Không có chứng chỉ công khai. Không có phân tích người học."
+      }
+    },
+    "verdicts": {
+      "0": {
+        "title": "Giữ lại tài liệu trợ giúp của bạn.",
+        "body": "Khi khách hàng đã biết mình cần gì, họ tìm kiếm. Tài liệu trợ giúp thắng ở việc tra cứu. Đừng gỡ bỏ công cụ vốn đang làm tốt việc đó."
+      },
+      "1": {
+        "title": "Đặt thêm một học viện khách hàng bên cạnh.",
+        "body": "Khi khách hàng cần học sản phẩm (hội nhập, chương trình theo vai trò, chứng nhận, khoá học cho tính năng mới), đó chính là việc mà một học viện được sinh ra để làm."
+      }
+    },
+    "stop_forwarding_help_articles_to_every": "Đừng chuyển tiếp bài trợ giúp cho từng khách hàng mới nữa.",
+    "bundle_the_articles_into_a_real": "Gom các bài viết thành một khoá hội nhập thật sự, thêm bài đánh giá cuối, cấp chứng chỉ, rồi nhìn tỉ lệ giữ chân dịch chuyển.",
+    "book_a_demo": "Đặt lịch demo",
+    "customer_academy_vs_help_docs": "Học viện khách hàng và tài liệu trợ giúp",
+    "why_your_help_center": "Vì sao trung tâm trợ giúp của bạn",
+    "intercom_articles_zendesk_guide_and_confluence": "Intercom Articles, Zendesk Guide và Confluence rất giỏi một việc: trả lời câu \"làm X thế nào?\" khi người dùng đã biết mình cần gì. Chúng chưa bao giờ được thiết kế để đưa một khách hàng hoàn toàn mới từ con số không đến chỗ dùng sản phẩm thành thạo. Đó là việc của một học viện khách hàng.",
+    "launch_your_academy_free": "Mở học viện của bạn, miễn phí",
+    "see_a_live_academy": "Xem một học viện đang chạy",
+    "the_short_answer": "Câu trả lời ngắn",
+    "you_need_both_they_do_different": "Bạn cần cả hai. Chúng làm hai việc khác nhau.",
+    "tool_by_tool": "Xét từng công cụ",
+    "what_the_popular_help_doc_tools": "Những công cụ tài liệu trợ giúp phổ biến giỏi ở đâu, và hụt ở đâu.",
+    "where_it_wins": "Nó thắng ở đâu",
+    "where_it_doesn_t": "Nó hụt ở đâu",
+    "meta_title": "Học viện khách hàng và tài liệu trợ giúp (Intercom, Zendesk, Confluence) | ClassroomHub",
+    "meta_description": "Vì sao một học viện khách hàng vượt trội tài liệu trợ giúp trong hội nhập, chứng nhận và mức độ sử dụng sản phẩm, so sánh trực diện với Intercom Articles, Zendesk Guide và Confluence."
+  },
+  "customer_education": {
+    "workflow": {
+      "0": {
+        "title": "Mang kiến thức sản phẩm của bạn vào",
+        "description": "Dùng tài liệu trợ giúp, hướng dẫn hội nhập, ghi chú phát hành, video demo, bản ghi Loom, và ghi chép nội bộ của đội chăm sóc khách hàng."
+      },
+      "1": {
+        "title": "Dựng một học viện khách hàng",
+        "description": "Tạo các khoá học có cấu trúc cho hội nhập, làm quen tính năng, đào tạo quản trị viên, và nâng cao cho người dùng thành thạo."
+      },
+      "2": {
+        "title": "Xuất bản dưới thương hiệu của bạn",
+        "description": "Tên miền riêng, trang chủ theo giao diện của bạn, danh mục khoá học công khai, và tiện ích nhúng được — học viện của bạn, không phải của chúng tôi."
+      },
+      "3": {
+        "title": "Theo dõi mức độ sử dụng và giữ chân",
+        "description": "Xem tiến độ, kết quả đánh giá, chứng chỉ và dữ liệu hoàn thành trên toàn bộ khách hàng và từng đợt học."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Cổng học tập mang thương hiệu riêng",
+        "description": "Danh mục hướng tới khách hàng với trang giới thiệu, giao diện, logo của bạn, tên miền của bạn, và những trang công khai sẵn sàng cho SEO."
+      },
+      "1": {
+        "title": "Bài học có video và đa phương tiện",
+        "description": "Nhúng bản demo, video hướng dẫn, Loom, MP4, PDF và slide. Có sẵn tự tạo ảnh đại diện và chuyển mã."
+      },
+      "2": {
+        "title": "Lớp theo đợt và lộ trình học",
+        "description": "Gộp nhiều khoá thành hành trình hội nhập, có thứ tự hoàn thành bắt buộc, điều kiện tiên quyết và chứng chỉ."
+      },
+      "3": {
+        "title": "Trợ giảng AI trong bài học",
+        "description": "Mỗi người học có một trợ giảng chạy bằng Claude ngay trong bài, trả lời câu hỏi và tóm tắt nội dung."
+      },
+      "4": {
+        "title": "Cộng đồng và hỏi đáp",
+        "description": "Diễn đàn thảo luận cho từng khoá và bảng tin cho từng đợt học, có biểu cảm, luồng trả lời và nhắc tên."
+      },
+      "5": {
+        "title": "Chứng chỉ khách hàng khoe được",
+        "description": "Cấp chứng chỉ PDF/PNG mang thương hiệu, có mã xác minh. Rất hợp cho khách hàng nòng cốt và chương trình quản trị viên."
+      },
+      "6": {
+        "title": "Tiện ích nhúng được",
+        "description": "Đưa khoá học vào trung tâm trợ giúp, trang giới thiệu, hoặc luồng hội nhập ngay trong sản phẩm chỉ bằng một thẻ script."
+      },
+      "7": {
+        "title": "Phân tích mức độ sử dụng",
+        "description": "Xem ai đã hoàn thành hội nhập, ai đã qua bài đánh giá, và tính năng nào cần được hướng dẫn thêm."
+      },
+      "8": {
+        "title": "Dạy bài học bằng 10 ngôn ngữ",
+        "description": "Mỗi bài học có bản riêng cho tiếng Anh, Tây Ban Nha, Bồ Đào Nha, Đức, Pháp, Hindi, Việt, Nga, Ba Lan và Đan Mạch."
+      }
+    },
+    "outcomes": {
+      "0": "Học tự phục vụ thay cho những buổi hội nhập một kèm một.",
+      "1": "Khách hàng nắm được luồng làm việc cốt lõi trước buổi trao đổi đầu tiên.",
+      "2": "Chương trình nhiều cấp, tách người dùng phổ thông với khách hàng nòng cốt.",
+      "3": "Chứng chỉ chia sẻ công khai tiếp sức cho cộng đồng lan toả.",
+      "4": "Khoá học ngắn đúng trọng tâm mỗi khi bạn ra tính năng mới.",
+      "5": "Khách hàng hiểu sản phẩm không bao giờ lặng lẽ rời đi."
+    },
+    "branded_customer_academy_on_a_custom": "Học viện khách hàng mang thương hiệu riêng trên tên miền riêng — trang chủ, danh mục, giao diện theo thương hiệu",
+    "built_for_product_led_teams": "Dành cho những đội lấy sản phẩm làm trung tâm",
+    "how_it_works": "Cách hoạt động",
+    "from_scattered_docs_to_a_polished": "Từ mớ tài liệu rời rạc thành một học viện chỉn chu.",
+    "make_it_yours": "Biến nó thành của bạn",
+    "customize_how_your_customer_academy_looks": "Tuỳ chỉnh diện mạo học viện khách hàng của bạn.",
+    "theme_the_catalog_swap_fonts_and": "Đổi giao diện danh mục, thay phông chữ và màu sắc cho khớp thương hiệu, và dựng những trang giới thiệu trông như phần còn lại của sản phẩm — mà vẫn giữ nguyên hệ thống học tập bên dưới.",
+    "every_piece_included": "Đủ mọi mảnh ghép",
+    "everything_you_need_to_teach_customers": "Mọi thứ bạn cần để dạy khách hàng dùng sản phẩm của mình.",
+    "get_started": "Bắt đầu",
+    "an_ai_tutor_in_every_lesson": "Một trợ giảng AI trong mọi bài học.",
+    "an_ai_tutor_sits_inside_every": "Một trợ giảng AI nằm ngay trong từng bài học — hiểu nội dung bài, nói nhiều thứ tiếng, và kiên nhẫn. Nó trả lời những câu khách hàng lẽ ra đã gửi cho bộ phận hỗ trợ, trước khi họ rời trang.",
+    "global_customers": "Khách hàng toàn cầu",
+    "author_once_publish_in_ten_each": "Soạn một lần, xuất bản mười thứ tiếng. Mỗi bài học có bản riêng theo ngôn ngữ — khách hàng chọn thứ tiếng họ đọc, chứng chỉ in ra đúng ngôn ngữ đó, và số liệu sử dụng được tổng hợp trên toàn khu vực.",
+    "embed_anywhere": "Nhúng ở bất cứ đâu",
+    "bring_lessons_to_your_help_center": "Đưa bài học vào trung tâm trợ giúp, vào ứng dụng, vào trang giới thiệu của bạn.",
+    "publish_any_course_as_a_widget": "Xuất bản bất kỳ khoá học nào thành một tiện ích. Chèn một thẻ script vào trung tâm trợ giúp, luồng hội nhập trong sản phẩm, hay trang giới thiệu. Tiến độ, điểm số và chứng chỉ đồng bộ ngược về ClassroomHub.",
+    "launch_your_customer_academy": "Mở học viện khách hàng của bạn.",
+    "build_a_branded_learning_portal_customers": "Dựng một cổng học tập mang thương hiệu mà khách hàng thật sự dùng. Tên miền riêng, trợ giảng AI, chứng chỉ và phân tích — có sẵn ngay.",
+    "book_a_demo": "Đặt lịch demo",
+    "customer_academy_software_for_saas_classroomhub": "Phần mềm học viện khách hàng cho SaaS | ClassroomHub",
+    "customer_education": "Đào tạo khách hàng",
+    "launch_a_customer_academy": "Mở một học viện khách hàng",
+    "turn_your_help_docs_onboarding_videos": "Biến tài liệu trợ giúp, video hội nhập và kiến thức sản phẩm của bạn thành một cổng học tập mang thương hiệu riêng. Đào tạo khách hàng, chứng nhận người dùng thành thạo, và tăng mức độ sử dụng — trên tên miền của bạn, với một trợ giảng AI trong mọi bài học.",
+    "start_free": "Dùng thử miễn phí",
+    "custom_domain": "Tên miền riêng",
+    "ai_in_every_lesson": "AI trong mọi bài học",
+    "certified_champions": "Khách hàng nòng cốt có chứng nhận",
+    "turn_power_users_into_a_public": "Biến người dùng thành thạo thành một cộng đồng công khai.",
+    "bundle_courses_into_cohorts_gate_them": "Gộp khoá học thành từng đợt, đặt một bài tập bắt buộc làm cửa ải, và cấp chứng chỉ chia sẻ được. Khách hàng nòng cốt rất thích khoe — và sản phẩm của bạn có thêm một đội quân lan toả thầm lặng.",
+    "branded_pdf_png_certificates_with_verifiable": "Chứng chỉ PDF/PNG mang thương hiệu, có mã xác minh",
+    "cohorts_with_required_completion_order": "Lớp theo đợt với thứ tự hoàn thành bắt buộc",
+    "per_course_q_a_and_cohort": "Hỏi đáp riêng từng khoá và bảng tin chung cho cả đợt",
+    "why_teams_ship_this": "Vì sao các đội làm điều này",
+    "educated_customers_churn_less_period": "Khách hàng được đào tạo thì ít rời bỏ hơn. Chấm hết.",
+    "launch_a_branded_customer_academy_onboarding": "Mở một học viện khách hàng mang thương hiệu riêng. Hội nhập, làm quen tính năng, đào tạo quản trị viên và chứng nhận — trên tên miền của bạn, với một trợ giảng AI trong mọi bài học.",
+    "langs": {
+      "0": {
+        "native": "English",
+        "en": "English",
+        "sample": "Getting Started: Your First Workspace"
+      },
+      "1": {
+        "native": "Español",
+        "en": "Spanish",
+        "sample": "Primeros pasos: Tu primer espacio"
+      },
+      "2": {
+        "native": "Português",
+        "en": "Portuguese",
+        "sample": "Primeiros passos: Seu primeiro workspace"
+      },
+      "3": {
+        "native": "Deutsch",
+        "en": "German",
+        "sample": "Erste Schritte: Dein erster Arbeitsbereich"
+      },
+      "4": {
+        "native": "Français",
+        "en": "French",
+        "sample": "Premiers pas : Votre premier espace"
+      },
+      "6": {
+        "native": "Tiếng Việt",
+        "en": "Vietnamese",
+        "sample": "Bắt đầu: Không gian làm việc đầu tiên"
+      },
+      "7": {
+        "en": "Russian"
+      },
+      "8": {
+        "native": "Polski",
+        "en": "Polish",
+        "sample": "Pierwsze kroki: Twoja przestrzeń"
+      },
+      "9": {
+        "en": "Danish",
+        "sample": "Kom godt i gang: Dit første område"
+      }
     }
+  },
+  "compliance_training": {
+    "workflow": {
+      "0": {
+        "title": "Bắt đầu từ chính những quy định bạn đang có",
+        "description": "Đưa quy trình, PDF, trang Notion, Google Docs, video và ghi chép quy trình nội bộ vào một khoá học có cấu trúc."
+      },
+      "1": {
+        "title": "Giao khoá học theo đối tượng",
+        "description": "Nhập danh sách người học bằng CSV, nhóm theo phòng ban hoặc vai trò, và giao đúng khoá cho đúng đối tượng theo lô."
+      },
+      "2": {
+        "title": "Đặt luật tuân thủ",
+        "description": "Định nghĩa điểm đạt, hạn chót, chu kỳ học lại, thời gian ân hạn, lịch nhắc và kỳ gia hạn."
+      },
+      "3": {
+        "title": "Giữ bằng chứng ở một chỗ",
+        "description": "Theo dõi ai đang đạt, ai sắp hết hạn, ai đang học, ai được miễn, ai chưa đạt — mà không phải mở một bảng tính nào."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Theo dõi trạng thái tuân thủ",
+        "description": "Nhìn một lượt là biết từng người đang đạt, sắp hết hạn hay chưa đạt — và lọc ra ngay những người cần được nhắc."
+      },
+      "1": {
+        "title": "Gia hạn và chu kỳ học lại",
+        "description": "Cấu hình luật đào tạo lặp lại — hằng năm, nửa năm, hoặc tuỳ chỉnh — để chứng nhận được làm mới đúng lịch."
+      },
+      "2": {
+        "title": "Hạn chót và thời gian ân hạn",
+        "description": "Đặt ngày phải hoàn thành và khoảng ân hạn. Lời nhắc tự động gửi đi trước khi người học rơi khỏi diện tuân thủ."
+      },
+      "3": {
+        "title": "Miễn trừ, đặt lại và gia hạn",
+        "description": "Xử lý những ngoại lệ ngoài đời thật mà không đánh mất lịch sử kiểm toán về việc ai đã được yêu cầu phải học."
+      },
+      "4": {
+        "title": "Chứng chỉ có mã tuỳ chỉnh",
+        "description": "Cấp chứng chỉ PDF/PNG mang thương hiệu, với định dạng mã tuỳ chỉnh (năm, tháng, số thứ tự, tiền tố tổ chức) gắn với việc hoàn thành khoá học."
+      },
+      "5": {
+        "title": "Hồ sơ hoàn thành và sổ chứng chỉ",
+        "description": "Mọi lượt hoàn thành, điểm số và chứng chỉ đã cấp đều được lưu theo từng người học — tra cứu được ngay trong trang quản trị khi bạn cần biết ai đã học xong cái gì."
+      },
+      "6": {
+        "title": "SSO và ràng buộc theo tên miền",
+        "description": "Bắt buộc đăng nhập SSO theo tên miền email bằng Better Auth. Có lối vào khẩn cấp cho quản trị viên; lịch sử đăng nhập được ghi đầy đủ."
+      },
+      "7": {
+        "title": "Nhắm đúng đối tượng",
+        "description": "Ghi danh theo lô, phân quyền theo vai trò, và giao khoá theo nhóm. Nhân sự chính thức, nhà thầu và nhà cung cấp được hội nhập theo cách khác nhau."
+      }
+    },
+    "questionTypes": {
+      "0": "Trắc nghiệm một lựa chọn",
+      "1": "Chọn nhiều đáp án",
+      "2": "Đúng / sai",
+      "3": "Trả lời ngắn",
+      "4": "Đoạn văn",
+      "5": "Nhập số",
+      "6": "Điền vào chỗ trống",
+      "7": "Nối cặp",
+      "8": "Sắp xếp thứ tự",
+      "9": "Nộp tệp",
+      "10": "Chọn điểm trên hình",
+      "11": "Ngân hàng từ",
+      "12": "Chấm sao",
+      "14": "Ghi hình"
+    },
+    "useCases": {
+      "0": "Nhận thức an toàn thông tin hằng năm",
+      "1": "Đào tạo GDPR và quyền riêng tư",
+      "2": "Ôn lại HIPAA",
+      "3": "Đào tạo phòng chống rửa tiền / định danh khách hàng",
+      "4": "Ứng xử nơi làm việc và chống quấy rối",
+      "5": "Hội nhập nhà thầu và nhà cung cấp",
+      "6": "Quy trình chuẩn trong y tế",
+      "7": "Xác nhận chính sách trong dịch vụ tài chính",
+      "8": "An toàn trong sản xuất",
+      "9": "Đào tạo phân quyền theo vai trò"
+    },
+    "compliance_dashboard_required_learners_grouped_by": "Bảng điều khiển tuân thủ — người học bắt buộc, nhóm theo đạt, sắp hết hạn và chưa đạt",
+    "built_for_evidence_based_programs": "Dành cho những chương trình cần bằng chứng",
+    "how_it_works": "Cách hoạt động",
+    "from_policy_document_to_provable_completion": "Từ văn bản quy định tới bằng chứng hoàn thành.",
+    "inside_a_compliance_program": "Bên trong một chương trình tuân thủ",
+    "a_look_inside_a_compliance_program": "Nhìn vào bên trong một chương trình tuân thủ.",
+    "from_importing_your_team_to_issuing": "Từ lúc nhập danh sách nhân sự tới lúc cấp chứng chỉ — toàn bộ luồng trong một cái nhìn.",
+    "built_for_audit_pressure": "Dựng cho sức ép kiểm toán",
+    "everything_you_need_when_training_completion": "Đủ mọi thứ bạn cần khi việc hoàn thành đào tạo là bắt buộc.",
+    "get_started": "Bắt đầu",
+    "renewals_on_autopilot": "Gia hạn chạy tự động",
+    "training_that_re_runs_itself": "Khoá đào tạo tự chạy lại chính nó.",
+    "set_a_retake_interval_once_classroomhub": "Đặt chu kỳ học lại một lần. ClassroomHub tự đưa người học về trạng thái “sắp hết hạn”, gửi lời nhắc, giữ họ trong thời gian ân hạn, và đánh dấu chưa đạt — tất cả mà không cần quản trị viên can thiệp.",
+    "a_personal_course_authoring_assistant": "Một trợ lý soạn khoá học của riêng bạn.",
+    "drop_in_a_policy_doc_or": "Thả vào một văn bản quy định hoặc dán một đường dẫn. Trợ lý lập dàn ý khoá đào tạo tuân thủ, viết nháp từng bài, ra câu hỏi kiểm tra, rồi dừng lại chờ bạn duyệt trước khi xuất bản — nhờ vậy việc dựng một khoá bắt buộc rút từ một tuần xuống một buổi chiều.",
+    "keep_your_employees_compliant_and_track": "Giữ nhân viên của bạn trong diện tuân thủ và biết ai đang tụt lại.",
+    "build_certified_training_from_your_existing": "Dựng khoá đào tạo có chứng nhận từ chính những quy định bạn đang có, giao cho đúng người, và giữ bằng chứng hoàn thành ở một chỗ.",
+    "book_a_demo": "Đặt lịch demo",
+    "compliance_training_classroomhub": "Đào tạo tuân thủ | ClassroomHub",
+    "compliance_training": "Đào tạo tuân thủ",
+    "keep_your_employees_compliant_and": "Giữ nhân viên của bạn trong diện tuân thủ và",
+    "turn_policies_sops_docs_and_videos": "Biến quy định, quy trình, tài liệu và video thành những khoá học được giao kèm bài kiểm tra, chứng chỉ, luật gia hạn và bằng chứng hoàn thành. Biết chính xác ai đang tuân thủ — và chứng minh được điều đó.",
+    "start_free": "Dùng thử miễn phí",
+    "soc_2_friendly": "Thuận tiện cho SOC 2",
+    "audit_ready_records": "Hồ sơ sẵn sàng cho kiểm toán",
+    "your_own_domain": "Tên miền của riêng bạn",
+    "annual_biannual_or_custom_intervals_per": "Chu kỳ hằng năm, nửa năm hoặc tuỳ chỉnh cho từng khoá",
+    "reminder_cadences_before_expiry": "Lịch nhắc trước khi hết hạn",
+    "configurable_grace_periods_and_waiver_workflows": "Thời gian ân hạn và luồng miễn trừ cấu hình được",
+    "pause_renewals_for_leave_role_change": "Tạm dừng gia hạn khi nghỉ phép, đổi vai trò hoặc nghỉ việc",
+    "don_t_settle_for_multiple_choice": "Đừng dừng ở trắc nghiệm. Hãy kiểm tra mức hiểu đúng như quy định đòi hỏi — có điểm thành phần, nộp tệp, bằng chứng video, và can thiệp thủ công khi cần một con người xem lại.",
+    "auto_graded_12": "Chấm tự động · 12",
+    "partial_credit_9": "Có điểm thành phần · 9",
+    "manual_review_3": "Chấm tay · 3",
+    "certificates_evidence": "Chứng chỉ và bằng chứng",
+    "proof_of_training_designed_for_your": "Bằng chứng đào tạo, thiết kế theo thương hiệu của bạn.",
+    "configure_the_certificate_id_format_the": "Cấu hình định dạng mã chứng chỉ đúng cách bộ phận hồ sơ của bạn cần — theo năm, tháng, số thứ tự, hoặc một tiền tố riêng. Tải về dạng PDF hoặc PNG. Mọi lần cấp đều được ghi lại để kiểm toán.",
+    "templated_and_branded_with_your_logo": "Theo mẫu và mang logo cùng màu sắc của bạn",
+    "tied_to_a_required_passing_score": "Gắn với điểm đạt bắt buộc và bài đánh giá",
+    "auto_revokes_when_a_renewal_lapses": "Tự thu hồi khi quá hạn gia hạn",
+    "use_cases": "Tình huống sử dụng",
+    "training_for_the_work_people_are": "Đào tạo cho đúng những gì người ta buộc phải biết.",
+    "keep_your_employees_compliant_and_track_2": "Giữ nhân viên của bạn trong diện tuân thủ và biết ai đang tụt lại. Biến quy định và quy trình thành khoá đào tạo có chứng nhận, kèm gia hạn, thời gian ân hạn và bằng chứng kiểm toán.",
+    "turn_policies_and_sops_into_certified": "Biến quy định và quy trình thành khoá đào tạo có chứng nhận. Theo dõi tuân thủ, gia hạn, thời gian ân hạn và bằng chứng kiểm toán ở cùng một nơi."
+  },
+  "partner_training": {
+    "steps": {
+      "0": {
+        "title": "Mở một không gian dành cho đối tác",
+        "description": "Thêm một không gian đối tác riêng dưới tài khoản bạn đang có. Thương hiệu riêng, tên miền riêng, danh mục riêng. Khách hàng không bao giờ thấy nội dung của đối tác, và đối tác cũng không thấy nội dung của khách hàng."
+      },
+      "1": {
+        "title": "Đóng gói kiến thức sản phẩm của bạn",
+        "description": "Đưa vào tài liệu, kịch bản bán hàng, ghi chú phát hành, video demo và các bản ghi Loom hướng dẫn. Trợ lý AI biến chúng thành một khoá học có cấu trúc mà bạn chỉnh sửa được."
+      },
+      "2": {
+        "title": "Thiết kế lộ trình chứng nhận",
+        "description": "Gom khoá học thành từng đợt cho hội nhập, bán hàng, triển khai và chủ đề nâng cao, kèm bài tập bắt buộc và một kỳ thi cuối."
+      },
+      "3": {
+        "title": "Theo dõi mức sẵn sàng và cấp chứng nhận",
+        "description": "Xem tiến độ, điểm số, bài nộp và chứng chỉ đã cấp trên toàn bộ các tổ chức đối tác và từng nhân sự."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Lớp theo đợt và lộ trình học",
+        "description": "Gộp nhiều khoá thành một hành trình chứng nhận có thứ tự bắt buộc và tiến độ dùng chung."
+      },
+      "1": {
+        "title": "Chứng chỉ đối tác mang thương hiệu",
+        "description": "Cấp chứng chỉ PDF và PNG với logo của bạn, mã tuỳ chỉnh, và một đường dẫn xác minh công khai mà đối tác chia sẻ được."
+      },
+      "2": {
+        "title": "Tên miền riêng và cổng mang thương hiệu",
+        "description": "Chạy học viện đối tác trên tên miền của chính bạn qua Cloudflare. Giao diện, logo, trang giới thiệu và SEO đều là của bạn."
+      },
+      "3": {
+        "title": "Trang công khai và nhúng",
+        "description": "Xuất bản trang giới thiệu khoá học, hoặc nhúng một tiện ích học tập vào cổng đối tác, mạng nội bộ, hay trang giới thiệu của bạn."
+      },
+      "4": {
+        "title": "Nội dung đa ngôn ngữ",
+        "description": "Dạy bài học bằng 10 ngôn ngữ. Soạn một lần rồi xuất bản bản riêng cho tiếng Anh, Tây Ban Nha, Bồ Đào Nha, Đức, Pháp, Hindi và nhiều thứ tiếng khác."
+      },
+      "5": {
+        "title": "Phân tích hiệu quả",
+        "description": "Đào sâu vào tỉ lệ hoàn thành, thời gian tới lúc được chứng nhận, điểm bài tập và chất lượng bài nộp, theo từng đối tác, từng đợt hay từng khu vực."
+      },
+      "6": {
+        "title": "Trợ giảng AI trong bài học",
+        "description": "Mỗi đối tác có một trợ giảng chạy bằng Claude ngay trong khoá học, tóm tắt bài và trả lời câu hỏi về sản phẩm."
+      },
+      "7": {
+        "title": "Ghi danh và mời theo đợt",
+        "description": "Nhập cả tổ chức đối tác từ CSV, giao theo vai trò, chặn chương trình trả phí, và theo dõi ai đã nhận lời mời."
+      }
+    },
+    "partner_academy_latest_courses_cohort_structure": "Học viện đối tác — khoá học mới nhất, cấu trúc theo đợt và trạng thái người học",
+    "for_partner_programs_at": "Cho chương trình đối tác tại",
+    "partner_enablement": "Trang bị cho đối tác",
+    "give_every_partner_the_same_starting": "Cho mọi đối tác cùng một vạch xuất phát.",
+    "public_course_pages": "Trang khoá học công khai",
+    "open_a_few_courses_to_the": "Mở vài khoá cho công chúng, giữ lại phần còn lại.",
+    "pick_the_courses_you_want_anyone": "Chọn những khoá bạn muốn ai cũng xem được. Đối tác (và cả những người tò mò chưa phải đối tác) có thể vào ngay mà không cần đăng ký, xem vài bài, và nếu thấy cuốn thì họ tạo tài khoản để mở phần còn lại của danh mục.",
+    "what_you_can_run": "Bạn có thể tổ chức những gì",
+    "certification_programs_for_the_people_who": "Chương trình chứng nhận cho những người đại diện cho sản phẩm của bạn.",
+    "embed_anywhere": "Nhúng ở bất cứ đâu",
+    "drop_a_learning_widget_into_any": "Đặt một tiện ích học tập vào bất kỳ trang nào.",
+    "generate_a_published_widget_payload_for": "Tạo mã nhúng cho bất kỳ khoá học nào, rồi dán đoạn mã vào cổng đối tác, mạng nội bộ hay trang giới thiệu của bạn. Tiến độ, điểm số và chứng chỉ tự đồng bộ ngược về ClassroomHub.",
+    "global_partners": "Đối tác toàn cầu",
+    "author_once_publish_in_ten_each": "Soạn một lần, xuất bản mười thứ tiếng. Mỗi bài học có bản riêng theo ngôn ngữ. Người học chọn thứ tiếng họ đọc, chứng chỉ in ra đúng ngôn ngữ đó, và số liệu được tổng hợp trên toàn khu vực.",
+    "certify_your_next_partner_cohort": "Cấp chứng nhận cho đợt đối tác tiếp theo của bạn.",
+    "turn_your_product_knowledge_into_a": "Biến kiến thức sản phẩm của bạn thành một chương trình lặp lại được. Khoá học, chứng chỉ, cổng mang thương hiệu và phân tích, tất cả ở một nơi.",
+    "book_a_demo": "Đặt lịch demo",
+    "partner_training_classroomhub": "Đào tạo đối tác | ClassroomHub",
+    "partner_training": "Đào tạo đối tác",
+    "train_the_partners": "Đào tạo những đối tác",
+    "run_a_partner_workspace_alongside_your": "Chạy một không gian đối tác song song với học viện khách hàng của bạn. Thương hiệu riêng, tên miền riêng, cùng một tài khoản. Chứng nhận đại lý, agency và đơn vị tích hợp bằng những chương trình và bài đánh giá luôn đi kịp với sản phẩm của bạn.",
+    "start_free": "Dùng thử miễn phí",
+    "custom_domain": "Tên miền riêng",
+    "separate_workspace": "Không gian làm việc riêng",
+    "readiness_analytics": "Phân tích mức sẵn sàng",
+    "see_which_partners_are_ready_to": "Xem đối tác nào đã sẵn sàng bán, và đối tác nào cần được hỗ trợ.",
+    "drill_into_completion_rates_time_to": "Đào sâu vào tỉ lệ hoàn thành, thời gian tới lúc được chứng nhận, điểm bài tập và chất lượng bài nộp. Lọc theo tổ chức đối tác, đợt học, khu vực hay lộ trình chứng nhận. Xuất mọi thứ ra CSV.",
+    "course_level_and_cohort_level_dashboards": "Bảng điều khiển ở cấp khoá học và cấp đợt học",
+    "per_learner_gradebook_with_manual_override": "Sổ điểm từng người học, có thể sửa tay",
+    "newsfeed_activity_and_q_a_participation": "Hoạt động trên bảng tin và mức tham gia hỏi đáp",
+    "time_to_certify": "Thời gian tới lúc được chứng nhận",
+    "pass_rate": "Tỉ lệ đạt",
+    "completion_by_partner_org": "Mức hoàn thành theo từng tổ chức đối tác",
+    "replace_with_static_partner_analytics_dashboard": "Bảng phân tích đối tác — mức hoàn thành, thời gian tới lúc được chứng nhận và tỉ lệ đạt theo từng tổ chức đối tác",
+    "run_a_partner_academy_alongside_your": "Chạy một học viện đối tác song song với học viện khách hàng. Thương hiệu riêng, tên miền riêng, cùng một tài khoản. Chứng nhận đại lý, agency và đơn vị tích hợp bằng chương trình, chứng chỉ và số liệu phân tích.",
+    "langs": {
+      "0": {
+        "native": "English",
+        "en": "English",
+        "sample": "Implementation Checklist"
+      },
+      "1": {
+        "native": "Español",
+        "en": "Spanish",
+        "sample": "Lista de implementación"
+      },
+      "2": {
+        "native": "Português",
+        "en": "Portuguese",
+        "sample": "Lista de implementação"
+      },
+      "3": {
+        "native": "Deutsch",
+        "en": "German",
+        "sample": "Implementierungs-Checkliste"
+      },
+      "4": {
+        "native": "Français",
+        "en": "French",
+        "sample": "Liste de mise en œuvre"
+      },
+      "6": {
+        "native": "Tiếng Việt",
+        "en": "Vietnamese",
+        "sample": "Danh sách triển khai"
+      },
+      "7": {
+        "en": "Russian"
+      },
+      "8": {
+        "native": "Polski",
+        "en": "Polish",
+        "sample": "Lista wdrożeniowa"
+      },
+      "9": {
+        "en": "Danish",
+        "sample": "Implementeringstjekliste"
+      }
+    }
+  },
+  "docs_vs_academy": {
+    "quickVerdicts": {
+      "0": {
+        "title": "Dùng tài liệu khi người đọc đã biết mình cần gì.",
+        "description": "Tài liệu hợp nhất cho việc tra cứu, tham chiếu, xử lý sự cố, chi tiết API, hành vi sản phẩm, ghi chú phát hành, và bất cứ thứ gì người dùng cần tìm ngay tại chỗ."
+      },
+      "1": {
+        "title": "Dùng học viện nội bộ khi người học cần một lộ trình dẫn dắt.",
+        "description": "Học viện hợp nhất khi người ta cần hội nhập, đào tạo theo vai trò, thực hành, bằng chứng hoàn thành, chứng nhận, hoặc một hành trình học lặp lại được."
+      }
+    },
+    "comparisonRows": {
+      "0": {
+        "note": "Người đó đã có sẵn một việc trong đầu và cần câu trả lời đáng tin nhanh nhất."
+      },
+      "1": {
+        "note": "Người mới cần trình tự, bối cảnh, ví dụ, và một lộ trình rõ ràng từ bước đầu tới lúc dùng thành thạo."
+      },
+      "2": {
+        "note": "Sự thành thạo cần được đánh giá, có hồ sơ hoàn thành, chứng chỉ, hoặc một bằng chứng nhìn thấy được về mức sẵn sàng."
+      },
+      "3": {
+        "note": "Hội nhập đối tác thường cần lộ trình theo vai trò, việc được giao, theo dõi tiến độ và chứng nhận."
+      },
+      "4": {
+        "note": "Việc tra cứu nên giữ ở dạng tìm được, đọc lướt được, dẫn link được và dễ cập nhật."
+      },
+      "5": {
+        "note": "Việc hoàn thành, lời nhắc, gia hạn và bằng chứng kiểm toán thuộc về một học viện hoặc một hệ thống LMS."
+      },
+      "6": {
+        "note": "Chi tiết API, tham số, trường hợp biên và mã lỗi hợp nhất với dạng tài liệu."
+      },
+      "7": {
+        "note": "Một chương trình cần cấu trúc: bài học, đợt học hoặc nhóm đối tượng, bài đánh giá, chứng chỉ và số liệu phân tích."
+      }
+    },
+    "docsUseCases": {
+      "0": "Các bước cài đặt sản phẩm mà người dùng phải quay lại xem",
+      "1": "Tham chiếu API, chi tiết SDK, Webhooks, hạn mức và lỗi",
+      "2": "Giải thích tính năng và các tuỳ chọn cấu hình",
+      "3": "Bài xử lý sự cố và cách đi vòng cho lỗi đã biết",
+      "4": "Ghi chú phát hành, ghi chú chuyển đổi và nhật ký thay đổi",
+      "5": "Những câu trả lời ngắn mà đội hỗ trợ, chăm sóc và bán hàng gửi đi lặp đi lặp lại"
+    },
+    "academyUseCases": {
+      "0": "Hội nhập nhân viên, khách hàng hoặc đối tác mới",
+      "1": "Đào tạo quản trị viên cho sản phẩm phức tạp hoặc hệ thống nội bộ",
+      "2": "Chứng nhận cho đại lý, agency, chuyên gia tư vấn hoặc người dùng thành thạo",
+      "3": "Đào tạo tuân thủ cần bằng chứng, gia hạn và hồ sơ kiểm toán",
+      "4": "Chương trình thúc đẩy sử dụng tính năng sau một đợt ra mắt lớn",
+      "5": "Trang bị theo vai trò cho đội bán hàng, hỗ trợ, triển khai hoặc chăm sóc khách hàng"
+    },
+    "decisionSignals": {
+      "0": {
+        "title": "Nếu người đọc đang tìm kiếm, hãy viết tài liệu.",
+        "description": "Ý định tìm kiếm thường có nghĩa là người đó đã có bối cảnh. Họ cần độ chính xác, không cần một khoá học. Hãy làm trang dễ đọc lướt, liên kết các chủ đề liên quan, và giữ nó luôn cập nhật."
+      },
+      "1": {
+        "title": "Nếu người học cần trình tự, hãy dựng học viện.",
+        "description": "Trình tự quan trọng khi các khái niệm phụ thuộc lẫn nhau. Một học viện nội bộ có thể bắt đầu từ nền tảng, thêm phần thực hành, kiểm tra mức hiểu, rồi cấp bằng chứng."
+      },
+      "2": {
+        "title": "Nếu doanh nghiệp cần bằng chứng, hãy dựng học viện.",
+        "description": "Tài liệu có thể cung cấp thông tin, nhưng hiếm khi chứng minh được mức sẵn sàng. Hãy dùng khoá học, bài đánh giá, hồ sơ hoàn thành và chứng chỉ khi quản lý cần biết ai đã được đào tạo."
+      },
+      "3": {
+        "title": "Nếu mỗi vai trò cần một kết quả khác nhau, hãy dựng lộ trình riêng.",
+        "description": "Một nhân viên hỗ trợ, một quản trị viên, một đại lý và một lãnh đạo bảo trợ không nên đọc cùng một cây tài liệu dài. Học viện cho phép mỗi vai trò đi theo một lộ trình dựng riêng cho họ."
+      }
+    },
+    "hybridModel": {
+      "0": {
+        "title": "Tài liệu vẫn là nguồn sự thật",
+        "description": "Giữ các dữ kiện chuẩn trong tài liệu: hành vi sản phẩm, tham chiếu kỹ thuật, tuỳ chọn cài đặt, ảnh màn hình, giới hạn và chi tiết xử lý sự cố."
+      },
+      "1": {
+        "title": "Học viện đóng gói hành trình học",
+        "description": "Biến những tài liệu quan trọng nhất thành các bài học có dẫn dắt, kèm bối cảnh, thứ tự, bài tập, câu hỏi kiểm tra, ví dụ và chứng chỉ."
+      },
+      "2": {
+        "title": "Đội hỗ trợ và chăm sóc dẫn người dùng tới đúng lớp",
+        "description": "Người dùng thành thạo thì đưa sang tài liệu để có câu trả lời nhanh. Người mới, đối tác và đội nội bộ thì đưa vào lộ trình học viện khi họ cần đào tạo có cấu trúc."
+      }
+    },
+    "academySignals": {
+      "0": "Người ta vẫn liên tục xin buổi hội nhập dù tài liệu đã có sẵn.",
+      "1": "Khách hàng đọc tài liệu nhưng vẫn không dùng hết luồng làm việc.",
+      "2": "Quản lý hỏi ai đã hoàn thành đào tạo.",
+      "3": "Đối tác cần được chứng nhận trước khi bán hoặc triển khai.",
+      "4": "Đào tạo tuân thủ, chính sách hay quy trình cần bằng chứng gia hạn.",
+      "5": "Thay đổi sản phẩm cần nhiều hơn một thông báo."
+    },
+    "docs_answering_questions_customer_academy_building": "Tài liệu trả lời câu hỏi, học viện khách hàng xây dựng năng lực — đặt cạnh nhau",
+    "decision_framework": "Khung ra quyết định",
+    "ask_these_four_questions_before_creating": "Hãy hỏi bốn câu này trước khi tạo thêm một kênh nội dung nữa.",
+    "the_wrong_format_creates_expensive_confusion": "Chọn sai định dạng gây ra sự lúng túng rất đắt. Tài liệu dài không thể ép người ta thành thạo, còn khoá học dài thì gây bực bội khi người ta chỉ cần một câu trả lời.",
+    "classroomhub_can_host_your_company_academy": "ClassroomHub có thể vận hành học viện nội bộ của bạn.",
+    "turn_your_docs_videos_policies_and": "Biến tài liệu, video, quy định và kiến thức sản phẩm của bạn thành một học viện mang thương hiệu riêng, có khoá học, bài đánh giá, chứng chỉ, số liệu phân tích và tên miền riêng.",
+    "book_a_demo": "Đặt lịch demo",
+    "docs_vs_company_academy_classroomhub": "Tài liệu hay học viện nội bộ | ClassroomHub",
+    "docs_vs_company_academy": "Tài liệu hay học viện nội bộ",
+    "documentation_answers_questions": "Tài liệu trả lời câu hỏi.",
+    "a_company_academy_teaches_them_to": "Học viện nội bộ dạy người ta làm được việc.",
+    "most_teams_do_not_need_to": "Phần lớn các đội không cần chọn một thứ mãi mãi. Họ cần hiểu mỗi định dạng làm nhiệm vụ gì. Bài này giải thích khi nào tài liệu là đủ, khi nào một học viện nội bộ là công cụ tốt hơn, và hai thứ nên phối hợp với nhau ra sao.",
+    "explore_academies": "Tìm hiểu về học viện",
+    "decision_table": "Bảng quyết định",
+    "start_with_the_need_then_choose": "Bắt đầu từ nhu cầu, rồi mới chọn định dạng.",
+    "if_the_person_wants_one_answer": "Nếu người ta muốn một câu trả lời, tài liệu thường là đúng. Nếu người ta cần một lộ trình, một bằng chứng, hay một quy trình hội nhập lặp lại được, học viện nội bộ thường là đúng.",
+    "when_docs_are_enough": "Khi nào tài liệu là đủ",
+    "choose_documentation_when_the_task_is": "Chọn tài liệu khi công việc là tra cứu được, hẹp và lặp lại.",
+    "documentation_works_best_when_the_user": "Tài liệu phát huy tốt nhất khi người dùng có một việc cụ thể và cần một câu trả lời chính xác. Dễ tìm, dễ đọc lướt, dễ tin — không cần ghi danh.",
+    "reference_retrieval": "Tham chiếu và tra cứu",
+    "when_an_academy_is_better": "Khi nào học viện tốt hơn",
+    "choose_a_company_academy_when_capability": "Chọn học viện nội bộ khi điều quan trọng là năng lực, sự thay đổi hành vi, hoặc bằng chứng.",
+    "an_academy_turns_scattered_knowledge_into": "Học viện biến kiến thức rời rạc thành một lộ trình có cấu trúc. Hãy dùng nó khi người học cần bối cảnh trước chi tiết, cần thực hành trước khi tự làm, hoặc cần một chứng chỉ trước khi được giao một vai trò.",
+    "structured_learning": "Học có cấu trúc",
+    "the_hybrid_model": "Mô hình kết hợp",
+    "the_strongest_teams_use_docs_and": "Những đội mạnh nhất dùng cả tài liệu lẫn học viện.",
+    "treat_documentation_as_the_reference_layer": "Hãy coi tài liệu là lớp tham chiếu, còn học viện là lớp trang bị năng lực. Học viện không nên chép lại từng trang trong tài liệu của bạn. Nó nên tổ chức những nội dung quan trọng thành một lộ trình hướng tới kết quả.",
+    "a_practical_guide_to_when_your": "Một hướng dẫn thiết thực về việc khi nào doanh nghiệp cần tài liệu, khi nào cần một học viện nội bộ, và hai thứ phối hợp thế nào cho hội nhập, trang bị năng lực và chứng nhận."
+  },
+  "shared": {
+    "now_rendering": "Đang hiển thị",
+    "cert_editor_caption": "Ảnh chụp trình soạn mẫu chứng chỉ"
   }
 }

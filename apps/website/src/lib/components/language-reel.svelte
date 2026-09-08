@@ -1,5 +1,6 @@
 <script>
   import { BlurFade } from '@cio/ui/custom/animation/blurfade';
+  import { t } from '$lib/i18n';
   import Check from '@lucide/svelte/icons/check';
   import Languages from '@lucide/svelte/icons/languages';
 
@@ -130,7 +131,9 @@
                       {lang.code.toUpperCase()}
                     </span>
                     <div>
-                      <p class="text-[11px] tracking-wide text-gray-400 uppercase">Now rendering · {lang.en}</p>
+                      <p class="text-[11px] tracking-wide text-gray-400 uppercase">
+                        {$t('shared.now_rendering')} · {lang.en}
+                      </p>
                       <p class="text-xs text-gray-600">{lang.native}</p>
                     </div>
                   </div>

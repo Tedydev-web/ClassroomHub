@@ -152,15 +152,15 @@
 
   <McpServerSection
     eyebrow="Setup"
-    title="Two minutes to wire it up."
+    title={$t('mcp.two_minutes_to_wire_it_up')}
     description="Drop this into your agent's MCP config, restart the client, and you're ready to run any of the recipes above."
     showTools={false}
   />
 
   <PageSignupCTA
-    header="One prompt away from a real course."
-    subText="Spin up a free workspace, paste a recipe, and watch your agent build it."
-    btnLabel="Get started free"
+    header={$t('mcp.one_prompt_away_from_a_real')}
+    subText={$t('mcp.spin_up_a_free_workspace_paste')}
+    btnLabel={$t('mcp.get_started_free')}
   />
 </section>
 

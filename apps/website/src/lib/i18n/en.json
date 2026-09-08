@@ -362,6 +362,762 @@
         "title": "Audit every draft before publish",
         "description": "Get a written summary of what each draft is missing: landing page, quiz questions, certificate rule, or final exam."
       }
-    }
+    },
+    "two_minutes_to_wire_it_up": "Two minutes to wire it up.",
+    "one_prompt_away_from_a_real": "One prompt away from a real course.",
+    "spin_up_a_free_workspace_paste": "Spin up a free workspace, paste a recipe, and watch your agent build it.",
+    "get_started_free": "Get started free"
+  },
+  "dev": {
+    "meta_title": "LMS API, Webhooks, and MCP server | ClassroomHub",
+    "meta_description": "Automate course authoring and learner provisioning with the ClassroomHub REST API, Webhooks, and MCP server. Documented, versioned, no integration tax.",
+    "badge": "Developer reference",
+    "heading_lead": "API, Webhooks, MCP.",
+    "heading_accent": "No integration tax.",
+    "subhead": "ClassroomHub ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no \"premium connector\" plans. Build the integration that fits your stack.",
+    "read_docs": "Read the API docs",
+    "see_pricing": "See pricing",
+    "api_eyebrow": "REST API",
+    "api_heading": "Everything in the LMS is reachable over HTTP.",
+    "api_body": "Bearer-token auth, JSON in, JSON out. Provision learners from your CRM, pull completion data into your warehouse, or build your own admin tooling on the same surface the dashboard uses.",
+    "api_point_objects": "Orgs, users, courses, lessons, exercises, submissions, certificates",
+    "api_point_keys": "Per-org API keys, scoped permissions",
+    "api_point_pagination": "Cursor-based pagination, rate limits documented",
+    "api_point_versioning": "Versioned endpoints with a documented deprecation window",
+    "webhooks_eyebrow": "Webhooks",
+    "webhooks_heading": "Subscribe to the events you care about, instead of polling.",
+    "webhooks_body": "Every important state change posts to your endpoint, signed with your shared secret. We retry with exponential backoff, and you can replay any event from the dashboard.",
+    "stack_eyebrow": "Under the hood",
+    "stack_heading": "Built on a stack your team already knows.",
+    "stack_body": "We run and operate the platform, so there is nothing for you to deploy or patch. The parts you integrate with are documented in full: a typed REST API, signed webhooks, and an MCP server your agents can call directly.",
+    "stack_cta": "API reference →",
+    "stack_label": "Stack",
+    "stack_api": "Hono on Node, Drizzle, Postgres",
+    "stack_ui": "SvelteKit 2, Svelte 5, Tailwind v4",
+    "stack_ai": "Bring your own keys for OpenAI, Anthropic, Google Gemini, or Moonshot",
+    "stack_mcp": "Hosted server,",
+    "cta_header": "Programmable from day one.",
+    "cta_subtext": "API, Webhooks, and an MCP server in the box. Documented, versioned, and ready on day one.",
+    "cta_button": "Read the docs"
+  },
+  "public_courses": {
+    "creatorUseCases": {
+      "0": "A free intro course that leads into a paid program",
+      "1": "A public sample course people can review before they buy",
+      "2": "A short onboarding or community course that does not need login friction",
+      "3": "Partner or reseller training you can share with a link",
+      "4": "A simple home for short lessons and self-graded modules"
+    },
+    "learnerUseCases": {
+      "0": "Browse the full catalog without creating an account",
+      "1": "Read in light mode or dark mode",
+      "2": "Get immediate quiz feedback",
+      "3": "Start on mobile and continue on desktop",
+      "4": "Use a course page that matches the creator brand they came for"
+    },
+    "keyFeatures": {
+      "0": {
+        "title": "Branding controls",
+        "description": "Choose a landing theme, add your logo, set your site name, and connect a custom domain without custom development."
+      },
+      "1": {
+        "title": "Light and dark mode",
+        "description": "The lesson viewer includes a built-in mode switcher, and the learner preference stays in place between visits."
+      },
+      "2": {
+        "title": "Clean lesson pages",
+        "description": "Public course pages use the same design system as the rest of ClassroomHub, so they feel like part of your product instead of a separate microsite."
+      },
+      "3": {
+        "title": "Auto-graded quizzes",
+        "description": "Support for 15 auto-gradable question types, including multiple choice, ordering, hotspot, short answer, and fill-in-the-blank, with instant feedback in the lesson."
+      }
+    },
+    "conversionMechanics": {
+      "0": {
+        "title": "Inline callout cards",
+        "description": "Add a callout card inside any lesson with a title, description, button label, and link to your paid course, checkout, or community."
+      },
+      "1": {
+        "title": "Locked lesson previews",
+        "description": "Leave part of the course open, then replace locked lesson content with a callout that points to the next step."
+      },
+      "2": {
+        "title": "Payment, discount, and invite gating",
+        "description": "Route learners into paid enrollment with payment links, discount codes, or invite-based access."
+      },
+      "3": {
+        "title": "Auto-enroll after sign-up",
+        "description": "Learners who sign in can return to the lesson they were already viewing instead of starting over."
+      }
+    },
+    "brandingItems": {
+      "0": "Custom domain",
+      "1": "Your logo",
+      "2": "Your site name",
+      "3": "Dark mode built-in",
+      "4": "SEO-friendly pages"
+    },
+    "publicCoursesFaqs": {
+      "0": {
+        "question": "Does hosting a public course cost extra?",
+        "answer": "No. Public courses are part of your existing ClassroomHub workspace. Every paid plan can publish them, and learners do not count against your seat limits until they enroll in a paid course."
+      },
+      "1": {
+        "question": "Can I require payment, or capture leads on a public course?",
+        "answer": "Yes. You can attach a payment link, a discount code, or an invite token to the enrollment flow. You can also place callout cards inside lessons that link to a paid course, a community, or any URL you choose."
+      },
+      "2": {
+        "question": "Do I need a custom domain?",
+        "answer": "No. Every public course is available on your ClassroomHub public site by default. A custom domain is optional if you want the course to live at your own URL."
+      },
+      "3": {
+        "question": "Can search engines index a public course?",
+        "answer": "Yes. Public course landing pages and lesson previews are server-rendered and include the metadata search engines need, so courses are discoverable."
+      },
+      "4": {
+        "question": "How are quizzes graded?",
+        "answer": "Instantly in the browser. Public courses support 15 auto-gradable question types, including multiple choice, ordering, matching, hotspot, fill-in-the-blank, numeric, short answer, and file upload."
+      },
+      "5": {
+        "question": "Can I gate some lessons and leave the rest public?",
+        "answer": "Yes. Lock the lessons you want to gate and the viewer will show a callout card in place of the content. You can use that card to send people to the paid version of the course."
+      },
+      "6": {
+        "question": "Can I match the course page to my brand?",
+        "answer": "Yes. You can choose a landing theme, upload your logo, set a site name, and optionally connect a custom domain. Dark mode is built in for learners."
+      }
+    },
+    "workflow": {
+      "0": {
+        "title": "Build the course",
+        "description": "Use the same course editor you already use for paid courses. Public courses support all 15 auto-gradable question types.",
+        "label": "Step 01"
+      },
+      "1": {
+        "title": "Switch type to PUBLIC",
+        "description": "Change the course type to `PUBLIC`. If a question type is not supported, ClassroomHub flags it before publish.",
+        "label": "Step 02"
+      },
+      "2": {
+        "title": "Set the page up",
+        "description": "Choose a theme, add your logo and site name, and connect a custom domain if you want one.",
+        "label": "Step 03"
+      },
+      "3": {
+        "title": "Publish",
+        "description": "Publish the course on your public site, then add callouts or locked lessons where you want to turn readers into enrollments.",
+        "label": "Step 04"
+      }
+    },
+    "public_course_page_on_desktop": "Public course page on desktop",
+    "what_you_get": "What you get",
+    "the_essentials_are_already_built_in": "The essentials are already built in.",
+    "you_do_not_need_a_separate": "You do not need a separate website project to publish public course pages that look finished and work well.",
+    "public_course_empty_state_in_the": "Public course empty state in the dashboard",
+    "branding_options": "Branding options",
+    "how_it_works": "How it works",
+    "set_it_up_in_the_same": "Set it up in the same workflow you already use.",
+    "you_do_not_need_a_second": "You do not need a second publishing tool. Public courses use the same course editor and publishing flow as the rest of ClassroomHub.",
+    "publish_a_public_course_without_spinning": "Publish a public course without spinning up a separate site.",
+    "use_the_same_classroomhub_workspace_to": "Use the same ClassroomHub workspace to share free lessons, add quizzes, and point interested learners toward the next step.",
+    "book_a_demo": "Book a Demo",
+    "public_courses_classroomhub": "Public Courses | ClassroomHub",
+    "public_courses": "Public Courses",
+    "publish_free_courses_that_lead_to": "Publish free courses that lead to paid enrollments.",
+    "public_courses_let_you_share_lessons": "Public courses let you share lessons without asking people to create an account first. You can publish free course content, add quizzes, customize the page, and guide interested learners into a paid course or community.",
+    "start_free": "Start free",
+    "why_teams_use_it": "Why teams use it",
+    "public_courses_are_useful_before_someone": "Public courses are useful before someone is ready to enroll.",
+    "teams_use_them_to_share_sample": "Teams use them to share sample lessons, open training, and course previews. Learners get a low-friction way to read or try the material before deciding what to do next.",
+    "for_creators": "For creators",
+    "a_practical_way_to_publish_useful": "A practical way to publish useful course content in public.",
+    "shareable_by_default": "Shareable by default",
+    "for_learners": "For learners",
+    "a_simple_course_page_that_is": "A simple course page that is easy to browse and easy to read.",
+    "no_login_wall": "No login wall",
+    "moving_people_forward": "Moving people forward",
+    "if_someone_wants_more_you_can": "If someone wants more, you can give them a clear next step.",
+    "public_courses_are_useful_on_their": "Public courses are useful on their own, but they can also lead into a paid course, a cohort, or a community. Add callouts inside lessons, lock selected content, and guide people into enrollment when it makes sense.",
+    "meta_description": "Publish public courses on your own branded page, with built-in quizzes, lesson callouts, and optional custom domains.",
+    "og_description": "A branded public course page for sharing free lessons, quizzes, and previews before someone enrolls.",
+    "faq_heading": "Public courses, answered",
+    "faq_subheading": "A few common questions before teams publish their first public course."
+  },
+  "customer_education": {
+    "workflow": {
+      "0": {
+        "title": "Bring your product knowledge",
+        "description": "Use help docs, onboarding guides, release notes, demo videos, Looms, and internal customer success notes."
+      },
+      "1": {
+        "title": "Build a customer academy",
+        "description": "Create structured courses for onboarding, feature adoption, admin training, and power-user education."
+      },
+      "2": {
+        "title": "Publish it under your brand",
+        "description": "Custom domain, themed landing pages, public course catalog, and embeddable widgets — your academy, not ours."
+      },
+      "3": {
+        "title": "Track adoption & retention",
+        "description": "See progress, assessment results, certificates, and completion data across customers and cohorts."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Branded learning portal",
+        "description": "Customer-facing catalog with landing pages, themes, your logo, your domain, and SEO-ready public pages."
+      },
+      "1": {
+        "title": "Video & rich media lessons",
+        "description": "Embed demos, walkthroughs, Looms, MP4s, PDFs, and slide decks. Auto-thumbnails and transcoding included."
+      },
+      "2": {
+        "title": "Cohorts & learning paths",
+        "description": "Bundle courses into onboarding journeys with required completion order, prerequisites, and certificates."
+      },
+      "3": {
+        "title": "AI lesson assistant",
+        "description": "Each learner gets a Claude-powered tutor inside the lesson that can answer questions and summarise content."
+      },
+      "4": {
+        "title": "Community & Q&A",
+        "description": "Per-course discussion forums and cohort newsfeeds with reactions, threads, and mentions."
+      },
+      "5": {
+        "title": "Certificates customers can share",
+        "description": "Issue branded PDF/PNG certificates with verifiable IDs. Great for customer champions and admin programs."
+      },
+      "6": {
+        "title": "Embeddable widgets",
+        "description": "Drop courses into your help center, marketing site, or in-product onboarding via a single script tag."
+      },
+      "7": {
+        "title": "Adoption analytics",
+        "description": "See who completed onboarding, who passed assessments, and which features need more education."
+      },
+      "8": {
+        "title": "Deliver lessons in 10 languages",
+        "description": "Per-language lesson variants for English, Spanish, Portuguese, German, French, Hindi, Vietnamese, Russian, Polish, and Danish."
+      }
+    },
+    "langs": {
+      "0": {
+        "native": "English",
+        "en": "English",
+        "sample": "Getting Started: Your First Workspace"
+      },
+      "1": {
+        "native": "Español",
+        "en": "Spanish",
+        "sample": "Primeros pasos: Tu primer espacio"
+      },
+      "2": {
+        "native": "Português",
+        "en": "Portuguese",
+        "sample": "Primeiros passos: Seu primeiro workspace"
+      },
+      "3": {
+        "native": "Deutsch",
+        "en": "German",
+        "sample": "Erste Schritte: Dein erster Arbeitsbereich"
+      },
+      "4": {
+        "native": "Français",
+        "en": "French",
+        "sample": "Premiers pas : Votre premier espace"
+      },
+      "6": {
+        "native": "Tiếng Việt",
+        "en": "Vietnamese",
+        "sample": "Bắt đầu: Không gian làm việc đầu tiên"
+      },
+      "7": {
+        "en": "Russian"
+      },
+      "8": {
+        "native": "Polski",
+        "en": "Polish",
+        "sample": "Pierwsze kroki: Twoja przestrzeń"
+      },
+      "9": {
+        "en": "Danish",
+        "sample": "Kom godt i gang: Dit første område"
+      }
+    },
+    "outcomes": {
+      "0": "Self-serve education replaces 1:1 onboarding calls.",
+      "1": "Customers learn core workflows before their first review call.",
+      "2": "Multi-tier programs for end-users vs. champions.",
+      "3": "Public shareable certificates fuel community advocacy.",
+      "4": "Targeted micro-courses when you ship something new.",
+      "5": "The customers who know your product never churn quietly."
+    },
+    "branded_customer_academy_on_a_custom": "Branded customer academy on a custom domain — hero, catalog, themed branding",
+    "built_for_product_led_teams": "Built for product-led teams",
+    "how_it_works": "How it works",
+    "from_scattered_docs_to_a_polished": "From scattered docs to a polished academy.",
+    "make_it_yours": "Make it yours",
+    "customize_how_your_customer_academy_looks": "Customize how your customer academy looks like.",
+    "theme_the_catalog_swap_fonts_and": "Theme the catalog, swap fonts and colors to match your brand, and build landing pages that feel like the rest of your product — without losing the LMS underneath.",
+    "every_piece_included": "Every piece, included",
+    "everything_you_need_to_teach_customers": "Everything you need to teach customers your product.",
+    "get_started": "Get started",
+    "an_ai_tutor_in_every_lesson": "An AI tutor in every lesson.",
+    "an_ai_tutor_sits_inside_every": "An AI tutor sits inside every lesson — lesson-aware, multilingual, and patient. It answers the questions customers would have sent to support, before they leave the page.",
+    "global_customers": "Global customers",
+    "author_once_publish_in_ten_each": "Author once, publish in ten. Each lesson supports per-language variants — customers pick the language they read in, certificates render in that language, and adoption analytics roll up across regions.",
+    "embed_anywhere": "Embed anywhere",
+    "bring_lessons_to_your_help_center": "Bring lessons to your help center, your app, your marketing site.",
+    "publish_any_course_as_a_widget": "Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to ClassroomHub.",
+    "launch_your_customer_academy": "Launch your customer academy.",
+    "build_a_branded_learning_portal_customers": "Build a branded learning portal customers actually use. Custom domain, AI tutoring, certificates, and analytics — out of the box.",
+    "book_a_demo": "Book a Demo",
+    "customer_academy_software_for_saas_classroomhub": "Customer academy software for SaaS | ClassroomHub",
+    "customer_education": "Customer Education",
+    "launch_a_customer_academy": "Launch a customer academy",
+    "turn_your_help_docs_onboarding_videos": "Turn your help docs, onboarding videos, and product knowledge into a branded learning portal. Train customers, certify power-users, and drive adoption — under your own domain, with an AI tutor in every lesson.",
+    "start_free": "Start free",
+    "custom_domain": "Custom domain",
+    "ai_in_every_lesson": "AI in every lesson",
+    "certified_champions": "Certified champions",
+    "turn_power_users_into_a_public": "Turn power-users into a public community.",
+    "bundle_courses_into_cohorts_gate_them": "Bundle courses into cohorts, gate them with a required exercise, and issue shareable certificates. Customer champions love showing off — and your product gets a quiet army of advocates.",
+    "branded_pdf_png_certificates_with_verifiable": "Branded PDF/PNG certificates with verifiable IDs",
+    "cohorts_with_required_completion_order": "Cohorts with required completion order",
+    "per_course_q_a_and_cohort": "Per-course Q&A and cohort-wide newsfeed",
+    "why_teams_ship_this": "Why teams ship this",
+    "educated_customers_churn_less_period": "Educated customers churn less. Period.",
+    "launch_a_branded_customer_academy_onboarding": "Launch a branded customer academy. Onboarding, feature adoption, admin training, and certification — under your own domain, with an AI tutor in every lesson."
+  },
+  "compliance_training": {
+    "workflow": {
+      "0": {
+        "title": "Start with the policies you already have",
+        "description": "Bring SOPs, PDFs, Notion pages, Google Docs, videos, and internal process notes into one structured course."
+      },
+      "1": {
+        "title": "Assign training by audience",
+        "description": "Import people via CSV, group by team or role, and assign the right course to the right audience in bulk."
+      },
+      "2": {
+        "title": "Set the compliance rules",
+        "description": "Define passing scores, deadlines, retake intervals, grace periods, reminders, and renewal windows."
+      },
+      "3": {
+        "title": "Keep proof in one place",
+        "description": "Track who is compliant, expiring, in progress, waived, or non-compliant without ever opening a spreadsheet."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Compliance status tracking",
+        "description": "Know at a glance whether each learner is compliant, expiring soon, or non-compliant — and surface the people who need a reminder."
+      },
+      "1": {
+        "title": "Renewals & retake intervals",
+        "description": "Configure recurring training rules — annual, biannual, custom — so certifications refresh on schedule."
+      },
+      "2": {
+        "title": "Deadlines & grace periods",
+        "description": "Set required completion dates and grace windows. Reminders go out automatically before learners fall out of compliance."
+      },
+      "3": {
+        "title": "Waivers, resets, and extensions",
+        "description": "Handle real-world exceptions without losing the audit history of who was required to complete training."
+      },
+      "4": {
+        "title": "Certificates with custom IDs",
+        "description": "Issue branded PDF/PNG certificates with configurable ID formats (year, month, sequence, org prefix) tied to course completion."
+      },
+      "5": {
+        "title": "Completion records & certificate ledger",
+        "description": "Every completion, mark, and issued certificate is stored against the learner — searchable from the dashboard when you need to look up who finished what."
+      },
+      "6": {
+        "title": "SSO and domain enforcement",
+        "description": "Force SSO by email domain with Better Auth. Break-glass overrides for admins; full sign-in audit history."
+      },
+      "7": {
+        "title": "Audience targeting",
+        "description": "Bulk enrollment, role-based access, and group assignment. Onboard contractors, vendors, and full-time staff differently."
+      }
+    },
+    "questionTypes": {
+      "0": "Multiple choice",
+      "1": "Checkbox",
+      "2": "True / false",
+      "3": "Short answer",
+      "4": "Paragraph",
+      "5": "Numeric",
+      "6": "Fill in the blank",
+      "7": "Matching",
+      "8": "Ordering",
+      "9": "File upload",
+      "10": "Hotspot",
+      "11": "Word bank",
+      "12": "Star rating",
+      "14": "Video recording"
+    },
+    "useCases": {
+      "0": "Annual security awareness",
+      "1": "GDPR & privacy training",
+      "2": "HIPAA refreshers",
+      "3": "AML / KYC training",
+      "4": "Workplace conduct & harassment",
+      "5": "Contractor & vendor onboarding",
+      "6": "Healthcare SOPs",
+      "7": "Financial-services policy acks",
+      "8": "Manufacturing safety",
+      "9": "Role-based access training"
+    },
+    "compliance_dashboard_required_learners_grouped_by": "Compliance dashboard — required learners grouped by compliant, expiring soon, and non-compliant",
+    "built_for_evidence_based_programs": "Built for evidence-based programs",
+    "how_it_works": "How it works",
+    "from_policy_document_to_provable_completion": "From policy document to provable completion.",
+    "inside_a_compliance_program": "Inside a compliance program",
+    "a_look_inside_a_compliance_program": "A look inside a compliance program.",
+    "from_importing_your_team_to_issuing": "From importing your team to issuing a certificate — the whole flow at a glance.",
+    "built_for_audit_pressure": "Built for audit pressure",
+    "everything_you_need_when_training_completion": "Everything you need when training completion is not optional.",
+    "get_started": "Get started",
+    "renewals_on_autopilot": "Renewals on autopilot",
+    "training_that_re_runs_itself": "Training that re-runs itself.",
+    "set_a_retake_interval_once_classroomhub": "Set a retake interval once. ClassroomHub automatically moves learners back into “expiring soon”, sends reminders, holds them in a grace period, and flags non-compliance — all without admin intervention.",
+    "a_personal_course_authoring_assistant": "A personal course-authoring assistant.",
+    "drop_in_a_policy_doc_or": "Drop in a policy doc or paste a URL. The assistant plans the compliance course, drafts each lesson, writes the quiz questions, and stops for your approval before publishing — so building required training drops from a week to an afternoon.",
+    "keep_your_employees_compliant_and_track": "Keep your employees compliant and track who's falling behind.",
+    "build_certified_training_from_your_existing": "Build certified training from your existing policies, assign it to the right people, and keep proof of completion in one place.",
+    "book_a_demo": "Book a Demo",
+    "compliance_training_classroomhub": "Compliance Training | ClassroomHub",
+    "compliance_training": "Compliance Training",
+    "keep_your_employees_compliant_and": "Keep your employees compliant and",
+    "turn_policies_sops_docs_and_videos": "Turn policies, SOPs, docs, and videos into assigned courses with quizzes, certificates, renewal rules, and completion evidence. Know exactly who is compliant — and prove it.",
+    "start_free": "Start free",
+    "soc_2_friendly": "SOC 2-friendly",
+    "audit_ready_records": "Audit-ready records",
+    "your_own_domain": "Your own domain",
+    "annual_biannual_or_custom_intervals_per": "Annual, biannual, or custom intervals per course",
+    "reminder_cadences_before_expiry": "Reminder cadences before expiry",
+    "configurable_grace_periods_and_waiver_workflows": "Configurable grace periods and waiver workflows",
+    "pause_renewals_for_leave_role_change": "Pause renewals for leave, role change, or offboarding",
+    "don_t_settle_for_multiple_choice": "Don't settle for multiple choice. Test understanding the way the policy actually requires — with partial credit, file uploads, video evidence, and manual override when you need a human in the loop.",
+    "auto_graded_12": "Auto-graded · 12",
+    "partial_credit_9": "Partial credit · 9",
+    "manual_review_3": "Manual review · 3",
+    "certificates_evidence": "Certificates & evidence",
+    "proof_of_training_designed_for_your": "Proof of training, designed for your brand.",
+    "configure_the_certificate_id_format_the": "Configure the certificate ID format the way your records team needs it — by year, month, sequence, or a custom prefix. Download as PDF or PNG. Every issuance is logged for audit.",
+    "templated_and_branded_with_your_logo": "Templated and branded with your logo and colours",
+    "tied_to_a_required_passing_score": "Tied to a required passing score and assessment",
+    "auto_revokes_when_a_renewal_lapses": "Auto-revokes when a renewal lapses",
+    "use_cases": "Use cases",
+    "training_for_the_work_people_are": "Training for the work people are required to know.",
+    "keep_your_employees_compliant_and_track_2": "Keep your employees compliant and track who's falling behind. Turn policies and SOPs into certified training with renewals, grace periods, and audit evidence.",
+    "turn_policies_and_sops_into_certified": "Turn policies and SOPs into certified training. Track compliance, renewals, grace periods, and audit evidence in one place."
+  },
+  "partner_training": {
+    "steps": {
+      "0": {
+        "title": "Spin up a partner workspace",
+        "description": "Add a separate partner workspace under your existing account. Its own brand, its own domain, its own catalog. Customers never see partner content, and partners never see customer content."
+      },
+      "1": {
+        "title": "Package your product knowledge",
+        "description": "Bring in your docs, sales playbooks, release notes, demo videos, and enablement Looms. The AI assistant turns them into a structured course you can edit."
+      },
+      "2": {
+        "title": "Design certification paths",
+        "description": "Group courses into cohorts for onboarding, sales, implementation, and advanced topics, with required exercises and a final exam."
+      },
+      "3": {
+        "title": "Track readiness and certify",
+        "description": "See progress, marks, submissions, and issued certificates across partner orgs and individual reps."
+      }
+    },
+    "features": {
+      "0": {
+        "title": "Cohorts and learning paths",
+        "description": "Bundle multiple courses into a certification journey with a required order and shared progress."
+      },
+      "1": {
+        "title": "Branded partner certificates",
+        "description": "Issue PDF and PNG certificates with your logo, configurable IDs, and a public verification URL partners can share."
+      },
+      "2": {
+        "title": "Custom domain and branded portal",
+        "description": "Run your partner academy on your own domain via Cloudflare. Theme, logo, landing pages, and SEO are all yours."
+      },
+      "3": {
+        "title": "Public pages and embeds",
+        "description": "Publish course landing pages, or embed a learning widget on your partner portal, intranet, or marketing site."
+      },
+      "4": {
+        "title": "Multilingual content",
+        "description": "Deliver lessons in 10 languages. Author once and publish per-language variants for English, Spanish, Portuguese, German, French, Hindi, and more."
+      },
+      "5": {
+        "title": "Performance analytics",
+        "description": "Drill into completion, time-to-certify, exercise marks, and submission quality, by partner, cohort, or geography."
+      },
+      "6": {
+        "title": "AI lesson assistant",
+        "description": "Each partner gets a Claude-powered tutor inside the course that can summarise lessons and answer product questions."
+      },
+      "7": {
+        "title": "Cohort enrolment and invites",
+        "description": "Import full partner orgs from CSV, assign by role, gate paid programs, and track who has accepted their invite."
+      }
+    },
+    "langs": {
+      "0": {
+        "native": "English",
+        "en": "English",
+        "sample": "Implementation Checklist"
+      },
+      "1": {
+        "native": "Español",
+        "en": "Spanish",
+        "sample": "Lista de implementación"
+      },
+      "2": {
+        "native": "Português",
+        "en": "Portuguese",
+        "sample": "Lista de implementação"
+      },
+      "3": {
+        "native": "Deutsch",
+        "en": "German",
+        "sample": "Implementierungs-Checkliste"
+      },
+      "4": {
+        "native": "Français",
+        "en": "French",
+        "sample": "Liste de mise en œuvre"
+      },
+      "6": {
+        "native": "Tiếng Việt",
+        "en": "Vietnamese",
+        "sample": "Danh sách triển khai"
+      },
+      "7": {
+        "en": "Russian"
+      },
+      "8": {
+        "native": "Polski",
+        "en": "Polish",
+        "sample": "Lista wdrożeniowa"
+      },
+      "9": {
+        "en": "Danish",
+        "sample": "Implementeringstjekliste"
+      }
+    },
+    "partner_academy_latest_courses_cohort_structure": "Partner academy — latest courses, cohort structure, and learner state",
+    "for_partner_programs_at": "For partner programs at",
+    "partner_enablement": "Partner enablement",
+    "give_every_partner_the_same_starting": "Give every partner the same starting point.",
+    "public_course_pages": "Public course pages",
+    "open_a_few_courses_to_the": "Open a few courses to the public, gate the rest.",
+    "pick_the_courses_you_want_anyone": "Pick the courses you want anyone to see. Partners (and the curious ones who aren’t partners yet) can jump in without signing up, watch a few lessons, and if they’re hooked they create an account to unlock the rest of your catalog.",
+    "what_you_can_run": "What you can run",
+    "certification_programs_for_the_people_who": "Certification programs for the people who represent your product.",
+    "embed_anywhere": "Embed anywhere",
+    "drop_a_learning_widget_into_any": "Drop a learning widget into any site.",
+    "generate_a_published_widget_payload_for": "Generate a published widget payload for any course, paste the snippet into your partner portal, intranet, or marketing page. Progress, marks, and certificates sync back to ClassroomHub automatically.",
+    "global_partners": "Global partners",
+    "author_once_publish_in_ten_each": "Author once, publish in ten. Each lesson supports per-language variants. Learners pick the language they read in, certificates render in that language, and analytics roll up across regions.",
+    "certify_your_next_partner_cohort": "Certify your next partner cohort.",
+    "turn_your_product_knowledge_into_a": "Turn your product knowledge into a repeatable program. Courses, certificates, branded portal, and analytics in one place.",
+    "book_a_demo": "Book a Demo",
+    "partner_training_classroomhub": "Partner Training | ClassroomHub",
+    "partner_training": "Partner Training",
+    "train_the_partners": "Train the partners",
+    "run_a_partner_workspace_alongside_your": "Run a partner workspace alongside your customer academy. Separate brand, separate domain, same account. Certify resellers, agencies, and integrators with programs and assessments that stay in sync as your product changes.",
+    "start_free": "Start free",
+    "custom_domain": "Custom domain",
+    "separate_workspace": "Separate workspace",
+    "readiness_analytics": "Readiness analytics",
+    "see_which_partners_are_ready_to": "See which partners are ready to sell, and which need help.",
+    "drill_into_completion_rates_time_to": "Drill into completion rates, time-to-certify, exercise marks, and submission quality. Filter by partner org, cohort, geography, or certification path. Export anything to CSV.",
+    "course_level_and_cohort_level_dashboards": "Course-level and cohort-level dashboards",
+    "per_learner_gradebook_with_manual_override": "Per-learner gradebook with manual override",
+    "newsfeed_activity_and_q_a_participation": "Newsfeed activity and Q&A participation",
+    "time_to_certify": "Time to certify",
+    "pass_rate": "Pass rate",
+    "completion_by_partner_org": "Completion by partner org",
+    "replace_with_static_partner_analytics_dashboard": "Partner analytics dashboard — completion, time to certify, and pass rate by partner org",
+    "run_a_partner_academy_alongside_your": "Run a partner academy alongside your customer one. Separate brand, separate domain, same account. Certify resellers, agencies, and integrators with programs, certificates, and analytics."
+  },
+  "docs_vs_academy": {
+    "quickVerdicts": {
+      "0": {
+        "title": "Use documentation when the reader knows what they need.",
+        "description": "Docs are best for lookup, reference, troubleshooting, API details, product behavior, release notes, and anything a user needs to search in the moment."
+      },
+      "1": {
+        "title": "Use a company academy when the learner needs a guided path.",
+        "description": "Academies are best when people need onboarding, role-based training, practice, proof of completion, certification, or a repeatable learning journey."
+      }
+    },
+    "comparisonRows": {
+      "0": {
+        "note": "The person already has a task in mind and needs the fastest reliable answer."
+      },
+      "1": {
+        "note": "Beginners need sequencing, context, examples, and a clear path from first step to confident use."
+      },
+      "2": {
+        "note": "Expertise needs assessment, completion records, certificates, or some visible proof of readiness."
+      },
+      "3": {
+        "note": "Partner onboarding usually needs role-based paths, assignments, progress tracking, and certification."
+      },
+      "4": {
+        "note": "Lookup work should stay searchable, skimmable, linkable, and easy to update."
+      },
+      "5": {
+        "note": "Completion, reminders, renewals, and audit evidence belong in an academy or LMS."
+      },
+      "6": {
+        "note": "API details, parameters, edge cases, and error codes work best as documentation."
+      },
+      "7": {
+        "note": "A program needs structure: lessons, cohorts or audiences, assessments, certificates, and analytics."
+      }
+    },
+    "docsUseCases": {
+      "0": "Product setup steps that users need to revisit",
+      "1": "API references, SDK details, Webhooks, limits, and errors",
+      "2": "Feature explanations and configuration options",
+      "3": "Troubleshooting articles and known issue workarounds",
+      "4": "Release notes, migration notes, and changelogs",
+      "5": "Short answers that support, success, and sales teams repeatedly send"
+    },
+    "academyUseCases": {
+      "0": "New employee, customer, or partner onboarding",
+      "1": "Admin training for complex products or internal systems",
+      "2": "Certification for resellers, agencies, consultants, or power users",
+      "3": "Compliance training that needs proof, renewal, and audit evidence",
+      "4": "Feature adoption programs after a major product launch",
+      "5": "Role-based enablement for sales, support, implementation, or customer success teams"
+    },
+    "decisionSignals": {
+      "0": {
+        "title": "If the audience is searching, write docs.",
+        "description": "Search intent usually means the person already has context. They need precision, not a course. Make the page easy to scan, link related topics, and keep it current."
+      },
+      "1": {
+        "title": "If the audience needs sequence, build an academy.",
+        "description": "Sequence matters when concepts depend on each other. A company academy can start with foundations, add practice, check understanding, then issue proof."
+      },
+      "2": {
+        "title": "If the business needs proof, build an academy.",
+        "description": "Docs can inform, but they rarely prove readiness. Use courses, assessments, completion records, and certificates when managers need to know who is trained."
+      },
+      "3": {
+        "title": "If different roles need different outcomes, build paths.",
+        "description": "A support agent, admin, reseller, and executive sponsor should not read the same long documentation tree. Academies let each role follow a purpose-built path."
+      }
+    },
+    "hybridModel": {
+      "0": {
+        "title": "Docs stay as the source of truth",
+        "description": "Keep canonical facts in documentation: product behavior, technical references, setup options, screenshots, limitations, and troubleshooting details."
+      },
+      "1": {
+        "title": "Academy packages the learning journey",
+        "description": "Turn the most important docs into guided lessons with context, order, exercises, quizzes, examples, and certificates."
+      },
+      "2": {
+        "title": "Support and success route people to the right layer",
+        "description": "Send advanced users to docs for quick answers. Send new users, partners, and internal teams to academy paths when they need structured training."
+      }
+    },
+    "academySignals": {
+      "0": "People keep asking for onboarding calls even though docs exist.",
+      "1": "Customers read the docs but still do not adopt the full workflow.",
+      "2": "Managers ask who has completed training.",
+      "3": "Partners need certification before they sell or implement.",
+      "4": "Compliance, policy, or process training needs renewal evidence.",
+      "5": "Product changes require more than an announcement."
+    },
+    "docs_answering_questions_customer_academy_building": "Docs answering questions, customer academy building capability — side by side",
+    "decision_framework": "Decision framework",
+    "ask_these_four_questions_before_creating": "Ask these four questions before creating another content surface.",
+    "the_wrong_format_creates_expensive_confusion": "The wrong format creates expensive confusion. Long docs cannot force mastery, and long courses are frustrating when someone only needs one answer.",
+    "classroomhub_can_host_your_company_academy": "ClassroomHub can host your company academy.",
+    "turn_your_docs_videos_policies_and": "Turn your docs, videos, policies, and product knowledge into a branded academy with courses, assessments, certificates, analytics, and a custom domain.",
+    "book_a_demo": "Book a Demo",
+    "docs_vs_company_academy_classroomhub": "Docs vs Company Academy | ClassroomHub",
+    "docs_vs_company_academy": "Docs vs Company Academy",
+    "documentation_answers_questions": "Documentation answers questions.",
+    "a_company_academy_teaches_them_to": "A company academy teaches them to do the job.",
+    "most_teams_do_not_need_to": "Most teams do not need to choose one forever. They need to understand the job each format performs. This guide explains when docs are enough, when a company academy is the better tool, and how the two should work together.",
+    "explore_academies": "Explore academies",
+    "decision_table": "Decision table",
+    "start_with_the_need_then_choose": "Start with the need, then choose the format.",
+    "if_the_person_wants_one_answer": "If the person wants one answer, documentation is usually right. If the person needs a path, proof, or repeatable onboarding, a company academy is usually right.",
+    "when_docs_are_enough": "When docs are enough",
+    "choose_documentation_when_the_task_is": "Choose documentation when the task is searchable, narrow, and repeatable.",
+    "documentation_works_best_when_the_user": "Documentation works best when the user has a specific job and needs a precise answer. Easy to find, easy to scan, easy to trust — no enrollment required.",
+    "reference_retrieval": "Reference & retrieval",
+    "when_an_academy_is_better": "When an academy is better",
+    "choose_a_company_academy_when_capability": "Choose a company academy when capability, behavior change, or proof matters.",
+    "an_academy_turns_scattered_knowledge_into": "An academy turns scattered knowledge into a structured path. Use it when the learner needs context before details, practice before independence, or a certificate before being trusted with a role.",
+    "structured_learning": "Structured learning",
+    "the_hybrid_model": "The hybrid model",
+    "the_strongest_teams_use_docs_and": "The strongest teams use docs and academies together.",
+    "treat_documentation_as_the_reference_layer": "Treat documentation as the reference layer and the academy as the enablement layer. The academy should not duplicate every page in your docs. It should organize the important material into an outcome-driven path.",
+    "a_practical_guide_to_when_your": "A practical guide to when your company needs documentation, when it needs a company academy, and how both work together for onboarding, enablement, and certification."
+  },
+  "vs_help_docs": {
+    "competitors": {
+      "0": {
+        "name": "Intercom Articles",
+        "good": "Best-in-class in-app help widget. Great search. Where short-form, \"right-now\" answers belong.",
+        "missing": "No sequenced learning paths. No assessments. No certification. No per-learner progress."
+      },
+      "1": {
+        "name": "Zendesk Guide",
+        "good": "Mature knowledge base, deeply integrated with Zendesk tickets. Excellent for tier-1 deflection.",
+        "missing": "No course structure, no grading, no certificates. Built for support, not for learning."
+      },
+      "2": {
+        "name": "Confluence",
+        "good": "The default internal docs tool. Cheap, ubiquitous, easy to write into.",
+        "missing": "Not customer-facing by default. No course primitives. No public certs. No learner analytics."
+      }
+    },
+    "verdicts": {
+      "0": {
+        "title": "Keep your help docs.",
+        "body": "When a customer already knows what they need, they search. Help docs win at lookup. Don't rip out the tool that already does that job well."
+      },
+      "1": {
+        "title": "Add a customer academy alongside.",
+        "body": "When a customer needs to learn the product (onboarding, role-based programs, certification, adoption courses for new features), that's the job an academy was built for."
+      }
+    },
+    "stop_forwarding_help_articles_to_every": "Stop forwarding help articles to every new customer.",
+    "bundle_the_articles_into_a_real": "Bundle the articles into a real onboarding course, add a final assessment, issue a certificate, and watch retention move.",
+    "book_a_demo": "Book a Demo",
+    "customer_academy_vs_help_docs": "Customer academy vs help docs",
+    "why_your_help_center": "Why your help center",
+    "intercom_articles_zendesk_guide_and_confluence": "Intercom Articles, Zendesk Guide, and Confluence are excellent at one thing: answering \"how do I do X?\" when the user already knows what they need. They were never designed to take a brand-new customer from zero to confident product use. That's what a customer academy is for.",
+    "launch_your_academy_free": "Launch your academy free",
+    "see_a_live_academy": "See a live academy",
+    "the_short_answer": "The short answer",
+    "you_need_both_they_do_different": "You need both. They do different jobs.",
+    "tool_by_tool": "Tool-by-tool",
+    "what_the_popular_help_doc_tools": "What the popular help-doc tools are great at, and what they aren't.",
+    "where_it_wins": "Where it wins",
+    "where_it_doesn_t": "Where it doesn't",
+    "meta_title": "Customer academy vs help docs (Intercom, Zendesk, Confluence) | ClassroomHub",
+    "meta_description": "Why a customer academy outperforms help docs for onboarding, certification, and adoption, compared head-to-head with Intercom Articles, Zendesk Guide, and Confluence."
+  },
+  "shared": {
+    "now_rendering": "Now rendering",
+    "cert_editor_caption": "Screenshot of the certificate template editor"
   }
 }

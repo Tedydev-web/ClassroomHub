@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { SALES_EMAIL } from '@cio/utils/constants';
   import { PageHeader, PageSignupCTA, WorkflowSteps } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
@@ -22,15 +23,13 @@
   const quickVerdicts = [
     {
       Icon: FileText,
-      title: 'Use documentation when the reader knows what they need.',
-      description:
-        'Docs are best for lookup, reference, troubleshooting, API details, product behavior, release notes, and anything a user needs to search in the moment.'
+      title: $t('docs_vs_academy.quickVerdicts.0.title'),
+      description: $t('docs_vs_academy.quickVerdicts.0.description')
     },
     {
       Icon: GraduationCap,
-      title: 'Use a company academy when the learner needs a guided path.',
-      description:
-        'Academies are best when people need onboarding, role-based training, practice, proof of completion, certification, or a repeatable learning journey.'
+      title: $t('docs_vs_academy.quickVerdicts.1.title'),
+      description: $t('docs_vs_academy.quickVerdicts.1.description')
     }
   ];
 
@@ -39,131 +38,121 @@
       need: '"How do I do X?"',
       docs: true,
       academy: false,
-      note: 'The person already has a task in mind and needs the fastest reliable answer.'
+      note: $t('docs_vs_academy.comparisonRows.0.note')
     },
     {
       need: '"Teach me the product from zero"',
       docs: false,
       academy: true,
-      note: 'Beginners need sequencing, context, examples, and a clear path from first step to confident use.'
+      note: $t('docs_vs_academy.comparisonRows.1.note')
     },
     {
       need: '"Prove I am an expert"',
       docs: false,
       academy: true,
-      note: 'Expertise needs assessment, completion records, certificates, or some visible proof of readiness.'
+      note: $t('docs_vs_academy.comparisonRows.2.note')
     },
     {
       need: '"Onboard a new partner team"',
       docs: false,
       academy: true,
-      note: 'Partner onboarding usually needs role-based paths, assignments, progress tracking, and certification.'
+      note: $t('docs_vs_academy.comparisonRows.3.note')
     },
     {
       need: '"Look something up fast"',
       docs: true,
       academy: false,
-      note: 'Lookup work should stay searchable, skimmable, linkable, and easy to update.'
+      note: $t('docs_vs_academy.comparisonRows.4.note')
     },
     {
       need: '"Make sure everyone completed required training"',
       docs: false,
       academy: true,
-      note: 'Completion, reminders, renewals, and audit evidence belong in an academy or LMS.'
+      note: $t('docs_vs_academy.comparisonRows.5.note')
     },
     {
       need: '"Explain a technical reference"',
       docs: true,
       academy: false,
-      note: 'API details, parameters, edge cases, and error codes work best as documentation.'
+      note: $t('docs_vs_academy.comparisonRows.6.note')
     },
     {
       need: '"Launch a repeatable customer education program"',
       docs: false,
       academy: true,
-      note: 'A program needs structure: lessons, cohorts or audiences, assessments, certificates, and analytics.'
+      note: $t('docs_vs_academy.comparisonRows.7.note')
     }
   ];
 
   const docsUseCases = [
-    'Product setup steps that users need to revisit',
-    'API references, SDK details, Webhooks, limits, and errors',
-    'Feature explanations and configuration options',
-    'Troubleshooting articles and known issue workarounds',
-    'Release notes, migration notes, and changelogs',
-    'Short answers that support, success, and sales teams repeatedly send'
+    $t('docs_vs_academy.docsUseCases.0'),
+    $t('docs_vs_academy.docsUseCases.1'),
+    $t('docs_vs_academy.docsUseCases.2'),
+    $t('docs_vs_academy.docsUseCases.3'),
+    $t('docs_vs_academy.docsUseCases.4'),
+    $t('docs_vs_academy.docsUseCases.5')
   ];
 
   const academyUseCases = [
-    'New employee, customer, or partner onboarding',
-    'Admin training for complex products or internal systems',
-    'Certification for resellers, agencies, consultants, or power users',
-    'Compliance training that needs proof, renewal, and audit evidence',
-    'Feature adoption programs after a major product launch',
-    'Role-based enablement for sales, support, implementation, or customer success teams'
+    $t('docs_vs_academy.academyUseCases.0'),
+    $t('docs_vs_academy.academyUseCases.1'),
+    $t('docs_vs_academy.academyUseCases.2'),
+    $t('docs_vs_academy.academyUseCases.3'),
+    $t('docs_vs_academy.academyUseCases.4'),
+    $t('docs_vs_academy.academyUseCases.5')
   ];
 
   const decisionSignals = [
     {
       Icon: Search,
-      title: 'If the audience is searching, write docs.',
-      description:
-        'Search intent usually means the person already has context. They need precision, not a course. Make the page easy to scan, link related topics, and keep it current.'
+      title: $t('docs_vs_academy.decisionSignals.0.title'),
+      description: $t('docs_vs_academy.decisionSignals.0.description')
     },
     {
       Icon: Route,
-      title: 'If the audience needs sequence, build an academy.',
-      description:
-        'Sequence matters when concepts depend on each other. A company academy can start with foundations, add practice, check understanding, then issue proof.'
+      title: $t('docs_vs_academy.decisionSignals.1.title'),
+      description: $t('docs_vs_academy.decisionSignals.1.description')
     },
     {
       Icon: ClipboardCheck,
-      title: 'If the business needs proof, build an academy.',
-      description:
-        'Docs can inform, but they rarely prove readiness. Use courses, assessments, completion records, and certificates when managers need to know who is trained.'
+      title: $t('docs_vs_academy.decisionSignals.2.title'),
+      description: $t('docs_vs_academy.decisionSignals.2.description')
     },
     {
       Icon: Users,
-      title: 'If different roles need different outcomes, build paths.',
-      description:
-        'A support agent, admin, reseller, and executive sponsor should not read the same long documentation tree. Academies let each role follow a purpose-built path.'
+      title: $t('docs_vs_academy.decisionSignals.3.title'),
+      description: $t('docs_vs_academy.decisionSignals.3.description')
     }
   ];
 
   const hybridModel = [
     {
-      title: 'Docs stay as the source of truth',
-      description:
-        'Keep canonical facts in documentation: product behavior, technical references, setup options, screenshots, limitations, and troubleshooting details.'
+      title: $t('docs_vs_academy.hybridModel.0.title'),
+      description: $t('docs_vs_academy.hybridModel.0.description')
     },
     {
-      title: 'Academy packages the learning journey',
-      description:
-        'Turn the most important docs into guided lessons with context, order, exercises, quizzes, examples, and certificates.'
+      title: $t('docs_vs_academy.hybridModel.1.title'),
+      description: $t('docs_vs_academy.hybridModel.1.description')
     },
     {
-      title: 'Support and success route people to the right layer',
-      description:
-        'Send advanced users to docs for quick answers. Send new users, partners, and internal teams to academy paths when they need structured training.'
+      title: $t('docs_vs_academy.hybridModel.2.title'),
+      description: $t('docs_vs_academy.hybridModel.2.description')
     }
   ];
 
   const academySignals = [
-    'People keep asking for onboarding calls even though docs exist.',
-    'Customers read the docs but still do not adopt the full workflow.',
-    'Managers ask who has completed training.',
-    'Partners need certification before they sell or implement.',
-    'Compliance, policy, or process training needs renewal evidence.',
-    'Product changes require more than an announcement.'
+    $t('docs_vs_academy.academySignals.0'),
+    $t('docs_vs_academy.academySignals.1'),
+    $t('docs_vs_academy.academySignals.2'),
+    $t('docs_vs_academy.academySignals.3'),
+    $t('docs_vs_academy.academySignals.4'),
+    $t('docs_vs_academy.academySignals.5')
   ];
 </script>
 
 <svelte:head>
-  <title>Docs vs Company Academy | ClassroomHub</title>
-  <meta
-    name="description"
-    content="A practical guide to when your company needs documentation, when it needs a company academy, and how both work together for onboarding, enablement, and certification."
-  />
+  <title>{$t('docs_vs_academy.docs_vs_company_academy_classroomhub')}</title>
+  <meta name="description" content={$t('docs_vs_academy.a_practical_guide_to_when_your')} />
 </svelte:head>
 
 <section class="bg-white">
@@ -171,24 +160,23 @@
     <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <BookOpen size={14} class="text-blue-700" />
-        Docs vs Company Academy
+        {$t('docs_vs_academy.docs_vs_company_academy')}
       </Badge>
 
       <h1 class="text-[clamp(2.4rem,4vw,3.6rem)] leading-[1.08] font-medium tracking-tight text-gray-950">
-        Documentation answers questions.
-        <em class="text-blue-700 not-italic">A company academy teaches them to do the job.</em>
+        {$t('docs_vs_academy.documentation_answers_questions')}
+        <em class="text-blue-700 not-italic">{$t('docs_vs_academy.a_company_academy_teaches_them_to')}</em>
       </h1>
 
       <p class="mt-6 text-sm leading-relaxed lg:text-base">
-        Most teams do not need to choose one forever. They need to understand the job each format performs. This guide
-        explains when docs are enough, when a company academy is the better tool, and how the two should work together.
+        {$t('docs_vs_academy.most_teams_do_not_need_to')}
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >Book a Demo</Button
+          >{$t('docs_vs_academy.book_a_demo')}</Button
         >
-        <Button href="/customer-education" variant="outline">Explore academies</Button>
+        <Button href="/customer-education" variant="outline">{$t('docs_vs_academy.explore_academies')}</Button>
       </div>
     </div>
 
@@ -196,7 +184,7 @@
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/docs-vs-company-academy/docs-vs-customer-site.jpeg"
-          alt="Docs answering questions, customer academy building capability — side by side"
+          alt={$t('docs_vs_academy.docs_answering_questions_customer_academy_building')}
           class="block h-auto w-full"
           loading="eager"
           decoding="async"
@@ -208,13 +196,14 @@
   <section class="bg-gray-50 px-6 py-16 lg:px-12 lg:py-24">
     <div class="mx-auto max-w-[1120px]">
       <div class="mb-10 max-w-[720px]">
-        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">Decision table</div>
+        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('docs_vs_academy.decision_table')}
+        </div>
         <h2 class="text-[clamp(2rem,3vw,2.7rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-          Start with the need, then choose the format.
+          {$t('docs_vs_academy.start_with_the_need_then_choose')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          If the person wants one answer, documentation is usually right. If the person needs a path, proof, or
-          repeatable onboarding, a company academy is usually right.
+          {$t('docs_vs_academy.if_the_person_wants_one_answer')}
         </p>
       </div>
 
@@ -259,13 +248,14 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-gray-200">
         <!-- When docs are enough -->
         <div class="lg:pr-10">
-          <div class="text-[11px] font-medium tracking-widest text-blue-700 uppercase">When docs are enough</div>
+          <div class="text-[11px] font-medium tracking-widest text-blue-700 uppercase">
+            {$t('docs_vs_academy.when_docs_are_enough')}
+          </div>
           <h2 class="mt-4 text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-            Choose documentation when the task is searchable, narrow, and repeatable.
+            {$t('docs_vs_academy.choose_documentation_when_the_task_is')}
           </h2>
           <p class="mt-5 text-sm leading-relaxed text-gray-500">
-            Documentation works best when the user has a specific job and needs a precise answer. Easy to find, easy to
-            scan, easy to trust — no enrollment required.
+            {$t('docs_vs_academy.documentation_works_best_when_the_user')}
           </p>
 
           <div class="my-7 border-t border-gray-200"></div>
@@ -288,7 +278,7 @@
               class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700"
             >
               <FileText size={13} strokeWidth={2} />
-              Reference & retrieval
+              {$t('docs_vs_academy.reference_retrieval')}
             </span>
           </div>
         </div>
@@ -296,14 +286,13 @@
         <!-- When an academy is better -->
         <div class="mt-12 lg:mt-0 lg:pl-10">
           <div class="text-[11px] font-medium tracking-widest text-emerald-700 uppercase">
-            When an academy is better
+            {$t('docs_vs_academy.when_an_academy_is_better')}
           </div>
           <h2 class="mt-4 text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-            Choose a company academy when capability, behavior change, or proof matters.
+            {$t('docs_vs_academy.choose_a_company_academy_when_capability')}
           </h2>
           <p class="mt-5 text-sm leading-relaxed text-gray-500">
-            An academy turns scattered knowledge into a structured path. Use it when the learner needs context before
-            details, practice before independence, or a certificate before being trusted with a role.
+            {$t('docs_vs_academy.an_academy_turns_scattered_knowledge_into')}
           </p>
 
           <div class="my-7 border-t border-gray-200"></div>
@@ -326,7 +315,7 @@
               class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700"
             >
               <GraduationCap size={13} strokeWidth={2} />
-              Structured learning
+              {$t('docs_vs_academy.structured_learning')}
             </span>
           </div>
         </div>
@@ -335,9 +324,9 @@
   </section>
 
   <WorkflowSteps
-    eyebrow="Decision framework"
-    title="Ask these four questions before creating another content surface."
-    description="The wrong format creates expensive confusion. Long docs cannot force mastery, and long courses are frustrating when someone only needs one answer."
+    eyebrow={$t('docs_vs_academy.decision_framework')}
+    title={$t('docs_vs_academy.ask_these_four_questions_before_creating')}
+    description={$t('docs_vs_academy.the_wrong_format_creates_expensive_confusion')}
     steps={decisionSignals.map((signal, i) => ({
       title: signal.title,
       description: signal.description,
@@ -348,13 +337,14 @@
   <section class="px-6 py-16 lg:px-12 lg:py-24">
     <div class="mx-auto grid max-w-[1120px] grid-cols-1 items-start gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
       <div>
-        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">The hybrid model</div>
+        <div class="mb-3 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('docs_vs_academy.the_hybrid_model')}
+        </div>
         <h2 class="text-[clamp(2rem,3vw,2.7rem)] leading-[1.15] font-medium tracking-tight text-gray-950">
-          The strongest teams use docs and academies together.
+          {$t('docs_vs_academy.the_strongest_teams_use_docs_and')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Treat documentation as the reference layer and the academy as the enablement layer. The academy should not
-          duplicate every page in your docs. It should organize the important material into an outcome-driven path.
+          {$t('docs_vs_academy.treat_documentation_as_the_reference_layer')}
         </p>
       </div>
 
@@ -379,8 +369,8 @@
   </section>
 
   <PageSignupCTA
-    header="ClassroomHub can host your company academy."
-    subText="Turn your docs, videos, policies, and product knowledge into a branded academy with courses, assessments, certificates, analytics, and a custom domain."
-    btnLabel="Book a Demo"
+    header={$t('docs_vs_academy.classroomhub_can_host_your_company_academy')}
+    subText={$t('docs_vs_academy.turn_your_docs_videos_policies_and')}
+    btnLabel={$t('docs_vs_academy.book_a_demo')}
   />
 </section>

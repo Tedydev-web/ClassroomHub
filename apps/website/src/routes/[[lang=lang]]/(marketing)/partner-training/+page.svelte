@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/i18n';
   import { SALES_EMAIL } from '@cio/utils/constants';
   import {
     EmbedCodePreview,
@@ -29,114 +30,104 @@
 
   const steps = [
     {
-      title: 'Spin up a partner workspace',
-      description:
-        'Add a separate partner workspace under your existing account. Its own brand, its own domain, its own catalog. Customers never see partner content, and partners never see customer content.'
+      title: $t('partner_training.steps.0.title'),
+      description: $t('partner_training.steps.0.description')
     },
     {
-      title: 'Package your product knowledge',
-      description:
-        'Bring in your docs, sales playbooks, release notes, demo videos, and enablement Looms. The AI assistant turns them into a structured course you can edit.'
+      title: $t('partner_training.steps.1.title'),
+      description: $t('partner_training.steps.1.description')
     },
     {
-      title: 'Design certification paths',
-      description:
-        'Group courses into cohorts for onboarding, sales, implementation, and advanced topics, with required exercises and a final exam.'
+      title: $t('partner_training.steps.2.title'),
+      description: $t('partner_training.steps.2.description')
     },
     {
-      title: 'Track readiness and certify',
-      description: 'See progress, marks, submissions, and issued certificates across partner orgs and individual reps.'
+      title: $t('partner_training.steps.3.title'),
+      description: $t('partner_training.steps.3.description')
     }
   ];
 
   const features = [
     {
       Icon: Layers,
-      title: 'Cohorts and learning paths',
-      description: 'Bundle multiple courses into a certification journey with a required order and shared progress.'
+      title: $t('partner_training.features.0.title'),
+      description: $t('partner_training.features.0.description')
     },
     {
       Icon: BadgeCheck,
-      title: 'Branded partner certificates',
-      description:
-        'Issue PDF and PNG certificates with your logo, configurable IDs, and a public verification URL partners can share.'
+      title: $t('partner_training.features.1.title'),
+      description: $t('partner_training.features.1.description')
     },
     {
       Icon: Globe,
-      title: 'Custom domain and branded portal',
-      description:
-        'Run your partner academy on your own domain via Cloudflare. Theme, logo, landing pages, and SEO are all yours.'
+      title: $t('partner_training.features.2.title'),
+      description: $t('partner_training.features.2.description')
     },
     {
       Icon: Share2,
-      title: 'Public pages and embeds',
-      description:
-        'Publish course landing pages, or embed a learning widget on your partner portal, intranet, or marketing site.'
+      title: $t('partner_training.features.3.title'),
+      description: $t('partner_training.features.3.description')
     },
     {
       Icon: Languages,
-      title: 'Multilingual content',
-      description:
-        'Deliver lessons in 10 languages. Author once and publish per-language variants for English, Spanish, Portuguese, German, French, Hindi, and more.'
+      title: $t('partner_training.features.4.title'),
+      description: $t('partner_training.features.4.description')
     },
     {
       Icon: ChartNoAxesCombined,
-      title: 'Performance analytics',
-      description:
-        'Drill into completion, time-to-certify, exercise marks, and submission quality, by partner, cohort, or geography.'
+      title: $t('partner_training.features.5.title'),
+      description: $t('partner_training.features.5.description')
     },
     {
       Icon: MessageSquareText,
-      title: 'AI lesson assistant',
-      description:
-        'Each partner gets a Claude-powered tutor inside the course that can summarise lessons and answer product questions.'
+      title: $t('partner_training.features.6.title'),
+      description: $t('partner_training.features.6.description')
     },
     {
       Icon: Boxes,
-      title: 'Cohort enrolment and invites',
-      description:
-        'Import full partner orgs from CSV, assign by role, gate paid programs, and track who has accepted their invite.'
+      title: $t('partner_training.features.7.title'),
+      description: $t('partner_training.features.7.description')
     }
   ];
 
   const langs = [
     {
       code: 'en',
-      native: 'English',
-      en: 'English',
-      sample: 'Implementation Checklist',
+      native: $t('partner_training.langs.0.native'),
+      en: $t('partner_training.langs.0.en'),
+      sample: $t('partner_training.langs.0.sample'),
       tone: 'from-blue-100 to-blue-200',
       ring: 'ring-blue-200'
     },
     {
       code: 'es',
-      native: 'Español',
-      en: 'Spanish',
-      sample: 'Lista de implementación',
+      native: $t('partner_training.langs.1.native'),
+      en: $t('partner_training.langs.1.en'),
+      sample: $t('partner_training.langs.1.sample'),
       tone: 'from-amber-100 to-rose-200',
       ring: 'ring-amber-200'
     },
     {
       code: 'pt',
-      native: 'Português',
-      en: 'Portuguese',
-      sample: 'Lista de implementação',
+      native: $t('partner_training.langs.2.native'),
+      en: $t('partner_training.langs.2.en'),
+      sample: $t('partner_training.langs.2.sample'),
       tone: 'from-emerald-100 to-teal-200',
       ring: 'ring-emerald-200'
     },
     {
       code: 'de',
-      native: 'Deutsch',
-      en: 'German',
-      sample: 'Implementierungs-Checkliste',
+      native: $t('partner_training.langs.3.native'),
+      en: $t('partner_training.langs.3.en'),
+      sample: $t('partner_training.langs.3.sample'),
       tone: 'from-slate-100 to-slate-200',
       ring: 'ring-slate-200'
     },
     {
       code: 'fr',
-      native: 'Français',
-      en: 'French',
-      sample: 'Liste de mise en œuvre',
+      native: $t('partner_training.langs.4.native'),
+      en: $t('partner_training.langs.4.en'),
+      sample: $t('partner_training.langs.4.sample'),
       tone: 'from-blue-100 to-indigo-200',
       ring: 'ring-indigo-200'
     },
@@ -150,33 +141,33 @@
     },
     {
       code: 'vi',
-      native: 'Tiếng Việt',
-      en: 'Vietnamese',
-      sample: 'Danh sách triển khai',
+      native: $t('partner_training.langs.6.native'),
+      en: $t('partner_training.langs.6.en'),
+      sample: $t('partner_training.langs.6.sample'),
       tone: 'from-red-100 to-yellow-200',
       ring: 'ring-red-200'
     },
     {
       code: 'ru',
       native: 'Русский',
-      en: 'Russian',
+      en: $t('partner_training.langs.7.en'),
       sample: 'Контрольный список',
       tone: 'from-sky-100 to-blue-200',
       ring: 'ring-sky-200'
     },
     {
       code: 'pl',
-      native: 'Polski',
-      en: 'Polish',
-      sample: 'Lista wdrożeniowa',
+      native: $t('partner_training.langs.8.native'),
+      en: $t('partner_training.langs.8.en'),
+      sample: $t('partner_training.langs.8.sample'),
       tone: 'from-rose-100 to-red-200',
       ring: 'ring-rose-200'
     },
     {
       code: 'da',
       native: 'Dansk',
-      en: 'Danish',
-      sample: 'Implementeringstjekliste',
+      en: $t('partner_training.langs.9.en'),
+      sample: $t('partner_training.langs.9.sample'),
       tone: 'from-red-100 to-rose-200',
       ring: 'ring-red-200'
     }
@@ -184,11 +175,8 @@
 </script>
 
 <svelte:head>
-  <title>Partner Training | ClassroomHub</title>
-  <meta
-    name="description"
-    content="Run a partner academy alongside your customer one. Separate brand, separate domain, same account. Certify resellers, agencies, and integrators with programs, certificates, and analytics."
-  />
+  <title>{$t('partner_training.partner_training_classroomhub')}</title>
+  <meta name="description" content={$t('partner_training.run_a_partner_academy_alongside_your')} />
 </svelte:head>
 
 <section class="bg-white">
@@ -196,26 +184,27 @@
     <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <Trophy size={14} class="text-blue-700" />
-        Partner Training
+        {$t('partner_training.partner_training')}
       </Badge>
       <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        Train the partners
+        {$t('partner_training.train_the_partners')}
         <em class="text-blue-700 not-italic">who sell your product.</em>
       </h1>
       <HeroSubtitle class="mx-auto">
-        Run a partner workspace alongside your customer academy. Separate brand, separate domain, same account. Certify
-        resellers, agencies, and integrators with programs and assessments that stay in sync as your product changes.
+        {$t('partner_training.run_a_partner_workspace_alongside_your')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >Book a Demo</Button
+          >{$t('partner_training.book_a_demo')}</Button
         >
-        <Button href="/signup" variant="outline">Start free</Button>
+        <Button href="/signup" variant="outline">{$t('partner_training.start_free')}</Button>
       </div>
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Custom domain</span>
         <span class="flex items-center gap-1.5"
-          ><span class="font-medium text-blue-700">✓</span> Separate workspace</span
+          ><span class="font-medium text-blue-700">✓</span> {$t('partner_training.custom_domain')}</span
+        >
+        <span class="flex items-center gap-1.5"
+          ><span class="font-medium text-blue-700">✓</span> {$t('partner_training.separate_workspace')}</span
         >
         <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Embeddable</span>
       </div>
@@ -225,7 +214,7 @@
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/partner-training/latest-courses.jpeg"
-          alt="Partner academy — latest courses, cohort structure, and learner state"
+          alt={$t('partner_training.partner_academy_latest_courses_cohort_structure')}
           class="block h-auto w-full"
           loading="eager"
           decoding="async"
@@ -235,7 +224,7 @@
   </PageHeader>
 
   <TrustBand
-    caption="For partner programs at"
+    caption={$t('partner_training.for_partner_programs_at')}
     items={[
       'SaaS platforms',
       'Fintech',
@@ -247,30 +236,30 @@
   />
 
   <WorkflowSteps
-    eyebrow="Partner enablement"
-    title="Give every partner the same starting point."
+    eyebrow={$t('partner_training.partner_enablement')}
+    title={$t('partner_training.give_every_partner_the_same_starting')}
     {steps}
     bgClass="bg-gray-50"
   />
 
   <ImageDemoSection
-    eyebrow="Public course pages"
-    title="Open a few courses to the public, gate the rest."
-    description="Pick the courses you want anyone to see. Partners (and the curious ones who aren’t partners yet) can jump in without signing up, watch a few lessons, and if they’re hooked they create an account to unlock the rest of your catalog."
+    eyebrow={$t('partner_training.public_course_pages')}
+    title={$t('partner_training.open_a_few_courses_to_the')}
+    description={$t('partner_training.pick_the_courses_you_want_anyone')}
     imageSrc="/assets/assets/www/partner-training/public-courses.jpeg"
     imageAlt="Public partner course pages — open courses up front, sign-up gates the rest"
   />
 
   <FeatureGrid
-    eyebrow="What you can run"
-    title="Certification programs for the people who represent your product."
+    eyebrow={$t('partner_training.what_you_can_run')}
+    title={$t('partner_training.certification_programs_for_the_people_who')}
     {features}
   />
 
   <EmbedCodePreview
-    eyebrow="Embed anywhere"
-    title="Drop a learning widget into any site."
-    description="Generate a published widget payload for any course, paste the snippet into your partner portal, intranet, or marketing page. Progress, marks, and certificates sync back to ClassroomHub automatically."
+    eyebrow={$t('partner_training.embed_anywhere')}
+    title={$t('partner_training.drop_a_learning_widget_into_any')}
+    description={$t('partner_training.generate_a_published_widget_payload_for')}
     fileName="partner-portal.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your partner portal --&gt;</span>',
@@ -295,10 +284,10 @@
 
   <LanguageReel
     {langs}
-    eyebrow="Global partners"
+    eyebrow={$t('partner_training.global_partners')}
     headlineLead="Train your network"
     headlineAccent="in their language."
-    description="Author once, publish in ten. Each lesson supports per-language variants. Learners pick the language they read in, certificates render in that language, and analytics roll up across regions."
+    description={$t('partner_training.author_once_publish_in_ten_each')}
     moduleLabel="Module 2 · Implementation"
     footerLabel="8 lessons"
   />
@@ -307,23 +296,27 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Readiness analytics</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('partner_training.readiness_analytics')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          See which partners are ready to sell, and which need help.
+          {$t('partner_training.see_which_partners_are_ready_to')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Drill into completion rates, time-to-certify, exercise marks, and submission quality. Filter by partner org,
-          cohort, geography, or certification path. Export anything to CSV.
+          {$t('partner_training.drill_into_completion_rates_time_to')}
         </p>
         <ul class="mt-6 space-y-3 text-sm text-gray-700">
           <li class="flex items-start gap-2">
-            <BookOpenCheck size={16} class="mt-0.5 text-blue-700" /> Course-level and cohort-level dashboards
+            <BookOpenCheck size={16} class="mt-0.5 text-blue-700" />
+            {$t('partner_training.course_level_and_cohort_level_dashboards')}
           </li>
           <li class="flex items-start gap-2">
-            <ChartNoAxesCombined size={16} class="mt-0.5 text-blue-700" /> Per-learner gradebook with manual override
+            <ChartNoAxesCombined size={16} class="mt-0.5 text-blue-700" />
+            {$t('partner_training.per_learner_gradebook_with_manual_override')}
           </li>
           <li class="flex items-start gap-2">
-            <MessageSquareText size={16} class="mt-0.5 text-blue-700" /> Newsfeed activity and Q&A participation
+            <MessageSquareText size={16} class="mt-0.5 text-blue-700" />
+            {$t('partner_training.newsfeed_activity_and_q_a_participation')}
           </li>
         </ul>
       </div>
@@ -332,16 +325,16 @@
         <div class="aspect-[4/3] w-full bg-gradient-to-br from-blue-50 via-white to-gray-50 p-6">
           <div class="grid h-full grid-cols-2 gap-3">
             <div class="rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="text-[10px] text-gray-500">Time to certify</p>
+              <p class="text-[10px] text-gray-500">{$t('partner_training.time_to_certify')}</p>
               <p class="mt-1 text-xl font-medium text-gray-950">11.2d</p>
               <p class="text-[10px] text-green-600">↓ 2.4d</p>
             </div>
             <div class="rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="text-[10px] text-gray-500">Pass rate</p>
+              <p class="text-[10px] text-gray-500">{$t('partner_training.pass_rate')}</p>
               <p class="mt-1 text-xl font-medium text-blue-700">87%</p>
             </div>
             <div class="col-span-2 rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="mb-2 text-[10px] text-gray-500">Completion by partner org</p>
+              <p class="mb-2 text-[10px] text-gray-500">{$t('partner_training.completion_by_partner_org')}</p>
               <div class="space-y-1.5">
                 {#each [{ n: 'Northwind', v: 92 }, { n: 'Acme Resellers', v: 78 }, { n: 'Globex Implements', v: 64 }] as row}
                   <div class="flex items-center gap-2">
@@ -356,14 +349,16 @@
             </div>
           </div>
         </div>
-        <p class="pb-3 text-center text-xs text-gray-400">Replace with /static/partner-analytics-dashboard.png</p>
+        <p class="pb-3 text-center text-xs text-gray-400">
+          {$t('partner_training.replace_with_static_partner_analytics_dashboard')}
+        </p>
       </div>
     </div>
   </section>
 
   <PageSignupCTA
-    header="Certify your next partner cohort."
-    subText="Turn your product knowledge into a repeatable program. Courses, certificates, branded portal, and analytics in one place."
-    btnLabel="Book a Demo"
+    header={$t('partner_training.certify_your_next_partner_cohort')}
+    subText={$t('partner_training.turn_your_product_knowledge_into_a')}
+    btnLabel={$t('partner_training.book_a_demo')}
   />
 </section>

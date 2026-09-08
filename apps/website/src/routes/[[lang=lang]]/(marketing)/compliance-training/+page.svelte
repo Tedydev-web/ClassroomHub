@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/i18n';
   import { SALES_EMAIL } from '@cio/utils/constants';
   import {
     AiTutorSection,
@@ -29,125 +30,105 @@
 
   const workflow = [
     {
-      title: 'Start with the policies you already have',
-      description:
-        'Bring SOPs, PDFs, Notion pages, Google Docs, videos, and internal process notes into one structured course.'
+      title: $t('compliance_training.workflow.0.title'),
+      description: $t('compliance_training.workflow.0.description')
     },
     {
-      title: 'Assign training by audience',
-      description:
-        'Import people via CSV, group by team or role, and assign the right course to the right audience in bulk.'
+      title: $t('compliance_training.workflow.1.title'),
+      description: $t('compliance_training.workflow.1.description')
     },
     {
-      title: 'Set the compliance rules',
-      description: 'Define passing scores, deadlines, retake intervals, grace periods, reminders, and renewal windows.'
+      title: $t('compliance_training.workflow.2.title'),
+      description: $t('compliance_training.workflow.2.description')
     },
     {
-      title: 'Keep proof in one place',
-      description:
-        'Track who is compliant, expiring, in progress, waived, or non-compliant without ever opening a spreadsheet.'
+      title: $t('compliance_training.workflow.3.title'),
+      description: $t('compliance_training.workflow.3.description')
     }
   ];
 
   const features = [
     {
       Icon: ShieldCheck,
-      title: 'Compliance status tracking',
-      description:
-        'Know at a glance whether each learner is compliant, expiring soon, or non-compliant — and surface the people who need a reminder.'
+      title: $t('compliance_training.features.0.title'),
+      description: $t('compliance_training.features.0.description')
     },
     {
       Icon: RefreshCw,
-      title: 'Renewals & retake intervals',
-      description:
-        'Configure recurring training rules — annual, biannual, custom — so certifications refresh on schedule.'
+      title: $t('compliance_training.features.1.title'),
+      description: $t('compliance_training.features.1.description')
     },
     {
       Icon: CalendarClock,
-      title: 'Deadlines & grace periods',
-      description:
-        'Set required completion dates and grace windows. Reminders go out automatically before learners fall out of compliance.'
+      title: $t('compliance_training.features.2.title'),
+      description: $t('compliance_training.features.2.description')
     },
     {
       Icon: ClipboardCheck,
-      title: 'Waivers, resets, and extensions',
-      description:
-        'Handle real-world exceptions without losing the audit history of who was required to complete training.'
+      title: $t('compliance_training.features.3.title'),
+      description: $t('compliance_training.features.3.description')
     },
     {
       Icon: BadgeCheck,
-      title: 'Certificates with custom IDs',
-      description:
-        'Issue branded PDF/PNG certificates with configurable ID formats (year, month, sequence, org prefix) tied to course completion.'
+      title: $t('compliance_training.features.4.title'),
+      description: $t('compliance_training.features.4.description')
     },
     {
       Icon: FileSpreadsheet,
-      title: 'Completion records & certificate ledger',
-      description:
-        'Every completion, mark, and issued certificate is stored against the learner — searchable from the dashboard when you need to look up who finished what.'
+      title: $t('compliance_training.features.5.title'),
+      description: $t('compliance_training.features.5.description')
     },
     {
       Icon: KeyRound,
-      title: 'SSO and domain enforcement',
-      description:
-        'Force SSO by email domain with Better Auth. Break-glass overrides for admins; full sign-in audit history.'
+      title: $t('compliance_training.features.6.title'),
+      description: $t('compliance_training.features.6.description')
     },
     {
       Icon: Users,
-      title: 'Audience targeting',
-      description:
-        'Bulk enrollment, role-based access, and group assignment. Onboard contractors, vendors, and full-time staff differently.'
+      title: $t('compliance_training.features.7.title'),
+      description: $t('compliance_training.features.7.description')
     }
   ];
 
   const questionTypes = [
-    'Multiple choice',
-    'Checkbox',
-    'True / false',
-    'Short answer',
-    'Paragraph',
-    'Numeric',
-    'Fill in the blank',
-    'Matching',
-    'Ordering',
-    'File upload',
-    'Hotspot',
-    'Word bank',
-    'Star rating',
+    $t('compliance_training.questionTypes.0'),
+    $t('compliance_training.questionTypes.1'),
+    $t('compliance_training.questionTypes.2'),
+    $t('compliance_training.questionTypes.3'),
+    $t('compliance_training.questionTypes.4'),
+    $t('compliance_training.questionTypes.5'),
+    $t('compliance_training.questionTypes.6'),
+    $t('compliance_training.questionTypes.7'),
+    $t('compliance_training.questionTypes.8'),
+    $t('compliance_training.questionTypes.9'),
+    $t('compliance_training.questionTypes.10'),
+    $t('compliance_training.questionTypes.11'),
+    $t('compliance_training.questionTypes.12'),
     'Links',
-    'Video recording'
+    $t('compliance_training.questionTypes.14')
   ];
 
   const useCases = [
-    'Annual security awareness',
-    'GDPR & privacy training',
-    'HIPAA refreshers',
-    'AML / KYC training',
-    'Workplace conduct & harassment',
-    'Contractor & vendor onboarding',
-    'Healthcare SOPs',
-    'Financial-services policy acks',
-    'Manufacturing safety',
-    'Role-based access training'
+    $t('compliance_training.useCases.0'),
+    $t('compliance_training.useCases.1'),
+    $t('compliance_training.useCases.2'),
+    $t('compliance_training.useCases.3'),
+    $t('compliance_training.useCases.4'),
+    $t('compliance_training.useCases.5'),
+    $t('compliance_training.useCases.6'),
+    $t('compliance_training.useCases.7'),
+    $t('compliance_training.useCases.8'),
+    $t('compliance_training.useCases.9')
   ];
 </script>
 
 <svelte:head>
-  <title>Compliance Training | ClassroomHub</title>
-  <meta
-    name="description"
-    content="Keep your employees compliant and track who's falling behind. Turn policies and SOPs into certified training with renewals, grace periods, and audit evidence."
-  />
-  <meta property="og:title" content="Keep your employees compliant and track who's falling behind." />
-  <meta
-    property="og:description"
-    content="Turn policies and SOPs into certified training. Track compliance, renewals, grace periods, and audit evidence in one place."
-  />
-  <meta name="twitter:title" content="Keep your employees compliant and track who's falling behind." />
-  <meta
-    name="twitter:description"
-    content="Turn policies and SOPs into certified training. Track compliance, renewals, grace periods, and audit evidence in one place."
-  />
+  <title>{$t('compliance_training.compliance_training_classroomhub')}</title>
+  <meta name="description" content={$t('compliance_training.keep_your_employees_compliant_and_track_2')} />
+  <meta property="og:title" content={$t('compliance_training.keep_your_employees_compliant_and_track')} />
+  <meta property="og:description" content={$t('compliance_training.turn_policies_and_sops_into_certified')} />
+  <meta name="twitter:title" content={$t('compliance_training.keep_your_employees_compliant_and_track')} />
+  <meta name="twitter:description" content={$t('compliance_training.turn_policies_and_sops_into_certified')} />
   <script type="module" src="/assets/assets/embeds/question-type-picker/question-type-picker.js"></script>
 </svelte:head>
 
@@ -159,28 +140,31 @@
           <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75"></span>
           <span class="relative inline-flex h-2 w-2 rounded-full bg-blue-600"></span>
         </span>
-        Compliance Training
+        {$t('compliance_training.compliance_training')}
       </Badge>
       <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        Keep your employees compliant and
+        {$t('compliance_training.keep_your_employees_compliant_and')}
         <em class="text-blue-700 not-italic">track who's falling behind.</em>
       </h1>
       <HeroSubtitle class="mx-auto">
-        Turn policies, SOPs, docs, and videos into assigned courses with quizzes, certificates, renewal rules, and
-        completion evidence. Know exactly who is compliant — and prove it.
+        {$t('compliance_training.turn_policies_sops_docs_and_videos')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >Book a Demo</Button
+          >{$t('compliance_training.book_a_demo')}</Button
         >
-        <Button href="/signup" variant="outline">Start free</Button>
+        <Button href="/signup" variant="outline">{$t('compliance_training.start_free')}</Button>
       </div>
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> SOC 2-friendly</span>
         <span class="flex items-center gap-1.5"
-          ><span class="font-medium text-blue-700">✓</span> Audit-ready records</span
+          ><span class="font-medium text-blue-700">✓</span> {$t('compliance_training.soc_2_friendly')}</span
         >
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Your own domain</span>
+        <span class="flex items-center gap-1.5"
+          ><span class="font-medium text-blue-700">✓</span> {$t('compliance_training.audit_ready_records')}</span
+        >
+        <span class="flex items-center gap-1.5"
+          ><span class="font-medium text-blue-700">✓</span> {$t('compliance_training.your_own_domain')}</span
+        >
       </div>
     </div>
 
@@ -188,7 +172,7 @@
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/compliance-training/org-compliance.jpeg"
-          alt="Compliance dashboard — required learners grouped by compliant, expiring soon, and non-compliant"
+          alt={$t('compliance_training.compliance_dashboard_required_learners_grouped_by')}
           class="block h-auto w-full"
           loading="eager"
           decoding="async"
@@ -198,7 +182,7 @@
   </PageHeader>
 
   <TrustBand
-    caption="Built for evidence-based programs"
+    caption={$t('compliance_training.built_for_evidence_based_programs')}
     items={[
       'SOC 2 readiness',
       'GDPR awareness',
@@ -209,21 +193,25 @@
     ]}
   />
 
-  <WorkflowSteps eyebrow="How it works" title="From policy document to provable completion." steps={workflow} />
+  <WorkflowSteps
+    eyebrow={$t('compliance_training.how_it_works')}
+    title={$t('compliance_training.from_policy_document_to_provable_completion')}
+    steps={workflow}
+  />
 
   <ImageDemoSection
-    eyebrow="Inside a compliance program"
-    title="A look inside a compliance program."
-    description="From importing your team to issuing a certificate — the whole flow at a glance."
+    eyebrow={$t('compliance_training.inside_a_compliance_program')}
+    title={$t('compliance_training.a_look_inside_a_compliance_program')}
+    description={$t('compliance_training.from_importing_your_team_to_issuing')}
     imageSrc="/assets/assets/www/compliance-training/compliance-dashboard.jpeg"
     imageAlt="Compliance dashboard — required learners, status, and certificates"
   />
 
   <FeatureGrid
-    eyebrow="Built for audit pressure"
-    title="Everything you need when training completion is not optional."
+    eyebrow={$t('compliance_training.built_for_audit_pressure')}
+    title={$t('compliance_training.everything_you_need_when_training_completion')}
     description={'Not a generic LMS with a "compliance" checkbox. Real workflows for the people who have to answer the auditor\u2019s questions.'}
-    ctaLabel="Get started"
+    ctaLabel={$t('compliance_training.get_started')}
     ctaHref="/signup"
     {features}
   />
@@ -231,24 +219,28 @@
   <!-- Renewal split feature -->
   <SplitFeatureSection
     bgClass="bg-gray-50"
-    eyebrow="Renewals on autopilot"
-    title="Training that re-runs itself."
-    description="Set a retake interval once. ClassroomHub automatically moves learners back into “expiring soon”, sends reminders, holds them in a grace period, and flags non-compliance — all without admin intervention."
+    eyebrow={$t('compliance_training.renewals_on_autopilot')}
+    title={$t('compliance_training.training_that_re_runs_itself')}
+    description={$t('compliance_training.set_a_retake_interval_once_classroomhub')}
     imageSrc="/assets/assets/www/compliance-training/course-compliance.jpeg"
     imageAlt="Compliance settings panel — retake interval, grace period, reminders, waiver rules"
   >
     {#snippet bullets()}
       <li class="flex items-start gap-2">
-        <span class="mt-0.5 text-blue-700">→</span> Annual, biannual, or custom intervals per course
+        <span class="mt-0.5 text-blue-700">→</span>
+        {$t('compliance_training.annual_biannual_or_custom_intervals_per')}
       </li>
       <li class="flex items-start gap-2">
-        <span class="mt-0.5 text-blue-700">→</span> Reminder cadences before expiry
+        <span class="mt-0.5 text-blue-700">→</span>
+        {$t('compliance_training.reminder_cadences_before_expiry')}
       </li>
       <li class="flex items-start gap-2">
-        <span class="mt-0.5 text-blue-700">→</span> Configurable grace periods and waiver workflows
+        <span class="mt-0.5 text-blue-700">→</span>
+        {$t('compliance_training.configurable_grace_periods_and_waiver_workflows')}
       </li>
       <li class="flex items-start gap-2">
-        <span class="mt-0.5 text-blue-700">→</span> Pause renewals for leave, role change, or offboarding
+        <span class="mt-0.5 text-blue-700">→</span>
+        {$t('compliance_training.pause_renewals_for_leave_role_change')}
       </li>
     {/snippet}
   </SplitFeatureSection>
@@ -262,13 +254,18 @@
           15 question types. Twelve auto-graded.
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Don't settle for multiple choice. Test understanding the way the policy actually requires — with partial
-          credit, file uploads, video evidence, and manual override when you need a human in the loop.
+          {$t('compliance_training.don_t_settle_for_multiple_choice')}
         </p>
         <div class="mt-6 flex flex-wrap gap-2">
-          <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Auto-graded · 12</span>
-          <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">Partial credit · 9</span>
-          <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">Manual review · 3</span>
+          <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+            >{$t('compliance_training.auto_graded_12')}</span
+          >
+          <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700"
+            >{$t('compliance_training.partial_credit_9')}</span
+          >
+          <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
+            >{$t('compliance_training.manual_review_3')}</span
+          >
         </div>
       </div>
 
@@ -290,23 +287,27 @@
         />
       </div>
       <div class="order-1 lg:order-2">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Certificates & evidence</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('compliance_training.certificates_evidence')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Proof of training, designed for your brand.
+          {$t('compliance_training.proof_of_training_designed_for_your')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Configure the certificate ID format the way your records team needs it — by year, month, sequence, or a custom
-          prefix. Download as PDF or PNG. Every issuance is logged for audit.
+          {$t('compliance_training.configure_the_certificate_id_format_the')}
         </p>
         <ul class="mt-6 space-y-3 text-sm text-gray-700">
           <li class="flex items-start gap-2">
-            <GraduationCap size={16} class="mt-0.5 text-blue-700" /> Templated and branded with your logo and colours
+            <GraduationCap size={16} class="mt-0.5 text-blue-700" />
+            {$t('compliance_training.templated_and_branded_with_your_logo')}
           </li>
           <li class="flex items-start gap-2">
-            <BadgeCheck size={16} class="mt-0.5 text-blue-700" /> Tied to a required passing score and assessment
+            <BadgeCheck size={16} class="mt-0.5 text-blue-700" />
+            {$t('compliance_training.tied_to_a_required_passing_score')}
           </li>
           <li class="flex items-start gap-2">
-            <AlertTriangle size={16} class="mt-0.5 text-blue-700" /> Auto-revokes when a renewal lapses
+            <AlertTriangle size={16} class="mt-0.5 text-blue-700" />
+            {$t('compliance_training.auto_revokes_when_a_renewal_lapses')}
           </li>
         </ul>
       </div>
@@ -315,8 +316,8 @@
 
   <AiTutorSection
     accent="In your dashboard"
-    title="A personal course-authoring assistant."
-    description="Drop in a policy doc or paste a URL. The assistant plans the compliance course, drafts each lesson, writes the quiz questions, and stops for your approval before publishing — so building required training drops from a week to an afternoon."
+    title={$t('compliance_training.a_personal_course_authoring_assistant')}
+    description={$t('compliance_training.drop_in_a_policy_doc_or')}
     imageSrc="/assets/assets/www/compliance-training/ai-course-builder.jpeg"
     imageAlt="Course builder — plan, approve, implement. Templates, in-editor chat, and MCP."
   />
@@ -325,9 +326,11 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto max-w-[1100px]">
       <div class="mb-10 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Use cases</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('compliance_training.use_cases')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Training for the work people are required to know.
+          {$t('compliance_training.training_for_the_work_people_are')}
         </h2>
       </div>
 
@@ -351,8 +354,8 @@
   </section>
 
   <PageSignupCTA
-    header="Keep your employees compliant and track who's falling behind."
-    subText="Build certified training from your existing policies, assign it to the right people, and keep proof of completion in one place."
-    btnLabel="Book a Demo"
+    header={$t('compliance_training.keep_your_employees_compliant_and_track')}
+    subText={$t('compliance_training.build_certified_training_from_your_existing')}
+    btnLabel={$t('compliance_training.book_a_demo')}
   />
 </section>

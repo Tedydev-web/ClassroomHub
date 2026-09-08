@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/i18n';
   import { SALES_EMAIL } from '@cio/utils/constants';
   import {
     AiTutorSection,
@@ -33,119 +34,109 @@
 
   const workflow = [
     {
-      title: 'Bring your product knowledge',
-      description:
-        'Use help docs, onboarding guides, release notes, demo videos, Looms, and internal customer success notes.'
+      title: $t('customer_education.workflow.0.title'),
+      description: $t('customer_education.workflow.0.description')
     },
     {
-      title: 'Build a customer academy',
-      description:
-        'Create structured courses for onboarding, feature adoption, admin training, and power-user education.'
+      title: $t('customer_education.workflow.1.title'),
+      description: $t('customer_education.workflow.1.description')
     },
     {
-      title: 'Publish it under your brand',
-      description:
-        'Custom domain, themed landing pages, public course catalog, and embeddable widgets — your academy, not ours.'
+      title: $t('customer_education.workflow.2.title'),
+      description: $t('customer_education.workflow.2.description')
     },
     {
-      title: 'Track adoption & retention',
-      description: 'See progress, assessment results, certificates, and completion data across customers and cohorts.'
+      title: $t('customer_education.workflow.3.title'),
+      description: $t('customer_education.workflow.3.description')
     }
   ];
 
   const features = [
     {
       Icon: PanelTop,
-      title: 'Branded learning portal',
-      description:
-        'Customer-facing catalog with landing pages, themes, your logo, your domain, and SEO-ready public pages.'
+      title: $t('customer_education.features.0.title'),
+      description: $t('customer_education.features.0.description')
     },
     {
       Icon: MonitorPlay,
-      title: 'Video & rich media lessons',
-      description:
-        'Embed demos, walkthroughs, Looms, MP4s, PDFs, and slide decks. Auto-thumbnails and transcoding included.'
+      title: $t('customer_education.features.1.title'),
+      description: $t('customer_education.features.1.description')
     },
     {
       Icon: BookMarked,
-      title: 'Cohorts & learning paths',
-      description:
-        'Bundle courses into onboarding journeys with required completion order, prerequisites, and certificates.'
+      title: $t('customer_education.features.2.title'),
+      description: $t('customer_education.features.2.description')
     },
     {
       Icon: Bot,
-      title: 'AI lesson assistant',
-      description:
-        'Each learner gets a Claude-powered tutor inside the lesson that can answer questions and summarise content.'
+      title: $t('customer_education.features.3.title'),
+      description: $t('customer_education.features.3.description')
     },
     {
       Icon: MessagesSquare,
-      title: 'Community & Q&A',
-      description: 'Per-course discussion forums and cohort newsfeeds with reactions, threads, and mentions.'
+      title: $t('customer_education.features.4.title'),
+      description: $t('customer_education.features.4.description')
     },
     {
       Icon: GraduationCap,
-      title: 'Certificates customers can share',
-      description:
-        'Issue branded PDF/PNG certificates with verifiable IDs. Great for customer champions and admin programs.'
+      title: $t('customer_education.features.5.title'),
+      description: $t('customer_education.features.5.description')
     },
     {
       Icon: Code2,
-      title: 'Embeddable widgets',
-      description:
-        'Drop courses into your help center, marketing site, or in-product onboarding via a single script tag.'
+      title: $t('customer_education.features.6.title'),
+      description: $t('customer_education.features.6.description')
     },
     {
       Icon: BarChart3,
-      title: 'Adoption analytics',
-      description: 'See who completed onboarding, who passed assessments, and which features need more education.'
+      title: $t('customer_education.features.7.title'),
+      description: $t('customer_education.features.7.description')
     },
     {
       Icon: Languages,
-      title: 'Deliver lessons in 10 languages',
-      description:
-        'Per-language lesson variants for English, Spanish, Portuguese, German, French, Hindi, Vietnamese, Russian, Polish, and Danish.'
+      title: $t('customer_education.features.8.title'),
+      description: $t('customer_education.features.8.description')
     }
   ];
 
   const langs = [
     {
       code: 'en',
-      native: 'English',
-      en: 'English',
-      sample: 'Getting Started: Your First Workspace',
+      native: $t('customer_education.langs.0.native'),
+      en: $t('customer_education.langs.0.en'),
+      sample: $t('customer_education.langs.0.sample'),
       tone: 'from-blue-100 to-blue-200',
       ring: 'ring-blue-200'
     },
     {
       code: 'es',
-      native: 'Español',
-      en: 'Spanish',
-      sample: 'Primeros pasos: Tu primer espacio',
+      native: $t('customer_education.langs.1.native'),
+      en: $t('customer_education.langs.1.en'),
+      sample: $t('customer_education.langs.1.sample'),
       tone: 'from-amber-100 to-rose-200',
       ring: 'ring-amber-200'
     },
     {
       code: 'pt',
-      native: 'Português',
-      en: 'Portuguese',
-      sample: 'Primeiros passos: Seu primeiro workspace',
+      native: $t('customer_education.langs.2.native'),
+      en: $t('customer_education.langs.2.en'),
+      sample: $t('customer_education.langs.2.sample'),
       tone: 'from-emerald-100 to-teal-200',
       ring: 'ring-emerald-200'
     },
     {
       code: 'de',
-      native: 'Deutsch',
-      en: 'German',
-      sample: 'Erste Schritte: Dein erster Arbeitsbereich',
+      native: $t('customer_education.langs.3.native'),
+      en: $t('customer_education.langs.3.en'),
+      sample: $t('customer_education.langs.3.sample'),
       tone: 'from-slate-100 to-slate-200',
       ring: 'ring-slate-200'
     },
     {
       code: 'fr',
-      native: 'Français',
-      en: 'French',
-      sample: 'Premiers pas : Votre premier espace',
+      native: $t('customer_education.langs.4.native'),
+      en: $t('customer_education.langs.4.en'),
+      sample: $t('customer_education.langs.4.sample'),
       tone: 'from-blue-100 to-indigo-200',
       ring: 'ring-indigo-200'
     },
@@ -159,54 +150,51 @@
     },
     {
       code: 'vi',
-      native: 'Tiếng Việt',
-      en: 'Vietnamese',
-      sample: 'Bắt đầu: Không gian làm việc đầu tiên',
+      native: $t('customer_education.langs.6.native'),
+      en: $t('customer_education.langs.6.en'),
+      sample: $t('customer_education.langs.6.sample'),
       tone: 'from-red-100 to-yellow-200',
       ring: 'ring-red-200'
     },
     {
       code: 'ru',
       native: 'Русский',
-      en: 'Russian',
+      en: $t('customer_education.langs.7.en'),
       sample: 'Начало работы: ваше рабочее пространство',
       tone: 'from-sky-100 to-blue-200',
       ring: 'ring-sky-200'
     },
     {
       code: 'pl',
-      native: 'Polski',
-      en: 'Polish',
-      sample: 'Pierwsze kroki: Twoja przestrzeń',
+      native: $t('customer_education.langs.8.native'),
+      en: $t('customer_education.langs.8.en'),
+      sample: $t('customer_education.langs.8.sample'),
       tone: 'from-rose-100 to-red-200',
       ring: 'ring-rose-200'
     },
     {
       code: 'da',
       native: 'Dansk',
-      en: 'Danish',
-      sample: 'Kom godt i gang: Dit første område',
+      en: $t('customer_education.langs.9.en'),
+      sample: $t('customer_education.langs.9.sample'),
       tone: 'from-red-100 to-rose-200',
       ring: 'ring-red-200'
     }
   ];
 
   const outcomes = [
-    { title: 'Reduce repeat support tickets', sub: 'Self-serve education replaces 1:1 onboarding calls.' },
-    { title: 'Shorten time-to-value', sub: 'Customers learn core workflows before their first review call.' },
-    { title: 'Train admins and power users', sub: 'Multi-tier programs for end-users vs. champions.' },
-    { title: 'Certify customer champions', sub: 'Public shareable certificates fuel community advocacy.' },
-    { title: 'Drive feature adoption', sub: 'Targeted micro-courses when you ship something new.' },
-    { title: 'Build a moat of educated users', sub: 'The customers who know your product never churn quietly.' }
+    { title: $t('customer_education.outcomes.0'), sub: $t('customer_education.outcomes.0') },
+    { title: $t('customer_education.outcomes.1'), sub: $t('customer_education.outcomes.1') },
+    { title: $t('customer_education.outcomes.2'), sub: $t('customer_education.outcomes.2') },
+    { title: $t('customer_education.outcomes.3'), sub: $t('customer_education.outcomes.3') },
+    { title: $t('customer_education.outcomes.4'), sub: $t('customer_education.outcomes.4') },
+    { title: $t('customer_education.outcomes.5'), sub: $t('customer_education.outcomes.5') }
   ];
 </script>
 
 <svelte:head>
-  <title>Customer academy software for SaaS | ClassroomHub</title>
-  <meta
-    name="description"
-    content="Launch a branded customer academy. Onboarding, feature adoption, admin training, and certification — under your own domain, with an AI tutor in every lesson."
-  />
+  <title>{$t('customer_education.customer_academy_software_for_saas_classroomhub')}</title>
+  <meta name="description" content={$t('customer_education.launch_a_branded_customer_academy_onboarding')} />
 </svelte:head>
 
 <section class="bg-white">
@@ -214,27 +202,30 @@
     <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <Crown size={14} class="text-blue-700" />
-        Customer Education
+        {$t('customer_education.customer_education')}
       </Badge>
       <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-        Launch a customer academy
+        {$t('customer_education.launch_a_customer_academy')}
         <em class="text-blue-700 not-italic">customers actually love.</em>
       </h1>
       <HeroSubtitle class="mx-auto">
-        Turn your help docs, onboarding videos, and product knowledge into a branded learning portal. Train customers,
-        certify power-users, and drive adoption — under your own domain, with an AI tutor in every lesson.
+        {$t('customer_education.turn_your_help_docs_onboarding_videos')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >Book a Demo</Button
+          >{$t('customer_education.book_a_demo')}</Button
         >
-        <Button href="/signup" variant="outline">Start free</Button>
+        <Button href="/signup" variant="outline">{$t('customer_education.start_free')}</Button>
       </div>
       <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Custom domain</span>
-        <span class="flex items-center gap-1.5"><span class="font-medium text-blue-700">✓</span> Embed anywhere</span>
         <span class="flex items-center gap-1.5"
-          ><span class="font-medium text-blue-700">✓</span> AI in every lesson</span
+          ><span class="font-medium text-blue-700">✓</span> {$t('customer_education.custom_domain')}</span
+        >
+        <span class="flex items-center gap-1.5"
+          ><span class="font-medium text-blue-700">✓</span> {$t('customer_education.embed_anywhere')}</span
+        >
+        <span class="flex items-center gap-1.5"
+          ><span class="font-medium text-blue-700">✓</span> {$t('customer_education.ai_in_every_lesson')}</span
         >
       </div>
     </div>
@@ -243,7 +234,7 @@
       <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/customer-education/beautiful-academy-site.jpeg"
-          alt="Branded customer academy on a custom domain — hero, catalog, themed branding"
+          alt={$t('customer_education.branded_customer_academy_on_a_custom')}
           class="block h-auto w-full"
           loading="eager"
           decoding="async"
@@ -253,7 +244,7 @@
   </PageHeader>
 
   <TrustBand
-    caption="Built for product-led teams"
+    caption={$t('customer_education.built_for_product_led_teams')}
     items={[
       'SaaS onboarding',
       'Developer tools',
@@ -266,29 +257,33 @@
 
   <RoiBand bgClass="bg-white" />
 
-  <WorkflowSteps eyebrow="How it works" title="From scattered docs to a polished academy." steps={workflow} />
+  <WorkflowSteps
+    eyebrow={$t('customer_education.how_it_works')}
+    title={$t('customer_education.from_scattered_docs_to_a_polished')}
+    steps={workflow}
+  />
 
   <ImageDemoSection
-    eyebrow="Make it yours"
-    title="Customize how your customer academy looks like."
-    description="Theme the catalog, swap fonts and colors to match your brand, and build landing pages that feel like the rest of your product — without losing the LMS underneath."
+    eyebrow={$t('customer_education.make_it_yours')}
+    title={$t('customer_education.customize_how_your_customer_academy_looks')}
+    description={$t('customer_education.theme_the_catalog_swap_fonts_and')}
     imageSrc="/assets/assets/www/customer-education/customizable-academy.jpeg"
     imageAlt="Customizable customer academy — catalog, course page, certificate"
   />
 
   <FeatureGrid
-    eyebrow="Every piece, included"
-    title="Everything you need to teach customers your product."
+    eyebrow={$t('customer_education.every_piece_included')}
+    title={$t('customer_education.everything_you_need_to_teach_customers')}
     description={'Not a "content site" bolted onto your help docs. A real LMS with cohorts, assessments, certificates, AI tutoring, community, and analytics, wrapped in your brand.'}
-    ctaLabel="Get started"
+    ctaLabel={$t('customer_education.get_started')}
     ctaHref="/signup"
     {features}
   />
 
   <AiTutorSection
     accent=""
-    title="An AI tutor in every lesson."
-    description="An AI tutor sits inside every lesson — lesson-aware, multilingual, and patient. It answers the questions customers would have sent to support, before they leave the page."
+    title={$t('customer_education.an_ai_tutor_in_every_lesson')}
+    description={$t('customer_education.an_ai_tutor_sits_inside_every')}
     imagePath="/static/ai-tutor-stack.png"
     imageCaption="AI tutor in a lesson — lesson-aware chat, follow-ups, translation, summarisation"
     vimeoVideoId="1192910311"
@@ -296,19 +291,19 @@
 
   <LanguageReel
     {langs}
-    eyebrow="Global customers"
+    eyebrow={$t('customer_education.global_customers')}
     headlineLead="Teach customers"
     headlineAccent="in the language they bought in."
-    description="Author once, publish in ten. Each lesson supports per-language variants — customers pick the language they read in, certificates render in that language, and adoption analytics roll up across regions."
+    description={$t('customer_education.author_once_publish_in_ten_each')}
     moduleLabel="Lesson 1 · Onboarding"
     footerLabel="6 lessons · 18 min"
     bgClass="bg-white"
   />
 
   <EmbedCodePreview
-    eyebrow="Embed anywhere"
-    title="Bring lessons to your help center, your app, your marketing site."
-    description="Publish any course as a widget. Drop a script tag into your help center, in-product onboarding, or marketing page. Progress, marks, and certificates sync back to ClassroomHub."
+    eyebrow={$t('customer_education.embed_anywhere')}
+    title={$t('customer_education.bring_lessons_to_your_help_center')}
+    description={$t('customer_education.publish_any_course_as_a_widget')}
     fileName="help-center.html"
     codeLines={[
       '<span class="text-slate-500">&lt;!-- in your help center --&gt;</span>',
@@ -335,23 +330,27 @@
   <section class="px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Certified champions</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('customer_education.certified_champions')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Turn power-users into a public community.
+          {$t('customer_education.turn_power_users_into_a_public')}
         </h2>
         <p class="mt-5 text-base leading-relaxed text-gray-500">
-          Bundle courses into cohorts, gate them with a required exercise, and issue shareable certificates. Customer
-          champions love showing off — and your product gets a quiet army of advocates.
+          {$t('customer_education.bundle_courses_into_cohorts_gate_them')}
         </p>
         <ul class="mt-6 space-y-3 text-sm text-gray-700">
           <li class="flex items-start gap-2">
-            <GraduationCap size={16} class="mt-0.5 text-blue-700" /> Branded PDF/PNG certificates with verifiable IDs
+            <GraduationCap size={16} class="mt-0.5 text-blue-700" />
+            {$t('customer_education.branded_pdf_png_certificates_with_verifiable')}
           </li>
           <li class="flex items-start gap-2">
-            <BookMarked size={16} class="mt-0.5 text-blue-700" /> Cohorts with required completion order
+            <BookMarked size={16} class="mt-0.5 text-blue-700" />
+            {$t('customer_education.cohorts_with_required_completion_order')}
           </li>
           <li class="flex items-start gap-2">
-            <MessagesSquare size={16} class="mt-0.5 text-blue-700" /> Per-course Q&A and cohort-wide newsfeed
+            <MessagesSquare size={16} class="mt-0.5 text-blue-700" />
+            {$t('customer_education.per_course_q_a_and_cohort')}
           </li>
         </ul>
       </div>
@@ -368,9 +367,11 @@
   <section class="bg-gray-50 px-6 py-12 lg:px-12 lg:py-16">
     <div class="mx-auto max-w-[1100px]">
       <div class="mb-10 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Why teams ship this</div>
+        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
+          {$t('customer_education.why_teams_ship_this')}
+        </div>
         <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          Educated customers churn less. Period.
+          {$t('customer_education.educated_customers_churn_less_period')}
         </h2>
       </div>
 
@@ -388,8 +389,8 @@
   <MultiAcademySection />
 
   <PageSignupCTA
-    header="Launch your customer academy."
-    subText="Build a branded learning portal customers actually use. Custom domain, AI tutoring, certificates, and analytics — out of the box."
-    btnLabel="Book a Demo"
+    header={$t('customer_education.launch_your_customer_academy')}
+    subText={$t('customer_education.build_a_branded_learning_portal_customers')}
+    btnLabel={$t('customer_education.book_a_demo')}
   />
 </section>
