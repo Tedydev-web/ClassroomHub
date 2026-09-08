@@ -59,10 +59,11 @@ test('/docs is answered with 410, not left to the marketing 404', () => {
 test('the docs worker carries a 410 handler instead of the pages', () => {
   const config = readFileSync(join(appRoot, '../docs/wrangler.jsonc'), 'utf8');
 
-  // `workers_dev: false` alone did not close the address: an hour after it was
-  // deployed the worker was still serving pages there. What actually removed
-  // them is having no assets to serve.
-  assert.match(config, /"workers_dev":\s*false/);
+  // Disabling the workers.dev route was tried and left the pages up: with no
+  // route the worker had no deploy target, so the new version was uploaded and
+  // never promoted. Having no assets is what removes them, and the route has to
+  // stay for that to reach the edge at all.
+  assert.match(config, /"workers_dev":\s*true/);
   assert.match(config, /"main":\s*"src\/gone\.ts"/);
   assert.doesNotMatch(config, /"assets"/, 'the docs worker must not serve the retired pages');
 

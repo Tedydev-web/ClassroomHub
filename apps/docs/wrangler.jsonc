@@ -4,11 +4,15 @@
   "compatibility_date": "2026-03-13",
   // The developer documentation is retired. Removing the marketing site's /docs
   // proxy alone would have left every page readable at
-  // cio-docs.<subdomain>.workers.dev, so this worker stops carrying them:
-  // `workers_dev: false` was deployed first and, an hour later, the address was
-  // still serving pages, so the assets are gone and a 410 handler stands in
-  // their place. The flag stays because it is still the correct intent.
-  "workers_dev": false,
+  // cio-docs.<subdomain>.workers.dev, so this worker no longer carries them: it
+  // has no assets, and `src/gone.ts` answers 410 on every path.
+  //
+  // The workers.dev route stays enabled deliberately. Turning it off was tried
+  // first and did nothing, because it left the worker with nowhere to deploy to
+  // — wrangler reported "No deploy targets for cio-docs", uploaded the version
+  // and never promoted it, so the old build kept serving the pages. A route that
+  // answers 410 removes the content; a route that cannot be updated does not.
+  "workers_dev": true,
   "main": "src/gone.ts",
 
   "observability": {
