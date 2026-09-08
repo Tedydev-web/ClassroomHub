@@ -81,9 +81,19 @@ REWRITE
 echo "Rewrote ${ENV_DIR}/production.env"
 
 # The same pair under the names the embeds and OpenAPI upload workflows read.
-printf '%s' "${TOKEN_ID}" | gh secret set CLOUDFLARE_ACCESS_KEY -R "${REPO}"
-printf '%s' "${secret}" | gh secret set CLOUDFLARE_SECRET_ACCESS_KEY -R "${REPO}"
-echo "Updated the GitHub secrets"
+#
+# Written to the `production` environment as well as the repository. Every
+# deploy job declares `environment: production`, and an environment secret of
+# the same name shadows the repository one — so rotating only the repository
+# copy leaves the workflows presenting the previous key and failing with
+# SignatureDoesNotMatch, while every local check with the new key passes.
+for scope in "-R ${REPO}" "-R ${REPO} --env ${GH_ENVIRONMENT:-production}"; do
+  # shellcheck disable=SC2086 # deliberate word splitting: $scope carries flags
+  printf '%s' "${TOKEN_ID}" | gh secret set CLOUDFLARE_ACCESS_KEY $scope
+  # shellcheck disable=SC2086
+  printf '%s' "${secret}" | gh secret set CLOUDFLARE_SECRET_ACCESS_KEY $scope
+done
+echo "Updated the GitHub secrets (repository and the production environment)"
 
 # Only the services that read object storage. The dashboard does not, so it keeps
 # serving through this.
