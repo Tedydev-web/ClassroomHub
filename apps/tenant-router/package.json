@@ -8,10 +8,12 @@
     "deploy": "wrangler deploy",
     "tail": "wrangler tail",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "tsx --test src/*.test.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
+    "tsx": "4.7.1",
     "typescript": "^5.5.2",
     "wrangler": "4.21.x"
   }

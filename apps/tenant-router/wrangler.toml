@@ -45,7 +45,14 @@ routes = [
   # Every subdomain, so a newly created tenant `<siteName>.classroom.io.vn` is
   # served without adding a route per org. The Worker hands `api` and the
   # internal origins straight to their origin; `assets` is served from R2.
-  { pattern = "*.classroom.io.vn/*", zone_name = "classroom.io.vn" }
+  { pattern = "*.classroom.io.vn/*", zone_name = "classroom.io.vn" },
+  # The brand's new apex. Both zones are listed in this one environment because
+  # `wrangler deploy` reconciles routes against the environment it is given: a
+  # separate config for the second zone would strip the first zone's routes on
+  # every deploy. One Worker answers for both, and every host list below names
+  # the hosts on both.
+  { pattern = "classroomhub.io.vn/*", zone_name = "classroomhub.io.vn" },
+  { pattern = "*.classroomhub.io.vn/*", zone_name = "classroomhub.io.vn" }
 ]
 
 # Vars, bindings and secrets are not inherited by environments — each has to be
@@ -53,16 +60,20 @@ routes = [
 [env.production.vars]
 DASHBOARD_UPSTREAM_HOST = "dashboard-origin.classroom.io.vn"
 API_UPSTREAM_HOST = "api-origin.classroom.io.vn"
-APEX_REDIRECT_HOST = "learn.classroom.io.vn"
+APEX_REDIRECT_HOST = "learn.classroom.io.vn,learn.classroomhub.io.vn"
 APEX_REDIRECT_TARGET = "https://classroom.io.vn"
-EMBED_HOST = "embed.classroom.io.vn"
-ASSET_HOST = "assets.classroom.io.vn"
+EMBED_HOST = "embed.classroom.io.vn,embed.classroomhub.io.vn"
+ASSET_HOST = "assets.classroom.io.vn,assets.classroomhub.io.vn"
 API_URL = "https://api.classroom.io.vn"
 # Service hosts the wildcard route catches but that must reach their origin
 # untouched: the public API tunnel. The internal origins are added in code from
 # the upstream vars above; the Worker serves the public R2 asset domain.
-DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn"
-MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn"
+DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,api.classroomhub.io.vn"
+MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn,classroomhub.io.vn,www.classroomhub.io.vn"
+# Still the old apex. Setting this to the new one is what makes every other
+# marketing host 301 to it, and that belongs in the step that also moves the
+# constants the pages themselves are rendered from — otherwise the site
+# redirects to a domain its own links do not use.
 MARKETING_CANONICAL_HOST = "classroom.io.vn"
 
 [[env.production.r2_buckets]]

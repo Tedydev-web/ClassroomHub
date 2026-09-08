@@ -875,6 +875,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20250109.0
         version: 4.20260511.1
+      tsx:
+        specifier: 4.7.1
+        version: 4.7.1
       typescript:
         specifier: ^5.5.2
         version: 5.9.3
@@ -14411,6 +14414,11 @@ packages:
 
   tsx@4.21.0:
     resolution: {integrity: sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
+  tsx@4.7.1:
+    resolution: {integrity: sha512-8d6VuibXHtlN5E3zFkgY8u4DX7Y3Z27zvvPKVmLon/D4AjuKzarkUBTLDBgj9iTQ0hg5xM7c/mYiRVM+HETf0g==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -30082,6 +30090,13 @@ snapshots:
   tsx@4.21.0:
     dependencies:
       esbuild: 0.27.2
+      get-tsconfig: 4.13.0
+    optionalDependencies:
+      fsevents: 2.3.3
+
+  tsx@4.7.1:
+    dependencies:
+      esbuild: 0.19.12
       get-tsconfig: 4.13.0
     optionalDependencies:
       fsevents: 2.3.3

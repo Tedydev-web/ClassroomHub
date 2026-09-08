@@ -44,10 +44,11 @@ interface Env {
   DASHBOARD_UPSTREAM_HOST: string;
   API_UPSTREAM_HOST: string;
   APEX_REDIRECT_TARGET: string;
+  /** Comma-separated legacy learning apexes that redirect to the marketing apex. */
   APEX_REDIRECT_HOST: string;
-  /** Hostname that serves embed widget assets from R2. */
+  /** Comma-separated hostnames that serve embed widget assets from R2. */
   EMBED_HOST: string;
-  /** Hostname that serves public static assets from the R2 assets bucket. */
+  /** Comma-separated hostnames that serve public static assets from the R2 assets bucket. */
   ASSET_HOST: string;
   /** Public API origin injected into embed scripts. */
   API_URL: string;
@@ -98,6 +99,24 @@ const AUTH_PREFIX = '/api/auth';
 const HLS_PREFIX = '/hls/';
 const PROXY_HLS_PREFIX = '/proxy/hls/';
 const HLS_COOKIE_NAME = 'cio_hls';
+
+/**
+ * The hosts a comma-separated variable names.
+ *
+ * Every host variable here takes a list, because the deployment answers on more
+ * than one apex while a brand move is in progress and the old one has to keep
+ * working. A single value would leave `assets.<old apex>` unrecognised the
+ * moment the new one became canonical, and it would fall through to tenant
+ * routing — a 404 for every image already published.
+ */
+export function hostSet(value: string | undefined): Set<string> {
+  return new Set(
+    (value ?? '')
+      .split(',')
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
 
 function withMarketingSecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
@@ -362,7 +381,9 @@ async function handleHlsRequest(request: Request, env: Env): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const originalHost = request.headers.get('host') ?? url.host;
+    // Lowercased because a Host header preserves whatever case the client sent,
+    // and every comparison below is against a lowercase host list.
+    const originalHost = (request.headers.get('host') ?? url.host).toLowerCase();
 
     // The wildcard route binds this Worker to every *.classroom.io.vn host so a
     // newly created tenant resolves without touching Cloudflare. The cost is that
@@ -373,21 +394,14 @@ export default {
     // `fetch(request)` does not loop: Cloudflare does not re-invoke a Worker on a
     // subrequest to a route bound to that same Worker, so this reaches the origin
     // (tunnel or R2) exactly as a direct hit would have before the wildcard route.
-    const passthroughHosts = new Set(
-      [env.API_UPSTREAM_HOST, env.DASHBOARD_UPSTREAM_HOST, ...(env.DIRECT_PASSTHROUGH_HOSTS ?? '').split(',')]
-        .map((host) => host.trim())
-        .filter(Boolean)
+    const passthroughHosts = hostSet(
+      [env.API_UPSTREAM_HOST, env.DASHBOARD_UPSTREAM_HOST, env.DIRECT_PASSTHROUGH_HOSTS ?? ''].join(',')
     );
     if (passthroughHosts.has(originalHost)) {
       return fetch(request);
     }
 
-    const marketingHosts = new Set(
-      (env.MARKETING_HOSTS ?? '')
-        .split(',')
-        .map((host) => host.trim())
-        .filter(Boolean)
-    );
+    const marketingHosts = hostSet(env.MARKETING_HOSTS);
     if (env.MARKETING && marketingHosts.has(originalHost)) {
       if (env.MARKETING_CANONICAL_HOST && originalHost !== env.MARKETING_CANONICAL_HOST) {
         const canonicalUrl = new URL(request.url);
@@ -399,7 +413,7 @@ export default {
     }
 
     // Legacy learning apex → permanent redirect to marketing apex.
-    if (originalHost === env.APEX_REDIRECT_HOST) {
+    if (hostSet(env.APEX_REDIRECT_HOST).has(originalHost)) {
       const target = new URL(env.APEX_REDIRECT_TARGET);
       target.pathname = url.pathname;
       target.search = url.search;
@@ -407,12 +421,12 @@ export default {
     }
 
     // Public static assets — served from the R2 `assets` bucket (no Render hop).
-    if (originalHost === env.ASSET_HOST) {
+    if (hostSet(env.ASSET_HOST).has(originalHost)) {
       return handlePublicAssetRequest(request, env);
     }
 
     // Public embed scripts — served from the R2 `assets` bucket (no Render hop).
-    if (originalHost === env.EMBED_HOST) {
+    if (hostSet(env.EMBED_HOST).has(originalHost)) {
       return handleEmbedAssetRequest(request, env);
     }
 
