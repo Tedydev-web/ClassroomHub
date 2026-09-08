@@ -1,95 +1,59 @@
 <script lang="ts">
   import { PageSignupCTA, PageHeader } from '$lib/components';
+  import { t } from '$lib/i18n';
   import { Button } from '@cio/ui/base/button';
   import * as Accordion from '@cio/ui/base/accordion';
 
-  const whyStart = [
-    {
-      src: '/assets/assets/www/teach/teach-from-anywhere.svg',
-      header: 'Fully Online; Teach from anywhere',
-      subText: ' Facilitate a subject from the comfort of your space, engaging students from highly diverse background'
-    },
-    {
-      src: '/assets/assets/www/teach/get-paid.svg',
-      header: 'Get paid extra commission',
-      subText: 'Get paid for the course you design and earn extra comission based on course perfomance'
-    },
-    {
-      src: '/assets/assets/www/teach/inspire-learners.svg',
-      header: 'Inspire learners',
-      subText: 'Your opportunity to inspire thousands of learners to achieve dreams and academic pursue exellence'
-    }
-  ];
+  const whyStart = $derived(
+    [
+      ['anywhere', '/assets/assets/www/teach/teach-from-anywhere.svg'],
+      ['paid', '/assets/assets/www/teach/get-paid.svg'],
+      ['inspire', '/assets/assets/www/teach/inspire-learners.svg']
+    ].map(([key, src]) => ({
+      src,
+      header: $t(`teach.why.${key}.header`),
+      subText: $t(`teach.why.${key}.subtext`)
+    }))
+  );
 
-  const steps = [
-    {
-      title: 'Sign up',
-      subText: 'Create a free account on our platform at classroom.tedydev.io.vn/signup'
-    },
-    {
-      title: 'Record a course',
-      subText: 'Prepare your content however you want and then upload them onto our platform.'
-    },
-    {
-      title: 'Launch the course',
-      subText: 'Polish your course, make sure it is ready for students. Then publish it.'
-    },
-    {
-      title: 'Start making sales',
-      subText:
-        'Share your course with your audience and on social media and start earning money on the courses you create'
-    }
-  ];
+  const steps = $derived(
+    ['signup', 'record', 'launch', 'sell'].map((key) => ({
+      title: $t(`teach.steps.${key}.title`),
+      subText: $t(`teach.steps.${key}.subtext`)
+    }))
+  );
 
-  const faqs = [
-    {
-      value: 'tutors',
-      question: 'What kind of tutors does ClassroomHub look for?',
-      answer:
-        'We are looking for all kinds of tutors. The most important thing is that you have some experience teaching and you have proven track record of excellent communication'
-    },
-    {
-      value: 'equipment',
-      question: 'What equipment do I need to teach on ClassroomHub?',
-      answer: 'You just need internet access and a laptop.'
-    },
-    {
-      value: 'apply',
-      question: 'What happens after I apply?',
-      answer:
-        'We will get your application and review it. You should get a response from us within 2-5 working days depending on the volume of applications'
-    },
-    {
-      value: 'earn',
-      question: 'How much can I earn?',
-      answer:
-        'That depends on how much your course sells for and how many students buy your course. Your income is limitless, you can keep making money while you sleep.'
-    }
-  ];
+  const faqs = $derived(
+    ['tutors', 'equipment', 'apply', 'earn'].map((value) => ({
+      value,
+      question: $t(`teach.faqs.${value}.question`),
+      answer: $t(`teach.faqs.${value}.answer`)
+    }))
+  );
 </script>
 
 <svelte:head>
-  <title>Teach | ClassroomHub</title>
+  <title>{$t('teach.title')}</title>
   <meta property="og:image" itemprop="image" content="/assets/brand/og/teach.png" />
-  <meta property="og:title" content="Teach on ClassroomHub" />
-  <meta property="og:description" content="On ClassroomHub you can make side income while doing what you love." />
+  <meta property="og:title" content={$t('teach.og_title')} />
+  <meta property="og:description" content={$t('teach.og_description')} />
 
   <meta property="og:image:secure_url" itemprop="image" content="/assets/brand/og/teach.png" />
 
-  <meta name="twitter:title" content="Teach on ClassroomHub" />
-  <meta name="twitter:description" content="On ClassroomHub you can make side income while doing what you love." />
+  <meta name="twitter:title" content={$t('teach.og_title')} />
+  <meta name="twitter:description" content={$t('teach.og_description')} />
   <meta name="twitter:image" content="/assets/brand/og/teach.png" />
 </svelte:head>
 
 <section>
   <PageHeader className="flex items-center justify-evenly px-5 flex-wrap text-left">
     <div>
-      <h1 class="text-3xl lg:text-5xl">Teach with us</h1>
+      <h1 class="text-3xl lg:text-5xl">{$t('teach.heading')}</h1>
       <p class="my-5 text-center lg:w-[77%] lg:text-left">
-        With ClassroomHub, you can make side income while teaching the subject you love
+        {$t('teach.subhead')}
       </p>
 
-      <Button href="/teach/register" target="_blank">Register</Button>
+      <Button href="/teach/register" target="_blank">{$t('teach.register')}</Button>
     </div>
 
     <div class=" ">
@@ -100,7 +64,7 @@
   <div class="mx-auto mt-10">
     <div class="border-b border-slate-100 px-[10%] pb-10">
       <h1 class="flex items-center justify-center gap-3 pb-28 text-center text-3xl">
-        Why you should teach with us? <img src="/assets/assets/www/teach/star.svg" alt="" />
+        {$t('teach.why_heading')} <img src="/assets/assets/www/teach/star.svg" alt="" />
       </h1>
 
       <div class="mt-10 flex flex-wrap justify-center lg:justify-between">
@@ -122,7 +86,7 @@
 
     <div class="mt-10 px-[10%] py-10">
       <h1 class="mb-28 flex items-center justify-center gap-3 text-center text-3xl">
-        How to get started <img src="/assets/assets/www/teach/thumbs-up.svg" alt="" />
+        {$t('teach.steps_heading')} <img src="/assets/assets/www/teach/thumbs-up.svg" alt="" />
       </h1>
 
       <div class="mx-auto mt-5 flex flex-wrap justify-between gap-y-10">
@@ -139,31 +103,14 @@
         {/each}
       </div>
       <div class="mt-3 flex justify-center px-[5%]">
-        <Button href="/teach/register" target="_blank" rel="noopener noreferrer nofollow">Get Started</Button>
-      </div>
-    </div>
-
-    <div class="my-10 h-[75%] px-2 py-12 lg:h-[80%] lg:px-[12%]">
-      <h1 class="flex items-center justify-center gap-3 text-center text-2xl">Word from our fufilled facilitators</h1>
-
-      <div
-        class="relative mx-auto mt-10 w-full rounded-md border bg-white py-6 text-center shadow-sm before:absolute before:top-0 before:left-0 before:h-full before:w-[4.5%] before:rounded-tl-md before:rounded-bl-md before:bg-[#0233BD] md:w-2/4"
-      >
-        <h1 class="mx-auto w-[77%] text-base leading-5 font-medium">
-          With ClassroomHub, I am training over 100 students. I am making more money than expected with little effort
-          and my students are happy. Love the product
-        </h1>
-        <div class="mt-3 flex flex-row items-center justify-center gap-4">
-          <img src="/assets/assets/www/teach/user-profile.png" alt="" class="w-8" />
-          <p class="text-sm">
-            <span class="mr-2 font-semibold"> Bilik Diana </span> English tutor
-          </p>
-        </div>
+        <Button href="/teach/register" target="_blank" rel="noopener noreferrer nofollow"
+          >{$t('teach.get_started')}</Button
+        >
       </div>
     </div>
 
     <div class="mx-auto my-10 mt-10 px-10 lg:max-w-[65%] lg:px-[15%]">
-      <h1 class="text-center text-xl">Frequently asked questions</h1>
+      <h1 class="text-center text-xl">{$t('teach.faq_heading')}</h1>
 
       <div class="mt-10">
         <Accordion.Root type="single" class="w-full">
@@ -182,9 +129,9 @@
     </div>
 
     <PageSignupCTA
-      header="Kick off your Teaching Business in Minutes"
-      subText="Don't wait, let's get you started."
-      btnLabel="Register"
+      header={$t('teach.cta_header')}
+      subText={$t('teach.cta_subtext')}
+      btnLabel={$t('teach.register')}
       link="/teach/register"
       demo={false}
     />

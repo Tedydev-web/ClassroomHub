@@ -251,5 +251,117 @@
       "support_247": "Hỗ trợ 24/7",
       "enterprise_contact": "Hạn mức riêng, thủ tục mua sắm, và một đầu mối liên hệ cố định. Hãy trao đổi với chúng tôi."
     }
+  },
+  "teach": {
+    "title": "Giảng dạy | ClassroomHub",
+    "og_title": "Giảng dạy trên ClassroomHub",
+    "og_description": "Trên ClassroomHub, bạn có thể kiếm thêm thu nhập từ chính việc mình yêu thích.",
+    "heading": "Giảng dạy cùng chúng tôi",
+    "subhead": "Với ClassroomHub, bạn có thể kiếm thêm thu nhập trong khi dạy đúng môn mình yêu thích",
+    "register": "Đăng ký",
+    "why_heading": "Vì sao nên dạy cùng chúng tôi?",
+    "why": {
+      "anywhere": {
+        "header": "Hoàn toàn trực tuyến; dạy từ bất cứ đâu",
+        "subtext": "Đứng lớp ngay tại không gian của bạn, tiếp cận học viên từ nhiều nền tảng rất khác nhau"
+      },
+      "paid": {
+        "header": "Nhận thêm hoa hồng",
+        "subtext": "Được trả cho khoá học bạn thiết kế và nhận thêm hoa hồng theo kết quả của khoá học"
+      },
+      "inspire": {
+        "header": "Truyền cảm hứng cho người học",
+        "subtext": "Cơ hội để bạn truyền cảm hứng cho hàng nghìn người học chạm tới ước mơ và theo đuổi sự xuất sắc trong học tập"
+      }
+    },
+    "steps_heading": "Bắt đầu thế nào",
+    "steps": {
+      "signup": {
+        "title": "Đăng ký",
+        "subtext": "Tạo một tài khoản miễn phí trên nền tảng."
+      },
+      "record": {
+        "title": "Ghi hình khoá học",
+        "subtext": "Chuẩn bị nội dung theo cách bạn muốn rồi tải lên nền tảng."
+      },
+      "launch": {
+        "title": "Ra mắt khoá học",
+        "subtext": "Trau chuốt khoá học, chắc chắn nó đã sẵn sàng cho học viên. Rồi xuất bản."
+      },
+      "sell": {
+        "title": "Bắt đầu bán",
+        "subtext": "Chia sẻ khoá học tới khán giả của bạn và trên mạng xã hội, rồi bắt đầu kiếm tiền từ những khoá học bạn tạo ra"
+      }
+    },
+    "get_started": "Bắt đầu",
+    "faq_heading": "Câu hỏi thường gặp",
+    "faqs": {
+      "tutors": {
+        "question": "ClassroomHub tìm kiếm giảng viên như thế nào?",
+        "answer": "Chúng tôi tìm mọi kiểu giảng viên. Điều quan trọng nhất là bạn có kinh nghiệm giảng dạy và có bằng chứng rõ ràng về khả năng truyền đạt tốt."
+      },
+      "equipment": {
+        "question": "Tôi cần thiết bị gì để dạy trên ClassroomHub?",
+        "answer": "Bạn chỉ cần kết nối internet và một chiếc laptop."
+      },
+      "apply": {
+        "question": "Sau khi nộp hồ sơ thì sao?",
+        "answer": "Chúng tôi sẽ nhận và xem xét hồ sơ của bạn. Bạn sẽ nhận được phản hồi trong vòng 2-5 ngày làm việc, tuỳ số lượng hồ sơ."
+      },
+      "earn": {
+        "question": "Tôi có thể kiếm được bao nhiêu?",
+        "answer": "Điều đó tuỳ vào giá khoá học của bạn và số học viên mua nó. Thu nhập không có trần — bạn vẫn kiếm được tiền cả khi đang ngủ."
+      }
+    },
+    "cta_header": "Khởi động việc dạy học của bạn chỉ trong vài phút",
+    "cta_subtext": "Đừng chờ nữa, bắt đầu thôi."
+  },
+  "mcp": {
+    "meta_title": "Công thức MCP cho ClassroomHub | Dựng khoá học bằng agent của bạn",
+    "meta_description": "Những prompt dùng được ngay cho máy chủ MCP của ClassroomHub. Tạo khoá học, cập nhật nội dung theo tài liệu mới, gắn thẻ đợt ra mắt, và hơn thế — từ Cursor, Claude Code, Codex hay OpenCode.",
+    "badge": "Công thức MCP",
+    "heading_lead": "Để agent của bạn",
+    "heading_accent": "giữ khoá học luôn cập nhật.",
+    "subhead": "Cắm máy chủ MCP của ClassroomHub vào Cursor, Claude Code, Codex hay OpenCode. Rồi dán một trong những prompt dưới đây. Agent sẽ lập kế hoạch, chờ bạn duyệt, rồi thực hiện.",
+    "get_key": "Lấy khoá MCP",
+    "read_docs": "Đọc tài liệu",
+    "eyebrow": "Công thức",
+    "list_heading": "Dán một prompt. Nhận kết quả.",
+    "prompt_label": "Prompt",
+    "copy": "Sao chép",
+    "copied": "Đã chép",
+    "copy_aria": "Sao chép prompt",
+    "recipes": {
+      "author": {
+        "eyebrow": "01 · Soạn bài",
+        "title": "Tạo khoá hội nhập khách hàng từ một đường dẫn tài liệu",
+        "description": "Agent lập dàn ý khoá học, viết nháp từng bài và ra câu hỏi kiểm tra, rồi chờ bạn duyệt trước khi xuất bản."
+      },
+      "refresh": {
+        "eyebrow": "02 · Cập nhật",
+        "title": "Làm mới khoá đào tạo tuân thủ sau khi quy định thay đổi",
+        "description": "Khi quy định đổi, agent tìm ra những bài bị ảnh hưởng và viết nháp phần sửa để bạn xem lại."
+      },
+      "launch": {
+        "eyebrow": "03 · Ra mắt",
+        "title": "Gắn thẻ mọi khoá học gắn với một đợt ra mắt sản phẩm",
+        "description": "Gắn thẻ hàng loạt cho cả bản nháp lẫn khoá đã xuất bản, để lọc, giao việc hay báo cáo chỉ trong một truy vấn."
+      },
+      "quiz": {
+        "eyebrow": "04 · Ra đề",
+        "title": "Thêm câu hỏi kiểm tra vào một bài học có sẵn",
+        "description": "Agent đọc nội dung bài học và sinh ra câu hỏi đánh giá để bạn duyệt trước khi xuất bản."
+      },
+      "reorder": {
+        "eyebrow": "05 · Sắp xếp lại",
+        "title": "Đổi thứ tự các bài trong một khoá học",
+        "description": "Nói cho agent biết thứ tự nào là quan trọng; nó sắp xếp lại chương và bài mà không đụng vào nội dung."
+      },
+      "audit": {
+        "eyebrow": "06 · Rà soát",
+        "title": "Soát mọi bản nháp trước khi xuất bản",
+        "description": "Nhận một bản tóm tắt cho biết mỗi bản nháp còn thiếu gì: trang giới thiệu, câu hỏi kiểm tra, quy tắc cấp chứng chỉ, hay bài thi cuối khoá."
+      }
+    }
   }
 }

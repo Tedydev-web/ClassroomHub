@@ -1,9 +1,16 @@
+import { ensureTranslations, localeFromPath, t } from '$lib/i18n';
+import { get } from 'svelte/store';
+
 export const prerender = true;
 
-export const load = () => ({
-  pageMetaTags: {
-    title: 'MCP recipes for ClassroomHub | Build courses with your agent',
-    description:
-      'Ready-to-run prompts for the ClassroomHub MCP server. Generate courses, refresh content from updated docs, tag launches, and more — from Cursor, Claude Code, Codex, or OpenCode.'
-  }
-});
+export const load = async ({ url }) => {
+  await ensureTranslations(localeFromPath(url.pathname));
+  const translate = get(t);
+
+  return {
+    pageMetaTags: {
+      title: translate('mcp.meta_title'),
+      description: translate('mcp.meta_description')
+    }
+  };
+};

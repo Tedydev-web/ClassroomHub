@@ -251,5 +251,117 @@
       "support_247": "24/7 Support",
       "enterprise_contact": "Custom limits, procurement, and a named contact. Talk to us."
     }
+  },
+  "teach": {
+    "title": "Teach | ClassroomHub",
+    "og_title": "Teach on ClassroomHub",
+    "og_description": "On ClassroomHub you can make side income while doing what you love.",
+    "heading": "Teach with us",
+    "subhead": "With ClassroomHub, you can make side income while teaching the subject you love",
+    "register": "Register",
+    "why_heading": "Why you should teach with us?",
+    "why": {
+      "anywhere": {
+        "header": "Fully Online; Teach from anywhere",
+        "subtext": "Facilitate a subject from the comfort of your space, engaging students from highly diverse backgrounds"
+      },
+      "paid": {
+        "header": "Get paid extra commission",
+        "subtext": "Get paid for the course you design and earn extra commission based on course performance"
+      },
+      "inspire": {
+        "header": "Inspire learners",
+        "subtext": "Your opportunity to inspire thousands of learners to achieve their dreams and pursue academic excellence"
+      }
+    },
+    "steps_heading": "How to get started",
+    "steps": {
+      "signup": {
+        "title": "Sign up",
+        "subtext": "Create a free account on the platform."
+      },
+      "record": {
+        "title": "Record a course",
+        "subtext": "Prepare your content however you want and then upload it onto the platform."
+      },
+      "launch": {
+        "title": "Launch the course",
+        "subtext": "Polish your course, make sure it is ready for students. Then publish it."
+      },
+      "sell": {
+        "title": "Start making sales",
+        "subtext": "Share your course with your audience and on social media and start earning money on the courses you create"
+      }
+    },
+    "get_started": "Get Started",
+    "faq_heading": "Frequently asked questions",
+    "faqs": {
+      "tutors": {
+        "question": "What kind of tutors does ClassroomHub look for?",
+        "answer": "We are looking for all kinds of tutors. The most important thing is that you have some experience teaching and a proven track record of excellent communication."
+      },
+      "equipment": {
+        "question": "What equipment do I need to teach on ClassroomHub?",
+        "answer": "You just need internet access and a laptop."
+      },
+      "apply": {
+        "question": "What happens after I apply?",
+        "answer": "We will get your application and review it. You should get a response from us within 2-5 working days depending on the volume of applications."
+      },
+      "earn": {
+        "question": "How much can I earn?",
+        "answer": "That depends on how much your course sells for and how many students buy it. Your income is limitless — you can keep making money while you sleep."
+      }
+    },
+    "cta_header": "Kick off your teaching business in minutes",
+    "cta_subtext": "Don't wait, let's get you started."
+  },
+  "mcp": {
+    "meta_title": "MCP recipes for ClassroomHub | Build courses with your agent",
+    "meta_description": "Ready-to-run prompts for the ClassroomHub MCP server. Generate courses, refresh content from updated docs, tag launches, and more — from Cursor, Claude Code, Codex, or OpenCode.",
+    "badge": "MCP recipes",
+    "heading_lead": "Let your agent",
+    "heading_accent": "keep your courses up to date.",
+    "subhead": "Plug the ClassroomHub MCP server into Cursor, Claude Code, Codex, or OpenCode. Then paste one of these prompts. The agent plans the work, waits for your approval, and runs it.",
+    "get_key": "Get an MCP key",
+    "read_docs": "Read the docs",
+    "eyebrow": "Recipes",
+    "list_heading": "Paste a prompt. Get the result.",
+    "prompt_label": "Prompt",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copy_aria": "Copy prompt",
+    "recipes": {
+      "author": {
+        "eyebrow": "01 · Authoring",
+        "title": "Generate a customer onboarding course from a doc URL",
+        "description": "The agent plans the course, drafts every lesson, and writes the quiz questions, then waits for your approval before publishing."
+      },
+      "refresh": {
+        "eyebrow": "02 · Refresh",
+        "title": "Refresh a compliance course after a policy update",
+        "description": "When the policy changes, the agent identifies the affected lessons and drafts the revisions for your review."
+      },
+      "launch": {
+        "eyebrow": "03 · Launches",
+        "title": "Tag every course tied to a new product launch",
+        "description": "Bulk-tag drafts and published courses so you can filter, assign, or report on them in one query."
+      },
+      "quiz": {
+        "eyebrow": "04 · Quiz authoring",
+        "title": "Add quiz questions to an existing lesson",
+        "description": "The agent reads the lesson body and generates assessment questions you can review before publishing."
+      },
+      "reorder": {
+        "eyebrow": "05 · Reorganise",
+        "title": "Reorder lessons inside a course",
+        "description": "Tell the agent what order matters; it reorders sections and lessons without touching the content."
+      },
+      "audit": {
+        "eyebrow": "06 · Review",
+        "title": "Audit every draft before publish",
+        "description": "Get a written summary of what each draft is missing: landing page, quiz questions, certificate rule, or final exam."
+      }
+    }
   }
 }
