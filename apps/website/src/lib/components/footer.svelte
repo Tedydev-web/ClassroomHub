@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { CONTACT } from '@cio/utils/constants';
   import { DEFAULT_LOCALE, pathInLocale, t, type Locale } from '$lib/i18n';
 
   let locale = $derived((page.data.locale ?? DEFAULT_LOCALE) as Locale);
@@ -15,6 +16,18 @@
     unnoticed. Paths under `(redirects)` — /privacy, /tos, /roadmap — are not
     translated pages, so they keep their bare path.
   */
+  /*
+    Reaching a human. The addresses and numbers come from `@cio/utils` so the
+    footer, the help centre and transactional email cannot drift apart.
+  */
+  const contactChannels = $derived([
+    { label: CONTACT.email, href: `mailto:${CONTACT.email}` },
+    { label: `Zalo · ${CONTACT.phoneDisplay}`, href: CONTACT.zalo, external: true },
+    { label: `Telegram · ${CONTACT.telegramHandle}`, href: CONTACT.telegram, external: true },
+    { label: $t('footer.facebook'), href: CONTACT.facebook, external: true },
+    { label: CONTACT.phoneDisplay, href: `tel:${CONTACT.phoneDial}` }
+  ]);
+
   const columns = $derived([
     {
       heading: $t('footer.product'),
@@ -108,6 +121,27 @@
     <div class="flex flex-col gap-4 lg:max-w-[220px]">
       <img width="32" height="32" loading="lazy" src="/logo-192.png" alt="ClassroomHub logo" />
       <p class="ui:text-muted-foreground text-sm leading-6">{$t('footer.tagline')}</p>
+
+      <!--
+        Contact sits with the brand rather than as a fifth nav column: these are
+        ways to reach a person, not places on this site. Zalo first after email,
+        because it is the channel most Vietnamese visitors will actually use.
+      -->
+      <div class="mt-1">
+        <p class="ui:text-foreground mb-2.5 text-sm font-semibold">{$t('footer.contact')}</p>
+        <ul class="space-y-2">
+          {#each contactChannels as channel}
+            <li>
+              <a
+                href={channel.href}
+                target={channel.external ? '_blank' : undefined}
+                rel={channel.external ? 'noopener' : undefined}
+                class="ui:text-muted-foreground ui:hover:text-foreground text-sm transition-colors">{channel.label}</a
+              >
+            </li>
+          {/each}
+        </ul>
+      </div>
     </div>
 
     <!-- Nav columns -->

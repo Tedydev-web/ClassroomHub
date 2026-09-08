@@ -76,7 +76,13 @@
     "support": "Support",
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",
-    "rights": "All rights reserved. ClassroomHub © {year}"
+    "rights": "All rights reserved. ClassroomHub © {year}",
+    "contact": "Contact",
+    "email": "Email",
+    "phone": "Phone",
+    "zalo": "Zalo",
+    "telegram": "Telegram",
+    "facebook": "Facebook"
   },
   "hero": {
     "title_lead": "One platform to teach anything,",

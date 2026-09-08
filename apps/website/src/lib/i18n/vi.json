@@ -76,7 +76,13 @@
     "support": "Hỗ trợ",
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản sử dụng",
-    "rights": "Bảo lưu mọi quyền. ClassroomHub © {year}"
+    "rights": "Bảo lưu mọi quyền. ClassroomHub © {year}",
+    "contact": "Liên hệ",
+    "email": "Email",
+    "phone": "Điện thoại",
+    "zalo": "Zalo",
+    "telegram": "Telegram",
+    "facebook": "Facebook"
   },
   "hero": {
     "title_lead": "Một nền tảng để dạy bất cứ điều gì,",

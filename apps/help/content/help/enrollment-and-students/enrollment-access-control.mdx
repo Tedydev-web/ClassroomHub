@@ -41,7 +41,7 @@ Restricting who can **join** a course is not the same as hiding it from every st
 | **Internal Enrollment Only** (org-wide) | When on, only existing org members can self-enroll; anyone else needs an invite, even on an open course |
 
 :::warning[Explore hides courses that are closed to new students]
-**Explore** in the student LMS lists published courses the student has not enrolled in yet, and excludes any course whose **Students can enroll themselves** is off. So turning that toggle off both blocks open enrollment and drops the course out of Explore. What ClassroomIO does not support today is hiding a published, open course from _specific_ people.
+**Explore** in the student LMS lists published courses the student has not enrolled in yet, and excludes any course whose **Students can enroll themselves** is off. So turning that toggle off both blocks open enrollment and drops the course out of Explore. What ClassroomHub does not support today is hiding a published, open course from _specific_ people.
 :::
 
 **Workarounds:**
@@ -56,14 +56,14 @@ For where students see enrolled vs available courses, see [Student Dashboard](/r
 
 Course enrollment is different from **organization signup**. In **Settings → Authentication → General**, you have three org-level controls that work together:
 
-**Block all new signups** — the strictest setting: nobody can create a new account on your academy, invite links included. Existing accounts are not affected, so someone who already has a ClassroomIO account and holds an invite to your organization can still join. Turning this on reveals a **Signup Disabled Message** field, where you can explain how to request access.
+**Block all new signups** — the strictest setting: nobody can create a new account on your academy, invite links included. Existing accounts are not affected, so someone who already has a ClassroomHub account and holds an invite to your organization can still join. Turning this on reveals a **Signup Disabled Message** field, where you can explain how to request access.
 
 **Allow public signups** — a filter rather than a lock. When turned off, your signup page stays available but only people you have invited can use it: a new account can be created, as long as its email address has an active invite. Leave it on to let anyone register.
 
 Both settings control who can sign up for your organization, not which courses they can join.
 
 :::info[Inviting someone while new signups are blocked]
-**Block all new signups** takes precedence over invites at account creation. If you invite an email address that has no ClassroomIO account yet while it is on, the recipient cannot finish signing up and will see your **Signup Disabled Message** instead. To invite brand-new people, turn off **Allow public signups** instead.
+**Block all new signups** takes precedence over invites at account creation. If you invite an email address that has no ClassroomHub account yet while it is on, the recipient cannot finish signing up and will see your **Signup Disabled Message** instead. To invite brand-new people, turn off **Allow public signups** instead.
 :::
 
 **Internal Enrollment Only** — when enabled, only people who are already members of your organization can enroll in your courses. Anyone else has to be invited; they cannot enroll themselves from a course page even if the course is open to new students. Members still self-enroll normally, since **Students can enroll themselves** is on by default for published courses. This is what makes an internal academy closed: pair it with **Allow public signups** off, add employees via course invite links (which creates their account as a student in your organization), and from then on they can discover and join your open courses from Explore themselves.

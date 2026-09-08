@@ -75,7 +75,10 @@ program
         )}\n${chalk.green('pnpm run dev')}`
       );
 
-      console.log(`\nDM me on X if you face any issues: https://x.com/rotimi_best`);
+      // Written out rather than imported from `@cio/utils`: this CLI is published
+      // to npm on its own, so a workspace dependency would not resolve for the
+      // people who install it.
+      console.log(`\nSomething not working? Write to support@classroom.io.vn, or message @ClassroomHub on Telegram.`);
     } catch (error) {
       spinner.fail(chalk.red(`Failed to scaffold the project. ${error}`));
       process.exit(1);

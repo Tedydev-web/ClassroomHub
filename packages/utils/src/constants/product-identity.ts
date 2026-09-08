@@ -49,3 +49,26 @@ export const PRODUCT_HOSTS = {
   embed: 'embed.classroom.io.vn',
   assets: 'assets.classroom.io.vn'
 } as const;
+
+/**
+ * Every way a person can reach the people who run this deployment.
+ *
+ * One definition, because these end up in the marketing footer, the help
+ * centre, transactional email and the dashboard's error pages, and a phone
+ * number that is right in three of those and stale in the fourth is worse than
+ * one that is missing everywhere.
+ *
+ * The phone number is stored in the national form people recognise and the
+ * international form a `tel:` link needs: a Vietnamese reader looks for
+ * `0869 685 621`, while a phone dialling from abroad needs `+84`.
+ */
+export const CONTACT = {
+  /** The mailbox on the product domain — also the account transactional mail is sent from. */
+  email: OPERATOR_EMAIL,
+  phoneDisplay: '0869 685 621',
+  phoneDial: '+84869685621',
+  zalo: 'https://zalo.me/0869685621',
+  telegramHandle: '@ClassroomHub',
+  telegram: 'https://t.me/ClassroomHub',
+  facebook: 'https://www.facebook.com/profile.php?id=61594408852974'
+} as const;

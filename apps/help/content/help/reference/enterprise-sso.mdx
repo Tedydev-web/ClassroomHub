@@ -3,15 +3,12 @@ title: Enterprise SSO
 description: Configure Single Sign-On (SSO) with OIDC for your organization.
 ---
 
-ClassroomIO supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP). For step-by-step setup, start with [Set Up Enterprise SSO](/organization-and-team/enterprise-sso-setup).
+ClassroomHub supports Single Sign-On (SSO) via OpenID Connect (OIDC), allowing your organization members to sign in using your existing identity provider (IdP). For step-by-step setup, start with [Set Up Enterprise SSO](/organization-and-team/enterprise-sso-setup).
 
 :::info[Enterprise Feature]
 SSO requires an **Enterprise** plan.
 
-**Cloud:** [Contact us](mailto:support@classroomio.com) to upgrade.
-
-**Self-hosted:** requires an Enterprise license key. See [Self-Hosting → Enterprise & licensing](https://classroomio.com/docs/self-hosted/enterprise) for how to set it up.
-[Book a call](http://cal.com/classroomio/enterprise) to get your license.
+[Contact us](mailto:support@classroom.io.vn) to upgrade.
 :::
 
 ## Supported Providers
@@ -26,11 +23,11 @@ We support OIDC-based SSO with the following identity providers:
 
 ### Academy Login
 
-When users visit your organization's custom domain (e.g., `yourorg.classroomio.com`), SSO is automatically detected and they can sign in directly with your IdP.
+When users visit your organization's custom domain (e.g., `yourorg.classroom.io.vn`), SSO is automatically detected and they can sign in directly with your IdP.
 
 ### Shared App Login
 
-On the main ClassroomIO app (`app.classroomio.com`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
+On the main ClassroomHub app (`hub.classroom.io.vn`), users enter their email address first. If their email domain matches your configured SSO domain, they'll be prompted to sign in via SSO.
 
 ## Access Policies
 
@@ -62,7 +59,7 @@ Users are automatically provisioned when they first sign in via SSO:
 
 ### Role Mapping
 
-Map IdP groups to ClassroomIO roles:
+Map IdP groups to ClassroomHub roles:
 
 - Admins → `ROLE.ADMIN` (1)
 - Tutors → `ROLE.TUTOR` (2)
@@ -84,5 +81,4 @@ SAML 2.0 support is planned for a future release. Currently, only OIDC is suppor
 ## Related guides
 
 - [Set Up Enterprise SSO](/organization-and-team/enterprise-sso-setup) — connect Google Workspace, Okta, or Auth0
-- [Roles and Permissions](/organization-and-team/roles-and-permissions) — how ClassroomIO roles map to SSO role mapping
-- [Enterprise & licensing](https://classroomio.com/docs/self-hosted/enterprise) — setting `LICENSE_KEY` on self-hosted deployments
+- [Roles and Permissions](/organization-and-team/roles-and-permissions) — how ClassroomHub roles map to SSO role mapping
