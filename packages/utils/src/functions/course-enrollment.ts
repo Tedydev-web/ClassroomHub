@@ -30,3 +30,23 @@ type SelfEnrollmentMetadata = {
 export function isSelfEnrollmentAllowed(metadata: SelfEnrollmentMetadata | null | undefined): boolean {
   return metadata?.allowSelfEnrollment ?? metadata?.allowNewStudent ?? true;
 }
+
+/**
+ * Whether a course's exercise list must be narrowed to what this viewer is assigned.
+ *
+ * Assignment scoping is a student rule, so it applies to a viewer who is a student in the
+ * course's group and to nobody else. Two viewers are not students and are easy to conflate:
+ * a teacher, who has a membership with another role, and an organisation owner, who has no
+ * membership in this course's group at all.
+ *
+ * The second one is why this exists as a named rule. Treating "no membership" as "assigned
+ * nothing" removed every exercise from the course for the person most likely to be
+ * authoring them, while leaving the lessons in place — so the course looked like it simply
+ * had no exercises, with nothing logged and nothing to click.
+ */
+export function shouldScopeExercisesToAssignments(
+  viewer: { roleId: number } | null | undefined,
+  studentRoleId: number
+): boolean {
+  return viewer?.roleId === studentRoleId;
+}

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 
-import { ContentType } from '@cio/utils/constants';
+import { ContentType, ROLE } from '@cio/utils/constants';
+import { shouldScopeExercisesToAssignments } from '@cio/utils/functions/course-enrollment';
 import { and, db, eq, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
@@ -56,9 +57,15 @@ export async function getCourseContentItems(
       : drizzleSql`false`;
 
     const exerciseCompletionSql = profileId ? isExerciseCompletedSql('exercise', { profileId }) : drizzleSql`false`;
-    const exerciseVisibilitySql = profileId
-      ? drizzleSql`AND ${viewerMember ? getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId) : drizzleSql`false`}`
-      : drizzleSql``;
+    // Narrowed to assignments only for a student; see `shouldScopeExercisesToAssignments`
+    // for who that is and, more to the point, who it is not. Whoever reaches this function
+    // has already been authorised for the course by the route, and the lessons selected in
+    // the same query were never gated — so leaving the filter off here grants nothing the
+    // same response did not already carry.
+    const exerciseVisibilitySql =
+      viewerMember && shouldScopeExercisesToAssignments(viewerMember, ROLE.STUDENT)
+        ? drizzleSql`AND ${getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId)}`
+        : drizzleSql``;
 
     const result = await dbClient.execute(drizzleSql`
       SELECT
