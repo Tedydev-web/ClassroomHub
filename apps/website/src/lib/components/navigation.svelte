@@ -51,8 +51,7 @@
 
   /**
    * Switching language keeps the visitor on the page they are reading and records the
-   * choice, which is what stops the next visit from being guessed at again. The key is
-   * the one the dashboard reads, so the two halves of the product never disagree.
+   * choice, which is what stops the next visit from being guessed at again.
    *
    * A real link, not a button: it is how the prerenderer discovers the other language
    * tree at build time, and it lets a reader open the translation in a new tab.

@@ -8,7 +8,13 @@ export const DEFAULT_LOCALE = 'vi';
 export const LOCALES = ['vi', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
 
-/** Shared with the dashboard, so a visitor who picks a language keeps it across both. */
+/**
+ * Where an explicit language choice is remembered.
+ *
+ * The dashboard stores its own under the same name, but this one is written with
+ * no `Domain` and the two live on different hosts, so nothing travels between
+ * them: this is the website's own memory, and only of a choice the visitor made.
+ */
 export const LOCALE_COOKIE = 'classroomhub_locale';
 
 /** The locale a path is written in: `/en/...` is English, everything else Vietnamese. */
