@@ -2116,7 +2116,8 @@
               "passage_workspace_previous_question": "Câu trước",
               "passage_workspace_next_question": "Câu sau",
               "passage_workspace_answered_question": "Câu {number}, đã trả lời",
-              "passage_workspace_unanswered_question": "Câu {number}, chưa trả lời"
+              "passage_workspace_unanswered_question": "Câu {number}, chưa trả lời",
+              "row_summary": "{questions} câu · {points} điểm"
             },
             "publish_as_exam": "Xuất bản thành đề thi"
           },

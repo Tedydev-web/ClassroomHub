@@ -2113,7 +2113,8 @@
               "passage_workspace_previous_question": "Назад",
               "passage_workspace_next_question": "Далее",
               "passage_workspace_answered_question": "Вопрос {number}, есть ответ",
-              "passage_workspace_unanswered_question": "Вопрос {number}, без ответа"
+              "passage_workspace_unanswered_question": "Вопрос {number}, без ответа",
+              "row_summary": "{questions} вопросов · {points} баллов"
             }
           },
           "new_exercise_modal": {

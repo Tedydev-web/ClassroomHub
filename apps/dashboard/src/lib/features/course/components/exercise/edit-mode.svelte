@@ -66,6 +66,7 @@
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
   import { courseApi } from '$features/course/api';
   import AssessmentItemComposer from './assessment-item-composer.svelte';
+  import { countAssessmentQuestions, countSectionQuestions } from './assessment-item-summary';
 
   const flipDurationMs = 200;
   const uploadLimits = getResolvedUploadLimits();
@@ -693,12 +694,18 @@
   </div>
 {/snippet}
 
-{#snippet compactCanonicalQuestionRow(question: CanonicalQuestion, index: number)}
+{#snippet compactCanonicalQuestionRow(question: CanonicalQuestion)}
   <div class="border-border flex items-center gap-3 rounded-md border bg-white px-4 py-3 dark:bg-black">
-    <span class="ui:text-muted-foreground w-6 text-sm font-medium tabular-nums">{index + 1}</span>
     <div class="min-w-0 flex-1">
       <p class="truncate text-sm font-semibold">{richTextToPlainText(question.title)}</p>
       <p class="ui:text-muted-foreground text-xs">
+        <!-- What the row cannot show otherwise: a composite item holding a passage and six
+             blanks is one row, and looked identical to a row holding a single question. -->
+        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.row_summary', {
+          questions: countAssessmentQuestions(question),
+          points: question.points ?? 0
+        })}
+        &middot;
         {$t(
           question.gradingMode === 'auto'
             ? 'course.navItem.lessons.exercises.all_exercises.question_auto_graded_badge'
@@ -970,8 +977,11 @@
                 sectionNumber={sectionIndex + 1}
                 totalSections={activeSections.length}
                 colorTheme={section.colorTheme}
-                questionCount={sectionQuestions.length + canonicalSectionQuestions.length}
-                requiredQuestionCount={getRequiredQuestionCount(sectionQuestions) + canonicalSectionQuestions.length}
+                questionCount={countSectionQuestions(sectionQuestions.length, canonicalSectionQuestions)}
+                requiredQuestionCount={countSectionQuestions(
+                  getRequiredQuestionCount(sectionQuestions),
+                  canonicalSectionQuestions
+                )}
                 labels={sectionLabels}
                 titleError={getSectionErrorMsg(errors, section.id, 'title')}
                 descriptionError={getSectionErrorMsg(errors, section.id, 'description')}
@@ -1021,9 +1031,9 @@
                         {:else if item.kind === 'legacy'}
                           {@render questionEditor(item.question, index)}
                         {:else if reorderQuestions}
-                          {@render compactCanonicalQuestionRow(item.question, index)}
+                          {@render compactCanonicalQuestionRow(item.question)}
                         {:else}
-                          {@render compactCanonicalQuestionRow(item.question, index)}
+                          {@render compactCanonicalQuestionRow(item.question)}
                         {/if}
                       </div>
                     </div>
@@ -1055,7 +1065,14 @@
             {#if item.kind === 'legacy'}
               {@render questionEditor(item.question, index)}
             {:else}
-              {@render compactCanonicalQuestionRow(item.question, index)}
+              <div class="flex items-start gap-3">
+                <span class="ui:text-muted-foreground w-5 shrink-0 pt-3 text-xs font-medium tabular-nums">
+                  {index + 1}
+                </span>
+                <div class="min-w-0 flex-1">
+                  {@render compactCanonicalQuestionRow(item.question)}
+                </div>
+              </div>
             {/if}
           {/each}
           {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}

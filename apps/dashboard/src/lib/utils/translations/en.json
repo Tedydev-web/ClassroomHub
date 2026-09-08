@@ -2770,7 +2770,8 @@
               "passage_workspace_previous_question": "Previous",
               "passage_workspace_next_question": "Next",
               "passage_workspace_answered_question": "Question {number}, answered",
-              "passage_workspace_unanswered_question": "Question {number}, not answered"
+              "passage_workspace_unanswered_question": "Question {number}, not answered",
+              "row_summary": "{questions} questions · {points} points"
             },
             "add_section": "Add section",
             "reorder": "Reorder Questions",
@@ -4423,7 +4424,7 @@
     "cohorts": "Cohorts"
   },
   "lms": {
-    "view_landing_page": "Home"
+    "view_landing_page": "View landing page"
   },
   "my_learning": {
     "heading": "My Learning",
@@ -6042,9 +6043,6 @@
     "setup_failed_description": "We encountered an unexpected error. Please reload the page or contact us for support.",
     "reload_page": "Reload Page",
     "contact_us": "Contact Us"
-  },
-  "lms": {
-    "view_landing_page": "View landing page"
   },
   "invite_link": {
     "tab_label": "Invite link",

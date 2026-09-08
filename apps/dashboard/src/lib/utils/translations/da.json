@@ -2113,7 +2113,8 @@
               "passage_workspace_previous_question": "Forrige",
               "passage_workspace_next_question": "Næste",
               "passage_workspace_answered_question": "Spørgsmål {number}, besvaret",
-              "passage_workspace_unanswered_question": "Spørgsmål {number}, ubesvaret"
+              "passage_workspace_unanswered_question": "Spørgsmål {number}, ubesvaret",
+              "row_summary": "{questions} spørgsmål · {points} point"
             }
           },
           "new_exercise_modal": {

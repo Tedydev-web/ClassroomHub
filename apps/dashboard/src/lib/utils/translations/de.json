@@ -2113,7 +2113,8 @@
               "passage_workspace_previous_question": "Zurück",
               "passage_workspace_next_question": "Weiter",
               "passage_workspace_answered_question": "Frage {number}, beantwortet",
-              "passage_workspace_unanswered_question": "Frage {number}, nicht beantwortet"
+              "passage_workspace_unanswered_question": "Frage {number}, nicht beantwortet",
+              "row_summary": "{questions} Fragen · {points} Punkte"
             }
           },
           "new_exercise_modal": {
