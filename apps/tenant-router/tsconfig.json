@@ -12,5 +12,11 @@
     "isolatedModules": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  // The Worker compiles against the Cloudflare runtime types alone, and a test
+  // that reads wrangler.toml off disk needs Node's. Rather than pull @types/node
+  // into the Worker's own type environment — where `process` and `Buffer` would
+  // then typecheck and not exist at runtime — the tests are excluded here and
+  // typechecked by tsx when they run.
+  "exclude": ["src/**/*.test.ts"]
 }
