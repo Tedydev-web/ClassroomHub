@@ -1,12 +1,7 @@
 import i18n from '@sveltekit-i18n/base';
 import parser from '@sveltekit-i18n/parser-icu';
 
-export const DEFAULT_LOCALE = 'vi';
-export const LOCALES = ['vi', 'en'] as const;
-export type Locale = (typeof LOCALES)[number];
-
-/** Shared with the dashboard, so a visitor who picks a language keeps it across both. */
-export const LOCALE_COOKIE = 'classroomhub_locale';
+export { DEFAULT_LOCALE, LOCALES, LOCALE_COOKIE, localeFromPath, pathInLocale, type Locale } from './locale';
 
 export const config = {
   parser: parser(),
@@ -49,18 +44,4 @@ export async function ensureTranslations(target: string): Promise<void> {
 
   await load;
   locale.forceSet(target);
-}
-
-/** The locale a path is written in: `/en/...` is English, everything else Vietnamese. */
-export function localeFromPath(pathname: string): Locale {
-  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : DEFAULT_LOCALE;
-}
-
-/** The same page in the other locale, for the switcher and for `hreflang`. */
-export function pathInLocale(pathname: string, target: Locale): string {
-  const bare = pathname === '/en' ? '/' : pathname.startsWith('/en/') ? pathname.slice(3) : pathname;
-
-  if (target === DEFAULT_LOCALE) return bare;
-
-  return bare === '/' ? '/en' : `/en${bare}`;
 }

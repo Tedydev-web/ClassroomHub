@@ -2,6 +2,7 @@
   import { dev } from '$app/environment';
   import { page } from '$app/state';
   import { Footer, Navigation, NotFound } from '$lib/components';
+  import { applyGeoLocale } from '$lib/i18n/geo-locale';
   import { initUserJot } from '$lib/utils/userjot';
   import extend from 'just-extend';
   import { onMount } from 'svelte';
@@ -12,6 +13,8 @@
   let { children, data } = $props();
 
   onMount(() => {
+    void applyGeoLocale(page.url.pathname);
+
     if (dev) {
       localStorage.setItem('umami.disabled', '1');
       return;
