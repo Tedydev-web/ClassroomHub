@@ -1119,5 +1119,15 @@
   "shared": {
     "now_rendering": "Đang hiển thị",
     "cert_editor_caption": "Ảnh chụp trình soạn mẫu chứng chỉ"
+  },
+  "legal": {
+    "legal": "Pháp lý",
+    "privacy_title": "Chính sách bảo mật",
+    "terms_title": "Điều khoản sử dụng",
+    "privacy_meta_title": "Chính sách bảo mật | ClassroomHub",
+    "privacy_meta_description": "Cách ClassroomHub thu thập, sử dụng, lưu trữ và bảo vệ dữ liệu cá nhân khi bạn dùng trang web và dịch vụ của chúng tôi.",
+    "terms_meta_title": "Điều khoản sử dụng | ClassroomHub",
+    "terms_meta_description": "Những điều khoản điều chỉnh việc bạn sử dụng trang web và dịch vụ của ClassroomHub.",
+    "english_is_authoritative": "Văn bản này được công bố bằng tiếng Anh. Bản dịch (nếu có) chỉ nhằm mục đích tham khảo; bản tiếng Anh là bản có hiệu lực."
   }
 }

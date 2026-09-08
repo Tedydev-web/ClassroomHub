@@ -47,8 +47,8 @@
       links: [
         { label: $t('footer.roadmap'), href: '/roadmap' },
         { label: $t('footer.support'), href: 'mailto:help@classroom.tedydev.io.vn' },
-        { label: $t('footer.privacy'), href: '/privacy' },
-        { label: $t('footer.terms'), href: '/tos' }
+        { label: $t('footer.privacy'), href: localHref('/privacy') },
+        { label: $t('footer.terms'), href: localHref('/tos') }
       ]
     }
   ]);

@@ -1119,5 +1119,15 @@
   "shared": {
     "now_rendering": "Now rendering",
     "cert_editor_caption": "Screenshot of the certificate template editor"
+  },
+  "legal": {
+    "legal": "Legal",
+    "privacy_title": "Privacy Policy",
+    "terms_title": "Terms of Use",
+    "privacy_meta_title": "Privacy Policy | ClassroomHub",
+    "privacy_meta_description": "How ClassroomHub collects, uses, stores, and protects personal data when you use our websites and services.",
+    "terms_meta_title": "Terms of Use | ClassroomHub",
+    "terms_meta_description": "The terms that govern your use of ClassroomHub's websites and services.",
+    "english_is_authoritative": "This document is published in English. A translation is provided for convenience where one exists; the English text is the one that governs."
   }
 }
