@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PRODUCT_URLS } from '@cio/utils/constants';
+  import { PRODUCT_URLS, SALES_EMAIL } from '@cio/utils/constants';
   import { CodeBlock, HeroSubtitle, McpServerSection, PageHeader, PageSignupCTA } from '$lib/components';
   import { t } from '$lib/i18n';
   import { Badge } from '@cio/ui/base/badge';
@@ -57,7 +57,7 @@
         {$t('dev.subhead')}
       </HeroSubtitle>
       <div class="mt-8 flex flex-wrap items-center gap-3">
-        <Button href="{PRODUCT_URLS.docs}/api">{$t('dev.read_docs')}</Button>
+        <Button href="mailto:{SALES_EMAIL}?subject=ClassroomHub API access">{$t('dev.request_access')}</Button>
         <Button href="/pricing" variant="outline">{$t('dev.see_pricing')}</Button>
       </div>
     </div>
@@ -145,17 +145,6 @@
         <p class="mt-5 text-base leading-relaxed text-gray-500">
           {$t('dev.stack_body')}
         </p>
-
-        <div class="mt-8 flex flex-wrap items-center gap-3">
-          <a
-            href="{PRODUCT_URLS.docs}/api"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-medium text-white no-underline transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-          >
-            {$t('dev.stack_cta')}
-          </a>
-        </div>
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
@@ -194,11 +183,5 @@
     </div>
   </section>
 
-  <PageSignupCTA
-    header={$t('dev.cta_header')}
-    subText={$t('dev.cta_subtext')}
-    btnLabel={$t('dev.cta_button')}
-    link="{PRODUCT_URLS.docs}/api"
-    demo={false}
-  />
+  <PageSignupCTA header={$t('dev.cta_header')} subText={$t('dev.cta_subtext')} btnLabel={$t('dev.request_access')} />
 </section>

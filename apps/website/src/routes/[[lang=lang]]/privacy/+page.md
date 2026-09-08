@@ -4,32 +4,10 @@ At ClassroomHub ("us", "we", "our" or the "Company") we value your privacy and t
 
 We are committed to protecting your privacy in accordance with the highest level of privacy regulation. As such, we follow the obligations under the below regulations:
 
-- Canada's Personal Information Protection and Electronic Documents Act (PIPEDA) and the applicable provincial legislations
-- Quebec Law 25
-- the EU's General Data Protection Regulation (GDPR)
-- Brazil's Data Protection Legislation (LGPD)
-- California's Consumer Privacy Act (CCPA) / California Privacy Rights Act (CPRA) and California Online Privacy Protection Act (CalOPPA)
-- Colorado Privacy Act (CPA)
-- Utah Consumer Privacy Act (UCPA)
-- Connecticut Data Privacy Act (CTDPA)
-- Virginia Consumer Data Protection Act (VCDPA)
-- Texas Data Privacy and Security Act (TDPSA)
-- Oregon Consumer Privacy Act (OCPA)
-- Montana Consumer Data Privacy Act
-- Delaware Personal Data Privacy Act
-- Nebraska Data Privacy Law
-- New Hampshire Data Privacy Act
-- New Jersey Data Privacy Act
-- Minnesota Consumer Data Privacy Act
-- Maryland Online Consumer Protection Act
-- Kentucky Consumer Data Privacy Act (KCDPA)
-- Tennessee Information Protection Act (TIPA)
-- The Rhode Island Data Transparency and Privacy Protection Act (RIDTPPA)
-- Indiana Consumer Data Privacy Act (INCDPA)
-- Iowa Consumer Data Privacy Act (ICDPA)
-- South Africa's Protection of Personal Information Act (POPIA)
-- Switzerland's Federal Act on Data Protection (FADP)
-- Saudi Arabia's Personal Data Protection Law (PDPL)
+- Viet Nam's Decree 13/2023/ND-CP on Personal Data Protection
+- Viet Nam's Law on Cyber Information Security (86/2015/QH13) and Law on Cybersecurity (24/2018/QH14)
+- Viet Nam's Law on Protection of Consumer Rights (19/2023/QH15)
+- the EU's General Data Protection Regulation (GDPR), where we process the data of individuals in the European Economic Area
 
 ### Scope
 
@@ -200,16 +178,13 @@ In the unfortunate event of a Personal Data breach, we will notify you and any a
 
 Depending on your geographical location and citizenship, your rights are subject to local data privacy regulations. These rights may include:
 
-- **Right to Access** (PIPEDA, GDPR Article 15, CCPA/CPRA, CPA, VCDPA, CTDPA, UCPA, LGPD, POPIA)
-- **Right to Rectification** (PIPEDA, GDPR Article 16, CPRA, CPA, VCDPA, CTDPA, LGPD, POPIA)
-- **Right to be Forgotten (right to erasure)** (GDPR Article 17, CCPA/CPRA, CPA, VCDPA, CTDPA, UCPA, LGPD, POPIA)
-- **Right to Restriction of Processing** (GDPR Article 18, LGPD)
-- **Right to Portability** (PIPEDA, GDPR Article 20, LGPD)
-- **Right to Opt Out** (CPRA, CPA, VCDPA, CTDPA, UCPA)
-- **Right to Objection** (GDPR Article 21, LGPD, POPIA)
-- **Nondiscrimination and nonretaliation** (CCPA/CPRA, CPA, VCDPA, CTDPA, UCPA)
-- **File an Appeal** (CPA, VCDPA, CTDPA)
-- **File a Complaint** (GDPR Article 77, LGPD, POPIA)
+- **Right to Access** — obtain a copy of the Personal Data we hold about you
+- **Right to Rectification** — have inaccurate or incomplete data corrected
+- **Right to Erasure** — have your data deleted, where we are not required to keep it
+- **Right to Restriction of Processing** — ask us to pause processing while a dispute is resolved
+- **Right to Portability** — receive your data in a structured, machine-readable format
+- **Right to Withdraw Consent or Object** — withdraw consent, or object to processing based on our legitimate interests
+- **Right to Complain** — raise the matter with us, and with the competent authority in your country
 
 You have the right to file an appeal based on our response to you exercising any of these rights. In the event you disagree with how we resolved the appeal, you may have the right to contact your local data protection or consumer protection authority.
 
@@ -225,13 +200,13 @@ You have the right to restrict our processing of your Personal Data under certai
 
 You have the right to obtain Personal Data we hold about you, in a structured, electronic format, and to transmit such Personal Data to another data controller, where this is (a) Personal Data which you have provided to us, and (b) if we are processing that data on the basis of your consent or to perform a contract with you or the third party that subscribes to services.
 
-You have the right to opt out of the processing of your Personal Data for purposes of: (1) Targeted advertising; (2) The sale of Personal Data; and/or (3) Profiling in furtherance of decisions that produce legal or similarly significant effects concerning you. Under CPRA, you have the right to opt out of the sharing of your Personal Data to third parties and our use and disclosure of your Sensitive Personal Data to uses necessary to provide the products and services reasonably expected by you.
+You have the right to opt out of the processing of your Personal Data for purposes of: (1) Targeted advertising; (2) The sale or disclosure of Personal Data to a third party; and/or (3) Profiling in furtherance of decisions that produce legal or similarly significant effects concerning you. We do not sell Personal Data.
 
 Where the legal justification for our processing of your Personal Data is our legitimate interest, you have the right to object to such processing on grounds relating to your particular situation. We will abide by your request unless we have compelling legitimate grounds for processing which override your interests and rights, or if we need to continue to process the Personal Data for the establishment, exercise or defense of a legal claim.
 
 You have the right not to be denied service or have an altered experience for exercising your rights.
 
-If you are based in Colorado, please visit this [website](https://complaints.coag.gov/s/contact-us) to file a complaint. If you are based in Virginia, please visit this [website](https://www.oag.state.va.us/consumer-protection/index.php/file-a-complaint) to file a complaint. If you are based in Connecticut, please visit this [website](https://portal.ct.gov/AG/Common/Complaint-Form-Landing-page) to file a complaint.
+If you are in Viet Nam, you may also raise a complaint with the Department of Cybersecurity and High-Tech Crime Prevention (A05) of the Ministry of Public Security, which supervises personal data protection under Decree 13/2023/ND-CP. If you are in the European Economic Area, you may raise a complaint with your national supervisory authority.
 
 ### Withdrawing Consent
 
@@ -253,9 +228,8 @@ To request a copy of your information, unsubscribe from our email list, request 
 
 Email [support@classroom.io.vn](mailto:support@classroom.io.vn)
 
-Write to us at:
+Or reach us through the contact channels published in the footer of this website.
 
-Data Privacy Officer of ClassroomHub
-128 City Road, London, United Kingdom, EC1V 2NX
+We will answer a request about your Personal Data within 30 days, as required by Decree 13/2023/ND-CP.
 
-**Last updated:** July 12, 2026
+**Last updated:** September 8, 2026

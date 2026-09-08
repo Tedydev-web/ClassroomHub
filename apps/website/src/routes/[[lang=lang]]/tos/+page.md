@@ -57,7 +57,7 @@ You must not reproduce, distribute, modify, create derivative works of, publicly
 - Your computer may temporarily store copies of such material in RAM incidental to your accessing and viewing those materials.
 - You may store files that are automatically cached by your Web browser for display enhancement purposes.
 - You may print or download one copy of a reasonable number of pages of the Website.
-- If we provide desktop, mobile or other applications for download, you may download a single copy to your computer or mobile device, provided you agree to be bound by our license terms for such applications (for example, our open source license for applicable software).
+- If we provide desktop, mobile or other applications for download, you may download a single copy to your computer or mobile device, provided you agree to be bound by our license terms for such applications.
 
 You must not:
 
@@ -81,7 +81,7 @@ For your convenience, this Website may provide links or pointers to third-party 
 
 ## Software
 
-By downloading our software, you acknowledge and agree to the applicable open source or end user license terms published with that software (for example, our [LICENSE](https://github.com/Tedydev-web/classroomhub/blob/main/LICENSE) for the ClassroomHub project where applicable). Those terms will govern your use of the software.
+ClassroomHub is provided as a hosted service. Any software we make available for download — a mobile application, a desktop helper, or a client library — is licensed to you, not sold, and remains our property. By downloading it you agree to the end user licence terms published with that software, which govern your use of it. You may not copy, modify, reverse engineer, decompile, sublicense or redistribute it except to the extent applicable law expressly permits despite this restriction.
 
 ## Payment and Fees
 
@@ -111,7 +111,9 @@ Your provision of personal information through the Website is governed by our Pr
 
 ## Governing Law
 
-The Website and these Terms of Service will be governed by and construed in accordance with the laws of Nigeria and any applicable federal laws applicable therein, without giving effect to any choice or conflict of law provision, principle, or rule and notwithstanding your domicile, residence, or physical location. Any action or proceeding arising out of or relating to this Website and/or under these Terms of Service will be instituted in the courts of the Country of Nigeria, and each party irrevocably submits to the exclusive jurisdiction of such courts in any such action or proceeding. You waive any and all objections to the exercise of jurisdiction over you by such courts and to the venue of such courts.
+The Website and these Terms of Service will be governed by and construed in accordance with the laws of the Socialist Republic of Viet Nam, without giving effect to any choice or conflict of law provision, principle, or rule and notwithstanding your domicile, residence, or physical location. Any action or proceeding arising out of or relating to this Website and/or under these Terms of Service will be instituted in the competent courts of Viet Nam, and each party irrevocably submits to the exclusive jurisdiction of such courts in any such action or proceeding. You waive any and all objections to the exercise of jurisdiction over you by such courts and to the venue of such courts.
+
+Nothing in these Terms of Service removes a right that Vietnamese consumer protection law gives you and does not allow to be contracted away.
 
 The parties agree that the United Nations Convention on Contracts for the International Sale of Goods will not govern these Terms of Service or the rights and obligations of the parties under these Terms of Service.
 
@@ -131,6 +133,6 @@ No failure to exercise, and no delay in exercising, on the part of either party,
 
 We may provide any notice to you under these Terms of Service by: (i) sending a message to the email address you provide to us and consent to us using; or (ii) by posting to the Website. Notices sent by email will be effective when we send the email and notices we provide by posting will be effective upon posting. It is your responsibility to keep your email address current.
 
-To give us notice under these Terms of Service, you must contact us as follows: (i) by personal delivery, overnight courier or registered or certified mail to ClassroomHub, 128 City Road, London, United Kingdom, EC1V 2NX. We may update the address for notices to us by posting a notice on this Website. Notices provided by personal delivery will be effective immediately once personally received by an authorized representative of Company. Notices provided by overnight courier or registered or certified mail will be effective once received and where confirmation has been provided to evidence the receipt of the notice.
+To give us notice under these Terms of Service, contact us by email at [support@classroom.io.vn](mailto:support@classroom.io.vn). We may publish a postal address for notices by posting it on this Website. Notices sent by email will be effective when we confirm receipt; notices provided by personal delivery, overnight courier or registered mail to an address we have published will be effective once received and where confirmation has been provided to evidence the receipt of the notice.
 
-**Last updated:** April 12, 2026
+**Last updated:** September 8, 2026

@@ -10,12 +10,10 @@ Every organization gets a default site at `https://<siteName>.classroom.io.vn`. 
 When ClassroomHub builds a link for your organization, it resolves the host in this order:
 
 1. **Verified custom domain** → `https://<your-domain>`
-2. **Self-hosted override** (`DASHBOARD_ORIGIN` env var, if set)
-3. **Development** → `http://localhost:5173`
-4. **Academy URL** → `https://<siteName>.classroom.io.vn`
-5. **Fallback** → `https://hub.classroom.io.vn`
+2. **Academy URL** → `https://<siteName>.classroom.io.vn`
+3. **Fallback** → `https://hub.classroom.io.vn`
 
-Most customer-facing course links use your org context and stop at step 1 or 4. The `hub.classroom.io.vn` fallback applies when no academy URL is available.
+Most customer-facing course links use your org context and stop at step 1 or 2. The `hub.classroom.io.vn` fallback applies when no academy URL is available.
 
 ## Set up your domain
 

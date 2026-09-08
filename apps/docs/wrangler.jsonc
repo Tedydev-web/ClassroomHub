@@ -2,6 +2,12 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cio-docs",
   "compatibility_date": "2026-03-13",
+  // The developer documentation is retired: the marketing site answers /docs
+  // with 410 and no longer proxies here. Removing the proxy alone would have
+  // left every page still readable at cio-docs.<subdomain>.workers.dev, which is
+  // how it was reachable in the first place, so the preview subdomain is turned
+  // off as well. Nothing routes to this worker once this is deployed.
+  "workers_dev": false,
   // Static assets only — no Worker script. The site is prerendered by Blume and
   // packaged into ./build by scripts/package-assets.mjs, which nests it under
   // docs/ so the paths the website proxies through (/docs/*) resolve directly.

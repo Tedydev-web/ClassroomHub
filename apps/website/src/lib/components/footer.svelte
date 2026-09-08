@@ -13,8 +13,8 @@
   /*
     The four columns as data. Written out as markup they were 110 lines of
     near-identical anchors, which is how the OSS Friends link survived a rebrand
-    unnoticed. Paths under `(redirects)` — /privacy, /tos, /roadmap — are not
-    translated pages, so they keep their bare path.
+    unnoticed. /privacy and /tos are translated pages; everything else here is an
+    absolute URL or a mailto already.
   */
   /*
     Reaching a human. The addresses and numbers come from `@cio/utils` so the
@@ -51,14 +51,12 @@
         { label: $t('footer.docs_vs_academy'), href: localHref('/docs-vs-company-academy') },
         { label: $t('footer.public_courses'), href: localHref('/public-courses') },
         { label: $t('footer.teach'), href: localHref('/teach') },
-        { label: $t('footer.help_center'), href: PRODUCT_URLS.help, external: true },
-        { label: $t('footer.getting_started'), href: PRODUCT_URLS.docs, external: true }
+        { label: $t('footer.help_center'), href: PRODUCT_URLS.help, external: true }
       ]
     },
     {
       heading: $t('footer.company'),
       links: [
-        { label: $t('footer.roadmap'), href: '/roadmap' },
         { label: $t('footer.support'), href: `mailto:${CONTACT.email}` },
         { label: $t('footer.privacy'), href: localHref('/privacy') },
         { label: $t('footer.terms'), href: localHref('/tos') }

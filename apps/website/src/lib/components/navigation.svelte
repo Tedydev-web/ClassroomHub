@@ -7,7 +7,6 @@
   import LocateFixed from '@lucide/svelte/icons/locate-fixed';
   import Menu from '@lucide/svelte/icons/menu';
   import MessagesSquare from '@lucide/svelte/icons/messages-square';
-  import Server from '@lucide/svelte/icons/server';
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import Webhook from '@lucide/svelte/icons/webhook';
   import X from '@lucide/svelte/icons/x';
@@ -93,10 +92,8 @@
 
   const developers: NavCollectionItem[] = $derived([
     { key: 'automation', href: localHref('/automation'), ...item('automation') },
-    { key: 'docs', href: PRODUCT_URLS.docs, ...item('docs') },
     { key: 'help', href: PRODUCT_URLS.help, ...item('help') },
-    { key: 'mcp-recipes', href: localHref('/mcp-recipes'), ...item('mcp_recipes') },
-    { key: 'storybook', href: PRODUCT_URLS.marketing, ...item('storybook') }
+    { key: 'mcp-recipes', href: localHref('/mcp-recipes'), ...item('mcp_recipes') }
   ]);
 
   const navItems: NavItem[] = $derived([
@@ -163,8 +160,6 @@
               <GraduationCap size={24} />
             {:else if key === 'automation'}
               <Webhook size={24} />
-            {:else if key === 'docs'}
-              <Server size={24} />
             {:else if key === 'help'}
               <BookOpen size={24} />
             {:else if key === 'mcp-recipes'}

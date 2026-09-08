@@ -37,10 +37,6 @@
         "title": "Automation",
         "subtitle": "API, Webhooks, and MCP server."
       },
-      "docs": {
-        "title": "Documentation",
-        "subtitle": "API reference and integration guides."
-      },
       "help": {
         "title": "Help Center",
         "subtitle": "Guides for running your academy."
@@ -48,10 +44,6 @@
       "mcp_recipes": {
         "title": "MCP Recipes",
         "subtitle": "Ready-to-run agent prompts."
-      },
-      "storybook": {
-        "title": "Storybook",
-        "subtitle": "Browse and reuse UI components."
       }
     }
   },
@@ -71,8 +63,6 @@
     "public_courses": "Public Courses",
     "teach": "Teach with us",
     "help_center": "Help Center",
-    "getting_started": "Getting Started",
-    "roadmap": "Roadmap",
     "support": "Support",
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",
@@ -381,7 +371,6 @@
     "heading_lead": "API, Webhooks, MCP.",
     "heading_accent": "No integration tax.",
     "subhead": "ClassroomHub ships with a public REST API, signed Webhooks, and an MCP server. No closed marketplace, no \"premium connector\" plans. Build the integration that fits your stack.",
-    "read_docs": "Read the API docs",
     "see_pricing": "See pricing",
     "api_eyebrow": "REST API",
     "api_heading": "Everything in the LMS is reachable over HTTP.",
@@ -396,15 +385,14 @@
     "stack_eyebrow": "Under the hood",
     "stack_heading": "Built on a stack your team already knows.",
     "stack_body": "We run and operate the platform, so there is nothing for you to deploy or patch. The parts you integrate with are documented in full: a typed REST API, signed webhooks, and an MCP server your agents can call directly.",
-    "stack_cta": "API reference →",
     "stack_label": "Stack",
     "stack_api": "Hono on Node, Drizzle, Postgres",
     "stack_ui": "SvelteKit 2, Svelte 5, Tailwind v4",
     "stack_ai": "Bring your own keys for OpenAI, Anthropic, Google Gemini, or Moonshot",
     "stack_mcp": "Hosted server,",
     "cta_header": "Programmable from day one.",
-    "cta_subtext": "API, Webhooks, and an MCP server in the box. Documented, versioned, and ready on day one.",
-    "cta_button": "Read the docs"
+    "cta_subtext": "API, Webhooks, and an MCP server in the box. Versioned, supported, and ready on day one.",
+    "request_access": "Request API access"
   },
   "public_courses": {
     "creatorUseCases": {

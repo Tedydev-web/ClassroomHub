@@ -37,10 +37,6 @@
         "title": "Tự động hoá",
         "subtitle": "API, Webhooks và máy chủ MCP."
       },
-      "docs": {
-        "title": "Tài liệu",
-        "subtitle": "Tham chiếu API và hướng dẫn tích hợp."
-      },
       "help": {
         "title": "Trung tâm trợ giúp",
         "subtitle": "Hướng dẫn vận hành học viện của bạn."
@@ -48,10 +44,6 @@
       "mcp_recipes": {
         "title": "Công thức MCP",
         "subtitle": "Prompt cho agent, dùng được ngay."
-      },
-      "storybook": {
-        "title": "Storybook",
-        "subtitle": "Xem và tái sử dụng các thành phần giao diện."
       }
     }
   },
@@ -71,8 +63,6 @@
     "public_courses": "Khoá học mở",
     "teach": "Giảng dạy cùng chúng tôi",
     "help_center": "Trung tâm trợ giúp",
-    "getting_started": "Bắt đầu",
-    "roadmap": "Lộ trình",
     "support": "Hỗ trợ",
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản sử dụng",
@@ -381,7 +371,6 @@
     "heading_lead": "API, Webhooks, MCP.",
     "heading_accent": "Không mất phí tích hợp.",
     "subhead": "ClassroomHub có sẵn REST API công khai, Webhooks được ký và một máy chủ MCP. Không có chợ tiện ích đóng, không có gói \"connector cao cấp\". Hãy dựng đúng tích hợp phù hợp với hệ thống của bạn.",
-    "read_docs": "Đọc tài liệu API",
     "see_pricing": "Xem bảng giá",
     "api_eyebrow": "REST API",
     "api_heading": "Mọi thứ trong hệ thống đều gọi được qua HTTP.",
@@ -396,15 +385,14 @@
     "stack_eyebrow": "Bên dưới lớp vỏ",
     "stack_heading": "Dựng trên bộ công nghệ đội của bạn đã quen.",
     "stack_body": "Chúng tôi vận hành nền tảng, nên bạn không phải triển khai hay vá gì cả. Những phần bạn cần tích hợp đều có tài liệu đầy đủ: REST API có kiểu, webhook được ký, và một máy chủ MCP mà agent của bạn gọi thẳng được.",
-    "stack_cta": "Tài liệu API →",
     "stack_label": "Công nghệ",
     "stack_api": "Hono trên Node, Drizzle, Postgres",
     "stack_ui": "SvelteKit 2, Svelte 5, Tailwind v4",
     "stack_ai": "Dùng khoá riêng của bạn cho OpenAI, Anthropic, Google Gemini hoặc Moonshot",
     "stack_mcp": "Máy chủ được lưu trữ sẵn,",
     "cta_header": "Lập trình được ngay từ ngày đầu.",
-    "cta_subtext": "API, Webhooks và một máy chủ MCP có sẵn. Có tài liệu, có phiên bản, dùng được ngay ngày đầu tiên.",
-    "cta_button": "Đọc tài liệu"
+    "cta_subtext": "API, Webhooks và một máy chủ MCP có sẵn. Được đánh phiên bản, có hỗ trợ và dùng được ngay từ ngày đầu.",
+    "request_access": "Yêu cầu quyền truy cập API"
   },
   "public_courses": {
     "creatorUseCases": {

@@ -1,7 +1,6 @@
 import { localeFromPath } from '$lib/i18n';
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 
-const DOCS_ORIGIN = 'https://cio-docs.digdippa.workers.dev';
 const HELP_ORIGIN = 'https://cio-help.digdippa.workers.dev';
 
 function proxy(origin: string, pathname: string, event: RequestEvent) {
@@ -25,13 +24,20 @@ function proxy(origin: string, pathname: string, event: RequestEvent) {
 export const handle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
 
-  // The documentation and the Help Center are separate workers served under this
-  // domain, so they are proxied rather than redirected: readers stay on
-  // classroom.io.vn and the pages keep one origin for cookies and analytics.
+  // The developer documentation is retired. It is answered with 410 rather than
+  // left to fall through to the marketing 404, because a crawler treats 410 as
+  // "this is gone, drop it" and a soft 404 as "try again later" — and these
+  // pages were indexable.
   if (pathname === '/docs' || pathname.startsWith('/docs/')) {
-    return proxy(DOCS_ORIGIN, pathname, event);
+    return new Response('Gone', {
+      status: 410,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' }
+    });
   }
 
+  // The Help Center is a separate worker served under this domain, so it is
+  // proxied rather than redirected: readers stay on the product domain and the
+  // pages keep one origin for cookies and analytics.
   if (pathname === '/help' || pathname.startsWith('/help/')) {
     return proxy(HELP_ORIGIN, pathname, event);
   }
