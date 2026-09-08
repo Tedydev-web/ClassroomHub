@@ -70,5 +70,5 @@ export const CONTACT = {
   zalo: 'https://zalo.me/0869685621',
   telegramHandle: '@ClassroomHub',
   telegram: 'https://t.me/ClassroomHub',
-  facebook: 'https://www.facebook.com/profile.php?id=61594408852974'
+  facebook: 'https://facebook.com/ClassroomHub.io.vn'
 } as const;
