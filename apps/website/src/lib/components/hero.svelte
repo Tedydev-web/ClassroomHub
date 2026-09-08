@@ -92,13 +92,13 @@
 
   <div class="relative z-10 mx-auto flex max-w-[1100px] flex-col items-center text-center">
     <h1 class="max-w-[820px] text-[clamp(2rem,4vw,3.25rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
-      The simplest way to run training
-      <em class="text-blue-700 not-italic">across your entire company</em>
+      One platform to teach anything,
+      <em class="text-blue-700 not-italic">to anyone</em>
     </h1>
 
     <p class="mt-5 max-w-[580px] text-sm leading-relaxed lg:text-base">
-      Run employee training, customer education, and partner onboarding from one place, with certifications, your own
-      domain, and an AI tutor in every lesson.
+      Train your staff, educate your customers, certify your partners, or sell courses to the public — from one account,
+      on your own domain, with certificates and an AI tutor in every lesson.
     </p>
 
     <div class="mt-7 flex flex-wrap items-center justify-center gap-3">

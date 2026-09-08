@@ -1,6 +1,8 @@
 <script lang="ts">
   import BookOpen from '@lucide/svelte/icons/book-open';
   import ChevronDown from '@lucide/svelte/icons/chevron-down';
+  import Globe from '@lucide/svelte/icons/globe';
+  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
   import LocateFixed from '@lucide/svelte/icons/locate-fixed';
   import Menu from '@lucide/svelte/icons/menu';
   import MessagesSquare from '@lucide/svelte/icons/messages-square';
@@ -75,6 +77,18 @@
       title: 'Partner Training',
       subtitle: 'A separate academy for your channel.',
       href: '/partner-training'
+    },
+    {
+      key: 'public-courses',
+      title: 'Public Courses',
+      subtitle: 'Sell courses to learners anywhere.',
+      href: '/public-courses'
+    },
+    {
+      key: 'teach',
+      title: 'Teach with us',
+      subtitle: 'Bring your own programme to the platform.',
+      href: '/teach'
     }
   ];
 
@@ -163,6 +177,10 @@
               <LocateFixed size={24} />
             {:else if key === 'customer-education'}
               <MessagesSquare size={24} />
+            {:else if key === 'public-courses'}
+              <Globe size={24} />
+            {:else if key === 'teach'}
+              <GraduationCap size={24} />
             {:else if key === 'automation'}
               <Webhook size={24} />
             {:else if key === 'docs'}
