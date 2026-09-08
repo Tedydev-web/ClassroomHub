@@ -54,26 +54,38 @@ Two ideas do all the work:
 
 Each step is verified against production before the next one starts.
 
-**1 — DNS.** The zone already exists and is active, and its nameservers are
-already delegated to Cloudflare (`brady`/`vida.ns.cloudflare.com`, the same pair
-as `classroom.io.vn`) — do not re-add it. What is missing is every record: the
-apex, `www`, `hub`, `api`, `play`, `embed` and `assets` all resolve to nothing
-today. Mirror them from `classroom.io.vn`, matching each record's proxied flag,
-then verify each resolves and Universal SSL has issued.
+**1 — DNS. Done.** Seven proxied records on `classroomhub.io.vn`: the apex,
+`*`, `hub`, `embed`, `learn` and `play` as CNAMEs to the same Cloudflare Tunnel
+the old zone uses, and `assets` to `public.r2.dev`. The wildcard is what serves
+tenants, so no record is needed per org.
 
-**2 — Routes, before any code changes.** Add to `[env.production].routes` in
-`apps/tenant-router/wrangler.toml`:
+Universal SSL only begins validating once a zone has proxied records, so the
+certificate is issued *after* this step, not before it — the hostnames fail the
+TLS handshake outright until it does, which looks like an outage rather than a
+wait.
 
-```toml
-{ pattern = "classroomhub.io.vn/*", zone_name = "classroomhub.io.vn" },
-{ pattern = "*.classroomhub.io.vn/*", zone_name = "classroomhub.io.vn" }
-```
+Mail was deliberately not mirrored. The MX, SPF and both DKIM records stay on
+`classroom.io.vn`; see below.
 
-and extend `DIRECT_PASSTHROUGH_HOSTS` and `MARKETING_HOSTS` with the new
-hostnames. Deploy. Verify `https://classroomhub.io.vn` and
-`https://hub.classroomhub.io.vn` both answer 200 while the old hosts still do.
-Nothing in the application has changed yet, so this step is reversible by
-deleting the routes.
+**2 — Routes and the Worker's host lists. Done.** Both zones are routed from
+the one `[env.production]` block, and `ASSET_HOST`, `EMBED_HOST`,
+`APEX_REDIRECT_HOST`, `DIRECT_PASSTHROUGH_HOSTS` and `MARKETING_HOSTS` all name
+the hosts on both apexes. `src/host-lists.test.ts` fails if a routed zone is
+missing from any of them.
+
+`MARKETING_CANONICAL_HOST` still points at the old apex, so the new one currently
+redirects there. That is the intended intermediate state: it proves the routing
+without the site advertising a domain its own rendered links do not use.
+
+**How the hosts actually reach an origin**, because it decides what a new zone
+needs: the tunnel has ingress rules for only three `classroom.io.vn`
+hostnames — `dashboard-origin`, `api-origin` and `api`. The apex, `hub` and every
+tenant point at the tunnel in DNS, but the Worker route intercepts them at the
+edge and they never reach it. So a second zone needs no tunnel change at all,
+except for `api`, which is in `DIRECT_PASSTHROUGH_HOSTS` and therefore does go to
+the tunnel: `api.classroomhub.io.vn` was added to the tunnel's ingress. Without
+it that host would have fallen through to tenant routing and been served as an
+org called `api`.
 
 **3 — Flip the constants.** Two lines in
 `packages/utils/src/constants/domains.ts`:
