@@ -192,5 +192,64 @@
   },
   "ai_tutor": {
     "control": "(bạn toàn quyền quyết định tôi nói gì và làm gì)"
+  },
+  "pricing": {
+    "title": "Bảng giá | ClassroomHub",
+    "heading_lead": "Chọn một gói.",
+    "heading_accent": "Mở học viện của bạn.",
+    "subhead": "Gói Basic miễn phí tới 20 học viên và có sẵn tín dụng AI hằng tháng. Nâng cấp khi cần thêm chỗ, thêm hạn mức AI, hoặc tên miền riêng. Cùng một sản phẩm cho đào tạo khách hàng, nhân viên và đối tác.",
+    "monthly": "Hằng tháng",
+    "yearly": "Hằng năm",
+    "save": "Tiết kiệm 2 tháng",
+    "per_month": "mỗi tháng",
+    "per_year": "mỗi năm",
+    "token_note": "Cần thêm tín dụng AI? Mua thêm gói token với giá 5$ cho mỗi 2 triệu token ngay trong trang quản trị.",
+    "cta_header": "Bắt đầu dựng học viện của bạn.",
+    "cta_subtext": "Đăng ký miễn phí với gói Basic. Nâng cấp khi cần thêm học viên, thêm tín dụng AI, hoặc tên miền riêng.",
+    "cta_button": "Đăng ký miễn phí",
+    "plans": {
+      "BASIC": {
+        "name": "Basic",
+        "description": "Gói miễn phí cho nhu cầu cá nhân, không cần thẻ tín dụng.",
+        "cta": "Đăng ký ngay"
+      },
+      "EARLY_ADOPTER": {
+        "name": "Early Adopters",
+        "description": "Dành cho đơn vị đào tạo đang lớn nhanh và muốn mở rộng.",
+        "cta": "Tôi muốn tham gia 😍"
+      },
+      "ENTERPRISE": {
+        "name": "Enterprise",
+        "description": "Phù hợp nhất với doanh nghiệp lớn cần nhiều quyền kiểm soát hơn",
+        "cta": "Liên hệ",
+        "price": "Báo giá riêng"
+      }
+    },
+    "features": {
+      "unlimited_courses": "Khoá học không giới hạn",
+      "unlimited_qa": "Hỏi đáp không giới hạn",
+      "unlimited_programs": "Chương trình học không giới hạn",
+      "students_20": "20 học viên",
+      "builder_no_video": "Trình soạn khoá học nâng cao (chưa có tải video)",
+      "ai_500k": "500 nghìn tín dụng AI / tháng",
+      "mcp_access": "Truy cập MCP",
+      "platform_branding": "Mang thương hiệu ClassroomHub",
+      "everything_basic": "Mọi thứ trong gói Basic",
+      "unlimited_collaborators": "Cộng tác viên không giới hạn",
+      "students_10k": "10 nghìn học viên",
+      "builder_video_certificate": "Trình soạn khoá học có tải video và cấp chứng chỉ",
+      "ai_3m": "3 triệu tín dụng AI / tháng",
+      "custom_branding": "Thương hiệu riêng",
+      "custom_domain": "Tên miền riêng",
+      "api_limited": "API có hạn mức",
+      "upcoming_features": "Bao gồm mọi tính năng sắp ra mắt",
+      "everything_early_adopters": "Mọi thứ trong gói Early Adopters, cộng thêm:",
+      "unlimited_students": "Học viên không giới hạn",
+      "ai_15m": "15 triệu tín dụng AI / tháng",
+      "unlimited_api": "Số lượt gọi API không giới hạn",
+      "sso": "SSO",
+      "support_247": "Hỗ trợ 24/7",
+      "enterprise_contact": "Hạn mức riêng, thủ tục mua sắm, và một đầu mối liên hệ cố định. Hãy trao đổi với chúng tôi."
+    }
   }
 }

@@ -1,4 +1,12 @@
-import { PRODUCT_NAME } from '../constants/product-identity';
+import { PRODUCT_NAME, SALES_EMAIL } from '../constants/product-identity';
+
+/**
+ * Where an enterprise enquiry goes. It used to be a cal.com booking page that
+ * answers 404 — the handle belonged to the upstream project and was never
+ * claimed here, so every Contact Us button on the pricing page and in the
+ * dashboard led nowhere.
+ */
+const ENTERPRISE_CONTACT = `mailto:${SALES_EMAIL}?subject=${PRODUCT_NAME} enterprise`;
 
 export default {
   BASIC: {
@@ -75,13 +83,13 @@ export default {
       'Unlimited API requests',
       'SSO',
       '24/7 Support',
-      'Need on-prem deployment, SSO, or a commercial license? Contact us.'
+      'Custom limits, procurement, and a named contact. Talk to us.'
     ],
     CTA: {
       LABEL: 'Contact Us',
-      LINK: 'https://cal.com/classroomhub/enterprise',
+      LINK: ENTERPRISE_CONTACT,
       DASHBOARD_LABEL: 'Contact Us',
-      DASHBOARD_LINK: 'https://cal.com/classroomhub/enterprise',
+      DASHBOARD_LINK: ENTERPRISE_CONTACT,
       IS_DISABLED: false
     }
   }

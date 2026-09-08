@@ -192,5 +192,64 @@
   },
   "ai_tutor": {
     "control": "(you have full control over what i say and do)"
+  },
+  "pricing": {
+    "title": "Pricing | ClassroomHub",
+    "heading_lead": "Pick a plan.",
+    "heading_accent": "Launch your academy.",
+    "subhead": "Basic is free for up to 20 students and includes monthly AI credits. Upgrade for more seats, higher AI limits, or a custom domain. Same product for customer, employee, and partner training.",
+    "monthly": "Monthly",
+    "yearly": "Annually",
+    "save": "Save 2 months",
+    "per_month": "per month",
+    "per_year": "per year",
+    "token_note": "Need more AI credits? Purchase additional token packs at $5 per 2M tokens from your dashboard.",
+    "cta_header": "Start building your academy.",
+    "cta_subtext": "Sign up free on Basic. Upgrade for more students, higher AI credits, or a custom domain.",
+    "cta_button": "Sign up for free",
+    "plans": {
+      "BASIC": {
+        "name": "Basic",
+        "description": "Free tier plan for personal use, no credit card required.",
+        "cta": "Signup Now"
+      },
+      "EARLY_ADOPTER": {
+        "name": "Early Adopters",
+        "description": "For fast growing teaching businesses that aim to scale.",
+        "cta": "I want in 😍"
+      },
+      "ENTERPRISE": {
+        "name": "Enterprise",
+        "description": "Best suited for larger businesses that need more control",
+        "cta": "Contact Us",
+        "price": "Request Pricing"
+      }
+    },
+    "features": {
+      "unlimited_courses": "Unlimited Courses",
+      "unlimited_qa": "Unlimited Q/A",
+      "unlimited_programs": "Unlimited Programs",
+      "students_20": "20 Students",
+      "builder_no_video": "Advanced Course Builder (no video upload)",
+      "ai_500k": "500K AI credits / month",
+      "mcp_access": "MCP access",
+      "platform_branding": "ClassroomHub branding",
+      "everything_basic": "Everything in Basic",
+      "unlimited_collaborators": "Unlimited Collaborators",
+      "students_10k": "10K Students",
+      "builder_video_certificate": "Course Builder with Video Upload & Certificate",
+      "ai_3m": "3M AI credits / month",
+      "custom_branding": "Custom Branding",
+      "custom_domain": "Custom Domain",
+      "api_limited": "API with limits",
+      "upcoming_features": "Includes all upcoming features",
+      "everything_early_adopters": "Everything in Early Adopters plus:",
+      "unlimited_students": "Unlimited students",
+      "ai_15m": "15M AI credits / month",
+      "unlimited_api": "Unlimited API requests",
+      "sso": "SSO",
+      "support_247": "24/7 Support",
+      "enterprise_contact": "Custom limits, procurement, and a named contact. Talk to us."
+    }
   }
 }

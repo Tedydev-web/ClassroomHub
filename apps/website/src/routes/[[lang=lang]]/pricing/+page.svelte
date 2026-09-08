@@ -4,33 +4,56 @@
   import { PricingToggle } from '@cio/ui/custom/pricing-toggle';
 
   import { PageSignupCTA, PageHeader } from '$lib/components';
+  import { t } from '$lib/i18n';
+  import { FEATURE_KEYS } from '$lib/i18n/plan-copy';
   import { env } from '$env/dynamic/public';
 
   let isYearlyPlan = $state(false);
 
   const planNames = Object.keys(PLANS) as Array<keyof typeof PLANS>;
+
+  /**
+   * The plan as the reader's language states it. Everything numeric — price,
+   * currency, the product ids the checkout needs — stays exactly as the billing
+   * package defines it; only the wording is swapped.
+   */
+  function translated(planName: keyof typeof PLANS) {
+    const plan = PLANS[planName];
+    const key = `pricing.plans.${planName}`;
+
+    return {
+      ...plan,
+      NAME: $t(`${key}.name`),
+      DESCRIPTION: $t(`${key}.description`),
+      PRICE: {
+        ...plan.PRICE,
+        ...(planName === 'ENTERPRISE' ? { MONTHLY: $t(`${key}.price`), YEARLY: $t(`${key}.price`) } : {})
+      },
+      FEATURES: plan.FEATURES.map((feature) => $t(`pricing.features.${FEATURE_KEYS[feature]}`)),
+      CTA: { ...plan.CTA, LABEL: $t(`${key}.cta`) }
+    };
+  }
 </script>
 
 <svelte:head>
-  <title>Pricing | ClassroomHub</title>
+  <title>{$t('pricing.title')}</title>
 </svelte:head>
 
 <section>
   <PageHeader className="flex flex-col items-center justify-center text-center">
     <h1 class="mx-auto flex flex-col items-center text-4xl text-slate-900 md:text-6xl">
-      <span>Pick a plan.</span>
-      <span class="relative text-blue-700">Launch your academy.</span>
+      <span>{$t('pricing.heading_lead')}</span>
+      <span class="relative text-blue-700">{$t('pricing.heading_accent')}</span>
     </h1>
     <p class="mt-10 w-[90%] text-center text-lg font-normal text-slate-700 md:w-[60%] lg:mt-7">
-      Basic is free for up to 20 students and includes monthly AI credits. Upgrade for more seats, higher AI limits, or
-      a custom domain. Same product for customer, employee, and partner training.
+      {$t('pricing.subhead')}
     </p>
     <div class="mt-8">
       <PricingToggle
         bind:isYearly={isYearlyPlan}
-        monthlyLabel="Monthly"
-        yearlyLabel="Annually"
-        saveLabel="Save 2 months"
+        monthlyLabel={$t('pricing.monthly')}
+        yearlyLabel={$t('pricing.yearly')}
+        saveLabel={$t('pricing.save')}
       />
     </div>
 
@@ -54,7 +77,7 @@
     <div class="mx-auto max-w-7xl">
       <div class="flex w-full flex-wrap justify-evenly gap-2">
         {#each planNames as planName}
-          {@const plan = PLANS[planName]}
+          {@const plan = translated(planName)}
           {@const isPopular = planName === 'EARLY_ADOPTER'}
 
           <PricingCard
@@ -65,7 +88,7 @@
             className="mx-auto lg:mx-0 w-full max-w-xs! lg:max-w-sm!"
             ctaLabel={plan.CTA.LABEL}
             isDisabled={false}
-            perOrgLabel={isYearlyPlan ? 'per year' : 'per month'}
+            perOrgLabel={isYearlyPlan ? $t('pricing.per_year') : $t('pricing.per_month')}
             handleClick={() => {
               if (env.PUBLIC_IS_SELF_OWNED === 'true') {
                 window.location.assign('/signup');
@@ -79,15 +102,15 @@
       </div>
     </div>
     <p class="mt-6 text-center text-sm text-slate-500">
-      Need more AI credits? Purchase additional token packs at $5 per 2M tokens from your dashboard.
+      {$t('pricing.token_note')}
     </p>
   </div>
 </section>
 
 <PageSignupCTA
-  header="Start building your academy."
-  subText="Sign up free on Basic. Upgrade for more students, higher AI credits, or a custom domain."
-  btnLabel="Sign up for free"
+  header={$t('pricing.cta_header')}
+  subText={$t('pricing.cta_subtext')}
+  btnLabel={$t('pricing.cta_button')}
   link="/signup"
   demo={false}
 />
