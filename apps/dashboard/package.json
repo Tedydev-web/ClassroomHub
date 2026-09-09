@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "vite dev --host :: --port 8000",
+    "dev:https": "cross-env HTTPS=true pnpm run dev",
     "dev:prod-api": "PRIVATE_SERVER_URL=https://api.classroom.io.vn PRIVATE_APP_HOST=localhost PRIVATE_APP_SUBDOMAINS=hub ENFORCE_TENANT_HOST=false VITE_ALLOWED_HOST=localhost,msna.localhost,.localhost vite dev --host :: --port 8000",
     "prebuild": "node scripts/guard-build-port.mjs && pnpm --filter @cio/ui run build",
     "build": "vite build",
@@ -110,6 +111,7 @@
     "@types/lodash": "^4.14.196",
     "@types/node": "^22.15.0",
     "all-object-keys": "^2.2.0",
+    "cross-env": "^10.1.0",
     "diff": "^5.2.0",
     "dotenv": "^16.3.1",
     "eslint": "^9.36.0",
@@ -132,6 +134,7 @@
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.44.1",
     "vite": "^5.4.4",
+    "vite-plugin-mkcert": "^2.1.0",
     "vitest": "^1.2.2",
     "wrangler": "4.21.2"
   },

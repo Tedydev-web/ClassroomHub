@@ -1,4 +1,5 @@
 import { isPlatformHost } from '@cio/utils/constants';
+import { isLocalOrPrivateHost } from '@cio/utils/functions';
 import { getVerifiedCustomDomainHostnames } from '../../queries/organization/organization';
 
 /** Lowercase hostnames with verified custom domains ( warmed at API boot + updated on domain routes ). */
@@ -74,6 +75,13 @@ export function resolveTrustedBrowserOrigin(
   }
 
   const hostname = parsed.hostname;
+
+  // Outside production a developer reaches the app on a LAN address, which no
+  // accepted apex covers. Guarded on NODE_ENV so it can never widen CORS on a
+  // deployed instance.
+  if (process.env.NODE_ENV !== 'production' && isLocalOrPrivateHost(hostname)) {
+    return origin;
+  }
 
   if (isPlatformHost(hostname)) {
     return origin;

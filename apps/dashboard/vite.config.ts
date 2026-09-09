@@ -1,10 +1,12 @@
 import { defineConfig, loadEnv } from 'vite';
 
-import fs from 'fs';
 import { sveltekit } from '@sveltejs/kit/vite';
+import mkcert from 'vite-plugin-mkcert';
 
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  const useHttps = process.env.HTTPS === 'true' || process.env.VITE_USE_HTTPS_ON_LOCALHOST === 'true';
+  const host = process.env.HOST || (useHttps ? '0.0.0.0' : undefined);
 
   return defineConfig({
     css: {
@@ -14,9 +16,9 @@ export default ({ mode }) => {
         }
       }
     },
-    plugins: [redirectToCanonicalOrigin(process.env), sveltekit()],
+    plugins: [redirectToCanonicalOrigin(process.env), sveltekit(), ...(useHttps ? [mkcert()] : [])],
     server: {
-      ...getServer(process.env),
+      host,
       fs: {
         // `..` is `apps/` — covers the dashboard's own files. `../../packages`
         // is required so Vite's `@fs` route can serve dynamic imports that
@@ -89,15 +91,11 @@ function redirectToCanonicalOrigin(params) {
 }
 
 function getServer(params) {
-  const { VITE_ALLOWED_HOST, VITE_USE_HTTPS_ON_LOCALHOST } = params || {};
-  if (VITE_USE_HTTPS_ON_LOCALHOST === 'true') {
-    return {
-      https: {
-        key: fs.readFileSync(`${__dirname}/cert/key.pem`),
-        cert: fs.readFileSync(`${__dirname}/cert/cert.pem`)
-      }
-    };
-  }
+  // HTTPS is handled by the mkcert plugin above, which issues a locally trusted
+  // certificate. The branch that stood here read `cert/key.pem` and `cert/cert.pem`
+  // from this directory — files this repository has never contained — so turning
+  // it on threw before the server started.
+  const { VITE_ALLOWED_HOST } = params || {};
 
   return {
     allowedHosts: VITE_ALLOWED_HOST

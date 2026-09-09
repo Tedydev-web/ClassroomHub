@@ -9,6 +9,8 @@ const IS_CLOUDFLARE = process.env.CI_ENVIRONMENT === 'cloudflare';
 
 const adapterCloudflare = IS_CLOUDFLARE ? (await import('@sveltejs/adapter-cloudflare')).default : null;
 const isSelfHosted = process.env.PUBLIC_IS_SELFHOSTED === 'true';
+const isProduction = process.env.NODE_ENV === 'production';
+const devConnectSrc = !isProduction ? ['ws:', 'wss:'] : [];
 const csp = getCspDomains(isSelfHosted, process.env.PUBLIC_SERVER_URL);
 
 const { NODE_ENV: nodeEnvironment } = process['env'];
@@ -75,6 +77,7 @@ const config = {
         'connect-src': [
           'self',
           'blob:',
+          ...devConnectSrc,
           'http://localhost:8001',
           'http://localhost:8004',
           ...(csp.apiOrigin ? [csp.apiOrigin] : []),
@@ -109,6 +112,7 @@ const config = {
         'connect-src': [
           'self',
           'blob:',
+          ...devConnectSrc,
           'http://localhost:8001',
           'http://localhost:8004',
           ...(csp.apiOrigin ? [csp.apiOrigin] : []),

@@ -1,4 +1,5 @@
 import { getTenantSiteNameFromHost, isPlatformHost } from '@cio/utils/constants/domains';
+import { isLocalOrPrivateHost } from '@cio/utils/functions';
 
 import type { TOrganization } from '../types';
 import {
@@ -25,8 +26,12 @@ function extractCallbackUrl(verificationUrl: string): URL | null {
 /** A customer's own domain: anything that is not localhost and not ours. */
 function isCustomDomainHost(hostname: string): boolean {
   const host = hostname.replace(/^www\./, '').toLowerCase();
+  // A LAN address is a developer's own machine, never a customer's domain.
+  if (host.includes('localhost') || isLocalOrPrivateHost(host)) {
+    return false;
+  }
 
-  return !host.includes('localhost') && !isPlatformHost(host);
+  return !isPlatformHost(host);
 }
 
 async function resolveOrgFromCallbackUrl(callbackUrl: URL): Promise<TOrganization | null> {

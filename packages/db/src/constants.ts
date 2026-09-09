@@ -11,6 +11,9 @@ const dashboardOrigin = DASHBOARD_ORIGIN?.trim().replace(/\/$/, '');
 
 const DEFAULT_TRUSTED_ORIGINS = [
   'http://localhost:8000',
+  // Upstream added an https local origin alongside its http one when it taught the
+  // dev servers to serve TLS. This deployment's dashboard dev port is 8000.
+  'https://localhost:8000',
   ...ACCEPTED_ROOT_DOMAINS.map((root) => `https://*.${root}`),
   // Common OIDC IdP discovery origins (SSO registration fetches .well-known/openid-configuration)
   'https://accounts.google.com',
