@@ -378,12 +378,26 @@ jobs:
 
           echo "api=${CLASSROOM_API_TAG} dashboard=${CLASSROOM_DASHBOARD_TAG} jobs=${CLASSROOM_JOBS_TAG}"
 
-          docker compose \
-            --env-file "${env_file}" \
-            -f docker/production/docker-compose.yaml \
-            --project-directory . \
-            --project-name zj19oe40izga1bnpymfz5z55 \
-            up -d --no-build --remove-orphans
+          compose_up() {
+            docker compose \
+              --env-file "${env_file}" \
+              -f docker/production/docker-compose.yaml \
+              --project-directory . \
+              --project-name zj19oe40izga1bnpymfz5z55 \
+              up -d --no-build --remove-orphans "$@"
+          }
+
+          # A change to the stack's network declaration makes Compose replace the
+          # network, and every already-running container still refers to the old
+          # one by id — so each fails with `network <id> not found` and the whole
+          # site goes down with nothing running. Recreating the containers is the
+          # only way out, and it is a far smaller outage than leaving the deploy
+          # dead until somebody notices. Retried once, so an unrelated failure
+          # still surfaces as a failure.
+          if ! compose_up; then
+            echo "::warning::Compose could not start the stack; recreating containers and retrying."
+            compose_up --force-recreate
+          fi
 
           rm -f "${env_file}"
 
