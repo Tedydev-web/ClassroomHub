@@ -7,6 +7,13 @@ on:
       - 'apps/docs/**'
       - 'apps/help/**'
       - 'apps/website/**'
+      # The site bundles these workspace packages, so a change to one of them
+      # changes what is served. Without them a fix in packages/ui landed on main
+      # and never redeployed: the marketing site stayed on its last successful
+      # build while main had moved on.
+      - 'packages/ui/**'
+      - 'packages/utils/**'
+      - 'packages/certificates/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_call:
   workflow_dispatch:
