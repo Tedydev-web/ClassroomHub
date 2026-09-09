@@ -12,7 +12,16 @@ const TITLE_MODELS: Record<AIProvider, string> = {
   [AIProvider.MOONSHOT]: 'kimi-k2.6'
 };
 
+/**
+ * A gateway config already carries the model its allowlist admits, and the
+ * gateway serves nothing else — overriding it here would ask for a model the
+ * subscription refuses. Only an official provider gets the cheap-model swap.
+ */
 function createTitleModel(config: AIProviderConfig) {
+  if (config.transport.kind === 'gateway') {
+    return createModel(config);
+  }
+
   return createModel({ ...config, model: TITLE_MODELS[config.provider] });
 }
 

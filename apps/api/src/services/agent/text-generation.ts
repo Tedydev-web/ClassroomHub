@@ -21,7 +21,10 @@ export async function generateFieldText(
   context: string | undefined,
   providerConfig: AIProviderConfig
 ): Promise<GenerateFieldTextResult> {
-  const modelName = TEXT_GEN_MODELS[providerConfig.provider];
+  // The gateway serves only the model its allowlist carries, so its config keeps
+  // the model it was resolved with; an official provider gets the cheap one.
+  const modelName =
+    providerConfig.transport.kind === 'gateway' ? providerConfig.model : TEXT_GEN_MODELS[providerConfig.provider];
   const model = createModel({ ...providerConfig, model: modelName });
 
   const contextLine = context ? `Context: ${context}.` : '';

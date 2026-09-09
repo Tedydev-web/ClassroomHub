@@ -23,7 +23,7 @@ import {
 } from '@api/services/agent/chat-history';
 import { compactConversation } from '@api/services/agent/compact';
 import { generateConversationTitle } from '@api/services/agent/title-generation';
-import { pickAnyConfiguredProvider } from '@cio/ai-assistant/providers';
+import { resolveUtilityProviderConfig } from '@api/services/agent/utility-provider';
 
 export const agentHistoryRouter = new Hono()
   /**
@@ -204,7 +204,7 @@ export const agentHistoryRouter = new Hono()
         const { conversationId } = c.req.valid('param');
         const { firstMessageText } = c.req.valid('json');
 
-        const providerConfig = pickAnyConfiguredProvider();
+        const providerConfig = await resolveUtilityProviderConfig();
         if (!providerConfig) {
           throw new AppError('AI assistant is not configured', 'AI_NOT_CONFIGURED', 503);
         }

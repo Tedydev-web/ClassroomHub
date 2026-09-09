@@ -43,6 +43,7 @@ import { assertStudentExerciseAccess, buildStudentAgentTools } from '@api/servic
 import { parseAndStoreDocument } from '@cio/core/services/agent/document';
 import { recordCreditPurchase } from '@api/services/agent/credit-purchase';
 import { generateCourseMeta } from '@api/services/agent/title-generation';
+import { resolveUtilityProviderConfig } from '@api/services/agent/utility-provider';
 import { generateFieldText } from '@api/services/agent/text-generation';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getChatConversation } from '@cio/db/queries/agent';
@@ -348,7 +349,7 @@ const agentCoreRouter = new Hono()
       try {
         const { prompt } = c.req.valid('json');
 
-        const providerConfig = pickAnyConfiguredProvider();
+        const providerConfig = await resolveUtilityProviderConfig();
 
         if (!providerConfig) {
           throw new AppError('AI assistant is not configured', 'AI_NOT_CONFIGURED', 503);
@@ -373,7 +374,7 @@ const agentCoreRouter = new Hono()
         const orgId = c.req.header('cio-org-id')!;
         const { prompt, tone, format, context, courseId } = c.req.valid('json');
 
-        const providerConfig = pickAnyConfiguredProvider();
+        const providerConfig = await resolveUtilityProviderConfig();
 
         if (!providerConfig) {
           throw new AppError('AI assistant is not configured', 'AI_NOT_CONFIGURED', 503);
