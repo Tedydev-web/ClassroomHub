@@ -1,4 +1,4 @@
-import { env } from '@cio/core/config/env';
+import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   countActiveOrganizationApiKeys,
@@ -56,11 +56,11 @@ export async function assertOrganizationAutomationKeyCreationAllowed(
   const planName = await getOrganizationPlanName(organizationId);
 
   if (type === AUTOMATION_TYPE.API) {
-    const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
-
-    if (!canUsePublicApi(planName, isSelfHosted)) {
+    // Same reason as the auth settings gate: a self-owned deployment has every
+    // entitlement, and reading only PUBLIC_IS_SELFHOSTED denied it its own keys.
+    if (!canUsePublicApi(planName, hasFullProductEntitlements)) {
       throw new AppError(
-        isSelfHosted
+        hasFullProductEntitlements
           ? 'Public API keys require an Enterprise plan'
           : 'Public API keys require an Early Adopter or Enterprise plan',
         ErrorCodes.UPGRADE_REQUIRED,

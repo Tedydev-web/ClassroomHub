@@ -46,8 +46,8 @@ import { getAccountPrimary } from '@cio/db/queries/account';
 import { getLastLogin, getProfileCourseProgress, getUserExercisesStats } from '@cio/db/queries/analytics';
 
 import type { OrganizationWithPlans } from '@cio/db/queries/organization/types';
+import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { canUseBasicAuthSettings, PLAN } from '@cio/utils/plans';
-import { env } from '@cio/core/config/env';
 import { isFreeLandingPageTheme, ROLE } from '@cio/utils/constants';
 import { createOrganizationWithOwner } from '@api/services/onboarding';
 import { deriveAudienceMemberStatus } from '@api/utils/audience-member-status';
@@ -730,15 +730,19 @@ async function assertAuthSettingsEntitlement(orgId: string, data: Partial<TOrgan
 
   if (!enterpriseChanged && !basicChanged) return;
 
-  const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
+  // A deployment we run for ourselves carries every entitlement, the same as a
+  // self-hosted one. Reading only PUBLIC_IS_SELFHOSTED here left this instance —
+  // self-owned, and with no plan row at all — unable to save either setting,
+  // while the dashboard's own enterprise check honoured the wider flag and
+  // offered the Enterprise ones as editable.
   const activePlan = await getActiveOrganizationPlan(orgId);
   const planName = activePlan?.planName ?? PLAN.BASIC;
 
-  if (enterpriseChanged && !isSelfHosted && planName !== PLAN.ENTERPRISE) {
+  if (enterpriseChanged && !hasFullProductEntitlements && planName !== PLAN.ENTERPRISE) {
     throw new AppError('These authentication settings require an Enterprise plan', ErrorCodes.UPGRADE_REQUIRED, 403);
   }
 
-  if (basicChanged && !canUseBasicAuthSettings(planName, isSelfHosted)) {
+  if (basicChanged && !canUseBasicAuthSettings(planName, hasFullProductEntitlements)) {
     throw new AppError('These authentication settings require a paid plan', ErrorCodes.UPGRADE_REQUIRED, 403);
   }
 }

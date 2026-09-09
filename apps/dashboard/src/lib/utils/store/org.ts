@@ -177,13 +177,13 @@ export const isEnterprisePlan = derived(currentOrg, ($currentOrg) => {
 export const hasPublicApiAccess = derived(currentOrg, ($currentOrg) => {
   const plan = getActiveOrgPlan($currentOrg.plans);
 
-  return canUsePublicApi(plan?.planName, PUBLIC_IS_SELFHOSTED === 'true');
+  return canUsePublicApi(plan?.planName, PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment);
 });
 
 export const hasBasicAuthSettingsAccess = derived(currentOrg, ($currentOrg) => {
   const plan = getActiveOrgPlan($currentOrg.plans);
 
-  return canUseBasicAuthSettings(plan?.planName, PUBLIC_IS_SELFHOSTED === 'true');
+  return canUseBasicAuthSettings(plan?.planName, PUBLIC_IS_SELFHOSTED === 'true' || isSelfOwnedDeployment);
 });
 
 export const currentOrgMaxAudience = derived(currentOrgPlan, ($plan) => {
