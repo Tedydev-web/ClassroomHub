@@ -28,11 +28,18 @@ describe('changedDeployServices', () => {
   it('rebuilds everything when a shared package changes', () => {
     // `packages/db` reaches the API, the jobs worker and the dashboard's types. Deciding
     // otherwise is a guess, and the guess is only safe until somebody adds an import.
-    assert.deepEqual(changedDeployServices(['packages/db/src/schema.ts']), ['api', 'dashboard', 'jobs']);
+    assert.deepEqual(changedDeployServices(['packages/db/src/schema.ts']), ['api', 'dashboard', 'jobs', 'admin']);
   });
 
   it('rebuilds everything when the lockfile changes', () => {
-    assert.deepEqual(changedDeployServices(['pnpm-lock.yaml']), ['api', 'dashboard', 'jobs']);
+    assert.deepEqual(changedDeployServices(['pnpm-lock.yaml']), ['api', 'dashboard', 'jobs', 'admin']);
+  });
+
+  it('narrows an operator-console change to the console alone', () => {
+    // The console is deployed too, and nothing else imports it. A change there must not
+    // restart the API a candidate is sitting an exam through.
+    assert.deepEqual(changedDeployServices(['apps/admin/src/routes/orgs/+page.svelte']), ['admin']);
+    assert.deepEqual(changedDeployServices(['docker/Dockerfile.admin']), ['admin']);
   });
 
   it("narrows a service's own Dockerfile to that service", () => {
@@ -43,13 +50,18 @@ describe('changedDeployServices', () => {
 
   it('still rebuilds everything for the rest of docker/', () => {
     // The compose file, the shared ignore rules and the entrypoints reach all three.
-    assert.deepEqual(changedDeployServices(['docker/production/docker-compose.yaml']), ['api', 'dashboard', 'jobs']);
-    assert.deepEqual(changedDeployServices(['docker/.dockerignore']), ['api', 'dashboard', 'jobs']);
+    assert.deepEqual(changedDeployServices(['docker/production/docker-compose.yaml']), [
+      'api',
+      'dashboard',
+      'jobs',
+      'admin'
+    ]);
+    assert.deepEqual(changedDeployServices(['docker/.dockerignore']), ['api', 'dashboard', 'jobs', 'admin']);
   });
 
   it('rebuilds everything for a path nobody has classified', () => {
     // The unknown path is the dangerous one, so it takes the blunt answer rather than none.
-    assert.deepEqual(changedDeployServices(['some/new/thing.ts']), ['api', 'dashboard', 'jobs']);
+    assert.deepEqual(changedDeployServices(['some/new/thing.ts']), ['api', 'dashboard', 'jobs', 'admin']);
   });
 
   it('takes the union when two apps changed together', () => {

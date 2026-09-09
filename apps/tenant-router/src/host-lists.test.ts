@@ -54,6 +54,12 @@ test('every routed apex appears in every host list', () => {
       hostSet(productionVar('DIRECT_PASSTHROUGH_HOSTS')).has(`api.${apex}`),
       `api.${apex} would be routed as a tenant instead of reaching the API`
     );
+    // The operator console is its own origin behind Cloudflare Access. Routed as a
+    // tenant it would resolve to no organisation and answer 404 on every apex.
+    assert.ok(
+      hostSet(productionVar('DIRECT_PASSTHROUGH_HOSTS')).has(`admin.${apex}`),
+      `admin.${apex} would be routed as a tenant instead of reaching the console`
+    );
     assert.ok(
       hostSet(productionVar('MARKETING_HOSTS')).has(apex),
       `${apex} would be routed as a tenant instead of serving the marketing site`

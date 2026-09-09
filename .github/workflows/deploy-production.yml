@@ -61,12 +61,13 @@ jobs:
       api: ${{ steps.read.outputs.api }}
       dashboard: ${{ steps.read.outputs.dashboard }}
       jobs: ${{ steps.read.outputs.jobs }}
+      admin: ${{ steps.read.outputs.admin }}
     steps:
       - id: read
         run: |
           set -euo pipefail
 
-          for service in api dashboard jobs; do
+          for service in api dashboard jobs admin; do
             container="zj19oe40izga1bnpymfz5z55-${service}-1"
             image="$(docker inspect --format '{{.Config.Image}}' "${container}" 2>/dev/null || true)"
             sha="${image##*:sha-}"
@@ -112,6 +113,7 @@ jobs:
           RUNNING_API: ${{ needs.running.outputs.api }}
           RUNNING_DASHBOARD: ${{ needs.running.outputs.dashboard }}
           RUNNING_JOBS: ${{ needs.running.outputs.jobs }}
+          RUNNING_ADMIN: ${{ needs.running.outputs.admin }}
           REBUILD_ALL: ${{ inputs.rebuild_all }}
         run: |
           set -euo pipefail
@@ -128,10 +130,10 @@ jobs:
 
           if [ "${REBUILD_ALL}" = "true" ]; then
             echo "Manual rebuild requested: building everything."
-            services="api dashboard jobs"
+            services="api dashboard jobs admin"
           fi
 
-          for service in api dashboard jobs; do
+          for service in api dashboard jobs admin; do
             # `if`, not `[ ... ] && continue`: under `set -e` the latter exits the script on
             # the ordinary path, where the test is false.
             if [ "${REBUILD_ALL}" = "true" ]; then continue; fi
@@ -140,6 +142,7 @@ jobs:
               api) running="${RUNNING_API}" ;;
               dashboard) running="${RUNNING_DASHBOARD}" ;;
               jobs) running="${RUNNING_JOBS}" ;;
+              admin) running="${RUNNING_ADMIN}" ;;
             esac
 
             # Nothing known, or a commit this clone does not have (a force-push, a rebuilt
@@ -195,7 +198,8 @@ jobs:
                 build_args: "PUBLIC_IS_SELFHOSTED=false\nPUBLIC_IS_SELF_OWNED=true"
               },
               { name: "api", dockerfile: "./docker/Dockerfile.api", image: "classroom-api", build_args: "" },
-              { name: "jobs", dockerfile: "./docker/Dockerfile.jobs", image: "classroom-jobs", build_args: "" }
+              { name: "jobs", dockerfile: "./docker/Dockerfile.jobs", image: "classroom-jobs", build_args: "" },
+              { name: "admin", dockerfile: "./docker/Dockerfile.admin", image: "classroom-admin", build_args: "" }
             ];
             console.log(JSON.stringify({ include: all.filter((entry) => wanted.has(entry.name)) }));
           ' "${services}")"
@@ -374,9 +378,10 @@ jobs:
           CLASSROOM_API_TAG="$(resolve_tag api)"
           CLASSROOM_DASHBOARD_TAG="$(resolve_tag dashboard)"
           CLASSROOM_JOBS_TAG="$(resolve_tag jobs)"
-          export CLASSROOM_API_TAG CLASSROOM_DASHBOARD_TAG CLASSROOM_JOBS_TAG
+          CLASSROOM_ADMIN_TAG="$(resolve_tag admin)"
+          export CLASSROOM_API_TAG CLASSROOM_DASHBOARD_TAG CLASSROOM_JOBS_TAG CLASSROOM_ADMIN_TAG
 
-          echo "api=${CLASSROOM_API_TAG} dashboard=${CLASSROOM_DASHBOARD_TAG} jobs=${CLASSROOM_JOBS_TAG}"
+          echo "api=${CLASSROOM_API_TAG} dashboard=${CLASSROOM_DASHBOARD_TAG} jobs=${CLASSROOM_JOBS_TAG} admin=${CLASSROOM_ADMIN_TAG}"
 
           compose_up() {
             docker compose \
@@ -458,7 +463,7 @@ jobs:
           running="${RUNNER_TEMP}/running-images.txt"
           docker ps --format '{{.Image}}' | sort -u > "${running}"
 
-          for image in classroom-api classroom-dashboard classroom-jobs; do
+          for image in classroom-api classroom-dashboard classroom-jobs classroom-admin; do
             repo="${REGISTRY}/${IMAGE_NAMESPACE}/${image}"
 
             # Newest first, so anything past the keep count is the older tail.

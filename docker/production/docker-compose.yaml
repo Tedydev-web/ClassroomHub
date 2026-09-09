@@ -470,6 +470,55 @@ services:
           cpus: "2.0"
           memory: 3G
 
+  # The operator console. Reads the super-admin endpoints and nothing else, so it
+  # needs no database, no Redis and no object storage — only a route to the API on
+  # the stack network.
+  #
+  # Published on loopback like every other service: the tunnel is the sole public
+  # path, and Cloudflare Access sits in front of the hostname so the console's own
+  # password is the second gate rather than the only one.
+  admin:
+    image: ghcr.io/tedydev-web/classroom-admin:${CLASSROOM_ADMIN_TAG:?set by the deploy}
+    labels:
+      io.classroom.stack: production
+      io.classroom.role: admin
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${HOST_ADMIN_PORT:-18002}:3083"
+    environment:
+      NODE_ENV: production
+      PORT: 3083
+      # Server-to-server, on the stack network — the console's `/api/*` proxy never
+      # leaves the host, so the operator's key does not travel over the tunnel.
+      PRIVATE_SERVER_URL: http://api:3081
+    healthcheck:
+      # Any non-5xx proves the SvelteKit server is listening and routing.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3083/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    stop_grace_period: 15s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
 # The AI gateway runs on the host, so a container reaches it across the docker
 # bridge and the host firewall admits that bridge by subnet. Left to Docker the
 # subnet is assigned dynamically, and it changed the last time this network was

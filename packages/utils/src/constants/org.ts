@@ -1,5 +1,6 @@
 export const blockedSubdomain = [
   'academy',
+  'admin',
   'api',
   'app',
   'apps',

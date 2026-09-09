@@ -73,9 +73,11 @@ EMBED_HOST = "embed.classroom.io.vn,embed.classroomhub.io.vn"
 ASSET_HOST = "assets.classroom.io.vn,assets.classroomhub.io.vn"
 API_URL = "https://api.classroom.io.vn"
 # Service hosts the wildcard route catches but that must reach their origin
-# untouched: the public API tunnel. The internal origins are added in code from
-# the upstream vars above; the Worker serves the public R2 asset domain.
-DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,api.classroomhub.io.vn"
+# untouched: the public API tunnel, and the operator console, which is a separate
+# origin behind Cloudflare Access rather than a tenant site. The internal origins
+# are added in code from the upstream vars above; the Worker serves the public R2
+# asset domain.
+DIRECT_PASSTHROUGH_HOSTS = "api.classroom.io.vn,api.classroomhub.io.vn,admin.classroom.io.vn,admin.classroomhub.io.vn"
 MARKETING_HOSTS = "classroom.io.vn,www.classroom.io.vn,classroomhub.io.vn,www.classroomhub.io.vn"
 # Still the old apex. Setting this to the new one is what makes every other
 # marketing host 301 to it, and that belongs in the step that also moves the
