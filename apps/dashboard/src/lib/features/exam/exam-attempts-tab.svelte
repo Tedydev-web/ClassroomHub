@@ -11,7 +11,7 @@
   import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
   import { classroomhub } from '$lib/utils/services/api';
   import ExamExportControls from '$features/exam/exam-export-controls.svelte';
-  import type { ExamExportLocale } from '$features/exam/exam-export-preferences';
+  import type { ExamExportLocale, ExamExportPaper } from '$features/exam/exam-export-preferences';
   import { snackbar } from '$features/ui/snackbar/store';
 
   /**
@@ -196,7 +196,7 @@
       const response = await fetch(`/courses/${courseId}/exams/${examId}/print/pdf`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ attemptIds, locale: exportLocale, includeAnswerKey })
+        body: JSON.stringify({ attemptIds, locale: exportLocale, includeAnswerKey, paper: exportPaper })
       });
 
       if (!response.ok) {
@@ -224,11 +224,18 @@
 
   /** Set by the controls above the table; see `exam-export-preferences`. */
   let exportLocale = $state<ExamExportLocale>('en');
+  let exportPaper = $state<ExamExportPaper>('a5');
   let includeAnswerKey = $state(true);
 </script>
 
 <div class="space-y-4">
-  <ExamExportControls bind:locale={exportLocale} bind:includeAnswerKey {loading} onreload={refresh} />
+  <ExamExportControls
+    bind:locale={exportLocale}
+    bind:includeAnswerKey
+    bind:paper={exportPaper}
+    {loading}
+    onreload={refresh}
+  />
 
   <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
     {#snippet stat(label: string, value: string, accent = false)}

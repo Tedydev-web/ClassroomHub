@@ -5734,6 +5734,9 @@
       "export_language": "Export language",
       "export_language_vi": "Tiếng Việt",
       "export_language_en": "English",
+      "export_paper": "Paper size",
+      "export_paper_a5": "A5",
+      "export_paper_a4": "A4",
       "print_with_key": "Sheets with answer key",
       "print_without_key": "Sheets without answer key"
     },

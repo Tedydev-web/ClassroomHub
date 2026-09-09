@@ -25,6 +25,30 @@
    */
   const labels = $derived(data.labels);
 
+  /**
+   * How the sheet meets the page it prints on.
+   *
+   * The layout below is settled in millimetres against a printed A4 Ministry form, so A5 is
+   * not a reflow but the same sheet zoomed down whole: Chromium's `zoom` scales the layout,
+   * not only the paint, so one candidate stays one page. The zoom is the ratio of the two
+   * printable widths (A5 148mm − 14mm margins = 134mm; A4 190mm), which keeps the sheet
+   * inside A5's printable box rather than overflowing it by the paper ratio's few millimetres.
+   */
+  const PAPER_GEOMETRY = {
+    a4: { size: 'A4 portrait', margin: '12mm 10mm', zoom: 1 },
+    a5: { size: 'A5 portrait', margin: '8mm 7mm', zoom: 0.705 }
+  } as const;
+
+  const geometry = $derived(PAPER_GEOMETRY[data.paper] ?? PAPER_GEOMETRY.a5);
+
+  // The tag name is assembled rather than written verbatim, so the Svelte compiler does not
+  // mistake this string for a second component style element and try to parse it as CSS.
+  const styleTag = 'style';
+
+  const paperHeadTag = $derived(
+    `<${styleTag}>@page { size: ${geometry.size}; margin: ${geometry.margin}; } .sheet { zoom: ${geometry.zoom}; }</${styleTag}>`
+  );
+
   /** Set when the tenant's uploaded logo will not load, so the name takes its place. */
   let logoBroken = $state(false);
 
@@ -128,6 +152,13 @@
 
 <svelte:head>
   <title>{$t('exam.print.tab_title')} — {data.examTitle}</title>
+  <!--
+    The paper geometry, emitted here rather than in the component's static stylesheet, so
+    the one @page rule the document carries is the chosen one. The PDF endpoint hands the
+    renderer this markup with the component stylesheet stripped to text, so an inline @page
+    in that stylesheet would have raced this one; there is now only this.
+  -->
+  {@html paperHeadTag}
 </svelte:head>
 
 <div class="toolbar">
@@ -303,10 +334,11 @@
     The page is the unit here, not the viewport: everything below is sized in millimetres so
     what the print dialog previews is what the sheet measures.
   */
-  @page {
-    size: A4 portrait;
-    margin: 12mm 10mm;
-  }
+  /*
+    The @page rule and the sheet's zoom are emitted from `<svelte:head>` instead, because
+    they depend on the chosen paper; see `paperStyle`. Everything below is in millimetres and
+    sized for A4, and A5 is that same sheet scaled down whole by the zoom rather than reflowed.
+  */
 
   .toolbar {
     display: flex;

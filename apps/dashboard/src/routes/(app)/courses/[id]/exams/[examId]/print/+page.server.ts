@@ -96,6 +96,13 @@ export const load = async ({ params, url, cookies, locals }) => {
    */
   const showAnswerKey = url.searchParams.get('key') !== 'off';
 
+  /**
+   * The paper the sheet is laid out for. A5 is the default — half the paper of A4 for the
+   * same sheet, scaled down whole so the Ministry form keeps its proportions — and A4 is
+   * asked for explicitly by the one query the preview tab and the PDF endpoint both send.
+   */
+  const paper = url.searchParams.get('paper') === 'a4' ? 'a4' : 'a5';
+
   const attemptIds = (url.searchParams.get('attempts') ?? '')
     .split(',')
     .map((id) => id.trim())
@@ -151,6 +158,7 @@ export const load = async ({ params, url, cookies, locals }) => {
   return {
     courseId: params.id,
     showAnswerKey,
+    paper,
     /**
      * The sheet's wording, from the server, in the language asked for.
      *

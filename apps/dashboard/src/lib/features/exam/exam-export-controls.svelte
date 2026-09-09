@@ -5,11 +5,15 @@
   import { Button } from '@cio/ui/base/button';
   import {
     EXAM_EXPORT_LOCALES,
+    EXAM_EXPORT_PAPERS,
     rememberedExamAnswerKeyChoice,
     rememberedExamExportLocale,
+    rememberedExamExportPaper,
     storeExamAnswerKeyChoice,
     storeExamExportLocale,
-    type ExamExportLocale
+    storeExamExportPaper,
+    type ExamExportLocale,
+    type ExamExportPaper
   } from '$features/exam/exam-export-preferences';
 
   /**
@@ -22,11 +26,13 @@
   let {
     locale = $bindable('en'),
     includeAnswerKey = $bindable(true),
+    paper = $bindable('a5'),
     loading = false,
     onreload
   }: {
     locale?: ExamExportLocale;
     includeAnswerKey?: boolean;
+    paper?: ExamExportPaper;
     loading?: boolean;
     onreload?: () => void;
   } = $props();
@@ -36,11 +42,17 @@
   onMount(() => {
     locale = rememberedExamExportLocale();
     includeAnswerKey = rememberedExamAnswerKeyChoice();
+    paper = rememberedExamExportPaper();
   });
 
   function chooseLocale(next: ExamExportLocale) {
     locale = next;
     storeExamExportLocale(next);
+  }
+
+  function choosePaper(next: ExamExportPaper) {
+    paper = next;
+    storeExamExportPaper(next);
   }
 
   function toggleAnswerKey() {
@@ -55,6 +67,15 @@
     {#each EXAM_EXPORT_LOCALES as option (option)}
       <Button size="sm" variant={locale === option ? 'default' : 'outline'} onclick={() => chooseLocale(option)}>
         {$t(`exam.results.export_language_${option}`)}
+      </Button>
+    {/each}
+  </div>
+
+  <div class="flex items-center gap-1.5">
+    <span class="text-muted-foreground text-xs">{$t('exam.results.export_paper')}</span>
+    {#each EXAM_EXPORT_PAPERS as option (option)}
+      <Button size="sm" variant={paper === option ? 'default' : 'outline'} onclick={() => choosePaper(option)}>
+        {$t(`exam.results.export_paper_${option}`)}
       </Button>
     {/each}
   </div>

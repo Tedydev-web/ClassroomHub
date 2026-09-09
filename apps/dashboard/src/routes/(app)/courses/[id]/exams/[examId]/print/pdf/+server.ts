@@ -44,6 +44,7 @@ export const POST = async ({ params, request, fetch, url, cookies }) => {
   const query = new URLSearchParams();
   if (typeof body?.locale === 'string') query.set('lang', body.locale);
   if (body?.includeAnswerKey === false) query.set('key', 'off');
+  if (body?.paper === 'a4') query.set('paper', 'a4');
   if (attemptIds.length > 0) query.set('attempts', attemptIds.join(','));
 
   const pageUrl = new URL(`/courses/${params.id}/exams/${params.examId}/print?${query}`, url.origin);

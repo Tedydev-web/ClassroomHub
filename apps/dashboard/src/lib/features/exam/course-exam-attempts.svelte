@@ -6,7 +6,7 @@
   import type { ExamResultRow } from '$features/exam/exam-result-row';
   import { classroomhub } from '$lib/utils/services/api';
   import ExamExportControls from '$features/exam/exam-export-controls.svelte';
-  import type { ExamExportLocale } from '$features/exam/exam-export-preferences';
+  import type { ExamExportLocale, ExamExportPaper } from '$features/exam/exam-export-preferences';
   import { downloadFile, fileNameFromResponse } from '$features/exam/exam-file-download';
   import { snackbar } from '$features/ui/snackbar/store';
   import { Button } from '@cio/ui/base/button';
@@ -129,6 +129,7 @@
   });
 
   let exportLocale = $state<ExamExportLocale>('en');
+  let exportPaper = $state<ExamExportPaper>('a5');
   let includeAnswerKey = $state(true);
   let printingAnswers = $state(false);
 
@@ -173,7 +174,7 @@
           const response = await fetch(`/courses/${courseId}/exams/${id}/print/pdf`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ attemptIds: ids, locale: exportLocale, includeAnswerKey })
+            body: JSON.stringify({ attemptIds: ids, locale: exportLocale, includeAnswerKey, paper: exportPaper })
           });
 
           if (!response.ok) {
@@ -236,7 +237,7 @@
   </div>
 
   {#if examId === 'all' && shown.length > 0}
-    <ExamExportControls bind:locale={exportLocale} bind:includeAnswerKey />
+    <ExamExportControls bind:locale={exportLocale} bind:includeAnswerKey bind:paper={exportPaper} />
   {/if}
 
   {#if examId !== 'all'}

@@ -11,8 +11,14 @@ export type ExamExportLocale = 'vi' | 'en';
 /** Only the languages the exports are written in; the interface has more. */
 export const EXAM_EXPORT_LOCALES: readonly ExamExportLocale[] = ['vi', 'en'];
 
+/** The paper the answer sheet is laid out for; A5 halves the sheet a class hands round. */
+export type ExamExportPaper = 'a4' | 'a5';
+
+export const EXAM_EXPORT_PAPERS: readonly ExamExportPaper[] = ['a5', 'a4'];
+
 const LOCALE_KEY = 'classroomhub_export_locale';
 const ANSWER_KEY_KEY = 'classroomhub_export_answer_keys';
+const PAPER_KEY = 'classroomhub_export_paper';
 
 function readStored(key: string): string | null {
   if (typeof window === 'undefined') return null;
@@ -62,4 +68,17 @@ export function rememberedExamAnswerKeyChoice(): boolean {
 
 export function storeExamAnswerKeyChoice(includeAnswerKey: boolean): void {
   writeStored(ANSWER_KEY_KEY, includeAnswerKey ? 'on' : 'off');
+}
+
+/**
+ * A5 by default: one sheet handed to a candidate is half a page, so a class of forty is
+ * twenty sheets of paper rather than forty. It stays a default a teacher can override to A4
+ * when a class marks the small bubbles by hand and wants the room.
+ */
+export function rememberedExamExportPaper(): ExamExportPaper {
+  return readStored(PAPER_KEY) === 'a4' ? 'a4' : 'a5';
+}
+
+export function storeExamExportPaper(paper: ExamExportPaper): void {
+  writeStored(PAPER_KEY, paper);
 }
