@@ -138,8 +138,11 @@
 {/snippet}
 
 {#if href}
+  <!-- `rest` carries the union of both variants' attributes, so each branch narrows
+       it to the element it actually renders. Inside this branch `href` is set, which
+       is what makes the props the anchor variant. -->
   <a
-    {...rest}
+    {...rest as HTMLAnchorAttributes}
     data-slot="button"
     data-testid={testId}
     href={disabled ? undefined : href}
@@ -154,7 +157,7 @@
   </a>
 {:else}
   <button
-    {...rest}
+    {...rest as HTMLButtonAttributes}
     data-slot="button"
     data-testid={testId}
     {type}
