@@ -464,3 +464,14 @@ services:
         limits:
           cpus: "2.0"
           memory: 3G
+
+# The AI gateway runs on the host, so a container reaches it across the docker
+# bridge and the host firewall admits that bridge by subnet. Left to Docker the
+# subnet is assigned dynamically, and it changed the last time this network was
+# recreated — silently stranding every AI call behind a firewall rule that still
+# named the old range. Pinned so the rule and the network cannot drift apart.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
