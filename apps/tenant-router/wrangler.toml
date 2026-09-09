@@ -24,6 +24,13 @@ bucket_name = "videos"
 binding = "ASSETS_BUCKET"
 bucket_name = "assets"
 
+# User-uploaded images (avatars, organisation logos, course covers). The API
+# publishes them under the same public host as the embed scripts, so the Worker
+# needs both buckets to answer for `assets.<apex>`.
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "media"
+
 [observability]
 enabled = true
 
@@ -83,6 +90,11 @@ bucket_name = "videos"
 [[env.production.r2_buckets]]
 binding = "ASSETS_BUCKET"
 bucket_name = "assets"
+
+# Restated for production: bindings are not inherited by environments.
+[[env.production.r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "media"
 
 [[env.production.services]]
 binding = "MARKETING"

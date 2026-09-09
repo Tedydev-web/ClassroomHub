@@ -87,6 +87,8 @@ interface Env {
   VIDEOS_BUCKET: R2Bucket;
   /** R2 bucket binding for static assets (embed scripts under `embeds/`). */
   ASSETS_BUCKET: R2Bucket;
+  /** R2 bucket binding for user-uploaded images (avatars, logos, course covers). */
+  MEDIA_BUCKET: R2Bucket;
 }
 
 // PostHog first-party proxy: requests to /ingest/* are forwarded to PostHog EU.
@@ -289,6 +291,19 @@ async function handleEmbedAssetRequest(request: Request, env: Env): Promise<Resp
   return new Response((object as R2ObjectBody).body, { status: 200, headers });
 }
 
+/**
+ * Which bucket backs a key on the public asset host.
+ *
+ * Two things publish to this one hostname. The build uploads embed scripts and
+ * the marketing video to the `assets` bucket under those two prefixes, and the
+ * API uploads every avatar, organisation logo and course cover to `media` at the
+ * root — its public base URL is this same host. Serving only `assets` answered
+ * 404 for every user-uploaded image, in the app and in email alike.
+ */
+export function bucketForPublicAsset(objectKey: string, env: Env): R2Bucket {
+  return objectKey.startsWith('embeds/') || objectKey.startsWith('marketing/') ? env.ASSETS_BUCKET : env.MEDIA_BUCKET;
+}
+
 async function handlePublicAssetRequest(request: Request, env: Env): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -310,8 +325,8 @@ async function handlePublicAssetRequest(request: Request, env: Env): Promise<Res
     return new Response('Not Found', { status: 404 });
   }
 
-  const object =
-    request.method === 'HEAD' ? await env.ASSETS_BUCKET.head(objectKey) : await env.ASSETS_BUCKET.get(objectKey);
+  const bucket = bucketForPublicAsset(objectKey, env);
+  const object = request.method === 'HEAD' ? await bucket.head(objectKey) : await bucket.get(objectKey);
   if (!object) {
     return new Response('Not Found', { status: 404 });
   }

@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { hostSet } from './index';
+import { bucketForPublicAsset, hostSet } from './index';
 
 const config = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../wrangler.toml'), 'utf8');
 
@@ -64,4 +64,35 @@ test('every routed apex appears in every host list', () => {
 test('the canonical marketing host is one of the marketing hosts', () => {
   // Otherwise every marketing host redirects to a host that is not routed here.
   assert.ok(hostSet(productionVar('MARKETING_HOSTS')).has(productionVar('MARKETING_CANONICAL_HOST')));
+});
+
+/**
+ * Regression: the public asset host serves user-uploaded images.
+ *
+ * The API publishes every avatar, organisation logo and course cover to the
+ * `media` bucket at the root of this same hostname, while the build publishes
+ * embed scripts and the marketing video to `assets` under two prefixes. Reading
+ * only `assets` answered 404 for every uploaded image — a blank avatar in the
+ * app and a broken logo in every email.
+ */
+test('an uploaded image is read from the media bucket, embeds from the assets bucket', () => {
+  const env = { ASSETS_BUCKET: 'assets', MEDIA_BUCKET: 'media' } as unknown as Parameters<
+    typeof bucketForPublicAsset
+  >[1];
+
+  assert.equal(bucketForPublicAsset('HzTAg5qSmhvR4qBiQbmO--cropped-image.png', env), 'media');
+  assert.equal(bucketForPublicAsset('embeds/course-widget/course-widget.js', env), 'assets');
+  assert.equal(bucketForPublicAsset('marketing/language-editor-demo.mov', env), 'assets');
+});
+
+/** Both buckets must be bound for production, or the Worker answers 500. */
+test('production binds every bucket the public asset host reads', () => {
+  const production = config.slice(config.indexOf('[env.production]'));
+
+  for (const binding of ['ASSETS_BUCKET', 'MEDIA_BUCKET']) {
+    assert.ok(
+      new RegExp(`binding = "${binding}"`).test(production),
+      `${binding} is not bound for production; bindings are not inherited from the top level`
+    );
+  }
 });

@@ -26,7 +26,18 @@ const EMBED_CONTENT_TYPES: Record<string, string> = {
   css: 'text/css',
   map: 'application/json',
   txt: 'text/plain',
-  mov: 'video/quicktime'
+  mov: 'video/quicktime',
+  // Uploaded images share this host. R2 stores their content type and
+  // `writeHttpMetadata` restores it, but a legacy object saved without one would
+  // otherwise be served as a download rather than drawn.
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  avif: 'image/avif',
+  ico: 'image/x-icon'
 };
 
 function contentTypeForObjectKey(objectKey: string): string {
