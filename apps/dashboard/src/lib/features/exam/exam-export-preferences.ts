@@ -6,8 +6,6 @@
  * rather than in one tab because two screens now offer the same downloads, and a preference
  * a teacher set on one of them should hold on the other.
  */
-import { getPersistedLocale } from '$lib/utils/functions/translations';
-
 export type ExamExportLocale = 'vi' | 'en';
 
 /** Only the languages the exports are written in; the interface has more. */
@@ -38,15 +36,15 @@ function writeStored(key: string, value: string): void {
 }
 
 /**
- * The teacher's own locale is right nearly every time, because a class and its teacher
- * usually share a language. It stays a default because the system cannot know who reads the
- * file: a sheet mailed to a parent is read by somebody who never saw this screen.
+ * English by default: the papers are an English course's, so the exported sheet reads in
+ * English until a teacher chooses otherwise. It stays a default rather than a fixed value
+ * because a teacher may still export in Vietnamese, and that choice is then remembered.
  */
 export function rememberedExamExportLocale(): ExamExportLocale {
   const stored = readStored(LOCALE_KEY);
   if (stored === 'vi' || stored === 'en') return stored;
 
-  return getPersistedLocale() === 'vi' ? 'vi' : 'en';
+  return 'en';
 }
 
 export function storeExamExportLocale(locale: ExamExportLocale): void {
