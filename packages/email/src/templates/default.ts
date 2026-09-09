@@ -1,5 +1,5 @@
 import type { EmailBranding } from '../core/branding';
-import { PRODUCT_HOSTS, PRODUCT_NAME } from '@cio/utils/constants';
+import { PRODUCT_HOSTS, PRODUCT_LOGO_URL, PRODUCT_NAME } from '@cio/utils/constants';
 
 /**
  * Shared shell for every transactional email.
@@ -60,18 +60,18 @@ function isFetchableImageUrl(value: string): boolean {
 }
 
 function buildMasthead(branding: EmailBranding): string {
-  const logoUrl = branding?.logoUrl && isFetchableImageUrl(branding.logoUrl) ? branding.logoUrl : undefined;
+  // An organisation that has not uploaded a mark still gets one: the platform's.
+  // A masthead of bare text next to a styled card reads as a rendering failure,
+  // which is exactly what a reader who has just seen a broken image assumes.
+  const orgLogoUrl = branding?.logoUrl && isFetchableImageUrl(branding.logoUrl) ? branding.logoUrl : undefined;
   const orgName = branding?.orgName ? escapeHtmlAttr(branding.orgName) : '';
+  const logoUrl = orgLogoUrl ?? (orgName ? PRODUCT_LOGO_URL : undefined);
 
   if (logoUrl) {
     const nameHtml = orgName
       ? `<span style="margin-left:10px;font-size:15px;font-weight:600;color:${TEXT};vertical-align:middle;">${orgName}</span>`
       : '';
     return `<img src="${escapeHtmlAttr(logoUrl)}" alt="${orgName || 'Logo'}" style="max-height:32px;width:auto;display:inline-block;vertical-align:middle;" />${nameHtml}`;
-  }
-
-  if (orgName) {
-    return `<span style="font-size:17px;font-weight:600;color:${TEXT};">${orgName}</span>`;
   }
 
   return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${PRODUCT_WORDMARK_URL}" width="180" height="46" alt="${PRODUCT_NAME}" style="display:block;width:180px;height:auto;" /></a>`;

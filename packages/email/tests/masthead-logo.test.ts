@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { PRODUCT_LOGO_URL } from '@cio/utils/constants';
+
 import { getDefaultTemplate } from '../src/templates/default';
 
 /**
@@ -23,18 +25,34 @@ describe('the masthead logo', () => {
     expect(head).toContain('MsNa English');
   });
 
-  it('refuses a relative path and shows the name instead', () => {
+  it('refuses a relative path and draws the platform mark instead', () => {
     // The case that shipped: a broken-image box where a readable name belongs.
     const head = masthead({ orgName: 'MsNa English', logoUrl: '/media/org/msna/avatar.png' });
 
     expect(head).not.toContain('<img src="/media');
+    expect(head).toContain(PRODUCT_LOGO_URL);
     expect(head).toContain('MsNa English');
   });
 
   it('refuses addresses no client will fetch', () => {
     for (const logoUrl of ['data:image/png;base64,AAAA', 'mailto:someone@example.com', 'not a url', '']) {
-      expect(masthead({ orgName: 'MsNa English', logoUrl })).not.toContain('<img');
+      const head = masthead({ orgName: 'MsNa English', logoUrl });
+
+      expect(head).not.toContain(logoUrl || 'src=""');
+      expect(head).toContain(PRODUCT_LOGO_URL);
     }
+  });
+
+  /**
+   * An organisation that never uploaded a mark still gets one. A masthead of
+   * bare text above a styled card reads as a rendering failure — which is
+   * exactly what a reader who has just seen a broken image concludes.
+   */
+  it('draws the platform mark for an organisation that set no logo', () => {
+    const head = masthead({ orgName: 'MsNa English' });
+
+    expect(head).toContain(`<img src="${PRODUCT_LOGO_URL}"`);
+    expect(head).toContain('MsNa English');
   });
 
   it('escapes the address into the attribute, so a quote cannot break out of it', () => {

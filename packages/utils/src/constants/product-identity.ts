@@ -85,6 +85,20 @@ export const PRODUCT_URLS = {
   help: `https://${PRODUCT_HOSTS.marketing}/help`
 } as const;
 
+/**
+ * The platform's own mark, for every place an organisation's logo is expected
+ * and absent.
+ *
+ * Absolute and unauthenticated on purpose. Email has no document to resolve a
+ * relative path against and no session to send, and an OG card is fetched by a
+ * crawler that has neither — a root-relative path renders as a broken image in
+ * both. PNG rather than the SVG the app uses, because mail clients drop SVG.
+ *
+ * The gradient variant, which is the product mark; the flat one exists only as
+ * a legacy favicon rendering and is being retired.
+ */
+export const PRODUCT_LOGO_URL = `https://${PRODUCT_HOSTS.dashboard}/logo-192.png`;
+
 export const CONTACT = {
   /** The mailbox on the product domain — also the account transactional mail is sent from. */
   email: OPERATOR_EMAIL,
