@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 
 import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
+import { parseWindowStamp } from '$features/exam/exam-window';
 
 /**
  * One exam, on one page, the way one exercise already is.
@@ -37,14 +38,14 @@ export const load = async ({ params, cookies }) => {
    * Postgres returns a `timestamptz` as `2026-08-28 01:38:04+00` — a space, not a `T`.
    * V8 reads that, but a space-separated datetime is outside what the ECMAScript grammar
    * requires any engine to parse, so the browser is handed a plain ISO string instead.
+   *
+   * Swapping in the `T` alone made it worse rather than better: it turns a string V8
+   * accepts into one it rejects, because the offset is `+00` and the grammar wants
+   * `+00:00`. Both settings fields then arrived as null and the settings tab drew an empty
+   * opening and closing time for an exam that had both. `parseWindowStamp` already fixes
+   * both characters, and is the rule the sitting page reads the same window with.
    */
-  const asIso = (value: string | null) => {
-    if (!value) return null;
-
-    const parsed = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
-
-    return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-  };
+  const asIso = (value: string | null) => parseWindowStamp(value)?.toISOString() ?? null;
 
   return {
     courseId: params.id,
