@@ -8,7 +8,6 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
   import DownloadIcon from '@lucide/svelte/icons/download';
-  import PrinterIcon from '@lucide/svelte/icons/printer';
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { ExamResultRow } from '$features/exam/exam-result-row';
@@ -18,9 +17,7 @@
     onopen,
     onreopen,
     ondelete,
-    onexportanswers,
     onprintanswers,
-    exportingAnswers = false,
     printingAnswers = false,
     showSummary = true
   }: {
@@ -28,11 +25,8 @@
     onopen: (attemptId: string) => void;
     onreopen: (attemptId: string) => void;
     ondelete: (attemptId: string, displayName: string | null) => void;
-    /** The papers to fetch answers for; empty means every finished sitting shown. */
-    onexportanswers?: (attemptIds: string[]) => void;
-    /** The same selection, opened as printable answer sheets instead of a workbook. */
+    /** The papers a teacher takes away, as one PDF answer sheet each; empty means every finished sitting shown. */
     onprintanswers?: (attemptIds: string[]) => void;
-    exportingAnswers?: boolean;
     printingAnswers?: boolean;
     /** Off where the screen already states them above the table, so they are not said twice. */
     showSummary?: boolean;
@@ -71,10 +65,6 @@
     const chosen = pickable.filter((row) => picked.has(row.attemptId)).map((row) => row.attemptId);
 
     return chosen.length > 0 ? chosen : pickable.map((row) => row.attemptId);
-  }
-
-  function exportAnswers() {
-    onexportanswers?.(chosenAttempts());
   }
 
   function printAnswers() {
@@ -370,30 +360,17 @@
     </div>
 
     <div class="ui:flex ui:flex-wrap ui:gap-2">
-      {#if pickable.length > 0 && onexportanswers}
+      {#if pickable.length > 0 && onprintanswers}
         <!--
-          The papers themselves, not the register. The other button takes away who sat and
-          what they scored; this one takes away what they answered, which is the only one of
-          the two a teacher can go through the paper with.
+          One button for taking the papers away: the candidates' answers as a PDF, one A4
+          sheet each, the form a teacher hands back in the room. It is the only download of
+          the answers themselves — the register is the CSV beside it.
         -->
-        <Button size="sm" disabled={exportingAnswers} onclick={exportAnswers}>
+        <Button size="sm" disabled={printingAnswers} onclick={printAnswers}>
           <DownloadIcon size={14} />
           {picked.size > 0
             ? $t('exam.results.export_answers_selected', { count: String(picked.size) })
             : $t('exam.results.export_answers_all', { count: String(pickable.length) })}
-        </Button>
-      {/if}
-
-      {#if pickable.length > 0 && onprintanswers}
-        <!--
-          The same answers as the workbook, on paper instead of in a spreadsheet: one A4
-          sheet per candidate, which is the form a teacher can hand back in the room.
-        -->
-        <Button size="sm" variant="outline" disabled={printingAnswers} onclick={printAnswers}>
-          <PrinterIcon size={14} />
-          {picked.size > 0
-            ? $t('exam.results.print_selected', { count: String(picked.size) })
-            : $t('exam.results.print_all', { count: String(pickable.length) })}
         </Button>
       {/if}
 

@@ -130,7 +130,6 @@
 
   let exportLocale = $state<ExamExportLocale>('en');
   let includeAnswerKey = $state(true);
-  let exportingAnswers = $state(false);
   let printingAnswers = $state(false);
 
   /**
@@ -153,44 +152,13 @@
     return grouped;
   }
 
-  async function exportAnswers(attemptIds: string[]) {
-    const grouped = attemptsByExam(attemptIds);
-    if (grouped.size === 0) return;
-
-    exportingAnswers = true;
-
-    try {
-      let failures = 0;
-
-      // One request per paper, in turn rather than at once: each response is a file the
-      // browser starts saving, and a browser handed several downloads in the same tick asks
-      // the teacher to permit them instead of saving them.
-      for (const [id, ids] of grouped) {
-        try {
-          const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
-            param: { examId: id },
-            json: { attemptIds: ids, locale: exportLocale }
-          });
-
-          if (!response.ok) {
-            failures += 1;
-            continue;
-          }
-
-          downloadFile(await response.blob(), fileNameFromResponse(response, 'answers.xlsx'));
-        } catch {
-          failures += 1;
-        }
-      }
-
-      if (failures > 0) snackbar.error($t('exam.results.export_failed'));
-      else snackbar.success($t('exam.results.exported'));
-    } finally {
-      exportingAnswers = false;
-    }
-  }
-
-  /** The sheets for each paper in the selection, one file per paper. */
+  /**
+   * The sheets for each paper in the selection, one file per paper.
+   *
+   * One request per paper, in turn rather than at once: each response is a file the browser
+   * starts saving, and a browser handed several downloads in the same tick asks the teacher
+   * to permit them instead of saving them.
+   */
   async function printAnswers(attemptIds: string[]) {
     const grouped = attemptsByExam(attemptIds);
     if (grouped.size === 0) return;
@@ -305,9 +273,7 @@
       onopen={openAttempt}
       onreopen={openAttempt}
       ondelete={openAttempt}
-      onexportanswers={exportAnswers}
       onprintanswers={printAnswers}
-      {exportingAnswers}
       {printingAnswers}
     />
   {/if}

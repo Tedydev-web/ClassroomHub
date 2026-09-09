@@ -220,47 +220,11 @@
     goto(`/courses/${courseId}/exams/${examId}/attempts/${attemptId}`);
   }
 
-  /**
-   * The class's answers, as a workbook a teacher takes into the room.
-   *
-   * Built and formatted on the server: the file is a zip of XML, and the browser has no
-   * reason to carry a spreadsheet writer for one screen. The wording is the server's and is
-   * always English — an export is mailed to a parent and opened by people who never see this
-   * screen, so the file must not change shape with the language the screen was in.
-   *
-   * The name comes back with the file rather than being composed here — the server knows the
-   * paper's title, which this page does not, and a folder full of files named after the
-   * wrong thing is how the last attempt at this went.
-   */
-  let exportingAnswers = $state(false);
   let printingAnswers = $state(false);
 
   /** Set by the controls above the table; see `exam-export-preferences`. */
   let exportLocale = $state<ExamExportLocale>('en');
   let includeAnswerKey = $state(true);
-
-  async function exportAnswers(attemptIds: string[]) {
-    exportingAnswers = true;
-
-    try {
-      const response = await classroomhub.exam[':examId']['answer-workbook'].$post({
-        param: { examId },
-        json: { attemptIds, locale: exportLocale }
-      });
-
-      if (!response.ok) {
-        snackbar.error($t('exam.results.export_failed'));
-        return;
-      }
-
-      downloadFile(await response.blob(), fileNameFromResponse(response, 'answers.xlsx'));
-      snackbar.success($t('exam.results.exported'));
-    } catch {
-      snackbar.error($t('exam.results.export_failed'));
-    } finally {
-      exportingAnswers = false;
-    }
-  }
 </script>
 
 <div class="space-y-4">
@@ -317,9 +281,7 @@
           onopen={openAttempt}
           onreopen={reopen}
           ondelete={remove}
-          onexportanswers={exportAnswers}
           onprintanswers={printAnswers}
-          {exportingAnswers}
           {printingAnswers}
         />
       {/if}
