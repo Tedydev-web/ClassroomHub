@@ -52,47 +52,6 @@
   /** Set when the tenant's uploaded logo will not load, so the name takes its place. */
   let logoBroken = $state(false);
 
-  /**
-   * Shrink the masthead logo to print size before it reaches the PDF.
-   *
-   * A tenant uploads a full-resolution logo — the one measured here was 4096×4096 — and the
-   * renderer embeds that untouched image once per candidate sheet. Thirteen candidates turned
-   * a page of rules and text into a 6 MB file and a fourteen-second render, all of it the
-   * same picture decoded and re-encoded thirteen times. The mark prints a centimetre tall, so
-   * it is redrawn onto a canvas capped at 512px and the source is swapped for that; the file
-   * then carries a thumbnail, not a photograph. Runs in the headless renderer as well as the
-   * preview, and if anything fails the original image simply stays — a larger file, never a
-   * missing logo.
-   */
-  const LOGO_MAX_PX = 512;
-
-  function downscaleLogo(event: Event) {
-    const img = event.currentTarget as HTMLImageElement;
-    if (img.dataset.downscaled) return;
-    img.dataset.downscaled = '1';
-
-    const largest = Math.max(img.naturalWidth, img.naturalHeight);
-    if (!largest || largest <= LOGO_MAX_PX) return;
-
-    const scale = LOGO_MAX_PX / largest;
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-
-    const context = canvas.getContext('2d');
-    if (!context) return;
-
-    context.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    try {
-      // PNG keeps the transparency a logo relies on; the source is swapped in place, and the
-      // guard above stops the load this fires from redrawing what is already a thumbnail.
-      img.src = canvas.toDataURL('image/png');
-    } catch {
-      // A tainted canvas cannot be exported; the original image stays, which still prints.
-    }
-  }
-
   type Question = { position: number; key: string; letters: string[] };
 
   /**
@@ -229,7 +188,6 @@
           <img
             src={data.issuer.organizationLogo}
             alt=""
-            onload={downscaleLogo}
             onerror={(event) => {
               // An uploaded file can be gone, and a broken-image icon in the masthead of a
               // printed sheet is worse than no logo: fall back to the name it stands for.
@@ -574,14 +532,7 @@
     min-width: 0;
     width: 100%;
     table-layout: fixed;
-    /*
-      Separate, not collapsed. A collapsed border straddles the cell edge — half of it sits
-      outside the flex item's box, and at the block's right edge that outer half falls past
-      the clip and prints as a half-width hairline, lighter than the other three sides. A
-      separate border paints wholly inside the box, so all four sides render at full weight.
-    */
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     /*
       The block's frame, and nothing inside it. The Ministry's sheet rules the outside of
       each block of ten and leaves the inside to whitespace; ruling every cell as well is
@@ -689,7 +640,14 @@
     .sheet {
       width: auto;
       margin: 0;
-      padding: 0;
+      /*
+        Horizontal padding stays. The @page margin already insets the sheet from the paper,
+        but the answer blocks are ruled to the sheet's own edge, and with no side padding the
+        rightmost block's border lands on the printable boundary and the renderer clips it to
+        a half-width hairline. Six millimetres keeps every block's frame off the edge; the
+        vertical padding is dropped so the sheet still fills the page top to bottom.
+      */
+      padding: 0 6mm;
     }
   }
 </style>
