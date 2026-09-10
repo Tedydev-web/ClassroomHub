@@ -5,6 +5,8 @@ import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server'
 
 type CreateOrgPlanRequest = typeof classroomhub.organization.plan.$post;
 type CreateOrgPlanSuccess = Extract<InferResponseType<CreateOrgPlanRequest>, { success: true }>;
+type ActivateOrgPlanRequest = typeof classroomhub.organization.plan.activate.$post;
+type ActivateOrgPlanSuccess = Extract<InferResponseType<ActivateOrgPlanRequest>, { success: true }>;
 type UpdateOrgPlanRequest = typeof classroomhub.organization.plan.$put;
 type UpdateOrgPlanSuccess = Extract<InferResponseType<UpdateOrgPlanRequest>, { success: true }>;
 type CancelOrgPlanRequest = typeof classroomhub.organization.plan.cancel.$post;
@@ -33,6 +35,29 @@ export class OrgPlanApiServer {
 
     if (!result.ok) {
       console.error('Error creating org plan (server):', result);
+      return null;
+    }
+
+    return result.body.data;
+  }
+
+  /**
+   * Activates an organization plan or creates it when no local plan exists yet.
+   * @param params Organization plan activation parameters
+   * @returns Response data or null on error
+   */
+  static async activateOrgPlan(params: TCreateOrgPlan) {
+    const result = await safeServerApi<ActivateOrgPlanSuccess>(() =>
+      classroomhub.organization.plan.activate.$post(
+        {
+          json: params
+        },
+        getApiKeyHeaders()
+      )
+    );
+
+    if (!result.ok) {
+      console.error('Error activating org plan (server):', result);
       return null;
     }
 

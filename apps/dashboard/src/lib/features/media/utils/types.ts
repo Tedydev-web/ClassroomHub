@@ -10,6 +10,11 @@ export type CreateAssetResponse = InferResponseType<CreateAssetRequest>;
 export type CreateAssetSuccess = Extract<CreateAssetResponse, { success: true }>;
 export type OrganizationAsset = CreateAssetSuccess['data'];
 
+export type CreateAndAttachAssetRequest = (typeof classroomhub.organization)['assets']['create-and-attach']['$post'];
+export type CreateAndAttachAssetResponse = InferResponseType<CreateAndAttachAssetRequest>;
+export type CreateAndAttachAssetSuccess = Extract<CreateAndAttachAssetResponse, { success: true }>;
+export type CreateAndAttachAssetData = CreateAndAttachAssetSuccess['data'];
+
 export type GetAssetRequest = (typeof classroomhub.organization)['assets'][':assetId']['$get'];
 export type GetAssetResponse = InferResponseType<GetAssetRequest>;
 export type GetAssetSuccess = Extract<GetAssetResponse, { success: true }>;
@@ -51,6 +56,11 @@ export type GetYouTubeMetadataRequest = (typeof classroomhub.organization)['asse
 export type GetYouTubeMetadataResponse = InferResponseType<GetYouTubeMetadataRequest>;
 export type GetYouTubeMetadataSuccess = Extract<GetYouTubeMetadataResponse, { success: true }>;
 export type YouTubeMetadata = GetYouTubeMetadataSuccess['data'];
+
+export type GetVimeoMetadataRequest = (typeof classroomhub.organization)['assets']['vimeo-metadata']['$get'];
+export type GetVimeoMetadataResponse = InferResponseType<GetVimeoMetadataRequest>;
+export type GetVimeoMetadataSuccess = Extract<GetVimeoMetadataResponse, { success: true }>;
+export type VimeoMetadata = GetVimeoMetadataSuccess['data'];
 
 export type GetAssetTranscriptRequest = (typeof classroomhub.organization)['assets'][':assetId']['transcript']['$get'];
 export type GetAssetTranscriptResponse = InferResponseType<GetAssetTranscriptRequest>;
