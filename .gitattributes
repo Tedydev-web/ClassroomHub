@@ -2,3 +2,11 @@
 # shebangs at container start (e.g. /app/entrypoint.sh) regardless of core.autocrlf.
 *.sh text eol=lf
 Dockerfile* text eol=lf
+
+# The help centre (apps/help) and docs site (apps/docs) are permanently
+# rebranded for this fork (~98 files diverge from upstream). Keep our versions
+# on every upstream merge instead of re-resolving the same conflicts each sync.
+# The `ours` driver is per-clone and NOT stored in the repo — a fresh clone must
+# run once:  git config merge.ours.driver true
+apps/help/** merge=ours
+apps/docs/** merge=ours
