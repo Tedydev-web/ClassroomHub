@@ -7,6 +7,7 @@ import {
   ZCreateOrgPlan,
   ZCreateOrganization,
   ZAudienceExportQuery,
+  ZBulkActionJobQuery,
   ZBulkAudienceAction,
   ZGetAudienceQuery,
   ZGetCoursesBySiteName,
@@ -179,18 +180,24 @@ export const audienceRouter = new Hono()
    * Status of a queued bulk action. Declared before `/audience/:userId/analytics`
    * so a numeric job id cannot be read as a user id.
    */
-  .get('/bulk-action/:jobId', authMiddleware, orgAdminMiddleware, async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const jobId = c.req.param('jobId');
-      const pollCount = Number(c.req.query('pollCount') ?? 0);
-      const envelope = await getBulkAudienceActionStatus(orgId, jobId, Number.isFinite(pollCount) ? pollCount : 0);
+  .get(
+    '/bulk-action/:jobId',
+    authMiddleware,
+    orgAdminMiddleware,
+    zValidator('query', ZBulkActionJobQuery),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const jobId = c.req.param('jobId');
+        const pollCount = Number(c.req.query('pollCount') ?? 0);
+        const envelope = await getBulkAudienceActionStatus(orgId, jobId, Number.isFinite(pollCount) ? pollCount : 0);
 
-      return c.json({ success: true, data: envelope }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to read bulk action status');
+        return c.json({ success: true, data: envelope }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to read bulk action status');
+      }
     }
-  })
+  )
   /**
    * POST /organization/audience/bulk-action/undo
    * Reverses a bulk action across exactly the members it changed.

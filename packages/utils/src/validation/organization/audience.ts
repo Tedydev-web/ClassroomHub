@@ -151,3 +151,12 @@ export const ZAudienceInviteByEmail = z.object({
 });
 
 export type TAudienceInviteByEmail = z.infer<typeof ZAudienceInviteByEmail>;
+
+/**
+ * The bulk-action status poll carries a throwaway pollCount so each read bypasses
+ * any HTTP cache; the server accepts and ignores it.
+ */
+export const ZBulkActionJobQuery = z.object({
+  pollCount: z.string().optional()
+});
+export type TBulkActionJobQuery = z.infer<typeof ZBulkActionJobQuery>;

@@ -484,7 +484,11 @@ export async function importAudienceMembers(orgId: string, data: TImportAudience
   if (candidateEmails.length === 0) {
     // Nothing importable at all is still a successful call with per-row
     // reasons, so the UI can show which rows failed and why.
-    return buildImportResult(rows, { imported: 0, enrolled: 0, emailsSent: 0, emailsFailed: 0 });
+    return {
+      ...buildImportResult(rows, { imported: 0, enrolled: 0, emailsSent: 0, emailsFailed: 0 }),
+      assigned: 0,
+      pendingInvitesRenewed: 0
+    };
   }
 
   const memberRows = await getOrganizationMembersByNormalizedEmails(orgId, candidateEmails);
