@@ -18,12 +18,11 @@ name: Notify CI/CD
 on:
   workflow_run:
     workflows:
-      - Quality
-      - Edge and docs quality
       - Deploy production
-      - Deploy marketing site and docs
+      - Deploy marketing site and help
       - Deploy tenant router
       - Deploy embeds to R2
+      - Deploy Storybook to R2
     types:
       - requested
       - completed
