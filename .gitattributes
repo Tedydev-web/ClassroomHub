@@ -10,3 +10,11 @@ Dockerfile* text eol=lf
 # run once:  git config merge.ours.driver true
 apps/help/** merge=ours
 apps/docs/** merge=ours
+
+# help/docs sites are fork-branded (ClassroomHub) and permanently diverge from
+# upstream's copies. `merge=ours` keeps our version whenever a future upstream
+# sync touches a file we also changed, so re-branded content is never clobbered.
+# NOTE: the driver is per-clone and not committed — each clone must run once:
+#   git config merge.ours.driver true
+apps/help/** merge=ours
+apps/docs/** merge=ours
