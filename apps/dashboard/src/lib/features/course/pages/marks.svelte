@@ -76,14 +76,14 @@
               </Table.Cell>
               {#each exercises as exercise (exercise.id)}
                 {@const mark = marks?.[exercise.id]}
-                {@const pct = gradePercent(mark, exercise.points)}
+                {@const pct = gradePercent(mark)}
                 <Table.Cell
                   class="min-w-[100px] border-r border-gray-100 px-2 py-2 text-center text-sm dark:border-neutral-800 {gradeCellClass(
                     pct
                   )}"
                 >
                   <span class="font-medium">
-                    {pct != null ? pct : (mark ?? '-')}
+                    {pct != null ? pct : (mark?.score ?? '-')}
                   </span>
                 </Table.Cell>
               {/each}
