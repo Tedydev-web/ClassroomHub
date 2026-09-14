@@ -1,5 +1,5 @@
 import type { ExportDocument } from '@cio/utils/export';
-import type { UserAnalytics, UserCourseWithStats } from '$lib/utils/types/analytics';
+import type { AudienceAnalytics, AudienceAnalyticsCourse } from '$features/audience/utils/types';
 
 type UserAnalyticsExportHeaders = {
   course: string;
@@ -16,9 +16,9 @@ type UserAnalyticsExportHeaders = {
  * roster. Headers arrive translated; the caller owns copy.
  */
 export function buildUserAnalyticsExportDocument(
-  analytics: UserAnalytics,
+  analytics: AudienceAnalytics,
   headers: UserAnalyticsExportHeaders
-): ExportDocument<UserCourseWithStats> {
+): ExportDocument<AudienceAnalyticsCourse> {
   const learner = analytics.user?.fullName || analytics.user?.email || 'learner';
 
   return {

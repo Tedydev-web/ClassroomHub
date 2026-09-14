@@ -1,5 +1,9 @@
 import type { ExportDocument } from '@cio/utils/export';
-import type { CourseAnalytics, StudentOverview } from '$lib/utils/types/analytics';
+import type { CourseAnalytics } from '$features/course/utils/types';
+
+// Row type mirrors the analytics endpoint's own student shape, so the export
+// stays aligned with what the API actually returns.
+type CourseAnalyticsStudent = CourseAnalytics['students'][number];
 
 type CourseAnalyticsExportHeaders = {
   name: string;
@@ -29,7 +33,7 @@ export function buildCourseAnalyticsExportDocument(
   analytics: CourseAnalytics,
   courseTitle: string,
   headers: CourseAnalyticsExportHeaders
-): ExportDocument<StudentOverview> {
+): ExportDocument<CourseAnalyticsStudent> {
   return {
     filename: `${courseTitle}-analytics-${new Date().toISOString().slice(0, 10)}`,
     title: courseTitle,

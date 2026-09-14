@@ -27,7 +27,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { user } from '$lib/utils/store/user';
 
-  const sectionIcons: Record<LandingSectionKey, Component> = {
+  const sectionIcons: Partial<Record<LandingSectionKey, Component>> = {
     navigation: ContentIcon,
     hero: HeaderIcon,
     courses: CourseIcon,
@@ -49,7 +49,7 @@
     selectedKey: () => selectedSectionKey,
     selectKey: (key) => landingPageEditorSelection.set(key),
     labelFor: (key) => t.get(`settings.landing_page.editor.sections.${key}`),
-    iconFor: (key) => sectionIcons[key]
+    iconFor: (key) => sectionIcons[key] ?? ContentIcon
   });
 
   function handlePreviewClick(event: MouseEvent) {
@@ -151,7 +151,10 @@
           });
 
           await orgApi.update($currentOrg.id, {
-            landingpage: updatedLandingPage as AccountOrg['landingpage']
+            // normalizeLandingPageSettings yields the canonical landing JSON to persist;
+            // OrgLandingPageJson and the stored AccountOrg shape model the same data from
+            // different sources, so bridge the editor->persist boundary explicitly.
+            landingpage: updatedLandingPage as unknown as AccountOrg['landingpage']
           });
         }}
         onClose={handleClose}

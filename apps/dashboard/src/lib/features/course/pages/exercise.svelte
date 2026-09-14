@@ -790,6 +790,7 @@
                 selfPacedCourse={isSelfPacedCourse}
                 {isPublicCourse}
                 {reorderQuestions}
+                onSaveRequested={handleSave}
               />
             {:else}
               <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
