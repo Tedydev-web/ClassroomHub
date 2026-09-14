@@ -58,6 +58,22 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-classroom}
       POSTGRES_USER: ${POSTGRES_USER:-classroom}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD to a generated production secret}
+    command:
+      [
+        "postgres",
+        "-c", "shared_buffers=1024MB",
+        "-c", "effective_cache_size=2048MB",
+        "-c", "work_mem=32MB",
+        "-c", "maintenance_work_mem=128MB",
+        "-c", "min_wal_size=1GB",
+        "-c", "max_wal_size=4GB",
+        "-c", "checkpoint_completion_target=0.9",
+        "-c", "wal_buffers=16MB",
+        "-c", "default_statistics_target=100",
+        "-c", "random_page_cost=1.1",
+        "-c", "effective_io_concurrency=200",
+        "-c", "max_connections=200",
+      ]
     # Loopback only, so the database is reachable for an administrator over an SSH
     # tunnel and from nowhere else. Binding the host's tailnet address instead
     # would put production data on every device that joins the tailnet; binding
@@ -90,8 +106,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.5"
-          memory: 2G
+          cpus: "2.5"
+          memory: 3G
 
   redis:
     image: redis:7.4.9-alpine@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99
@@ -205,6 +221,7 @@ services:
       PUBLIC_IS_SELF_OWNED: "true"
 
       DATABASE_URL: postgresql://${POSTGRES_USER:-classroom}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-classroom}
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-25}
       REDIS_URL: redis://redis:6379
 
       # Public identity. PUBLIC_SERVER_URL is the API's own canonical host, not
@@ -218,6 +235,11 @@ services:
       WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set WEBHOOK_ENCRYPTION_KEY to a generated production secret}
       # Must match the tenant-router Worker secret, or signed HLS playback fails.
       HLS_SIGNING_SECRET: ${HLS_SIGNING_SECRET:?set HLS_SIGNING_SECRET to the value shared with the tenant-router Worker}
+
+      # Observability
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.1}
 
       # Cloudflare R2. Virtual-hosted addressing, so path style stays off.
       OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:?set OBJECT_STORAGE_ENDPOINT to the R2 S3 API endpoint}
@@ -300,8 +322,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.5"
-          memory: 1536M
+          cpus: "2.0"
+          memory: 2G
 
   dashboard:
     image: ghcr.io/tedydev-web/classroom-dashboard:${CLASSROOM_DASHBOARD_TAG:?set by the deploy}
@@ -328,6 +350,7 @@ services:
       # runtime via $env/dynamic/public, so no rebuild is needed to flip it. Not
       # a secret: OAuth client ids are public, so it rides as plain runtime env.
       PUBLIC_GOOGLE_CLIENT_ID: ${PUBLIC_GOOGLE_CLIENT_ID:-}
+      PUBLIC_SENTRY_DSN: ${PUBLIC_SENTRY_DSN:-}
 
       # Server-to-server call stays on the stack network, never over the tunnel.
       PRIVATE_SERVER_URL: http://api:3081
@@ -345,7 +368,7 @@ services:
       ALLOWED_EXTERNAL_DOMAINS: ${ALLOWED_EXTERNAL_DOMAINS:-}
       CSP_SCRIPT_SRC_DOMAINS: ${CSP_SCRIPT_SRC_DOMAINS:-}
       CSP_STYLE_SRC_DOMAINS: ${CSP_STYLE_SRC_DOMAINS:-}
-      CSP_CONNECT_SRC_DOMAINS: ${CSP_CONNECT_SRC_DOMAINS:-${PUBLIC_SERVER_URL}}
+      CSP_CONNECT_SRC_DOMAINS: ${CSP_CONNECT_SRC_DOMAINS:-${PUBLIC_SERVER_URL},https://*.ingest.sentry.io,https://*.ingest.us.sentry.io}
       CSP_FRAME_SRC_DOMAINS: ${CSP_FRAME_SRC_DOMAINS:-}
       CSP_FONT_SRC_DOMAINS: ${CSP_FONT_SRC_DOMAINS:-}
       # Media loads from the R2 custom domain, so it must be allowed explicitly.
@@ -381,8 +404,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.75"
-          memory: 768M
+          cpus: "1.5"
+          memory: 1536M
 
   # BullMQ workers: video processing, transcription, AI course generation, email,
   # and notifications. Without this service those queues fill up silently.

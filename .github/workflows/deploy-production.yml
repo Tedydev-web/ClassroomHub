@@ -259,8 +259,12 @@ jobs:
             "TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}"
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
+          cache-from: |
+            type=gha,scope=${{ matrix.image }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: |
+            type=gha,mode=max,scope=${{ matrix.image }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           platforms: linux/amd64
           provenance: false
 
