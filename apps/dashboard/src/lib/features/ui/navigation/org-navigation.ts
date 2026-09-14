@@ -25,6 +25,7 @@ import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
 import type { PlanLimitResource } from '@cio/utils/plans';
 import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 import { isOrgFeatureEnabled, type OrgFeatureFlags, type OrgFeatureKey } from '@cio/utils/constants/org-features';
+import type { OrgNavCountKey, OrgNavCounts } from '$features/ui/sidebar/org-sidebar/org-nav-counts.svelte';
 
 export interface NavItem {
   title: string;
@@ -41,6 +42,8 @@ export interface NavItem {
   isPaid?: boolean; // Show upgrade indicator for free plan users
   /** True when this item's plan-limited resource has hit its cap (drives the upgrade indicator). */
   upgrade?: boolean;
+  /** Total shown as a pill in the sidebar, resolved from org nav counts via `countKey`. */
+  count?: number;
   disabled?: boolean;
   // Metadata for breadcrumb generation
   useHashUrl?: boolean; // Use '#' as URL (for collapsible items like settings)
@@ -71,6 +74,8 @@ export interface NavItemConfig {
    * neither would have no landing page and no way to reach its own settings.
    */
   featureKey?: OrgFeatureKey;
+  /** When set, the org sidebar shows the matching total from org nav counts. */
+  countKey?: OrgNavCountKey;
 }
 
 export interface NavGroup {
@@ -149,6 +154,7 @@ export const baseNavConfig: NavItemConfig[] = [
     group: 'content',
     titleKey: 'org_navigation.courses',
     featureKey: 'courses',
+    countKey: 'courses',
     path: '/courses',
     icon: CourseIcon,
     matchPattern: '^/org/[^/]+/courses(/.*)?$' // Matches nested routes
@@ -157,6 +163,7 @@ export const baseNavConfig: NavItemConfig[] = [
     group: 'content',
     titleKey: 'org_navigation.cohorts',
     featureKey: 'cohorts',
+    countKey: 'cohorts',
     path: '/cohorts',
     icon: GoalIcon,
     matchPattern: '^/org/[^/]+/cohorts(/.*)?$'
@@ -165,6 +172,7 @@ export const baseNavConfig: NavItemConfig[] = [
     group: 'content',
     titleKey: 'org_navigation.media',
     featureKey: 'media',
+    countKey: 'media',
     path: '/media',
     icon: AttachmentIcon,
     matchPattern: '^/org/[^/]+/media(/.*)?$'
@@ -182,6 +190,7 @@ export const baseNavConfig: NavItemConfig[] = [
     group: 'content',
     titleKey: 'org_navigation.tags',
     featureKey: 'tags',
+    countKey: 'tags',
     path: '/tags',
     icon: TagIcon,
     requiresAdmin: true,
@@ -516,7 +525,8 @@ export function getOrgNavigationGroups(
   isOrgAdmin: boolean | null,
   t: (key: string) => string,
   pagePathname: string,
-  limitsReached: Partial<Record<PlanLimitResource, boolean>> = {}
+  limitsReached: Partial<Record<PlanLimitResource, boolean>> = {},
+  counts: OrgNavCounts | null = null
 ): NavGroup[] {
   const pathnameOnly = pagePathname.split('?')[0];
   const groupedMap = new Map<string | null, NavItem[]>();
@@ -568,7 +578,8 @@ export function getOrgNavigationGroups(
       nestedRoutes: config.nestedRoutes,
       supportsDynamicSegment: config.supportsDynamicSegment,
       isPaid: config.isPaid,
-      upgrade: config.upgradeResource ? Boolean(limitsReached[config.upgradeResource]) : undefined
+      upgrade: config.upgradeResource ? Boolean(limitsReached[config.upgradeResource]) : undefined,
+      count: config.countKey && counts ? counts[config.countKey] : undefined
     };
 
     if (visibleSubConfigs.length > 0) {

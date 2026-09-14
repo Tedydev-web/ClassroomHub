@@ -120,7 +120,7 @@ export function toAudienceBulkFilterQuery(query: OrganizationAudienceQuery) {
     completion: query.completion,
     lastLoginBefore: query.lastLoginBefore,
     lastActiveBefore: query.lastActiveBefore,
-    excludeRecentJoiners: String(query.excludeRecentJoiners),
+    excludeRecentJoiners: query.excludeRecentJoiners ? 'true' : 'false',
     search: query.search
   };
 }

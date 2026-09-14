@@ -29,7 +29,6 @@
         data-sidebar="upgrade-trigger"
         data-slot="upgrade-trigger"
         data-testid="org-sidebar-upgrade"
-        type="button"
         aria-label={upgradeAccessibleLabel}
         tooltipContent={upgradeAccessibleLabel}
         class="ui:bg-background h-10 rounded-md px-3 text-black shadow-sm dark:text-white"

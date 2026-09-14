@@ -2,11 +2,13 @@ import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
 import type { ExportDocument } from '@cio/utils/export';
 import type { AudienceBulkAction, AudienceExportRows } from '$features/org/utils/types';
 
+export type { AudienceExportRows } from '$features/org/utils/types';
+
 export type GetAudienceAnalyticsRequest = (typeof classroomhub.organization.audience)[':userId']['analytics']['$get'];
 export type GetAudienceAnalyticsSuccess = Extract<InferResponseType<GetAudienceAnalyticsRequest>, { success: true }>;
 export type AudienceAnalytics = GetAudienceAnalyticsSuccess['data'];
 export type AudienceAnalyticsCourse = AudienceAnalytics['courses'][number];
-export type AudienceAnalyticsExercise = AudienceAnalyticsCourse['exercises'][number];
+export type AudienceAnalyticsExercise = NonNullable<AudienceAnalyticsCourse['exercises']>[number];
 export type AudienceAnalyticsUser = AudienceAnalytics['user'];
 
 /** A single audience row in an export document, shared by the export builder and

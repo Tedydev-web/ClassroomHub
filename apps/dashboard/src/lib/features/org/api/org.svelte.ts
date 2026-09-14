@@ -59,7 +59,6 @@ import {
   toAudienceRequestQuery
 } from '../utils/audience-query-utils';
 import { resolveOrgJoinRedirect } from '../utils/org-join-redirect';
-import type { ZodError } from 'zod';
 
 const PUBLISHED_COURSES_ORDERING_LIMIT = 100;
 
@@ -460,7 +459,10 @@ class OrgApi extends BaseApiWithErrors {
     const updates: TUpdateOrganization = {
       ...fields,
       landingpage: fields.landingpage ?? undefined,
-      avatarUrl
+      avatarUrl,
+      // avatar/favicon are handled via avatarUrl above; the form field type still
+      // admits File, so pin them out of the update payload explicitly.
+      favicon: undefined
     };
 
     if (resolvedFavicon !== undefined) {

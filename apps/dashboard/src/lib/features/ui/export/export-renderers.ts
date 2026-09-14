@@ -59,7 +59,7 @@ export function downloadXlsx<Row>(doc: ExportDocument<Row>): void {
   const { head, body } = toExportMatrix(doc);
   const bytes = buildXlsx({ name: doc.title, head, body });
 
-  downloadBlob(new Blob([bytes], { type: XLSX_MIME_TYPE }), `${sanitizeExportFilename(doc.filename)}.xlsx`);
+  downloadBlob(new Blob([bytes as BlobPart], { type: XLSX_MIME_TYPE }), `${sanitizeExportFilename(doc.filename)}.xlsx`);
 }
 
 export async function downloadPdf<Row>(doc: ExportDocument<Row>): Promise<void> {

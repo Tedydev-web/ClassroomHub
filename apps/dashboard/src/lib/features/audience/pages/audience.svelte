@@ -158,6 +158,10 @@
   const totalCount = $derived(pagination?.total ?? 0);
   const selectablePageRows = $derived(orgApi.audience.filter((row) => row.profileId));
 
+  // "All matching" is a mode, not 12,000 ids in a Set. It resolves server-side
+  // from the same filters the list used.
+  let allMatchingSelected = $state(false);
+
   // "All matching" covers every row on this page by definition, so the boxes
   // have to show it. Without this the bar reads "all 31 selected" over a table
   // with one tick in it.
@@ -168,7 +172,6 @@
   const somePageSelected = $derived(
     !allMatchingSelected && selectablePageRows.some((row) => selectedIds.has(String(row.id))) && !allPageSelected
   );
-  const hasSelection = $derived(selectedIds.size > 0 || allMatchingSelected);
 
   // The selection bar's Copy and Export both need the rows behind the current
   // selection. Ticked rows win; "all matching" is a filter, so it falls back to
@@ -337,9 +340,6 @@
     void navigateAudience(clearAudienceFilters(query));
   }
 
-  // "All matching" is a mode, not 12,000 ids in a Set. It resolves server-side
-  // from the same filters the list used.
-  let allMatchingSelected = $state(false);
   let bulkAction = $state<AudienceBulkAction | null>(null);
   let bulkDialogOpen = $state(false);
   let bulkPreview = $state<BulkAudiencePreview | null>(null);
@@ -350,8 +350,6 @@
   // The run the API handed to the queue. The poll loop reads it to tell "still
   // mine" from "superseded".
   let queuedJobId = $state<string | null>(null);
-
-  const bulkTargetCount = $derived(allMatchingSelected ? totalCount : selectedIds.size);
 
   function clearSelection() {
     selectedIds.clear();
