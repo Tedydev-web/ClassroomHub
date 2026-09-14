@@ -17,6 +17,9 @@ import { onboardingRouter } from '@api/routes/onboarding';
 import { organizationRouter } from '@api/routes/organization';
 import { publicCourseRouter } from '@api/routes/org-site';
 import { ssoDiscoveryRouter } from '@api/routes/sso/discovery';
+import { examRouter } from '@api/routes/exam';
+import { transcriptsRouter } from '@api/routes/transcripts';
+import { unsplashRouter } from '@api/routes/unsplash/unsplash';
 
 const accountRpc = new Hono().route('/account', accountRouter);
 const agentRpc = new Hono().route('/agent', agentRouter);
@@ -35,6 +38,9 @@ const onboardingRpc = new Hono().route('/onboarding', onboardingRouter);
 const organizationRpc = new Hono().route('/organization', organizationRouter);
 const publicCourseRpc = new Hono().route('/org-site/course', publicCourseRouter);
 const ssoRpc = new Hono().route('/sso', ssoDiscoveryRouter);
+const examRpc = new Hono().route('/exam', examRouter);
+const transcriptsRpc = new Hono().route('/transcripts', transcriptsRouter);
+const unsplashRpc = new Hono().route('/unsplash', unsplashRouter);
 
 export type Client = ReturnType<typeof hc<typeof accountRpc>> &
   ReturnType<typeof hc<typeof agentRpc>> &
@@ -52,4 +58,7 @@ export type Client = ReturnType<typeof hc<typeof accountRpc>> &
   ReturnType<typeof hc<typeof onboardingRpc>> &
   ReturnType<typeof hc<typeof organizationRpc>> &
   ReturnType<typeof hc<typeof publicCourseRpc>> &
-  ReturnType<typeof hc<typeof ssoRpc>>;
+  ReturnType<typeof hc<typeof ssoRpc>> &
+  ReturnType<typeof hc<typeof examRpc>> &
+  ReturnType<typeof hc<typeof transcriptsRpc>> &
+  ReturnType<typeof hc<typeof unsplashRpc>>;
