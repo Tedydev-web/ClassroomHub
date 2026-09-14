@@ -11,18 +11,6 @@ on:
       - 'turbo.json'
       - '.nvmrc'
       - '.github/workflows/package-build-check.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/dashboard/**'
-      - 'apps/api/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - 'package.json'
-      - 'turbo.json'
-      - '.nvmrc'
-      - '.github/workflows/package-build-check.yml'
 
 permissions:
   contents: read
