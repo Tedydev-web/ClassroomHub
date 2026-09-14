@@ -95,6 +95,270 @@ import { scormRouter } from '@api/routes/organization/scorm';
 import { zValidator } from '@hono/zod-validator';
 import { ZGetRecommendedCourses } from '@cio/utils/validation/course';
 
+export const audienceRouter = new Hono()
+  /**
+   * GET /organization/audience
+   * Gets organization audience (students)
+   * Requires authentication
+   */
+  .get('/', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZGetAudienceQuery), async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const query = c.req.valid('query');
+      const audience = await getOrgAudience(orgId, query);
+
+      return c.json(
+        {
+          success: true,
+          data: audience.items,
+          pagination: audience.pagination,
+          query: audience.query
+        },
+        200
+      );
+    } catch (error) {
+      return handleError(c, error, 'Failed to fetch organization audience');
+    }
+  })
+  /**
+   * GET /organization/audience/export
+   * Every row matching the scope, for a client-side export. Not paginated —
+   * the caller builds the file in the browser, so it needs the whole set.
+   */
+  .get('/export', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZAudienceExportQuery), async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const query = c.req.valid('query');
+      const rows = await getAudienceExportRows(orgId, query);
+
+      return c.json({ success: true, data: rows }, 200);
+    } catch (error) {
+      return handleError(c, error, 'Failed to build audience export');
+    }
+  })
+  /**
+   * GET /organization/audience/bulk-preview
+   * Exact count, target hash and sample for a filter-mode bulk action.
+   * The hash is what the apply step verifies the admin actually reviewed.
+   */
+  .get(
+    '/bulk-preview',
+    authMiddleware,
+    orgAdminMiddleware,
+    zValidator('query', ZGetAudienceQuery.omit({ page: true, limit: true, sortBy: true, sortOrder: true })),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const filter = c.req.valid('query');
+        const preview = await previewBulkAudienceAction(orgId, filter);
+
+        return c.json({ success: true, data: preview }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to preview bulk action');
+      }
+    }
+  )
+  /**
+   * POST /organization/audience/bulk-action
+   * Applies a lifecycle action to a selection or to everyone matching a filter.
+   */
+  .post('/bulk-action', authMiddleware, orgAdminMiddleware, zValidator('json', ZBulkAudienceAction), async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const user = c.get('user')!;
+      const data = c.req.valid('json');
+      const result = await applyBulkAudienceAction(orgId, data, user.id);
+
+      return c.json({ success: true, data: result }, 200);
+    } catch (error) {
+      return handleError(c, error, 'Failed to apply bulk action');
+    }
+  })
+  /**
+   * GET /organization/audience/bulk-action/:jobId
+   * Status of a queued bulk action. Declared before `/audience/:userId/analytics`
+   * so a numeric job id cannot be read as a user id.
+   */
+  .get('/bulk-action/:jobId', authMiddleware, orgAdminMiddleware, async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const jobId = c.req.param('jobId');
+      const pollCount = Number(c.req.query('pollCount') ?? 0);
+      const envelope = await getBulkAudienceActionStatus(orgId, jobId, Number.isFinite(pollCount) ? pollCount : 0);
+
+      return c.json({ success: true, data: envelope }, 200);
+    } catch (error) {
+      return handleError(c, error, 'Failed to read bulk action status');
+    }
+  })
+  /**
+   * POST /organization/audience/bulk-action/undo
+   * Reverses a bulk action across exactly the members it changed.
+   */
+  .post(
+    '/bulk-action/undo',
+    authMiddleware,
+    orgAdminMiddleware,
+    zValidator('json', ZUndoBulkAudienceAction),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const user = c.get('user')!;
+        const { undoToken } = c.req.valid('json');
+        const result = await undoBulkAudienceAction(orgId, undoToken, user.id);
+
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to undo bulk action');
+      }
+    }
+  )
+  /**
+   * DELETE /organization/audience/:memberId
+   * Removes a student from the organization
+   */
+  .delete('/:memberId', authMiddleware, orgAdminMiddleware, zValidator('param', ZRemoveTeamMember), async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const user = c.get('user')!;
+      const { memberId } = c.req.valid('param');
+
+      const deleted = await removeAudienceMember(orgId, memberId, user.id);
+
+      return c.json(
+        {
+          success: true,
+          data: deleted
+        },
+        200
+      );
+    } catch (error) {
+      return handleError(c, error, 'Failed to remove audience member');
+    }
+  })
+  /**
+   * POST /organization/audience/resend-invite
+   * Resends a student org invite email (new token; optional course metadata from last invite)
+   */
+  .post(
+    '/resend-invite',
+    authMiddleware,
+    orgTeamMemberMiddleware,
+    zValidator('json', ZAudienceInviteByEmail),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const user = c.get('user')!;
+        const data = c.req.valid('json');
+        const result = await resendAudienceInvite(orgId, data, user.id);
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to resend audience invite');
+      }
+    }
+  )
+  /**
+   * POST /organization/audience/revoke-invite
+   * Revokes an active (non-expired) pending student org invite
+   */
+  .post(
+    '/revoke-invite',
+    authMiddleware,
+    orgTeamMemberMiddleware,
+    zValidator('json', ZAudienceInviteByEmail),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const user = c.get('user')!;
+        const data = c.req.valid('json');
+        const result = await revokeAudiencePendingInvite(orgId, data, user.id);
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to revoke audience invite');
+      }
+    }
+  )
+  /**
+   * GET /organization/audience/:userId/analytics
+   * Gets user analytics for a specific user in an organization
+   * Requires authentication and organization membership
+   */
+  .get(
+    '/:userId/analytics',
+    authMiddleware,
+    orgTeamMemberMiddleware,
+    zValidator('param', ZGetUserAnalytics),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const { userId } = c.req.valid('param');
+        const analytics = await getUserAnalytics(userId, orgId);
+
+        return c.json(
+          {
+            success: true,
+            data: analytics
+          },
+          200
+        );
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch user analytics');
+      }
+    }
+  )
+  /**
+   * POST /organization/audience/import
+   * Imports users into the organization as students with optional course assignment
+   * Requires authentication and admin role
+   */
+  .post('/import', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZImportAudienceMembers), async (c) => {
+    try {
+      const orgId = c.req.header('cio-org-id')!;
+      const user = c.get('user')!;
+      const data = c.req.valid('json');
+
+      const result = await importAudienceMembers(orgId, data, user.id);
+
+      return c.json(
+        {
+          success: true,
+          data: result
+        },
+        201
+      );
+    } catch (error) {
+      return handleError(c, error, 'Failed to import audience members');
+    }
+  })
+  /**
+   * POST /organization/audience/assign-courses
+   * Assigns existing audience members to one or more courses
+   * Requires authentication and admin role
+   */
+  .post(
+    '/assign-courses',
+    authMiddleware,
+    orgTeamMemberMiddleware,
+    zValidator('json', ZAssignAudienceCourses),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const data = c.req.valid('json');
+
+        const result = await assignAudienceToCourses(orgId, data);
+
+        return c.json(
+          {
+            success: true,
+            data: result
+          },
+          200
+        );
+      } catch (error) {
+        return handleError(c, error, 'Failed to assign audience to courses');
+      }
+    }
+  );
 export const organizationRouter = new Hono()
   /**
    * GET /organization
@@ -270,234 +534,6 @@ export const organizationRouter = new Hono()
       return handleError(c, error, 'Failed to remove team member');
     }
   })
-  /**
-   * GET /organization/audience
-   * Gets organization audience (students)
-   * Requires authentication
-   */
-  .get('/audience', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZGetAudienceQuery), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const query = c.req.valid('query');
-      const audience = await getOrgAudience(orgId, query);
-
-      return c.json(
-        {
-          success: true,
-          data: audience.items,
-          pagination: audience.pagination,
-          query: audience.query
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch organization audience');
-    }
-  })
-  /**
-   * GET /organization/audience/export
-   * Every row matching the scope, for a client-side export. Not paginated —
-   * the caller builds the file in the browser, so it needs the whole set.
-   */
-  .get(
-    '/audience/export',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('query', ZAudienceExportQuery),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const query = c.req.valid('query');
-        const rows = await getAudienceExportRows(orgId, query);
-
-        return c.json({ success: true, data: rows }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to build audience export');
-      }
-    }
-  )
-  /**
-   * GET /organization/audience/bulk-preview
-   * Exact count, target hash and sample for a filter-mode bulk action.
-   * The hash is what the apply step verifies the admin actually reviewed.
-   */
-  .get(
-    '/audience/bulk-preview',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('query', ZGetAudienceQuery.omit({ page: true, limit: true, sortBy: true, sortOrder: true })),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const filter = c.req.valid('query');
-        const preview = await previewBulkAudienceAction(orgId, filter);
-
-        return c.json({ success: true, data: preview }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to preview bulk action');
-      }
-    }
-  )
-  /**
-   * POST /organization/audience/bulk-action
-   * Applies a lifecycle action to a selection or to everyone matching a filter.
-   */
-  .post(
-    '/audience/bulk-action',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('json', ZBulkAudienceAction),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const data = c.req.valid('json');
-        const result = await applyBulkAudienceAction(orgId, data, user.id);
-
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to apply bulk action');
-      }
-    }
-  )
-  /**
-   * GET /organization/audience/bulk-action/:jobId
-   * Status of a queued bulk action. Declared before `/audience/:userId/analytics`
-   * so a numeric job id cannot be read as a user id.
-   */
-  .get('/audience/bulk-action/:jobId', authMiddleware, orgAdminMiddleware, async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const jobId = c.req.param('jobId');
-      const pollCount = Number(c.req.query('pollCount') ?? 0);
-      const envelope = await getBulkAudienceActionStatus(orgId, jobId, Number.isFinite(pollCount) ? pollCount : 0);
-
-      return c.json({ success: true, data: envelope }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to read bulk action status');
-    }
-  })
-  /**
-   * POST /organization/audience/bulk-action/undo
-   * Reverses a bulk action across exactly the members it changed.
-   */
-  .post(
-    '/audience/bulk-action/undo',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('json', ZUndoBulkAudienceAction),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const { undoToken } = c.req.valid('json');
-        const result = await undoBulkAudienceAction(orgId, undoToken, user.id);
-
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to undo bulk action');
-      }
-    }
-  )
-  /**
-   * DELETE /organization/audience/:memberId
-   * Removes a student from the organization
-   */
-  .delete(
-    '/audience/:memberId',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('param', ZRemoveTeamMember),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const { memberId } = c.req.valid('param');
-
-        const deleted = await removeAudienceMember(orgId, memberId, user.id);
-
-        return c.json(
-          {
-            success: true,
-            data: deleted
-          },
-          200
-        );
-      } catch (error) {
-        return handleError(c, error, 'Failed to remove audience member');
-      }
-    }
-  )
-  /**
-   * POST /organization/audience/resend-invite
-   * Resends a student org invite email (new token; optional course metadata from last invite)
-   */
-  .post(
-    '/audience/resend-invite',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('json', ZAudienceInviteByEmail),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const data = c.req.valid('json');
-        const result = await resendAudienceInvite(orgId, data, user.id);
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to resend audience invite');
-      }
-    }
-  )
-  /**
-   * POST /organization/audience/revoke-invite
-   * Revokes an active (non-expired) pending student org invite
-   */
-  .post(
-    '/audience/revoke-invite',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('json', ZAudienceInviteByEmail),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const data = c.req.valid('json');
-        const result = await revokeAudiencePendingInvite(orgId, data, user.id);
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to revoke audience invite');
-      }
-    }
-  )
-  /**
-   * GET /organization/audience/:userId/analytics
-   * Gets user analytics for a specific user in an organization
-   * Requires authentication and organization membership
-   */
-  .get(
-    '/audience/:userId/analytics',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('param', ZGetUserAnalytics),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const { userId } = c.req.valid('param');
-        const analytics = await getUserAnalytics(userId, orgId);
-
-        return c.json(
-          {
-            success: true,
-            data: analytics
-          },
-          200
-        );
-      } catch (error) {
-        return handleError(c, error, 'Failed to fetch user analytics');
-      }
-    }
-  )
   /**
    * GET /organization/courses/public
    * Gets published courses for an organization (public landing page)
@@ -904,65 +940,7 @@ export const organizationRouter = new Hono()
       return handleError(c, error, 'Failed to fetch LMS exercises');
     }
   })
-  /**
-   * POST /organization/audience/import
-   * Imports users into the organization as students with optional course assignment
-   * Requires authentication and admin role
-   */
-  .post(
-    '/audience/import',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('json', ZImportAudienceMembers),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const data = c.req.valid('json');
-
-        const result = await importAudienceMembers(orgId, data, user.id);
-
-        return c.json(
-          {
-            success: true,
-            data: result
-          },
-          201
-        );
-      } catch (error) {
-        return handleError(c, error, 'Failed to import audience members');
-      }
-    }
-  )
-  /**
-   * POST /organization/audience/assign-courses
-   * Assigns existing audience members to one or more courses
-   * Requires authentication and admin role
-   */
-  .post(
-    '/audience/assign-courses',
-    authMiddleware,
-    orgTeamMemberMiddleware,
-    zValidator('json', ZAssignAudienceCourses),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const data = c.req.valid('json');
-
-        const result = await assignAudienceToCourses(orgId, data);
-
-        return c.json(
-          {
-            success: true,
-            data: result
-          },
-          200
-        );
-      } catch (error) {
-        return handleError(c, error, 'Failed to assign audience to courses');
-      }
-    }
-  )
+  .route('/audience', audienceRouter)
   .route('/automation', automationRouter)
   .route('/course-import', courseImportRouter)
   .route('/search', searchRouter)
