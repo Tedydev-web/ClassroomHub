@@ -1,7 +1,7 @@
 import type { CourseContentItem, CourseMembers } from '$features/course/utils/types';
 import type { Marks } from './types';
 import { ContentType } from '@cio/utils/constants/content';
-import Papa from 'papaparse';
+import type { ExportColumn, ExportDocument } from '@cio/utils/export';
 
 /** Exercise information for display in marks table (linear, no lesson grouping) */
 export interface ExerciseInfo {
@@ -10,22 +10,17 @@ export interface ExerciseInfo {
   points: number;
 }
 
-export interface GradebookMark {
-  score: string;
-  maxPoints: number;
-}
-
-/** Maps groupMemberId -> exerciseId -> selected completed attempt. */
+/** Maps groupMemberId -> exerciseId -> points obtained (as string) */
 export type StudentMarksByExercise = {
   [groupMemberId: string]: {
-    [exerciseId: string]: GradebookMark;
+    [exerciseId: string]: string;
   };
 };
 
 /** Student's exercise data for calculating totals */
 export type StudentExerciseData =
   | {
-      [exerciseId: string]: GradebookMark;
+      [exerciseId: string]: string;
     }
   | undefined;
 
@@ -44,10 +39,8 @@ export interface MarksPageData {
 export function calculateStudentTotal(studentExerciseData: StudentExerciseData): number {
   if (!studentExerciseData) return 0;
 
-  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
-  return Object.values(studentExerciseData).reduce((total: number, mark) => {
-    const points = Number(mark.score);
-    return total + (Number.isFinite(points) ? points : 0);
+  return Object.values(studentExerciseData).reduce((total: number, point) => {
+    return (total += parseInt(point as string, 10));
   }, 0);
 }
 
@@ -62,33 +55,13 @@ export function calculateStudentAverage(
   exercises: ExerciseInfo[]
 ): number | null {
   if (!studentExerciseData || exercises.length === 0) return null;
-  const totalPossible = exercises.reduce((sum, exercise) => {
-    const mark = studentExerciseData[exercise.id];
-    const maxPoints = mark?.maxPoints ?? exercise.points;
-    return sum + (Number.isFinite(maxPoints) && maxPoints > 0 ? maxPoints : 0);
-  }, 0);
+  const totalPossible = exercises.reduce((sum, ex) => sum + ex.points, 0);
   if (totalPossible === 0) return null;
-  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
-  const totalEarned = exercises.reduce((sum, exercise) => {
-    const points = Number(studentExerciseData[exercise.id]?.score);
-    return sum + (Number.isFinite(points) ? points : 0);
+  const totalEarned = exercises.reduce((sum, ex) => {
+    const pts = studentExerciseData[ex.id];
+    return sum + (pts != null ? parseInt(pts, 10) : 0);
   }, 0);
   return Math.round((totalEarned / totalPossible) * 100);
-}
-
-/**
- * Percentage for a single gradebook cell using its immutable attempted maximum.
- * @param mark Selected completed attempt returned by the gradebook API
- * @returns Rounded percentage, or null when the score or maximum is unusable
- */
-export function gradePercent(mark: GradebookMark | undefined): number | null {
-  if (!mark || !Number.isFinite(mark.maxPoints) || mark.maxPoints <= 0) return null;
-
-  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
-  const points = Number(mark.score);
-  if (!Number.isFinite(points)) return null;
-
-  return Math.round((points / mark.maxPoints) * 100);
 }
 
 /**
@@ -102,23 +75,18 @@ export function processMarksIntoStudentMarksByExerciseId(marks: Marks): StudentM
   if (!Array.isArray(marks)) return result;
 
   marks.forEach((mark) => {
-    const { exerciseId, exercisePoints, groupmemberId, totalPointsGotten } = mark;
+    const { groupmemberId, exerciseId, totalPointsGotten } = mark;
 
     if (!groupmemberId || !exerciseId) return;
-
-    const gradebookMark = {
-      score: totalPointsGotten?.toString() || '0',
-      maxPoints: exercisePoints
-    };
 
     if (result[groupmemberId]) {
       result[groupmemberId] = {
         ...result[groupmemberId],
-        [exerciseId]: gradebookMark
+        [exerciseId]: totalPointsGotten?.toString() || '0'
       };
     } else {
       result[groupmemberId] = {
-        [exerciseId]: gradebookMark
+        [exerciseId]: totalPointsGotten?.toString() || '0'
       };
     }
   });
@@ -134,21 +102,17 @@ export function processMarksIntoStudentMarksByExerciseId(marks: Marks): StudentM
  * @returns Ordered ExerciseInfo[] (exercise id, title, points)
  */
 export function processMarksIntoExercises(marks: Marks, contentItems: CourseContentItem[]): ExerciseInfo[] {
-  // Header points come from `activeExercisePoints` (identical on every row of an
-  // exercise), never from a row's historical `exercisePoints`: after a question is
-  // archived, submission rows carry diverging historical maxima and first-row-wins
-  // would show an arbitrary student's denominator in the column header.
   const marksByExerciseId = new Map<string, { title: string; points: number }>();
   const exerciseOrder: string[] = [];
   if (Array.isArray(marks)) {
     marks.forEach((mark) => {
-      const { exerciseId, exerciseTitle, activeExercisePoints } = mark;
+      const { exerciseId, exerciseTitle, exercisePoints } = mark;
       if (!exerciseId) return;
       if (!marksByExerciseId.has(exerciseId)) {
         exerciseOrder.push(exerciseId);
         marksByExerciseId.set(exerciseId, {
           title: exerciseTitle || '',
-          points: activeExercisePoints ?? 0
+          points: exercisePoints ?? 0
         });
       }
     });
@@ -178,92 +142,38 @@ export function processMarksIntoExercises(marks: Marks, contentItems: CourseCont
 }
 
 /**
- * Generate and download CSV export of marks (student by exercise + avg grade)
- * @param students Array of students
- * @param exercises Ordered exercises
- * @param studentMarksByExerciseId Student marks by exercise
- * @param courseTitle Course title for filename
+ * Describes the marks table as a shared `ExportDocument`.
+ *
+ * Replaces the one-off CSV and PDF generators that used to live here: both
+ * renderings now come from one column definition, so a formatting change cannot
+ * apply to one format and not the other.
  */
-export function generateMarksCSV(
+export function buildMarksExportDocument(
   students: CourseMembers,
   exercises: ExerciseInfo[],
   studentMarksByExerciseId: StudentMarksByExercise,
-  courseTitle: string
-): void {
-  const exportData = students.map((student) => {
-    const marks = studentMarksByExerciseId[student.id] || {};
-    const rowData: Record<string, string | number> = {
-      name: student.profile?.fullname || '',
-      email: student.profile?.email || ''
-    };
-    exercises.forEach((ex) => {
-      rowData[ex.title] = marks[ex.id]?.score ?? '-';
-    });
-    const avg = calculateStudentAverage(marks, exercises);
-    rowData['Avg grade'] = avg != null ? avg : '-';
-    return rowData;
-  });
+  courseTitle: string,
+  headers: { name: string; email: string; averageGrade: string }
+): ExportDocument<CourseMembers[number]> {
+  const exerciseColumns: ExportColumn<CourseMembers[number]>[] = exercises.map((exercise) => ({
+    key: exercise.id,
+    header: exercise.title,
+    value: (student) => studentMarksByExerciseId[student.id]?.[exercise.id] ?? null
+  }));
 
-  const csv = Papa.unparse(exportData);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `${courseTitle}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-/**
- * Generate and download PDF export of marks (student by exercise + avg grade)
- * @param students Array of students
- * @param exercises Ordered exercises
- * @param studentMarksByExerciseId Student marks by exercise
- * @param courseTitle Course title for filename and header
- */
-export async function generateMarksPDF(
-  students: CourseMembers,
-  exercises: ExerciseInfo[],
-  studentMarksByExerciseId: StudentMarksByExercise,
-  courseTitle: string
-): Promise<void> {
-  try {
-    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
-      import('jspdf'),
-      import('jspdf-autotable')
-    ]);
-
-    const doc = new jsPDF({ orientation: 'landscape' });
-    const head = [['Student', ...exercises.map((ex) => ex.title), 'Avg grade']];
-
-    const body = students.map((student) => {
-      const marks = studentMarksByExerciseId[student.id] || {};
-      const row: string[] = [student?.profile?.fullname ?? ''];
-      exercises.forEach((ex) => {
-        row.push(marks[ex.id]?.score ?? '-');
-      });
-      const avg = calculateStudentAverage(marks, exercises);
-      row.push(avg != null ? String(avg) : '-');
-      return row;
-    });
-
-    autoTable(doc, {
-      head,
-      body,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [22, 160, 133] },
-      footStyles: { fillColor: [22, 160, 133] },
-      didDrawPage: function (data) {
-        doc.setFontSize(14);
-        doc.setTextColor(40);
-        doc.text(`${courseTitle} - Marks`, data.settings.margin.left, 10);
+  return {
+    filename: `${courseTitle}-marks`,
+    title: `${courseTitle} — ${headers.averageGrade}`,
+    columns: [
+      { key: 'name', header: headers.name, value: (student) => student.profile?.fullname ?? '' },
+      { key: 'email', header: headers.email, value: (student) => student.profile?.email ?? '' },
+      ...exerciseColumns,
+      {
+        key: 'average',
+        header: headers.averageGrade,
+        value: (student) => calculateStudentAverage(studentMarksByExerciseId[student.id] || {}, exercises)
       }
-    });
-    doc.save(`${courseTitle}-marks.pdf`);
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw error;
-  }
+    ],
+    rows: students
+  };
 }

@@ -2,6 +2,7 @@ import './bootstrap';
 
 import './workers/media';
 import './workers/media-transcribe';
+import './workers/youtube-captions';
 import './workers/emails';
 import './workers/notifications';
 import './workers/webhooks';
@@ -20,6 +21,7 @@ log.info('all-workers-running', {
     'webhooks',
     'maintenance',
     'agent-course-generation',
-    'exam-import'
+    'exam-import',
+    'youtube-captions'
   ]
 });

@@ -51,6 +51,7 @@ import { getAssetHlsManifestLink, isHlsAsset, mapAssetToLessonVideo } from '../u
 import type { AttachAssetRequest } from '../utils/types';
 import type { DetachAssetRequest } from '../utils/types';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
+import { orgNavCountsApi } from '$features/ui/sidebar/org-sidebar/org-nav-counts.svelte';
 import { snackbar } from '$features/ui/snackbar/store';
 import type { StartAssetTranscriptionRequest } from '$features/jobs/utils/types';
 
@@ -160,7 +161,7 @@ export class MediaApi extends BaseApiWithErrors {
     let metadata: VimeoMetadata | null = null;
     await this.execute<GetVimeoMetadataRequest>({
       requestFn: () =>
-        classroomio.organization.assets['vimeo-metadata'].$get({
+        classroomhub.organization.assets['vimeo-metadata'].$get({
           query: result.data
         }),
       logContext: 'resolving Vimeo metadata',
@@ -193,6 +194,7 @@ export class MediaApi extends BaseApiWithErrors {
       logContext: 'creating media asset',
       onSuccess: (response) => {
         asset = response.data;
+        orgNavCountsApi.adjustCount('media', 1);
       },
       onError: () => {
         snackbar.error('snackbar.media_manager.create_failed');
@@ -223,12 +225,13 @@ export class MediaApi extends BaseApiWithErrors {
     let createdData: CreateAndAttachAssetData | null = null;
     await this.execute<CreateAndAttachAssetRequest>({
       requestFn: () =>
-        classroomio.organization.assets['create-and-attach'].$post({
+        classroomhub.organization.assets['create-and-attach'].$post({
           json: result.data
         }),
       logContext: 'creating and attaching media asset',
       onSuccess: (response) => {
         createdData = response.data;
+        orgNavCountsApi.adjustCount('media', 1);
       },
       onError: () => {
         snackbar.error('snackbar.media_manager.create_failed');
@@ -354,6 +357,7 @@ export class MediaApi extends BaseApiWithErrors {
       onSuccess: () => {
         deleted = true;
         this.assets = this.assets.filter((asset) => asset.id !== assetId);
+        orgNavCountsApi.adjustCount('media', -1);
         snackbar.success('snackbar.media_manager.delete_success');
       },
       onError: (error) => {

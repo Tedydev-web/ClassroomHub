@@ -25,3 +25,4 @@ export * from './webhook';
 export * from './scorm';
 export * from './admin';
 export * from './invite-link';
+export * from './youtube-caption';

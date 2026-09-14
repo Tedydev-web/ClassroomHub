@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ClassroomHub API",
-    "description": "# Authentication\n\nAll public API endpoints require an **organization-scoped API key** sent as a Bearer token.\n\n## Get an API key\n\n1. Sign in to [ClassroomHub](https://hub.classroom.io.vn) as an **organization admin**.\n2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://hub.classroom.io.vn/org/*/api) — `*` picks your current organization automatically).\n3. Click **Generate API key** and copy the secret immediately (it is shown only once).\n4. Keys look like `cio_api_...` and include the `public_api:*` scope.\n\n## Send requests\n\nAdd the key to every request:\n\n```\nAuthorization: Bearer cio_api_your_key_here\n```\n\nBase URL: `https://api.classroom.io.vn/public-api/v1`\n\n## Try requests in this reference\n\nUse the **Authorize** button (lock icon) on this page, choose **bearerAuth**, paste your full API key, then run **Try it** on any endpoint.\n\n## Plan access\n\nOn ClassroomHub Cloud, API keys are available on **Early Adopter** and **Enterprise** plans. Self-hosted deployments require **Enterprise**.\n",
+    "description": "Use the ClassroomHub public API to manage audience members and courses with organization-scoped API keys.\n\n# Authentication\n\nAll public API endpoints require an **organization-scoped API key** sent as a Bearer token.\n\n## Get an API key\n\n1. Sign in to [ClassroomHub](https://hub.classroom.io.vn) as an **organization admin**.\n2. In the org sidebar, open the **Automation** section, then **API** ([/org/*/api](https://hub.classroom.io.vn/org/*/api) — `*` picks your current organization automatically).\n3. Click **Generate API key** and copy the secret immediately (it is shown only once).\n4. Keys look like `cio_api_...` and include the `public_api:*` scope.\n\n## Send requests\n\nAdd the key to every request:\n\n```\nAuthorization: Bearer cio_api_your_key_here\n```\n\nBase URL: `https://api.classroom.io.vn/public-api/v1`\n\n## Try requests in this reference\n\nUse the **Authorize** button (lock icon) on this page, choose **bearerAuth**, paste your full API key, then run **Try it** on any endpoint.\n\n## Rate limits\n\nRequests to this API are rate limited per API key: **100 requests per minute** per key. A separate API key has its own budget, so traffic from one key does not affect another. Requests over the limit receive a `429 Too Many Requests` response with a `Retry-After` header.\n\nTwo caveats to be aware of:\n\n- Rate limiting is only enforced when the API runs with NODE_ENV=production; it is disabled in development and test environments. This applies regardless of hosting a self-hosted production deployment with Redis available does enforce the per-key budget.\n- If the shared Redis store is unavailable, requests are served without rate limiting (fail open).\n\n## Plan access\n\nAPI key creation is enabled in self-owned deployments. Hosted deployments follow the configured plan entitlements.\n\n# HTTP methods\n\nThe public API uses standard HTTP verbs:\n\n| Method | Use | Example |\n| --- | --- | --- |\n| `GET` | Fetch a resource or list | `GET /public-api/v1/courses` |\n| `POST` | Create a resource | `POST /public-api/v1/audience` |\n| `PUT` | Replace or update a resource | `PUT /public-api/v1/courses/{courseId}` |\n| `DELETE` | Remove a resource | `DELETE /public-api/v1/audience/{memberId}` |\n\n# Pagination\n\nList endpoints (`GET /courses`, `GET /audience`) accept:\n\n| Param | Type | Default | Notes |\n| --- | --- | --- | --- |\n| `page` | integer | `1` | 1-indexed |\n| `limit` | integer | `20` | Maximum `100` |\n\nResponses wrap results in a shared shape:\n\n```json\n{\n  \"success\": true,\n  \"data\": [],\n  \"pagination\": { \"page\": 1, \"limit\": 20, \"total\": 42, \"totalPages\": 3 },\n  \"query\": { \"page\": 1, \"limit\": 20 }\n}\n```\n\n`pagination` reports the actual result set; `query` echoes back the resolved request parameters (including any filters, e.g. `search` or `tags`).\n\n# Rate limiting\n\nRequests are limited **per API key**: 100 requests per minute. Every response includes:\n\n| Header | Meaning |\n| --- | --- |\n| `X-RateLimit-Limit` | Requests allowed in the current window |\n| `X-RateLimit-Remaining` | Requests left in the current window |\n| `X-RateLimit-Reset` | When the current window resets |\n\nExceeding the limit returns `429` with a `Retry-After` header (seconds until you can retry).\n\n# Errors\n\nFailed requests return:\n\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable message\",\n  \"code\": \"MACHINE_READABLE_CODE\",\n  \"field\": \"optional.field.path\"\n}\n```\n\n`field` is only present for validation errors that can be traced to a specific input.\n\n| Status | Meaning |\n| --- | --- |\n| `400` | Invalid request body or query: `code` is `VALIDATION_ERROR`, `field` identifies the offending input when known |\n| `401` | Missing or invalid API key |\n| `403` | The key is missing a required scope, or the organization's plan doesn't allow public API access |\n| `404` | The requested resource doesn't exist (or doesn't belong to your organization) |\n| `429` | Rate limit exceeded. See [Rate limiting](#rate-limiting): this response uses a different body, `{ \"error\": \"Too Many Requests\", \"message\": \"...\", \"retryAfter\": 42 }`, not the shape above |\n| `500` | Unexpected server error |\n",
     "version": "1.0.0",
     "contact": {
       "name": "ClassroomHub",
@@ -17,6 +17,16 @@
     {
       "url": "http://localhost:8001",
       "description": "Development environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Public API Audience",
+      "description": "Manage your organization's audience — invite, assign to courses, update, and remove members."
+    },
+    {
+      "name": "Public API Courses",
+      "description": "Create and manage courses, read their structure, and list enrolled students."
     }
   ],
   "paths": {
@@ -126,7 +136,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "List audience members"
       },
       "post": {
         "operationId": "postPublic-apiV1Audience",
@@ -202,7 +213,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Invite an audience member"
       }
     },
     "/public-api/v1/audience/assign-courses": {
@@ -293,7 +305,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Assign members to courses"
       }
     },
     "/public-api/v1/audience/{memberId}": {
@@ -352,7 +365,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Get an audience member"
       },
       "delete": {
         "operationId": "deletePublic-apiV1Audience:memberId",
@@ -409,7 +423,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Remove an audience member"
       },
       "put": {
         "operationId": "putPublic-apiV1Audience:memberId",
@@ -492,7 +507,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Update a member's email"
       }
     },
     "/public-api/v1/courses": {
@@ -518,11 +534,57 @@
                       "items": {
                         "type": "object"
                       }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "total": {
+                          "type": "number"
+                        },
+                        "totalPages": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "limit",
+                        "total",
+                        "totalPages"
+                      ]
+                    },
+                    "query": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "search": {
+                          "type": "string"
+                        },
+                        "tags": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "limit"
+                      ]
                     }
                   },
                   "required": [
                     "success",
-                    "data"
+                    "data",
+                    "pagination",
+                    "query"
                   ]
                 }
               }
@@ -538,6 +600,33 @@
         "parameters": [
           {
             "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "tags",
             "schema": {
               "type": "string"
@@ -548,7 +637,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "List courses"
       },
       "post": {
         "operationId": "postPublic-apiV1Courses",
@@ -701,7 +791,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Create a course"
       }
     },
     "/public-api/v1/courses/{courseId}/students": {
@@ -763,7 +854,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "List course students"
       }
     },
     "/public-api/v1/courses/{courseId}/export": {
@@ -822,7 +914,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Export course structure"
       }
     },
     "/public-api/v1/courses/{courseId}/structure": {
@@ -881,7 +974,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Get course structure"
       },
       "put": {
         "operationId": "putPublic-apiV1Courses:courseIdStructure",
@@ -1031,6 +1125,9 @@
                               },
                               "discount": {
                                 "type": "number"
+                              },
+                              "paymentEnabled": {
+                                "type": "boolean"
                               },
                               "paymentLink": {
                                 "type": "string"
@@ -1183,8 +1280,10 @@
                               "lessonDownload": {
                                 "type": "boolean"
                               },
+                              "allowSelfEnrollment": {
+                                "type": "boolean"
+                              },
                               "allowNewStudent": {
-                                "default": true,
                                 "type": "boolean"
                               },
                               "welcomeEmailMessage": {
@@ -1227,6 +1326,9 @@
                                   "free",
                                   "sequential"
                                 ]
+                              },
+                              "commentsEnabled": {
+                                "type": "boolean"
                               }
                             }
                           },
@@ -1611,7 +1713,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Sync course structure"
       }
     },
     "/public-api/v1/courses/{courseId}": {
@@ -1670,7 +1773,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Get a course"
       },
       "put": {
         "operationId": "putPublic-apiV1Courses:courseId",
@@ -1784,6 +1888,9 @@
                       },
                       "discount": {
                         "type": "number"
+                      },
+                      "paymentEnabled": {
+                        "type": "boolean"
                       },
                       "paymentLink": {
                         "type": "string"
@@ -1936,8 +2043,10 @@
                       "lessonDownload": {
                         "type": "boolean"
                       },
+                      "allowSelfEnrollment": {
+                        "type": "boolean"
+                      },
                       "allowNewStudent": {
-                        "default": true,
                         "type": "boolean"
                       },
                       "welcomeEmailMessage": {
@@ -1980,6 +2089,9 @@
                           "free",
                           "sequential"
                         ]
+                      },
+                      "commentsEnabled": {
+                        "type": "boolean"
                       }
                     }
                   },
@@ -2274,7 +2386,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Update a course"
       },
       "delete": {
         "operationId": "deletePublic-apiV1Courses:courseId",
@@ -2331,7 +2444,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "summary": "Delete a course"
       }
     }
   },

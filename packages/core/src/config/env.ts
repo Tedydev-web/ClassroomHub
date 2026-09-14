@@ -125,7 +125,11 @@ const envSchema = z.object({
   /** Optional allowlisted model pin validated for exam-import structured output. */
   EXAM_IMPORT_AI_MODEL: z.string().optional(),
   /** Optional allowlisted vision model pin validated for scanned exam transcription. */
-  EXAM_IMPORT_VISION_MODEL: z.string().optional()
+  EXAM_IMPORT_VISION_MODEL: z.string().optional(),
+  /** Supadata API key for YouTube caption fetching. Leave unset to disable YouTube transcripts. */
+  SUPADATA_API_KEY: z.string().optional(),
+  /** YouTube caption provider identifier (default 'supadata'). */
+  YOUTUBE_CAPTION_PROVIDER: z.string().optional()
 });
 
 export const env = envSchema.parse(process.env);

@@ -36,8 +36,15 @@ export interface Mark {
  * @param courseId Course ID
  * @returns Array of mark records
  */
-export async function getMarksByCourseId(courseId: string): Promise<Mark[]> {
+export async function getMarksByCourseId(courseId: string, submittedBy?: string): Promise<Mark[]> {
   try {
+    // Scope the submission join to one learner when asked, so the marks page shows a
+    // student only their own scores rather than the whole class's (upstream #1102). When
+    // omitted the join is by exercise alone, which is the gradebook's whole-class view.
+    const submissionJoin = submittedBy
+      ? and(eq(schema.exercise.id, schema.submission.exerciseId), eq(schema.submission.submittedBy, submittedBy))
+      : eq(schema.exercise.id, schema.submission.exerciseId);
+
     // Submission rows keep the denominator they were attempted against; only
     // submission-less rows show the live active maximum. Decimals are preserved
     // end to end (no ::int truncation of fractional question points).
@@ -74,7 +81,7 @@ export async function getMarksByCourseId(courseId: string): Promise<Mark[]> {
         schema.course,
         or(eq(schema.exercise.courseId, schema.course.id), eq(schema.lesson.courseId, schema.course.id))
       )
-      .leftJoin(schema.submission, eq(schema.exercise.id, schema.submission.exerciseId))
+      .leftJoin(schema.submission, submissionJoin)
       .where(
         and(
           eq(schema.course.id, courseId),

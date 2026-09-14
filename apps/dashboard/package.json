@@ -22,7 +22,8 @@
     "ci": "cp .env.example .env && vite build && vite preview",
     "translate": "node ./scripts/translate.cjs",
     "check": "svelte-check --threshold error",
-    "check:references": "node ../../scripts/dashboard-reference-check.mjs"
+    "check:references": "node ../../scripts/dashboard-reference-check.mjs",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@ai-sdk/svelte": "^4.0.158",

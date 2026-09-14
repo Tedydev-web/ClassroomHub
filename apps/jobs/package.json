@@ -19,6 +19,7 @@
     "dev:maintenance": "tsx watch --include '../../packages/*/dist/index.js' src/workers/maintenance.ts",
     "dev:agent-course-generation": "tsx watch --include '../../packages/*/dist/index.js' src/workers/agent-course-generation.ts",
     "dev:exam-import": "tsx watch --include '../../packages/*/dist/index.js' src/workers/exam-import.ts",
+    "dev:audience": "tsx watch --include '../../packages/*/dist/index.js' src/workers/audience.ts",
     "start": "node dist/index.js",
     "start:media": "node dist/workers/media.js",
     "start:media-transcribe": "node dist/workers/media-transcribe.js",
@@ -29,6 +30,7 @@
     "start:agent-course-generation": "node dist/workers/agent-course-generation.js",
     "start:exam-import": "node dist/workers/exam-import.js",
     "test": "vitest run",
+    "start:audience": "node dist/workers/audience.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },

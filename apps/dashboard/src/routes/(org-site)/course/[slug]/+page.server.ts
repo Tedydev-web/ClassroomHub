@@ -1,8 +1,9 @@
 import type { MetaTagsProps } from 'svelte-meta-tags';
 import type { CourseBySlugWithOrg, GetCourseBySlugRequest } from '$features/course/utils/types';
 import type { GetOrganizationRequest } from '$features/org/utils/types';
+import type { AccountOrg } from '$features/app/types';
+import { toPublicOrg } from '$features/app/public-org';
 import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
-import { resolvePublicRequestUrl } from '$lib/utils/functions/metaTags.server';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 import { error, redirect } from '@sveltejs/kit';
 
@@ -12,7 +13,7 @@ type GetOrganizationSuccess = Extract<InferResponseType<GetOrganizationRequest>,
 type GetPublicCourseRequest = (typeof classroomhub)['org-site']['course'][':courseSlug']['$get'];
 type GetPublicCourseSuccess = Extract<InferResponseType<GetPublicCourseRequest>, { success: true }>;
 
-export const load = async ({ params = { slug: '' }, parent, request, url }) => {
+export const load = async ({ params = { slug: '' }, parent, url }) => {
   const { org: parentOrg } = await parent();
 
   // PUBLIC courses are served by the anonymous org-site endpoint and bypass the
@@ -57,14 +58,14 @@ export const load = async ({ params = { slug: '' }, parent, request, url }) => {
     );
 
     if (organizationResult.ok) {
-      org = organizationResult.body.data[0] ?? null;
+      const organization = organizationResult.body.data[0];
+      org = organization ? toPublicOrg(organization as AccountOrg) : null;
     } else {
       console.error('Failed to fetch course organization:', organizationResult);
     }
   }
 
-  const publicRequestUrl = resolvePublicRequestUrl(url, request.headers);
-  const canonicalUrl = new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href;
+  const canonicalUrl = new URL(url.pathname, url.origin).href;
 
   const pageMetaTags = Object.freeze({
     title: course.title,
@@ -87,8 +88,8 @@ export const load = async ({ params = { slug: '' }, parent, request, url }) => {
       ]
     },
     twitter: {
-      handle: '@Tedydev_web',
-      site: '@Tedydev_web',
+      handle: '@classroomhub',
+      site: '@classroomhub',
       cardType: 'summary_large_image' as const,
       title: course.title,
       description: course.description,

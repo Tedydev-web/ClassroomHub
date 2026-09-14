@@ -1,10 +1,8 @@
 import * as schema from '@db/schema';
 
-import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
-import { ROLE } from '@cio/utils/constants';
-import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 
 function toIsoTimestamp(value: string | Date | null | undefined): string | null {
   if (!value) {
@@ -128,19 +126,8 @@ export async function getLastSeenForUserIds(userIds: string[]): Promise<Map<stri
  * @param userId User ID (profile ID)
  * @returns Array of exercise stats with scores and completion status
  */
-export async function getUserExercisesStats(courseId: string, userId: string) {
+export async function getUserExercisesStats(courseId: string, userId: string, options: { failOnError?: boolean } = {}) {
   try {
-    const [viewerMember] = await db
-      .select({ id: schema.groupmember.id, roleId: schema.groupmember.roleId })
-      .from(schema.groupmember)
-      .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
-      .where(and(eq(schema.course.id, courseId), eq(schema.groupmember.profileId, userId)))
-      .limit(1);
-
-    if (!viewerMember) {
-      return [];
-    }
-
     const exercises = await db
       .select({
         id: schema.exercise.id,
@@ -150,12 +137,7 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(
-        and(
-          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
-          getExerciseVisibilityCondition(viewerMember.id, viewerMember.roleId)
-        )
-      );
+      .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)));
 
     if (exercises.length === 0) {
       return [];
@@ -163,27 +145,55 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
 
     const exerciseIds = exercises.map((e) => e.id);
 
-    // Get active questions for these exercises with points (archived ones leave totalPoints)
+    // Get questions for these exercises with points
     const questions = await db
       .select({
         exerciseId: schema.question.exerciseId,
         points: schema.question.points
       })
       .from(schema.question)
-      .where(and(inArray(schema.question.exerciseId, exerciseIds), isNull(schema.question.archivedAt)));
+      .where(inArray(schema.question.exerciseId, exerciseIds));
 
-    // Get submissions for these exercises by this user
+    // Get groupmember for the user in this course's group
+    const course = await db
+      .select({
+        groupId: schema.course.groupId
+      })
+      .from(schema.course)
+      .where(eq(schema.course.id, courseId))
+      .limit(1);
+
+    if (!course[0] || !course[0].groupId) {
+      return [];
+    }
+
+    const groupMember = await db
+      .select({
+        id: schema.groupmember.id
+      })
+      .from(schema.groupmember)
+      .where(and(eq(schema.groupmember.groupId, course[0].groupId), eq(schema.groupmember.profileId, userId)))
+      .limit(1);
+
+    if (!groupMember[0]) {
+      return [];
+    }
+
+    // Get submissions for these exercises by this user. Most recent wins—order
+    // by created_at, tie-broken by id, so submissions.find(...) below returns a
+    // deterministic row for a student with multiple submissions per exercise.
     const submissions = await db
       .select({
         id: schema.submission.id,
         exerciseId: schema.submission.exerciseId,
-        score: sql<number>`COALESCE(${schema.submission.score}, ${schema.submission.total}::numeric, 0)::float`,
+        total: schema.submission.total,
         statusId: schema.submission.statusId
       })
       .from(schema.submission)
       .where(
-        and(inArray(schema.submission.exerciseId, exerciseIds), eq(schema.submission.submittedBy, viewerMember.id))
-      );
+        and(inArray(schema.submission.exerciseId, exerciseIds), eq(schema.submission.submittedBy, groupMember[0].id))
+      )
+      .orderBy(desc(schema.submission.createdAt), desc(schema.submission.id));
 
     // Build exercise stats
     const exerciseStats = exercises.map((exercise) => {
@@ -197,7 +207,7 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
         lessonTitle: exercise.lessonTitle || '',
         title: exercise.title,
         status: userSubmission?.statusId,
-        score: userSubmission?.score ?? 0,
+        score: userSubmission?.total || 0,
         totalPoints,
         isCompleted: !!userSubmission
       };
@@ -206,6 +216,9 @@ export async function getUserExercisesStats(courseId: string, userId: string) {
     return exerciseStats;
   } catch (error) {
     console.error('getUserExerciseStats error:', error);
+    if (options.failOnError) {
+      throw new Error('Failed to fetch user exercise stats');
+    }
     return [];
   }
 }
@@ -259,27 +272,7 @@ export async function getLessonsWithCompletion(courseId: string, userId: string)
         lessonId: schema.exercise.lessonId
       })
       .from(schema.exercise)
-      .where(
-        and(
-          inArray(schema.exercise.lessonId, lessonIds),
-          sql`EXISTS (
-            SELECT 1
-            FROM ${schema.groupmember} viewer_member
-            INNER JOIN ${schema.course} viewer_course ON viewer_course.group_id = viewer_member.group_id
-            WHERE viewer_course.id = ${courseId}
-              AND viewer_member.profile_id = ${userId}
-              AND (
-                viewer_member.role_id <> ${ROLE.STUDENT}
-                OR ${schema.exercise.assignmentMode} = 'ALL_STUDENTS'
-                OR EXISTS (
-                  SELECT 1 FROM ${schema.exerciseAssignment}
-                  WHERE ${schema.exerciseAssignment.exerciseId} = ${schema.exercise.id}
-                    AND ${schema.exerciseAssignment.groupMemberId} = viewer_member.id
-                )
-              )
-          )`
-        )
-      );
+      .where(inArray(schema.exercise.lessonId, lessonIds));
 
     const completionSet = new Set(completions.map((c) => c.lessonId).filter((id): id is string => id !== null));
     const exerciseCounts = new Map<string, number>();
@@ -308,7 +301,11 @@ export async function getLessonsWithCompletion(courseId: string, userId: string)
  * @param profileId Profile ID
  * @returns Course progress data
  */
-export async function getProfileCourseProgress(courseId: string, profileId: string) {
+export async function getProfileCourseProgress(
+  courseId: string,
+  profileId: string,
+  options: { failOnError?: boolean } = {}
+) {
   try {
     // Get course group
     const course = await db
@@ -340,8 +337,7 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
 
     const groupMember = await db
       .select({
-        id: schema.groupmember.id,
-        roleId: schema.groupmember.roleId
+        id: schema.groupmember.id
       })
       .from(schema.groupmember)
       .where(and(eq(schema.groupmember.groupId, course[0].groupId), eq(schema.groupmember.profileId, profileId)))
@@ -355,12 +351,6 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
         exercises_completed: 0
       };
     }
-
-    const courseExerciseCondition = or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId));
-    const visibleExerciseCondition = and(
-      courseExerciseCondition,
-      getExerciseVisibilityCondition(groupMember[0].id, groupMember[0].roleId)
-    );
 
     // Get lessons count
     const lessonsResult = await db
@@ -396,7 +386,7 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
       })
       .from(schema.exercise)
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(visibleExerciseCondition);
+      .where(or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)));
 
     const exercisesCount = Number(exercisesResult[0]?.count || 0);
 
@@ -408,7 +398,12 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
       .from(schema.submission)
       .innerJoin(schema.exercise, eq(schema.submission.exerciseId, schema.exercise.id))
       .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-      .where(and(visibleExerciseCondition, eq(schema.submission.submittedBy, groupMember[0].id)));
+      .where(
+        and(
+          or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
+          eq(schema.submission.submittedBy, groupMember[0].id)
+        )
+      );
 
     const exercisesCompleted = Number(exercisesCompletedResult[0]?.count || 0);
 
@@ -420,6 +415,9 @@ export async function getProfileCourseProgress(courseId: string, profileId: stri
     };
   } catch (error) {
     console.error('getProfileCourseProgress error:', error);
+    if (options.failOnError) {
+      throw new Error('Failed to fetch profile course progress');
+    }
     return {
       lessons_count: 0,
       lessons_completed: 0,
@@ -449,10 +447,76 @@ export async function insertPageEvents(events: PageEventInsert[]) {
       .insert(schema.analyticsPageEvent)
       .values(events)
       .returning({ id: schema.analyticsPageEvent.id });
+
+    await bumpMemberLastActiveFromEvents(events);
+
     return inserted.length;
   } catch (error) {
     console.error('insertPageEvents error:', error);
     throw new Error('Failed to insert page events');
+  }
+}
+
+export type MemberActivity = { orgId: string; userId: string; occurredAt: string };
+
+/** Latest activity per (org, user), so ingest writes one row per member. */
+export function collapseLatestActivityByMember(events: PageEventInsert[]): MemberActivity[] {
+  const latestByMember = new Map<string, MemberActivity & { at: number }>();
+
+  for (const event of events) {
+    const { orgId, userId, occurredAt } = event;
+    if (!orgId || !userId || !occurredAt) continue;
+
+    // Instants, not strings: `/track` accepts any ISO string, so offsets mix.
+    const at = new Date(occurredAt).getTime();
+    if (Number.isNaN(at)) continue;
+
+    const key = `${orgId}:${userId}`;
+    const seen = latestByMember.get(key);
+
+    if (!seen || at > seen.at) {
+      latestByMember.set(key, { orgId, userId, occurredAt, at });
+    }
+  }
+
+  return [...latestByMember.values()].map(({ orgId, userId, occurredAt }) => ({ orgId, userId, occurredAt }));
+}
+
+/**
+ * Keeps `last_active_at` current from the events just ingested. Denormalized
+ * because filtering a 20k-learner roster against the raw event table does not
+ * hold up.
+ *
+ * Only moves forward, so replayed batches cannot walk activity backwards.
+ * Best-effort — the nightly reconcile repairs any gap.
+ */
+async function bumpMemberLastActiveFromEvents(events: PageEventInsert[]): Promise<void> {
+  const activities = collapseLatestActivityByMember(events);
+
+  if (activities.length === 0) {
+    return;
+  }
+
+  try {
+    await Promise.all(
+      activities.map((activity) =>
+        db
+          .update(schema.organizationmember)
+          .set({ lastActiveAt: activity.occurredAt })
+          .where(
+            and(
+              eq(schema.organizationmember.organizationId, activity.orgId),
+              eq(schema.organizationmember.profileId, activity.userId),
+              or(
+                isNull(schema.organizationmember.lastActiveAt),
+                lt(schema.organizationmember.lastActiveAt, activity.occurredAt)
+              )
+            )
+          )
+      )
+    );
+  } catch (error) {
+    console.error('bumpMemberLastActiveFromEvents error:', error);
   }
 }
 

@@ -1,6 +1,7 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
+import { env } from '@cio/core/config/env';
 import { getStudentLimit } from '@cio/utils/plans';
 import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { type DbOrTxClient, db } from '@cio/db/drizzle';
@@ -53,6 +54,26 @@ export async function notifyStudentMilestone(notification: StudentMilestoneNotif
   const updatedNotified = milestone === 'reached' ? { half: true, reached: true } : { ...notified, half: true };
 
   await updateOrganization(orgId, { settings: { ...org.settings, studentLimitNotified: updatedNotified } });
+}
+
+/**
+ * How many more students the org can take, or `Infinity` when unlimited.
+ *
+ * The counterpart to `assertStudentCapacityOrThrow` for callers that must
+ * partially succeed: an import of 900 learners with 300 seats left should add
+ * 300 and report the rest, not reject the file.
+ */
+export async function getRemainingStudentSeats(orgId: string, dbClient: DbOrTxClient = db): Promise<number> {
+  if (env.PUBLIC_IS_SELFHOSTED === 'true') return Number.POSITIVE_INFINITY;
+
+  const activePlan = await getActiveOrganizationPlan(orgId, dbClient);
+  const limit = getStudentLimit(activePlan?.planName);
+
+  if (!Number.isFinite(limit)) return Number.POSITIVE_INFINITY;
+
+  const currentCount = await countActiveStudents(orgId, dbClient);
+
+  return Math.max(0, limit - currentCount);
 }
 
 /**
