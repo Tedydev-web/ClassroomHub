@@ -12,6 +12,17 @@ export type FirstOrganizationRecord = GetFirstOrganizationSuccess['data'][number
 
 export type JoinAcademyRequest = typeof classroomhub.organization.join.$post;
 
+// Quiz types
+export type QuizListRequest = (typeof classroomhub.organization)[':orgId']['quiz']['$get'];
+export type QuizGetRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$get'];
+export type QuizCreateRequest = (typeof classroomhub.organization)[':orgId']['quiz']['$post'];
+export type QuizUpdateRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$put'];
+export type QuizDeleteRequest = (typeof classroomhub.organization)[':orgId']['quiz'][':quizId']['$delete'];
+export type QuizListSuccess = Extract<InferResponseType<QuizListRequest>, { success: true }>;
+export type Quiz = QuizListSuccess['data'][number];
+export type QuizCreateData = NonNullable<InferRequestType<QuizCreateRequest>['json']>;
+export type QuizUpdateData = NonNullable<InferRequestType<QuizUpdateRequest>['json']>;
+
 // Team member types
 export type GetTeamRequest = (typeof classroomhub.organization)['team']['$get'];
 export type OrganizationTeamResponse = InferResponseType<GetTeamRequest> | null;

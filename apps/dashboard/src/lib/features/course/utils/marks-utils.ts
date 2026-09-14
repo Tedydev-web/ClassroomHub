@@ -69,6 +69,14 @@ export function calculateStudentAverage(
  * @param marks Array of mark records from API
  * @returns Nested object structure for student marks
  */
+export function gradePercent(score: string | undefined, maxPoints: number): number | null {
+  if (score == null || !Number.isFinite(maxPoints) || maxPoints <= 0) return null;
+  // Number() keeps fractional marks intact (parseInt would truncate "2.5" to 2).
+  const points = Number(score);
+  if (!Number.isFinite(points)) return null;
+  return Math.round((points / maxPoints) * 100);
+}
+
 export function processMarksIntoStudentMarksByExerciseId(marks: Marks): StudentMarksByExercise {
   const result: StudentMarksByExercise = {};
 
