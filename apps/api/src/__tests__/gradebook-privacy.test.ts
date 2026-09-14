@@ -58,12 +58,13 @@ function mark(overrides: Partial<Mark> & Pick<Mark, 'exerciseId' | 'groupmemberI
     courseId: COURSE_ID,
     exerciseTitle: 'Quiz',
     exercisePoints: 10,
-    // This fork's Mark carries the live active maximum and the submission columns; default
-    // them so the fixture satisfies the type without changing what the privacy test asserts.
+    // The fork's gradebook counts only completed submissions and returns
+    // { score, maxPoints } per exercise, so default the submission columns to a
+    // completed attempt the gradebook will include.
     activeExercisePoints: 10,
-    submissionId: null,
-    submissionCreatedAt: null,
-    gradingState: null,
+    submissionId: `sub-${overrides.exerciseId}-${overrides.groupmemberId}`,
+    submissionCreatedAt: '2026-01-01T00:00:00.000Z',
+    gradingState: 'completed',
     statusId: 3,
     totalPointsGotten: 8,
     ...overrides
@@ -136,8 +137,8 @@ describe('gradebook privacy', () => {
     expect(getMarksByCourseId).toHaveBeenCalledWith(COURSE_ID);
     expect(gradebook.students.map((row) => row.id)).toEqual([STUDENT_MEMBER_ID, OTHER_STUDENT_MEMBER_ID]);
     expect(gradebook.studentMarksByExerciseId).toEqual({
-      [STUDENT_MEMBER_ID]: { 'ex-1': '9', 'ex-2': '10' },
-      [OTHER_STUDENT_MEMBER_ID]: { 'ex-1': '4', 'ex-2': '2' }
+      [STUDENT_MEMBER_ID]: { 'ex-1': { score: '9', maxPoints: 10 }, 'ex-2': { score: '10', maxPoints: 10 } },
+      [OTHER_STUDENT_MEMBER_ID]: { 'ex-1': { score: '4', maxPoints: 10 }, 'ex-2': { score: '2', maxPoints: 10 } }
     });
   });
 
@@ -154,7 +155,7 @@ describe('gradebook privacy', () => {
     expect(getCourseMember).toHaveBeenCalledWith(COURSE_ID, STUDENT_MEMBER_ID);
     expect(gradebook.students).toEqual([studentOne]);
     expect(gradebook.studentMarksByExerciseId).toEqual({
-      [STUDENT_MEMBER_ID]: { 'ex-1': '9', 'ex-2': '10' }
+      [STUDENT_MEMBER_ID]: { 'ex-1': { score: '9', maxPoints: 10 }, 'ex-2': { score: '10', maxPoints: 10 } }
     });
     expect(gradebook.studentMarksByExerciseId[OTHER_STUDENT_MEMBER_ID]).toBeUndefined();
   });
