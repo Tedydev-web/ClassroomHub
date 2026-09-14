@@ -8,6 +8,9 @@ RUN apt-get update \
 
 WORKDIR /app
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM="${TURBO_TEAM}"
+
 # Keep install non-interactive and deterministic in CI/container contexts.
 ENV CI=true
 ENV PNPM_HOME="/pnpm"
@@ -32,7 +35,9 @@ RUN pnpm install --offline --frozen-lockfile --ignore-scripts \
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 # Build the worker and all its workspace deps in topological order.
 RUN --mount=type=cache,target=/app/.turbo \
-  turbo run build --filter=@cio/jobs-worker --concurrency=1
+    --mount=type=secret,id=TURBO_TOKEN \
+    export TURBO_TOKEN="$(cat /run/secrets/TURBO_TOKEN 2>/dev/null || true)" && \
+    turbo run build --filter=@cio/jobs-worker --concurrency=1
 
 # Run all worker entrypoints by default. Override CMD to scale media / transcribe
 # / maintenance independently.

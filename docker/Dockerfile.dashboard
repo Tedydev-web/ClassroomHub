@@ -9,6 +9,8 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 ARG PUBLIC_IS_SELFHOSTED=false
 ARG PUBLIC_IS_SELF_OWNED=true
+ARG TURBO_TEAM
+ENV TURBO_TEAM="${TURBO_TEAM}"
 
 LABEL io.classroom.public-is-selfhosted="${PUBLIC_IS_SELFHOSTED}" \
       io.classroom.public-is-self-owned="${PUBLIC_IS_SELF_OWNED}"
@@ -29,6 +31,8 @@ RUN pnpm install --offline --frozen-lockfile --ignore-scripts \
     --store-dir /pnpm/store --filter @cio/dashboard...
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN --mount=type=cache,target=/app/.turbo \
+    --mount=type=secret,id=TURBO_TOKEN \
+    export TURBO_TOKEN="$(cat /run/secrets/TURBO_TOKEN 2>/dev/null || true)" && \
     NODE_OPTIONS="--max-old-space-size=8072" \
     PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED}" \
     PUBLIC_IS_SELF_OWNED="${PUBLIC_IS_SELF_OWNED}" \
