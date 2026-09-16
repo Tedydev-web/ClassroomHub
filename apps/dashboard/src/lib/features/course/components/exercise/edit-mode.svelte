@@ -202,6 +202,12 @@
 
   function openAssessmentComposer(sectionId: string | null) {
     newAssessmentComposerSectionId = sectionId;
+    // The composer renders in the workspace's editor pane. Below xl only one pane is
+    // visible at a time, so opening it while the outline is showing would put the
+    // composer off-screen with no sign that anything happened.
+    activeWorkspaceSectionId = sectionId;
+    workspaceEditorMode = 'question';
+    workspacePanel = 'editor';
     removeUntouchedLegacyQuestionDrafts();
   }
 
@@ -724,6 +730,27 @@
   </div>
 {/snippet}
 
+{#snippet assessmentComposerPane()}
+  {#if courseApi.course?.id && activeCanonicalQuestionId !== null}
+    {@const activeCanonicalQuestion = $questionnaire.canonicalQuestions.find(
+      (question) => Number(question.id) === activeCanonicalQuestionId
+    )}
+    {#if activeCanonicalQuestion}
+      {@render canonicalQuestionEditor(activeCanonicalQuestion)}
+    {/if}
+  {:else if courseApi.course?.id && newAssessmentComposerSectionId !== undefined}
+    <AssessmentItemComposer
+      courseId={courseApi.course.id}
+      exerciseId={_exerciseId}
+      exerciseSectionId={newAssessmentComposerSectionId}
+      initialOrder={getNextQuestionOrder(newAssessmentComposerSectionId)}
+      {onSaveRequested}
+      onExitRequested={closeAssessmentWorkspace}
+      onSaved={addCanonicalQuestionToState}
+    />
+  {/if}
+{/snippet}
+
 {#snippet canonicalQuestionEditor(canonicalQuestion: CanonicalQuestion)}
   {#if courseApi.course?.id}
     <AssessmentItemComposer
@@ -748,29 +775,12 @@
     </div>
   {/if}
   <div class="questions px-6 pt-6">
-    {#if isAssessmentWorkspaceOpen}
+    {#if !USE_ASSESSMENT_WORKSPACE_PANEL && isAssessmentWorkspaceOpen}
       <section class="mb-6 min-w-0" data-assessment-workspace>
-        {#if courseApi.course?.id && activeCanonicalQuestionId !== null}
-          {@const activeCanonicalQuestion = $questionnaire.canonicalQuestions.find(
-            (question) => Number(question.id) === activeCanonicalQuestionId
-          )}
-          {#if activeCanonicalQuestion}
-            {@render canonicalQuestionEditor(activeCanonicalQuestion)}
-          {/if}
-        {:else if courseApi.course?.id && newAssessmentComposerSectionId !== undefined}
-          <AssessmentItemComposer
-            courseId={courseApi.course.id}
-            exerciseId={_exerciseId}
-            exerciseSectionId={newAssessmentComposerSectionId}
-            initialOrder={getNextQuestionOrder(newAssessmentComposerSectionId)}
-            {onSaveRequested}
-            onExitRequested={closeAssessmentWorkspace}
-            onSaved={addCanonicalQuestionToState}
-          />
-        {/if}
+        {@render assessmentComposerPane()}
       </section>
     {/if}
-    {#if USE_ASSESSMENT_WORKSPACE_PANEL && !isAssessmentWorkspaceOpen && !reorderQuestions}
+    {#if USE_ASSESSMENT_WORKSPACE_PANEL && !reorderQuestions}
       <section class="ui:border-border ui:bg-background overflow-hidden rounded-md border" data-assessment-workspace>
         <div class="ui:border-border flex min-h-14 flex-wrap items-center justify-between gap-3 border-b px-4 py-2">
           <div class="flex min-w-0 items-center gap-2">
@@ -913,7 +923,9 @@
             class="min-w-0 xl:block xl:overflow-y-auto"
             aria-label={$t('course.navItem.lessons.exercises.all_exercises.view_mode.edit')}
           >
-            {#if workspaceEditorMode === 'section' && workspaceSection}
+            {#if isAssessmentWorkspaceOpen}
+              {@render assessmentComposerPane()}
+            {:else if workspaceEditorMode === 'section' && workspaceSection}
               <div class="p-4 sm:p-6">
                 <SectionEditor
                   exerciseSectionId={workspaceSection.id}
