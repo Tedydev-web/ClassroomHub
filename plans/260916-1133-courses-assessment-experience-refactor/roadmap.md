@@ -138,3 +138,35 @@ have destroyed, a ring offset coupled to a background, and a token that was neve
 
 **Read the site before fixing it.** A survey is a hypothesis. So is a grep. So, twice today, was a
 detector I wrote myself.
+
+## Screen-by-screen audit — all 21 course routes, 2026-09-16
+
+Criterion 1 of "what done looks like" is *the shared shell, the route owning the title, and a
+document title set*. Measured across every `+page.svelte` under `(app)/courses`:
+
+| | Count |
+|---|---|
+| Route owns its `Page.Title` | 14 of 21 |
+| Title comes from the layout | 1 |
+| No title mechanism | 6 |
+| **Document title set** | **2 of 21 — and neither sets it through the app's own mechanism** |
+
+The second row is the finding. The root layout at `+layout.svelte:30` already merges
+`page.data.pageMetaTags` over the site defaults through `resolveMetaTags`, which has its own
+tests and its own bug history. **Not one of the twenty-one course routes passed it anything.**
+Every screen therefore served `PUBLIC_APP_TITLE`, so a teacher with an exam, its source exercise
+and a lesson open had three identical tabs and a browser history that could not tell them apart.
+
+Fixed on the three screens whose loader already holds a name: the exam, the exercise and the
+lesson.
+
+**The attempt screen was attempted and reverted, and the reason is worth recording.** Its loader
+calls `safeServerApi` with no success type, so `result.body` is `unknown` and the three existing
+reads are already errors. Adding the candidate's name added two more. Narrowing the response by
+hand made it worse — `svelte-check` went 343 → 354, because the hand-written shape threw away
+what the page component was relying on. The honest prerequisite is typing that endpoint's
+response, not casting at the call site.
+
+The remaining fourteen screens need translated section names, and the translation store is a
+module-level singleton: calling it inside a server `load` would share one locale across
+concurrent requests. Those titles need the locale passed in explicitly, which is its own change.
