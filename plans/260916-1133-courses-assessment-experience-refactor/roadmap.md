@@ -13,9 +13,24 @@ measurements. This file is the shape of the work.
 |---|---|
 | `svelte-check` | 344 errors — unchanged across all 84 commits this session |
 | Tests in `features` | 362 passing, 44 files (296 at session start) |
-| Hardcoded palette colours in scope | **28**, down from 123 |
+| Hardcoded palette colours in scope | **6**, down from 123 — and all six are the documented exclusions |
 | The three oversized files | **4672** lines, down from 4837 |
 | Frozen-file gate | 0 files changed, every commit |
+
+### Every defect class, swept and counted
+
+Run against the 375 in-scope files. A number here is either zero or exactly the exclusions this
+programme has argued for in writing — nothing is merely unexamined.
+
+| Class | Remaining | What it is |
+|---|---|---|
+| Hardcoded palette colours | **6** | the section colour picker (2), the certificate canvas (1), and two mentions inside an explanatory comment |
+| Arbitrary font sizes | **24** | the course card's container-query compact tier (13) and certificate rendering (11) |
+| Modals that open as wide as the window | **0** | |
+| Features switched off by a hardcoded constant | **1** | `USE_ASSESSMENT_WORKSPACE_PANEL`, awaiting a decision |
+| Empty handlers and hidden affordances | **0** | |
+| Translation keys that print their own path | **0** | |
+| Links pointing at routes that do not exist | **0** | |
 
 ## What this programme is, stated plainly
 
