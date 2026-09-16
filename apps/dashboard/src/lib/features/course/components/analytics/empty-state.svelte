@@ -20,13 +20,19 @@
 </script>
 
 <div class="flex flex-col items-center justify-center px-4 py-12 {className}">
-  <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800">
-    <SvelteComponent size="24" class="text-gray-400 dark:text-gray-500" />
+  <!--
+    Tokens rather than a hand-maintained light/dark pair. Each pair below collapsed into one
+    class that already knows both themes: `bg-gray-100 dark:bg-neutral-800` is exactly what
+    `ui:bg-muted` is for. Seven classes became four, and dark mode stopped being something
+    someone has to remember to update.
+  -->
+  <div class="ui:bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+    <SvelteComponent size="24" class="ui:text-muted-foreground" />
   </div>
-  <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+  <h3 class="ui:text-foreground mb-2 text-lg font-medium">
     {title}
   </h3>
-  <p class="max-w-sm text-center text-sm text-gray-500 dark:text-gray-400">
+  <p class="ui:text-muted-foreground max-w-sm text-center text-sm">
     {description}
   </p>
 </div>

@@ -100,7 +100,7 @@ jobs:
   changes:
     name: Decide what to build
     needs: running
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && fromJson('["self-hosted", "Linux", "deploy"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 5
     outputs:
       services: ${{ steps.decide.outputs.services }}
@@ -234,11 +234,11 @@ jobs:
     name: Build ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.any == 'true'
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && fromJson('["self-hosted", "Linux", "deploy"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      max-parallel: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 1 || 4 }}
+      max-parallel: 1
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4

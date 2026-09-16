@@ -41,9 +41,7 @@ concurrency:
 jobs:
   notify:
     name: Send Telegram notification
-    # On GitHub's runners, not the production machine: sending a message needs
-    # nothing local, and the point of this pipeline is to keep work off that box.
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 5
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main') ||
