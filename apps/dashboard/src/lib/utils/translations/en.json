@@ -3294,7 +3294,10 @@
             },
             "publish_as_exam": "Publish as an exam",
             "public_course_auto_graded_only": "A public course grades itself, so only auto-gradable question types are available."
-          }
+          },
+          "load_failed_title": "This exercise could not be loaded",
+          "load_failed_description": "The exercise did not come back, so nothing is shown here rather than an empty one. Try again.",
+          "load_failed_retry": "Try again"
         },
         "disabled": "Feature is disabled",
         "comments": {

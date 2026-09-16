@@ -13,6 +13,14 @@
   import { getStudentContentLockReason } from '$features/ai-assistant/utils/content-ask-ai-bar';
   import { snackbar } from '$features/ui/snackbar/store';
   import { ContentType } from '@cio/utils/constants/content';
+  import { invalidateAll } from '$app/navigation';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { Empty } from '@cio/ui/custom/empty';
+  import { Button } from '@cio/ui/base/button';
+  import { t } from '$lib/utils/functions/translations';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
 
   let { data = $bindable() } = $props();
 
@@ -58,7 +66,25 @@
 </script>
 
 <Page.Root class="mx-auto flex w-full px-3 sm:w-[90%] sm:px-4 lg:max-w-5xl">
-  {#if $isOrgStudent && !isCourseReady}
+  {#if data.loadFailed}
+    <!-- Must come before everything else: the editor below renders from the store, so
+         letting it mount on a failed load shows an empty exercise that a save would
+         write over the real one. -->
+    <div in:fly={{ y: 4, duration: motionDuration(MOTION_DURATION.fast), easing: cubicOut }}>
+      <Empty
+        variant="page"
+        icon={TriangleAlertIcon}
+        title={$t('course.navItem.lessons.exercises.load_failed_title')}
+        description={$t('course.navItem.lessons.exercises.load_failed_description')}
+      >
+        {#snippet children()}
+          <Button onclick={() => invalidateAll()}>
+            {$t('course.navItem.lessons.exercises.load_failed_retry')}
+          </Button>
+        {/snippet}
+      </Empty>
+    </div>
+  {:else if $isOrgStudent && !isCourseReady}
     <div class="flex justify-center py-16">
       <Spinner />
     </div>

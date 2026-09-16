@@ -7,8 +7,7 @@ export const load = async ({ params, cookies }) => {
   const exerciseId = params.exerciseId || '';
 
   if (!courseId || !exerciseId) {
-    console.log('courseId', courseId, 'exerciseId', exerciseId);
-    return { courseId, exerciseId, exercise: null, submissions: [], mySubmissions: [] };
+    return { courseId, exerciseId, exercise: null, submissions: [], mySubmissions: [], loadFailed: false };
   }
 
   const headers = getApiHeaders(cookies);
@@ -32,13 +31,16 @@ export const load = async ({ params, cookies }) => {
   const mySubmissions = mySubmissionData;
 
   const submissions = Array.isArray(overview.allSubmissions) ? overview.allSubmissions : [];
-  console.log('submissions', submissions.length, 'mySubmissions', mySubmissions.length);
 
   return {
     courseId,
     exerciseId,
     exercise,
     submissions,
-    mySubmissions
+    mySubmissions,
+    // The authoring screen renders from the store, so a null exercise reaches a teacher as
+    // an *empty* exercise — and saving that would overwrite the real one with nothing.
+    // Failure has to stop the page rather than reach it as data.
+    loadFailed: !exerciseResult.ok
   };
 };

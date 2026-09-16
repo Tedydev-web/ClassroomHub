@@ -2179,7 +2179,10 @@
               "uploading": "Đang tải tài liệu lên",
               "start": "Bắt đầu nhập"
             }
-          }
+          },
+          "load_failed_title": "Không tải được bài tập này",
+          "load_failed_description": "Bài tập không trả về, nên ở đây không hiện gì thay vì hiện một bài rỗng. Hãy thử lại.",
+          "load_failed_retry": "Thử lại"
         },
         "materials": {
           "body_heading": "Chưa có ghi chú, video hoặc slide nào được thêm vào cho bài học này",
