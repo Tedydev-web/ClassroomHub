@@ -293,7 +293,7 @@
       }
     } catch (error) {
       console.error(error);
-      snackbar.error();
+      snackbar.error('snackbar.course_settings.error.save_failed');
     }
   }
 
@@ -311,7 +311,7 @@
       }
     } catch (error) {
       console.error(error);
-      snackbar.error();
+      snackbar.error('snackbar.course_settings.error.link_failed');
     } finally {
       isGeneratingLink = false;
     }

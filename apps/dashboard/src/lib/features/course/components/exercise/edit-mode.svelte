@@ -662,12 +662,21 @@
         onQuestionChange={(nextQuestion) => onSharedQuestionChange(question.id, nextQuestion)}
       >
         {#snippet questionTypeSelect()}
-          <QuestionTypeSelect
-            value={question.questionTypeId?.toString()}
-            onValueChange={(nextValue) => onQuestionTypeChange(question.id, nextValue)}
-            triggerQuestionType={question?.questionType}
-            types={availableQuestionTypes}
-          />
+          <div class="space-y-1">
+            <QuestionTypeSelect
+              value={question.questionTypeId?.toString()}
+              onValueChange={(nextValue) => onQuestionTypeChange(question.id, nextValue)}
+              triggerQuestionType={question?.questionType}
+              types={availableQuestionTypes}
+            />
+            {#if isPublicCourse}
+              <!-- Otherwise the list is simply shorter here than in a private course, with
+                   nothing on screen saying why the missing types are missing. -->
+              <p class="ui:text-muted-foreground text-xs">
+                {$t('course.navItem.lessons.exercises.all_exercises.public_course_auto_graded_only')}
+              </p>
+            {/if}
+          </div>
         {/snippet}
       </ExerciseQuestion.QuestionRenderer>
 

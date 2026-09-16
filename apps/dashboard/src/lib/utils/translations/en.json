@@ -3292,7 +3292,8 @@
                 }
               }
             },
-            "publish_as_exam": "Publish as an exam"
+            "publish_as_exam": "Publish as an exam",
+            "public_course_auto_graded_only": "A public course grades itself, so only auto-gradable question types are available."
           }
         },
         "disabled": "Feature is disabled",
@@ -4647,7 +4648,9 @@
         "title": "title cannot be empty",
         "description": "description cannot be empty",
         "failed_integration": "Integration Failed, please try again later",
-        "failed_deletion": "Deletion Failed, please try again later"
+        "failed_deletion": "Deletion Failed, please try again later",
+        "save_failed": "Course settings were not saved - Please try again",
+        "link_failed": "The course link was not updated - Please try again"
       }
     },
     "course": {

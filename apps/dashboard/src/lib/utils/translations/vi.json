@@ -323,7 +323,9 @@
         "title": "tiêu đề không được để trống",
         "description": "mô tả không được để trống",
         "failed_integration": "Tích hợp không thành công, vui lòng thử lại sau",
-        "failed_deletion": "Xóa không thành công, vui lòng thử lại sau"
+        "failed_deletion": "Xóa không thành công, vui lòng thử lại sau",
+        "save_failed": "Chưa lưu được cài đặt khoá học - Vui lòng thử lại",
+        "link_failed": "Chưa cập nhật được đường dẫn khoá học - Vui lòng thử lại"
       },
       "success": {
         "download": "Tải xuống hoàn tất",
@@ -2131,7 +2133,8 @@
               "passage_workspace_unanswered_question": "Câu {number}, chưa trả lời",
               "row_summary": "{questions} câu · {points} điểm"
             },
-            "publish_as_exam": "Xuất bản thành đề thi"
+            "publish_as_exam": "Xuất bản thành đề thi",
+            "public_course_auto_graded_only": "Khoá học công khai tự chấm điểm, nên chỉ có các loại câu hỏi chấm tự động."
           },
           "new_exercise_modal": {
             "heading": "Bài tập mới",
