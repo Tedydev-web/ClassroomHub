@@ -1203,6 +1203,16 @@
           "signature_dont_crop": "Đừng cắt xén",
           "signature_upload_in_progress": "Đợi quá trình tải lên chữ ký hoàn tất trước khi lưu.",
           "save_failed": "Không thể lưu thiết kế chứng chỉ. Hãy kiểm tra biểu mẫu và thử lại."
+        },
+        "issue_modal": {
+          "title": "Gửi chứng chỉ",
+          "automatic": "Tự động",
+          "automatic_hint": "Đặt ở chế độ tự động thì chứng chỉ được cấp ngay khi học viên hoàn thành khoá học.",
+          "custom_intro": "Hoặc gửi một chứng chỉ riêng ở bên dưới.",
+          "student_email": "Email của học viên",
+          "schedule_date": "Ngày hẹn gửi",
+          "personal_message": "Thêm lời nhắn riêng",
+          "submit": "Cấp chứng chỉ"
         }
       },
       "people": {

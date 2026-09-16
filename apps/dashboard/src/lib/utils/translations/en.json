@@ -3763,6 +3763,16 @@
           "field_accent": "Accent",
           "field_signatories": "Signatories",
           "customize_design": "Customize design"
+        },
+        "issue_modal": {
+          "title": "Send certificate",
+          "automatic": "Automatic",
+          "automatic_hint": "Set this to automatic and a certificate is issued as soon as the learner finishes the course.",
+          "custom_intro": "Or send a personalised certificate below.",
+          "student_email": "Email address of the student",
+          "schedule_date": "Schedule date",
+          "personal_message": "Add a personalised message",
+          "submit": "Issue certificate"
         }
       },
       "landing_page": {
