@@ -1748,9 +1748,6 @@ importers:
       svelte-tiptap:
         specifier: ^2.2.0
         version: 2.2.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/extension-bubble-menu@3.14.0(patch_hash=9263af97f7def1fc79f3eadc068e8d3a148e725db0031e498a86a87e7152d9df)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/extension-floating-menu@3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(svelte@5.56.9(@typescript-eslint/types@8.50.1))
-      tippy.js:
-        specifier: ^6.3.7
-        version: 6.3.7
       tiptap-extension-auto-joiner:
         specifier: ^0.1.3
         version: 0.1.3
@@ -6040,9 +6037,6 @@ packages:
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
-
-  '@popperjs/core@2.11.8':
-    resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
   '@poppinss/colors@4.1.6':
     resolution: {integrity: sha512-H9xkIdFswbS8n1d6vmRd8+c10t2Qe+rZITbbDHHkQixH5+2x1FDGmi/0K+WgWiqQFKPSlIYB7jlH6Kpfn6Fleg==}
@@ -15365,9 +15359,6 @@ packages:
     resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
     engines: {node: '>=14.0.0'}
 
-  tippy.js@6.3.7:
-    resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
-
   tiptap-extension-auto-joiner@0.1.3:
     resolution: {integrity: sha512-nY3aKeCpVb2WjjVEZkLtEqxsK3KU1zGioyglMhK1sUFNjKDccOfRyz/YDKrHRAVsKJPGnk2A8VA1827iGEAXWQ==}
 
@@ -20943,8 +20934,6 @@ snapshots:
       '@sveltejs/kit': 2.49.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.56.9(@typescript-eslint/types@8.50.1))(vite@5.4.21(@types/node@22.19.3)(lightningcss@1.32.0)(sass@1.97.1)))(svelte@5.56.9(@typescript-eslint/types@8.50.1))(vite@5.4.21(@types/node@22.19.3)(lightningcss@1.32.0)(sass@1.97.1))
 
   '@polka/url@1.0.0-next.29': {}
-
-  '@popperjs/core@2.11.8': {}
 
   '@poppinss/colors@4.1.6':
     dependencies:
@@ -32426,10 +32415,6 @@ snapshots:
   tinyspy@2.2.1: {}
 
   tinyspy@3.0.2: {}
-
-  tippy.js@6.3.7:
-    dependencies:
-      '@popperjs/core': 2.11.8
 
   tiptap-extension-auto-joiner@0.1.3: {}
 
