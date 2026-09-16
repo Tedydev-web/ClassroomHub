@@ -12,9 +12,9 @@ measurements. This file is the shape of the work.
 | | |
 |---|---|
 | `svelte-check` | 344 errors — unchanged across all 84 commits this session |
-| Tests in `features` | 362 passing, 44 files (296 at session start) |
+| Tests in `features` | 470 passing, 57 files (296 at session start) |
 | Hardcoded palette colours in scope | **6**, down from 123 — and all six are the documented exclusions |
-| The three oversized files | **4672** lines, down from 4837 |
+| The three oversized files | **4670** lines, down from 4837 — the composer grew to 2,175 on the new kinds and came back to 2,095 |
 | Frozen-file gate | 0 files changed, every commit |
 
 ### Every defect class, swept and counted
@@ -124,6 +124,16 @@ functions. What is genuinely absent is the composer and the renderer. `numeric` 
 which the inherited plan listed as missing, are already done. The renderer's silent blank is fixed,
 so an unbuilt kind fails visibly rather than rendering nothing, which means the three pieces can
 land in any order safely.
+
+**A spec this programme wrote, then broke.** `interaction-kinds-spec.md` said a new kind should
+arrive as its own component rather than more branches inside a composer already at 1,840 lines.
+The word bank and ordering panels went in inline anyway and took it to 2,175. The half worth
+undoing immediately is done: 117 lines of authoring rules moved to `assessment-kind-config.ts`
+with **17 tests**, leaving two thin adapters that narrow the block and hand the config to a named
+rule. One rule now *holds* an invariant the composer only maintained by habit — `correctOrder` is
+rewritten with the options on every change, so it cannot stop being an exact permutation of them,
+and a test drives add, move and remove in sequence to prove it. The markup stays until someone
+can see the result of moving it.
 
 **Component splitting.** Pure extraction has reached its limit — the composer is 812 script against
 1028 template. Going further changes render structure rather than preserving it, and belongs where
