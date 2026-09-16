@@ -4,7 +4,7 @@
   import { type VariantProps, tv } from 'tailwind-variants';
 
   export const buttonVariants = tv({
-    base: "ui:aria-invalid:ring-destructive/20 ui:dark:aria-invalid:ring-destructive/40 ui:aria-invalid:border-destructive ui:focus-visible:border-ring ui:focus-visible:ring-ring/50 ui:relative ui:inline-flex ui:shrink-0 ui:items-center ui:justify-center ui:gap-2 ui:overflow-hidden ui:rounded-md ui:text-sm ui:font-medium ui:whitespace-nowrap ui:outline-hidden ui:transition-all ui:select-none ui:focus-visible:ring-[3px] ui:disabled:pointer-events-none ui:disabled:cursor-not-allowed ui:disabled:opacity-50 ui:[&_svg]:pointer-events-none ui:[&_svg]:shrink-0 ui:[&_svg:not([class*='ui:size-'])]:size-4 ui:cursor-pointer",
+    base: "ui:aria-invalid:ring-destructive/20 ui:dark:aria-invalid:ring-destructive/40 ui:aria-invalid:border-destructive ui:focus-visible:border-ring ui:focus-visible:ring-ring/50 ui:relative ui:inline-flex ui:shrink-0 ui:items-center ui:justify-center ui:gap-2 ui:overflow-hidden ui:rounded-md ui:text-sm ui:font-medium ui:whitespace-nowrap ui:outline-hidden ui:transition-all ui:select-none ui:focus-visible:ring-[3px] ui:disabled:pointer-events-none ui:disabled:cursor-not-allowed ui:disabled:opacity-50 ui:[&_svg]:pointer-events-none ui:[&_svg]:shrink-0 ui:[&_svg:not([class*='ui:size-'])]:size-4 ui:cursor-pointer ui:duration-(--ui-duration-instant) ui:ease-ui-out ui:active:scale-[0.98]",
     variants: {
       variant: {
         default: 'ui:bg-primary ui:text-primary-foreground ui:[a&]:hover:bg-primary/90 ui:shadow-2xs',
@@ -19,7 +19,9 @@
           'ui:text-primary ui:[a&]:hover:bg-accent ui:[a&]:hover:text-primary ui:dark:[a&]:hover:bg-accent/50',
         'ghost-outline':
           'ui:bg-background ui:[a&]:hover:bg-accent ui:[a&]:hover:text-accent-foreground ui:dark:hover:border-input ui:dark:bg-input/30 ui:dark:hover:bg-input/50 ui:hover:border ui:hover:shadow-2xs',
-        link: 'ui:text-primary ui:underline-offset-4 ui:[a&]:hover:underline'
+        // A link is text, and text that shrinks under the cursor reads as a glitch rather
+        // than as a button answering. The press feedback on `base` is cancelled here.
+        link: 'ui:text-primary ui:underline-offset-4 ui:[a&]:hover:underline ui:active:scale-100'
       },
       size: {
         default: 'ui:h-9 ui:px-4 ui:py-2 ui:has-[>svg]:px-3',
