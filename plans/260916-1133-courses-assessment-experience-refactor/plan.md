@@ -280,17 +280,20 @@ part of the extraction. The evidence says otherwise — the composer moves as a 
 `view-mode.svelte` is not in E1's scope at all. Splitting is independent and later. Bundling them
 would make the cheapest available change into the most expensive one.
 
-Two gates this phase must add before it starts:
+Two gates this phase must add before it starts. **Both are now in place.**
 
-1. **One handler per `composerId`.** During the transition both mount paths can exist, and
-   `set(composerId, handler)` followed by the other path's `delete(composerId)` silently removes a
-   *live* handler — a save that appears to work and persists nothing. Add a dev-mode warning in
-   `store.ts` when `set` overwrites an existing key, and assert one handler per id at save time.
-2. **A default-props gate for `AssessmentItemRenderer`.** `frozen-files.txt` deliberately excludes
-   it because it is shared, yet Phase 1 is precisely the phase that adds props to it — so the frozen
-   check stays green while a shifted default repaints the student screen. Before touching it, render
-   it with the student page's exact prop set and assert the output, or snapshot the prop defaults.
-   This session demonstrated twice that a rule without a gate does not hold.
+1. **One handler per `composerId`** — done, `6dfd665b6`. During the transition both mount paths can
+   exist, and `set(composerId, handler)` followed by the other path's `delete(composerId)` silently
+   removes a *live* handler — a save that appears to work and persists nothing. `store.ts` now warns
+   in dev when `set` overwrites a registered key, and each cleanup retracts only its own
+   registration instead of deleting by id unconditionally.
+2. **A default-props gate for `AssessmentItemRenderer`** — done, baseline recorded in
+   `renderer-prop-defaults.md` with the command that diffs it. `frozen-files.txt` deliberately
+   excludes the component because it is shared, yet Phase 1 is precisely the phase that adds props
+   to it — so the frozen check stays green while a shifted default repaints the student screen. The
+   recorded rule: a new prop with a new default is allowed, a changed existing default is not. A
+   rendering test is stronger and should replace the snapshot once Phase 1 opens; this session
+   demonstrated twice that a rule without a gate does not hold.
 
 **Phase 2 — Finish the existing interaction kinds (inherits E2, E3).**
 
