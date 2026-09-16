@@ -201,7 +201,8 @@ any type baseline.
 | F2 type tokens | **done** — scale installed with leading and tracking paired; commit `b32c25b4e` |
 | F3 motion tokens | **done** — four easings, five durations; the twelve hand-written cubic-beziers now spend them; commits `b32c25b4e`, `18751110f` |
 | F4 reduced motion | **done** — global guard shipped; the JS helper for Svelte transitions remains |
-| F1 prefix / D2 | **fixed** — 31 usages across 12 files were emitting no CSS; three of them carried variants and needed the prefix outermost. Proven against the built stylesheet: the unprefixed forms appear zero times against 2,510 prefixed classes. **Guard still owed**: `add-ui-prefix.cjs` guards on `packages/ui/src` (line 534), which is why the dashboard drifted unchecked. |
+| F1 prefix / D2 | **done** — 31 usages across 12 files were emitting no CSS; three carried variants and needed the prefix outermost. Proven against the built stylesheet: unprefixed forms appear zero times against 2,510 prefixed classes. A `dashboard-token-prefix` pre-commit guard now blocks recurrence, verified in both directions. It matches token names only rather than reusing `add-ui-prefix.cjs`, which prefixes every Tailwind class — plain utilities work unprefixed in the dashboard and must stay that way. |
+| D1 analytics | **done** — second loader converted; same defect as the gradebook |
 | F6 `Page.Root`, F7 font | not started |
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
