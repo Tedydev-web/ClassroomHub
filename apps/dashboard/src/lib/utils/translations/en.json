@@ -4279,7 +4279,10 @@
       "empty": "No course page views yet",
       "course": "Course",
       "views": "Views"
-    }
+    },
+    "load_failed_title": "Couldn't load analytics",
+    "load_failed_description": "The request failed, so there is nothing to show yet. This course may well have data.",
+    "load_failed_retry": "Try again"
   },
   "upgrade": {
     "certificate": "Upgrade your plan to generate certificates",

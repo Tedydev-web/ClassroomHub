@@ -47,7 +47,7 @@
   </Page.Header>
   <Page.Body>
     {#snippet child()}
-      <AnalyticsPage courseAnalytics={data.courseAnalytics} />
+      <AnalyticsPage courseAnalytics={data.courseAnalytics} loadFailed={data.loadFailed} />
     {/snippet}
   </Page.Body>
 </Page.Root>

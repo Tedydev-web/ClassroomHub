@@ -8,7 +8,8 @@ export const load = async ({ params, cookies }) => {
   if (!courseId) {
     return {
       courseId: '',
-      courseAnalytics: null
+      courseAnalytics: null,
+      loadFailed: false
     };
   }
 
@@ -25,6 +26,9 @@ export const load = async ({ params, cookies }) => {
 
   return {
     courseId,
-    courseAnalytics
+    courseAnalytics,
+    // A failed request is not a course without analytics. Collapsing the two tells a
+    // teacher their course has no data when the fetch simply did not arrive.
+    loadFailed: !result.ok
   };
 };

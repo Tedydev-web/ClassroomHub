@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import ChartBarIcon from '@lucide/svelte/icons/chart-bar';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { Button } from '@cio/ui/base/button';
+  import { Empty } from '@cio/ui/custom/empty';
   import { AnalyticsPanelCard } from '$features/analytics';
   import type { CourseAnalytics } from '$features/course/utils/types';
   import { t } from '$lib/utils/functions/translations';
@@ -13,9 +17,22 @@
 
   interface Props {
     courseAnalytics: CourseAnalytics | null;
+    /**
+     * The analytics request failed, which is not the same as a course with no data.
+     * Without this the page renders the empty state and tells the teacher something untrue.
+     */
+    loadFailed?: boolean;
   }
 
-  let { courseAnalytics }: Props = $props();
+  let { courseAnalytics, loadFailed = false }: Props = $props();
+
+  async function retry() {
+    try {
+      await invalidateAll();
+    } catch (error) {
+      console.error('analytics retry error:', error);
+    }
+  }
 
   // Set the store in the API layer (similar to marks)
   $effect(() => {
@@ -28,7 +45,18 @@
   const isLoading = $derived(false);
 </script>
 
-{#if isLoading}
+{#if loadFailed}
+  <Empty
+    variant="page"
+    icon={TriangleAlertIcon}
+    title={$t('analytics.load_failed_title')}
+    description={$t('analytics.load_failed_description')}
+  >
+    {#snippet children()}
+      <Button onclick={retry}>{$t('analytics.load_failed_retry')}</Button>
+    {/snippet}
+  </Empty>
+{:else if isLoading}
   <AnalyticsSkeleton />
 {:else if courseAnalytics}
   <div class="space-y-6" in:fade>
