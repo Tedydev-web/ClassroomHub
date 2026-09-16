@@ -36,6 +36,25 @@ tokens already installed, not from new numbers.
 - **Tab switches inside the exam detail screen** — a direction-aware slide was tempting, but tabs
   here are a primary navigation control, not an occasional surface. Rejected on frequency.
 
+## Shipped
+
+| # | Commit | What landed |
+|---|---|---|
+| 1 | `9dddc94d2` | The import wait fades out into its result instead of teleporting |
+| 2 | `0383e4f85` | Press feedback on `buttonVariants.base` — `active:scale-[0.98]` at `--ui-duration-instant` with `ease-ui-out`. The `link` variant cancels it: text that shrinks under the cursor reads as a glitch. Verified in the built stylesheet: `.ui\:active\:scale-\[0\.98\]:active{scale:.98}`. |
+| 4 | `36045726d` | The three failure states — gradebook, analytics, course shell — enter on `fast` with `cubicOut` and a 4px rise |
+
+**Row 2 required an explicit exception to the freeze, and the owner granted it.** The student sitting
+page uses the shared `Button` seven times, and six more frozen modules use it too
+(`exam-entry-form`, `exam-paper-navigator`, `exam-start-confirm`, `exam-submit-confirm`,
+`exam-resume-offer`, `exam-left-warning`, `exam-window-notice`). So the one-line root fix necessarily
+reaches the frozen screen. The options put to the owner were: take the exception, add an opt-in prop
+and accept months of inconsistency, or drop the row. The owner chose the exception.
+
+This is the only visual change to the student screen in this programme. Anything else still needs
+asking. Note that `frozen-files.txt` cannot catch this class of change — none of those files were
+edited — which is the same hole `renderer-prop-defaults.md` exists to cover for the shared renderer.
+
 ## Part 3 — Verdict
 
 This interface needs very little motion, and it is closer to right than the raw counts suggest — the

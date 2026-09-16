@@ -209,6 +209,7 @@ any type baseline.
 | D10 exam create | **done** — `goto` to the exam just created, instead of a full reload onto the list that also discarded the course store |
 | D14 save failures | **corrected, then done** — the register said "keyless toast". It is not: `snackbar/store.ts:34` defaults to `snackbar.something`, which exists in both `en` and `vi`. The real defect is weaker — the message is generic. Both sites now name what failed. |
 | D16 public-course filter | **done** — the shorter type list now says why it is shorter |
+| Motion rows 1, 2, 4 | **done** — see `animation-opportunities.md`. Row 2 (press feedback) needed an owner-granted exception to the freeze, because the shared `Button` is used seven times on the student sitting page and by six more frozen modules; it is the only visual change to that screen in this programme. |
 | F6 `Page.Root`, F7 font | not started |
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
