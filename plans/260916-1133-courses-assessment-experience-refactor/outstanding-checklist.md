@@ -87,7 +87,27 @@ the clipped element does not exist.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | Does AI ship in assessment while the gateway is off? Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6 (`hidden!` "Grade with AI" over a commented-out handler). | Phases 4–5 |
+| 1 | Does AI ship in assessment while the gateway is off? Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6. **For D6 the question is now narrower than "build or delete" — see below.** | Phases 4–5 |
+
+**D6 measured, and one of its two options turns out not to exist.**
+
+`mark-exercise-modal.svelte` is 450 lines, **95 of them commented out** — ten blocks between lines
+138 and 251. `gradeWithAI()` at `:236` has an entirely commented body, wired to a button at `:425`
+that carries `hidden!`. The flag it would set, `isGradeWithAI`, is threaded as a `$bindable` from
+`submissions.svelte:37` through the modal and on into a grading child at `:295` — and the only line
+that would ever set it `true` is the commented `:237`. So the flag is permanently `false` across
+three files.
+
+The decisive part: the commented body reads `question_type_id`, `open_answer` and
+`data.questionAnswers`. Those are **pre-migration snake_case columns**. Grepping live code, they
+survive only inside `packages/db/src/scripts/finalize-assessment-schema.ts`, the script that mapped
+them to camelCase. Nothing in the application uses them any more.
+
+So this code **cannot be uncommented and run**. "Build from it" was never an option; building AI
+grading means writing it against the current schema, to which these 95 lines contribute nothing.
+The real choice is *delete now* or *keep 95 lines that read as one uncomment away from working*.
+Left for the owner because the feature is theirs to want, not because the code might still be
+useful.
 | 2 | May the exercise import path change appearance alongside the exam path, or must it stay pixel-stable? | whether the shared review screen is restyled once or gated by target |
 | 3 | Is the exercise Submissions tab meant to be read-only, or is the missing grading entry a regression? (D3) | Phase 3 |
 | 4 | Does publish belong in the composer header, or is the course-level publish flow authoritative? | composer header design |
