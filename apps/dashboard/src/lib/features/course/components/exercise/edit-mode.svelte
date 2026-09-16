@@ -972,30 +972,39 @@
                 <div
                   class="space-y-2"
                   use:dndzone={{
-                    items: reorderSectionQuestions,
+                    items: reorderQuestions ? reorderSectionQuestions : sectionPlacementItems,
                     flipDurationMs,
                     dropTargetStyle: {
                       border: '2px #1d4ed8 solid',
                       'border-style': 'dashed',
                       'border-radius': '0.5rem'
                     },
+                    dragDisabled: !reorderQuestions,
                     type: 'exercise-question-placement'
                   }}
                   onconsider={(event) => handleSectionQuestionDndConsider(section.id, event)}
                   onfinalize={(event) => handleSectionQuestionDndFinalize(section.id, event)}
                 >
-                  {#each reorderSectionQuestions as item, index (item.id)}
+                  {#each reorderQuestions ? reorderSectionQuestions : sectionPlacementItems as item, index (item.id)}
                     <div
                       animate:flip={{ duration: flipDurationMs }}
-                      class="flex cursor-grab items-start gap-3 transition active:cursor-grabbing"
+                      class="flex items-start gap-3 transition {reorderQuestions
+                        ? 'cursor-grab active:cursor-grabbing'
+                        : ''}"
                     >
                       <div class="ui:text-muted-foreground flex w-5 shrink-0 flex-col items-center gap-2 pt-3">
-                        <GripVerticalIcon class="h-4 w-4 cursor-grab active:cursor-grabbing" aria-hidden="true" />
+                        {#if reorderQuestions}
+                          <GripVerticalIcon class="h-4 w-4 cursor-grab active:cursor-grabbing" aria-hidden="true" />
+                        {/if}
                         <span class="text-xs font-medium tabular-nums">{index + 1}</span>
                       </div>
                       <div class="min-w-0 flex-1">
-                        {#if item.kind === 'legacy'}
+                        {#if item.kind === 'legacy' && reorderQuestions}
                           {@render compactQuestionRow(item.question, index)}
+                        {:else if item.kind === 'legacy'}
+                          {@render questionEditor(item.question, index)}
+                        {:else if reorderQuestions}
+                          {@render compactCanonicalQuestionRow(item.question)}
                         {:else}
                           {@render compactCanonicalQuestionRow(item.question)}
                         {/if}
@@ -1003,6 +1012,15 @@
                     </div>
                   {/each}
                 </div>
+                {#if courseApi.course?.id && (newAssessmentComposerSectionId === section.id || !reorderQuestions)}
+                  <div class="mt-4 space-y-4" hidden={reorderQuestions}>
+                    {#if newAssessmentComposerSectionId !== section.id}
+                      <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(section.id)}>
+                        {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+                      </Button>
+                    {/if}
+                  </div>
+                {/if}
               </SectionEditor>
 
               <ExerciseQuestion.SectionAfterBehavior
@@ -1030,6 +1048,15 @@
               </div>
             {/if}
           {/each}
+          {#if courseApi.course?.id && (newAssessmentComposerSectionId === null || !reorderQuestions)}
+            <div class="mt-6 space-y-4" hidden={reorderQuestions}>
+              {#if newAssessmentComposerSectionId !== null}
+                <Button type="button" variant="secondary" onclick={() => openAssessmentComposer(null)}>
+                  {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
+                </Button>
+              {/if}
+            </div>
+          {/if}
         {/if}
       </div>
     {/if}
