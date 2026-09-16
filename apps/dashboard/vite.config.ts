@@ -19,6 +19,11 @@ export default ({ mode }) => {
     plugins: [redirectToCanonicalOrigin(process.env), sveltekit(), ...(useHttps ? [mkcert()] : [])],
     server: {
       host,
+      // `getServer` has built this from VITE_ALLOWED_HOST since it was written, but nothing
+      // called it — so reaching the dev server through any hostname other than localhost was
+      // refused by Vite with no way to allow it. Wiring it up is the whole of the fix; the
+      // function itself was already right.
+      ...getServer(process.env),
       fs: {
         // `..` is `apps/` — covers the dashboard's own files. `../../packages`
         // is required so Vite's `@fs` route can serve dynamic imports that
