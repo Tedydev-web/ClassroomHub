@@ -198,6 +198,16 @@ any type baseline.
 | D21 missing i18n | **done** — strings added in `en` and `vi`; commit `f6d6794e5` |
 | D1 loaders | **marks done** as the exemplar (loader returns `loadFailed`, page renders a distinct error with retry); commit `f6d6794e5`. Twelve loaders remain, same recipe. |
 | Design artefacts | **done** — `motion-vocabulary.md`, `design-direction.md`, `frozen-files.txt` |
+| F2 type tokens | **done** — scale installed with leading and tracking paired; commit `b32c25b4e` |
+| F3 motion tokens | **done** — four easings, five durations; the twelve hand-written cubic-beziers now spend them; commits `b32c25b4e`, `18751110f` |
+| F4 reduced motion | **done** — global guard shipped; the JS helper for Svelte transitions remains |
+| F1 prefix, F6 `Page.Root`, F7 font | not started |
+
+A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
+Tailwind's own prefixed `--ui-ease-out`, silently repointing all 41 existing `ease-out` usages at a
+different curve. Reading the built stylesheet found it before it shipped; the tokens are now
+`--ui-motion-ease-*`. Every token claim in this plan was verified against emitted CSS rather than
+assumed from the Tailwind v4 documentation.
 
 After each tranche: `svelte-check` held at 344 errors with no missing-module errors, and the
 frozen-file check returned empty.
