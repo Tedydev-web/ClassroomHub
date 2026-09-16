@@ -157,3 +157,34 @@ Named so a reviewer can ask for one by name.
 - The seven hand-written cubic-beziers are gone, replaced by token references.
 - Off-scale durations either reference a token or carry a comment justifying the exception.
 - The frozen-file check still returns empty.
+
+## Spent on the Courses and Exam surface — 2026-09-16
+
+The scale was installed and then not used here. Measured over every `.svelte` and `.ts` in the
+three roots, excluding the seventeen frozen files: **21 raw motion values**.
+
+| What | Count | Now |
+|---|---|---|
+| Tailwind `duration-150 / 200 / 300` | 11 | `ui:duration-(--ui-duration-fast / base / slow)` — a rename, because the scale was built from what the code already did |
+| Stock `ease-in-out` | 3 | `ui:ease-ui-in-out` |
+| `ease-linear` on the course header | 1 | kept; a width and height transition is the one place linear is right |
+| Svelte `duration: 250 / 300 / 350 / 500` | 6 | `motionDuration(MOTION_DURATION.…)` |
+
+**The six Svelte transitions are the finding, not the eleven classes.** A Svelte transition is
+JavaScript and never sees the stylesheet's global `prefers-reduced-motion` rule, so all six ran at
+full travel regardless of what the reader asked for. The largest was a whole question flying
+across the screen on every step of an exercise — 350ms of horizontal translate, repeated once per
+question, on the screen a learner spends the longest on.
+
+Two raw durations remain and are correct: `exam-countdown.svelte:113` and
+`exam-paper-navigator.svelte:49` are both frozen.
+
+### Three translucent surfaces removed at the same time
+
+`design-direction.md` rejects `backdrop-filter` on working screens, and three were still there:
+the course header, and **both sticky headers of the analytics student table**. The table one
+matters most — it was blurring the rows underneath the numbers a teacher is reading across. Solid
+`ui:bg-muted` instead, which is what the rejection asks for.
+
+A fourth find, unrelated to motion but in the same sweep: the course landing preview is a
+full-viewport overlay that was `bg-white`, so it opened white in dark mode. Now `ui:bg-background`.
