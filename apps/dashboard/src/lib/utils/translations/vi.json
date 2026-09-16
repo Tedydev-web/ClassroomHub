@@ -5951,7 +5951,11 @@
       "auto_submit_warning": "Đọc kỹ trước khi bật. Điện thoại tự khoá màn hình sinh ra đúng tín hiệu giống hệt lúc thí sinh tra cứu, nên tính năng này bắt em đang úp máy suy nghĩ trước khi bắt được người gian lận. Nó cũng không thể kích hoạt với người rời đi và không quay lại, còn một chiếc điện thoại thứ hai đặt cạnh bàn thì không sinh tín hiệu nào cả. Dù bật hay tắt, số lần rời vẫn được ghi lại và hiện cho thầy cô; cái này chỉ quyết định có lấy bài của thí sinh đi hay không.",
       "load_failed_title": "Không tải được danh sách đề",
       "load_failed_description": "Cả container lẫn bài tập đều không trả về. Đây không phải là chưa có cái nào — kiểm tra kết nối rồi thử lại.",
-      "load_failed_retry": "Thử lại"
+      "load_failed_retry": "Thử lại",
+      "paper_not_frozen_yet": "Đề thi này chưa mở nên đề chưa bị đóng băng. Câu hỏi vẫn sửa được.",
+      "edit_questions_hint_draft": "Câu hỏi nằm trong bài tập mà đề thi này được tạo ra từ đó. Hãy sửa ở đó trước khi mở thi.",
+      "edit_questions_hint_frozen": "Đề thi này đã đóng băng bản sao câu hỏi của riêng nó. Sửa bài tập nguồn sẽ không làm thay đổi đề mà thí sinh đã làm.",
+      "open_source_exercise": "Mở bài tập nguồn"
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",

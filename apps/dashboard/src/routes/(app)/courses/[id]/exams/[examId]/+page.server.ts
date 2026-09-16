@@ -57,6 +57,11 @@ export const load = async ({ params, cookies }) => {
       id: exam.id,
       title: exam.title,
       status: exam.status,
+      // The exercise holding this exam's questions. An exam's paper is a copy taken from a
+      // container exercise, so "edit the questions" means editing that exercise — and until
+      // now no screen said so or offered a way there. An id carries no answer key, so it
+      // belongs among the named fields.
+      exerciseId: exam.exerciseId,
       mode: exam.mode,
       workingSeconds: exam.workingSeconds,
       opensAt: asIso(exam.opensAt),

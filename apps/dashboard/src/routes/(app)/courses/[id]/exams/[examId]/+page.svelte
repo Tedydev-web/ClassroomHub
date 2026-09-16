@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   import { t } from '$lib/utils/functions/translations';
   import { Badge } from '@cio/ui/base/badge';
+  import { Button } from '@cio/ui/base/button';
   import * as Alert from '@cio/ui/base/alert';
   import * as Page from '@cio/ui/base/page';
   import * as UnderlineTabs from '@cio/ui/custom/underline-tabs';
@@ -113,14 +114,45 @@
 
         <UnderlineTabs.Content value="paper" class="w-full">
           <!--
-            Why the questions cannot be edited here, said once and plainly. An exam freezes
-            its paper when it opens and the class sits that frozen copy; changing a question
+            Why the questions are not edited here, said once and plainly. An exam freezes its
+            paper when it opens and the class sits that frozen copy; changing a question
             afterwards would leave every mark already given measured against a paper nobody
             answered. The key is a different matter, and correcting one re-marks the class.
+
+            None of that is true before the exam opens, which the copy below now distinguishes
+            — a draft was being told its paper was fixed while the tab under the notice sat
+            empty, because the frozen paper it was trying to show does not exist yet.
           -->
           <Alert.Root class="mb-4">
-            <Alert.Description>{$t('exam.settings.paper_is_fixed')}</Alert.Description>
+            <Alert.Description>
+              <!--
+                A draft has frozen nothing yet, so telling its author the paper is fixed was
+                simply untrue — and the tab under it was empty anyway, because the endpoint
+                409s until an exam opens. Two states, two sentences.
+              -->
+              {$t(data.exam.status === 'draft' ? 'exam.settings.paper_not_frozen_yet' : 'exam.settings.paper_is_fixed')}
+            </Alert.Description>
           </Alert.Root>
+
+          <!--
+            Where the questions actually live. An exam's paper is a copy taken from a container
+            exercise, so editing the questions means editing that exercise — a relationship the
+            product held in the database and had never once said out loud.
+          -->
+          {#if data.exam.exerciseId}
+            <div class="ui:border-border mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border p-4">
+              <p class="ui:text-muted-foreground text-sm">
+                {$t(
+                  data.exam.status === 'draft'
+                    ? 'exam.settings.edit_questions_hint_draft'
+                    : 'exam.settings.edit_questions_hint_frozen'
+                )}
+              </p>
+              <Button variant="secondary" href={`/courses/${data.courseId}/exercises/${data.exam.exerciseId}`}>
+                {$t('exam.settings.open_source_exercise')}
+              </Button>
+            </div>
+          {/if}
 
           <ExamPaperTab examId={data.examId} questions={data.questions} paper={data.paper} />
         </UnderlineTabs.Content>
