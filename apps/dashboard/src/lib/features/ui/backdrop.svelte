@@ -23,7 +23,7 @@
     -webkit-tap-highlight-color: transparent;
     color: #fff;
     z-index: 1201;
-    transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    transition: opacity 225ms var(--ui-motion-ease-in-out) 0ms;
   }
 
   .center {

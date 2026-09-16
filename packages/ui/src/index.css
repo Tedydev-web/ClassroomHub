@@ -205,10 +205,10 @@
    * screen moving A to B. ease-ui-spring overshoots on purpose and is reserved
    * for confirmation moments.
    */
-  --ease-ui-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-ui-in: cubic-bezier(0.64, 0, 0.78, 0);
-  --ease-ui-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-ui-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-ui-out: var(--ui-motion-ease-out);
+  --ease-ui-in: var(--ui-motion-ease-in);
+  --ease-ui-in-out: var(--ui-motion-ease-in-out);
+  --ease-ui-spring: var(--ui-motion-ease-spring);
 
   /* Course-app style animations (marketing / landing) */
   --animate-meteor: meteor 5s linear infinite;
@@ -230,6 +230,16 @@
    * than responses and keep their own long values above.
    */
   :root {
+    /*
+     * Easing values live here rather than only in `@theme`, because `@theme inline`
+     * folds its values into utility classes and emits no custom property — so a
+     * component `<style>` block could not reach them. `@theme` references these.
+     */
+    --ui-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ui-motion-ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+    --ui-motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ui-motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
     --ui-duration-instant: 100ms; /* press feedback, hover, focus ring */
     --ui-duration-fast: 150ms; /* colour and small state changes, tooltips */
     --ui-duration-base: 200ms; /* default: dropdowns, popovers, tabs */

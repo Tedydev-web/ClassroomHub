@@ -56,10 +56,10 @@
   }
   g.animate path {
     transform: translateY(-2px);
-    transition: transform 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    transition: transform 0.3s var(--ui-motion-ease-spring);
   }
   g path {
     transform: translateY(0);
-    transition: transform 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    transition: transform 0.3s var(--ui-motion-ease-spring);
   }
 </style>

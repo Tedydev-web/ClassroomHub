@@ -60,7 +60,7 @@
 
   .layer {
     transition:
-      transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      transform 0.3s var(--ui-motion-ease-spring),
       opacity 0.3s ease;
     transform-origin: center;
     opacity: 1;

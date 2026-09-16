@@ -229,7 +229,7 @@ input[type='checkbox'] {
   opacity: 100;
   transition-property: all;
   transition-duration: 300ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  transition-timing-function: var(--ui-motion-ease-in);
   color: var(--border-color-hover);
 }
 

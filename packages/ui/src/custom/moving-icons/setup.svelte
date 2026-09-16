@@ -36,7 +36,7 @@
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
 
-        // Spring-like easing: cubic-bezier(0.34, 1.56, 0.64, 1)
+        // Spring-like easing: var(--ui-motion-ease-spring)
         const eased = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
         const current = start + (end - start) * eased;

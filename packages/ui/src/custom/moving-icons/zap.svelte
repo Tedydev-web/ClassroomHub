@@ -66,7 +66,7 @@
   }
 
   .zap-icon.motion-active .zap-wrap {
-    animation: zapJolt 0.58s cubic-bezier(0.34, 1.15, 0.64, 1) forwards;
+    animation: zapJolt 0.58s var(--ui-motion-ease-spring) forwards;
   }
 
   @keyframes zapJolt {

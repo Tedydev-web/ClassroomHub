@@ -336,7 +336,7 @@
 .cio-cr-track {
   display: flex;
   gap: 12px;
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.32s var(--ui-motion-ease-in-out);
 }
 .cio-cr-card {
   background: var(--cio-color-bg-primary);

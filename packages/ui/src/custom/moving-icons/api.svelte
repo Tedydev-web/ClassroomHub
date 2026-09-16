@@ -68,11 +68,11 @@
   }
 
   .braces-icon.motion-active .brace-left-wrap {
-    animation: braceLeft 0.58s cubic-bezier(0.34, 1.15, 0.64, 1) forwards;
+    animation: braceLeft 0.58s var(--ui-motion-ease-spring) forwards;
   }
 
   .braces-icon.motion-active .brace-right-wrap {
-    animation: braceRight 0.58s cubic-bezier(0.34, 1.15, 0.64, 1) 0.07s forwards;
+    animation: braceRight 0.58s var(--ui-motion-ease-spring) 0.07s forwards;
   }
 
   @keyframes braceLeft {
