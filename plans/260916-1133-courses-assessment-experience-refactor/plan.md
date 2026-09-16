@@ -382,6 +382,38 @@ Two gates this phase must add before it starts. **Both are now in place.**
 
 **Phase 2 — Finish the existing interaction kinds (inherits E2, E3).**
 
+**The inherited definition is wrong, measured 2026-09-16.** E2 asks to "complete numeric, fill
+blank, word bank, ordering and star rating". Counting references across the three layers —
+schema, composer, shared renderer:
+
+| kind | schema | composer | renderer |
+|---|---|---|---|
+| `choice` | yes | yes | yes |
+| `true_false_group` | yes | yes | yes |
+| `numeric` | yes | **yes** | **yes** |
+| `fill_blank` | yes | **yes** | **yes** |
+| `word_bank` | yes | no | no |
+| `ordering` | yes | no | no |
+| `star_rating` | yes | no | no |
+| `file_upload` | yes | no | no |
+| `video_recording` | yes | no | no |
+
+So numeric and fill_blank are already done, and the real gap is two kinds wider than E2 says —
+it includes `file_upload` and `video_recording`, which E2 never listed. Five kinds have a schema
+and nothing else: a teacher cannot author them and a learner cannot see them.
+
+**The dangerous half of that is fixed** (`2ed7cb44c`). The renderer's dispatch chain ended at
+`true_false_group` with no `{:else}`, so any of those five rendered *nothing* — prompt, then empty
+space, no way to answer, no sign anything was missing. Unreachable today because the composer
+cannot create them, but Phase 2 is precisely the phase that would make it reachable. It now fails
+visibly, which is E2's own success criterion ("unknown kinds fail explicitly at the registry
+boundary") applied at the render boundary too.
+
+This is the **second** change reaching the shared renderer that the student page uses. Unlike the
+press-feedback exception, it alters only a state that is currently blank, so nothing a candidate
+sees today changes. It is a new prop with a new default, which `renderer-prop-defaults.md` permits;
+the baseline there is updated.
+
 **Phase 3 — Exercise surface completion.** D3 (grading reachable from the exercise), D6 (decide the
 dead AI feature — build or delete), D8 (replace `window.confirm` with the real dialog), D9 (wire the
 loading states), D16.
