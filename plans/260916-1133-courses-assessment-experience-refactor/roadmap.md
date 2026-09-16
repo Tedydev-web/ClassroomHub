@@ -167,6 +167,14 @@ hand made it worse — `svelte-check` went 343 → 354, because the hand-written
 what the page component was relying on. The honest prerequisite is typing that endpoint's
 response, not casting at the call site.
 
-The remaining fourteen screens need translated section names, and the translation store is a
-module-level singleton: calling it inside a server `load` would share one locale across
-concurrent requests. Those titles need the locale passed in explicitly, which is its own change.
+**Done, 2026-09-16: 13 of 21.** The locale problem was real and is solved rather than worked
+around. `document-title.ts` reads the dictionaries per call for the locale it is handed — from
+the cookie in a server load, from the layout's `localeCookie` through `parent()` in a universal
+one — holds nothing between calls, falls back to English the way the component translator does,
+and returns empty rather than the key. Seven tests, including one that resolves three titles
+concurrently to prove no locale can leak into another.
+
+The eight screens still without one: the course home, `ai-tutor`, `landingpage`,
+`certificates/editor`, `exam-imports/[importId]`, `exams/new`, `people/[personId]` and
+`attempts/[attemptId]`. Four have no loader at all, two carry live content as their title, and
+the attempt screen is blocked on typing its endpoint's response.
