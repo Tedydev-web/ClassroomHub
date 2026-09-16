@@ -86,9 +86,22 @@ export const POST = async ({ params, request, fetch, url, cookies }) => {
   );
 
   const styles = [...sheets.filter(Boolean), PRINT_OVERRIDES].join('\n');
+  const missingHrefs = hrefs.filter((_href, index) => sheets[index] === '');
+
   if (sheets.every((sheet) => sheet === '')) {
-    console.error('answer sheet pdf: no stylesheet could be read for', pageUrl.pathname);
+    console.error('answer sheet pdf: no stylesheet could be read for', pageUrl.pathname, missingHrefs);
     error(502, 'The answer sheets could not be rendered');
+  }
+
+  // Losing *some* sheets still produces a PDF, and a partly styled answer sheet is the kind
+  // of thing nobody notices until a candidate is holding it. The total failure above is
+  // loud; this one used to be silent, which makes it the more dangerous of the two.
+  if (missingHrefs.length > 0) {
+    console.warn(
+      `answer sheet pdf: ${missingHrefs.length} of ${hrefs.length} stylesheets could not be read for`,
+      pageUrl.pathname,
+      missingHrefs
+    );
   }
 
   /**
