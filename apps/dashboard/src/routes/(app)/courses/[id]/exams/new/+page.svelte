@@ -7,7 +7,7 @@
   import { Label } from '@cio/ui/base/label';
   import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
-  import { invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
   import { contentCreateStoreUtils } from '$features/course/components/content/store';
   import { page } from '$app/state';
 
@@ -84,7 +84,10 @@
 
       if ('success' in body && body.success) {
         snackbar.success($t('exam.settings.created'));
-        window.location.href = `/courses/${data.courseId}/exams`;
+        // Land on the exam that was just created, not the list. The full reload also threw
+        // away the course store the shell had already fetched.
+        const examId = body.data?.id;
+        await goto(examId ? `/courses/${data.courseId}/exams/${examId}` : `/courses/${data.courseId}/exams`);
       } else {
         snackbar.error('error' in body ? String(body.error) : $t('exam.settings.create_failed'));
       }
