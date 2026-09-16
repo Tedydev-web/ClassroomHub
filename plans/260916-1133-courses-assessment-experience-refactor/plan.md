@@ -252,8 +252,45 @@ declaration). Exit: no token utility emits zero CSS; the motion and type vocabul
 approval before it starts.**
 
 **Phase 1 — Assessment workspace (inherits E1).** Extract the canonical composer from the legacy
-list into a page-level two-pane workspace with an on-demand outline and preview as a mode. Split
-D20's three oversized files as part of the extraction, not as a separate refactor.
+list into a page-level two-pane workspace with an on-demand outline and preview as a mode.
+
+**Decision: incremental extraction — move the mount point, change nothing else.**
+
+The evidence that makes this cheap, and that corrects the red team's stated fear ("moving the
+composer can duplicate or lose atomic mutation registration"):
+
+- The composer is mounted conditionally inside `edit-mode.svelte:135`, gated on
+  `activeCanonicalQuestionId`. That is a render position, not an ownership boundary.
+- Save and preview state already live outside it, in a registry keyed by `composerId` —
+  `store.ts:83-89` (`assessmentComposerSaveHandlers.set/delete`) plus the preview-item pair at
+  `:64-76`. Registration is **by id, not by tree position**.
+- The composer does not own save at all: it takes `onSaveRequested` as a prop
+  (`assessment-item-composer.svelte:88,128`) and calls it (`:848`).
+
+So moving where it mounts does not change who registers. `edit-mode.svelte` only loses a
+conditional block.
+
+*Rejected — rewrite behind an adapter:* the 1897-line composer is where the risk actually lives;
+rewriting it is expensive and is not what E1 asks for. *Rejected — a parallel new route:* it leaves
+the nested mount in place, which fails E1's own exit criterion that the composer is no longer
+nested in the legacy editor list. It defers the work rather than doing it.
+
+**Correction to an earlier version of this plan:** it said to split the three oversized files as
+part of the extraction. The evidence says otherwise — the composer moves as a unit, and
+`view-mode.svelte` is not in E1's scope at all. Splitting is independent and later. Bundling them
+would make the cheapest available change into the most expensive one.
+
+Two gates this phase must add before it starts:
+
+1. **One handler per `composerId`.** During the transition both mount paths can exist, and
+   `set(composerId, handler)` followed by the other path's `delete(composerId)` silently removes a
+   *live* handler — a save that appears to work and persists nothing. Add a dev-mode warning in
+   `store.ts` when `set` overwrites an existing key, and assert one handler per id at save time.
+2. **A default-props gate for `AssessmentItemRenderer`.** `frozen-files.txt` deliberately excludes
+   it because it is shared, yet Phase 1 is precisely the phase that adds props to it — so the frozen
+   check stays green while a shifted default repaints the student screen. Before touching it, render
+   it with the student page's exact prop set and assert the output, or snapshot the prop defaults.
+   This session demonstrated twice that a rule without a gate does not hold.
 
 **Phase 2 — Finish the existing interaction kinds (inherits E2, E3).**
 
