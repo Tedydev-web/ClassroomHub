@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import * as Sidebar from '@cio/ui/base/sidebar';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { Empty } from '@cio/ui/custom/empty';
   import { Spinner } from '@cio/ui/base/spinner';
   import { CourseSidebar } from '$features/course/components/sidebar';
@@ -73,8 +74,24 @@
       return;
     }
 
-    courseApi.ensureCourse(data.courseId, $profile.id);
+    // `ensureCourse` resolves to null when the fetch fails and leaves the store empty,
+    // which is indistinguishable from "still loading" — so the shell has to record the
+    // failure itself or it spins forever.
+    courseLoadFailed = false;
+    void courseApi.ensureCourse(data.courseId, $profile.id).then((course) => {
+      courseLoadFailed = !course;
+    });
   });
+
+  let courseLoadFailed = $state(false);
+
+  async function retryCourseLoad() {
+    if (!data.courseId || !$profile.id) return;
+
+    courseLoadFailed = false;
+    const course = await courseApi.refreshCourse(data.courseId, $profile.id);
+    courseLoadFailed = !course;
+  }
 
   const isCourseReady = $derived.by(() => {
     return courseApi.course?.id === data.courseId && !!courseApi.group.id;
@@ -238,11 +255,25 @@
     <ContentCreateModal />
     <CourseCompletionModal />
 
-    {#if !isCourseReady}
+    {#if courseLoadFailed}
       <div class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center">
         <Empty
-          title="Loading course…"
-          description="Please wait while we load your course data."
+          title={$t('course.shell.load_failed_title')}
+          description={$t('course.shell.load_failed_description')}
+          icon={TriangleAlertIcon}
+          iconClass="h-8 w-8"
+          variant="page"
+        >
+          {#snippet children()}
+            <Button onclick={retryCourseLoad}>{$t('course.shell.retry')}</Button>
+          {/snippet}
+        </Empty>
+      </div>
+    {:else if !isCourseReady}
+      <div class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center">
+        <Empty
+          title={$t('course.shell.loading_title')}
+          description={$t('course.shell.loading_description')}
           icon={Spinner}
           iconClass="h-8 w-8"
           variant="page"

@@ -4028,6 +4028,13 @@
       "header": "No Permission",
       "body": "Unfortunately you don't have access to this course.",
       "button": "Go home"
+    },
+    "shell": {
+      "loading_title": "Loading course…",
+      "loading_description": "Please wait while we load your course data.",
+      "load_failed_title": "This course could not be loaded",
+      "load_failed_description": "The course data did not come back. Check your connection and try again.",
+      "retry": "Try again"
     }
   },
   "community": {

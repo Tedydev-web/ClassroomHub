@@ -2810,6 +2810,13 @@
       "description": "Bạn sắp biết học viên sẽ thấy gì khi họ đăng ký khóa học này",
       "copy_link": "Sao chép liên kết",
       "go_to_lms": "Đi tới LMS"
+    },
+    "shell": {
+      "loading_title": "Đang tải khoá học…",
+      "loading_description": "Vui lòng đợi trong lúc dữ liệu khoá học được tải.",
+      "load_failed_title": "Không tải được khoá học này",
+      "load_failed_description": "Dữ liệu khoá học không trả về. Kiểm tra kết nối rồi thử lại.",
+      "retry": "Thử lại"
     }
   },
   "courses": {
