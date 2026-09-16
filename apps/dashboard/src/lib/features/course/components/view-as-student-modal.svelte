@@ -40,7 +40,7 @@
     if (!isOpen && !isNavigating) open = false;
   }}
 >
-  <Dialog.Content class="w-[calc(100%-2rem)] max-w-xl! p-4">
+  <Dialog.Content class="max-w-xl! p-4">
     <Dialog.Header>
       <Dialog.Title>{$t('course.view_as_student.title')}</Dialog.Title>
       <Dialog.Description>{$t('course.view_as_student.description')}</Dialog.Description>

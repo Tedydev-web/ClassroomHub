@@ -21,7 +21,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="w-96">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>
         {$t('community.delete.title')}

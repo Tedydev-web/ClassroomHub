@@ -799,17 +799,22 @@
             if (!isOpen) shouldDeleteExercise = false;
           }}
         >
-          <Dialog.Content class="w-2/4">
+          <Dialog.Content class="ui:sm:max-w-sm">
             <Dialog.Header>
               <Dialog.Title>{$t('course.navItem.lessons.exercises.all_exercises.edit_mode.delete_modal')}</Dialog.Title>
             </Dialog.Header>
+            <!--
+              This was an <h1> inside a dialog that already has a title, so the question outranked
+              the heading above it and the page carried two level-one headings. It is the dialog's
+              description, which is what a screen reader announces after the title.
+            -->
+            <Dialog.Description class="ui:text-foreground text-base">
+              {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.sure')}
+            </Dialog.Description>
             <form onsubmit={(e) => e.preventDefault()}>
-              <h1 class="text-xl dark:text-white">
-                {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.sure')}
-              </h1>
-
               <div class="mt-5 flex items-center justify-between">
-                <Button variant="outline" type="submit" onclick={() => (shouldDeleteExercise = false)}>
+                <!-- Cancelling is not submitting; the submit type made the escape act like the act. -->
+                <Button variant="outline" type="button" onclick={() => (shouldDeleteExercise = false)}>
                   {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.no')}
                 </Button>
                 <Button disabled={isDeleting} onclick={handleDeleteExercise} loading={isDeleting}>
@@ -828,7 +833,7 @@
             if (!isOpen && passedPolicyDialog.open) closePassedPolicyDialog('cancel');
           }}
         >
-          <Dialog.Content class="max-h-[90dvh] w-[min(92vw,36rem)] overflow-y-auto">
+          <Dialog.Content class="ui:sm:max-w-xl max-h-[90dvh] overflow-y-auto">
             <Dialog.Header>
               <Dialog.Title>
                 {passedPolicyDialog.hasSingleAttemptWarning

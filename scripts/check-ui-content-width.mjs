@@ -20,13 +20,19 @@ import { readFileSync } from 'node:fs';
 const SURFACES = /\b(?:Dialog|Sheet|Drawer|AlertDialog)\.Content\b/;
 const CLASS_ATTR = /class="([^"]*)"/g;
 /**
- * `max-w-…`, with or without a responsive modifier.
+ * `max-w-…` or `w-…`, with or without a responsive modifier.
+ *
+ * `w-…` was missed by the first version of this check and is the more common mistake: the base
+ * sets `ui:w-full`, so an unprefixed `w-96` or `w-2/4` loses the same way and the surface takes
+ * the base's width instead. Measured in the built stylesheet, `.w-2\/4` sits at byte 48,746 and
+ * `.w-96` at 49,928, both before `.ui\:w-full` at 139,513. Eleven dialogs in the course surface
+ * were written this way, and not one of their widths was doing anything.
  *
  * A trailing `!` is deliberately excluded: `!important` beats the base rule wherever it lands
  * in the cascade, so those overrides do work. They are leaning on importance rather than on
  * the prefix, which is worth knowing but is not a broken screen.
  */
-const WIDTH_UTILITY = /^(?:(?:sm|md|lg|xl|2xl):)*max-w-[^!]*$/;
+const WIDTH_UTILITY = /^(?:(?:sm|md|lg|xl|2xl):)*(?:max-)?w-[^!]*$/;
 
 const files = process.argv.slice(2).filter((file) => file.endsWith('.svelte'));
 const offences = [];

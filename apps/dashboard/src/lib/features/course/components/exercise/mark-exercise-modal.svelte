@@ -156,7 +156,7 @@
     if (!isOpen) onClose();
   }}
 >
-  <Dialog.Content class="max-h-[90vh]! w-4/5 max-w-6xl!">
+  <Dialog.Content class="max-h-[90vh]! max-w-6xl!">
     <Dialog.Header class="py-2">
       <Dialog.Title class="text-base font-semibold">{data.title}</Dialog.Title>
     </Dialog.Header>

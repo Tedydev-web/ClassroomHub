@@ -45,7 +45,7 @@
 </script>
 
 <Dialog.Root bind:open onOpenChange={(isOpen) => handleOpenChange(isOpen)}>
-  <Dialog.Content class="ui:sm:max-w-2xl w-[95%]">
+  <Dialog.Content class="ui:sm:max-w-2xl">
     <Dialog.Header>
       <Dialog.Title>{$t('media_manager.delete.title')}</Dialog.Title>
       <Dialog.Description>

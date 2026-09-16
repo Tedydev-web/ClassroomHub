@@ -13,7 +13,7 @@
 </script>
 
 <Dialog.Root bind:open={$deleteMemberModal.open}>
-  <Dialog.Content class="w-96 pt-3">
+  <Dialog.Content class="ui:sm:max-w-sm pt-3">
     <Dialog.Header class="px-5 py-2">
       <Dialog.Title>{$t('course.navItem.people.delete_confirmation.title')}</Dialog.Title>
     </Dialog.Header>

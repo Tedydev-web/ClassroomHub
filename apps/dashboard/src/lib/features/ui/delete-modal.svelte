@@ -18,7 +18,7 @@
     if (!isOpen && !isLoading) open = false;
   }}
 >
-  <Dialog.Content class="w-96 p-6">
+  <Dialog.Content class="ui:sm:max-w-lg p-6">
     <Dialog.Header class="p-2">
       <Dialog.Title>{$t('delete_modal.label')}</Dialog.Title>
     </Dialog.Header>

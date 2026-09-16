@@ -71,7 +71,7 @@
     }
   }}
 >
-  <Dialog.Content class="w-[calc(100%-2rem)] max-w-md! p-4" onCloseAutoFocus={(e) => e.preventDefault()}>
+  <Dialog.Content class="max-w-md! p-4" onCloseAutoFocus={(e) => e.preventDefault()}>
     <Dialog.Header>
       <Dialog.Title>{$t('course.view_course_site.unpublished_title')}</Dialog.Title>
       <Dialog.Description>{$t('course.view_course_site.unpublished_description')}</Dialog.Description>

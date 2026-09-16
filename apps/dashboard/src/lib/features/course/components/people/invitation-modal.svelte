@@ -202,7 +202,7 @@
     if (!open) closeModal();
   }}
 >
-  <Dialog.Content class="max-h-[80vh] w-[96vw] max-w-3xl! overflow-y-auto">
+  <Dialog.Content class="max-h-[80vh] max-w-3xl! overflow-y-auto">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.people.invite_modal.title')}</Dialog.Title>
     </Dialog.Header>

@@ -175,7 +175,7 @@
     if (!isOpen) resetState();
   }}
 >
-  <Dialog.Content class="ui:sm:max-w-3xl max-h-[85vh] w-[95%] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden pb-0">
+  <Dialog.Content class="ui:sm:max-w-3xl max-h-[85vh] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden pb-0">
     <Dialog.Header>
       <Dialog.Title>{$t('media_manager.thumbnails.manage_title')}</Dialog.Title>
       <Dialog.Description>{$t('media_manager.thumbnails.manage_description')}</Dialog.Description>

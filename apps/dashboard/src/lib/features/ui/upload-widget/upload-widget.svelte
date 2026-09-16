@@ -113,7 +113,7 @@
     if (!isOpen) $handleOpenWidget.open = false;
   }}
 >
-  <Dialog.Content class="z-300! w-[95%] max-w-2xl!">
+  <Dialog.Content class="z-300! max-w-2xl!">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.landing_page.upload_widget.title')}</Dialog.Title>
     </Dialog.Header>

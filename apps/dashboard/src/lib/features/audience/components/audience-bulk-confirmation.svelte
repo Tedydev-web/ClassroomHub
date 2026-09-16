@@ -64,7 +64,7 @@
 </script>
 
 <Dialog.Root {open} onOpenChange={handleOpenChange}>
-  <Dialog.Content class="ui:sm:max-w-lg w-full">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>{$t(titleKey, { count })}</Dialog.Title>
       <Dialog.Description>{$t(bodyKey, { count })}</Dialog.Description>

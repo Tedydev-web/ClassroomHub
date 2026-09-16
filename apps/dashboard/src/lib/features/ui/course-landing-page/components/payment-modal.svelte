@@ -71,7 +71,7 @@
 </script>
 
 <Dialog.Root {open} onOpenChange={handleOpenChange}>
-  <Dialog.Content class="w-96">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>Process course payment</Dialog.Title>
     </Dialog.Header>

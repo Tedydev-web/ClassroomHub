@@ -24,7 +24,7 @@
     if (!isOpen) resetForm();
   }}
 >
-  <Dialog.Content class="w-3/5">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.certificates.issue_modal.title')}</Dialog.Title>
     </Dialog.Header>

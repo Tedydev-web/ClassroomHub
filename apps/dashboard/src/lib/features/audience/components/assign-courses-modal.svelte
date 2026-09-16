@@ -74,7 +74,7 @@
        nothing is deduped — Dialog.Content keeps its own `ui:max-w-[calc(100%-2rem)]` and the
        dialog opens as wide as the window. An earlier note here had half of it: the variant
        matters, but only once the prefix lets the merge see both. -->
-  <Dialog.Content class="ui:sm:max-w-md mx-auto w-4/5">
+  <Dialog.Content class="ui:sm:max-w-md mx-auto">
     <Dialog.Header>
       <Dialog.Title>{$t('audience.assign.title')}</Dialog.Title>
       <Dialog.Description>{$t('audience.assign.description')}</Dialog.Description>

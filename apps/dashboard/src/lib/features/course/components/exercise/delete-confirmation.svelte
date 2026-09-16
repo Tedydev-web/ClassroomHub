@@ -15,7 +15,7 @@
 </script>
 
 <Dialog.Root bind:open={$deleteConfirmation.open}>
-  <Dialog.Content class="w-96">
+  <Dialog.Content class="ui:sm:max-w-sm">
     <Dialog.Header>
       <Dialog.Title>{title}</Dialog.Title>
     </Dialog.Header>

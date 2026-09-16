@@ -17,7 +17,7 @@
 </script>
 
 <Dialog.Root bind:open={openDeleteModal}>
-  <Dialog.Content class="w-96">
+  <Dialog.Content class="ui:sm:max-w-sm">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.news_feed.delete_modal.title')}</Dialog.Title>
     </Dialog.Header>

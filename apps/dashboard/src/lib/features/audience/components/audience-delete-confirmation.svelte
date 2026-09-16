@@ -15,7 +15,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="ui:sm:max-w-md w-full">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('audience.delete.title')}</Dialog.Title>
       <Dialog.Description>{$t('audience.delete.description')}</Dialog.Description>

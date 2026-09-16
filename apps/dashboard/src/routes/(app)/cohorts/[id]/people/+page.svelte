@@ -291,7 +291,7 @@
 <InviteMembersModal cohortId={data.cohortId} />
 
 <Dialog.Root bind:open={isDeleteModalOpen}>
-  <Dialog.Content class="w-96 pt-3">
+  <Dialog.Content class="ui:sm:max-w-lg pt-3">
     <Dialog.Header class="px-5 py-2">
       <Dialog.Title>{$t('course.navItem.people.delete_confirmation.title')}</Dialog.Title>
     </Dialog.Header>
