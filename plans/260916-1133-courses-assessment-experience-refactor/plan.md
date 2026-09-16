@@ -254,6 +254,57 @@ approval before it starts.**
 **Phase 1 — Assessment workspace (inherits E1).** Extract the canonical composer from the legacy
 list into a page-level two-pane workspace with an on-demand outline and preview as a mode.
 
+**Third premise correction — the composer was never nested in the legacy list.**
+
+Read the template before planning any more of this phase. `edit-mode.svelte` renders the composer in
+a section that is a *sibling* of the legacy list, and the two guards are mutually exclusive: the
+composer block requires `isAssessmentWorkspaceOpen`, the list requires `!isAssessmentWorkspaceOpen`.
+So E1's stated exit criterion — "the composer is no longer nested in the legacy editor list" — was
+already satisfied by accident, and "move the mount point" was work that did not exist.
+
+What is actually there: **a two-pane workspace panel, already built, parked behind
+`const USE_ASSESSMENT_WORKSPACE_PANEL = false`** (`edit-mode.svelte:132`). Roughly 190 lines of
+outline aside plus editor pane that never render. That is a partial implementation of E1's own
+target, not a fork in the road.
+
+And the mechanism that explains why it was parked: opening a canonical item sets
+`activeCanonicalQuestionId`, which makes `isAssessmentWorkspaceOpen` true, which used to fail the
+panel's own `!isAssessmentWorkspaceOpen` guard. **Clicking a row in the outline destroyed the
+outline.** The panel could never have worked for canonical items.
+
+So Phase 1 is: put the composer *inside* the panel's editor pane, reach parity with what the legacy
+list can do, then flip the flag. Same three words as before, a different edit, and now with a
+mechanism behind it.
+
+**Done so far**
+
+- `6593aa157` — composer extracted into one `assessmentComposerPane` snippet, rendered inside the
+  editor pane when the panel is on and standalone when it is off. The panel's guard no longer
+  unmounts itself when the composer opens. `openAssessmentComposer` now switches to the editor pane,
+  because below `xl` only one pane shows at a time and the composer would otherwise open off-screen.
+- `347538fd2` — `ExerciseQuestion.SectionAfterBehavior` added under the pane's section editor. The
+  legacy list renders it per section; without this the flip would silently remove a teacher's ability
+  to say where a candidate goes after a section. Found by asking what the list can do that the pane
+  cannot — repeat that question before the flip.
+
+`svelte-check` stays at 344 errors with the flag both off **and** on, so the parked path carries no
+new type errors.
+
+**Blocking the flip:** the flag is still `false`. Flipping it changes the whole authoring screen for
+every teacher, and this session had no way to look at it. It is a one-line change and a product
+decision — which authoring layout ships — not a default to take silently. The comment at `:124` says
+the in-place layout was deliberate "until the new authoring design is settled", so the flip is
+exactly the moment of settling it.
+
+**Noted, deliberately not touched in the structural diff:** `:1033-1037` has an `{:else if
+reorderQuestions}` and an `{:else}` branch that render the identical snippet, and the inner
+`{#if newAssessmentComposerSectionId !== section.id}` at `:1044` / `:1080` is always true where it
+renders. Dead, harmless, and cleaning them inside a structural commit would obscure it.
+
+---
+
+*Superseded, kept because the reasoning below is still the reason the move was cheap:*
+
 **Decision: incremental extraction — move the mount point, change nothing else.**
 
 The evidence that makes this cheap, and that corrects the red team's stated fear ("moving the
