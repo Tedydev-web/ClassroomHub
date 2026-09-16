@@ -50,7 +50,6 @@
     getExerciseEditorQuestionTypeLabel,
     getQuestionTypeKey,
     getQuestionTypeOptionById,
-    questionTypeSupportsOptions,
     toExerciseQuestionModel
   } from './question-type-utils';
   import {
@@ -67,6 +66,7 @@
   import { courseApi } from '$features/course/api';
   import AssessmentItemComposer from './assessment-item-composer.svelte';
   import { countAssessmentQuestions, countSectionQuestions } from './assessment-item-summary';
+  import { applyQuestionTypeChange } from './question-type-transition';
 
   const flipDurationMs = 200;
   const uploadLimits = getResolvedUploadLimits();
@@ -246,76 +246,30 @@
     return errors[sectionId]?.[errorKey];
   }
 
-  function makeDefaultOption() {
-    return {
-      id: `${new Date().getTime()}-form`,
-      label: '',
-      value: '',
-      isCorrect: false
-    };
-  }
-
-  function makeTrueFalseOptions(correctValue = true) {
-    const ts = Date.now();
-    return [
-      { id: `${ts}-true-form`, label: 'True', value: 'true', isCorrect: correctValue },
-      { id: `${ts}-false-form`, label: 'False', value: 'false', isCorrect: !correctValue }
-    ];
-  }
-
-  function makeThumbsOptions() {
-    const ts = Date.now();
-    return [
-      { id: `${ts}-yes-form`, label: 'Yes', value: 'true', isCorrect: false },
-      { id: `${ts}-no-form`, label: 'No', value: 'false', isCorrect: false }
-    ];
-  }
-
   function onQuestionTypeChange(questionId: string | number, value: string) {
     if (!value) return;
 
     const nextQuestionType = getQuestionTypeOptionById(Number(value));
-    const nextQuestionTypeKey = nextQuestionType.key;
 
     questionnaire.update((q) => {
       const idx = q.questions.findIndex((qu) => String(qu.id) === String(questionId));
       if (idx === -1) return q;
 
       const current = q.questions[idx];
-      let nextOptions = current.options ?? [];
-      let nextSettings = current.settings ?? {};
-
-      if (nextQuestionTypeKey === QUESTION_TYPE_KEY.TRUE_FALSE) {
-        const correctValue = (current.settings as { correctValue?: boolean })?.correctValue ?? true;
-        nextSettings = { ...nextSettings, correctValue };
-        nextOptions = makeTrueFalseOptions(correctValue);
-      } else if (nextQuestionTypeKey === QUESTION_TYPE_KEY.THUMBS) {
-        nextSettings = { ...nextSettings };
-        nextOptions = makeThumbsOptions();
-      } else if (questionTypeSupportsOptions(nextQuestionTypeKey)) {
-        const hasActiveOptions = nextOptions.some((option) => !option.deletedAt);
-        if (!hasActiveOptions) {
-          nextOptions = [...nextOptions, makeDefaultOption()];
-        }
-      } else {
-        nextOptions = [];
-      }
-
-      if (nextQuestionTypeKey === QUESTION_TYPE_KEY.VIDEO_RECORDING) {
-        nextSettings = {
-          ...nextSettings,
-          maxDurationSeconds: 60,
-          allowRetakes: true
-        };
-      }
+      // What a type change keeps and what it discards lives in `question-type-transition.ts`,
+      // where it is asserted rather than buried inside this store update.
+      const { options, settings } = applyQuestionTypeChange(
+        { options: current.options ?? [], settings: current.settings ?? {} },
+        nextQuestionType.key
+      );
 
       const next = [...q.questions];
       next[idx] = {
         ...current,
         questionType: nextQuestionType,
         questionTypeId: nextQuestionType.id,
-        settings: nextSettings,
-        options: nextOptions,
+        settings,
+        options,
         isDirty: true
       };
 
