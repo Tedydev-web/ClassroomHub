@@ -77,3 +77,29 @@ surfaces.
 No library work is scheduled. The restyling phases build on the primitives already present, and the
 budget a migration would have consumed goes to the three files holding 47% of the surface (D20)
 instead — which is what actually blocks safe restyling.
+
+## Two list languages, and which one is canonical — measured 2026-09-16
+
+The owner's complaint about the exercise authoring screen was that it *"không giống với repo gốc
+đang làm UI/UX cho phần course này nói chung"* — it does not look like the rest of the course
+surface. That is a claim about a shared visual language, so it was tested against one: which
+primitive does a list of records actually use here?
+
+| Family | Files | Where |
+|---|---|---|
+| `Item` (`@cio/ui/base/item`) | **13** | exam list, media, cohort cards, community, billing, widgets, video, upgrade banner, org setup, course tags, card list |
+| `ResourceListRow` (`@cio/ui/custom/resource-list-row`) | **6** | courses list, cohorts list, LMS dashboard, cohort list rows, course list row, student exercise list |
+
+**So the exam list is not the deviation — it uses the majority family.** The hypothesis under
+test was that Exam and Exercise hand-rolled their lists while the rest of Courses used a shared
+row; it does not survive. `exam-list.svelte` composes `Item.Root`, `Item.Content`, `Item.Title`,
+`Item.Description` and `Item.Actions`, which is the same vocabulary as media and community.
+
+Recorded rather than acted on. Two shared families for one job is a real inconsistency, but
+collapsing them is a visual change across nineteen files in six features, most of them outside
+this programme's scope, and neither family is wrong today. It needs the owner's eyes and an
+explicit decision, not a sweep.
+
+This is the second time a claim about "not matching the original repo" has been checked and not
+held: `pages/exercise.svelte` differs from upstream by **one line**, and its tabs are identical.
+Whatever is wrong with that screen, it is not that it drifted from upstream's structure.
