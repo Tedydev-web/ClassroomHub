@@ -27,7 +27,7 @@ programme has argued for in writing — nothing is merely unexamined.
 | Hardcoded palette colours | **6** | the section colour picker (2), the certificate canvas (1), and two mentions inside an explanatory comment |
 | Arbitrary font sizes | **24** | the course card's container-query compact tier (13) and certificate rendering (11) |
 | Modals that open as wide as the window | **0** | |
-| Features switched off by a hardcoded constant | **1** | `USE_ASSESSMENT_WORKSPACE_PANEL`, awaiting a decision |
+| Features switched off by a hardcoded constant | **0** | `USE_ASSESSMENT_WORKSPACE_PANEL` and its panel are deleted |
 | Empty handlers and hidden affordances | **0** | |
 | Translation keys that print their own path | **0** | |
 | Links pointing at routes that do not exist | **0** | |
@@ -48,7 +48,7 @@ delete what cannot run.** That is the whole of it.
 deleting the feature it was hired to finish.
 
 - **Deliberate** — the composer, the import path, the canonical model. Keep and finish.
-- **Accidental** — the two-pane workspace for legacy questions, now reverted.
+- **Accidental** — the two-pane workspace for legacy questions, reverted and now deleted outright.
 
 Measured: `pages/exercise.svelte` differs from upstream by **one line**; the tabs are identical; the
 two-card layout is upstream's own. After the revert, `edit-mode.svelte` is upstream's structure plus
@@ -75,15 +75,23 @@ run, because it targets a schema and an API route that no longer exist.
 **Structure.** Six pure-function seams out of the three oversized files, 66 tests, each move
 behaviour-preserving by construction.
 
+### Settled without asking
+
+**The two-card meta layout stays.** It is upstream's own design and the fork differs from it by one
+line; the burden is on any change, not on keeping it. Reworking it is a visual choice that belongs
+with the screens awaiting review, not a gate on the programme.
+
+**The parked workspace panel is deleted**, 261 lines including the state only it read. It was this
+session's own mess, behind a constant that was never true, from a layout the owner rejected on
+sight. Keeping a switched-off copy of a rejected idea is not optionality.
+
 ### Open, and blocked on the owner
 
 | Decision | What it unblocks |
 |---|---|
 | Does AI ship while the gateway is off? | D5 — the suggestion offered though unusable. D6 is already resolved by deletion. |
-| The two-card meta layout — upstream's, kept or reworked? | the shape of the visual pass |
 | Which of the five schema-only interaction kinds are wanted? | whether that is a phase or a footnote |
 | `Page.Root` width variant — may it reach `org/` and `lms/`? | one shell across the app |
-| The parked workspace panel — delete or keep? | 190 lines, and whether the two-pane idea returns |
 
 ### Open, and needs someone looking at the screen
 
