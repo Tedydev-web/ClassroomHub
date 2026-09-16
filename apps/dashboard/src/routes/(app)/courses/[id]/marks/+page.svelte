@@ -69,7 +69,7 @@
 
     <Page.Body>
       {#snippet child()}
-        <MarksPage marksData={data.marksData} />
+        <MarksPage marksData={data.marksData} loadFailed={data.loadFailed} />
       {/snippet}
     </Page.Body>
   </Page.Root>

@@ -7,7 +7,8 @@ export const load = async ({ params, cookies }) => {
   if (!courseId) {
     return {
       courseId: '',
-      marksData: null
+      marksData: null,
+      loadFailed: false
     };
   }
 
@@ -18,6 +19,10 @@ export const load = async ({ params, cookies }) => {
 
   return {
     courseId,
-    marksData
+    marksData,
+    // A failed gradebook fetch must not reach the page as an empty one: "no students"
+    // and "we could not load your students" are different messages, and only the
+    // second is true here.
+    loadFailed: !result.ok
   };
 };

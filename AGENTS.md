@@ -889,6 +889,40 @@ Use `pnpm --filter @cio/db seed -- --all --extended-demo` only when multi-tenant
 
 ## Agent skills
 
+> [!IMPORTANT] MANDATORY SKILL DISCOVERY (PRE-FLIGHT CHECK)
+> Before executing any task, you MUST evaluate the user's intent against the "Skill Dispatch Matrix" below. If the intent matches, you must explicitly acknowledge the matched skill (e.g., "Matched intent to skill: [Skill Name]") and strictly follow its `SKILL.md`.
+
+### Skill Dispatch Matrix
+
+When the user asks for or implies one of the intents below (in either English or Vietnamese), **YOU MUST** activate and read the corresponding skill in `skills/` before proceeding.
+
+| User Intent (Prompt Signals) | Target Skill to Activate |
+| :--- | :--- |
+| **Feature Development & Git** | |
+| "làm tính năng mới", "ship feature", "tạo PR", "fix bug và tạo PR" | `skills/ship-feature/SKILL.md` |
+| "commit code", "lưu code", "stage files" | `skills/stage-and-commit/SKILL.md` |
+| "tạo issue", "mở ticket lỗi" | `skills/create-issue/SKILL.md` |
+| **UI, UX & Motion Design** | |
+| "code UI đẹp", "thiết kế page", "tránh AI slop", "giao diện pro" | `skills/frontend-design/SKILL.md` |
+| "thêm hiệu ứng iOS", "chuyển động mượt", "lướt vuốt", "vật lý" | `skills/apple-design/SKILL.md` |
+| "làm mượt UI", "chăm chút từng li", "độ nảy", "micro-interaction" | `skills/emil-design-eng/SKILL.md` |
+| "tìm chỗ cần thêm animation", "audit motion" | `skills/find-animation-opportunities/SKILL.md` |
+| "review animation", "kiểm tra code motion" | `skills/review-animations/SKILL.md` |
+| "cái hiệu ứng nảy nảy...", "gọi là gì", "tên hiệu ứng này là gì" | `skills/animation-vocabulary/SKILL.md` |
+| **Ideation, Planning & Architecture** | |
+| "viết PRD", "lên kế hoạch", "spec tính năng" | `skills/write-prd/SKILL.md` |
+| "làm vài mẫu thử", "cho vài phương án UI", "prototype" | `skills/prototype/SKILL.md` |
+| "chọn thư viện gì", "dùng lib nào cho OTP/charts" | `skills/pick-ui-library/SKILL.md` |
+| **Content, Documentation & Media** | |
+| "viết tài liệu", "docs", "hướng dẫn tính năng X" | `skills/write-docs/SKILL.md` |
+| "thêm ảnh vào docs", "chèn screenshot" | `skills/add-docs-image/SKILL.md` |
+| "tạo thumbnail", "ảnh cover blog", "ảnh đại diện video" | `skills/create-thumbnail/SKILL.md` |
+| "viết changelog", "bản tin tuần", "cập nhật thứ Hai" | `skills/write-changelog/SKILL.md` |
+| "tuần này ship được gì", "tổng hợp PR tuần", "recap hoạt động" | `skills/summarize-activity/SKILL.md` |
+| "sửa văn phong", "bớt mùi AI", "giống người viết", "humanize" | `skills/humanizer/SKILL.md` |
+| **Miscellaneous** | |
+| "nói ngắn thôi", "bật mode adhd", "trực diện" | `skills/i-have-adhd/SKILL.md` |
+
 ### Issue tracker
 
 Issues and specs live as markdown files under `.scratch/<feature-slug>/` in this repo. See `docs/agents/issue-tracker.md`.

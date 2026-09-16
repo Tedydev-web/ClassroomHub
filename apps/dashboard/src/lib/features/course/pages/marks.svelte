@@ -1,6 +1,9 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import { Empty } from '@cio/ui/custom/empty';
+  import { Button } from '@cio/ui/base/button';
   import UserXIcon from '@lucide/svelte/icons/user-x';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
   import * as Table from '@cio/ui/base/table';
   import * as Tooltip from '@cio/ui/base/tooltip';
@@ -10,9 +13,22 @@
 
   interface Props {
     marksData: MarksPageData | null;
+    /**
+     * The gradebook request failed, which is not the same as a course with no students.
+     * Without this the page renders the empty state and tells the teacher something untrue.
+     */
+    loadFailed?: boolean;
   }
 
-  let { marksData }: Props = $props();
+  let { marksData, loadFailed = false }: Props = $props();
+
+  async function retry() {
+    try {
+      await invalidateAll();
+    } catch (error) {
+      console.error('marks retry error:', error);
+    }
+  }
 
   const students = $derived(marksData?.students ?? []);
   const exercises = $derived(marksData?.exercises ?? []);
@@ -28,7 +44,18 @@
   }
 </script>
 
-{#if students.length > 0}
+{#if loadFailed}
+  <Empty
+    variant="page"
+    icon={TriangleAlertIcon}
+    title={$t('course.navItem.marks.load_failed_title')}
+    description={$t('course.navItem.marks.load_failed_description')}
+  >
+    {#snippet children()}
+      <Button onclick={retry}>{$t('course.navItem.marks.retry')}</Button>
+    {/snippet}
+  </Empty>
+{:else if students.length > 0}
   <div class="rounded-md border border-gray-300 dark:border-neutral-600">
     <Tooltip.Provider>
       <Table.Root class="">

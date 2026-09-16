@@ -3409,7 +3409,10 @@
           "csv": "Export as CSV",
           "pdf": "Export as PDF"
         },
-        "no_student": "No Student Added"
+        "no_student": "No Student Added",
+        "load_failed_title": "Couldn't load the gradebook",
+        "load_failed_description": "The request failed, so we cannot show marks right now. This course may still have students.",
+        "retry": "Try again"
       },
       "compliance": {
         "title": "Compliance",
@@ -4093,7 +4096,10 @@
     },
     "user_analytics": {
       "title": "Student profile",
-      "page_subtitle": "Progress, grades, and activity across their courses."
+      "page_subtitle": "Progress, grades, and activity across their courses.",
+      "load_failed_title": "Couldn't load this learner's progress",
+      "load_failed_description": "The request failed. This is not the same as having no progress yet — try again.",
+      "retry": "Try again"
     },
     "import": {
       "page_subtitle": "Add many people at once by email, then assign courses or cohorts if you like.",

@@ -762,7 +762,10 @@
     "page_subtitle": "Xem ai thuộc tổ chức của bạn, ai đang học, ai được mời và cách liên hệ với họ.",
     "user_analytics": {
       "title": "Hồ sơ sinh viên",
-      "page_subtitle": "Tiến độ, điểm số và hoạt động trên các khóa học của họ."
+      "page_subtitle": "Tiến độ, điểm số và hoạt động trên các khóa học của họ.",
+      "load_failed_title": "Không tải được tiến độ của học viên này",
+      "load_failed_description": "Yêu cầu thất bại. Điều này khác với việc học viên chưa có tiến độ — hãy thử lại.",
+      "retry": "Thử lại"
     },
     "delete": {
       "action": "Xóa",
@@ -1354,7 +1357,10 @@
           "csv": "Xuất dưới dạng CSV",
           "pdf": "Xuất dưới dạng PDF"
         },
-        "avg_grade": "Điểm trung bình"
+        "avg_grade": "Điểm trung bình",
+        "load_failed_title": "Không tải được bảng điểm",
+        "load_failed_description": "Yêu cầu thất bại nên chưa thể hiển thị điểm. Lớp này vẫn có thể đang có học sinh.",
+        "retry": "Thử lại"
       },
       "submissions": {
         "title": "Bài tập đã gửi",
