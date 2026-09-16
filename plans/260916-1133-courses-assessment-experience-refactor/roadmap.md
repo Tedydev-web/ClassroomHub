@@ -27,6 +27,7 @@ programme has argued for in writing — nothing is merely unexamined.
 | Hardcoded palette colours | **6** | the section colour picker (2), the certificate canvas (1), and two mentions inside an explanatory comment |
 | Arbitrary font sizes | **24** | the course card's container-query compact tier (13) and certificate rendering (11) |
 | Modals that open as wide as the window | **0** | |
+| Dialog width classes that silently do nothing | **0** | was **35** — every unprefixed `w-*` lost to the base's `ui:w-full`, so no dialog had the width its author wrote. The guard only checked `max-w-*`; it now checks `w-*` too |
 | Features switched off by a hardcoded constant | **0** | `USE_ASSESSMENT_WORKSPACE_PANEL` and its panel are deleted |
 | Empty handlers and hidden affordances | **0** | |
 | Translation keys that print their own path | **0** | |
