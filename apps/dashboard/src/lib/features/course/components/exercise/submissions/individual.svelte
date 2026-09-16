@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Spinner } from '@cio/ui/base/spinner';
   import { ExerciseQuestion } from '@cio/ui';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
   import { Badge } from '@cio/ui/base/badge';
@@ -24,12 +23,11 @@
   import type { SubmissionListItem } from '$features/course/utils/types';
 
   interface Props {
-    isLoading?: boolean;
     submissionGroups?: ExerciseSubmissionStudentGroup[];
     enrolledStudentKeys?: string[];
   }
 
-  let { isLoading = $bindable(false), submissionGroups = [], enrolledStudentKeys = [] }: Props = $props();
+  let { submissionGroups = [], enrolledStudentKeys = [] }: Props = $props();
 
   let studentSelected = $state(0);
   let selectedAttemptByStudentKey = $state<Record<string, number>>({});
@@ -211,9 +209,7 @@
   }
 </script>
 
-{#if isLoading}
-  <Spinner />
-{:else if submissionGroups?.length}
+{#if submissionGroups?.length}
   <div class="mt-2 mb-5 flex w-full gap-1 overflow-auto">
     {#each submissionGroups as studentGroup, i (studentGroup.studentKey)}
       <button

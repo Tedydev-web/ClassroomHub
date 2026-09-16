@@ -1,6 +1,5 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { Spinner } from '@cio/ui/base/spinner';
   import { ExerciseQuestion } from '@cio/ui';
 
   import { submissions } from './store';
@@ -12,11 +11,6 @@
   import { toExerciseQuestionModel } from '../question-type-utils';
   import { getExerciseSectionDisplayHtml } from '$features/course/utils/exercise-section-utils';
 
-  interface Props {
-    isLoading?: boolean;
-  }
-
-  let { isLoading = $bindable(true) }: Props = $props();
   const sectionFallbackTitle = $derived($t('course.navItem.lessons.exercises.all_exercises.section.fallback_title'));
 
   function toAnswerData(answerData: unknown): AnswerData | null {
@@ -66,9 +60,7 @@
   }
 </script>
 
-{#if isLoading}
-  <Spinner />
-{:else if browser}
+{#if browser}
   <div class="flex flex-col gap-6">
     <p class="mb-3 text-2xl">
       {$t('course.navItem.lessons.exercises.all_exercises.analytics.summary.question_chart')}

@@ -99,11 +99,11 @@
     </Tabs.List>
 
     <Tabs.Content value="summary" class="pt-2">
-      <Summary isLoading={false} />
+      <Summary />
     </Tabs.Content>
 
     <Tabs.Content value="individual" class="pt-2">
-      <Individual isLoading={false} {submissionGroups} {enrolledStudentKeys} />
+      <Individual {submissionGroups} {enrolledStudentKeys} />
     </Tabs.Content>
   </Tabs.Root>
 {:else}
