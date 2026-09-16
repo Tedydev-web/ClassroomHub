@@ -14,14 +14,22 @@
   import MarkExerciseModal from '$features/course/components/exercise/mark-exercise-modal.svelte';
   import { STATUS } from '$features/course/components/exercise/constants';
   import { onMount } from 'svelte';
+  import * as Empty from '@cio/ui/base/empty';
 
   interface Props {
     courseId: string;
     sections: SubmissionSection[];
     submissionIdData: { [key: string]: SubmissionIdData };
+    /** The board could not be fetched. Empty columns would claim nothing was handed in. */
+    failed?: boolean;
   }
 
-  let { courseId, sections: initialSections = [], submissionIdData: initialSubmissionIdData = {} }: Props = $props();
+  let {
+    courseId,
+    sections: initialSections = [],
+    submissionIdData: initialSubmissionIdData = {},
+    failed = false
+  }: Props = $props();
 
   const flipDurationMs = 300;
   let sections = $state<SubmissionSection[]>([]);
@@ -215,68 +223,77 @@
   {isSaving}
 />
 
-<div class="flex items-center overflow-x-scroll">
-  {#each sections as { id, title, items }, idx (id)}
-    <div
-      class="section ui:bg-muted ui:border-border mr-3 h-80 overflow-hidden rounded-md border p-3"
-      animate:flip={{ duration: flipDurationMs }}
-    >
-      <div class="mb-2 flex items-center">
-        <Chip value={items.length} />
-        <p class="ml-2 dark:text-white">{title}</p>
-      </div>
+{#if failed}
+  <Empty.Root class="ui:border-border ui:rounded-lg ui:border ui:border-dashed">
+    <Empty.Header>
+      <Empty.Title>{$t('course.navItem.submissions.load_failed_title')}</Empty.Title>
+      <Empty.Description>{$t('course.navItem.submissions.load_failed_description')}</Empty.Description>
+    </Empty.Header>
+  </Empty.Root>
+{:else}
+  <div class="flex items-center overflow-x-scroll">
+    {#each sections as { id, title, items }, idx (id)}
       <div
-        class="content mb-3 overflow-y-auto pr-2"
-        use:dndzone={{
-          items,
-          flipDurationMs,
-          dropTargetStyle: { outline: 'blue' }
-        }}
-        onconsider={handleDndConsiderCards(idx)}
-        onfinalize={handleDndFinalizeCards(idx)}
+        class="section ui:bg-muted ui:border-border mr-3 h-80 overflow-hidden rounded-md border p-3"
+        animate:flip={{ duration: flipDurationMs }}
       >
-        {#each items as item (item.id)}
-          <div
-            class="{item.isEarly
-              ? 'ui:border-border'
-              : 'border-red-700'} ui:bg-card mx-0 my-2 w-full rounded-md border px-3 py-3 shadow-sm"
-            animate:flip={{ duration: flipDurationMs }}
-          >
-            <a
-              class="mb-2 flex w-full cursor-pointer items-center text-black"
-              href={`${page.url.pathname}?submissionId=${item.id}`}
+        <div class="mb-2 flex items-center">
+          <Chip value={items.length} />
+          <p class="ml-2 dark:text-white">{title}</p>
+        </div>
+        <div
+          class="content mb-3 overflow-y-auto pr-2"
+          use:dndzone={{
+            items,
+            flipDurationMs,
+            dropTargetStyle: { outline: 'blue' }
+          }}
+          onconsider={handleDndConsiderCards(idx)}
+          onfinalize={handleDndFinalizeCards(idx)}
+        >
+          {#each items as item (item.id)}
+            <div
+              class="{item.isEarly
+                ? 'ui:border-border'
+                : 'border-red-700'} ui:bg-card mx-0 my-2 w-full rounded-md border px-3 py-3 shadow-sm"
+              animate:flip={{ duration: flipDurationMs }}
             >
-              <UserAvatar src={item.student.avatarUrl} alt="Student avatar" class="h-6 w-6" />
-              <p class="ml-2 text-sm dark:text-white">
-                {item.student.username}
+              <a
+                class="mb-2 flex w-full cursor-pointer items-center text-black"
+                href={`${page.url.pathname}?submissionId=${item.id}`}
+              >
+                <UserAvatar src={item.student.avatarUrl} alt="Student avatar" class="h-6 w-6" />
+                <p class="ml-2 text-sm dark:text-white">
+                  {item.student.username}
+                </p>
+              </a>
+              <a class="ui:text-primary text-md" href="{page.url.pathname}?submissionId={item.id}">
+                {item.exercise.title}
+              </a>
+              <a
+                class="my-2 flex items-center text-black no-underline hover:underline"
+                href={`/courses/${courseApi.course?.id}/exercises/${item.exercise.id}`}
+              >
+                <p class="text-grey text-sm dark:text-white">{item.exercise.title}</p>
+              </a>
+              {#if item.lesson}
+                <p class="text-grey text-sm dark:text-white">#{item.lesson.title}</p>
+              {/if}
+              {#if getWorkflowHintKey(item)}
+                <p class="ui:text-muted-foreground text-xs">
+                  {$t(getWorkflowHintKey(item))}
+                </p>
+              {/if}
+              <p class="text-xs text-gray-500 dark:text-white">
+                {item.submittedAt}
               </p>
-            </a>
-            <a class="ui:text-primary text-md" href="{page.url.pathname}?submissionId={item.id}">
-              {item.exercise.title}
-            </a>
-            <a
-              class="my-2 flex items-center text-black no-underline hover:underline"
-              href={`/courses/${courseApi.course?.id}/exercises/${item.exercise.id}`}
-            >
-              <p class="text-grey text-sm dark:text-white">{item.exercise.title}</p>
-            </a>
-            {#if item.lesson}
-              <p class="text-grey text-sm dark:text-white">#{item.lesson.title}</p>
-            {/if}
-            {#if getWorkflowHintKey(item)}
-              <p class="ui:text-muted-foreground text-xs">
-                {$t(getWorkflowHintKey(item))}
-              </p>
-            {/if}
-            <p class="text-xs text-gray-500 dark:text-white">
-              {item.submittedAt}
-            </p>
-          </div>
-        {/each}
+            </div>
+          {/each}
+        </div>
       </div>
-    </div>
-  {/each}
-</div>
+    {/each}
+  </div>
+{/if}
 
 <style>
   .section {

@@ -1409,7 +1409,9 @@
         },
         "tab_exercises": "Bài tập",
         "tab_exams": "Bài thi",
-        "tab_papers": "Quản lý đề thi"
+        "tab_papers": "Quản lý đề thi",
+        "load_failed_title": "Không tải được bài nộp",
+        "load_failed_description": "Bảng bài nộp không trả về. Đây không phải là chưa ai nộp gì — hãy thử lại."
       },
       "attendance": {
         "title": "Tham dự",
@@ -5861,7 +5863,9 @@
       "duplicate_failed": "Không nhân bản được đề này",
       "duplicated_notice": "Đã nhân bản. Đặt lại thời gian và mật khẩu trước khi gửi link.",
       "settings_tab": "Cài đặt",
-      "paper_tab": "Đề thi"
+      "paper_tab": "Đề thi",
+      "load_failed_title": "Không tải được danh sách đề thi",
+      "load_failed_description": "Danh sách không trả về. Đây không phải là khoá học chưa có đề nào — hãy thử lại."
     },
     "settings": {
       "title": "Tiêu đề đề thi",

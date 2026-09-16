@@ -3405,7 +3405,9 @@
         },
         "tab_exercises": "Exercises",
         "tab_exams": "Exams",
-        "tab_papers": "Manage exams"
+        "tab_papers": "Manage exams",
+        "load_failed_title": "The submissions could not be loaded",
+        "load_failed_description": "The board did not come back. This is not the same as nobody having handed anything in — try again."
       },
       "marks": {
         "title": "Marks",
@@ -5852,7 +5854,9 @@
       "duplicate_failed": "Could not duplicate that exam",
       "duplicated_notice": "Copied. Set its window and password before sending the link.",
       "settings_tab": "Settings",
-      "paper_tab": "Paper"
+      "paper_tab": "Paper",
+      "load_failed_title": "The exam papers could not be loaded",
+      "load_failed_description": "The list did not come back. This is not the same as the course having no papers — try again."
     },
     "settings": {
       "title": "Exam title",

@@ -20,7 +20,16 @@ export const load = async ({ params, cookies }) => {
   const courseId = params.id || '';
 
   if (!courseId) {
-    return { courseId: '', sections: [], submissionIdData: {}, attempts: [], attemptsFailed: false, exams: [] };
+    return {
+      courseId: '',
+      sections: [],
+      submissionIdData: {},
+      attempts: [],
+      attemptsFailed: false,
+      exams: [],
+      submissionsFailed: false,
+      examsFailed: false
+    };
   }
 
   const [result, attempts, exams] = await Promise.all([
@@ -41,6 +50,10 @@ export const load = async ({ params, cookies }) => {
     // Told apart from "nobody sat anything", which is what an empty list on a failed fetch
     // would otherwise claim to a teacher who has no way to know the difference.
     attemptsFailed: !attempts.ok,
-    exams: exams.ok ? exams.body.data : []
+    exams: exams.ok ? exams.body.data : [],
+    // The sittings tab already told the truth. The other two claimed nothing was handed in
+    // and no paper exists, which a teacher has no way to tell apart from a failed fetch.
+    submissionsFailed: !result.ok,
+    examsFailed: !exams.ok
   };
 };

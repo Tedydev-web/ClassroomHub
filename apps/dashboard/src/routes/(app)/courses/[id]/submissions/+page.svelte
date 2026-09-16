@@ -77,11 +77,12 @@
               courseId={data.courseId}
               sections={data.sections || []}
               submissionIdData={data.submissionIdData || {}}
+              failed={data.submissionsFailed ?? false}
             />
           </UnderlineTabs.Content>
 
           <UnderlineTabs.Content value="papers" class="mt-4">
-            <ExamList courseId={data.courseId} exams={data.exams ?? []} />
+            <ExamList courseId={data.courseId} exams={data.exams ?? []} failed={data.examsFailed ?? false} />
           </UnderlineTabs.Content>
         </UnderlineTabs.Root>
       {/snippet}

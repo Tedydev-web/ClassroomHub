@@ -49,7 +49,16 @@
    * our own history: the `.docx` import once published forty questions with seventeen
    * answer keys missing, and nobody knew until students sat it.
    */
-  let { courseId, exams: initialExams }: { courseId: string; exams: ExamRow[] } = $props();
+  let {
+    courseId,
+    exams: initialExams,
+    failed = false
+  }: {
+    courseId: string;
+    exams: ExamRow[];
+    /** The list could not be fetched. Saying the course has no paper would be a lie, not a default. */
+    failed?: boolean;
+  } = $props();
 
   /**
    * The loader is the source; `refreshed` only holds what a button fetched since. Storing
@@ -361,7 +370,14 @@
     </div>
   </div>
 
-  {#if exams.length === 0}
+  {#if failed}
+    <Empty.Root class="ui:border-border ui:rounded-lg ui:border ui:border-dashed">
+      <Empty.Header>
+        <Empty.Title>{$t('exam.manage.load_failed_title')}</Empty.Title>
+        <Empty.Description>{$t('exam.manage.load_failed_description')}</Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
+  {:else if exams.length === 0}
     <!--
       The empty state carries the explanation that used to sit as a permanent footnote
       under a populated list, where nobody reading it needed it. Somebody with no exams is
