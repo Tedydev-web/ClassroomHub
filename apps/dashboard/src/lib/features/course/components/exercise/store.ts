@@ -472,7 +472,10 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
           id: nextQuestionId,
           name: `${nextQuestionId}`,
           value: '',
-          points: 0,
+          // One, the way upstream creates a question. Zero made every new question on an
+          // auto-graded exercise invalid the instant it appeared, so the teacher met a
+          // validation error before typing anything.
+          points: 1,
           order: nextQuestionOrder,
           exerciseSectionId: nextExerciseSectionId,
           questionType: DEFAULT_QUESTION_TYPE,

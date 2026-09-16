@@ -1530,7 +1530,7 @@
           "all_exercises": {
             "heading": "Tất cả bài tập",
             "questions": "Câu hỏi",
-            "submissions": "bài nộp",
+            "submissions": "Bài nộp",
             "save": "Lưu",
             "preview": "Xem trước",
             "add_question": "Thêm câu hỏi",
@@ -1598,7 +1598,7 @@
               "sections": "phần",
               "points": "điểm",
               "all": "Tất cả được yêu cầu",
-              "due": "Đến hạn bởi",
+              "due": "Hạn nộp",
               "no_description": "Không có mô tả",
               "start": "Bắt đầu",
               "graded": "Đã chấm điểm",
