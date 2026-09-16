@@ -5,11 +5,15 @@ work is settled here; picking a kind starts construction.
 
 ## The gap is one module and two screens, not a feature from scratch
 
-Measured across the seven schema modules:
+Measured across the seven schema modules. The schema declares **ten** kinds, of which
+`assessment-vertical-slice.ts` supports five — the five in its
+`SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS` set at `:17`:
 
 | kind | item-schema | item-validation | **vertical-slice** | delivery | capabilities | response-envelope | legacy-adapter |
 |---|---|---|---|---|---|---|---|
 | `choice` | yes | yes | **yes** | yes | yes | yes | yes |
+| `text` | yes | yes | **yes** | yes | yes | yes | yes |
+| `true_false_group` | yes | yes | **yes** | yes | yes | yes | yes |
 | `numeric` | yes | yes | **yes** | yes | yes | yes | yes |
 | `fill_blank` | yes | yes | **yes** | yes | yes | yes | yes |
 | `word_bank` | yes | yes | **no** | yes | yes | yes | yes |
@@ -30,9 +34,20 @@ the faulty instrument was one I wrote myself.
 
 ## Therefore each kind is three pieces of work
 
-**1. Completeness and progress** — `assessment-vertical-slice.ts`, 291 lines, dispatches on
-`interaction.kind === '…' && entry.response.kind === '…'` at `:82-105`. Adding a kind is one branch
-in each of two functions. Pure, no browser, so it is written test-first and the tests are the spec.
+**1. Completeness, progress and scoring** — `assessment-vertical-slice.ts`, 291 lines. Pure, no
+browser, so it is written test-first and the tests are the spec. **Four edit sites, not two** — an
+earlier draft of this document said "one branch in each of two functions" and was wrong:
+
+| site | line | what it needs |
+|---|---|---|
+| `SUPPORTED_…_INTERACTION_KINDS` | `:17` | the kind added to the set |
+| `isAssessmentVerticalSliceResponseComplete` | `:82-118` | a branch, ending in the `{:else} return false` |
+| `getAssessmentVerticalSliceResponseProgress` | `:139-148` | a per-kind "empty response" case, like `text` and `true_false_group` already have |
+| `scoreAssessmentVerticalSlice` | `:209-283` | a scoring branch, or it hits `throw new Error(...)` at `:283` |
+
+The order matters. Adding a kind to the set **without** a scoring branch is strictly worse than
+leaving it out: the clean, early "Unsupported assessment vertical slice interactions" error at
+`:199` stops firing, and the kind instead throws from deep inside the scoring loop.
 
 **2. The composer** — how a teacher authors it. `assessment-item-composer.svelte` is already 1840
 lines and 1028 of those are template, so a new kind should arrive as its **own component** rendered
@@ -78,13 +93,13 @@ layer.
 
 | kind | Completeness rule | Composer | Renderer | Note |
 |---|---|---|---|---|
-| `star_rating` | answered when a value exists | a max-stars number and a label | a star row | simplest; a reaction, not a graded answer |
+| `star_rating` | answered when a value exists | a max-stars number and a label | a star row | **not simplest** — the scorer has exactly two paths, auto and `text`→manual, and a rating fits neither. It needs `maxScore: 0` or a third grading mode |
 | `word_bank` | answered when every blank has a word | a bank of words plus blanks in the prompt | drag or select into blanks | closest to `fill_blank`, which is done — read that first |
 | `ordering` | answered when the order differs from none | a list of items | drag to reorder; `svelte-dnd-action` is already a dependency and already used for question reorder | |
 | `file_upload` | answered when a file is attached | accepted types and size | upload control; `resolveCanonicalFileUploadMimeType` already exists in `@cio/question-types` | needs storage and an upload endpoint — confirm before starting |
 | `video_recording` | answered when a recording exists | duration cap and retakes | recorder; `VIDEO_RECORDING_MIME_TYPES` and `TExerciseVideoRecordingUploadInit` already exist | heaviest; browser capture plus storage |
 
-`star_rating` and `ordering` are the two that need nothing outside the app. `file_upload` and
+`ordering` is the one that needs nothing outside the app. `file_upload` and
 `video_recording` both depend on storage that has to be confirmed before either is promised.
 
 ## Recommended if only some are wanted
@@ -92,6 +107,6 @@ layer.
 `word_bank` and `ordering`. They are the two an English exam actually uses, the model work for both
 is one branch each, and `ordering` gets its interaction from a library already in the tree.
 
-`star_rating` is a survey control rather than an exam one. `file_upload` and `video_recording` are
+`star_rating` is a survey control rather than an exam one, and the scorer has no place to put it. `file_upload` and `video_recording` are
 larger than they look because of storage, and neither is an assessment interaction in the sense the
 rest of this model uses — they collect an artefact rather than an answer.
