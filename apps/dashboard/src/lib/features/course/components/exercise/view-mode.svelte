@@ -72,6 +72,7 @@
     type QuestionProgress,
     type TakeItem
   } from './take-progress';
+  import { resolveSectionAfterBehavior } from './section-after-behavior';
   import { getAssessmentPassageWorkspaceLabels, getExerciseQuestionLabels } from './question-labels';
   import {
     getExerciseSectionDisplayHtml,
@@ -341,39 +342,26 @@
   function evaluateSectionAfterBehavior() {
     if (!currentSection) return;
 
-    const behavior = currentSection.afterBehavior;
-    if (behavior.action === 'submit') {
+    // The rules live in `section-after-behavior.ts`, asserted rather than only reachable by
+    // sitting an exercise. What stays here is carrying the decision out.
+    const destination = resolveSectionAfterBehavior(
+      currentSection.afterBehavior,
+      activeSections,
+      $questionnaireMetaData.currentSectionIndex
+    );
+
+    if (destination.action === 'submit') {
       submitExercise();
       return;
     }
 
-    if (behavior.action === 'go_to_section' && behavior.exerciseSectionId) {
-      const targetIndex = activeSections.findIndex((section) => section.id === behavior.exerciseSectionId);
-      if (targetIndex >= 0) {
-        questionnaireMetaData.update((m) => ({
-          ...m,
-          currentSectionIndex: targetIndex,
-          currentQuestionIndex: 1,
-          sectionPhase: 'overview'
-        }));
-        saveCurrentExerciseDraft();
-        return;
-      }
-    }
-
-    const nextSectionIndex = $questionnaireMetaData.currentSectionIndex + 1;
-    if (nextSectionIndex < activeSections.length) {
-      questionnaireMetaData.update((m) => ({
-        ...m,
-        currentSectionIndex: nextSectionIndex,
-        currentQuestionIndex: 1,
-        sectionPhase: 'overview'
-      }));
-      saveCurrentExerciseDraft();
-      return;
-    }
-
-    submitExercise();
+    questionnaireMetaData.update((m) => ({
+      ...m,
+      currentSectionIndex: destination.index,
+      currentQuestionIndex: 1,
+      sectionPhase: 'overview'
+    }));
+    saveCurrentExerciseDraft();
   }
 
   async function onSubmit(id: string, value: AnswerData | undefined) {
