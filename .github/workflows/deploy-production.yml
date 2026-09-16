@@ -25,6 +25,13 @@ on:
         description: Rebuild every service, whatever the host is already serving
         type: boolean
         default: false
+      runner_pool:
+        description: Runner pool for building (use 'self-hosted' to consume 0 GitHub minutes)
+        type: choice
+        options:
+          - github-hosted
+          - self-hosted
+        default: github-hosted
 # Build and change detection run without global pipeline blocking.
 # The host deployment job locks on `deploy-production-host` so only
 # one deployment runs on the VPS at a time, never cancelling midway.
@@ -93,7 +100,7 @@ jobs:
   changes:
     name: Decide what to build
     needs: running
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && fromJson('["self-hosted", "Linux", "deploy"]') || 'ubuntu-latest' }}
     timeout-minutes: 5
     outputs:
       services: ${{ steps.decide.outputs.services }}
@@ -227,10 +234,11 @@ jobs:
     name: Build ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.any == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && fromJson('["self-hosted", "Linux", "deploy"]') || 'ubuntu-latest' }}
     timeout-minutes: 60
     strategy:
       fail-fast: true
+      max-parallel: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 1 || 4 }}
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
@@ -471,6 +479,12 @@ jobs:
             exit 1
           fi
           echo "Site answered HTTP 200."
+
+      - name: Automatic rollback on failure
+        if: failure()
+        run: |
+          echo "::error::Deploy failed healthcheck! Automatically restoring previous stable images..."
+          bash scripts/rollback.sh --force || true
 
       # Only after a healthy deploy: a failed one must leave the previous image
       # exactly where it is, because that is what the host is still running.

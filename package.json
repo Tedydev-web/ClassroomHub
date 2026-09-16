@@ -22,6 +22,8 @@
     "infra:up": "docker compose --env-file .env.dev -f docker-compose.dev.yaml up -d",
     "infra:down": "docker compose --env-file .env.dev -f docker-compose.dev.yaml down",
     "infra:status": "docker compose --env-file .env.dev -f docker-compose.dev.yaml ps",
+    "deploy:direct": "node scripts/deploy-direct.mjs",
+    "deploy:rollback": "bash scripts/rollback.sh",
     "test:scripts": "node scripts/run-script-tests.mjs",
     "check": "turbo run check",
     "typecheck": "turbo run typecheck",
