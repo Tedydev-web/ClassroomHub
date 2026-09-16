@@ -15,6 +15,8 @@
   import { IsMobile } from '../../hooks/is-mobile.svelte';
   import { SPLIT_LAYOUT_BREAKPOINT } from './constants';
   import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
+  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+  import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
   import { Button } from '../../base/button';
   import { Checkbox } from '../../base/checkbox';
@@ -25,6 +27,7 @@
   import { sanitizeHtml } from '../../tools/sanitize';
   import { createAssessmentRichTextAnswer, createAssessmentRichTextQuestion } from './assessment-rich-text-adapter';
   import { getExerciseQuestionRenderer } from './renderer-contract';
+  import { countWordBankBlanks, parseWordBankTemplate } from './renderers/word-bank/word-bank-utils';
   import QuestionSurface from './question-surface.svelte';
   import QuestionTitle from './question-title.svelte';
 
@@ -91,6 +94,12 @@
      */
     showQuestionStepper?: boolean;
     unsupportedInteractionLabel?: string;
+    wordBankHelperLabel?: string;
+    wordBankBankHeading?: string;
+    wordBankClearBlankLabel?: string;
+    orderingHelperLabel?: string;
+    orderingMoveUpLabel?: string;
+    orderingMoveDownLabel?: string;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
   }
 
@@ -141,7 +150,18 @@
      * still sees something, and the silent blank this replaced cannot come back through
      * a missing prop.
      */
-    unsupportedInteractionLabel = 'This question type cannot be displayed here.'
+    unsupportedInteractionLabel = 'This question type cannot be displayed here.',
+    /**
+     * Word bank and ordering labels. English defaults for the same reason as
+     * `unsupportedInteractionLabel`: a caller that has not translated them yet still
+     * gets a usable control rather than an unlabelled one.
+     */
+    wordBankHelperLabel = 'Pick a word, then pick the blank it belongs in.',
+    wordBankBankHeading = 'Word bank',
+    wordBankClearBlankLabel = 'Clear this blank',
+    orderingHelperLabel = 'Put these in the right order.',
+    orderingMoveUpLabel = 'Move up',
+    orderingMoveDownLabel = 'Move down'
   }: Props = $props();
   const rendererId = $props.id();
   const RichTextRenderer = getExerciseQuestionRenderer(QUESTION_TYPE_KEY.TEXTAREA, 'take');
@@ -434,6 +454,59 @@
     highlightPassageBlank(shownQuestionNumber);
     return clearPassageBlankHighlight;
   });
+
+  /**
+   * The word the candidate has picked up but not yet placed. One at a time across the
+   * whole item, so this is a single value rather than per-block state.
+   */
+  let selectedWordBankToken = $state<{ blockId: string; token: string } | null>(null);
+
+  function wordBankBlanks(interactionId: string, template: string): string[] {
+    const current = responsesByInteractionId.get(interactionId);
+    const filled = current?.kind === 'word_bank' ? current.filledBlanks : [];
+    return Array.from({ length: countWordBankBlanks(template) }, (_, index) => filled[index] ?? '');
+  }
+
+  function toggleWordBankToken(interactionId: string, token: string) {
+    const isSelected = selectedWordBankToken?.blockId === interactionId && selectedWordBankToken.token === token;
+    selectedWordBankToken = isSelected ? null : { blockId: interactionId, token };
+  }
+
+  /** Places the picked-up word, or clears the blank when nothing is picked up. */
+  function placeWordBankToken(interactionId: string, template: string, blankIndex: number) {
+    const blanks = wordBankBlanks(interactionId, template);
+    const picked = selectedWordBankToken?.blockId === interactionId ? selectedWordBankToken.token : null;
+    blanks[blankIndex] = picked ?? '';
+    selectedWordBankToken = null;
+    updateResponse(interactionId, { kind: 'word_bank', filledBlanks: blanks });
+  }
+
+  function orderedOrderingOptions<T extends { id: string }>(interactionId: string, options: T[]): T[] {
+    const current = responsesByInteractionId.get(interactionId);
+    if (current?.kind !== 'ordering') return options;
+
+    const optionsById = new Map(options.map((option) => [option.id, option]));
+    const ordered = current.orderedOptionIds
+      .map((optionId) => optionsById.get(optionId))
+      .filter((option): option is T => option !== undefined);
+    const placed = new Set(ordered.map((option) => option.id));
+
+    return [...ordered, ...options.filter((option) => !placed.has(option.id))];
+  }
+
+  function moveOrderingOption<T extends { id: string }>(
+    interactionId: string,
+    options: T[],
+    index: number,
+    direction: 1 | -1
+  ) {
+    const ordered = [...orderedOrderingOptions(interactionId, options)];
+    const target = index + direction;
+    if (target < 0 || target >= ordered.length) return;
+
+    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+    updateResponse(interactionId, { kind: 'ordering', orderedOptionIds: ordered.map((option) => option.id) });
+  }
 
   function updateResponse(
     interactionId: string,
@@ -837,6 +910,107 @@
               />
             {/each}
           </div>
+          {#if invalid}
+            <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
+          {/if}
+        </fieldset>
+      {:else if block.interaction.kind === 'word_bank'}
+        {@const interaction = block.interaction}
+        {@const invalid = isInteractionInvalid(block)}
+        {@const errorElementId = `${rendererId}-${block.id}-error`}
+        {@const promptElementId = `${rendererId}-${block.id}-prompt`}
+        {@const segments = parseWordBankTemplate(interaction.config.template)}
+        {@const blanks = wordBankBlanks(block.id, interaction.config.template)}
+        <fieldset class="ui:space-y-3" data-assessment-invalid={invalid ? 'true' : undefined}>
+          <legend id={promptElementId} class="ui:font-medium"
+            >{@html renderAuthoredHtml(interaction.prompt.html)}</legend
+          >
+          <p class="ui:text-muted-foreground ui:text-xs">{wordBankHelperLabel}</p>
+          <p class="ui:text-sm ui:leading-8">
+            {#each segments as segment, segmentIndex (segmentIndex)}
+              {#if segment.type === 'text'}<span>{segment.value}</span>{:else}
+                <Button
+                  type="button"
+                  variant={blanks[segment.index] ? 'secondary' : 'outline'}
+                  size="sm"
+                  {disabled}
+                  aria-labelledby={promptElementId}
+                  aria-describedby={invalid ? errorElementId : undefined}
+                  class="ui:mx-1 ui:min-w-24"
+                  onclick={() => placeWordBankToken(block.id, interaction.config.template, segment.index)}
+                >
+                  {blanks[segment.index] || ' '}
+                </Button>
+                {#if blanks[segment.index]}
+                  <span class="ui:sr-only">{wordBankClearBlankLabel}</span>
+                {/if}
+              {/if}
+            {/each}
+          </p>
+          <div class="ui:space-y-2">
+            <p class="ui:text-muted-foreground ui:text-xs ui:font-medium">{wordBankBankHeading}</p>
+            <div class="ui:flex ui:flex-wrap ui:gap-2">
+              {#each interaction.config.bankTokens as token, tokenIndex (`${token}-${tokenIndex}`)}
+                <Button
+                  type="button"
+                  variant={selectedWordBankToken?.blockId === block.id && selectedWordBankToken.token === token
+                    ? 'default'
+                    : 'outline'}
+                  size="sm"
+                  {disabled}
+                  aria-pressed={selectedWordBankToken?.blockId === block.id && selectedWordBankToken.token === token}
+                  onclick={() => toggleWordBankToken(block.id, token)}
+                >
+                  {token}
+                </Button>
+              {/each}
+            </div>
+          </div>
+          {#if invalid}
+            <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
+          {/if}
+        </fieldset>
+      {:else if block.interaction.kind === 'ordering'}
+        {@const interaction = block.interaction}
+        {@const invalid = isInteractionInvalid(block)}
+        {@const errorElementId = `${rendererId}-${block.id}-error`}
+        {@const promptElementId = `${rendererId}-${block.id}-prompt`}
+        {@const orderedOptions = orderedOrderingOptions(block.id, interaction.config.options)}
+        <fieldset class="ui:space-y-3" data-assessment-invalid={invalid ? 'true' : undefined}>
+          <legend id={promptElementId} class="ui:font-medium"
+            >{@html renderAuthoredHtml(interaction.prompt.html)}</legend
+          >
+          <p class="ui:text-muted-foreground ui:text-xs">{orderingHelperLabel}</p>
+          <ol class="ui:space-y-2">
+            {#each orderedOptions as option, index (option.id)}
+              <li class="ui:bg-background ui:flex ui:items-center ui:gap-3 ui:rounded-md ui:border ui:p-3">
+                <NumberBadge number={index + 1} />
+                <div class="ui:min-w-0 ui:flex-1 ui:text-sm">{@html renderAuthoredHtml(option.html)}</div>
+                <div class="ui:flex ui:shrink-0 ui:gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={disabled || index === 0}
+                    aria-label={orderingMoveUpLabel}
+                    onclick={() => moveOrderingOption(block.id, interaction.config.options, index, -1)}
+                  >
+                    <ChevronUpIcon class="ui:size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={disabled || index === orderedOptions.length - 1}
+                    aria-label={orderingMoveDownLabel}
+                    onclick={() => moveOrderingOption(block.id, interaction.config.options, index, 1)}
+                  >
+                    <ChevronDownIcon class="ui:size-4" />
+                  </Button>
+                </div>
+              </li>
+            {/each}
+          </ol>
           {#if invalid}
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
