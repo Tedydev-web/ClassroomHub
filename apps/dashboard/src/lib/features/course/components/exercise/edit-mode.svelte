@@ -2,9 +2,6 @@
   import TrashIcon from '@lucide/svelte/icons/trash';
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
   import InfoIcon from '@lucide/svelte/icons/info';
-  import BookOpenTextIcon from '@lucide/svelte/icons/book-open-text';
-  import ListChecksIcon from '@lucide/svelte/icons/list-checks';
-  import Settings2Icon from '@lucide/svelte/icons/settings-2';
   import PlusIcon from '@lucide/svelte/icons/plus';
   import { dndzone } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
@@ -112,10 +109,6 @@
   let promotedAssessmentQuestionId = $state<number | null>(null);
   let activeCanonicalQuestionId = $state<number | null>(null);
   let pendingCanonicalQuestionId = $state<number | null>(null);
-  let activeWorkspaceSectionId = $state<string | null>(null);
-  let activeLegacyQuestionId = $state<string | number | null>(null);
-  let workspaceEditorMode = $state<'question' | 'section'>('question');
-  let workspacePanel = $state<'outline' | 'editor'>('outline');
   let errors = $derived($questionnaireValidation);
   const questionLabels = $derived(getExerciseQuestionLabels());
   const activeSections = $derived(
@@ -124,13 +117,8 @@
   /**
    * Question authoring follows the upstream layout: every legacy question is edited
    * in place inside its section, with no separate outline-and-editor split.
-   *
-   * The two-pane workspace panel below is kept intact behind this switch so it can be
-   * folded back in once the new authoring design is settled. Turning this on restores
-   * the split view; assessment items keep opening their own composer either way.
+   * Assessment items still open their own composer above the list.
    */
-  const USE_ASSESSMENT_WORKSPACE_PANEL = false;
-
   const isAssessmentWorkspaceOpen = $derived(
     !reorderQuestions && (activeCanonicalQuestionId !== null || newAssessmentComposerSectionId !== undefined)
   );
@@ -179,35 +167,11 @@
 
   async function addQuestionToSection(sectionId: string | null) {
     const questionId = handleAddQuestion(sectionId);
-    activeWorkspaceSectionId = sectionId;
-    activeLegacyQuestionId = questionId;
-    workspaceEditorMode = 'question';
-    workspacePanel = 'editor';
     await scrollToExerciseElement(getQuestionElementId(questionId));
-  }
-
-  function selectWorkspaceSection(sectionId: string | null) {
-    activeWorkspaceSectionId = sectionId;
-    activeLegacyQuestionId = null;
-    workspaceEditorMode = 'section';
-    workspacePanel = 'editor';
-  }
-
-  function selectLegacyQuestion(question: Question) {
-    activeWorkspaceSectionId = question.exerciseSectionId ?? null;
-    activeLegacyQuestionId = question.id;
-    workspaceEditorMode = 'question';
-    workspacePanel = 'editor';
   }
 
   function openAssessmentComposer(sectionId: string | null) {
     newAssessmentComposerSectionId = sectionId;
-    // The composer renders in the workspace's editor pane. Below xl only one pane is
-    // visible at a time, so opening it while the outline is showing would put the
-    // composer off-screen with no sign that anything happened.
-    activeWorkspaceSectionId = sectionId;
-    workspaceEditorMode = 'question';
-    workspacePanel = 'editor';
     removeUntouchedLegacyQuestionDrafts();
   }
 
@@ -470,11 +434,6 @@
   }
 
   function openCanonicalQuestionEditor(questionId: number) {
-    activeWorkspaceSectionId =
-      $questionnaire.canonicalQuestions.find((question) => Number(question.id) === questionId)?.exerciseSectionId ??
-      null;
-    workspaceEditorMode = 'question';
-    workspacePanel = 'editor';
     if (activeCanonicalQuestionId === null) {
       activeCanonicalQuestionId = questionId;
       return;
@@ -491,18 +450,6 @@
       (question) => (question.exerciseSectionId ?? null) === exerciseSectionId
     );
   }
-
-  const workspaceSectionId = $derived(activeWorkspaceSectionId ?? activeSections[0]?.id ?? null);
-  const workspaceSection = $derived(activeSections.find((section) => section.id === workspaceSectionId) ?? null);
-  const workspaceLegacyQuestions = $derived(getQuestionsForSection($questionnaire.questions, workspaceSectionId));
-  const workspaceUnsectionedItems = $derived(
-    getQuestionPlacementItemsForSection($questionnaire.questions, $questionnaire.canonicalQuestions, null)
-  );
-  const activeLegacyQuestion = $derived(
-    workspaceLegacyQuestions.find((question) => String(question.id) === String(activeLegacyQuestionId)) ??
-      workspaceLegacyQuestions[0] ??
-      null
-  );
 
   function getRenderedQuestionPlacementItems(exerciseSectionId: string | null) {
     const placementItems = getQuestionPlacementItemsForSection(
@@ -738,216 +685,12 @@
     </div>
   {/if}
   <div class="questions px-6 pt-6">
-    {#if !USE_ASSESSMENT_WORKSPACE_PANEL && isAssessmentWorkspaceOpen}
+    {#if isAssessmentWorkspaceOpen}
       <section class="mb-6 min-w-0" data-assessment-workspace>
         {@render assessmentComposerPane()}
       </section>
     {/if}
-    {#if USE_ASSESSMENT_WORKSPACE_PANEL && !reorderQuestions}
-      <section class="ui:border-border ui:bg-background overflow-hidden rounded-md border" data-assessment-workspace>
-        <div class="ui:border-border flex min-h-14 flex-wrap items-center justify-between gap-3 border-b px-4 py-2">
-          <div class="flex min-w-0 items-center gap-2">
-            <ListChecksIcon class="ui:text-muted-foreground h-4 w-4 shrink-0" aria-hidden="true" />
-            <h2 class="truncate text-sm font-semibold">
-              {$t('course.navItem.lessons.exercises.all_exercises.questions')}
-            </h2>
-            <span class="ui:text-muted-foreground text-xs tabular-nums">
-              {$questionnaire.questions.length + $questionnaire.canonicalQuestions.length}
-            </span>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              class="min-h-11"
-              onclick={() => openAssessmentComposer(workspaceSectionId)}
-            >
-              <PlusIcon class="h-4 w-4" />
-              {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.add')}
-            </Button>
-            <Button type="button" class="min-h-11" onclick={() => addQuestionToSection(workspaceSectionId)}>
-              <PlusIcon class="h-4 w-4" />
-              {sectionLabels.addQuestion}
-            </Button>
-          </div>
-        </div>
-
-        <div class="ui:bg-muted/50 grid grid-cols-2 gap-1 p-1 xl:hidden" aria-label={sectionLabels.questions}>
-          <Button
-            type="button"
-            variant={workspacePanel === 'outline' ? 'secondary' : 'ghost'}
-            class="min-h-11"
-            aria-pressed={workspacePanel === 'outline'}
-            onclick={() => (workspacePanel = 'outline')}
-          >
-            {$t('course.navItem.lessons.exercises.all_exercises.section.questions')}
-          </Button>
-          <Button
-            type="button"
-            variant={workspacePanel === 'editor' ? 'secondary' : 'ghost'}
-            class="min-h-11"
-            aria-pressed={workspacePanel === 'editor'}
-            onclick={() => (workspacePanel = 'editor')}
-          >
-            {$t('course.navItem.lessons.exercises.all_exercises.view_mode.edit')}
-          </Button>
-        </div>
-
-        <div
-          class="xl:grid xl:max-h-[calc(100dvh-12rem)] xl:min-h-[40rem] xl:grid-cols-[minmax(18rem,3fr)_minmax(32rem,7fr)]"
-        >
-          <aside
-            class:hidden={workspacePanel !== 'outline'}
-            class="ui:border-border min-w-0 xl:block xl:overflow-y-auto xl:border-r"
-            aria-label={$t('course.navItem.lessons.exercises.all_exercises.section.questions')}
-          >
-            {#if activeSections.length > 0}
-              <nav class="space-y-4 p-3">
-                {#each activeSections as section, sectionIndex (section.id)}
-                  {@const sectionItems = getQuestionPlacementItemsForSection(
-                    $questionnaire.questions,
-                    $questionnaire.canonicalQuestions,
-                    section.id
-                  )}
-                  <div class="ui:border-border overflow-hidden rounded-md border">
-                    <div class="ui:bg-muted/30 flex items-center justify-between gap-2 px-3 py-2">
-                      <Button
-                        type="button"
-                        variant={workspaceSectionId === section.id ? 'secondary' : 'ghost'}
-                        class="min-h-11 min-w-0 flex-1 justify-start px-2 text-left"
-                        aria-current={workspaceSectionId === section.id ? 'true' : undefined}
-                        onclick={() => selectWorkspaceSection(section.id)}
-                      >
-                        <BookOpenTextIcon class="h-4 w-4 shrink-0" />
-                        <span class="truncate">{richTextToPlainText(section.title) || `${sectionIndex + 1}`}</span>
-                      </Button>
-                      <span class="ui:text-muted-foreground text-xs tabular-nums">{sectionItems.length}</span>
-                    </div>
-                    <div class="space-y-1 p-2">
-                      {#each sectionItems as item, index (item.id)}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          class="min-h-11 w-full justify-start gap-2 px-2 text-left"
-                          aria-current={item.kind === 'legacy'
-                            ? String(activeLegacyQuestion?.id) === String(item.question.id)
-                            : Number(activeCanonicalQuestionId) === Number(item.question.id)}
-                          onclick={() =>
-                            item.kind === 'legacy'
-                              ? selectLegacyQuestion(item.question)
-                              : openCanonicalQuestionEditor(Number(item.question.id))}
-                        >
-                          <span class="ui:text-muted-foreground w-5 shrink-0 text-xs tabular-nums">{index + 1}</span>
-                          <span class="truncate text-sm">
-                            {richTextToPlainText(item.question.title) ||
-                              getExerciseEditorQuestionTypeLabel(item.question.questionType)}
-                          </span>
-                        </Button>
-                      {/each}
-                    </div>
-                  </div>
-                {/each}
-              </nav>
-            {:else if workspaceUnsectionedItems.length > 0}
-              <nav class="space-y-1 p-3">
-                {#each workspaceUnsectionedItems as item, index (item.id)}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    class="min-h-11 w-full justify-start gap-2 px-2 text-left"
-                    aria-current={item.kind === 'legacy'
-                      ? String(activeLegacyQuestion?.id) === String(item.question.id)
-                      : Number(activeCanonicalQuestionId) === Number(item.question.id)}
-                    onclick={() =>
-                      item.kind === 'legacy'
-                        ? selectLegacyQuestion(item.question)
-                        : openCanonicalQuestionEditor(Number(item.question.id))}
-                  >
-                    <span class="ui:text-muted-foreground w-5 shrink-0 text-xs tabular-nums">{index + 1}</span>
-                    <span class="truncate text-sm">
-                      {richTextToPlainText(item.question.title) ||
-                        getExerciseEditorQuestionTypeLabel(item.question.questionType)}
-                    </span>
-                  </Button>
-                {/each}
-              </nav>
-            {:else}
-              <div class="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center">
-                <ListChecksIcon class="ui:text-muted-foreground h-8 w-8" aria-hidden="true" />
-                <p class="ui:text-muted-foreground text-sm">
-                  {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.empty_questions_helper')}
-                </p>
-              </div>
-            {/if}
-          </aside>
-
-          <section
-            class:hidden={workspacePanel !== 'editor'}
-            class="min-w-0 xl:block xl:overflow-y-auto"
-            aria-label={$t('course.navItem.lessons.exercises.all_exercises.view_mode.edit')}
-          >
-            {#if isAssessmentWorkspaceOpen}
-              {@render assessmentComposerPane()}
-            {:else if workspaceEditorMode === 'section' && workspaceSection}
-              <div class="p-4 sm:p-6">
-                <SectionEditor
-                  exerciseSectionId={workspaceSection.id}
-                  title={workspaceSection.title}
-                  description={workspaceSection.description}
-                  sectionNumber={activeSections.findIndex((section) => section.id === workspaceSection.id) + 1}
-                  totalSections={activeSections.length}
-                  colorTheme={workspaceSection.colorTheme}
-                  questionCount={getQuestionsForSection($questionnaire.questions, workspaceSection.id).length +
-                    getCanonicalQuestionsForSection(workspaceSection.id).length}
-                  requiredQuestionCount={getRequiredQuestionCount(
-                    getQuestionsForSection($questionnaire.questions, workspaceSection.id)
-                  ) + getCanonicalQuestionsForSection(workspaceSection.id).length}
-                  labels={sectionLabels}
-                  titleError={getSectionErrorMsg(errors, workspaceSection.id, 'title')}
-                  descriptionError={getSectionErrorMsg(errors, workspaceSection.id, 'description')}
-                  onTitleChange={(title) => handleUpdateSectionTitle(workspaceSection.id, title)}
-                  onDescriptionChange={(description) =>
-                    handleUpdateSectionDescription(workspaceSection.id, description)}
-                  onColorThemeChange={(colorTheme) => handleUpdateSectionColorTheme(workspaceSection.id, colorTheme)}
-                  onAddQuestion={() => addQuestionToSection(workspaceSection.id)}
-                  onDelete={() => onInitSectionDeleteClicked(workspaceSection.id)}
-                  onMoveUp={() => moveSection(workspaceSection.id, -1)}
-                  onMoveDown={() => moveSection(workspaceSection.id, 1)}
-                  canMoveUp={activeSections[0]?.id !== workspaceSection.id}
-                  canMoveDown={activeSections.at(-1)?.id !== workspaceSection.id}
-                />
-                <!-- Where a candidate goes after finishing this section. The legacy list
-                     renders this next to each section; the pane edits one section at a
-                     time, so it belongs under that section's editor. -->
-                <ExerciseQuestion.SectionAfterBehavior
-                  sectionIndex={activeSections.findIndex((section) => section.id === workspaceSection.id)}
-                  currentSectionId={workspaceSection.id}
-                  allSections={activeSections}
-                  afterBehavior={workspaceSection.afterBehavior}
-                  labels={sectionAfterBehaviorLabels}
-                  onChange={(behavior) => handleUpdateSectionAfterBehavior(workspaceSection.id, behavior)}
-                />
-              </div>
-            {:else if activeLegacyQuestion}
-              <div class="p-4 sm:p-6">
-                {@render questionEditor(
-                  activeLegacyQuestion,
-                  workspaceLegacyQuestions.findIndex((question) => question.id === activeLegacyQuestion?.id)
-                )}
-              </div>
-            {:else}
-              <div class="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center">
-                <Settings2Icon class="ui:text-muted-foreground h-8 w-8" aria-hidden="true" />
-                <p class="ui:text-muted-foreground text-sm">
-                  {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.empty_questions')}
-                </p>
-              </div>
-            {/if}
-          </section>
-        </div>
-      </section>
-    {/if}
-    {#if !isAssessmentWorkspaceOpen && (!USE_ASSESSMENT_WORKSPACE_PANEL || reorderQuestions)}
+    {#if !isAssessmentWorkspaceOpen}
       <div data-legacy-question-list>
         {#if hasSections($questionnaire.sections)}
           <div class="space-y-5">
