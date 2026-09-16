@@ -54,10 +54,23 @@ back-out curves — `(0.34,1.15,0.64,1)`, `(0.68,-0.6,0.32,1.6)`, `(0.175,0.885,
 Asymmetric easing is the reason entrances and exits use different curves: motion that accelerates and
 decelerates at different rates reads as alive rather than mechanical.
 
-## Token block for `@theme`
+## Installed and verified
 
-Paste into `packages/ui/src/index.css` alongside the colour tokens. Tailwind v4 exposes
-`--ui-duration-*` as `duration-*` utilities and `--ui-ease-*` as `ease-*` under the `ui` prefix.
+Shipped in `packages/ui/src/index.css` — 84 lines added, nothing changed, so the frozen student
+screen is untouched. The emitted CSS was read back to confirm each token resolves rather than
+assuming the Tailwind v4 namespaces behave:
+
+| Written | Emitted |
+|---|---|
+| `ui:duration-(--ui-duration-base)` | `transition-duration: var(--ui-duration-base)` |
+| `ui:ease-ui-spring` | `cubic-bezier(.34, 1.56, .64, 1)` |
+| `ui:text-2xs` | `font-size:.6875rem; line-height:1.45; letter-spacing:.01em` |
+
+Note the duration syntax: the easings live in `@theme` and produce `ease-ui-*` utilities directly,
+while durations are plain custom properties on `:root` and are spent through the arbitrary-property
+form above. Both were confirmed in the built stylesheet.
+
+## Token block (as installed)
 
 ```css
 @theme inline {
