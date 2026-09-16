@@ -90,6 +90,7 @@
      * stays either way, because jumping to a number is a different act from stepping.
      */
     showQuestionStepper?: boolean;
+    unsupportedInteractionLabel?: string;
     onResponseChange?: (response: AssessmentResponseEnvelope) => void;
   }
 
@@ -133,7 +134,14 @@
     activeQuestionNumber = null,
     showQuestionStepper = true,
     onQuestionChange,
-    onResponseChange = () => {}
+    onResponseChange = () => {},
+    /**
+     * Shown in place of an interaction this renderer cannot draw. Defaults to English
+     * rather than to an empty string on purpose: a caller that forgets to translate it
+     * still sees something, and the silent blank this replaced cannot come back through
+     * a missing prop.
+     */
+    unsupportedInteractionLabel = 'This question type cannot be displayed here.'
   }: Props = $props();
   const rendererId = $props.id();
   const RichTextRenderer = getExerciseQuestionRenderer(QUESTION_TYPE_KEY.TEXTAREA, 'take');
@@ -899,6 +907,18 @@
             <p id={errorElementId} role="alert" class="ui:text-destructive ui:text-sm">{validationMessage}</p>
           {/if}
         </fieldset>
+      {:else}
+        <!--
+          The chain above used to end without an else, so an interaction of a kind this
+          renderer does not draw produced nothing at all: a prompt, then empty space, and no
+          way to answer or to tell that anything was missing. The schema already accepts
+          kinds with no renderer yet — word_bank, ordering, star_rating, file_upload,
+          video_recording — so the silent blank was one authoring feature away from reaching
+          a candidate. Failing visibly is the point; it must not be quiet again.
+        -->
+        <p role="alert" class="ui:text-destructive ui:text-sm" data-assessment-unsupported={block.interaction.kind}>
+          {unsupportedInteractionLabel}
+        </p>
       {/if}
 
       <!--
