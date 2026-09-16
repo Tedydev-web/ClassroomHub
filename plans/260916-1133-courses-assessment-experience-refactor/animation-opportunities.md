@@ -70,6 +70,18 @@ This is the only visual change to the student screen in this programme. Anything
 asking. Note that `frozen-files.txt` cannot catch this class of change — none of those files were
 edited — which is the same hole `renderer-prop-defaults.md` exists to cover for the shared renderer.
 
+## Second pass — the surfaces built on 2026-09-16
+
+`word_bank` and `ordering` are new UI and had never been through this gate. Run again over just
+those two:
+
+| Candidate | Verdict |
+|---|---|
+| **Ordering reorder, both lists** | **Taken.** Two steps swap on a button press with nothing between the positions, so the reader must re-find the item they moved — and in the composer that list *is* the answer key. `flip` at the `fast` token in both. The renderer's is JavaScript and cannot see the stylesheet's reduced-motion rule, so it reads the preference itself; the composer's uses `motionDuration`, which already does. |
+| Word bank token landing in a blank | **Rejected.** The blank is a `Button`, so it already carries the press feedback from row 2, and its filled state is a variant change that transitions with it. A second animation on the same press is noise. |
+| Word bank chip becoming selected | **Rejected.** Same press, same feedback. |
+| Composer panel appearing when a kind is added | **Rejected on frequency and function.** An author adds questions in runs of ten; a panel that animates in each time turns a working rhythm into waiting. |
+
 ## Part 3 — Verdict
 
 This interface needs very little motion, and it is closer to right than the raw counts suggest — the
