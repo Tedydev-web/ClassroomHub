@@ -144,6 +144,19 @@ All 18 are now defined in `en` and `vi`. Re-running the sweep returns **zero** i
 100 sit in `audience`, `automation`, `cohort`, `media`, `org` and `tag` — outside this goal, listed
 here so nobody has to rediscover them.
 
+## 2c. Sweeps that came back clean
+
+Worth recording, because a negative result stops the next session repeating the search.
+
+- **Dead links.** Every static `href`, `goto(` and `resolve(` target in Courses, Exam and Exercise
+  was matched against the 108 real routes under `src/routes`. **Zero** point at a route that does
+  not exist. The one candidate, `/course/${slug}` in `course-list-row.svelte:134`, resolves to
+  `(org-site)/course/[slug]`, which is present — the matcher had truncated the interpolation.
+  Acceptance criterion 5 holds for static links; runtime navigation is not covered by this.
+- **Features wired off.** Only `USE_ASSESSMENT_WORKSPACE_PANEL` remains, and it is the one under
+  discussion. The `isLoading={false}` family is gone with D9, and there are no empty `onclick`
+  handlers.
+
 ## 3. Unfinished features
 
 | # | Item | Measured state |
