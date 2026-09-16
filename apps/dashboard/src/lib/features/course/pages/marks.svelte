@@ -63,25 +63,25 @@
     </Empty>
   </div>
 {:else if students.length > 0}
-  <div class="rounded-md border border-gray-300 dark:border-neutral-600">
+  <div class="ui:border-border rounded-md border">
     <Tooltip.Provider>
       <Table.Root class="">
         <Table.Header>
-          <Table.Row class="border-b-2 border-gray-200 dark:border-neutral-700">
+          <Table.Row class="ui:border-border border-b-2">
             <Table.Head
-              class="ui:text-foreground sticky left-0 z-100! min-w-[200px] border-r border-gray-200 bg-gray-50 px-3 py-3 text-left text-sm font-semibold dark:border-neutral-700 dark:bg-neutral-800/80"
+              class="ui:text-foreground ui:border-border ui:bg-muted sticky left-0 z-100! min-w-[200px] border-r px-3 py-3 text-left text-sm font-semibold"
             >
               {$t('course.navItem.marks.student')}
             </Table.Head>
             {#each exercises as exercise (exercise.id)}
               <Table.Head
-                class="min-w-[100px] border-r border-gray-200 bg-white px-2 py-3 text-center text-sm font-semibold last:border-r-0 dark:border-neutral-700 dark:bg-neutral-900"
+                class="ui:border-border ui:bg-background min-w-[100px] border-r px-2 py-3 text-center text-sm font-semibold last:border-r-0"
               >
                 <TruncatedWithTooltip text={exercise.title} maxWidth="100px" />
               </Table.Head>
             {/each}
             <Table.Head
-              class="min-w-[90px] border-gray-200 bg-white px-2 py-3 text-center text-sm font-semibold dark:border-neutral-700 dark:bg-neutral-900"
+              class="ui:border-border ui:bg-background min-w-[90px] px-2 py-3 text-center text-sm font-semibold"
             >
               {$t('course.navItem.marks.avg_grade')}
             </Table.Head>
@@ -91,10 +91,8 @@
           {#each students as student (student.id)}
             {@const marks = studentMarksByExerciseId[student.id]}
             {@const avg = calculateStudentAverage(marks, exercises)}
-            <Table.Row class="border-b border-gray-100 dark:border-neutral-800">
-              <Table.Cell
-                class="sticky left-0 min-w-[200px] border-r border-gray-200 bg-gray-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800/80"
-              >
+            <Table.Row class="ui:border-border border-b">
+              <Table.Cell class="ui:border-border ui:bg-muted sticky left-0 min-w-[200px] border-r px-3 py-2">
                 <div class="flex items-center gap-2">
                   <UserAvatar
                     src={student.profile?.avatarUrl}
@@ -112,9 +110,7 @@
                 {@const mark = marks?.[exercise.id]}
                 {@const pct = gradePercent(mark)}
                 <Table.Cell
-                  class="min-w-[100px] border-r border-gray-100 px-2 py-2 text-center text-sm dark:border-neutral-800 {gradeCellClass(
-                    pct
-                  )}"
+                  class="ui:border-border min-w-[100px] border-r px-2 py-2 text-center text-sm {gradeCellClass(pct)}"
                 >
                   <span class="font-medium">
                     {pct != null ? pct : (mark?.score ?? '-')}
