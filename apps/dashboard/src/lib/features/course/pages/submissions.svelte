@@ -9,6 +9,7 @@
   import type { SubmissionIdData, SubmissionItem, SubmissionSection } from '$features/course/utils/types';
   import { t } from '$lib/utils/functions/translations';
 
+  import { Badge } from '@cio/ui/base/badge';
   import { Chip } from '@cio/ui/custom/chip';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
   import MarkExerciseModal from '$features/course/components/exercise/mark-exercise-modal.svelte';
@@ -252,29 +253,44 @@
             <div
               class="{item.isEarly
                 ? 'ui:border-border'
-                : 'border-red-700'} ui:bg-card mx-0 my-2 w-full rounded-md border px-3 py-3 shadow-sm"
+                : 'ui:border-destructive'} ui:bg-card mx-0 my-2 w-full rounded-md border px-3 py-3 shadow-sm"
               animate:flip={{ duration: flipDurationMs }}
             >
+              <!--
+                One card, one primary destination: marking. The exercise title used to be printed
+                twice, as two adjacent links going to two different places, so the same words meant
+                two different things. The title now belongs to the marking link, and the exercise
+                gets its own labelled link below.
+              -->
               <a
-                class="mb-2 flex w-full cursor-pointer items-center text-black"
+                class="ui:text-foreground mb-2 flex w-full cursor-pointer items-center"
                 href={`${page.url.pathname}?submissionId=${item.id}`}
               >
                 <UserAvatar src={item.student.avatarUrl} alt="Student avatar" class="h-6 w-6" />
-                <p class="ml-2 text-sm dark:text-white">
+                <p class="ml-2 text-sm">
                   {item.student.username}
                 </p>
               </a>
-              <a class="ui:text-primary text-md" href="{page.url.pathname}?submissionId={item.id}">
+              <a class="ui:text-primary text-base font-medium" href="{page.url.pathname}?submissionId={item.id}">
                 {item.exercise.title}
               </a>
+              <!-- Lateness was carried by the border colour alone, which is invisible to anyone who
+                   cannot see it and to anyone who has not learnt what a red card means here. -->
+              <div class="my-2">
+                <Badge variant={item.isEarly ? 'success' : 'destructive'}>
+                  {item.isEarly
+                    ? $t('course.navItem.submissions.grading_modal.early')
+                    : $t('course.navItem.submissions.grading_modal.late')}
+                </Badge>
+              </div>
               <a
-                class="my-2 flex items-center text-black no-underline hover:underline"
+                class="ui:text-muted-foreground my-2 flex items-center text-sm no-underline hover:underline"
                 href={`/courses/${courseApi.course?.id}/exercises/${item.exercise.id}`}
               >
-                <p class="text-grey text-sm dark:text-white">{item.exercise.title}</p>
+                {$t('course.navItem.submissions.open_exercise')}
               </a>
               {#if item.lesson}
-                <p class="text-grey text-sm dark:text-white">#{item.lesson.title}</p>
+                <p class="ui:text-muted-foreground text-sm">#{item.lesson.title}</p>
               {/if}
               {#if getWorkflowHintKey(item)}
                 <p class="ui:text-muted-foreground text-xs">

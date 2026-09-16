@@ -2982,7 +2982,8 @@
                 "passed": "Passed",
                 "not_passed": "Not passed",
                 "no_submission_title": "Nothing handed in yet",
-                "no_submission_description": "This student has not submitted this exercise."
+                "no_submission_description": "This student has not submitted this exercise.",
+                "open_marking": "Mark this attempt"
               },
               "submissions": "Submissions",
               "loading_submissions": "Loading submissions...",
@@ -3416,7 +3417,8 @@
         "tab_exams": "Exams",
         "tab_papers": "Manage exams",
         "load_failed_title": "The submissions could not be loaded",
-        "load_failed_description": "The board did not come back. This is not the same as nobody having handed anything in — try again."
+        "load_failed_description": "The board did not come back. This is not the same as nobody having handed anything in — try again.",
+        "open_exercise": "Open the exercise"
       },
       "marks": {
         "title": "Marks",

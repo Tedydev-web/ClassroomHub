@@ -2,6 +2,8 @@
   import { ExerciseQuestion } from '@cio/ui';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
   import { Badge } from '@cio/ui/base/badge';
+  import { buttonVariants } from '@cio/ui/base/button';
+  import SquarePenIcon from '@lucide/svelte/icons/square-pen';
   import * as Select from '@cio/ui/base/select';
   import { Empty } from '@cio/ui/custom/empty';
   import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
@@ -263,6 +265,21 @@
             })}
           </p>
         </div>
+
+        <!--
+          Marking lives on the course submissions page, which opens its marking dialog from a
+          `submissionId` in the URL. This tab showed the answers with no way to act on them, so a
+          teacher who spotted a wrong mark had to leave, find the same student again and re-open
+          them. Linking the attempt that is already on screen is the whole fix; nothing about
+          marking is rebuilt here.
+        -->
+        <a
+          class={buttonVariants({ variant: 'secondary', size: 'sm' })}
+          href={`/courses/${page.params.id}/submissions?submissionId=${selectedSubmission.id}`}
+        >
+          <SquarePenIcon class="size-4" />
+          {$t('course.navItem.lessons.exercises.all_exercises.analytics.individual.open_marking')}
+        </a>
 
         <div class="w-full md:w-80">
           <Select.Root

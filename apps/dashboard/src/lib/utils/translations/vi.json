@@ -1436,7 +1436,8 @@
         "tab_exams": "Bài thi",
         "tab_papers": "Quản lý đề thi",
         "load_failed_title": "Không tải được bài nộp",
-        "load_failed_description": "Bảng bài nộp không trả về. Đây không phải là chưa ai nộp gì — hãy thử lại."
+        "load_failed_description": "Bảng bài nộp không trả về. Đây không phải là chưa ai nộp gì — hãy thử lại.",
+        "open_exercise": "Mở bài tập"
       },
       "attendance": {
         "title": "Tham dự",
@@ -1603,7 +1604,8 @@
                 "passed": "Đạt",
                 "not_passed": "Không đạt",
                 "no_submission_title": "Chưa có bài nộp nào",
-                "no_submission_description": "Học viên này chưa nộp bài tập này."
+                "no_submission_description": "Học viên này chưa nộp bài tập này.",
+                "open_marking": "Chấm lượt làm này"
               },
               "summary": {
                 "heading": "Tóm tắt",
