@@ -25,12 +25,9 @@ on:
         description: Rebuild every service, whatever the host is already serving
         type: boolean
         default: false
-
-concurrency:
-  group: deploy-production
-  # Never cancel a deploy midway: `up -d` is quick, but interrupting it between
-  # `docker pull` and the restart would leave a half-updated stack.
-  cancel-in-progress: false
+# Build and change detection run without global pipeline blocking.
+# The host deployment job locks on `deploy-production-host` so only
+# one deployment runs on the VPS at a time, never cancelling midway.
 
 permissions:
   contents: read
@@ -274,6 +271,11 @@ jobs:
     if: needs.changes.outputs.any == 'true'
     runs-on: [self-hosted, Linux, deploy]
     timeout-minutes: 30
+    concurrency:
+      group: deploy-production-host
+      # Never cancel a deploy midway: `up -d` is quick, but interrupting it between
+      # `docker pull` and the restart would leave a half-updated stack.
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
@@ -306,21 +308,37 @@ jobs:
 
           echo "${GHCR_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
 
-          # Retried once. A pull writes into containerd's ingest area before it
-          # commits the layer, and anything sweeping the content store at that
-          # moment leaves it with a half-written blob: `commit failed: rename
-          # .../ingest/... no such file or directory`. That is what a concurrent
-          # docker cleanup did to this deploy, and a second attempt succeeds
-          # because the ingest starts again from nothing.
-          for service in ${missing}; do
-            ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
-
+          # Pull missing images in parallel. Retried once if any pull fails
+          # (e.g. transient network or containerd ingest lock).
+          pull_service() {
+            local service="$1"
+            local ref="${REGISTRY}/${IMAGE_NAMESPACE}/classroom-${service}:sha-${GITHUB_SHA}"
+            echo "Pulling ${service} (${ref})..."
             if ! docker pull --quiet "${ref}"; then
-              echo "::warning::Pulling ${ref} failed; retrying once."
-              sleep 10
+              echo "::warning::Pulling ${ref} failed; retrying once in 5s."
+              sleep 5
               docker pull --quiet "${ref}"
             fi
+            echo "Successfully pulled ${service}."
+          }
+
+          pids=()
+          for service in ${missing}; do
+            pull_service "${service}" &
+            pids+=($!)
           done
+
+          pull_failed=0
+          for pid in "${pids[@]}"; do
+            if ! wait "${pid}"; then
+              pull_failed=1
+            fi
+          done
+
+          if [ "${pull_failed}" -ne 0 ]; then
+            echo "::error::One or more image pulls failed."
+            exit 1
+          fi
 
           docker logout "${REGISTRY}"
 

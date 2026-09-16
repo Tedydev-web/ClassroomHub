@@ -19,15 +19,18 @@ RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 RUN npm i -g turbo@1.13.4
 
 # Fetch deps from the lockfile first (cached unless pnpm-lock.yaml changes); the
-# store is baked into this layer and reused by the offline install below.
+# store is kept in a BuildKit cache mount and reused by the offline install below
+# without bloating the final container image layer.
 COPY pnpm-lock.yaml ./
 # Patched deps in the lockfile are hashed against these files, so `pnpm fetch` needs them.
 COPY patches ./patches
-RUN pnpm fetch --store-dir /pnpm/store
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm fetch --store-dir /pnpm/store
 
 COPY . .
 
-RUN pnpm install --offline --frozen-lockfile --ignore-scripts \
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --offline --frozen-lockfile --ignore-scripts \
     --store-dir /pnpm/store --filter @cio/dashboard...
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN --mount=type=cache,target=/app/.turbo \
