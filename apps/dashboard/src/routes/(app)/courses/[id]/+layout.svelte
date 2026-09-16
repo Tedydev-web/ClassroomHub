@@ -16,7 +16,7 @@
   import { Confetti } from '$features/ui';
   import { courseApi } from '$features/course/api';
   import ContentCreateModal from '$features/course/components/content/content-create-modal.svelte';
-  import CourseCompletionModal from '$features/course/components/ceritficate/course-completion-modal.svelte';
+  import CourseCompletionModal from '$features/course/components/certificate/course-completion-modal.svelte';
   import { aiAssistantPanelDefinition, ContentAskAiBar, AI_ASSISTANT_PANEL_ID } from '$features/ai-assistant';
   import {
     getContentAskAiBarWidthClass,

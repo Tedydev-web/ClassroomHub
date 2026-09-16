@@ -4,7 +4,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { courseApi } from '$features/course/api';
   import { profile } from '$lib/utils/store/user';
-  import CertificateEditor from '$features/course/components/ceritficate/editor/certificate-editor.svelte';
+  import CertificateEditor from '$features/course/components/certificate/editor/certificate-editor.svelte';
 
   const courseId = $derived(page.params.id ?? '');
 

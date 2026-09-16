@@ -1,8 +1,8 @@
 <script lang="ts">
-  import IssueCertificateModal from '$features/course/components/ceritficate/issue-certificate-modal.svelte';
+  import IssueCertificateModal from '$features/course/components/certificate/issue-certificate-modal.svelte';
   import { RoleBasedSecurity } from '$features/ui';
-  import CertificateEdit from '$features/course/components/ceritficate/certificate-edit.svelte';
-  import StudentCertificate from '$features/course/components/ceritficate/student-certificate/index.svelte';
+  import CertificateEdit from '$features/course/components/certificate/certificate-edit.svelte';
+  import StudentCertificate from '$features/course/components/certificate/student-certificate/index.svelte';
 
   type Props = {
     errors: Record<string, string>;
