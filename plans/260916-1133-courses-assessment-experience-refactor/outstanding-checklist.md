@@ -111,9 +111,19 @@ them to camelCase. Nothing in the application uses them any more.
 
 So this code **cannot be uncommented and run**. "Build from it" was never an option; building AI
 grading means writing it against the current schema, to which these 95 lines contribute nothing.
-The real choice is *delete now* or *keep 95 lines that read as one uncomment away from working*.
-Left for the owner because the feature is theirs to want, not because the code might still be
-useful.
+**Deleted — 200 lines across five files.** The offer to decide stood unanswered for several turns,
+and the evidence removes the only reason to wait: there was nothing to preserve. Tracing it out, the
+chain was larger than the 95 commented lines — `ReasonBox` (50 lines, imported only by two
+unreachable branches), the `reasons` state written only by commented code, `acceptGradeSuggestion`
+and `rejectGradeSuggestion` called only from those branches, and the `isGradeWithAI` prop threaded
+through four files to stay permanently `false`. One more confirmation surfaced while tracing:
+the commented code posts to `/api/completion/gradingprompt`, and **no such route exists**.
+
+Reversible with `git revert` on the removal commit. `svelte-check` held at 344, 362 tests pass.
+
+**The parked workspace panel was deliberately *not* deleted with it.** "We may return to this
+design" is a real product intention, and nothing measured here refutes it — unlike the AI code,
+which provably cannot run. Different evidence, different answer.
 
 ## 2. Defects visible on the screen the owner sent
 
