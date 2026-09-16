@@ -8,6 +8,11 @@
   import * as Page from '@cio/ui/base/page';
   import * as Select from '@cio/ui/base/select';
   import { goto, invalidateAll } from '$app/navigation';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { Empty } from '@cio/ui/custom/empty';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { contentCreateStoreUtils } from '$features/course/components/content/store';
   import { page } from '$app/state';
 
@@ -106,67 +111,84 @@
 
   <Page.Body>
     {#snippet child()}
-      <div class="space-y-6">
-        <div class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
-          <div class="ui:space-y-1">
-            <p class="ui:text-sm ui:font-medium">{$t('exam.settings.copy_from_exercise')}</p>
-            <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.copy_explainer')}</p>
+      {#if data.loadFailed}
+        <div in:fly={{ y: 4, duration: motionDuration(MOTION_DURATION.fast), easing: cubicOut }}>
+          <Empty
+            variant="page"
+            icon={TriangleAlertIcon}
+            title={$t('exam.settings.load_failed_title')}
+            description={$t('exam.settings.load_failed_description')}
+          >
+            {#snippet children()}
+              <Button onclick={() => invalidateAll()}>{$t('exam.settings.load_failed_retry')}</Button>
+            {/snippet}
+          </Empty>
+        </div>
+      {:else}
+        <div class="space-y-6">
+          <div class="ui:border-border ui:space-y-3 ui:rounded-md ui:border ui:p-4">
+            <div class="ui:space-y-1">
+              <p class="ui:text-sm ui:font-medium">{$t('exam.settings.copy_from_exercise')}</p>
+              <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.copy_explainer')}</p>
+            </div>
+
+            {#if data.copyable.length === 0}
+              <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.settings.no_copyable')}</p>
+              <!-- Without this, a teacher whose questions are still in a file has to leave,
+                 find the content screen, import there, and come back. -->
+              <Button variant="secondary" onclick={goToImport}>{$t('exam.settings.import_document')}</Button>
+            {:else}
+              <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
+                <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
+                  <Label for="exam-source">{$t('exam.settings.source_exercise')}</Label>
+                  <Select.Root type="single" value={sourceId} onValueChange={(value) => (source = value)}>
+                    <Select.Trigger id="exam-source" class="ui:w-full">
+                      {data.copyable.find((exercise) => exercise.id === sourceId)?.title ?? ''}
+                    </Select.Trigger>
+                    <Select.Content>
+                      {#each data.copyable as exercise (exercise.id)}
+                        <Select.Item value={exercise.id}>
+                          {exercise.title} — {$t('exam.manage.question_count', {
+                            count: String(exercise.questionCount)
+                          })}
+                        </Select.Item>
+                      {/each}
+                    </Select.Content>
+                  </Select.Root>
+                </div>
+                <Button disabled={copying} onclick={copyPaper}>
+                  {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
+                </Button>
+              </div>
+              <Button variant="link" class="ui:h-auto ui:p-0 ui:text-xs" onclick={goToImport}>
+                {$t('exam.settings.import_document')}
+              </Button>
+            {/if}
           </div>
 
-          {#if data.copyable.length === 0}
-            <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.settings.no_copyable')}</p>
-            <!-- Without this, a teacher whose questions are still in a file has to leave,
-                 find the content screen, import there, and come back. -->
-            <Button variant="secondary" onclick={goToImport}>{$t('exam.settings.import_document')}</Button>
+          {#if data.containers.length === 0}
+            <p class="ui:text-muted-foreground ui:text-sm">
+              {$t('exam.settings.no_containers')}
+            </p>
           {:else}
-            <div class="ui:flex ui:flex-wrap ui:items-end ui:gap-3">
-              <div class="ui:min-w-0 ui:flex-1 ui:space-y-2">
-                <Label for="exam-source">{$t('exam.settings.source_exercise')}</Label>
-                <Select.Root type="single" value={sourceId} onValueChange={(value) => (source = value)}>
-                  <Select.Trigger id="exam-source" class="ui:w-full">
-                    {data.copyable.find((exercise) => exercise.id === sourceId)?.title ?? ''}
-                  </Select.Trigger>
-                  <Select.Content>
-                    {#each data.copyable as exercise (exercise.id)}
-                      <Select.Item value={exercise.id}>
-                        {exercise.title} — {$t('exam.manage.question_count', { count: String(exercise.questionCount) })}
-                      </Select.Item>
-                    {/each}
-                  </Select.Content>
-                </Select.Root>
-              </div>
-              <Button disabled={copying} onclick={copyPaper}>
-                {copying ? $t('exam.settings.copying') : $t('exam.settings.copy_paper')}
-              </Button>
+            <div class="ui:space-y-2">
+              <Label for="exam-container">{$t('exam.settings.pick_container')}</Label>
+              <Select.Root type="single" value={exerciseId} onValueChange={(value) => (chosen = value)}>
+                <Select.Trigger id="exam-container" class="ui:w-full">
+                  {data.containers.find((container) => container.id === exerciseId)?.title ?? ''}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each data.containers as container (container.id)}
+                    <Select.Item value={container.id}>{container.title}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </div>
-            <Button variant="link" class="ui:h-auto ui:p-0 ui:text-xs" onclick={goToImport}>
-              {$t('exam.settings.import_document')}
-            </Button>
+
+            <ExamSettingsForm {submitting} onsubmit={create} />
           {/if}
         </div>
-
-        {#if data.containers.length === 0}
-          <p class="ui:text-muted-foreground ui:text-sm">
-            {$t('exam.settings.no_containers')}
-          </p>
-        {:else}
-          <div class="ui:space-y-2">
-            <Label for="exam-container">{$t('exam.settings.pick_container')}</Label>
-            <Select.Root type="single" value={exerciseId} onValueChange={(value) => (chosen = value)}>
-              <Select.Trigger id="exam-container" class="ui:w-full">
-                {data.containers.find((container) => container.id === exerciseId)?.title ?? ''}
-              </Select.Trigger>
-              <Select.Content>
-                {#each data.containers as container (container.id)}
-                  <Select.Item value={container.id}>{container.title}</Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
-          </div>
-
-          <ExamSettingsForm {submitting} onsubmit={create} />
-        {/if}
-      </div>
+      {/if}
     {/snippet}
   </Page.Body>
 </Page.Root>

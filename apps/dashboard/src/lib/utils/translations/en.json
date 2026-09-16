@@ -5927,7 +5927,10 @@
       "auto_submit": "Hand the paper in after this many departures",
       "auto_submit_off": "Leave empty — never hand it in automatically",
       "auto_submit_range": "Enter a number of departures between 1 and 50, or leave it empty",
-      "auto_submit_warning": "Read before switching this on. A phone that locks its own screen produces the same signal as a candidate looking something up, so this catches a student thinking with the phone face-down before it catches anyone cheating. It also cannot fire on somebody who leaves and never comes back, and a second phone beside the desk produces no signal at all. Departures are recorded and shown to you either way; this only decides whether the paper is taken from them."
+      "auto_submit_warning": "Read before switching this on. A phone that locks its own screen produces the same signal as a candidate looking something up, so this catches a student thinking with the phone face-down before it catches anyone cheating. It also cannot fire on somebody who leaves and never comes back, and a second phone beside the desk produces no signal at all. Departures are recorded and shown to you either way; this only decides whether the paper is taken from them.",
+      "load_failed_title": "The exam papers could not be loaded",
+      "load_failed_description": "Neither the containers nor the exercises came back. This is not the same as having none — check your connection and try again.",
+      "load_failed_retry": "Try again"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",

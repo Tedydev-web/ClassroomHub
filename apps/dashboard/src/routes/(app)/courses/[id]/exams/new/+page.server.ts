@@ -26,6 +26,10 @@ export const load = async ({ params, cookies }) => {
   return {
     courseId: params.id,
     containers: containers.ok ? containers.body.data : [],
-    copyable: copyable.ok ? copyable.body.data : []
+    copyable: copyable.ok ? copyable.body.data : [],
+    // Without this the page tells a teacher the course has no container to deliver and
+    // offers to import one — when in fact the list simply did not arrive. Acting on that
+    // message creates a container the teacher did not need.
+    loadFailed: !containers.ok || !copyable.ok
   };
 };

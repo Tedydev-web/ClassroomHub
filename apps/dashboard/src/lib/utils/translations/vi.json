@@ -5936,7 +5936,10 @@
       "auto_submit": "Tự nộp bài sau bao nhiêu lần rời khỏi",
       "auto_submit_off": "Để trống — không bao giờ tự nộp",
       "auto_submit_range": "Nhập số lần từ 1 đến 50, hoặc để trống",
-      "auto_submit_warning": "Đọc kỹ trước khi bật. Điện thoại tự khoá màn hình sinh ra đúng tín hiệu giống hệt lúc thí sinh tra cứu, nên tính năng này bắt em đang úp máy suy nghĩ trước khi bắt được người gian lận. Nó cũng không thể kích hoạt với người rời đi và không quay lại, còn một chiếc điện thoại thứ hai đặt cạnh bàn thì không sinh tín hiệu nào cả. Dù bật hay tắt, số lần rời vẫn được ghi lại và hiện cho thầy cô; cái này chỉ quyết định có lấy bài của thí sinh đi hay không."
+      "auto_submit_warning": "Đọc kỹ trước khi bật. Điện thoại tự khoá màn hình sinh ra đúng tín hiệu giống hệt lúc thí sinh tra cứu, nên tính năng này bắt em đang úp máy suy nghĩ trước khi bắt được người gian lận. Nó cũng không thể kích hoạt với người rời đi và không quay lại, còn một chiếc điện thoại thứ hai đặt cạnh bàn thì không sinh tín hiệu nào cả. Dù bật hay tắt, số lần rời vẫn được ghi lại và hiện cho thầy cô; cái này chỉ quyết định có lấy bài của thí sinh đi hay không.",
+      "load_failed_title": "Không tải được danh sách đề",
+      "load_failed_description": "Cả container lẫn bài tập đều không trả về. Đây không phải là chưa có cái nào — kiểm tra kết nối rồi thử lại.",
+      "load_failed_retry": "Thử lại"
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
