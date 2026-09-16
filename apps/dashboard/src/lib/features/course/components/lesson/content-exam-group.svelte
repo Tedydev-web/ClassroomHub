@@ -28,9 +28,9 @@
 </script>
 
 <section class="mx-auto w-full p-3 lg:w-11/12">
-  <div class="ui:border-border m-auto mb-3 max-w-xl rounded-md border transition dark:bg-neutral-800">
+  <div class="ui:border-border ui:dark:bg-card m-auto mb-3 max-w-xl rounded-md border transition">
     <div
-      class="ui:bg-secondary flex min-h-[50px] items-center justify-between rounded-tl-md rounded-tr-md border-b px-3 dark:bg-neutral-700"
+      class="ui:bg-secondary flex min-h-[50px] items-center justify-between rounded-tl-md rounded-tr-md border-b px-3"
     >
       <div class="flex items-center gap-2">
         <CourseContentIcon type={ContentType.Exam} size={16} />
@@ -56,7 +56,7 @@
           <CourseContentIcon type={ContentType.Exam} size={14} />
           <span class="flex-1 truncate">{exam.title}</span>
           <span
-            class="ui:text-2xs inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-gray-700 dark:bg-neutral-700 dark:text-gray-200"
+            class="ui:bg-muted ui:text-muted-foreground ui:text-2xs inline-flex items-center gap-1 rounded-full px-2 py-1"
           >
             {STATUS_LABEL[exam.status] ?? exam.status}
           </span>

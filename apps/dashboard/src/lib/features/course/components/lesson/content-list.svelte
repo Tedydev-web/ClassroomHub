@@ -48,7 +48,7 @@
   const isLiveCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
   const isSelfPacedCourse = $derived(isSelfPacedLikeCourse(courseApi.course?.type));
   const metaChipClass =
-    'inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 ui:text-2xs text-gray-700 dark:bg-neutral-700 dark:text-gray-200';
+    'inline-flex items-center gap-1 rounded-full ui:bg-muted ui:text-muted-foreground ui:text-2xs px-2 py-1';
 
   type ContentDndItem = CourseContentItem & {
     id: string;
@@ -291,7 +291,7 @@
     {@const isLockPending = Boolean(lockPendingItemKeys[getItemLockKey(item)])}
     {@const actionDisabled = Boolean($contentEditingStore && !isEditingItem)}
     <div
-      class="relative m-auto mb-4 flex max-w-xl items-start rounded-md border border-gray-200 px-3 py-2 transition dark:bg-neutral-800 {reorder
+      class="ui:border-border ui:dark:bg-card relative m-auto mb-4 flex max-w-xl items-start rounded-md border px-3 py-2 transition {reorder
         ? 'border-primary-300 bg-primary-50/40 cursor-grab shadow-sm active:cursor-grabbing'
         : ''}"
     >
@@ -403,7 +403,7 @@
 
       <div class="ml-3 flex min-w-fit items-start gap-2">
         {#if isStudentView}
-          <span class="mt-1 inline-flex items-center text-gray-500 dark:text-gray-300">
+          <span class="ui:text-muted-foreground mt-1 inline-flex items-center">
             {#if itemLocked}
               <LockIcon size={16} />
             {:else}
@@ -414,7 +414,7 @@
           <Button
             size="icon-sm"
             variant="outline"
-            class="h-8 w-8 text-gray-600"
+            class="ui:text-muted-foreground h-8 w-8"
             onclick={() => handleToggleItemLock(item)}
             disabled={actionDisabled || isEditingItem || isLockPending}
             aria-label={lockLabel}
@@ -473,6 +473,6 @@
       </div>
     </div>
   {:else}
-    <p class="text-center text-sm text-gray-500 dark:text-white">{$t('course.navItem.lessons.no_lesson')}</p>
+    <p class="text-center text-sm ui:text-muted-foreground">{$t('course.navItem.lessons.no_lesson')}</p>
   {/each}
 </section>
