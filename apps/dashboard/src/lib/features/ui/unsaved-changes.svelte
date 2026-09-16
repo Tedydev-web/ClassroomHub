@@ -61,7 +61,7 @@
     if (!isOpen) pendingUrl = null;
   }}
 >
-  <Dialog.Content class="sm:max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('common.unsaved_changes.title')}</Dialog.Title>
       <Dialog.Description>{$t('common.unsaved_changes.message')}</Dialog.Description>

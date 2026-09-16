@@ -35,3 +35,7 @@ pre-commit:
         ❌ Token utilities in apps/dashboard must carry the ui: prefix, or they emit no CSS.
         Write ui:text-muted-foreground, and for variants put the prefix outermost:
         ui:hover:bg-accent — not hover:ui:bg-accent.
+
+    ui-content-width:
+      glob: 'apps/dashboard/src/**/*.svelte'
+      run: node scripts/check-ui-content-width.mjs {staged_files}

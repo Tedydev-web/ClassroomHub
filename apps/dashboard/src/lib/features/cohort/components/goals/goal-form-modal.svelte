@@ -156,7 +156,7 @@
 </script>
 
 <Dialog.Root bind:open onOpenChange={(value) => !value && onClose()}>
-  <Dialog.Content class="max-h-[90vh] w-[96vw] max-w-2xl overflow-y-auto">
+  <Dialog.Content class="ui:sm:max-w-2xl max-h-[90vh] w-[96vw] overflow-y-auto">
     <Dialog.Header>
       <Dialog.Title>
         {isEditing ? $t('cohorts.goals.modal.edit_title') : $t('cohorts.goals.modal.create_title')}

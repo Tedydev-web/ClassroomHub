@@ -189,7 +189,7 @@
 </Field.Group>
 
 <Dialog.Root bind:open={isFormOpen}>
-  <Dialog.Content class="max-h-[85vh] max-w-2xl overflow-y-auto">
+  <Dialog.Content class="ui:sm:max-w-2xl max-h-[85vh] overflow-y-auto">
     <Dialog.Header>
       <Dialog.Title>{editingId ? $t('automation.webhooks.edit') : $t('automation.webhooks.add')}</Dialog.Title>
       <Dialog.Description>{$t('automation.webhooks.form_description')}</Dialog.Description>
@@ -233,7 +233,7 @@
 </Dialog.Root>
 
 <Dialog.Root bind:open={isDeliveriesOpen}>
-  <Dialog.Content class="max-w-3xl">
+  <Dialog.Content class="ui:sm:max-w-3xl">
     <Dialog.Header>
       <Dialog.Title>{$t('automation.webhooks.deliveries')}</Dialog.Title>
     </Dialog.Header>

@@ -614,7 +614,7 @@
 </div>
 
 <Dialog.Root open={aiSuggestionDialogOpen} onOpenChange={handleAiSuggestionDialogChange}>
-  <Dialog.Content class="max-w-lg">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>{$t('exam_import.review.ai_suggestion_confirm_heading')}</Dialog.Title>
       <Dialog.Description>{$t('exam_import.review.ai_suggestion_confirm_description')}</Dialog.Description>
@@ -662,7 +662,7 @@
 </Dialog.Root>
 
 <Dialog.Root bind:open={cancelConfirmOpen}>
-  <Dialog.Content class="sm:max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('exam_import.status.cancel_confirm_heading')}</Dialog.Title>
       <Dialog.Description>{$t('exam_import.status.cancel_confirm_description')}</Dialog.Description>

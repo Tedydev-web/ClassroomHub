@@ -68,7 +68,7 @@
     if (!open) closeModal();
   }}
 >
-  <Dialog.Content class="max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.people.invite_modal.grant_access_modal.title')}</Dialog.Title>
       <Dialog.Description>

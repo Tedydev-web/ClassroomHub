@@ -291,7 +291,7 @@
     }
   }}
 >
-  <Dialog.Content class="sm:max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('automation.mcp.keys.modal.title')}</Dialog.Title>
       <Dialog.Description>{$t('automation.mcp.keys.modal.description')}</Dialog.Description>

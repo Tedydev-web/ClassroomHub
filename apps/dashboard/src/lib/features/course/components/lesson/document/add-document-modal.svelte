@@ -278,7 +278,7 @@
 </script>
 
 <Dialog.Root open={$lessonDocUpload.isModalOpen} onOpenChange={handleOpenChange}>
-  <Dialog.Content class="w-[90%] max-w-4/5">
+  <Dialog.Content class="ui:sm:max-w-4/5 w-[90%]">
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.lessons.materials.tabs.document.upload_title')}</Dialog.Title>
     </Dialog.Header>

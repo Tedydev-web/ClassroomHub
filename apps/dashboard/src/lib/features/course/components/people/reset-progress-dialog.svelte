@@ -92,7 +92,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="max-w-lg">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>
         {$t('course.navItem.people.reset_progress.dialog.title', { studentName })}

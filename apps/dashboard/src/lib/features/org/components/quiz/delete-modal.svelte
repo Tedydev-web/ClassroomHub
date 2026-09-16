@@ -34,7 +34,7 @@
     if (!isOpen) closeModal();
   }}
 >
-  <Dialog.Content class="w-2/5 max-w-[388px]">
+  <Dialog.Content class="ui:sm:max-w-[388px] w-2/5">
     <Dialog.Header>
       <Dialog.Title>
         {$deleteModal.isQuestion ? $t('components.quiz.question_delete') : $t('components.quiz.quiz_delete')}

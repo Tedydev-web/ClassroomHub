@@ -258,7 +258,7 @@
     }
   }}
 >
-  <Dialog.Content class="sm:max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('automation.api.keys.modal.title')}</Dialog.Title>
       <Dialog.Description>{$t('automation.api.keys.modal.description')}</Dialog.Description>

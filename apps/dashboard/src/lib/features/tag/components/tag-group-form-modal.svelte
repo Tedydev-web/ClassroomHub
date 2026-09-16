@@ -75,7 +75,7 @@
 </script>
 
 <Dialog.Root {open} onOpenChange={handleOpenChange}>
-  <Dialog.Content class="sm:max-w-lg">
+  <Dialog.Content class="ui:sm:max-w-lg">
     <Dialog.Header>
       <Dialog.Title>
         {$t(mode === 'edit' ? 'tags_admin.group_modal.edit_title' : 'tags_admin.group_modal.create_title')}

@@ -12,7 +12,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
+  <Dialog.Content class="ui:sm:max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
     <Dialog.Header>
       <Dialog.Title>{$t('course.navItem.settings.certificate_deadline_required')}</Dialog.Title>
       <Dialog.Description>

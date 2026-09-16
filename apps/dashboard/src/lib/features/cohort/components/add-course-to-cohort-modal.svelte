@@ -125,7 +125,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{$t('cohorts.courses.add_modal_title') || 'Add Course to Cohort'}</Dialog.Title>
     </Dialog.Header>

@@ -105,7 +105,7 @@
     }
   }}
 >
-  <Dialog.Content class="max-h-[60vh] w-[95%] max-w-2xl overflow-y-auto">
+  <Dialog.Content class="ui:sm:max-w-2xl max-h-[60vh] w-[95%] overflow-y-auto">
     <Dialog.Header>
       <Dialog.Title>{$t('media_manager.edit.title')}</Dialog.Title>
       <Dialog.Description>{$t('media_manager.edit.description')}</Dialog.Description>

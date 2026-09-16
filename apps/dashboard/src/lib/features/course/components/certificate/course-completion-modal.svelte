@@ -75,7 +75,7 @@
 </div>
 
 <Dialog.Root {open} {onOpenChange}>
-  <Dialog.Content class="max-w-md">
+  <Dialog.Content class="ui:sm:max-w-md">
     {#if activeStep === 'checking'}
       <div class="flex flex-col items-center justify-center gap-4 py-8">
         <Spinner class="size-8" />

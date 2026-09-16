@@ -497,7 +497,7 @@
 
     <!-- Mobile filter sheet -->
     <Sheet.Root bind:open={filterSheetOpen}>
-      <Sheet.Content side="right" portalProps={{ disabled: true }} class="flex w-full flex-col p-0 sm:max-w-md">
+      <Sheet.Content side="right" portalProps={{ disabled: true }} class="ui:sm:max-w-md flex w-full flex-col p-0">
         <Sheet.Header class="border-b">
           <Sheet.Title>{$t('public_courses.filters.title')}</Sheet.Title>
           <Sheet.Description>

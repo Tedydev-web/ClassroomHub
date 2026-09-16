@@ -69,9 +69,12 @@
 </script>
 
 <Dialog.Root bind:open onOpenChange={(v) => !v && handleClose()}>
-  <!-- `sm:max-w-md` as well as `max-w-md`: without the variant, Dialog.Content's
-       own `sm:max-w-lg` survives the class merge and wins above 640px. -->
-  <Dialog.Content class="mx-auto w-4/5 max-w-md sm:max-w-md">
+  <!-- The `ui:` prefix is what makes this override take. `tailwind-merge` is configured for
+       that prefix, so an unprefixed `max-w-*` is not recognised as the same property and
+       nothing is deduped — Dialog.Content keeps its own `ui:max-w-[calc(100%-2rem)]` and the
+       dialog opens as wide as the window. An earlier note here had half of it: the variant
+       matters, but only once the prefix lets the merge see both. -->
+  <Dialog.Content class="ui:sm:max-w-md mx-auto w-4/5">
     <Dialog.Header>
       <Dialog.Title>{$t('audience.assign.title')}</Dialog.Title>
       <Dialog.Description>{$t('audience.assign.description')}</Dialog.Description>
