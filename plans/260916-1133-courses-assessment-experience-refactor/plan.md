@@ -290,16 +290,26 @@ mechanism behind it.
 `svelte-check` stays at 344 errors with the flag both off **and** on, so the parked path carries no
 new type errors.
 
-**Blocking the flip:** the flag is still `false`. Flipping it changes the whole authoring screen for
-every teacher, and this session had no way to look at it. It is a one-line change and a product
-decision — which authoring layout ships — not a default to take silently. The comment at `:124` says
-the in-place layout was deliberate "until the new authoring design is settled", so the flip is
-exactly the moment of settling it.
+- `4d3af49c6` — **the flip.** The flag and the in-place fallback are gone; the workspace is how
+  exercises are authored. The flat list survives for one job only: reordering, which needs every
+  section on screen at once and so cannot use a pane that shows one section at a time.
+- `54912b107` — removed what the flat list could no longer reach now that it only ever renders while
+  reordering: two `{:else}` branches rendering the identical snippet, a `hidden={reorderQuestions}`
+  wrapper that was now always hidden, and `dragDisabled: !reorderQuestions` that was now always
+  false.
 
-**Noted, deliberately not touched in the structural diff:** `:1033-1037` has an `{:else if
-reorderQuestions}` and an `{:else}` branch that render the identical snippet, and the inner
-`{#if newAssessmentComposerSectionId !== section.id}` at `:1044` / `:1080` is always true where it
-renders. Dead, harmless, and cleaning them inside a structural commit would obscure it.
+`svelte-check` 344, the 17 exercise tests pass, the dashboard builds.
+
+**Phase 1 exit — structural, met.** The composer lives in the editor pane, the outline survives
+clicking a row, the fallback is gone. No restyling and no motion: that is Phase 2 onward.
+
+**Not yet verified by eye.** Nobody has looked at the screen. Worth checking first: opening an
+assessment item keeps the outline; the mobile outline/editor toggle lands on the editor when the
+composer opens; section after-behaviour is reachable; reorder mode still drags across sections.
+
+**Left alone deliberately:** with no sections at all, the reorder path renders full question editors
+rather than compact rows, and has no `dndzone` — so reordering unsectioned questions does not work.
+That predates this phase and belongs with the reorder work, not here.
 
 ---
 
