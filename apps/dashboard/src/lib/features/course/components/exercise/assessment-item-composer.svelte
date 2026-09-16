@@ -23,6 +23,8 @@
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import EyeIcon from '@lucide/svelte/icons/eye';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
+  import { flip } from 'svelte/animate';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
   import PlusIcon from '@lucide/svelte/icons/plus';
@@ -1640,7 +1642,9 @@
       </Field.Legend>
       <Field.Group>
         {#each block.interaction.config.options as option, optionIndex (option.id)}
-          <div class="flex items-end gap-2">
+          <!-- The list order is the answer key, so a step that jumps on reorder loses the author's
+               place in the very thing they are setting. -->
+          <div class="flex items-end gap-2" animate:flip={{ duration: motionDuration(MOTION_DURATION.fast) }}>
             <InputField
               bind:value={block.interaction.config.options[optionIndex].html}
               name={getBlockDomId(block.id, `ordering-option-${option.id}`)}

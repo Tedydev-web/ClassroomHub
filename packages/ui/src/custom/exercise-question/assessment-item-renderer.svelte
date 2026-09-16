@@ -28,6 +28,7 @@
   import { createAssessmentRichTextAnswer, createAssessmentRichTextQuestion } from './assessment-rich-text-adapter';
   import { getExerciseQuestionRenderer } from './renderer-contract';
   import { countWordBankBlanks, parseWordBankTemplate } from './renderers/word-bank/word-bank-utils';
+  import { flip } from 'svelte/animate';
   import QuestionSurface from './question-surface.svelte';
   import QuestionTitle from './question-title.svelte';
 
@@ -983,7 +984,17 @@
           <p class="ui:text-muted-foreground ui:text-xs">{orderingHelperLabel}</p>
           <ol class="ui:space-y-2">
             {#each orderedOptions as option, index (option.id)}
-              <li class="ui:bg-background ui:flex ui:items-center ui:gap-3 ui:rounded-md ui:border ui:p-3">
+              <!--
+                Two items swap places on a button press, and without a bridge both teleport, so
+                the reader has to re-find the one they just moved. `flip` is a JavaScript
+                animation and does not see the stylesheet's reduced-motion rule, so it reads the
+                preference itself. 150ms: this is a small state change repeated within a single
+                question, and anything longer starts to feel like waiting.
+              -->
+              <li
+                animate:flip={{ duration: prefersReducedMotion() ? 1 : 150 }}
+                class="ui:bg-background ui:flex ui:items-center ui:gap-3 ui:rounded-md ui:border ui:p-3"
+              >
                 <NumberBadge number={index + 1} />
                 <div class="ui:min-w-0 ui:flex-1 ui:text-sm">{@html renderAuthoredHtml(option.html)}</div>
                 <div class="ui:flex ui:shrink-0 ui:gap-1">
