@@ -75,6 +75,13 @@
   } from '$features/course/components/exercise/store';
   import type { CanonicalQuestionState } from '$features/course/components/exercise/store';
   import type { TAssessmentItemMutation } from '@cio/utils/validation/exercise';
+  import {
+    getBlockDomId as blockDomIdIn,
+    getComposerDomId as composerDomId,
+    getValidationFocusId as validationFocusId,
+    issuePathEquals,
+    issuePathStartsWith
+  } from './assessment-validation-focus';
 
   interface Props {
     courseId: string;
@@ -235,20 +242,17 @@
     return crypto.randomUUID();
   }
 
+  /**
+   * Thin wrappers over `assessment-validation-focus.ts`, kept so the call sites below read
+   * the same as before. The module holds the logic; these only supply what it used to read
+   * straight out of this closure.
+   */
   function getComposerDomId(): string {
-    return `assessment-${questionId ?? 'new'}`;
+    return composerDomId(questionId);
   }
 
   function getBlockDomId(blockId: string, field: string): string {
-    return `${getComposerDomId()}-${blockId}-${field}`;
-  }
-
-  function issuePathStartsWith(issue: AssessmentIssue, path: Array<string | number>): boolean {
-    return path.every((segment, index) => issue.path[index] === segment);
-  }
-
-  function issuePathEquals(issue: AssessmentIssue, path: Array<string | number>): boolean {
-    return issue.path.length === path.length && issuePathStartsWith(issue, path);
+    return blockDomIdIn(getComposerDomId(), blockId, field);
   }
 
   function getValidationError(path: Array<string | number>, required = false): string {
@@ -324,52 +328,11 @@
   }
 
   function getValidationFocusId(issue: AssessmentIssue): string {
-    if (issuePathEquals(issue, ['presentation', 'layout'])) {
-      const firstPassageBlock = passageBlocks[0];
-
-      return firstPassageBlock ? getBlockDomId(firstPassageBlock.id, 'content') : `${getComposerDomId()}-add-content`;
-    }
-
-    const blockIndex = issue.path[0] === 'blocks' && typeof issue.path[1] === 'number' ? issue.path[1] : null;
-    if (blockIndex === null) return `${getComposerDomId()}-actions`;
-
-    const block = composer.definition.blocks[blockIndex];
-    if (!block) return `${getComposerDomId()}-actions`;
-
-    if (issue.path.includes('prompt')) return getBlockDomId(block.id, 'prompt');
-    if (issue.path.includes('maxScore')) return getBlockDomId(block.id, 'points');
-
-    if (block.kind === 'interaction' && block.interaction.kind === 'choice') {
-      const optionsPathIndex = issue.path.indexOf('options');
-      const optionIndex = optionsPathIndex >= 0 ? issue.path[optionsPathIndex + 1] : null;
-      if (typeof optionIndex === 'number') {
-        const option = block.interaction.config.options[optionIndex];
-        if (option) return getBlockDomId(option.id, 'label');
-      }
-
-      if (optionsPathIndex >= 0) return getBlockDomId(block.id, 'add-option');
-
-      if (issue.path.includes('correctOptionIds')) {
-        const firstOption = block.interaction.config.options[0];
-        if (firstOption) return getBlockDomId(firstOption.id, 'correct');
-      }
-    }
-
-    if (block.kind === 'interaction' && block.interaction.kind === 'true_false_group') {
-      const statementsPathIndex = issue.path.indexOf('statements');
-      const statementIndex = statementsPathIndex >= 0 ? issue.path[statementsPathIndex + 1] : null;
-      if (typeof statementIndex === 'number') {
-        const statement = block.interaction.config.statements[statementIndex];
-        if (statement) return getBlockDomId(statement.id, 'label');
-      }
-
-      const tiersPathIndex = issue.path.indexOf('tiers');
-      const tierIndex = tiersPathIndex >= 0 ? issue.path[tiersPathIndex + 1] : null;
-      if (typeof tierIndex === 'number') return getBlockDomId(block.id, `tier-${tierIndex}`);
-      if (tiersPathIndex >= 0) return getBlockDomId(block.id, 'tier-0');
-    }
-
-    return getBlockDomId(block.id, 'block');
+    return validationFocusId(issue, {
+      composerDomId: getComposerDomId(),
+      blocks: composer.definition.blocks,
+      passageBlocks
+    });
   }
 
   function revealValidationIssue(issue: AssessmentIssue) {
