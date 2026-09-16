@@ -92,6 +92,15 @@ export type ExamImportDraftView = {
    */
   findings: Array<ExamImportValidationResult['findings'][number] & { class: ExamImportFindingClass }>;
   aiSuggestionQuestionIds: string[];
+  /**
+   * Whether AI suggestion is configured at all on this deployment. Only the parts that need
+   * no IO are checked here — the environment flag and the gateway connection — because a
+   * draft view is built synchronously. That is enough to stop offering a button that cannot
+   * work: with either of those missing, no organization setting or model pin can save it.
+   * A deployment that passes this check still gets the existing per-request estimate, which
+   * is where the organization setting and the model allowlist are answered.
+   */
+  aiSuggestionAvailable: boolean;
   publishable: boolean;
   expiresAt: string;
   updatedAt: string;
@@ -242,6 +251,7 @@ function draftView(draftRecord: TExamImportDraft, validation: ExamImportValidati
     draft: validation.draft,
     findings: validation.findings.map((finding) => ({ ...finding, class: examImportFindingClass(finding.code) })),
     aiSuggestionQuestionIds: collectExamImportAiRegions(validation.draft).map((region) => region.questionId),
+    aiSuggestionAvailable: isExamImportAiConfigured(),
     publishable: validation.publishable,
     expiresAt: draftRecord.expiresAt,
     updatedAt: draftRecord.updatedAt
@@ -565,6 +575,13 @@ export async function applyExamImportAnswerKeyService(
   }
 }
 
+/** The IO-free half of the AI availability gate. See `ExamImportDraftView.aiSuggestionAvailable`. */
+function isExamImportAiConfigured(): boolean {
+  const connection = readGatewayConnectionFromEnv();
+
+  return env.EXAM_IMPORT_AI_ENABLED === 'true' && Boolean(connection.baseURL && connection.authToken);
+}
+
 function organizationAllowsExamImportAi(settings: unknown): boolean {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false;
 
@@ -611,12 +628,8 @@ async function getExamImportAiSuggestionContext(
   const requestedModel = env.EXAM_IMPORT_AI_MODEL?.trim();
   const model = requestedModel ? selectGatewayModelId(settings, requestedModel) : null;
   const modelConfig = settings.modelAllowlist.find((entry) => entry.modelId === model);
-  const connection = readGatewayConnectionFromEnv();
   const available =
-    env.EXAM_IMPORT_AI_ENABLED === 'true' &&
-    organizationAllowsExamImportAi(organization?.settings) &&
-    modelConfig !== undefined &&
-    Boolean(connection.baseURL && connection.authToken);
+    isExamImportAiConfigured() && organizationAllowsExamImportAi(organization?.settings) && modelConfig !== undefined;
   const estimatedPromptTokens = estimateExamImportAiPromptTokens(suggestableRegions);
   const maximumCompletionTokens = EXAM_IMPORT_AI_MAX_COMPLETION_TOKENS * suggestableRegions.length;
   const estimatedMaximumQuotaUnits = modelConfig

@@ -9,6 +9,7 @@
   import * as Alert from '@cio/ui/base/alert';
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
+  import * as Tooltip from '@cio/ui/base/tooltip';
   import * as Dialog from '@cio/ui/base/dialog';
   import { Spinner } from '@cio/ui/base/spinner';
   import * as ToggleGroup from '@cio/ui/base/toggle-group';
@@ -113,6 +114,12 @@
       .map((view) => view.question.id)
   );
   const aiSuggestionQuestionIds = $derived(draftView?.aiSuggestionQuestionIds ?? []);
+  /**
+   * Whether this deployment has AI configured at all. Shown rather than hidden: a teacher who
+   * cannot see the feature cannot ask for it to be turned on. The button stays visible and
+   * disabled, and says why, instead of costing two clicks and a round-trip to find out.
+   */
+  const aiSuggestionAvailable = $derived(draftView?.aiSuggestionAvailable ?? false);
   const selectedAiQuestionCount = $derived(
     [...selectedAiQuestionIds].filter((questionId) => aiSuggestionQuestionIds.includes(questionId)).length
   );
@@ -547,15 +554,30 @@
               </Button>
             {/if}
             {#if aiSuggestionQuestionIds.length > 0}
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={selectedAiQuestionCount === 0 || aiSuggestionLoading || aiSuggestionPending}
-                onclick={openAiSuggestionConfirmation}
-              >
-                <SparklesIcon class="size-4" />
-                {$t('exam_import.review.ai_suggestion_action', { count: selectedAiQuestionCount })}
-              </Button>
+              <Tooltip.Provider>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    {#snippet child({ props })}
+                      <Button
+                        {...props}
+                        variant="secondary"
+                        size="sm"
+                        disabled={!aiSuggestionAvailable ||
+                          selectedAiQuestionCount === 0 ||
+                          aiSuggestionLoading ||
+                          aiSuggestionPending}
+                        onclick={openAiSuggestionConfirmation}
+                      >
+                        <SparklesIcon class="size-4" />
+                        {$t('exam_import.review.ai_suggestion_action', { count: selectedAiQuestionCount })}
+                      </Button>
+                    {/snippet}
+                  </Tooltip.Trigger>
+                  {#if !aiSuggestionAvailable}
+                    <Tooltip.Content>{$t('exam_import.review.ai_suggestion_unavailable')}</Tooltip.Content>
+                  {/if}
+                </Tooltip.Root>
+              </Tooltip.Provider>
             {/if}
             <ToggleGroup.Root
               type="single"

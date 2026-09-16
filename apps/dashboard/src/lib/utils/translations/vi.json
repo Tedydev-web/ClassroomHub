@@ -5536,7 +5536,7 @@
       "ai_suggestion_quota_upper_bound": "Giới hạn ước tính: {count} đơn vị hạn mức",
       "ai_suggestion_model": "Mô hình đã cấu hình: {model}",
       "ai_suggestion_teacher_confirmation": "Mọi trường do AI đề xuất vẫn cần giáo viên xác nhận trước khi xuất bản.",
-      "ai_suggestion_unavailable": "Đề xuất AI không khả dụng cho không gian làm việc này.",
+      "ai_suggestion_unavailable": "Gợi ý AI chưa được cấu hình trên hệ thống này.",
       "ai_suggestion_confirm_action": "Yêu cầu đề xuất",
       "ai_suggestion_queued": "Đã xếp hàng đề xuất AI cho {count} câu",
       "ai_suggestion_pending": "Đang áp dụng đề xuất AI",

@@ -5320,7 +5320,7 @@
       "ai_suggestion_quota_upper_bound": "Estimated upper limit: {count} quota units",
       "ai_suggestion_model": "Configured model: {model}",
       "ai_suggestion_teacher_confirmation": "Every AI-derived field remains proposed and requires teacher confirmation before publishing.",
-      "ai_suggestion_unavailable": "AI suggestions are not available for this workspace.",
+      "ai_suggestion_unavailable": "AI suggestions are not configured on this deployment.",
       "ai_suggestion_confirm_action": "Request suggestions",
       "ai_suggestion_queued": "Queued AI suggestions for {count} questions",
       "ai_suggestion_pending": "AI suggestions are being applied",
