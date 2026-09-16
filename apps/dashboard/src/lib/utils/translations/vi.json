@@ -5798,7 +5798,8 @@
       "export_paper_a5": "A5",
       "export_paper_a4": "A4",
       "print_with_key": "Phiếu có đáp án",
-      "print_without_key": "Phiếu không đáp án"
+      "print_without_key": "Phiếu không đáp án",
+      "revert_mark": "Hoàn tác"
     },
     "manage": {
       "title": "Đề thi",

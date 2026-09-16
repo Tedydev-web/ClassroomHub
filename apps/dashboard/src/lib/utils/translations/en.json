@@ -5789,7 +5789,8 @@
       "export_paper_a5": "A5",
       "export_paper_a4": "A4",
       "print_with_key": "Sheets with answer key",
-      "print_without_key": "Sheets without answer key"
+      "print_without_key": "Sheets without answer key",
+      "revert_mark": "Revert"
     },
     "manage": {
       "title": "Exams",

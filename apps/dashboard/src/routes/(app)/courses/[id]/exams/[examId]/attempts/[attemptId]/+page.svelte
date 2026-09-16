@@ -30,6 +30,12 @@
    * navigation back would show the marks and total as they were the first time.
    */
   let edited = $state<Record<number, { score: string; comment: string }>>({});
+  /**
+   * Marks this page has successfully written, which `data.attempt.manualScores` will not
+   * know about until a reload. Kept so reverting an edit returns to what the server
+   * actually holds now rather than to the value it held when the page loaded.
+   */
+  let committed = $state<Record<number, { score: string; comment: string }>>({});
   let saved = $state<{ score: string | null; total: string | null; gradingState: string } | null>(null);
 
   const marks = $derived({
@@ -42,6 +48,7 @@
         }
       ])
     ),
+    ...committed,
     ...edited
   });
 
@@ -70,6 +77,18 @@
     return grouped;
   });
 
+  /**
+   * Drop this question's unsaved edit so `marks` falls back to the value the server holds.
+   *
+   * This is the only undo the data supports. Reverting a mark that was already *saved*
+   * would need the API to keep a history of marks, and it does not — `answerLog` records
+   * what the sitter changed, not what the marker did.
+   */
+  function revertMark(questionId: number) {
+    const { [questionId]: _discarded, ...rest } = edited;
+    edited = rest;
+  }
+
   async function saveMark(questionId: number) {
     const raw = marks[questionId];
     const numeric = Number(raw?.score);
@@ -92,6 +111,12 @@
         // Recomputed on the server by the one function that owns the total, so the
         // automatic part and the marks cannot drift apart.
         saved = { score: body.data.score, total: body.data.total, gradingState: body.data.gradingState };
+        // This value is now the server's. Moving it out of `edited` both hides the revert
+        // control — there is nothing left to discard — and gives a later edit something
+        // truthful to revert to.
+        committed = { ...committed, [questionId]: { score: String(numeric), comment: raw?.comment ?? '' } };
+        const { [questionId]: _justSaved, ...stillEdited } = edited;
+        edited = stillEdited;
         snackbar.success($t('exam.results.mark_saved'));
       } else {
         snackbar.error($t('exam.results.mark_failed'));
@@ -323,6 +348,17 @@
                 >
                   {$t('exam.results.save_mark')}
                 </Button>
+                {#if edited[item.questionId]}
+                  <!--
+                    Typing over a mark used to be one-way: the number that was there is still
+                    on the server, but nothing on screen put it back. Shown only while an
+                    unsaved edit exists — after a save the server holds the new value and
+                    there is nothing here to return to.
+                  -->
+                  <Button size="sm" variant="ghost" onclick={() => revertMark(item.questionId)}>
+                    {$t('exam.results.revert_mark')}
+                  </Button>
+                {/if}
               </div>
             {/if}
           </li>
