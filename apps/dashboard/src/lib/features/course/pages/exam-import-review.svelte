@@ -499,6 +499,9 @@
     </details>
 
     <div class="grid min-w-0 gap-6 xl:grid-cols-[minmax(20rem,5fr)_minmax(28rem,7fr)]">
+      <!-- A scrolling pane needs tabindex="0" or a keyboard user cannot scroll it at all. The
+           rule fires because the element is not a control, which is the point: it is a labelled
+           landmark that scrolls, so the suppression is correct rather than deferred. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
         role="region"
@@ -528,6 +531,9 @@
         </div>
       </div>
 
+      <!-- A scrolling pane needs tabindex="0" or a keyboard user cannot scroll it at all. The
+           rule fires because the element is not a control, which is the point: it is a labelled
+           landmark that scrolls, so the suppression is correct rather than deferred. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
         role="region"

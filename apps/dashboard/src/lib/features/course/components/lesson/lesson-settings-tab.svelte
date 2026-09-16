@@ -24,11 +24,22 @@
 
   // ── Live session (Zoom link + scheduled time + timezone) ──────────────────
   const isLiveClass = $derived(courseApi.course?.type === 'LIVE_CLASS');
+  /**
+   * An empty list here renders an empty select, which tells a teacher scheduling a live class
+   * that there are no timezones rather than that their browser cannot enumerate them. Falling
+   * back to their own timezone keeps the control usable and truthful: it is the one value that
+   * is always available and almost always the one they want.
+   */
   const timezoneOptions = (() => {
+    const browserTimezone = getBrowserTimezone();
     try {
-      return (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.('timeZone') ?? [];
+      const supported = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.(
+        'timeZone'
+      );
+
+      return supported?.length ? supported : [browserTimezone];
     } catch {
-      return [];
+      return [browserTimezone];
     }
   })();
 
