@@ -89,7 +89,7 @@
                       >
                         <CourseContentIcon type={ContentType.Exam} size={14} />
                         <span class="flex-1 truncate">{exam.title}</span>
-                        <span class="ui:text-muted-foreground ml-auto shrink-0 text-[10px] leading-none">
+                        <span class="ui:text-muted-foreground ui:text-2xs ml-auto shrink-0 leading-none">
                           {STATUS_LABEL[exam.status] ?? exam.status}
                         </span>
                       </a>

@@ -231,6 +231,20 @@
   --animate-shine: shine 2s linear infinite;
 }
 
+/*
+ * Same mechanism as the z-index safelist above, and for the same reason. Tailwind emits a
+ * utility only when its scanner finds that exact candidate under `packages/ui/src`, so the
+ * three steps this scale adds beyond stock Tailwind — 2xs, display-sm and display — emitted
+ * nothing at all: no component here happened to use them. `.ui\:text-xs` was present because
+ * components do use it, which is what made the gap invisible. A dashboard file writing
+ * `ui:text-2xs` got no CSS, the same silent failure as an unprefixed token.
+ *
+ * Declaring a step in `@theme` is not the same as publishing it.
+ */
+@source inline('ui:text-2xs{,!}');
+@source inline('ui:text-display-sm{,!}');
+@source inline('ui:text-display{,!}');
+
 @layer base {
   /*
    * Motion durations. Frequency of use sets them: the more often a motion is

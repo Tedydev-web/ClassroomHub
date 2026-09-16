@@ -56,7 +56,7 @@
           <CourseContentIcon type={ContentType.Exam} size={14} />
           <span class="flex-1 truncate">{exam.title}</span>
           <span
-            class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-[10px] text-gray-700 dark:bg-neutral-700 dark:text-gray-200"
+            class="ui:text-2xs inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-gray-700 dark:bg-neutral-700 dark:text-gray-200"
           >
             {STATUS_LABEL[exam.status] ?? exam.status}
           </span>

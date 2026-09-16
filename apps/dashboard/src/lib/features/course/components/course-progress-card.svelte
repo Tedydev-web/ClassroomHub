@@ -23,7 +23,7 @@
     <span class="ui:text-primary text-xs font-semibold tabular-nums">{percent}%</span>
   </div>
   <Progress value={percent} max={100} class="mt-2 h-1.5" />
-  <p class="ui:text-muted-foreground mt-2 truncate text-[11px]">
+  <p class="ui:text-muted-foreground ui:text-2xs mt-2 truncate">
     {$t('course.sidebar.progress.lessons', {
       completed: lessonsComplete,
       total: lessonsTotal

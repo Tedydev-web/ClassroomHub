@@ -92,7 +92,7 @@
     </Button>
   </nav>
 
-  <p class="ui:text-muted-foreground truncate px-3 pb-2 text-[11px]">
+  <p class="ui:text-muted-foreground ui:text-2xs truncate px-3 pb-2">
     {$t('course.sidebar.progress.lessons', {
       completed: courseProgress.lessonsComplete,
       total: courseProgress.lessonsTotal

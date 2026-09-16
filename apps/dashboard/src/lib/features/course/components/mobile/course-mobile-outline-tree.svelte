@@ -180,7 +180,7 @@
           <div class="ml-auto flex items-center gap-1">
             {#if sectionProgress.total > 0}
               <span
-                class="shrink-0 text-[11px] font-medium tabular-nums {sectionProgress.completed ===
+                class="ui:text-2xs shrink-0 font-medium tabular-nums {sectionProgress.completed ===
                 sectionProgress.total
                   ? 'ui:text-green-600'
                   : 'ui:text-muted-foreground'}"
