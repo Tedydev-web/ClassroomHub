@@ -82,6 +82,7 @@
     issuePathEquals,
     issuePathStartsWith
   } from './assessment-validation-focus';
+  import { canMoveBlock as blockIsMovable } from './assessment-block-movement';
 
   interface Props {
     courseId: string;
@@ -536,33 +537,12 @@
   }
 
   function canMoveBlock(blockId: string, offset: -1 | 1): boolean {
-    const block = composer.definition.blocks.find((candidate) => candidate.id === blockId);
-    if (!block) return false;
-
-    if (usesPassageLayout && block.kind === 'content') {
-      const passageIndex = passageGroupsWithContent.findIndex((group) => group.passage?.id === blockId);
-      const destinationIndex = passageIndex + offset;
-
-      return passageIndex >= 0 && destinationIndex >= 0 && destinationIndex < passageGroupsWithContent.length;
-    }
-
-    if (usesPassageLayout) {
-      const passageGroup = passageGroups.find((group) =>
-        group.interactions.some((interaction) => interaction.id === blockId)
-      );
-      const interactionIndex = passageGroup?.interactions.findIndex((interaction) => interaction.id === blockId) ?? -1;
-      const destinationIndex = interactionIndex + offset;
-
-      return (
-        interactionIndex >= 0 && destinationIndex >= 0 && destinationIndex < (passageGroup?.interactions.length ?? 0)
-      );
-    }
-
-    const laneBlocks = composer.definition.blocks;
-    const laneIndex = laneBlocks.findIndex((candidate) => candidate.id === blockId);
-    const destinationIndex = laneIndex + offset;
-
-    return destinationIndex >= 0 && destinationIndex < laneBlocks.length;
+    return blockIsMovable(blockId, offset, {
+      usesPassageLayout,
+      blocks: composer.definition.blocks,
+      passageGroups,
+      passageGroupsWithContent
+    });
   }
 
   function addPassageBlock() {
