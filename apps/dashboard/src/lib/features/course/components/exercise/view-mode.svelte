@@ -25,7 +25,6 @@
   import {
     assessmentResponseEnvelopeSchema,
     getExerciseQuestionContractKey,
-    getAssessmentVerticalSliceResponseProgress,
     isAssessmentVerticalSliceResponseComplete,
     parseAssessmentDeliveryDefinition
   } from '@cio/question-types';
@@ -36,7 +35,6 @@
     getTextareaAnswerCharacterCount,
     hasMeaningfulAnswerData,
     resolveCanonicalFileUploadMimeType,
-    toApiPayload,
     type AnswerData,
     type ApiPayload,
     type ExerciseQuestionFileUploader,
@@ -45,12 +43,7 @@
   } from '@cio/question-types';
   import type { AssessmentDeliveryDefinition, AssessmentResponseEnvelope } from '@cio/question-types';
   import { exerciseApi } from '$features/course/api';
-  import type {
-    Exercise,
-    ExerciseAttempt,
-    SubmissionListItem,
-    SubmittedExerciseAttempt
-  } from '$features/course/utils/types';
+  import type { ExerciseAttempt, SubmissionListItem, SubmittedExerciseAttempt } from '$features/course/utils/types';
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -65,6 +58,20 @@
   } from '$features/course/store/course-completion-modal';
   import { isSelfPacedLikeCourse } from '$features/course/utils/compliance-utils';
   import { toExerciseQuestionModel } from './question-type-utils';
+  import {
+    formatPercent,
+    getExerciseQuestionProgress as computeExerciseProgress,
+    getTakeItemQuestionProgress as computeTakeItemProgress,
+    getTakeItemTotalPossibleGrade,
+    isCanonicalTakeItemAnswered,
+    isRequiredQuestion,
+    isRequiredTakeItem,
+    mapAnswerToApiPayload,
+    normalizeAnswerValue,
+    type CanonicalQuestion,
+    type QuestionProgress,
+    type TakeItem
+  } from './take-progress';
   import { getAssessmentPassageWorkspaceLabels, getExerciseQuestionLabels } from './question-labels';
   import {
     getExerciseSectionDisplayHtml,
@@ -93,23 +100,10 @@
   } from '$features/course/utils/exercise-section-display-mode';
   import {
     getCanonicalAssessmentReviewItems,
-    sumAnswerScoresForRenderedQuestions,
-    type CanonicalAssessmentReviewItem
+    sumAnswerScoresForRenderedQuestions
   } from '$features/course/utils/submission-review-score-utils';
   import { VIDEO_RECORDING_MIME_TYPES, type TExerciseVideoRecordingUploadInit } from '@cio/utils/validation/exercise';
   import type { TExerciseSubmissionCreate } from '@cio/utils/validation/exercise';
-
-  type CanonicalQuestion = NonNullable<Exercise['canonicalQuestions']>[number];
-  type TakeItem =
-    | { kind: 'legacy'; id: string; question: Question }
-    | {
-        kind: 'canonical';
-        id: string;
-        question: CanonicalQuestion;
-        definition: AssessmentDeliveryDefinition;
-        feedback?: CanonicalAssessmentReviewItem['feedback'];
-        revisionId: string | null;
-      };
 
   interface Props {
     preview?: boolean;
@@ -205,79 +199,17 @@
     saveCurrentExerciseDraft();
   }
 
-  function normalizeAnswerValue(
-    previousValue: AnswerData | undefined,
-    nextValue: AnswerData | undefined
-  ): AnswerData | undefined {
-    if (nextValue && typeof nextValue === 'object' && 'type' in nextValue) {
-      return nextValue;
-    }
-    return previousValue;
+  /**
+   * The progress helpers are pure and live in `take-progress.ts`. These two read the store
+   * and hand the answers over, which keeps the store access in one place instead of in
+   * every call site.
+   */
+  function getTakeItemQuestionProgress(item: TakeItem): QuestionProgress {
+    return computeTakeItemProgress(item, $questionnaireMetaData);
   }
 
-  function mapAnswerToApiPayload(question: Question, answerData: AnswerData | null | undefined): ApiPayload | null {
-    const questionId = Number(question.id);
-    if (Number.isNaN(questionId) || !answerData) return null;
-    return toApiPayload(answerData, questionId);
-  }
-
-  function hasMeaningfulCanonicalResponse(response: AssessmentResponseEnvelope | undefined): boolean {
-    return (response?.responses.length ?? 0) > 0;
-  }
-
-  function isCanonicalTakeItemAnswered(
-    item: Extract<TakeItem, { kind: 'canonical' }>,
-    response: AssessmentResponseEnvelope | undefined
-  ): boolean {
-    return (
-      hasMeaningfulCanonicalResponse(response) && isAssessmentVerticalSliceResponseComplete(item.definition, response)
-    );
-  }
-
-  function getTakeItemQuestionProgress(item: TakeItem): { answered: number; total: number } {
-    if (item.kind === 'canonical') {
-      return getAssessmentVerticalSliceResponseProgress(
-        item.definition,
-        $questionnaireMetaData.canonicalAnswers[item.id]
-      );
-    }
-
-    const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(item.question));
-    const answered = hasMeaningfulAnswerData($questionnaireMetaData.answers[questionKey]) ? 1 : 0;
-
-    return { answered, total: 1 };
-  }
-
-  function getExerciseQuestionProgress(items: TakeItem[]): { answered: number; total: number } {
-    return items.reduce(
-      (progress, item) => {
-        const itemProgress = getTakeItemQuestionProgress(item);
-
-        return {
-          answered: progress.answered + itemProgress.answered,
-          total: progress.total + itemProgress.total
-        };
-      },
-      { answered: 0, total: 0 }
-    );
-  }
-
-  function getTakeItemPoints(item: TakeItem): number {
-    if (item.kind === 'legacy') return getTotalPossibleGrade([item.question]);
-
-    return item.definition.blocks.reduce((total, block) => {
-      return block.kind === 'interaction' ? total + block.interaction.maxScore : total;
-    }, 0);
-  }
-
-  function isRequiredTakeItem(item: TakeItem): boolean {
-    if (item.kind === 'legacy') return isRequiredQuestion(item.question);
-
-    return item.definition.blocks.some((block) => block.kind === 'interaction' && block.interaction.required);
-  }
-
-  function isRequiredQuestion(question: Question | null | undefined): boolean {
-    return !question || toExerciseQuestionModel(question).required !== false;
+  function getExerciseQuestionProgress(items: TakeItem[]): QuestionProgress {
+    return computeExerciseProgress(items, $questionnaireMetaData);
   }
 
   async function submitExercise() {
@@ -584,20 +516,6 @@
     if (questionProgress.total === 0) return 0;
 
     return Math.round((questionProgress.answered / questionProgress.total) * 100);
-  }
-
-  function getTotalPossibleGrade(questions: Question[]): number {
-    return questions.reduce((total, question) => total + Number(question.points ?? 0), 0);
-  }
-
-  function getTakeItemTotalPossibleGrade(items: TakeItem[]): number {
-    return items.reduce((total, item) => total + getTakeItemPoints(item), 0);
-  }
-
-  function formatPercent(value: number) {
-    return new Intl.NumberFormat(undefined, {
-      maximumFractionDigits: 1
-    }).format(value);
   }
 
   function getAutoSavedData() {
