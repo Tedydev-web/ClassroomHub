@@ -334,7 +334,9 @@
       "title": "A new version is available.",
       "description": "Reload to get the latest features and fixes.",
       "reload": "Reload"
-    }
+    },
+    "delete": "Delete",
+    "remove": "Remove"
   },
   "compliance": {
     "title": "Compliance",
@@ -2038,6 +2040,9 @@
       "create_button": "Create",
       "error": {
         "failed_to_clone": "Failed to clone course"
+      },
+      "success": {
+        "course_cloned": "Course copied"
       }
     }
   },
@@ -2975,7 +2980,9 @@
                 "status_pending": "Pending",
                 "counts_as_complete": "Counts as complete",
                 "passed": "Passed",
-                "not_passed": "Not passed"
+                "not_passed": "Not passed",
+                "no_submission_title": "Nothing handed in yet",
+                "no_submission_description": "This student has not submitted this exercise."
               },
               "submissions": "Submissions",
               "loading_submissions": "Loading submissions...",
@@ -3290,7 +3297,8 @@
                   "max_characters_label": "Maximum characters",
                   "max_characters_placeholder": "Maximum characters"
                 }
-              }
+              },
+              "answer_key": "Answer key"
             },
             "publish_as_exam": "Publish as an exam",
             "public_course_auto_graded_only": "A public course grades itself, so only auto-gradable question types are available."
@@ -3355,7 +3363,8 @@
           "empty": "No versions yet"
         },
         "student_share_your_knowledge": "No lessons have been added to this course yet. Please check back later.",
-        "student_body_content": "No lessons have been added to this course yet. Check back later."
+        "student_body_content": "No lessons have been added to this course yet. Check back later.",
+        "title": "Lessons"
       },
       "attendance": {
         "title": "Attendance",
@@ -4115,7 +4124,14 @@
       "page_subtitle": "Progress, grades, and activity across their courses.",
       "load_failed_title": "Couldn't load this learner's progress",
       "load_failed_description": "The request failed. This is not the same as having no progress yet — try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "awaiting_grade": "Awaiting grade",
+      "course_level_exercise": "Course-level exercise",
+      "export_progress": "Export progress",
+      "no_exercises_title": "No exercises yet",
+      "no_exercises_description": "This course has no exercises, so there is nothing to track for this student yet.",
+      "not_submitted": "Not submitted",
+      "student_actions": "Student actions"
     },
     "import": {
       "page_subtitle": "Add many people at once by email, then assign courses or cohorts if you like.",
@@ -4159,6 +4175,9 @@
       "resend_snackbar_success": "Invitation email sent",
       "resend_snackbar_email_failed": "Invite was renewed but the email could not be sent",
       "revoke_snackbar_success": "Pending invitation revoked"
+    },
+    "filter": {
+      "last_activity": "Last activity"
     }
   },
   "analytics": {
@@ -4298,7 +4317,9 @@
     },
     "load_failed_title": "Couldn't load analytics",
     "load_failed_description": "The request failed, so there is nothing to show yet. This course may well have data.",
-    "load_failed_retry": "Try again"
+    "load_failed_retry": "Try again",
+    "course_progress": "Course progress",
+    "exercises_completed": "Exercises submitted"
   },
   "upgrade": {
     "certificate": "Upgrade your plan to generate certificates",
@@ -4872,7 +4893,8 @@
   "generic": {
     "locked": "Locked",
     "unlocked": "Unlocked",
-    "loading": "Loading"
+    "loading": "Loading",
+    "progress": "Progress"
   },
   "validations": {
     "user_profile": {

@@ -42,7 +42,9 @@
       "title": "Đã có phiên bản mới.",
       "description": "Tải lại để nhận các tính năng và bản sửa lỗi mới nhất.",
       "reload": "Tải lại"
-    }
+    },
+    "delete": "Xoá",
+    "remove": "Gỡ"
   },
   "validations": {
     "generic": {
@@ -173,7 +175,8 @@
   "generic": {
     "locked": "Đã khóa",
     "unlocked": "Đã mở khóa",
-    "loading": "Đang tải"
+    "loading": "Đang tải",
+    "progress": "Tiến độ"
   },
   "content": {
     "heading": "Quốc tế hóa trong SvelteKit",
@@ -703,7 +706,9 @@
     },
     "load_failed_title": "Không tải được phân tích",
     "load_failed_description": "Yêu cầu thất bại nên chưa có gì để hiển thị. Lớp này vẫn có thể đang có dữ liệu.",
-    "load_failed_retry": "Thử lại"
+    "load_failed_retry": "Thử lại",
+    "course_progress": "Tiến độ khoá học",
+    "exercises_completed": "Bài tập đã nộp"
   },
   "audience": {
     "title": "khán giả",
@@ -773,7 +778,14 @@
       "page_subtitle": "Tiến độ, điểm số và hoạt động trên các khóa học của họ.",
       "load_failed_title": "Không tải được tiến độ của học viên này",
       "load_failed_description": "Yêu cầu thất bại. Điều này khác với việc học viên chưa có tiến độ — hãy thử lại.",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "awaiting_grade": "Chờ chấm",
+      "course_level_exercise": "Bài tập cấp khoá học",
+      "export_progress": "Xuất tiến độ",
+      "no_exercises_title": "Chưa có bài tập nào",
+      "no_exercises_description": "Khoá học này chưa có bài tập nào, nên chưa có gì để theo dõi cho học viên này.",
+      "not_submitted": "Chưa nộp",
+      "student_actions": "Thao tác với học viên"
     },
     "delete": {
       "action": "Xóa",
@@ -784,7 +796,10 @@
       "confirm": "Xóa",
       "snackbar_success": "Thành viên đã bị xóa"
     },
-    "import_limit_reached": "Bạn đã đạt đến giới hạn sinh viên trong kế hoạch của mình. Nâng cấp để nhập thêm sinh viên."
+    "import_limit_reached": "Bạn đã đạt đến giới hạn sinh viên trong kế hoạch của mình. Nâng cấp để nhập thêm sinh viên.",
+    "filter": {
+      "last_activity": "Hoạt động gần nhất"
+    }
   },
   "community": {
     "title": "cộng đồng",
@@ -1576,7 +1591,9 @@
                 "status_pending": "Đang chờ",
                 "counts_as_complete": "Được tính là hoàn thành",
                 "passed": "Đạt",
-                "not_passed": "Không đạt"
+                "not_passed": "Không đạt",
+                "no_submission_title": "Chưa có bài nộp nào",
+                "no_submission_description": "Học viên này chưa nộp bài tập này."
               },
               "summary": {
                 "heading": "Tóm tắt",
@@ -1983,7 +2000,8 @@
                   "max_duration_placeholder": "60",
                   "manual_grading": "Yêu cầu phân loại thủ công"
                 }
-              }
+              },
+              "answer_key": "Đáp án"
             },
             "settings": "Cài đặt",
             "settings_allow_multiple": "Cho phép thử nhiều lần",
@@ -2507,7 +2525,8 @@
           "link_copied": "Đã sao chép liên kết"
         },
         "student_share_your_knowledge": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
-        "student_body_content": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau."
+        "student_body_content": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
+        "title": "Bài học"
       },
       "news_feed": {
         "heading": "Nguồn cấp tin tức",
@@ -2840,6 +2859,9 @@
       "create_button": "Tạo",
       "error": {
         "failed_to_clone": "Không thể sao chép khóa học"
+      },
+      "success": {
+        "course_cloned": "Đã sao chép khoá học"
       }
     },
     "new_course_modal": {
