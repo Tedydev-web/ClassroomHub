@@ -127,6 +127,23 @@ useful.
 | 6 | Two "Thêm câu hỏi" buttons, page header and card header | screenshot | **closed — not a defect.** Upstream has both by design: `addQuestionFromHeader` on the page header (`pages/exercise.svelte:657` upstream, `:642` here) and `onAddQuestion` per section. What the screenshot showed was *three* add affordances at once, because the panel contributed its own "Thêm tương tác" and "Thêm câu hỏi" pair in its header. With the panel off, the upstream pair remains. |
 | 7 | Large dead vertical space under the question editor | screenshot | **closed.** It was the panel's own grid: `xl:min-h-[40rem]` on the two-pane container at `edit-mode.svelte:782`, which reserved 40rem of height whatever the editor held. That container no longer renders. |
 
+## 2b. Strings that printed their own key path — swept, not stumbled on
+
+D21 found one of these by accident while copying a pattern. A systematic sweep of every `$t(...)`
+call against `en.json` found **118 keys referenced but never defined**, of which **18 are in
+Courses, Exam or Exercise**. Each one renders its own key path on screen: the translations module
+says so itself at `translations.ts:12` — *"Without a fallback, `$t` returns the key path"* — and
+the fallback is `en`, so a key missing from `en` has nothing left to fall back to.
+
+Two sat in the composer the owner is using right now: `common.remove` on a control's label and
+`…shared_question.answer_key` on a field legend. `common` held only five keys and neither `remove`
+nor `delete` was among them. Others covered the per-student exercise list's empty state, the
+analytics CSV column headers, and the "course copied" confirmation.
+
+All 18 are now defined in `en` and `vi`. Re-running the sweep returns **zero** in scope. The other
+100 sit in `audience`, `automation`, `cohort`, `media`, `org` and `tag` — outside this goal, listed
+here so nobody has to rediscover them.
+
 ## 3. Unfinished features
 
 | # | Item | Measured state |
