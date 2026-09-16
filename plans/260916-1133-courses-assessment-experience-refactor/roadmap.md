@@ -4,8 +4,10 @@
 navigation: the baseline below is measured, not carried over, and the phases are what is actually
 left rather than what was originally guessed.
 
-Read `outstanding-checklist.md` for the open items and `typography-audit.md` for the design-system
-measurements. This file is the shape of the work.
+**Start at `phase-plan.md`.** It is the one document that is the phase: the contract, the measured
+state of every defect class, and the remaining stages in the order they can actually be done. This
+file stays as the detail behind it; read `outstanding-checklist.md` for the open items and
+`typography-audit.md` for the design-system measurements.
 
 ## Baseline, measured today
 
