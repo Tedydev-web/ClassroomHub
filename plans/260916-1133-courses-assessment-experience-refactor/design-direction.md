@@ -100,6 +100,19 @@ the hand-rolled ones.
 The rule: **the route owns the page title.** A page component never emits one. Screens that need a
 title inside the content area use a section heading, which is a different thing and looks like one.
 
+**Measured 2026-09-16, and one exception is argued rather than fixed.** Fourteen course routes own
+their title correctly. Exactly one page component in this scope still emits one — `pages/exercise.svelte` —
+and it should keep doing so. Its title is `exerciseContentItem?.title || $questionnaire.title`: live
+content the teacher is editing in that very screen, which updates as they type. Moving it to the
+route would make the route subscribe to the questionnaire store, pushing page state up into routing
+to satisfy a rule written for static titles. The rule stands for titles the route knows; a title the
+page is authoring is the exception, and this is the only one.
+
+The "raw `<h1>` with a hand-rolled size" half of this defect was real and is fixed: the exercise
+delete dialog carried an `<h1>` inside a dialog that already had a title, so the page had two
+level-one headings and the question outranked the heading above it. It is now the dialog's
+description.
+
 ## Interaction feel
 
 Adopted from the fluid-interface principles, scoped to where this product actually has gestures:
