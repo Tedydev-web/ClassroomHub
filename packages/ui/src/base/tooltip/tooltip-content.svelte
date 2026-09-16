@@ -22,7 +22,7 @@
     {sideOffset}
     {side}
     class={cn(
-      'ui:bg-primary ui:text-primary-foreground ui:animate-in ui:fade-in-0 ui:zoom-in-95 ui:data-[state=closed]:animate-out ui:data-[state=closed]:fade-out-0 ui:data-[state=closed]:zoom-out-95 ui:data-[side=bottom]:slide-in-from-top-2 ui:data-[side=left]:slide-in-from-right-2 ui:data-[side=right]:slide-in-from-left-2 ui:data-[side=top]:slide-in-from-bottom-2 ui:origin-(--bits-tooltip-content-transform-origin) ui:z-menu-elevated ui:w-fit ui:text-balance ui:rounded-md ui:px-3 ui:py-1.5 ui:text-xs',
+      'ui:bg-primary ui:text-primary-foreground ui:animate-in ui:fade-in-0 ui:zoom-in-95 ui:data-[state=closed]:animate-out ui:data-[state=closed]:fade-out-0 ui:data-[state=closed]:zoom-out-95 ui:data-[side=bottom]:slide-in-from-top-2 ui:data-[side=left]:slide-in-from-right-2 ui:data-[side=right]:slide-in-from-left-2 ui:data-[side=top]:slide-in-from-bottom-2 ui:origin-(--bits-tooltip-content-transform-origin) ui:data-[state=open]:duration-(--ui-duration-fast) ui:data-[state=open]:ease-ui-out ui:data-[state=closed]:duration-(--ui-duration-instant) ui:data-[state=closed]:ease-ui-in ui:z-menu-elevated ui:w-fit ui:text-balance ui:rounded-md ui:px-3 ui:py-1.5 ui:text-xs',
       className
     )}
     {...restProps}

@@ -15,7 +15,22 @@ tokens already installed, not from new numbers.
 | 2 | Every primary action across the teacher surfaces — `exam-import-review.svelte` has **0** press states, and only one file in the whole `course` + `exam` tree uses `active:scale` against 79 `onclick` handlers in `components/exercise/` alone | A click produces nothing until the request returns | Feedback | Tens/day | `active:scale-[0.98]` with `ui:duration-(--ui-motion-duration-instant)` and `ease-ui-out`. Deliberately near-imperceptible: at this frequency anything larger reads as sluggish within a day. |
 | 3 | `submissions.svelte:99,103` → `summary.svelte:69`, `individual.svelte:214`; `grading-loader.svelte` has no importer | `isLoading` is passed a hardcoded `false` and the spinners never render | — | — | **Withdrawn after checking.** Neither `Summary` nor `Individual` fetches anything: `submissions` arrives as an already-resolved prop from the page loader (`pages/exercise.svelte:807`). So `isLoading={false}` is *correct*, and the spinner branches are vestigial from when these components loaded their own data. The honest fix is to delete the dead prop and its branches, not to wire them — that belongs with the dead-code work, not here. |
 | 4 | Error and empty states, including the two just added to marks and analytics | Appear instantly | Preventing a jarring change | Rare | Fade + `translateY(4px)` at `fast` with `ease-ui-out`. Deliberately the fast token, not `base`: an error must not saunter in while the user is already waiting. |
-| 5 | Popovers and dropdowns across the teacher screens | Grow from their own centre | Spatial consistency | Occasional | Scale from `0.96` with `transform-origin` set to the trigger, `base` + `ease-ui-out`. Exit along the same path, `fast` + `ease-ui-in`. |
+| 5 | Popovers and dropdowns across the teacher screens | ~~Grow from their own centre~~ — **wrong, corrected below** | Spatial consistency | Occasional | See the correction. |
+
+**Correction to row 5.** They do *not* grow from their own centre. All four overlay primitives already
+carry bits-ui's trigger origin: `origin-(--bits-popover-content-transform-origin)` and the
+dropdown-menu, select and tooltip equivalents, each paired with `zoom-in-95`. The spatial story was
+already right, and this row was written from an assumption rather than from the file.
+
+The real gap was timing. The built stylesheet showed
+`ui\:animate-in{animation:enter var(--tw-animation-duration,var(--tw-duration,.15s))var(--tw-ease,ease)…}`
+— so with nothing set, every overlay entered *and* left at 150ms on a symmetric `ease`, which is the
+one curve `motion-vocabulary.md` reserves for neither. Now popover, dropdown-menu and select open on
+`base` with `ease-ui-out` and close on `fast` with `ease-ui-in`; tooltip, being more frequent, opens
+on `fast` and closes on `instant`. Verified emitted:
+`.ui\:data-\[state\=open\]\:duration-\(--ui-duration-base\)[data-state=open]{--tw-duration:var(--ui-duration-base)…}`.
+
+No frozen file uses any of these four primitives, so this one needed no exception.
 
 `transform` and `opacity` only, so every row composites on the GPU. The global
 `prefers-reduced-motion` guard already neutralises all five.
