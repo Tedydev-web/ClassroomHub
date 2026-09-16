@@ -49,6 +49,15 @@ The order matters. Adding a kind to the set **without** a scoring branch is stri
 leaving it out: the clean, early "Unsupported assessment vertical slice interactions" error at
 `:199` stops firing, and the kind instead throws from deep inside the scoring loop.
 
+**Correction, measured after this document was first written:** for `word_bank` and `ordering` the
+composer and the renderer were **not** absent. `packages/ui/src/custom/exercise-question/renderers/`
+already held a full legacy tree for both — `edit`, `take`, `preview`, `review`, `submission` — plus
+`word-bank-utils.ts`, and every `word_bank.*` and `ordering.*` translation key already existed in
+both locales. What was missing was the canonical path: the vertical slice refused the kinds, the
+canonical renderer had no branch, and the composer offered no way to add one. All three are now
+built, reusing `word-bank-utils.ts` rather than reimplementing it. That is the third claim this
+document has had to withdraw.
+
 **2. The composer** — how a teacher authors it. `assessment-item-composer.svelte` is already 1840
 lines and 1028 of those are template, so a new kind should arrive as its **own component** rendered
 by the composer, not as more branches inside it. That is also the only way this does not make the
@@ -101,6 +110,17 @@ layer.
 
 `ordering` is the one that needs nothing outside the app. `file_upload` and
 `video_recording` both depend on storage that has to be confirmed before either is promised.
+
+## Built, 2026-09-16
+
+`word_bank` and `ordering` are done end to end: four model sites with 13 tests, two canonical
+renderer branches, and two composer panels. `file_upload` and `video_recording` are **not** started,
+for a reason that is not effort. `initVideoRecordingUpload`, `completeVideoRecordingUpload` and
+`getVideoRecordingPlaybackUrl` exist and are routed at `apps/api/src/routes/course/exercise.ts:560`,
+`:588` and `:607` — but every one of them is keyed on a **legacy `questionId`**, not on a canonical
+interaction id. So the storage is real and the endpoints work; what is missing is an id bridge on the
+API side. That is a server change with its own access-control surface, not a renderer branch, and it
+should be decided as its own piece of work.
 
 ## Recommended if only some are wanted
 

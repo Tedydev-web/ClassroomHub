@@ -89,8 +89,6 @@ sight. Keeping a switched-off copy of a rejected idea is not optionality.
 
 | Decision | What it unblocks |
 |---|---|
-| Does AI ship while the gateway is off? | D5 — the suggestion offered though unusable. D6 is already resolved by deletion. |
-| Which of the five schema-only interaction kinds are wanted? | whether that is a phase or a footnote |
 | `Page.Root` width variant — may it reach `org/` and `lms/`? | one shell across the app |
 
 ### Open, and needs someone looking at the screen
@@ -109,7 +107,12 @@ already uses tokens; its compact tier needs a step below `2xs` or an explicit ex
 
 ### Not started
 
-**The five interaction kinds** — specified in `interaction-kinds-spec.md`, and the gap is smaller
+**`word_bank` and `ordering` are built** — model, renderer and composer, on 2026-09-16. `file_upload`
+and `video_recording` remain, blocked on an API id bridge rather than on UI: the upload endpoints
+exist but key on a legacy question id. `star_rating` is not recommended; the scorer has no path for
+it.
+
+**The remaining interaction kinds** — specified in `interaction-kinds-spec.md`, and the gap is smaller
 than "not started" suggests. Six of the seven schema modules already know all five: validation,
 scoring rules, delivery shape, response envelope, capabilities and the legacy adapter. **Only
 `assessment-vertical-slice.ts`** does not, and that is one branch per kind in each of two pure
