@@ -42,6 +42,7 @@
   import ViewMode from '$features/course/components/exercise/view-mode.svelte';
   import Submissions from '$features/course/components/exercise/submissions/submissions.svelte';
   import UpdateDescription from '$features/course/components/exercise/update-description.svelte';
+  import { hasDirtyQuestionnaire as isQuestionnaireDirty } from '$features/course/components/exercise/questionnaire-dirty';
   import { ContentNavigationActions } from '$features/course/components/lesson';
   import {
     // RefreshPageData,
@@ -142,26 +143,10 @@
   let passedPolicyAttemptChoice = $state<PassedPolicyAttemptChoice>('retry');
   const passedPolicyReviewStoragePrefix = 'classroomhub:passed-policy-review';
 
-  function isTemporaryId(id: string | number | undefined) {
-    return typeof id === 'string' && id.includes('-form');
-  }
-
+  // The rules live in `questionnaire-dirty.ts`, asserted rather than only reachable by
+  // driving the screen. This wrapper keeps the call sites below unchanged.
   function hasDirtyQuestionnaire() {
-    const hasDirtyQuestion = ($questionnaire.questions ?? []).some((question) => {
-      const hasDirtyOption = (question.options ?? []).some((option) => option.isDirty || isTemporaryId(option.id));
-      return question.isDirty || Boolean(question.deletedAt) || isTemporaryId(question.id) || hasDirtyOption;
-    });
-    const hasDirtySection = ($questionnaire.sections ?? []).some(
-      (section) => section.isDirty || Boolean(section.deletedAt)
-    );
-
-    return Boolean(
-      $questionnaire.isTitleDirty ||
-        $questionnaire.isDescriptionDirty ||
-        $questionnaire.isDueByDirty ||
-        hasDirtyQuestion ||
-        hasDirtySection
-    );
+    return isQuestionnaireDirty($questionnaire);
   }
 
   async function handleDeleteExercise() {
