@@ -201,7 +201,8 @@ any type baseline.
 | F2 type tokens | **done** — scale installed with leading and tracking paired; commit `b32c25b4e` |
 | F3 motion tokens | **done** — four easings, five durations; the twelve hand-written cubic-beziers now spend them; commits `b32c25b4e`, `18751110f` |
 | F4 reduced motion | **done** — global guard shipped; the JS helper for Svelte transitions remains |
-| F1 prefix, F6 `Page.Root`, F7 font | not started |
+| F1 prefix / D2 | **fixed** — 31 usages across 12 files were emitting no CSS; three of them carried variants and needed the prefix outermost. Proven against the built stylesheet: the unprefixed forms appear zero times against 2,510 prefixed classes. **Guard still owed**: `add-ui-prefix.cjs` guards on `packages/ui/src` (line 534), which is why the dashboard drifted unchecked. |
+| F6 `Page.Root`, F7 font | not started |
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
 Tailwind's own prefixed `--ui-ease-out`, silently repointing all 41 existing `ease-out` usages at a
