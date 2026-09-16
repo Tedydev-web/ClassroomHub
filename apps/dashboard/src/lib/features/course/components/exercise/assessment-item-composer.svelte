@@ -24,6 +24,14 @@
   import EyeIcon from '@lucide/svelte/icons/eye';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
   import { flip } from 'svelte/animate';
+  import {
+    addOrderingOption,
+    addWordBankDistractor,
+    moveOrderingOption,
+    removeOrderingOption,
+    removeWordBankDistractor,
+    syncWordBankAnswers
+  } from './assessment-kind-config';
   import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
@@ -42,6 +50,7 @@
     type AssessmentBlock,
     type AssessmentContentBlock,
     type AssessmentGradingMode,
+    type AssessmentInteraction,
     type AssessmentInteractionBlock,
     type AssessmentIssue,
     type AssessmentItemDefinition
@@ -613,120 +622,29 @@
     updateComposer(addAssessmentInteractionBlock(composer, 'ordering', createId, activePassageGroup?.passage?.id));
   }
 
-  function countTemplateBlanks(template: string): number {
-    return (template.match(/_{3,}/g) ?? []).length;
-  }
-
-  /**
-   * One answer field per `___` in the template. Authors add and remove blanks by editing the
-   * sentence, so the answer list has to follow it rather than be maintained separately —
-   * otherwise a removed blank leaves an orphan answer that validation then rejects.
-   */
-  function syncWordBankAnswers(blockId: string) {
+  function updateWordBankConfig(
+    blockId: string,
+    next: (
+      config: Extract<AssessmentInteraction, { kind: 'word_bank' }>['config']
+    ) => Extract<AssessmentInteraction, { kind: 'word_bank' }>['config']
+  ) {
     updateBlock(blockId, (block) => {
       if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
 
-      const blankCount = Math.max(1, countTemplateBlanks(block.interaction.config.template));
-      const { correctAnswers } = block.interaction.config;
-      if (correctAnswers.length === blankCount) return block;
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: {
-            ...block.interaction.config,
-            correctAnswers: Array.from({ length: blankCount }, (_, index) => correctAnswers[index] ?? '')
-          }
-        }
-      };
+      return { ...block, interaction: { ...block.interaction, config: next(block.interaction.config) } };
     });
   }
 
-  function addWordBankDistractor(blockId: string) {
-    updateBlock(blockId, (block) => {
-      if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
-      if (block.interaction.config.distractors.length >= MAX_INTERACTION_OPTIONS) return block;
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: { ...block.interaction.config, distractors: [...block.interaction.config.distractors, ''] }
-        }
-      };
-    });
-  }
-
-  function removeWordBankDistractor(blockId: string, distractorIndex: number) {
-    updateBlock(blockId, (block) => {
-      if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: {
-            ...block.interaction.config,
-            distractors: block.interaction.config.distractors.filter((_, index) => index !== distractorIndex)
-          }
-        }
-      };
-    });
-  }
-
-  /** The authored list order is the correct order, so the two never drift apart. */
-  function moveOrderingOption(blockId: string, index: number, direction: 1 | -1) {
+  function updateOrderingConfig(
+    blockId: string,
+    next: (
+      config: Extract<AssessmentInteraction, { kind: 'ordering' }>['config']
+    ) => Extract<AssessmentInteraction, { kind: 'ordering' }>['config']
+  ) {
     updateBlock(blockId, (block) => {
       if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
 
-      const options = [...block.interaction.config.options];
-      const target = index + direction;
-      if (target < 0 || target >= options.length) return block;
-
-      [options[index], options[target]] = [options[target], options[index]];
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
-        }
-      };
-    });
-  }
-
-  function addOrderingOption(blockId: string) {
-    updateBlock(blockId, (block) => {
-      if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
-      if (block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS) return block;
-
-      const options = [...block.interaction.config.options, { id: createId(), html: '' }];
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
-        }
-      };
-    });
-  }
-
-  function removeOrderingOption(blockId: string, optionId: string) {
-    updateBlock(blockId, (block) => {
-      if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
-      if (block.interaction.config.options.length <= 2) return block;
-
-      const options = block.interaction.config.options.filter((option) => option.id !== optionId);
-
-      return {
-        ...block,
-        interaction: {
-          ...block.interaction,
-          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
-        }
-      };
+      return { ...block, interaction: { ...block.interaction, config: next(block.interaction.config) } };
     });
   }
 
@@ -1551,7 +1469,7 @@
       errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'template'])}
       oninput={() => {
         clearValidationState();
-        syncWordBankAnswers(block.id);
+        updateWordBankConfig(block.id, syncWordBankAnswers);
       }}
     />
     <p class="ui:text-muted-foreground text-xs">
@@ -1600,7 +1518,8 @@
               type="button"
               variant="secondary"
               label={$t('common.remove')}
-              onclick={() => removeWordBankDistractor(block.id, distractorIndex)}
+              onclick={() =>
+                updateWordBankConfig(block.id, (config) => removeWordBankDistractor(config, distractorIndex))}
             >
               <TrashIcon class="h-4 w-4" />
             </IconButton>
@@ -1612,7 +1531,8 @@
         variant="secondary"
         size="sm"
         disabled={block.interaction.config.distractors.length >= MAX_INTERACTION_OPTIONS}
-        onclick={() => addWordBankDistractor(block.id)}
+        onclick={() =>
+          updateWordBankConfig(block.id, (config) => addWordBankDistractor(config, MAX_INTERACTION_OPTIONS))}
       >
         <PlusIcon class="h-4 w-4" />
         {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.add_distractor')}
@@ -1670,7 +1590,7 @@
               variant="secondary"
               disabled={optionIndex === 0}
               label={$t('course.navItem.lessons.exercises.all_exercises.section.move_up')}
-              onclick={() => moveOrderingOption(block.id, optionIndex, -1)}
+              onclick={() => updateOrderingConfig(block.id, (config) => moveOrderingOption(config, optionIndex, -1))}
             >
               <ChevronUpIcon class="h-4 w-4" />
             </IconButton>
@@ -1679,7 +1599,7 @@
               variant="secondary"
               disabled={optionIndex === block.interaction.config.options.length - 1}
               label={$t('course.navItem.lessons.exercises.all_exercises.section.move_down')}
-              onclick={() => moveOrderingOption(block.id, optionIndex, 1)}
+              onclick={() => updateOrderingConfig(block.id, (config) => moveOrderingOption(config, optionIndex, 1))}
             >
               <ChevronDownIcon class="h-4 w-4" />
             </IconButton>
@@ -1690,7 +1610,7 @@
                 label={$t(
                   'course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.remove_step_tooltip'
                 )}
-                onclick={() => removeOrderingOption(block.id, option.id)}
+                onclick={() => updateOrderingConfig(block.id, (config) => removeOrderingOption(config, option.id))}
               >
                 <TrashIcon class="h-4 w-4" />
               </IconButton>
@@ -1703,7 +1623,8 @@
         variant="secondary"
         size="sm"
         disabled={block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS}
-        onclick={() => addOrderingOption(block.id)}
+        onclick={() =>
+          updateOrderingConfig(block.id, (config) => addOrderingOption(config, createId(), MAX_INTERACTION_OPTIONS))}
       >
         <PlusIcon class="h-4 w-4" />
         {$t('course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.add_step')}
