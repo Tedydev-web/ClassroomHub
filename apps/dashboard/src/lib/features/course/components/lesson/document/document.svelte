@@ -378,15 +378,15 @@
 
 <!-- PDF Viewer Modal -->
 {#if pdfViewerOpen}
-  <div class="ui:z-modal fixed inset-0 flex flex-col bg-white dark:bg-neutral-800">
+  <div class="ui:z-modal ui:bg-background fixed inset-0 flex flex-col">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:bg-neutral-800">
+    <div class="ui:border-border ui:bg-background flex items-center justify-between border-b px-4 py-3">
       <div class="flex items-center space-x-4">
-        <h2 class="max-w-md truncate text-lg font-semibold text-gray-900 dark:text-gray-300">
+        <h2 class="ui:text-foreground max-w-md truncate text-lg font-semibold">
           {viewingPDF?.name}
         </h2>
         {#if !isLoading && !error}
-          <span class="text-sm text-gray-500">
+          <span class="ui:text-muted-foreground text-sm">
             {$t('course.navItem.lessons.materials.tabs.document.page_of', {
               page: pageNum,
               total: pageCount
@@ -414,7 +414,7 @@
               <ZoomOutIcon size={16} />
             </IconButton>
 
-            <span class="min-w-12 text-center text-sm text-gray-600">
+            <span class="ui:text-muted-foreground min-w-12 text-center text-sm">
               {Math.round(scale * 100)}%
             </span>
 
@@ -429,14 +429,14 @@
     </div>
 
     <!-- PDF Content -->
-    <div class="flex-1 overflow-auto bg-gray-100 p-4">
+    <div class="ui:bg-muted flex-1 overflow-auto p-4">
       {#if isLoading}
         <div class="flex h-full items-center justify-center">
           <div class="text-center">
             <div
               class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"
             ></div>
-            <p class="text-gray-600">
+            <p class="ui:text-muted-foreground">
               {$t('course.navItem.lessons.materials.tabs.document.loading_pdf')}
             </p>
           </div>
@@ -477,8 +477,8 @@
 
     <!-- Footer with instructions -->
     {#if !isLoading && !error}
-      <div class="border-t border-gray-200 bg-gray-50 px-4 py-2">
-        <p class="text-center text-xs text-gray-500">
+      <div class="ui:border-border ui:bg-muted border-t px-4 py-2">
+        <p class="ui:text-muted-foreground text-center text-xs">
           {$t('course.navItem.lessons.materials.tabs.document.use_arrow_keys')}
         </p>
       </div>

@@ -171,9 +171,9 @@
 </script>
 
 <div class="max-w-xl space-y-6">
-  <div class="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+  <div class="ui:border-border flex items-center justify-between gap-4 rounded-lg border p-4">
     <div class="space-y-1">
-      <Label for="allow-multiple" class="text-sm font-medium dark:text-gray-100">
+      <Label for="allow-multiple" class="ui:text-foreground text-sm font-medium">
         {$t('course.navItem.lessons.exercises.all_exercises.settings_allow_multiple')}
       </Label>
       <p class="ui:text-muted-foreground text-sm">
@@ -189,8 +189,8 @@
     />
   </div>
 
-  <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
-    <Label class="mb-2 block text-sm font-medium dark:text-gray-100">
+  <div class="ui:border-border rounded-lg border p-4">
+    <Label class="ui:text-foreground mb-2 block text-sm font-medium">
       {$t('course.navItem.lessons.exercises.all_exercises.settings_completion_policy')}
     </Label>
     <Select.Root
@@ -252,8 +252,8 @@
     {/if}
   </div>
 
-  <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
-    <Label class="mb-2 block text-sm font-medium dark:text-gray-100">
+  <div class="ui:border-border rounded-lg border p-4">
+    <Label class="ui:text-foreground mb-2 block text-sm font-medium">
       {$t('course.navItem.lessons.exercises.all_exercises.settings_section_display')}
     </Label>
     <p class="ui:text-muted-foreground mb-3 text-sm">
@@ -291,12 +291,9 @@
     </Select.Root>
   </div>
 
-  <div
-    class="space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700"
-    aria-busy={assignmentsLoading}
-  >
+  <div class="ui:border-border space-y-4 rounded-lg border p-4" aria-busy={assignmentsLoading}>
     <div class="space-y-1">
-      <Label class="block text-sm font-medium dark:text-gray-100">
+      <Label class="ui:text-foreground block text-sm font-medium">
         {$t('course.navItem.lessons.exercises.all_exercises.settings_assignment')}
       </Label>
       <p class="ui:text-muted-foreground text-sm">
@@ -360,7 +357,7 @@
   </div>
 
   {#if isPublicCourse}
-    <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+    <div class="ui:border-border rounded-lg border p-4">
       <InputField
         label={$t('course.navItem.settings.slug.label')}
         helperMessage={$t('course.navItem.settings.slug.description')}
