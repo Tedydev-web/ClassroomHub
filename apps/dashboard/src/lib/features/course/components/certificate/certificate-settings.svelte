@@ -98,7 +98,7 @@
         disabled={$isFreePlan}
       />
       <div class="flex-1">
-        <Field.Label for="certificate-downloadable" class="text-gray-600">
+        <Field.Label for="certificate-downloadable" class="ui:text-muted-foreground">
           {$t('course.navItem.certificates.allow')}
         </Field.Label>
         {#if courseApi.course?.certificate?.isDownloadable && certificateValidationErrors.includes('course.certification.deadline_required')}

@@ -216,7 +216,9 @@
                   </Select.Content>
                 </Select.Root>
               {:else}
-                <p class="text-xs text-gray-500">{$t('course.navItem.lessons.add_content_create_section_first')}</p>
+                <p class="ui:text-muted-foreground text-xs">
+                  {$t('course.navItem.lessons.add_content_create_section_first')}
+                </p>
               {/if}
             </div>
           {/if}

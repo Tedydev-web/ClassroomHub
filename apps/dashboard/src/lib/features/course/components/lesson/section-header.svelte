@@ -56,9 +56,7 @@
   }: Props = $props();
 </script>
 
-<div
-  class="ui:bg-secondary flex min-h-[50px] items-center justify-between rounded-tl-md rounded-tr-md border-b px-3 dark:bg-neutral-700"
->
+<div class="ui:bg-secondary flex min-h-[50px] items-center justify-between rounded-tl-md rounded-tr-md border-b px-3">
   {#if isEditing}
     <div class="flex w-4/6 items-center gap-2">
       <CourseContentIcon type={ContentType.Section} size={16} />

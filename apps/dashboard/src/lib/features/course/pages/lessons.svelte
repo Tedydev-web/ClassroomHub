@@ -126,7 +126,7 @@
   </div>
 
   {#if reorder}
-    <p class="text-center text-xs text-gray-400 italic dark:text-white">
+    <p class="ui:text-muted-foreground text-center text-xs italic">
       {$t('course.navItem.lessons.drag')}
     </p>
   {/if}

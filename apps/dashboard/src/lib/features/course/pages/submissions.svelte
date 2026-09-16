@@ -281,7 +281,7 @@
                   {$t(getWorkflowHintKey(item))}
                 </p>
               {/if}
-              <p class="text-xs text-gray-500 dark:text-white">
+              <p class="ui:text-muted-foreground text-xs">
                 {item.submittedAt}
               </p>
             </div>

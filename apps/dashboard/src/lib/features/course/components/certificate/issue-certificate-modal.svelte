@@ -37,7 +37,7 @@
           If you set this as automatic, certificates will be issued after the learner completes the course.
         </p>
       </div>
-      <p class="my-4 text-xs font-normal text-gray-500">or send a personalised/ custom certificate below:</p>
+      <p class="ui:text-muted-foreground my-4 text-xs font-normal">or send a personalised/ custom certificate below:</p>
       <form onsubmit={preventDefault(issueCertificate)}>
         <div class="flex w-full flex-col gap-2 md:flex-row">
           <InputField
