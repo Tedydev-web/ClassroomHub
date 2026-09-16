@@ -95,14 +95,14 @@
 
 <section
   id={`exercise-section-${exerciseSectionId}`}
-  class={`overflow-hidden rounded-lg border bg-white shadow-xs dark:bg-zinc-950 ${BORDER_CLASSES[colorTheme]}`}
+  class={`ui:bg-card overflow-hidden rounded-lg border shadow-xs ${BORDER_CLASSES[colorTheme]}`}
   aria-expanded={!sectionCollapsed}
 >
   <!-- `items-start`: an imported paper puts its rubric in the section title — the
        ones on this deployment run 148 to 207 characters — and a rubric that wraps
        to five lines left the colour swatches, the count and the delete button
        floating in the middle of it. They belong beside the first line. -->
-  <div class="group/sectionhead flex items-start gap-3 border-b bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+  <div class="group/sectionhead ui:bg-muted flex items-start gap-3 border-b px-4 py-3">
     {#if showReorderHandles}
       <GripVerticalIcon class="ui:text-muted-foreground h-4 w-4 shrink-0" aria-hidden="true" />
     {/if}
@@ -157,7 +157,7 @@
       {#each COLOR_THEMES as theme (theme)}
         <button
           type="button"
-          class={`h-3 w-3 cursor-pointer rounded-full border ${COLOR_CLASSES[theme]} ${theme === colorTheme ? 'ring-2 ring-offset-2 dark:ring-offset-zinc-900' : ''}`}
+          class={`h-3 w-3 cursor-pointer rounded-full border ${COLOR_CLASSES[theme]} ${theme === colorTheme ? 'ui:ring-offset-muted ring-2 ring-offset-2' : ''}`}
           title={`${labels.color ?? 'Section color'}: ${theme}`}
           onclick={() => onColorThemeChange?.(theme)}
         ></button>
@@ -179,7 +179,7 @@
   </div>
 
   {#if !sectionCollapsed}
-    <div class="border-b bg-white px-4 py-3 dark:bg-zinc-950">
+    <div class="ui:bg-card border-b px-4 py-3">
       <!-- Imported section passages are HTML, and hand-authored passages need
            the same formatting capabilities. `full` preserves existing tables,
            lists and inline marks instead of narrowing the document schema. -->
@@ -197,7 +197,7 @@
       />
     </div>
 
-    <div class="space-y-4 bg-white px-4 py-4 dark:bg-zinc-950">
+    <div class="ui:bg-card space-y-4 px-4 py-4">
       {@render children?.()}
 
       <div class="flex justify-center">
@@ -205,7 +205,7 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-between border-t bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+    <div class="ui:bg-muted flex items-center justify-between border-t px-4 py-3">
       <p class="ui:text-muted-foreground text-sm">
         {requiredQuestionCount}
         {labels.required ?? 'required'}

@@ -245,6 +245,13 @@
 @source inline('ui:text-display-sm{,!}');
 @source inline('ui:text-display{,!}');
 
+/*
+ * `ring-offset-muted` has no user inside this package, so it was never emitted — and a
+ * consumer needs it wherever a focus or selection ring sits on a `ui:bg-muted` band rather
+ * than on the page background. The section colour picker is the first such place.
+ */
+@source inline('ui:ring-offset-muted{,!}');
+
 @layer base {
   /*
    * Motion durations. Frequency of use sets them: the more often a motion is
