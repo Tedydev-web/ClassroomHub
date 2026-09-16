@@ -212,7 +212,13 @@ any type baseline.
 | D16 public-course filter | **done** — the shorter type list now says why it is shorter |
 | Motion rows 1, 2, 4 | **done** — see `animation-opportunities.md`. Row 2 (press feedback) needed an owner-granted exception to the freeze, because the shared `Button` is used seven times on the student sitting page and by six more frozen modules; it is the only visual change to that screen in this programme. |
 | F7 font | **resolved — do not bind.** The plan offered "bind `--font-cio` to Geist, or delete the dead declaration", assuming the choice was taste. It is not. Geist is self-hosted with three subsets; Vietnamese precomposed characters live at U+1EA0-1EF9 and **82 of those 90 codepoints fall outside every declared `unicode-range`**. Binding would render Ạ ả ấ ầ ậ ắ ằ ặ and the rest in a fallback face — a typeface change mid-word, in a Vietnamese-first product. The commented-out stack is gone and the measurement is recorded at `index.css:129` so no future session re-enables it. Binding needs a Geist build with a Vietnamese subset, which is a font problem, not a CSS one. |
+| D13 two exam entry points | **corrected, then done.** The register said "two different page shells". They are not: both use `Page.Root` with the identical class `mx-auto flex w-full md:w-[calc(95vw-var(--sidebar-width))]!`. The real divergence was permission — `submissions` wraps in `RoleBasedSecurity allowedRoles={[1, 2]}`, `exams` wrapped in nothing. The API's `courseTeamMemberMiddleware` kept the data safe, so this was never a leak, but a learner following an old bookmark met a 404 instead of an answer about permission. Now guarded the same way. |
 | F6 `Page.Root` | not started — still needs its own approval, it reaches `org/` and `lms/` |
+
+Three register entries have now been corrected by reading the code before acting on them — D14
+("keyless toast": the key exists), D1 ("13 of 15 loaders": three), D13 ("two page shells": one shell,
+two permission rules). The register was written from a survey, and a survey is a hypothesis. Read the
+site before fixing it.
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
 Tailwind's own prefixed `--ui-ease-out`, silently repointing all 41 existing `ease-out` usages at a
