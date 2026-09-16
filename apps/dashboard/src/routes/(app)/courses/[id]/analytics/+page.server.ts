@@ -1,3 +1,4 @@
+import { sectionMetaTags } from '$lib/utils/functions/document-title';
 import type { CourseAnalytics } from '$features/course/utils/types';
 import { classroomhub } from '$lib/utils/services/api';
 import { getApiHeaders } from '$lib/utils/services/api';
@@ -29,6 +30,9 @@ export const load = async ({ params, cookies }) => {
     courseAnalytics,
     // A failed request is not a course without analytics. Collapsing the two tells a
     // teacher their course has no data when the fetch simply did not arrive.
-    loadFailed: !result.ok
+    loadFailed: !result.ok,
+    // The browser tab. Resolved from the locale cookie rather than the `$t` store, which is a
+    // module-level singleton and would share one locale across concurrent requests.
+    pageMetaTags: await sectionMetaTags(cookies.get('classroomhub_locale'), 'analytics.title')
   };
 };

@@ -9,10 +9,7 @@ export const load = async ({ data }) => {
   const userLocale = persistedLocale || data?.locals?.profile?.locale || getInitialLocale(serverLang);
 
   const initLocale = getInitialLocale(userLocale);
-  const translationsStart = performance.now();
   await ensureTranslations(initLocale); // keep this just before the `return`
-  const translationsMs = Math.round((performance.now() - translationsStart) * 100) / 100;
-  console.log(`[+layout.ts] ensureTranslations: ${translationsMs}ms | locale=${initLocale}`);
 
   return data ?? {};
 };

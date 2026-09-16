@@ -1,3 +1,4 @@
+import { sectionMetaTags } from '$lib/utils/functions/document-title';
 import { error } from '@sveltejs/kit';
 
 import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
@@ -13,5 +14,11 @@ export const load = async ({ params, cookies }) => {
     throw error(404, 'Không tải được danh sách đề thi');
   }
 
-  return { courseId: params.id, exams: result.body.data };
+  return {
+    courseId: params.id,
+    exams: result.body.data,
+    // The browser tab. Resolved from the locale cookie rather than the `$t` store, which is a
+    // module-level singleton and would share one locale across concurrent requests.
+    pageMetaTags: await sectionMetaTags(cookies.get('classroomhub_locale'), 'exam.manage.title')
+  };
 };

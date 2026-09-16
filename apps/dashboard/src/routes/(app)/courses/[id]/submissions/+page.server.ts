@@ -1,3 +1,4 @@
+import { sectionMetaTags } from '$lib/utils/functions/document-title';
 import type { ListSubmissionsForGradingSuccess } from '$features/course/utils/types';
 import { classroomhub } from '$lib/utils/services/api';
 import { getApiHeaders } from '$lib/utils/services/api';
@@ -54,6 +55,9 @@ export const load = async ({ params, cookies }) => {
     // The sittings tab already told the truth. The other two claimed nothing was handed in
     // and no paper exists, which a teacher has no way to tell apart from a failed fetch.
     submissionsFailed: !result.ok,
-    examsFailed: !exams.ok
+    examsFailed: !exams.ok,
+    // The browser tab. Resolved from the locale cookie rather than the `$t` store, which is a
+    // module-level singleton and would share one locale across concurrent requests.
+    pageMetaTags: await sectionMetaTags(cookies.get('classroomhub_locale'), 'course.navItem.submissions.title')
   };
 };
