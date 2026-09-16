@@ -334,7 +334,7 @@
           </div>
           <div class="ui:bg-muted h-2 w-full rounded-full">
             <div
-              class="h-2 rounded-full bg-blue-600 transition-all duration-300"
+              class="ui:duration-(--ui-duration-slow) h-2 rounded-full bg-blue-600 transition-all"
               style="width: {$lessonDocUpload.uploadProgress}%"
             ></div>
           </div>

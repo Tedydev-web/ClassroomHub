@@ -59,7 +59,7 @@
       <Button {...props} variant="secondary" size="sm" aria-label={$t('audience.user_analytics.student_actions')}>
         {$t('generic.progress')}
         <ChevronDownIcon
-          class="size-4 transition-transform duration-200 {menuOpen ? 'rotate-180' : ''}"
+          class="ui:duration-(--ui-duration-base) size-4 transition-transform {menuOpen ? 'rotate-180' : ''}"
           aria-hidden="true"
         />
       </Button>

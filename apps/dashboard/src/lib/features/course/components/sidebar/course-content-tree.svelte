@@ -175,7 +175,7 @@
                       <IconButton
                         variant="ghost-outline"
                         size="icon-xs"
-                        class="opacity-0 transition-opacity duration-150 group-hover/section:opacity-100"
+                        class="ui:duration-(--ui-duration-fast) opacity-0 transition-opacity group-hover/section:opacity-100"
                         onclick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
@@ -188,7 +188,7 @@
 
                     <IconButton variant="ghost" size="icon-xs">
                       <ChevronRightIcon
-                        class="transition-transform duration-200 group-data-[state=open]/section:rotate-90"
+                        class="ui:duration-(--ui-duration-base) transition-transform group-data-[state=open]/section:rotate-90"
                       />
                     </IconButton>
                   </div>

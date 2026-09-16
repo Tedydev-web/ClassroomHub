@@ -62,9 +62,9 @@
   <!-- Responsive Table -->
   <div class="ui:border-border relative max-h-[min(480px,70vh)] overflow-auto rounded-md border">
     <Table.Root class="min-w-[800px]">
-      <Table.Header class="ui:bg-muted/80 sticky top-0 z-10 backdrop-blur-sm">
+      <Table.Header class="ui:bg-muted sticky top-0 z-10">
         <Table.Row>
-          <Table.Head class="ui:bg-muted/95 sticky top-0 left-0 z-20 min-w-[200px] px-4 py-3 backdrop-blur-sm">
+          <Table.Head class="ui:bg-muted sticky top-0 left-0 z-20 min-w-[200px] px-4 py-3">
             {$t('analytics.student_name')}
           </Table.Head>
           <Table.Head class="min-w-[150px] px-4 py-3">{$t('analytics.lessons_completed')}</Table.Head>

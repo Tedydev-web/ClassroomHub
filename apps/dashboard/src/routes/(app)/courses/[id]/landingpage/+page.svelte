@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { fly } from 'svelte/transition';
   import type { Component } from 'svelte';
   import { goto } from '$app/navigation';
@@ -70,9 +71,9 @@
 
 {#if courseApi.course}
   <div
-    class="fixed inset-0 z-250 h-screen w-screen bg-white"
-    in:fly={{ y: 500, duration: 500 }}
-    out:fly={{ y: 500, duration: 500 }}
+    class="ui:bg-background fixed inset-0 z-250 h-screen w-screen"
+    in:fly={{ y: 500, duration: motionDuration(MOTION_DURATION.deliberate) }}
+    out:fly={{ y: 500, duration: motionDuration(MOTION_DURATION.deliberate) }}
   >
     <Sidebar.Provider bind:open={sidebarOpen} style="--sidebar-width: 360px; --sidebar-width-icon: 4rem">
       <Sidebar.Root side="left" collapsible="icon" class="h-full">

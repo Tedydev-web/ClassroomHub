@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { Button } from '@cio/ui/base/button';
   import { Spinner } from '@cio/ui/base/spinner';
   import { Empty } from '@cio/ui/custom/empty';
@@ -113,8 +114,8 @@
       {#each visibleAssets as asset (asset.id)}
         <div
           class="flex items-center justify-between gap-3 rounded-md border p-3"
-          animate:flip={{ duration: 250 }}
-          out:fly={{ x: -400, duration: 300 }}
+          animate:flip={{ duration: motionDuration(MOTION_DURATION.base) }}
+          out:fly={{ x: -400, duration: motionDuration(MOTION_DURATION.slow) }}
         >
           <div class="flex min-w-0 flex-1 items-center gap-3">
             <div

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { get } from 'svelte/store';
   import { onDestroy, tick, untrack } from 'svelte';
   import { invalidateAll } from '$app/navigation';
@@ -1672,11 +1673,14 @@
       {/if}
       <div class="grid overflow-hidden" style="grid-template-areas: 'slot';">
         {#key currentTakeItem.id}
+          <!-- A whole question sliding across on every step is the largest movement this screen
+               makes, and it ran regardless of what the reader asked for: a Svelte transition is
+               JavaScript and never saw the stylesheet's reduced-motion rule. -->
           <div
             id="question"
             class="min-w-0 [grid-area:slot]"
-            in:fly={{ x: flyX, duration: 350, easing: cubicInOut }}
-            out:fly={{ x: flyOutX, duration: 350, easing: cubicInOut }}
+            in:fly={{ x: flyX, duration: motionDuration(MOTION_DURATION.slow), easing: cubicInOut }}
+            out:fly={{ x: flyOutX, duration: motionDuration(MOTION_DURATION.slow), easing: cubicInOut }}
           >
             {#if currentTakeItem.kind === 'canonical'}
               <div id={getCanonicalQuestionElementId(currentTakeItem.id)}>

@@ -369,7 +369,9 @@
                         <IconButton
                           variant="ghost-outline"
                           size="icon-xs"
-                          class="transition-opacity duration-150 {isHovered ? 'opacity-100' : 'opacity-0'}"
+                          class="ui:duration-(--ui-duration-fast) transition-opacity {isHovered
+                            ? 'opacity-100'
+                            : 'opacity-0'}"
                           onclick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
@@ -389,7 +391,9 @@
 
                       <IconButton variant="ghost" size="icon-xs">
                         <ChevronRightIcon
-                          class="transition-transform duration-200 {item.isActive ? 'rotate-90' : ''}"
+                          class="ui:duration-(--ui-duration-base) transition-transform {item.isActive
+                            ? 'rotate-90'
+                            : ''}"
                         />
                       </IconButton>
                     </div>

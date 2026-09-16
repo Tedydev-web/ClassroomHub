@@ -189,7 +189,7 @@
               </span>
             {/if}
             <ChevronRightIcon
-              class="ui:text-muted-foreground size-3.5 shrink-0 transition-transform duration-200 group-data-[state=open]/section:rotate-90"
+              class="ui:text-muted-foreground ui:duration-(--ui-duration-base) size-3.5 shrink-0 transition-transform group-data-[state=open]/section:rotate-90"
             />
           </div>
         </Collapsible.Trigger>

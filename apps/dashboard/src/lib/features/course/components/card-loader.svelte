@@ -2,7 +2,9 @@
   import { Skeleton } from '@cio/ui/base/skeleton';
 </script>
 
-<div class="mr-4 mb-4 h-[370px] w-72 rounded-md border p-2 transition ease-in-out">
+<div
+  class="ui:duration-(--ui-duration-fast) ui:ease-ui-in-out mr-4 mb-4 h-[370px] w-72 rounded-md border p-2 transition"
+>
   <Skeleton class="h-[45%] w-full" />
   <div class="flex h-[50%] flex-col justify-between pt-4 pb-2">
     <!-- Title -->
