@@ -1,5 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { cubicIn } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { env } from '$env/dynamic/public';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -304,7 +307,15 @@
   </header>
 
   {#if !draftView}
-    <section class="ui:border-border flex min-h-72 flex-col items-center justify-center gap-4 border-y py-12">
+    <!--
+      The longest wait in the product ends here: parsing can run for minutes, and until
+      now the result replaced this panel in the same frame. Fading the wait out is the
+      whole bridge — the result itself is dense and must not slide around.
+    -->
+    <section
+      out:fade={{ duration: motionDuration(MOTION_DURATION.fast), easing: cubicIn }}
+      class="ui:border-border flex min-h-72 flex-col items-center justify-center gap-4 border-y py-12"
+    >
       {#if status?.status === 'failed'}
         <TriangleAlertIcon class="ui:text-destructive size-8" />
         <div class="max-w-lg text-center">
