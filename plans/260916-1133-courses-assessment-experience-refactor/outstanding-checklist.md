@@ -27,8 +27,9 @@ Measured against `upstream/main`, as context only:
 | `assessment-item-composer.svelte` | **does not exist** | 1840 |
 
 `upstream/main`'s `edit-mode.svelte` contains **zero** occurrences of `grid-cols-[minmax`,
-`workspacePanel` or `data-assessment-workspace`. The outline-and-editor split is entirely a fork
-invention. The page container is identical in both (`lg:max-w-5xl`).
+`workspacePanel` or `data-assessment-workspace`, and the page container is identical in both
+(`lg:max-w-5xl`). Read that as placement, not as a verdict: the composer is absent from upstream
+too, and it stays.
 
 The flag I deleted carried its own explanation:
 
@@ -89,6 +90,12 @@ the clipped element does not exist.
 |---|---|---|
 | 1 | Does AI ship in assessment while the gateway is off? Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6. **For D6 the question is now narrower than "build or delete" — see below.** | Phases 4–5 |
 
+| 2 | May the exercise import path change appearance alongside the exam path, or must it stay pixel-stable? | whether the shared review screen is restyled once or gated by target |
+| 3 | Is the exercise Submissions tab meant to be read-only, or is the missing grading entry a regression? (D3) | Phase 3 |
+| 4 | Does publish belong in the composer header, or is the course-level publish flow authoritative? | composer header design |
+| 5 | Is `certificates/editor` meant to stay full-screen outside the course shell? | Phase 6 |
+| 6 | F6 — `Page.Root` width variant API. Touches 30 usages in `org/` and `lms/`, beyond this goal's stated scope. | Phase 0c |
+
 **D6 measured, and one of its two options turns out not to exist.**
 
 `mark-exercise-modal.svelte` is 450 lines, **95 of them commented out** — ten blocks between lines
@@ -108,11 +115,6 @@ grading means writing it against the current schema, to which these 95 lines con
 The real choice is *delete now* or *keep 95 lines that read as one uncomment away from working*.
 Left for the owner because the feature is theirs to want, not because the code might still be
 useful.
-| 2 | May the exercise import path change appearance alongside the exam path, or must it stay pixel-stable? | whether the shared review screen is restyled once or gated by target |
-| 3 | Is the exercise Submissions tab meant to be read-only, or is the missing grading entry a regression? (D3) | Phase 3 |
-| 4 | Does publish belong in the composer header, or is the course-level publish flow authoritative? | composer header design |
-| 5 | Is `certificates/editor` meant to stay full-screen outside the course shell? | Phase 6 |
-| 6 | F6 — `Page.Root` width variant API. Touches 30 usages in `org/` and `lms/`, beyond this goal's stated scope. | Phase 0c |
 
 ## 2. Defects visible on the screen the owner sent
 
