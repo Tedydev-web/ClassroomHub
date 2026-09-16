@@ -89,7 +89,6 @@ the clipped element does not exist.
 | # | Question | Blocks |
 |---|---|---|
 | 1 | Does AI ship in assessment while the gateway is off? Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6. **For D6 the question is now narrower than "build or delete" — see below.** | Phases 4–5 |
-
 | 2 | May the exercise import path change appearance alongside the exam path, or must it stay pixel-stable? | whether the shared review screen is restyled once or gated by target |
 | 3 | Is the exercise Submissions tab meant to be read-only, or is the missing grading entry a regression? (D3) | Phase 3 |
 | 4 | Does publish belong in the composer header, or is the course-level publish flow authoritative? | composer header design |
