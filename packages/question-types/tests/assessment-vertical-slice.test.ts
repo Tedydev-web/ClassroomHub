@@ -634,3 +634,158 @@ describe('assessment vertical slice', () => {
     expect(scoreAssessmentVerticalSlice(fillBlankDefinition, validation.data).autoScore).toBe(1.5);
   });
 });
+
+const wordBankDefinition = {
+  schemaVersion: 1 as const,
+  blocks: [
+    {
+      id: 'word-bank-1',
+      kind: 'interaction' as const,
+      interaction: {
+        kind: 'word_bank' as const,
+        prompt: { format: 'html' as const, html: '<p>Fill the sentence.</p>' },
+        required: true,
+        maxScore: 2,
+        config: {
+          template: '<p>The ___ sat on the ___.</p>',
+          correctAnswers: ['cat', 'mat'],
+          distractors: ['hat']
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
+const orderingDefinition = {
+  schemaVersion: 1 as const,
+  blocks: [
+    {
+      id: 'ordering-1',
+      kind: 'interaction' as const,
+      interaction: {
+        kind: 'ordering' as const,
+        prompt: { format: 'html' as const, html: '<p>Put these in order.</p>' },
+        required: true,
+        maxScore: 3,
+        config: {
+          options: [
+            { id: 'a', html: '<p>First</p>' },
+            { id: 'b', html: '<p>Second</p>' },
+            { id: 'c', html: '<p>Third</p>' }
+          ],
+          correctOrder: ['a', 'b', 'c']
+        }
+      }
+    }
+  ],
+  feedback: []
+};
+
+function wordBankResponse(filledBlanks: string[]) {
+  return {
+    schemaVersion: 1,
+    responses: [{ interactionId: 'word-bank-1', response: { kind: 'word_bank', filledBlanks } }]
+  };
+}
+
+function orderingResponse(orderedOptionIds: string[]) {
+  return {
+    schemaVersion: 1,
+    responses: [{ interactionId: 'ordering-1', response: { kind: 'ordering', orderedOptionIds } }]
+  };
+}
+
+describe('word bank interactions', () => {
+  it('is supported by the vertical slice', () => {
+    expect(getUnsupportedAssessmentVerticalSliceInteractionKinds(wordBankDefinition)).toEqual([]);
+  });
+
+  it('accepts a response whose every blank holds a bank token', () => {
+    const delivery = toAssessmentDeliveryDefinition(wordBankDefinition);
+
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, wordBankResponse(['cat', 'mat']))).toBe(true);
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, wordBankResponse(['hat', 'cat']))).toBe(true);
+  });
+
+  it('rejects a blank holding a word that is not in the bank', () => {
+    const delivery = toAssessmentDeliveryDefinition(wordBankDefinition);
+
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, wordBankResponse(['cat', 'dog']))).toBe(false);
+  });
+
+  it('rejects an empty response for a required interaction', () => {
+    const delivery = toAssessmentDeliveryDefinition(wordBankDefinition);
+
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, wordBankResponse(['', '']))).toBe(false);
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, undefined)).toBe(false);
+  });
+
+  it('counts a fully blank response as unanswered progress', () => {
+    const delivery = toAssessmentDeliveryDefinition(wordBankDefinition);
+
+    expect(getAssessmentVerticalSliceResponseProgress(delivery, wordBankResponse(['', '']))).toEqual({
+      answered: 0,
+      total: 1
+    });
+    expect(getAssessmentVerticalSliceResponseProgress(delivery, wordBankResponse(['cat', 'mat']))).toEqual({
+      answered: 1,
+      total: 1
+    });
+  });
+
+  it('scores each blank positionally, case-insensitively, for partial credit', () => {
+    const correct = validateAssessmentResponseEnvelope(wordBankDefinition, wordBankResponse([' Cat ', 'mat']));
+    const half = validateAssessmentResponseEnvelope(wordBankDefinition, wordBankResponse(['cat', 'hat']));
+
+    expect(correct.success && half.success).toBe(true);
+    if (!correct.success || !half.success) return;
+
+    expect(scoreAssessmentVerticalSlice(wordBankDefinition, correct.data).autoScore).toBe(2);
+    expect(scoreAssessmentVerticalSlice(wordBankDefinition, half.data).autoScore).toBe(1);
+  });
+});
+
+describe('ordering interactions', () => {
+  it('is supported by the vertical slice', () => {
+    expect(getUnsupportedAssessmentVerticalSliceInteractionKinds(orderingDefinition)).toEqual([]);
+  });
+
+  it('accepts an order that covers every option exactly once', () => {
+    const delivery = toAssessmentDeliveryDefinition(orderingDefinition);
+
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, orderingResponse(['c', 'a', 'b']))).toBe(true);
+  });
+
+  it('rejects a partial order, a duplicate, and an unknown option', () => {
+    const delivery = toAssessmentDeliveryDefinition(orderingDefinition);
+
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, orderingResponse(['a', 'b']))).toBe(false);
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, orderingResponse(['a', 'a', 'b']))).toBe(false);
+    expect(isAssessmentVerticalSliceResponseComplete(delivery, orderingResponse(['a', 'b', 'z']))).toBe(false);
+  });
+
+  it('counts a partial order as unanswered progress', () => {
+    const delivery = toAssessmentDeliveryDefinition(orderingDefinition);
+
+    expect(getAssessmentVerticalSliceResponseProgress(delivery, orderingResponse(['a', 'b']))).toEqual({
+      answered: 0,
+      total: 1
+    });
+    expect(getAssessmentVerticalSliceResponseProgress(delivery, orderingResponse(['a', 'b', 'c']))).toEqual({
+      answered: 1,
+      total: 1
+    });
+  });
+
+  it('scores the exact order only, never a partial arrangement', () => {
+    const exact = validateAssessmentResponseEnvelope(orderingDefinition, orderingResponse(['a', 'b', 'c']));
+    const swapped = validateAssessmentResponseEnvelope(orderingDefinition, orderingResponse(['a', 'c', 'b']));
+
+    expect(exact.success && swapped.success).toBe(true);
+    if (!exact.success || !swapped.success) return;
+
+    expect(scoreAssessmentVerticalSlice(orderingDefinition, exact.data).autoScore).toBe(3);
+    expect(scoreAssessmentVerticalSlice(orderingDefinition, swapped.data).autoScore).toBe(0);
+  });
+});

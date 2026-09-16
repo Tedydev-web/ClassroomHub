@@ -18,8 +18,10 @@ const SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS: ReadonlySet<Assessm
   'choice',
   'fill_blank',
   'numeric',
+  'ordering',
   'text',
-  'true_false_group'
+  'true_false_group',
+  'word_bank'
 ]);
 
 export type AssessmentVerticalSliceInteractionScore = {
@@ -59,6 +61,14 @@ function hasExactChoiceResponse(expectedOptionIds: string[], selectedOptionIds: 
 
 function normalizeFillBlankValue(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function isExactOrdering(optionIds: string[], orderedOptionIds: string[]): boolean {
+  if (orderedOptionIds.length !== optionIds.length) return false;
+  if (new Set(orderedOptionIds).size !== orderedOptionIds.length) return false;
+
+  const declaredIds = new Set(optionIds);
+  return orderedOptionIds.every((optionId) => declaredIds.has(optionId));
 }
 
 /** Whether every required interaction in the Phase 3 delivery slice has a meaningful response. */
@@ -102,6 +112,24 @@ export function isAssessmentVerticalSliceResponseComplete(
     } else if (interaction.kind === 'fill_blank' && entry.response.kind === 'fill_blank') {
       if (entry.response.values.length !== interaction.config.blankCount) return false;
       if (interaction.required && !entry.response.values.some((value) => value.trim().length > 0)) return false;
+    } else if (interaction.kind === 'word_bank' && entry.response.kind === 'word_bank') {
+      // Delivery merges the answers and the distractors into `bankTokens` and drops
+      // `correctAnswers`, so the blank count is not knowable here. What is checkable is
+      // that every word the candidate placed came out of the bank they were shown.
+      const bank = new Set(interaction.config.bankTokens.map(normalizeFillBlankValue));
+      const filledValues = entry.response.filledBlanks.filter((value) => value.trim().length > 0);
+      if (interaction.required && filledValues.length === 0) return false;
+      if (!filledValues.every((value) => bank.has(normalizeFillBlankValue(value)))) return false;
+    } else if (interaction.kind === 'ordering' && entry.response.kind === 'ordering') {
+      // A partial arrangement is not an answer: the candidate has to place every option.
+      if (
+        !isExactOrdering(
+          interaction.config.options.map((option) => option.id),
+          entry.response.orderedOptionIds
+        )
+      ) {
+        return false;
+      }
     } else if (interaction.kind === 'true_false_group' && entry.response.kind === 'true_false_group') {
       const statementIds = new Set(interaction.config.statements.map((statement) => statement.id));
       const responseStatementIds = entry.response.answers.map((answer) => answer.statementId);
@@ -144,6 +172,12 @@ export function getAssessmentVerticalSliceResponseProgress(
       if (characterCount === 0) return false;
     }
     if (matchingResponse.response.kind === 'true_false_group' && matchingResponse.response.answers.length === 0) {
+      return false;
+    }
+    if (
+      matchingResponse.response.kind === 'word_bank' &&
+      !matchingResponse.response.filledBlanks.some((value) => value.trim().length > 0)
+    ) {
       return false;
     }
 
@@ -245,6 +279,45 @@ export function scoreAssessmentVerticalSlice(
         interaction.maxScore,
         correctCount / interaction.config.acceptedAnswers.length
       );
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+      continue;
+    }
+
+    if (interaction.kind === 'word_bank') {
+      // Same positional, case-insensitive rule as fill_blank; the bank only limits what
+      // the candidate can put in a blank, not how a blank is marked.
+      const response = validated.responsesByInteractionId.get(block.id);
+      const correctCount =
+        response?.kind === 'word_bank'
+          ? interaction.config.correctAnswers.reduce(
+              (count, expected, index) =>
+                count +
+                Number(
+                  normalizeFillBlankValue(response.filledBlanks[index] ?? '') === normalizeFillBlankValue(expected)
+                ),
+              0
+            )
+          : 0;
+      const score =
+        interaction.config.correctAnswers.length > 0
+          ? scaleScoreByFraction(interaction.maxScore, correctCount / interaction.config.correctAnswers.length)
+          : 0;
+      autoScoreCents += Math.round(score * 100);
+      interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
+      continue;
+    }
+
+    if (interaction.kind === 'ordering') {
+      // Exact match only. Like multiple choice, this scorer does not invent a
+      // partial-credit rule the author never wrote.
+      const response = validated.responsesByInteractionId.get(block.id);
+      const score =
+        response?.kind === 'ordering' &&
+        interaction.config.correctOrder.length === response.orderedOptionIds.length &&
+        interaction.config.correctOrder.every((optionId, index) => response.orderedOptionIds[index] === optionId)
+          ? interaction.maxScore
+          : 0;
       autoScoreCents += Math.round(score * 100);
       interactionScores.push({ interactionId: block.id, score, maxScore: interaction.maxScore, grading: 'auto' });
       continue;
