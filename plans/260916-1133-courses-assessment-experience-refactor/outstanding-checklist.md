@@ -123,8 +123,8 @@ useful.
 | 3 | "Đến hạn bởi" — not Vietnamese anyone writes | `vi.json` at `…all_exercises.view_mode.due` | **fixed** → "Hạn nộp" |
 | 4 | "bài nộp" lowercase beside "Câu hỏi" and "Cài đặt" | `vi.json` at `…all_exercises.submissions` | **fixed** → "Bài nộp" |
 | 5 | "Câu hỏi 11" clipped to "u hỏi 11" at the card's left edge | screenshot | **open, cause unknown — the one item blocking the next step.** The obvious explanation was disproved: the grid needs 288+512=800px and the container gives ~976px, so it fits. Left-edge clipping is not what `truncate` or grid overflow produce. It may have sat inside the reverted panel, or it may live in the shared card or page container and still be on production. One line of feedback separates the two: reload the same URL after this deploy and say whether "Câu hỏi" is still cut. Do not design around it until that is known. |
-| 6 | Two "Thêm câu hỏi" buttons, page header and card header | screenshot | **open** — needs a decision on which one owns the action |
-| 7 | Large dead vertical space under the question editor | screenshot | **open** — likely also inside the reverted panel |
+| 6 | Two "Thêm câu hỏi" buttons, page header and card header | screenshot | **closed — not a defect.** Upstream has both by design: `addQuestionFromHeader` on the page header (`pages/exercise.svelte:657` upstream, `:642` here) and `onAddQuestion` per section. What the screenshot showed was *three* add affordances at once, because the panel contributed its own "Thêm tương tác" and "Thêm câu hỏi" pair in its header. With the panel off, the upstream pair remains. |
+| 7 | Large dead vertical space under the question editor | screenshot | **closed.** It was the panel's own grid: `xl:min-h-[40rem]` on the two-pane container at `edit-mode.svelte:782`, which reserved 40rem of height whatever the editor held. That container no longer renders. |
 
 ## 3. Unfinished features
 
