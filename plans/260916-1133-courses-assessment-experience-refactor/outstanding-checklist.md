@@ -50,6 +50,39 @@ around: "divergence from upstream" is two unrelated things.
 
 E1 was written about (a). I applied it to (b).
 
+## 0b. How far the exercise screen actually diverges — measured after the revert
+
+The complaint was that this screen looks nothing like upstream. Measured, it is almost entirely
+upstream already:
+
+| Thing | upstream | fork |
+|---|---|---|
+| `pages/exercise.svelte` | 944 lines | **945** |
+| Tabs on the page | questions, settings, submissions | **identical** |
+| The meta card (title, due date, description) | `pages/exercise.svelte:784` | **same file, same line** |
+| `exercises/[exerciseId]/+page.svelte` | 74 | 100 — the +26 is the failure state added today |
+| `edit-mode.svelte` snippets | 5 | 8 |
+
+The three extra snippets are `compactCanonicalQuestionRow`, `assessmentComposerPane` and
+`canonicalQuestionEditor` — all of them the canonical assessment feature, and nothing else
+structural.
+
+So the two-card stack the owner disliked is **upstream's own design**, line for line. What was
+genuinely divergent was the two-pane workspace, now reverted. After that revert,
+`edit-mode.svelte` is upstream's structure plus the feature the fork set out to build, which is
+exactly what "re-sync with upstream while keeping what we added" means.
+
+**Still in the file and worth a decision:** the parked workspace panel is roughly 190 lines that
+no longer render. The comment says it is kept "until the new authoring design is settled". The
+owner has now seen it and rejected it, so either it goes — committing to the upstream shape — or
+it stays parked because there is an intention to return to it. Leaving it undecided is how dead
+code accumulates.
+
+**Screenshot row 5 resolved without needing a reload.** The clipped "Câu hỏi 11" header sat inside
+the `USE_ASSESSMENT_WORKSPACE_PANEL` block at `edit-mode.svelte:775`, together with the
+"Thêm tương tác" and "Thêm câu hỏi" buttons visible beside it. That block no longer renders, so
+the clipped element does not exist.
+
 ## 1. Blocked on the owner — nothing proceeds without these
 
 | # | Question | Blocks |
