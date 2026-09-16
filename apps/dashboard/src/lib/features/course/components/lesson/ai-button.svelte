@@ -14,8 +14,7 @@
   let { isLoading, callAI = () => {} }: Props = $props();
 
   let openPopover = $state<boolean>(false);
-  let aiButtonClass =
-    'flex items-center px-5 py-2 border border-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md w-full mb-2';
+  let aiButtonClass = 'ui:border-border ui:hover:bg-accent mb-2 flex w-full items-center rounded-md border px-5 py-2';
 </script>
 
 <!-- Update this when ai-sdk is updated -->

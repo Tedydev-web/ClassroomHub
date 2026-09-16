@@ -328,11 +328,11 @@
       <!-- Upload Progress -->
       {#if $lessonDocUpload.isUploading}
         <div class="mt-4">
-          <div class="mb-1 flex justify-between text-sm text-gray-600">
+          <div class="ui:text-muted-foreground mb-1 flex justify-between text-sm">
             <span>{$t('course.navItem.lessons.materials.tabs.document.uploading')}</span>
             <span>{$lessonDocUpload.uploadProgress}%</span>
           </div>
-          <div class="h-2 w-full rounded-full bg-gray-200">
+          <div class="ui:bg-muted h-2 w-full rounded-full">
             <div
               class="h-2 rounded-full bg-blue-600 transition-all duration-300"
               style="width: {$lessonDocUpload.uploadProgress}%"

@@ -348,7 +348,7 @@
           {#if exerciseTemplateApi.isLoading}
             <div class="grid grid-cols-2 items-start gap-4 lg:grid-cols-3 xl:grid-cols-4">
               {#each Array(16) as _, index (index)}
-                <div class="ui:border-border h-[140px] w-full rounded-md border p-5 dark:bg-neutral-700">
+                <div class="ui:border-border ui:bg-muted h-[140px] w-full rounded-md border p-5">
                   <div class="flex h-full flex-col justify-evenly">
                     <Skeleton class="h-4 w-3/4" />
                     <div class="flex flex-col items-start justify-between gap-1">
@@ -366,7 +366,7 @@
               class="grid-cols-2! lg:grid-cols-3! xl:grid-cols-4!"
             />
           {:else}
-            <p class="text-sm text-gray-500">
+            <p class="ui:text-muted-foreground text-sm">
               {$t('course.navItem.lessons.exercises.new_exercise_modal.no_templates_for_tag')}
             </p>
           {/if}

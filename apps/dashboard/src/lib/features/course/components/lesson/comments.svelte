@@ -118,23 +118,18 @@
       <div class="mt-2 flex items-start gap-3 pb-2">
         <UserAvatar src={commentItem.avatar} alt={commentItem.name ?? 'User'} class="mt-2 size-6!" />
 
-        <div class="w-full rounded-md border px-3 py-2 dark:border-neutral-700">
+        <div class="ui:border-border w-full rounded-md border px-3 py-2">
           <div class="flex items-center justify-between gap-2">
             <p class="text-sm dark:text-white">
               {commentItem.name}
-              <span
-                class="ml-1 text-xs font-normal text-gray-800 dark:text-white"
-                title={commentItem.commentAt.toLocaleString()}
-              >
+              <span class="ui:text-foreground ml-1 text-xs font-normal" title={commentItem.commentAt.toLocaleString()}>
                 {calDateDiff(commentItem.commentAt)}
               </span>
             </p>
 
             {#if courseApi.group.memberId === commentItem.groupmemberId}
               <DropdownMenu.Root>
-                <DropdownMenu.Trigger
-                  class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-neutral-700"
-                >
+                <DropdownMenu.Trigger class="ui:hover:bg-accent flex h-8 w-8 items-center justify-center rounded-md">
                   <EllipsisVerticalIcon class="size-4" />
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="end">
