@@ -79,13 +79,36 @@ export function removeAssessmentComposerPreviewItem(composerId: string): void {
   });
 }
 
+/**
+ * Warn when one composer id is registered twice.
+ *
+ * Two live registrations under one id means the second silently replaced the first, and
+ * whichever unmounts first would otherwise take the survivor's handler with it. That
+ * produces a save which appears to succeed and persists nothing — the worst failure this
+ * store can have, and an invisible one. Moving the composer's mount point is exactly the
+ * work that can introduce it.
+ */
+function warnOnDuplicateComposer(kind: string, composerId: string, existed: boolean): void {
+  if (existed && import.meta.env.DEV) {
+    console.warn(
+      `[exercise store] ${kind} handler for composer "${composerId}" was replaced while still registered. ` +
+        'Two composers are mounted under one id; the first to unmount would have removed the live handler.'
+    );
+  }
+}
+
 export function registerAssessmentComposerSaveHandler(
   composerId: string,
   saveHandler: AssessmentComposerSaveHandler
 ): () => void {
+  warnOnDuplicateComposer('save', composerId, assessmentComposerSaveHandlers.has(composerId));
   assessmentComposerSaveHandlers.set(composerId, saveHandler);
 
   return () => {
+    // Only retract our own registration. An unconditional delete would remove a handler
+    // that a later mount had already installed under the same id.
+    if (assessmentComposerSaveHandlers.get(composerId) !== saveHandler) return;
+
     assessmentComposerSaveHandlers.delete(composerId);
     setAssessmentComposerDirty(composerId, false);
   };
@@ -95,9 +118,13 @@ export function registerAssessmentComposerMutationHandler(
   composerId: string,
   handler: AssessmentComposerMutationHandler
 ): () => void {
+  warnOnDuplicateComposer('mutation', composerId, assessmentComposerMutationHandlers.has(composerId));
   assessmentComposerMutationHandlers.set(composerId, handler);
 
   return () => {
+    // Same hazard as the save registry: retract only our own handler.
+    if (assessmentComposerMutationHandlers.get(composerId) !== handler) return;
+
     assessmentComposerMutationHandlers.delete(composerId);
   };
 }
