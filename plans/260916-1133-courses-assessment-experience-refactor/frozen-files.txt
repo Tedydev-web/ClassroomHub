@@ -1,0 +1,17 @@
+apps/dashboard/src/routes/(org-site)/exam/[slug]/+page.svelte
+apps/dashboard/src/routes/(org-site)/exam/[slug]/+page.server.ts
+apps/dashboard/src/lib/features/exam/exam-countdown.svelte
+apps/dashboard/src/lib/features/exam/exam-entry-form.svelte
+apps/dashboard/src/lib/features/exam/exam-window-notice.svelte
+apps/dashboard/src/lib/features/exam/exam-start-confirm.svelte
+apps/dashboard/src/lib/features/exam/exam-submit-confirm.svelte
+apps/dashboard/src/lib/features/exam/exam-resume-offer.svelte
+apps/dashboard/src/lib/features/exam/exam-resume-owner.ts
+apps/dashboard/src/lib/features/exam/exam-left-warning.svelte
+apps/dashboard/src/lib/features/exam/exam-activity.ts
+apps/dashboard/src/lib/features/exam/exam-activity-outbox.ts
+apps/dashboard/src/lib/features/exam/exam-autosave.ts
+apps/dashboard/src/lib/features/exam/exam-refusals.ts
+apps/dashboard/src/lib/features/exam/exam-paper-navigator.svelte
+apps/dashboard/src/lib/features/exam/exam-annotations.ts
+apps/dashboard/src/lib/features/exam/exam-link-preview.ts
