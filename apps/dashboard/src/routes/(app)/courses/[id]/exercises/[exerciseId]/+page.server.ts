@@ -41,6 +41,13 @@ export const load = async ({ params, cookies }) => {
     // The authoring screen renders from the store, so a null exercise reaches a teacher as
     // an *empty* exercise — and saving that would overwrite the real one with nothing.
     // Failure has to stop the page rather than reach it as data.
-    loadFailed: !exerciseResult.ok
+    loadFailed: !exerciseResult.ok,
+    /**
+     * The browser tab. Every screen in this section served the platform's own title, so a
+     * teacher working across an exam, its attempts and the source exercise had a row of
+     * identical tabs and a useless history. Only the title is set; everything else still
+     * falls back to the site defaults.
+     */
+    pageMetaTags: exercise?.title ? Object.freeze({ title: exercise.title }) : undefined
   };
 };

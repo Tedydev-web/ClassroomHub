@@ -85,6 +85,13 @@ export const load = async ({ params, cookies }) => {
     rows: rowsResult.ok ? rowsResult.body.data : [],
     // Told apart from "nobody sat it", which an empty list on a failed fetch would
     // otherwise claim to a teacher who has no way to know the difference.
-    rowsFailed: !rowsResult.ok
+    rowsFailed: !rowsResult.ok,
+    /**
+     * The browser tab. Every screen in this section served the platform's own title, so a
+     * teacher working across an exam, its attempts and the source exercise had a row of
+     * identical tabs and a useless history. Only the title is set; everything else still
+     * falls back to the site defaults.
+     */
+    pageMetaTags: Object.freeze({ title: exam.title })
   };
 };

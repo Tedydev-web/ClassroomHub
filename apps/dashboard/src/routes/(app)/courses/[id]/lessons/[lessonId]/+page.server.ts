@@ -18,6 +18,13 @@ export const load = async ({ params, cookies }) => {
   return {
     courseId,
     lessonId,
-    lesson: lesson
+    lesson: lesson,
+    /**
+     * The browser tab. Every screen in this section served the platform's own title, so a
+     * teacher working across an exam, its attempts and the source exercise had a row of
+     * identical tabs and a useless history. Only the title is set; everything else still
+     * falls back to the site defaults.
+     */
+    pageMetaTags: lesson?.title ? Object.freeze({ title: lesson.title }) : undefined
   };
 };
