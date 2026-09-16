@@ -34,7 +34,6 @@
   const flipDurationMs = 300;
   let sections = $state<SubmissionSection[]>([]);
   let submissionIdData = $state<Record<string, SubmissionIdData>>({});
-  let isGradeWithAI = $state(false);
   let isSaving = $state(false);
 
   onMount(() => {
@@ -120,7 +119,6 @@
   }
 
   function handleModalClose() {
-    isGradeWithAI = false;
     goto(page.url.pathname);
   }
 
@@ -219,7 +217,6 @@
   data={submissionIdData[submissionId] || {}}
   {handleSave}
   deleteSubmission={handleDeleteSubmission}
-  bind:isGradeWithAI
   {isSaving}
 />
 

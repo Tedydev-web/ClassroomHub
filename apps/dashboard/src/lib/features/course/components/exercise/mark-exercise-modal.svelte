@@ -23,7 +23,6 @@
     open?: boolean;
     onClose?: () => void;
     handleSave?: (data: SubmissionIdData) => void | Promise<void>;
-    isGradeWithAI?: boolean;
     data: SubmissionIdData;
     deleteSubmission?: (id: string, statusId: number) => void | Promise<void>;
     isSaving?: boolean;
@@ -33,7 +32,6 @@
     open = $bindable(false),
     onClose = () => {},
     handleSave = (_d: SubmissionIdData) => {},
-    isGradeWithAI = $bindable(false),
     data = $bindable(),
     deleteSubmission = async (_id: string, _statusId: number) => {},
     isSaving = false
@@ -55,7 +53,6 @@
   ];
 
   let status = $state(SELECTABLE_STATUS[0]);
-  let reasons = $state({});
   let isLoading = $state(false);
   let openDeletePrompt = $state(false);
   let isDeleting = $state(false);
@@ -135,28 +132,7 @@
     });
   }
 
-  // const getMultipleAnswersGrade = (options, answer, points) => {
-  //   const correctOptions = options
-  //     .filter((option) => option.is_correct)
-  //     .map((option) => option.value);
-
-  //   const correctSelections = answer.answers.filter((answer) =>
-  //     correctOptions.includes(answer)
-  //   ).length;
-
   //   const incorrectSelections = answer.answers.length - correctSelections;
-
-  //   const pointsEarned = (correctSelections / correctOptions.length) * points;
-  //   const deduction = (incorrectSelections * points) / correctOptions.length;
-  //   const finalPoints = Math.max(pointsEarned - deduction, 0);
-
-  //   return {
-  //     finalPoints,
-  //     correctOptions,
-  //     correctSelections,
-  //     incorrectSelections
-  //   };
-  // };
 
   async function handleDeleteSubmission() {
     isDeleting = true;
@@ -164,92 +140,10 @@
     isDeleting = false;
   }
 
-  // const { input, handleSubmit, completion } = useCompletion({
-  //   api: '/api/completion/gradingprompt',
-  //   onFinish: async () => {
-  //     try {
-  //       const responseData = $completion.replace('```json', '').replace('```', '');
-
-  //       let aiResponses: {
-  //         id: number;
-  //         score: number;
-  //         explanation: string;
-  //       }[] = [];
-  //       try {
-  //         // Parse the modified response data as JSON
-  //         aiResponses = JSON.parse(responseData);
-  //       } catch (error) {
-  //         console.error('Error parsing AI response', error);
-  //       }
-
-  //       data?.questions.forEach((question) => {
-  //         const { id, points, question_type_id, options } = question;
-  //         if (question_type_id == QUESTION_TYPE.RADIO) {
-  //           const answer = data.questionAnswers.find((q) => q.question_id === id);
-
   //           const answerPoints = answer?.answers?.length ?? 0;
-
-  //           reasons = {
-  //             ...reasons,
-  //             [id]: `${$t('course.navItem.submissions.grading_modal.allocated')} ${$t(
-  //               'course.navItem.submissions.grading_modal.total_try'
-  //             )} ${answerPoints} `
-  //           };
-  //           data.questionAnswerByPoint[id] = `${Math.ceil(points / answerPoints)}`;
-  //         } else if (question_type_id == QUESTION_TYPE.CHECKBOX) {
-  //           const answer = data.questionAnswers.find((q) => q.question_id === id);
 
   //           const { finalPoints, correctOptions, correctSelections, incorrectSelections } =
   //             getMultipleAnswersGrade(options, answer, points);
-
-  //           reasons = {
-  //             ...reasons,
-  //             [id]: `${$t(
-  //               'course.navItem.submissions.grading_modal.allocated'
-  //             )} ${correctSelections} ${$t('course.navItem.submissions.grading_modal.out_of')} ${
-  //               correctOptions.length
-  //             } ${$t('course.navItem.submissions.grading_modal.options_correct')} ${$t(
-  //               'course.navItem.submissions.grading_modal.options_wrong'
-  //             )} ${incorrectSelections} `
-  //           };
-
-  //           data.questionAnswerByPoint[id] = `${finalPoints}`;
-  //         } else if (aiResponses.length) {
-  //           const graded = aiResponses.find((res) => res.id === id);
-
-  //           reasons = {
-  //             ...reasons,
-  //             [id]: `${graded?.explanation}`
-  //           };
-
-  //           data.questionAnswerByPoint[id] = `${graded?.score}`;
-  //         }
-  //       });
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //     } finally {
-  //       isLoading = false;
-  //     }
-  //   }
-  // });
-
-  function gradeWithAI() {
-    // isGradeWithAI = true;
-    // isLoading = true;
-    // const paragraphAiInput = data.questions
-    //   .filter((q) => q.question_type_id === QUESTION_TYPE.TEXTAREA)
-    //   .map((q) => {
-    //     const answer = data.questionAnswers.find((qA) => qA.question_id === q.id); // { open_answer: '' }
-    //     return {
-    //       id: q.id,
-    //       question: q.title,
-    //       answer: answer?.open_answer,
-    //       point: q.points
-    //     };
-    //   });
-    // $input = JSON.stringify(paragraphAiInput);
-    // handleSubmit({ preventDefault: () => {} });
-  }
 
   $effect(() => {
     setStatus(data);
@@ -291,8 +185,6 @@
               isFinished: true
             }}
             bind:grades={data.questionAnswerByPoint}
-            bind:reasons
-            bind:isGradeWithAI
             bind:isLoading
             disableGrading={false}
             canonicalQuestions={(data.canonicalQuestions ?? []).map((question) => ({
@@ -422,12 +314,6 @@
           </div>
 
           <div class="flex w-full flex-col space-y-3 px-3 py-2">
-            <Button variant="outline" onclick={gradeWithAI} class="hidden! w-full">
-              <img src="/ai.svg" alt={$t('course.navItem.submissions.grading_modal.ai_icon')} />
-              <p class="text-sm font-semibold">
-                {$t('course.navItem.submissions.grading_modal.grade_with_ai')}
-              </p>
-            </Button>
             <Button
               onclick={() => {
                 handleSave(data);

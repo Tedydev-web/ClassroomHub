@@ -8,7 +8,7 @@
     ReleasedAssessmentFeedback
   } from '@cio/question-types';
   import type { Question } from '$features/course/types';
-  import { Grade, ReasonBox } from '$features/ui/question';
+  import { Grade } from '$features/ui/question';
   import { toExerciseQuestionModel } from './question-type-utils';
   import { getExerciseQuestionLabels } from './question-labels';
   import { ExerciseQuestion } from '@cio/ui';
@@ -53,10 +53,8 @@
     /** Per-question scores (e.g. from `questionnaireMetaData.grades` or grading modal `questionAnswerByPoint`). */
     grades?: Record<string, number>;
     disableGrading?: boolean;
-    isGradeWithAI?: boolean;
     isLoading?: boolean;
     /** Optional AI grading copy keyed by question id. */
-    reasons?: Record<string, string>;
     canonicalQuestions?: CanonicalPreviewQuestion[];
     canonicalAnswers?: Record<string, AssessmentResponseEnvelope | undefined>;
   }
@@ -67,21 +65,10 @@
     questionnaireMetaData: _questionnaireMetaData = {},
     grades = $bindable({}),
     disableGrading = true,
-    isGradeWithAI = $bindable(false),
     isLoading = $bindable(false),
-    reasons = $bindable({}),
     canonicalQuestions = [],
     canonicalAnswers = {}
   }: Props = $props();
-
-  function acceptGradeSuggestion() {
-    isGradeWithAI = false;
-  }
-
-  function rejectGradeSuggestion(questionId: Question['id']) {
-    isGradeWithAI = false;
-    grades[String(questionId)] = 0;
-  }
 
   function getAnswerForQuestion(questionModel: ExerciseQuestionModel, fallbackIndex = 0): AnswerData | undefined {
     const questionKey = getExerciseQuestionContractKey(questionModel, fallbackIndex);
@@ -218,15 +205,6 @@
         questionNumber={showMixedGradeControls ? undefined : questionNumber}
         questionNumberActive={false}
       />
-
-      {#if isGradeWithAI}
-        <ReasonBox
-          reason={reasons[item.question.id]}
-          {isLoading}
-          acceptGrade={acceptGradeSuggestion}
-          rejectGrade={() => rejectGradeSuggestion(item.question.id)}
-        />
-      {/if}
     {:else}
       <ExerciseQuestion.AssessmentItemRenderer
         definition={item.question.definition}
@@ -371,15 +349,6 @@
           disabled: true
         }}
       />
-
-      {#if isGradeWithAI}
-        <ReasonBox
-          reason={reasons[currentQuestion.id]}
-          {isLoading}
-          acceptGrade={acceptGradeSuggestion}
-          rejectGrade={() => rejectGradeSuggestion(currentQuestion.id)}
-        />
-      {/if}
     </div>
   {/each}
 {/if}
