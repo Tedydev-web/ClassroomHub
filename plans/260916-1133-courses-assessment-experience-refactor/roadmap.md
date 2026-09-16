@@ -87,8 +87,14 @@ behaviour-preserving by construction.
 
 ### Open, and needs someone looking at the screen
 
-**The last 28 colours**, 22 of them in `marks.svelte`, where greys sit between the grade tints and a
-wrong substitution changes what a mark *means* rather than how it looks.
+**Seven deployed screens nobody has looked at yet** — the gradebook, the analytics empty state, the
+lesson list and content tree, the section editor, the document viewer in dark mode, the exercise
+settings tab, the grading modal, and the certificate modal. Each was converted in its own commit so
+any one can be reverted alone.
+
+The gradebook was held back three times on the theory that its greys sat between the grade tints.
+Reading it line by line showed otherwise: all 22 were table chrome, and the five grade tints come
+from `gradeCellClass()`, untouched. The caution was right; the theory was not.
 
 **The compact type tier.** `course-list-row.svelte` runs a container-query ramp whose roomy tier
 already uses tokens; its compact tier needs a step below `2xs` or an explicit exemption.
