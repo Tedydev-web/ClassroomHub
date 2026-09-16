@@ -140,7 +140,7 @@
         onCreated(exerciseApi.exercise.id);
       }
     } catch (error) {
-      console.log('Error creating exercise from template', error);
+      console.error('Error creating exercise from template', error);
       snackbar.error($t('course.navItem.lessons.exercises.new_exercise_modal.errors.template_fetch'));
     } finally {
       isTemplateFinishedLoading = false;

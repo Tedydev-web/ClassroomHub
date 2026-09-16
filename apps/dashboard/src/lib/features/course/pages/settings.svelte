@@ -889,7 +889,6 @@
         id="content-grouping"
         checked={$settings.isContentGroupingEnabled}
         onCheckedChange={(checked) => {
-          console.log('checked', checked);
           $settings.isContentGroupingEnabled = checked;
           hasUnsavedChanges = true;
         }}

@@ -432,7 +432,6 @@
 
       // Check if there are validation errors from the API
       if (Object.keys(exerciseApi.errors || {}).length > 0) {
-        console.log('Validation errors from API:', exerciseApi.errors);
         snackbar.error('snackbar.exercise.validation_errors');
         isSaving = false;
         return;
@@ -579,11 +578,6 @@
       });
     });
   }
-
-  $inspect('$isStudentExperience', $isStudentExperience);
-  $inspect('isExerciseAccessible', isExerciseAccessible);
-  $inspect('isExerciseAccessible', isExerciseAccessible);
-  $inspect('mySubmissions', mySubmissions);
 
   function getFirstActiveSectionId() {
     const [firstActiveSection] = [...($questionnaire.sections ?? [])]
