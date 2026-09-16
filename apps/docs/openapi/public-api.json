@@ -115,7 +115,9 @@
               "enum": [
                 "createdAt",
                 "name",
-                "email"
+                "email",
+                "lastLoginAt",
+                "lastActiveAt"
               ]
             }
           },
@@ -128,6 +130,102 @@
               "enum": [
                 "asc",
                 "desc"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "default": "ACTIVE",
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "DEACTIVATED",
+                "ARCHIVED"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "inviteStatus",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "pending",
+                "expired",
+                "revoked"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "enrollment",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "enrolled",
+                "not_enrolled"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "completion",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "not_started",
+                "in_progress",
+                "completed"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "lastLoginBefore",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "180d",
+                "never"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "lastActiveBefore",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "180d",
+                "never"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "excludeRecentJoiners",
+            "schema": {
+              "default": true,
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
               ]
             }
           }
