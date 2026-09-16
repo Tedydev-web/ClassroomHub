@@ -48,6 +48,32 @@ with a new default is allowed, a changed default is not.
 The renderer already fails visibly for an unbuilt kind rather than rendering nothing, so the three
 pieces can land in any order without a half-built kind reaching a candidate as blank space.
 
+## The trap whoever implements this will hit
+
+`assessment-vertical-slice.ts` runs against a **delivery** definition, and delivery strips the
+answer key. Writing a completeness rule against the authored config compiles against the wrong type
+and, worse, would reach for a key that is deliberately absent from the copy a candidate receives.
+
+Measured in `assessment-delivery-definition.ts:75-86`:
+
+| kind | authored config | what delivery actually exposes |
+|---|---|---|
+| `word_bank` | `template`, `correctAnswers`, `distractors` | `template`, **`bankTokens`** — the answers and distractors merged and sorted, so the order leaks nothing |
+| `ordering` | `options`, `correctOrder` | `options` only, re-sorted; **`correctOrder` is gone** |
+| `numeric` | `correctValue` | stripped |
+
+So a completeness rule for `word_bank` **cannot** compare against `correctAnswers.length` to learn
+the blank count — that field does not exist at this layer. It can check that every filled value is a
+token from `bankTokens`, and that a required interaction has at least one non-empty value. The count
+check already exists where the key is available: `assessment-response-envelope.ts:232`.
+
+For `ordering` the rule is the same shape as `choice`: no duplicate ids, every id must belong to
+`config.options`, and a required interaction must cover every option — a partial order is not an
+answer.
+
+Both rules use only what delivery exposes, which is the test that the rule is written at the right
+layer.
+
 ## What each kind costs, in rough order of cheapness
 
 | kind | Completeness rule | Composer | Renderer | Note |
