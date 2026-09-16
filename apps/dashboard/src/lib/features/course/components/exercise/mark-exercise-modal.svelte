@@ -163,7 +163,7 @@
     <div class="flex max-h-[calc(90vh-5rem)] justify-between gap-4 overflow-y-auto pr-4">
       <div class="mt-2 min-h-0 min-w-0 flex-1">
         {#if openDeletePrompt}
-          <div class="mx-auto w-96 rounded-md border border-gray-300 p-3">
+          <div class="ui:border-border mx-auto w-96 rounded-md border p-3">
             <h1 class="text-lg dark:text-white">
               {$t('delete_modal.content')}
             </h1>
@@ -200,9 +200,9 @@
       </div>
 
       <div class="sticky top-0 mt-2 ml-4 min-h-0 w-2/5 max-w-[350px] shrink-0 self-start">
-        <div class="rounded-md border border-gray-300">
+        <div class="ui:border-border rounded-md border">
           <div
-            class="flex items-center justify-between gap-1 border-t-0 border-r-0 border-b border-l-0 border-gray-300 p-3"
+            class="ui:border-border flex items-center justify-between gap-1 border-t-0 border-r-0 border-b border-l-0 p-3"
           >
             <p class="text-base dark:text-white">
               {$t('course.navItem.submissions.grading_modal.details')}
@@ -218,14 +218,12 @@
             </p>
 
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger
-                class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-neutral-700"
-              >
+              <DropdownMenu.Trigger class="ui:hover:bg-accent flex h-8 w-8 items-center justify-center rounded-md">
                 <EllipsisVerticalIcon class="h-5 w-5" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end">
                 <DropdownMenu.Item
-                  class="text-red-600"
+                  class="ui:text-destructive"
                   onclick={() => {
                     openDeletePrompt = true;
                   }}
@@ -237,11 +235,11 @@
           </div>
 
           <div class="flex items-center space-x-4 px-3 py-2 text-sm">
-            <p class="text-sm font-semibold text-gray-500 dark:text-white">
+            <p class="ui:text-muted-foreground text-sm font-semibold">
               {$t('course.navItem.submissions.grading_modal.total_grade')}:
             </p>
 
-            <Badge class="w-fit rounded-md bg-gray-100 font-semibold text-black dark:bg-neutral-700 dark:text-white">
+            <Badge class="ui:bg-muted ui:text-foreground w-fit rounded-md font-semibold">
               {total}/{maxPoints}
             </Badge>
           </div>
@@ -253,11 +251,11 @@
         </div>
       </div> -->
           <div class="flex items-center space-x-4 px-3 py-2 text-sm">
-            <p class="text-sm font-semibold text-gray-500 dark:text-white">
+            <p class="ui:text-muted-foreground text-sm font-semibold">
               {$t('course.navItem.submissions.grading_modal.student')}:
             </p>
             {#if data.student}
-              <div class="flex flex-row items-center justify-center rounded-md bg-gray-100 p-[6px] dark:bg-neutral-700">
+              <div class="ui:bg-muted flex flex-row items-center justify-center rounded-md p-[6px]">
                 <UserAvatar
                   src={data.student.avatarUrl}
                   alt={$t('course.navItem.submissions.grading_modal.student_avatar')}
@@ -269,16 +267,9 @@
               </div>
             {/if}
           </div>
-          <!-- <div class="flex items-center space-x-4 text-sm px-3 py-2">
-        <p class="dark:text-white text-sm text-gray-500 font-semibold">Assesment Type:</p>
-        <Tag
-          class="dark:text-white font-semibold bg-gray-100 dark:bg-neutral-700 rounded-md text-black w-fit"
-          >Paragraph</Tag
-        >
-      </div> -->
 
           <div class="flex flex-col items-start px-3 py-2 text-sm">
-            <p class="font-semibold text-gray-500 dark:text-white">
+            <p class="ui:text-muted-foreground font-semibold">
               {$t('course.navItem.submissions.grading_modal.status')}:
             </p>
             <Select.Root
@@ -304,7 +295,7 @@
           </div>
 
           <div class="flex flex-col items-start px-3 py-2 text-sm">
-            <p class="font-semibold text-gray-500 dark:text-white">
+            <p class="ui:text-muted-foreground font-semibold">
               {$t('course.navItem.submissions.grading_modal.add_comment')}:
             </p>
             <TextareaField
