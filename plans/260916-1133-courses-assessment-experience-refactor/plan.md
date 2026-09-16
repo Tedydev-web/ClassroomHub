@@ -211,7 +211,8 @@ any type baseline.
 | D14 save failures | **corrected, then done** — the register said "keyless toast". It is not: `snackbar/store.ts:34` defaults to `snackbar.something`, which exists in both `en` and `vi`. The real defect is weaker — the message is generic. Both sites now name what failed. |
 | D16 public-course filter | **done** — the shorter type list now says why it is shorter |
 | Motion rows 1, 2, 4 | **done** — see `animation-opportunities.md`. Row 2 (press feedback) needed an owner-granted exception to the freeze, because the shared `Button` is used seven times on the student sitting page and by six more frozen modules; it is the only visual change to that screen in this programme. |
-| F6 `Page.Root`, F7 font | not started |
+| F7 font | **resolved — do not bind.** The plan offered "bind `--font-cio` to Geist, or delete the dead declaration", assuming the choice was taste. It is not. Geist is self-hosted with three subsets; Vietnamese precomposed characters live at U+1EA0-1EF9 and **82 of those 90 codepoints fall outside every declared `unicode-range`**. Binding would render Ạ ả ấ ầ ậ ắ ằ ặ and the rest in a fallback face — a typeface change mid-word, in a Vietnamese-first product. The commented-out stack is gone and the measurement is recorded at `index.css:129` so no future session re-enables it. Binding needs a Geist build with a Vietnamese subset, which is a font problem, not a CSS one. |
+| F6 `Page.Root` | not started — still needs its own approval, it reaches `org/` and `lms/` |
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
 Tailwind's own prefixed `--ui-ease-out`, silently repointing all 41 existing `ease-out` usages at a

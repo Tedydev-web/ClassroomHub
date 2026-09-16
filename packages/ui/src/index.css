@@ -126,7 +126,18 @@
 }
 
 @theme inline {
-  /* --font-cio: 'Geist', Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, sans-serif; */
+  /*
+   * Geist is self-hosted in `apps/dashboard/src/app.css`, and a commented-out stack
+   * pointing this token at it used to sit here. Do not restore it.
+   *
+   * The three declared subsets are cyrillic, latin-ext (U+1E00-1E9F, U+1EF2-1EFF) and
+   * latin. Vietnamese precomposed characters live at U+1EA0-1EF9, and 82 of those 90
+   * codepoints fall outside every declared range — Ạ ả ấ ầ ậ ắ ằ ặ and the rest. Binding
+   * this token to Geist would render those in a fallback face, so a Vietnamese word would
+   * change typeface mid-word. This app is Vietnamese-first.
+   *
+   * Binding it needs a Geist build carrying a Vietnamese subset first, not a CSS change.
+   */
   --font-cio: var(--font-sans);
   --default-font-family: var(--font-cio);
   --radius-sm: calc(var(--radius) - 4px);
