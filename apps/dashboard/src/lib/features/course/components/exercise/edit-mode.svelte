@@ -953,6 +953,17 @@
                   canMoveUp={activeSections[0]?.id !== workspaceSection.id}
                   canMoveDown={activeSections.at(-1)?.id !== workspaceSection.id}
                 />
+                <!-- Where a candidate goes after finishing this section. The legacy list
+                     renders this next to each section; the pane edits one section at a
+                     time, so it belongs under that section's editor. -->
+                <ExerciseQuestion.SectionAfterBehavior
+                  sectionIndex={activeSections.findIndex((section) => section.id === workspaceSection.id)}
+                  currentSectionId={workspaceSection.id}
+                  allSections={activeSections}
+                  afterBehavior={workspaceSection.afterBehavior}
+                  labels={sectionAfterBehaviorLabels}
+                  onChange={(behavior) => handleUpdateSectionAfterBehavior(workspaceSection.id, behavior)}
+                />
               </div>
             {:else if activeLegacyQuestion}
               <div class="p-4 sm:p-6">
