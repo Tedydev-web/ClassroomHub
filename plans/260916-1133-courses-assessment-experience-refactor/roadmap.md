@@ -101,10 +101,14 @@ already uses tokens; its compact tier needs a step below `2xs` or an explicit ex
 
 ### Not started
 
-**The five interaction kinds** — `word_bank`, `ordering`, `star_rating`, `file_upload`,
-`video_recording` have a schema and nothing else: no composer, no renderer. `numeric` and
-`fill_blank`, which the inherited plan listed as missing, are already done. The renderer's silent
-blank is fixed, so an unbuilt kind now fails visibly instead of rendering nothing.
+**The five interaction kinds** — specified in `interaction-kinds-spec.md`, and the gap is smaller
+than "not started" suggests. Six of the seven schema modules already know all five: validation,
+scoring rules, delivery shape, response envelope, capabilities and the legacy adapter. **Only
+`assessment-vertical-slice.ts`** does not, and that is one branch per kind in each of two pure
+functions. What is genuinely absent is the composer and the renderer. `numeric` and `fill_blank`,
+which the inherited plan listed as missing, are already done. The renderer's silent blank is fixed,
+so an unbuilt kind fails visibly rather than rendering nothing, which means the three pieces can
+land in any order safely.
 
 **Component splitting.** Pure extraction has reached its limit — the composer is 812 script against
 1028 template. Going further changes render structure rather than preserving it, and belongs where
