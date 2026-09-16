@@ -31,6 +31,9 @@ programme has argued for in writing — nothing is merely unexamined.
 | Features switched off by a hardcoded constant | **0** | `USE_ASSESSMENT_WORKSPACE_PANEL` and its panel are deleted |
 | Empty handlers and hidden affordances | **0** | |
 | Translation keys that print their own path | **0** | |
+| Click-only handlers with no keyboard equivalent | **0** | measured over every `.svelte` in the three roots; the first detector read only as far as `onclick=` and so could not see an `onkeydown` written after it, and reported a false positive |
+| Accessibility suppressions in scope | **2** | both on the import review scrolling panes, both correct — a scrolling landmark needs `tabindex`, which is what the rule flags. Now documented in place rather than left bare |
+| Failure rendered as emptiness | **0** | five swallowing `catch` blocks examined: three are correct (a missing draft is absent, not broken; blocked site storage is handled deliberately twice), one is a degraded-but-valid optional thumbnail, and one was a real defect — an unsupported `Intl.supportedValuesOf` rendered an empty timezone select — now fixed |
 | Links pointing at routes that do not exist | **0** | |
 
 ## What this programme is, stated plainly
