@@ -30,8 +30,11 @@
   "common": {
     "refresh": "Làm mới",
     "unsaved_changes": {
-      "message": "Bạn có những thay đổi chưa được lưu. Bạn có chắc chắn muốn rời đi không?",
-      "label": "Thay đổi chưa lưu"
+      "message": "Các chỉnh sửa của bạn chưa được lưu. Rời khỏi trang này sẽ mất chúng.",
+      "label": "Thay đổi chưa lưu",
+      "title": "Rời đi mà không lưu?",
+      "stay": "Tiếp tục chỉnh sửa",
+      "leave": "Rời đi không lưu"
     },
     "discard": "Hủy",
     "save_changes": "Lưu thay đổi",

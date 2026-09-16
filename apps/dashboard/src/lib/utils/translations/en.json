@@ -321,8 +321,11 @@
   },
   "common": {
     "unsaved_changes": {
-      "message": "You have unsaved changes. Are you sure you want to leave?",
-      "label": "Unsaved changes"
+      "message": "Your edits have not been saved yet. Leaving this page discards them.",
+      "label": "Unsaved changes",
+      "title": "Leave without saving?",
+      "stay": "Keep editing",
+      "leave": "Leave without saving"
     },
     "discard": "Discard",
     "save_changes": "Save changes",
