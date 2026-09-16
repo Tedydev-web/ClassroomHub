@@ -1,5 +1,8 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { Empty } from '@cio/ui/custom/empty';
   import { Button } from '@cio/ui/base/button';
   import UserXIcon from '@lucide/svelte/icons/user-x';
@@ -45,16 +48,20 @@
 </script>
 
 {#if loadFailed}
-  <Empty
-    variant="page"
-    icon={TriangleAlertIcon}
-    title={$t('course.navItem.marks.load_failed_title')}
-    description={$t('course.navItem.marks.load_failed_description')}
-  >
-    {#snippet children()}
-      <Button onclick={retry}>{$t('course.navItem.marks.retry')}</Button>
-    {/snippet}
-  </Empty>
+  <!-- Deliberately the fast token rather than base: the teacher is already waiting on a
+       request that failed, and an error has no business sauntering in. -->
+  <div in:fly={{ y: 4, duration: motionDuration(MOTION_DURATION.fast), easing: cubicOut }}>
+    <Empty
+      variant="page"
+      icon={TriangleAlertIcon}
+      title={$t('course.navItem.marks.load_failed_title')}
+      description={$t('course.navItem.marks.load_failed_description')}
+    >
+      {#snippet children()}
+        <Button onclick={retry}>{$t('course.navItem.marks.retry')}</Button>
+      {/snippet}
+    </Empty>
+  </div>
 {:else if students.length > 0}
   <div class="rounded-md border border-gray-300 dark:border-neutral-600">
     <Tooltip.Provider>

@@ -7,7 +7,9 @@
   import { AnalyticsPanelCard } from '$features/analytics';
   import type { CourseAnalytics } from '$features/course/utils/types';
   import { t } from '$lib/utils/functions/translations';
-  import { fade } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import AnalyticsGraph from '$features/course/components/analytics/analytics-graph.svelte';
   import AnalyticsSkeleton from '$features/course/components/analytics/analytics-skeleton.svelte';
   import CourseAnalyticsKpis from '$features/course/components/analytics/course-analytics-kpis.svelte';
@@ -46,16 +48,20 @@
 </script>
 
 {#if loadFailed}
-  <Empty
-    variant="page"
-    icon={TriangleAlertIcon}
-    title={$t('analytics.load_failed_title')}
-    description={$t('analytics.load_failed_description')}
-  >
-    {#snippet children()}
-      <Button onclick={retry}>{$t('analytics.load_failed_retry')}</Button>
-    {/snippet}
-  </Empty>
+  <!-- Deliberately the fast token rather than base: the teacher is already waiting on a
+       request that failed, and an error has no business sauntering in. -->
+  <div in:fly={{ y: 4, duration: motionDuration(MOTION_DURATION.fast), easing: cubicOut }}>
+    <Empty
+      variant="page"
+      icon={TriangleAlertIcon}
+      title={$t('analytics.load_failed_title')}
+      description={$t('analytics.load_failed_description')}
+    >
+      {#snippet children()}
+        <Button onclick={retry}>{$t('analytics.load_failed_retry')}</Button>
+      {/snippet}
+    </Empty>
+  </div>
 {:else if isLoading}
   <AnalyticsSkeleton />
 {:else if courseAnalytics}

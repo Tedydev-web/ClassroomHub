@@ -3,6 +3,9 @@
   import { goto } from '$app/navigation';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { Empty } from '@cio/ui/custom/empty';
   import { Spinner } from '@cio/ui/base/spinner';
   import { CourseSidebar } from '$features/course/components/sidebar';
@@ -256,7 +259,12 @@
     <CourseCompletionModal />
 
     {#if courseLoadFailed}
-      <div class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center">
+      <!-- Deliberately the fast token rather than base: the teacher is already waiting on a
+           request that failed, and an error has no business sauntering in. -->
+      <div
+        class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center"
+        in:fly={{ y: 4, duration: motionDuration(MOTION_DURATION.fast), easing: cubicOut }}
+      >
         <Empty
           title={$t('course.shell.load_failed_title')}
           description={$t('course.shell.load_failed_description')}
