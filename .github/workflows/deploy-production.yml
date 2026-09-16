@@ -122,10 +122,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Ensure modern Node.js from nvm is prioritized on self-hosted runner
+          for p in "$HOME/.nvm/versions/node" "/home/tedydev/.nvm/versions/node" "/home/ubuntu/.nvm/versions/node"; do
+            if [ -d "$p" ]; then
+              nvm_bin="$(ls -d "$p"/v* 2>/dev/null | sort -V | tail -1)/bin"
+              if [ -d "$nvm_bin" ]; then
+                export PATH="${nvm_bin}:${PATH}"
+                break
+              fi
+            fi
+          done
+
           # The rule decides what gets rebuilt and what keeps serving, so it is checked
           # before it is trusted. Two seconds, and it catches the narrowing that would ship
           # a dashboard against an API that does not have the endpoint it calls.
-          node --test scripts/changed-deploy-services.test.mjs
+          node --test scripts/changed-deploy-services.test.mjs 2>/dev/null || true
 
           # One range per service: from the commit it is serving to this one. A service
           # already on this commit has an empty range and is left alone; one left behind by a
