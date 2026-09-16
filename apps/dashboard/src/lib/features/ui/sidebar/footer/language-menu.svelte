@@ -21,14 +21,14 @@
   <DropdownMenu.SubTrigger class="m-0 gap-2">
     <LanguagesIcon size={16} />
     <span class="flex-1 text-sm">{$t('profileMenu.language')}</span>
-    <span class="text-muted-foreground text-xs">{currentLanguage?.native}</span>
+    <span class="ui:text-muted-foreground text-xs">{currentLanguage?.native}</span>
   </DropdownMenu.SubTrigger>
   <DropdownMenu.SubContent class="max-h-72 overflow-y-auto">
     <DropdownMenu.RadioGroup value={$locale} onValueChange={onSelect}>
       {#each LANGUAGES as language (language.id)}
         <DropdownMenu.RadioItem value={language.id} class="text-sm">
           <span class="flex-1">{language.native}</span>
-          <span class="text-muted-foreground text-xs">{language.text}</span>
+          <span class="ui:text-muted-foreground text-xs">{language.text}</span>
         </DropdownMenu.RadioItem>
       {/each}
     </DropdownMenu.RadioGroup>

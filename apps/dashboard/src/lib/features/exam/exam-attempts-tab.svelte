@@ -239,8 +239,8 @@
 
   <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
     {#snippet stat(label: string, value: string, accent = false)}
-      <div class="border-border rounded-lg border px-3 py-2">
-        <p class="text-muted-foreground text-xs">{label}</p>
+      <div class="ui:border-border rounded-lg border px-3 py-2">
+        <p class="ui:text-muted-foreground text-xs">{label}</p>
         <p
           class={accent
             ? 'text-lg font-semibold text-amber-600 tabular-nums dark:text-amber-400'
@@ -268,7 +268,7 @@
 
     <Tabs.Content value="summary" class="pt-4">
       {#if loadingSummary && distribution === null}
-        <p class="text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
+        <p class="ui:text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
       {:else}
         <ExamAnswerSummary questions={distribution ?? []} />
       {/if}

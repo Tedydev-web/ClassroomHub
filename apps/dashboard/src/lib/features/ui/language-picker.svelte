@@ -45,8 +45,8 @@
 <DropdownMenu.Root>
   <DropdownMenu.Trigger
     class={[
-      'hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 min-h-9 items-center gap-2 rounded-md px-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none',
-      variant === 'outline' ? 'border-input bg-background border' : ''
+      'ui:hover:bg-accent ui:hover:text-accent-foreground ui:focus-visible:ring-ring inline-flex h-9 min-h-9 items-center gap-2 rounded-md px-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none',
+      variant === 'outline' ? 'ui:border-input ui:bg-background border' : ''
     ]}
     aria-label={$t('profileMenu.language')}
   >
@@ -63,7 +63,7 @@
             who cannot read the current interface can still find their own row.
           -->
           <span class="flex-1">{language.native}</span>
-          <span class="text-muted-foreground text-xs">{language.text}</span>
+          <span class="ui:text-muted-foreground text-xs">{language.text}</span>
         </DropdownMenu.RadioItem>
       {/each}
     </DropdownMenu.RadioGroup>

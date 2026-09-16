@@ -63,7 +63,7 @@
 
 <div class="flex flex-wrap items-center justify-end gap-3">
   <div class="flex items-center gap-1.5">
-    <span class="text-muted-foreground text-xs">{$t('exam.results.export_language')}</span>
+    <span class="ui:text-muted-foreground text-xs">{$t('exam.results.export_language')}</span>
     {#each EXAM_EXPORT_LOCALES as option (option)}
       <Button size="sm" variant={locale === option ? 'default' : 'outline'} onclick={() => chooseLocale(option)}>
         {$t(`exam.results.export_language_${option}`)}
@@ -72,7 +72,7 @@
   </div>
 
   <div class="flex items-center gap-1.5">
-    <span class="text-muted-foreground text-xs">{$t('exam.results.export_paper')}</span>
+    <span class="ui:text-muted-foreground text-xs">{$t('exam.results.export_paper')}</span>
     {#each EXAM_EXPORT_PAPERS as option (option)}
       <Button size="sm" variant={paper === option ? 'default' : 'outline'} onclick={() => choosePaper(option)}>
         {$t(`exam.results.export_paper_${option}`)}

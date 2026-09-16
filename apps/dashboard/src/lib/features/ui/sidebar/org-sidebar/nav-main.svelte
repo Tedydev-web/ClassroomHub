@@ -100,7 +100,7 @@
                               <PremiumIcon {isHovered} size={16} class="ui:text-primary ml-auto" />
                             {:else if item.count}
                               <span
-                                class="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums group-data-[collapsible=icon]:hidden"
+                                class="ui:text-muted-foreground ml-auto shrink-0 text-xs tabular-nums group-data-[collapsible=icon]:hidden"
                               >
                                 {formatCompactCount(item.count)}
                               </span>

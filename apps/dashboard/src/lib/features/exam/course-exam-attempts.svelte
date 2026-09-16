@@ -242,7 +242,7 @@
 
   {#if examId !== 'all'}
     {#if loadingRows}
-      <p class="text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
+      <p class="ui:text-muted-foreground text-sm">{$t('exam.results.loading')}</p>
     {:else}
       <ExamAttemptsTab {courseId} {examId} rows={rows ?? []} failed={rowsFailed} />
     {/if}

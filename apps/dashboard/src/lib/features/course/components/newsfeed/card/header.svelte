@@ -29,10 +29,10 @@
     <div class="flex items-center gap-2">
       <UserAvatar src={feed.authorAvatarUrl} class="size-8" />
       <div class="flex flex-col">
-        <p class="text-foreground text-sm font-semibold capitalize">
+        <p class="ui:text-foreground text-sm font-semibold capitalize">
           {feed.authorFullname || $t('course.navItem.news_feed.anonymous')}
         </p>
-        <p class="text-muted-foreground text-xs font-normal">{calDateDiff(feed.createdAt)}</p>
+        <p class="ui:text-muted-foreground text-xs font-normal">{calDateDiff(feed.createdAt)}</p>
       </div>
     </div>
 
