@@ -183,7 +183,7 @@ jobs:
 
             # `-d '\n'` so a path with a space is one argument, and `sort -u` because xargs
             # may split a long list across several runs, each answering for its own share.
-            touched="$(printf '%s\n' "${files}" | xargs -d '\n' node scripts/changed-deploy-services.mjs | sort -u | tr '\n' ' ')"
+            touched="$(printf '%s\n' "${files}" | xargs -d '\n' node scripts/changed-deploy-services.cjs | sort -u | tr '\n' ' ')"
 
             case " ${touched} " in
               *" ${service} "*)
