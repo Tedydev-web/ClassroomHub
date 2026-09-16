@@ -23,6 +23,8 @@
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import EyeIcon from '@lucide/svelte/icons/eye';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
+  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+  import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
   import PlusIcon from '@lucide/svelte/icons/plus';
   import TrashIcon from '@lucide/svelte/icons/trash';
   import Undo2Icon from '@lucide/svelte/icons/undo-2';
@@ -593,6 +595,139 @@
     updateComposer(addTrueFalseGroupInteractionBlock(composer, createId, activePassageGroup?.passage?.id));
   }
 
+  function addWordBankQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addAssessmentInteractionBlock(composer, 'word_bank', createId, activePassageGroup?.passage?.id));
+  }
+
+  function addOrderingQuestion() {
+    if (interactionLimitReached) return;
+
+    mobileWorkspacePanel = 'questions';
+    showPreview = false;
+    updateComposer(addAssessmentInteractionBlock(composer, 'ordering', createId, activePassageGroup?.passage?.id));
+  }
+
+  function countTemplateBlanks(template: string): number {
+    return (template.match(/_{3,}/g) ?? []).length;
+  }
+
+  /**
+   * One answer field per `___` in the template. Authors add and remove blanks by editing the
+   * sentence, so the answer list has to follow it rather than be maintained separately —
+   * otherwise a removed blank leaves an orphan answer that validation then rejects.
+   */
+  function syncWordBankAnswers(blockId: string) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
+
+      const blankCount = Math.max(1, countTemplateBlanks(block.interaction.config.template));
+      const { correctAnswers } = block.interaction.config;
+      if (correctAnswers.length === blankCount) return block;
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: {
+            ...block.interaction.config,
+            correctAnswers: Array.from({ length: blankCount }, (_, index) => correctAnswers[index] ?? '')
+          }
+        }
+      };
+    });
+  }
+
+  function addWordBankDistractor(blockId: string) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
+      if (block.interaction.config.distractors.length >= MAX_INTERACTION_OPTIONS) return block;
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: { ...block.interaction.config, distractors: [...block.interaction.config.distractors, ''] }
+        }
+      };
+    });
+  }
+
+  function removeWordBankDistractor(blockId: string, distractorIndex: number) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'word_bank') return block;
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: {
+            ...block.interaction.config,
+            distractors: block.interaction.config.distractors.filter((_, index) => index !== distractorIndex)
+          }
+        }
+      };
+    });
+  }
+
+  /** The authored list order is the correct order, so the two never drift apart. */
+  function moveOrderingOption(blockId: string, index: number, direction: 1 | -1) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
+
+      const options = [...block.interaction.config.options];
+      const target = index + direction;
+      if (target < 0 || target >= options.length) return block;
+
+      [options[index], options[target]] = [options[target], options[index]];
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
+        }
+      };
+    });
+  }
+
+  function addOrderingOption(blockId: string) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
+      if (block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS) return block;
+
+      const options = [...block.interaction.config.options, { id: createId(), html: '' }];
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
+        }
+      };
+    });
+  }
+
+  function removeOrderingOption(blockId: string, optionId: string) {
+    updateBlock(blockId, (block) => {
+      if (block.kind !== 'interaction' || block.interaction.kind !== 'ordering') return block;
+      if (block.interaction.config.options.length <= 2) return block;
+
+      const options = block.interaction.config.options.filter((option) => option.id !== optionId);
+
+      return {
+        ...block,
+        interaction: {
+          ...block.interaction,
+          config: { ...block.interaction.config, options, correctOrder: options.map((option) => option.id) }
+        }
+      };
+    });
+  }
+
   function selectPassage(groupId: string) {
     const passageGroup = passageGroupsWithContent.find((group) => group.id === groupId);
     if (!passageGroup) return;
@@ -651,6 +786,12 @@
     }
     if (block.interaction.kind === 'true_false_group') {
       return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group');
+    }
+    if (block.interaction.kind === 'word_bank') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.word_bank');
+    }
+    if (block.interaction.kind === 'ordering') {
+      return t.get('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.ordering');
     }
 
     return t.get('course.navItem.lessons.exercises.all_exercises.assessment_item.question');
@@ -1381,6 +1522,190 @@
       </Button>
     </Field.Set>
   {/if}
+  {#if block.interaction.kind === 'word_bank'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+    <InputField
+      bind:value={block.interaction.maxScore}
+      name={getBlockDomId(block.id, 'points')}
+      label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+      type="number"
+      min="0"
+      step="0.01"
+      oninput={clearValidationState}
+    />
+    <InputField
+      bind:value={block.interaction.config.template}
+      name={getBlockDomId(block.id, 'template')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_label')}
+      placeholder={$t(
+        'course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_placeholder'
+      )}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'template'])}
+      oninput={() => {
+        clearValidationState();
+        syncWordBankAnswers(block.id);
+      }}
+    />
+    <p class="ui:text-muted-foreground text-xs">
+      {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_helper')}
+    </p>
+    <Field.Set>
+      <Field.Legend>
+        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.correct_answers_heading')}
+      </Field.Legend>
+      <Field.Group class="grid gap-4 sm:grid-cols-2">
+        {#each block.interaction.config.correctAnswers as _answer, answerIndex (answerIndex)}
+          <InputField
+            bind:value={block.interaction.config.correctAnswers[answerIndex]}
+            name={getBlockDomId(block.id, `word-bank-answer-${answerIndex}`)}
+            label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.blank_label')} ${answerIndex + 1}`}
+            placeholder={$t(
+              'course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.correct_placeholder'
+            )}
+            errorMessage={getValidationError([
+              'blocks',
+              blockIndex,
+              'interaction',
+              'config',
+              'correctAnswers',
+              answerIndex
+            ])}
+            oninput={clearValidationState}
+          />
+        {/each}
+      </Field.Group>
+    </Field.Set>
+    <Field.Set>
+      <Field.Legend>
+        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.distractors_heading')}
+      </Field.Legend>
+      <Field.Group class="grid gap-4 sm:grid-cols-2">
+        {#each block.interaction.config.distractors as _distractor, distractorIndex (distractorIndex)}
+          <div class="flex items-end gap-2">
+            <InputField
+              bind:value={block.interaction.config.distractors[distractorIndex]}
+              name={getBlockDomId(block.id, `word-bank-distractor-${distractorIndex}`)}
+              label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.distractor_placeholder')} ${distractorIndex + 1}`}
+              oninput={clearValidationState}
+            />
+            <IconButton
+              type="button"
+              variant="secondary"
+              label={$t('common.remove')}
+              onclick={() => removeWordBankDistractor(block.id, distractorIndex)}
+            >
+              <TrashIcon class="h-4 w-4" />
+            </IconButton>
+          </div>
+        {/each}
+      </Field.Group>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={block.interaction.config.distractors.length >= MAX_INTERACTION_OPTIONS}
+        onclick={() => addWordBankDistractor(block.id)}
+      >
+        <PlusIcon class="h-4 w-4" />
+        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.add_distractor')}
+      </Button>
+    </Field.Set>
+  {/if}
+  {#if block.interaction.kind === 'ordering'}
+    <RichTextField
+      bind:value={block.interaction.prompt.html}
+      name={getBlockDomId(block.id, 'prompt')}
+      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
+      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
+      oninput={clearValidationState}
+    />
+    <InputField
+      bind:value={block.interaction.maxScore}
+      name={getBlockDomId(block.id, 'points')}
+      label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+      type="number"
+      min="0"
+      step="0.01"
+      oninput={clearValidationState}
+    />
+    <Field.Set>
+      <Field.Legend>
+        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.helper')}
+      </Field.Legend>
+      <Field.Group>
+        {#each block.interaction.config.options as option, optionIndex (option.id)}
+          <div class="flex items-end gap-2">
+            <InputField
+              bind:value={block.interaction.config.options[optionIndex].html}
+              name={getBlockDomId(block.id, `ordering-option-${option.id}`)}
+              label={$t(
+                'course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.step_placeholder',
+                {
+                  index: optionIndex + 1
+                }
+              )}
+              errorMessage={getValidationError([
+                'blocks',
+                blockIndex,
+                'interaction',
+                'config',
+                'options',
+                optionIndex,
+                'html'
+              ])}
+              oninput={clearValidationState}
+            />
+            <IconButton
+              type="button"
+              variant="secondary"
+              disabled={optionIndex === 0}
+              label={$t('course.navItem.lessons.exercises.all_exercises.section.move_up')}
+              onclick={() => moveOrderingOption(block.id, optionIndex, -1)}
+            >
+              <ChevronUpIcon class="h-4 w-4" />
+            </IconButton>
+            <IconButton
+              type="button"
+              variant="secondary"
+              disabled={optionIndex === block.interaction.config.options.length - 1}
+              label={$t('course.navItem.lessons.exercises.all_exercises.section.move_down')}
+              onclick={() => moveOrderingOption(block.id, optionIndex, 1)}
+            >
+              <ChevronDownIcon class="h-4 w-4" />
+            </IconButton>
+            {#if block.interaction.config.options.length > 2}
+              <IconButton
+                type="button"
+                variant="secondary"
+                label={$t(
+                  'course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.remove_step_tooltip'
+                )}
+                onclick={() => removeOrderingOption(block.id, option.id)}
+              >
+                <TrashIcon class="h-4 w-4" />
+              </IconButton>
+            {/if}
+          </div>
+        {/each}
+      </Field.Group>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS}
+        onclick={() => addOrderingOption(block.id)}
+      >
+        <PlusIcon class="h-4 w-4" />
+        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.add_step')}
+      </Button>
+    </Field.Set>
+  {/if}
   {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
@@ -1408,6 +1733,12 @@
       </DropdownMenu.Item>
       <DropdownMenu.Item onclick={addTrueFalseGroupQuestion} disabled={interactionLimitReached}>
         {$t('course.navItem.lessons.exercises.all_exercises.assessment_item.true_false_group')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addWordBankQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.word_bank')}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={addOrderingQuestion} disabled={interactionLimitReached}>
+        {$t('course.navItem.lessons.exercises.all_exercises.edit_mode.question_types.ordering')}
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
