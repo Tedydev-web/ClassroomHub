@@ -5450,7 +5450,11 @@
       "fetch_failed": "Không thể lấy trạng thái nhập đề",
       "fetch_failed_description": "Yêu cầu trạng thái không thành công. Bản nhập vẫn được giữ lại để bạn kiểm tra lại.",
       "check_again": "Kiểm tra lại",
-      "poll_timeout": "Đã hết thời gian chờ trạng thái nhập đề."
+      "poll_timeout": "Đã hết thời gian chờ trạng thái nhập đề.",
+      "cancel_confirm_heading": "Huỷ lần import này?",
+      "cancel_confirm_description": "Huỷ rồi không hoàn tác được, và không có cách chạy lại — bạn sẽ phải tìm lại tài liệu và tải lên từ đầu.",
+      "cancel_confirm_keep": "Tiếp tục xử lý",
+      "cancel_confirm_action": "Huỷ import"
     },
     "review": {
       "page_title": "Kiểm tra bài tập đã nhập",

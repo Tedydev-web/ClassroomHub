@@ -196,7 +196,16 @@
     void examImportApi.pollUntilReady(courseId, importId);
   }
 
+  let cancelConfirmOpen = $state(false);
+
+  /**
+   * Cancelling is not recoverable. There is no endpoint that re-runs an import, and the
+   * file itself only ever existed in the browser that uploaded it — so the single exit
+   * from a cancelled import is to find the document again and upload it again. A parse
+   * that can run to ten minutes should not end on one unguarded click.
+   */
   async function cancelImport() {
+    cancelConfirmOpen = false;
     await examImportApi.cancel(courseId, importId);
   }
 
@@ -366,7 +375,7 @@
             {$t('exam_import.status.processing_description')}
           </p>
         </div>
-        <Button variant="secondary" disabled={examImportApi.isLoading} onclick={cancelImport}>
+        <Button variant="secondary" disabled={examImportApi.isLoading} onclick={() => (cancelConfirmOpen = true)}>
           <XIcon class="size-4" />
           {$t('exam_import.status.cancel_action')}
         </Button>
@@ -647,6 +656,23 @@
       <Button disabled={!aiSuggestionEstimate?.available || aiSuggestionLoading} onclick={requestAiSuggestions}>
         <SparklesIcon class="size-4" />
         {$t('exam_import.review.ai_suggestion_confirm_action')}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={cancelConfirmOpen}>
+  <Dialog.Content class="sm:max-w-md">
+    <Dialog.Header>
+      <Dialog.Title>{$t('exam_import.status.cancel_confirm_heading')}</Dialog.Title>
+      <Dialog.Description>{$t('exam_import.status.cancel_confirm_description')}</Dialog.Description>
+    </Dialog.Header>
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (cancelConfirmOpen = false)}>
+        {$t('exam_import.status.cancel_confirm_keep')}
+      </Button>
+      <Button variant="destructive" disabled={examImportApi.isLoading} onclick={cancelImport}>
+        {$t('exam_import.status.cancel_confirm_action')}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

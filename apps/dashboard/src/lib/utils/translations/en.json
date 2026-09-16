@@ -5234,7 +5234,11 @@
       "fetch_failed": "Import status is unavailable",
       "fetch_failed_description": "The status request failed. Your import is retained and can be checked again.",
       "check_again": "Check again",
-      "poll_timeout": "Import status polling timed out."
+      "poll_timeout": "Import status polling timed out.",
+      "cancel_confirm_heading": "Cancel this import?",
+      "cancel_confirm_description": "Cancelling cannot be undone, and an import cannot be restarted — you would have to find the document and upload it again.",
+      "cancel_confirm_keep": "Keep processing",
+      "cancel_confirm_action": "Cancel the import"
     },
     "review": {
       "page_title": "Review imported exercise",
