@@ -88,9 +88,10 @@ the clipped element does not exist.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | Does AI ship in assessment while the gateway is off? Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6. **For D6 the question is now narrower than "build or delete" — see below.** | Phases 4–5 |
+| ~~1~~ | **Answered by the owner: ship it, disabled, with the reason on it.** Done — the draft view now carries the IO-free half of the same gate the estimate uses, and the button says why it cannot run. | — |
+| 1 | ~~Does AI ship in assessment while the gateway is off?~~ Both env flags `false`, both model pins empty, circuit breaker `open` since 2026-09-09. Covers D5 (suggestion offered though unusable) and D6. **For D6 the question is now narrower than "build or delete" — see below.** | Phases 4–5 |
 | 2 | May the exercise import path change appearance alongside the exam path, or must it stay pixel-stable? | whether the shared review screen is restyled once or gated by target |
-| 3 | Is the exercise Submissions tab meant to be read-only, or is the missing grading entry a regression? (D3) | Phase 3 |
+| ~~3~~ | **Answered by reading, not by asking.** Marking opens from `?submissionId=` on the course submissions page — a deep link that already exists. Two views of the same submissions where only one can act is the inconsistency the design direction rejects, so the exercise tab now links the attempt on screen straight to marking. No grading UI was duplicated. **D3 closed.** | — |
 | 4 | Does publish belong in the composer header, or is the course-level publish flow authoritative? | composer header design |
 | 5 | Is `certificates/editor` meant to stay full-screen outside the course shell? | Phase 6 |
 | 6 | F6 — `Page.Root` width variant API. Touches 30 usages in `org/` and `lms/`, beyond this goal's stated scope. | Phase 0c |
