@@ -203,6 +203,12 @@ any type baseline.
 | F4 reduced motion | **done** — global guard shipped; the JS helper for Svelte transitions remains |
 | F1 prefix / D2 | **done** — 31 usages across 12 files were emitting no CSS; three carried variants and needed the prefix outermost. Proven against the built stylesheet: unprefixed forms appear zero times against 2,510 prefixed classes. A `dashboard-token-prefix` pre-commit guard now blocks recurrence, verified in both directions. It matches token names only rather than reusing `add-ui-prefix.cjs`, which prefixes every Tailwind class — plain utilities work unprefixed in the dashboard and must stay that way. |
 | D1 analytics | **done** — second loader converted; same defect as the gradebook |
+| E1 workspace | **done** — Phase 1; the composer authors inside the outline-and-editor pane, the parked panel is live, the in-place fallback is gone |
+| D8 unsaved guard | **done** — `window.confirm` replaced by a focus-trapped dialog. `beforeNavigate` cancels and `goto` resumes after confirming; closing the dialog by Escape or overlay means *stay*, because dismissal must never be the destructive branch. Tab close keeps the browser's own prompt, which cannot be replaced. |
+| D7 course shell | **done** — `ensureCourse` resolves `null` on failure and leaves the store empty, which the shell could not tell from "still loading", so it spun forever. The shell now records the failure and offers a retry, and the two English loading strings are translated. |
+| D10 exam create | **done** — `goto` to the exam just created, instead of a full reload onto the list that also discarded the course store |
+| D14 save failures | **corrected, then done** — the register said "keyless toast". It is not: `snackbar/store.ts:34` defaults to `snackbar.something`, which exists in both `en` and `vi`. The real defect is weaker — the message is generic. Both sites now name what failed. |
+| D16 public-course filter | **done** — the shorter type list now says why it is shorter |
 | F6 `Page.Root`, F7 font | not started |
 
 A regression was introduced and caught during F3: naming the easings `--ui-ease-*` shadowed
