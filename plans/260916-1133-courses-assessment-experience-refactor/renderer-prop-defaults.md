@@ -44,10 +44,28 @@ stop.
     activeQuestionNumber = null,
     showQuestionStepper = true,
     onQuestionChange,
-    onResponseChange = () => {}
+    onResponseChange = () => {},
+    unsupportedInteractionLabel = 'This question type cannot be displayed here.'
 ```
 
-24 props. Nine carry no default and are supplied by every caller.
+25 props. Nine carry no default and are supplied by every caller.
+
+## Change log
+
+**2026-09-16 — `unsupportedInteractionLabel` added.** A new prop with a new default, which the
+rule above permits. Nothing existing moved.
+
+Why it exists: the interaction dispatch chain ended at `true_false_group` with no `{:else}`, so an
+interaction of a kind the renderer cannot draw produced *nothing* — a prompt, then empty space, no
+way to answer and no sign anything was missing. The schema already accepts five such kinds
+(`word_bank`, `ordering`, `star_rating`, `file_upload`, `video_recording`), so the silent blank was
+one authoring feature away from reaching a candidate.
+
+Its default is an English sentence rather than `''` deliberately: a caller that forgets to
+translate it still sees something, so the blank cannot return through a missing prop. The frozen
+student page is one of those callers and cannot be edited to pass a translation, which is a known
+and accepted gap — it is an error state that should never appear, and an English warning beats a
+blank.
 
 ## The check
 
