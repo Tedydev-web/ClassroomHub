@@ -93,6 +93,20 @@ const createExamSchema = z.object({
  */
 export const listExamsQuerySchema = z.object({ includeDeleted: z.enum(['0', '1']).optional() });
 
+/**
+ * An empty selection means every submitted attempt, so both print endpoints accept a missing
+ * list. Declared rather than read off the raw body so the RPC client knows these routes take
+ * input at all; without it the print loaders' correct calls failed the dashboard's type check.
+ */
+const attemptSelectionSchema = z.object({ attemptIds: z.array(z.string()).default([]) });
+
+export const answerSheetsSchema = attemptSelectionSchema.extend({
+  html: z.string().default(''),
+  styles: z.string().optional()
+});
+
+export const printContextQuerySchema = z.object({ lang: z.string().optional() });
+
 export const updateExamSchema = z.object({
   title: z.string().min(1).max(300).optional(),
   mode: z.enum(['public', 'private']).optional(),
@@ -344,60 +358,72 @@ export const examRouter = new Hono()
    * from a second copy would be two designs pretending to be one. The dashboard renders the
    * page it already has and hands the result over; this turns it into a file.
    */
-  .post('/:examId/answer-sheets', authMiddleware, examTeamMemberMiddleware, async (c) => {
-    try {
-      const body = await c.req.json().catch(() => ({}));
-      const attemptIds = Array.isArray(body?.attemptIds)
-        ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
-        : [];
+  .post(
+    '/:examId/answer-sheets',
+    authMiddleware,
+    examTeamMemberMiddleware,
+    zValidator('json', answerSheetsSchema),
+    async (c) => {
+      try {
+        const { attemptIds, html, styles } = c.req.valid('json');
 
-      const { file, fileName } = await buildExamAnswerSheetPdfService(
-        c.req.param('examId'),
-        attemptIds,
-        typeof body?.html === 'string' ? body.html : '',
-        typeof body?.styles === 'string' ? body.styles : undefined
-      );
+        const { file, fileName } = await buildExamAnswerSheetPdfService(
+          c.req.param('examId'),
+          attemptIds,
+          html,
+          styles
+        );
 
-      return new Response(new Uint8Array(file), {
-        headers: {
-          'content-type': 'application/pdf',
-          'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
-        }
-      });
-    } catch (error) {
-      return handleError(c, error);
+        return new Response(new Uint8Array(file), {
+          headers: {
+            'content-type': 'application/pdf',
+            'content-disposition': `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+          }
+        });
+      } catch (error) {
+        return handleError(c, error);
+      }
     }
-  })
+  )
   /**
    * The same table the workbook is built from, as JSON, for the printable answer sheets.
    *
    * A `POST` for the same reason the workbook is one: the selection is a list of candidates,
    * and a list of candidates in a URL is a list of candidates in every access log.
    */
-  .post('/:examId/answer-matrix', authMiddleware, examTeamMemberMiddleware, async (c) => {
-    try {
-      const body = await c.req.json().catch(() => ({}));
-      const attemptIds = Array.isArray(body?.attemptIds)
-        ? body.attemptIds.filter((id: unknown): id is string => typeof id === 'string')
-        : [];
+  .post(
+    '/:examId/answer-matrix',
+    authMiddleware,
+    examTeamMemberMiddleware,
+    zValidator('json', attemptSelectionSchema),
+    async (c) => {
+      try {
+        const { attemptIds } = c.req.valid('json');
 
-      const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
+        const matrix = await buildExamAnswerMatrixService(c.req.param('examId'), attemptIds);
 
-      return c.json({ success: true as const, data: matrix });
-    } catch (error) {
-      return handleError(c, error);
+        return c.json({ success: true as const, data: matrix });
+      } catch (error) {
+        return handleError(c, error);
+      }
     }
-  })
+  )
   // The masthead and foot of a printed answer sheet: who issued it, and what it records.
-  .get('/:examId/print-context', authMiddleware, examTeamMemberMiddleware, async (c) => {
-    try {
-      const context = await getExamPrintContextService(c.req.param('examId'), c.req.query('lang'));
+  .get(
+    '/:examId/print-context',
+    authMiddleware,
+    examTeamMemberMiddleware,
+    zValidator('query', printContextQuerySchema),
+    async (c) => {
+      try {
+        const context = await getExamPrintContextService(c.req.param('examId'), c.req.valid('query').lang);
 
-      return c.json({ success: true as const, data: context });
-    } catch (error) {
-      return handleError(c, error);
+        return c.json({ success: true as const, data: context });
+      } catch (error) {
+        return handleError(c, error);
+      }
     }
-  })
+  )
   .get('/:examId/answer-keys', authMiddleware, examTeamMemberMiddleware, async (c) => {
     try {
       const questions = await listExamAnswerKeysService(c.req.param('examId'));
