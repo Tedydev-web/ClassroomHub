@@ -1,4 +1,14 @@
 <script lang="ts" module>
+  /**
+   * When to use this rather than `Item` directly.
+   *
+   * This is not a second list family: it wraps `Item.Root` and only changes the layout. Use it
+   * for full-bleed rows inside one list surface — a divider between rows, no radius of their
+   * own, a hover band — such as the courses list. Use `Item` directly for items that stand alone
+   * or sit in a grid of cards, each with its own outline, such as the exam list or media cards.
+   * The test is the container: one bordered list whose rows share its edges takes this; separate
+   * cards take `Item`.
+   */
   import { tv, type VariantProps } from 'tailwind-variants';
 
   export const resourceListRowVariants = tv({
