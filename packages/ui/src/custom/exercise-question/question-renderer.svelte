@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from 'svelte/reactivity';
   import type {
     AnswerData,
     ExerciseQuestionModel,
@@ -271,6 +272,18 @@
   function removeVideo(videoIndex: number) {
     setQuestionVideoUrls(questionVideoUrls.filter((_, index) => index !== videoIndex));
   }
+
+  /**
+   * Question images that failed to load, so the box stays empty rather than showing the
+   * browser's broken-image glyph. Same reasoning as `option-image.svelte`: a picture that has
+   * been removed from storage should read as "no picture", not as a fault the reader has to
+   * interpret mid-question. Tracked by URL so a different, working image is still attempted.
+   */
+  let failedImageUrls = $state(new SvelteSet<string>());
+
+  function markImageFailed(imageUrl: string) {
+    failedImageUrls.add(imageUrl);
+  }
 </script>
 
 {#snippet content()}
@@ -352,11 +365,14 @@
               {#each questionImageUrls as imageUrl, imageIndex (`${imageUrl}-${imageIndex}`)}
                 <div class="ui:group ui:relative ui:h-40 ui:w-40 ui:rounded-md ui:border">
                   <div class="ui:absolute ui:inset-0 ui:overflow-hidden ui:rounded-md">
-                    <img
-                      src={imageUrl}
-                      alt={label('question.edit.image_alt')}
-                      class="ui:h-full ui:w-full ui:object-cover"
-                    />
+                    {#if !failedImageUrls.has(imageUrl)}
+                      <img
+                        src={imageUrl}
+                        alt={label('question.edit.image_alt')}
+                        class="ui:h-full ui:w-full ui:object-cover"
+                        onerror={() => markImageFailed(imageUrl)}
+                      />
+                    {/if}
                   </div>
                   <IconButton
                     disabled={contract.disabled}
@@ -446,8 +462,19 @@
       {#if questionImageUrls.length > 0}
         <div class="ui:flex ui:flex-wrap ui:gap-3">
           {#each questionImageUrls as imageUrl, imageIndex (`${imageUrl}-${imageIndex}`)}
-            <div class="ui:h-40 ui:w-40 ui:overflow-hidden ui:rounded-md ui:border">
-              <img src={imageUrl} alt={label('question.edit.image_alt')} class="ui:h-full ui:w-full ui:object-cover" />
+            <div
+              class="ui:h-40 ui:w-40 ui:overflow-hidden ui:rounded-md ui:border {failedImageUrls.has(imageUrl)
+                ? 'ui:bg-muted'
+                : ''}"
+            >
+              {#if !failedImageUrls.has(imageUrl)}
+                <img
+                  src={imageUrl}
+                  alt={label('question.edit.image_alt')}
+                  class="ui:h-full ui:w-full ui:object-cover"
+                  onerror={() => markImageFailed(imageUrl)}
+                />
+              {/if}
             </div>
           {/each}
         </div>
