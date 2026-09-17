@@ -126,6 +126,27 @@ the dialog widths — a class that is written, looks right, and does nothing.
 This route works for anything rendered by `packages/ui`. It does not reach the eight dashboard
 screens in Stage B, which need a session.
 
+### Stage B, the eight dashboard screens read statically — 2026-09-17
+
+No teacher session exists here, so each screen was read against the acceptance criterion instead
+of looked at: one primary action, and loading, empty, error and success distinct. Two read-only
+audits reported; every finding was re-read at its line before acting. Half did not survive.
+
+| Screen | Primary action | States | Outcome |
+|---|---|---|---|
+| Gradebook | none, read-only | empty and error-with-retry present; loading is the server load | clean |
+| Analytics | retry only on failure | error, empty present | `isLoading = $derived(false)` makes the skeleton branch dead code, **not a defect**: the page reads server data, and SvelteKit holds navigation until it arrives. Left as found |
+| Lesson list and tree | one default "Add content" | empty per content type, snackbar on save | clean |
+| Section editor | outline "Add question" | form | **fixed** `3b8df8575`: the title field's accessible name was never passed, so screen readers heard "Section title" in English in every locale. The other five English fallbacks the audit flagged are all supplied by the caller and never render |
+| Document viewer, dark | none at rest, retry on error | loading, error-with-retry | **fixed** `012352511`: spinner, error and retry link were fixed blue and red; now the primary and destructive tokens |
+| Exercise settings tab | one "Save" | loading, empty, two error surfaces, success snackbar | clean |
+| Grading modal | one "Submit grades" | loading via preview, saving on the button | three `dark:text-white` where a token would do; renders correctly, left as found |
+| Certificate issue modal | one "Submit" | none | the audit called the button dead — true, it only resets the form — but **nothing opens this modal**: no code sets `issueCertificateModal.open`, and upstream ships the same stub. Unreachable, so not a user-facing defect. Recorded, not built |
+
+What a static read cannot settle stays with the owner: whether each screen *looks* like one
+primary action at a glance. No screen gave a reason to change its layout, so the gate on layout
+work stays closed.
+
 ### Stage E — deferred by decision, 2026-09-17: `file_upload` and `video_recording`
 
 Not built, and not blocked on UI. Decided under the owner's delegation with `kongming` counsel.
@@ -192,7 +213,7 @@ corrections are folded in.
   contract infers; the pages it feeds need `JSONValue` handling and a paper-question shape fix
   first. Scope it as one change to the attempt page's contracts.
 - **Owner feel checks** — the 24px question-step nudge, and a real drop with reduced motion on.
-- **Stage B** — the eight dashboard screens still owed a look; Storybook cannot reach them.
+- **Stage B** — read statically (above); two defects fixed. A visual pass on production is still the owner's.
 
 ## The rule this programme earned
 
