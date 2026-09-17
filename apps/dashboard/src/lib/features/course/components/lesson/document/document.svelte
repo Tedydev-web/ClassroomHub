@@ -434,7 +434,7 @@
         <div class="flex h-full items-center justify-center">
           <div class="text-center">
             <div
-              class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"
+              class="ui:border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"
             ></div>
             <p class="ui:text-muted-foreground">
               {$t('course.navItem.lessons.materials.tabs.document.loading_pdf')}
@@ -444,7 +444,7 @@
       {:else if error}
         <div class="flex h-full items-center justify-center">
           <div class="text-center">
-            <div class="mb-4 text-red-500">
+            <div class="ui:text-destructive mb-4">
               <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
@@ -454,10 +454,10 @@
                 />
               </svg>
             </div>
-            <p class="mb-2 text-red-600">{$t(error)}</p>
+            <p class="ui:text-destructive mb-2">{$t(error)}</p>
             <button
               onclick={() => viewingPDF && viewPDF(viewingPDF)}
-              class="text-blue-600 underline hover:text-blue-800"
+              class="ui:text-primary underline hover:no-underline"
             >
               {$t('course.navItem.lessons.materials.tabs.document.try_again')}
             </button>
