@@ -86,13 +86,20 @@ wrong is guessing, and this programme has already reverted one layout change mad
 
 Bounded by the owner's own words, not by a sweep.
 
-### Stage D — the markup half of a spec this programme broke
+### Stage D — done, 2026-09-17
 
 `interaction-kinds-spec.md` said a new kind should arrive as its own component. The word bank and
-ordering panels went inline and took the composer from 1,840 to 2,175 lines. The rules came back
-out to `assessment-kind-config.ts` with 17 tests, leaving 2,095. The markup has not moved, because
-moving it changes render structure rather than preserving it and belongs where the result can be
-seen. **Acceptance:** composer under 1,800 lines with no behaviour change the owner can observe.
+ordering panels went inline and took the composer from 1,840 to 2,175 lines. Both halves are now
+undone: the rules to `assessment-kind-config.ts` with 17 tests, then the markup to
+`assessment-word-bank-editor.svelte` and `assessment-ordering-editor.svelte`. **Composer: 1,914.**
+
+The `{#if}` guard moved *with* the markup rather than being lifted into the caller. That is the
+detail that made the move safe: the fields narrow on exactly the condition they narrowed on
+before, so the extraction moves lines without re-deriving a single type. The first attempt did
+lift the guard, and `svelte-check` immediately went from 343 to 354 — every `config.options` read
+lost its narrowing at once. **Acceptance:** met on the tool side — 343 unchanged, 470 tests
+passing, no frozen file touched. Still owed a look from the owner, like everything else in
+Stage B.
 
 ### Stage E — the remaining interaction kinds, if wanted
 
