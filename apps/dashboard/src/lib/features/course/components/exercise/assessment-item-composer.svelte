@@ -23,18 +23,8 @@
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import EyeIcon from '@lucide/svelte/icons/eye';
   import ListChecksIcon from '@lucide/svelte/icons/list-checks';
-  import { flip } from 'svelte/animate';
-  import {
-    addOrderingOption,
-    addWordBankDistractor,
-    moveOrderingOption,
-    removeOrderingOption,
-    removeWordBankDistractor,
-    syncWordBankAnswers
-  } from './assessment-kind-config';
-  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
-  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-  import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
+  import AssessmentWordBankEditor from './assessment-word-bank-editor.svelte';
+  import AssessmentOrderingEditor from './assessment-ordering-editor.svelte';
   import PlusIcon from '@lucide/svelte/icons/plus';
   import TrashIcon from '@lucide/svelte/icons/trash';
   import Undo2Icon from '@lucide/svelte/icons/undo-2';
@@ -1442,195 +1432,23 @@
       </Button>
     </Field.Set>
   {/if}
-  {#if block.interaction.kind === 'word_bank'}
-    <RichTextField
-      bind:value={block.interaction.prompt.html}
-      name={getBlockDomId(block.id, 'prompt')}
-      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
-      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
-      oninput={clearValidationState}
-    />
-    <InputField
-      bind:value={block.interaction.maxScore}
-      name={getBlockDomId(block.id, 'points')}
-      label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
-      type="number"
-      min="0"
-      step="0.01"
-      oninput={clearValidationState}
-    />
-    <InputField
-      bind:value={block.interaction.config.template}
-      name={getBlockDomId(block.id, 'template')}
-      label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_label')}
-      placeholder={$t(
-        'course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_placeholder'
-      )}
-      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'template'])}
-      oninput={() => {
-        clearValidationState();
-        updateWordBankConfig(block.id, syncWordBankAnswers);
-      }}
-    />
-    <p class="ui:text-muted-foreground text-xs">
-      {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_helper')}
-    </p>
-    <Field.Set>
-      <Field.Legend>
-        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.correct_answers_heading')}
-      </Field.Legend>
-      <Field.Group class="grid gap-4 sm:grid-cols-2">
-        {#each block.interaction.config.correctAnswers as _answer, answerIndex (answerIndex)}
-          <InputField
-            bind:value={block.interaction.config.correctAnswers[answerIndex]}
-            name={getBlockDomId(block.id, `word-bank-answer-${answerIndex}`)}
-            label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.blank_label')} ${answerIndex + 1}`}
-            placeholder={$t(
-              'course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.correct_placeholder'
-            )}
-            errorMessage={getValidationError([
-              'blocks',
-              blockIndex,
-              'interaction',
-              'config',
-              'correctAnswers',
-              answerIndex
-            ])}
-            oninput={clearValidationState}
-          />
-        {/each}
-      </Field.Group>
-    </Field.Set>
-    <Field.Set>
-      <Field.Legend>
-        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.distractors_heading')}
-      </Field.Legend>
-      <Field.Group class="grid gap-4 sm:grid-cols-2">
-        {#each block.interaction.config.distractors as _distractor, distractorIndex (distractorIndex)}
-          <div class="flex items-end gap-2">
-            <InputField
-              bind:value={block.interaction.config.distractors[distractorIndex]}
-              name={getBlockDomId(block.id, `word-bank-distractor-${distractorIndex}`)}
-              label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.distractor_placeholder')} ${distractorIndex + 1}`}
-              oninput={clearValidationState}
-            />
-            <IconButton
-              type="button"
-              variant="secondary"
-              label={$t('common.remove')}
-              onclick={() =>
-                updateWordBankConfig(block.id, (config) => removeWordBankDistractor(config, distractorIndex))}
-            >
-              <TrashIcon class="h-4 w-4" />
-            </IconButton>
-          </div>
-        {/each}
-      </Field.Group>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        disabled={block.interaction.config.distractors.length >= MAX_INTERACTION_OPTIONS}
-        onclick={() =>
-          updateWordBankConfig(block.id, (config) => addWordBankDistractor(config, MAX_INTERACTION_OPTIONS))}
-      >
-        <PlusIcon class="h-4 w-4" />
-        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.add_distractor')}
-      </Button>
-    </Field.Set>
-  {/if}
-  {#if block.interaction.kind === 'ordering'}
-    <RichTextField
-      bind:value={block.interaction.prompt.html}
-      name={getBlockDomId(block.id, 'prompt')}
-      label={$t('course.navItem.lessons.exercises.all_exercises.assessment_item.prompt')}
-      errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'prompt'], true)}
-      oninput={clearValidationState}
-    />
-    <InputField
-      bind:value={block.interaction.maxScore}
-      name={getBlockDomId(block.id, 'points')}
-      label={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
-      type="number"
-      min="0"
-      step="0.01"
-      oninput={clearValidationState}
-    />
-    <Field.Set>
-      <Field.Legend>
-        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.helper')}
-      </Field.Legend>
-      <Field.Group>
-        {#each block.interaction.config.options as option, optionIndex (option.id)}
-          <!-- The list order is the answer key, so a step that jumps on reorder loses the author's
-               place in the very thing they are setting. -->
-          <div class="flex items-end gap-2" animate:flip={{ duration: motionDuration(MOTION_DURATION.fast) }}>
-            <InputField
-              bind:value={block.interaction.config.options[optionIndex].html}
-              name={getBlockDomId(block.id, `ordering-option-${option.id}`)}
-              label={$t(
-                'course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.step_placeholder',
-                {
-                  index: optionIndex + 1
-                }
-              )}
-              errorMessage={getValidationError([
-                'blocks',
-                blockIndex,
-                'interaction',
-                'config',
-                'options',
-                optionIndex,
-                'html'
-              ])}
-              oninput={clearValidationState}
-            />
-            <IconButton
-              type="button"
-              variant="secondary"
-              disabled={optionIndex === 0}
-              label={$t('course.navItem.lessons.exercises.all_exercises.section.move_up')}
-              onclick={() => updateOrderingConfig(block.id, (config) => moveOrderingOption(config, optionIndex, -1))}
-            >
-              <ChevronUpIcon class="h-4 w-4" />
-            </IconButton>
-            <IconButton
-              type="button"
-              variant="secondary"
-              disabled={optionIndex === block.interaction.config.options.length - 1}
-              label={$t('course.navItem.lessons.exercises.all_exercises.section.move_down')}
-              onclick={() => updateOrderingConfig(block.id, (config) => moveOrderingOption(config, optionIndex, 1))}
-            >
-              <ChevronDownIcon class="h-4 w-4" />
-            </IconButton>
-            {#if block.interaction.config.options.length > 2}
-              <IconButton
-                type="button"
-                variant="secondary"
-                label={$t(
-                  'course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.remove_step_tooltip'
-                )}
-                onclick={() => updateOrderingConfig(block.id, (config) => removeOrderingOption(config, option.id))}
-              >
-                <TrashIcon class="h-4 w-4" />
-              </IconButton>
-            {/if}
-          </div>
-        {/each}
-      </Field.Group>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        disabled={block.interaction.config.options.length >= MAX_INTERACTION_OPTIONS}
-        onclick={() =>
-          updateOrderingConfig(block.id, (config) => addOrderingOption(config, createId(), MAX_INTERACTION_OPTIONS))}
-      >
-        <PlusIcon class="h-4 w-4" />
-        {$t('course.navItem.lessons.exercises.all_exercises.shared_question.ordering.edit.add_step')}
-      </Button>
-    </Field.Set>
-  {/if}
+  <AssessmentWordBankEditor
+    {block}
+    {blockIndex}
+    {getBlockDomId}
+    {getValidationError}
+    {clearValidationState}
+    {updateWordBankConfig}
+  />
+  <AssessmentOrderingEditor
+    {block}
+    {blockIndex}
+    {getBlockDomId}
+    {getValidationError}
+    {clearValidationState}
+    {updateOrderingConfig}
+    {createId}
+  />
   {@render trueFalseGroupInteractionEditor(block, blockIndex)}
 {/snippet}
 
