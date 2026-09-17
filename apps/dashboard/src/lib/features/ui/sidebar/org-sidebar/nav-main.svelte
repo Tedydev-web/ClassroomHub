@@ -9,6 +9,9 @@
   import { HoverableItem, PremiumIcon } from '@cio/ui/custom/moving-icons';
   import { formatCompactCount } from '@cio/utils/functions';
   import { orgNavCountsApi } from './org-nav-counts.svelte';
+  import { calculateProgress, setupProgressApi } from '$features/setup/api/setup-progress.svelte';
+  import { withProfileCompletion } from '$features/setup/utils/setup-profile-completion';
+  import { profile } from '$lib/utils/store/user';
 
   const groups = $derived(
     getOrgNavigationGroups(
@@ -23,9 +26,28 @@
       orgNavCountsApi.counts
     )
   );
+
+  /**
+   * The setup checklist has nothing left to offer once every step is done, so its entry leaves
+   * the sidebar — the same rule the header's setup ring already follows. It stays while the
+   * admin is on the setup page itself, so the active entry never vanishes from under them.
+   */
+  const isSetupComplete = $derived(
+    !setupProgressApi.isLoading &&
+      setupProgressApi.progress.orgSiteName === $currentOrg.siteName &&
+      calculateProgress(withProfileCompletion(setupProgressApi.setupList, $profile.avatarUrl)) === 100
+  );
+  const visibleGroups = $derived(
+    isSetupComplete
+      ? groups.map((group) => ({
+          ...group,
+          items: group.items.filter((item) => item.path !== '/setup' || item.isActive)
+        }))
+      : groups
+  );
 </script>
 
-{#each groups as group (group.labelKey)}
+{#each visibleGroups as group (group.labelKey)}
   <Sidebar.Group class="pt-0!">
     {#if group.labelKey}
       <Sidebar.GroupLabel>{$t(group.labelKey)}</Sidebar.GroupLabel>

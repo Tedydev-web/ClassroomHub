@@ -9,6 +9,7 @@
   import { t } from '$lib/utils/functions/translations';
   import BadgeCheckIcon from '@lucide/svelte/icons/badge-check';
   import { calculateProgress, setupProgressApi } from '$features/setup/api/setup-progress.svelte';
+  import { withProfileCompletion } from '$features/setup/utils/setup-profile-completion';
   import { getSetupPagePath, goToSetupItem } from '$features/setup/utils/setup-navigation';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -31,17 +32,7 @@
     goto(setupPageHref);
   }
 
-  const setupList = $derived(
-    setupProgressApi.setupList.map((item) => {
-      if (item.id === 'profile') {
-        return {
-          ...item,
-          is_completed: !$profile.avatarUrl?.includes('avatars/avatar.png') || !!$profile.avatarUrl
-        };
-      }
-      return item;
-    })
-  );
+  const setupList = $derived(withProfileCompletion(setupProgressApi.setupList, $profile.avatarUrl));
   const progressPercentage = $derived(calculateProgress(setupList));
 </script>
 

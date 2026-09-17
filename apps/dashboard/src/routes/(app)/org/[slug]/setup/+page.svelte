@@ -14,6 +14,7 @@
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
+  import { withProfileCompletion } from '$features/setup/utils/setup-profile-completion';
   import { goToSetupItem, SETUP_STEPS } from '$features/setup/utils/setup-navigation';
 
   let { data } = $props();
@@ -24,17 +25,7 @@
     }
   });
 
-  const setupList = $derived(
-    setupProgressApi.setupList.map((item) => {
-      if (item.id === 'profile') {
-        return {
-          ...item,
-          is_completed: !$profile.avatarUrl?.includes('avatars/avatar.png') || !!$profile.avatarUrl
-        };
-      }
-      return item;
-    })
-  );
+  const setupList = $derived(withProfileCompletion(setupProgressApi.setupList, $profile.avatarUrl));
 
   const completed = $derived(setupList.filter((list) => list.is_completed).length);
   const total = $derived(setupList.length);
