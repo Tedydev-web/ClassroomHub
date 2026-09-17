@@ -1,5 +1,11 @@
 import { isRecord } from '../question-answer-validation';
-import { assessmentFailure, assessmentIssue, assessmentSuccess, type AssessmentResult } from './assessment-errors';
+import {
+  assessmentFailure,
+  assessmentIssue,
+  assessmentSuccess,
+  type AssessmentIssue,
+  type AssessmentResult
+} from './assessment-errors';
 import { parseAssessmentItemDefinition } from './assessment-item-validation';
 import type {
   AssessmentBlock,
@@ -185,7 +191,10 @@ const DELIVERY_CONFIG_RESTORERS = {
 function collectExposedAuthorDataIssues(value: unknown) {
   if (!isRecord(value)) return [];
 
-  const issues = [];
+  // Typed explicitly: an empty `[]` is an evolving array under this package's own compiler
+  // settings but `never[]` under the dashboard's, which checks this source too — so every push
+  // below was an error there, hidden while the dashboard's generated route types were stale.
+  const issues: AssessmentIssue[] = [];
   if (Object.prototype.hasOwnProperty.call(value, 'feedback')) {
     issues.push(assessmentIssue('MALFORMED_DEFINITION', ['feedback'], 'Learner delivery must not contain feedback'));
   }
