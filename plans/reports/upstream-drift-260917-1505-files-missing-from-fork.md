@@ -28,3 +28,29 @@ data grounds that dropped presentation as a side effect. The larger surface is t
 that exist on both sides and differ: that is where a sync resolution can keep the fork's side of
 a file and silently discard upstream's visual changes to it. The rule recorded for future syncs:
 **keep the fork's data source, take upstream's presentation.**
+
+## Second pass, same day: files both sides have
+
+The first measurement of shared files counted any line reachable from `HEAD` as "the fork had
+it", and `git log` from `HEAD` walks into upstream's side of every sync merge. A line a merge
+discarded was therefore counted as received. Re-run on the fork's first-parent history only:
+97 shared files still lack upstream lines. Each candidate was re-read before acting.
+
+**Real losses, fixed:**
+
+| What | Cause | Fix |
+|---|---|---|
+| 154 translation keys (audience bulk bar, filters, CSV import, views, user analytics, export menu, settings sidebar sections, relative times) | 2026-09-14 sync kept the fork's locale files; upstream #1078's code arrived without its strings | `2b0e05c62`: every missing key added at upstream's position in all 10 locales; no existing string changed |
+| `course-role-reconcile` job had no worker branch | A sync kept the fork's maintenance worker; the API still queued the retry | commit after `2b0e05c62`: handler restored |
+
+**Checked and not lost** (a read-only audit proposed these as losses; each failed on re-reading):
+
+| Candidate | Verdict | Evidence |
+|---|---|---|
+| Process error guards in `apps/api/src/index.ts` and `instrument.ts` | Deliberate | `apps/api/src/process-error-handling.test.ts` asserts they are not registered |
+| Moonshot provider in `routes/agent/agent.ts` | Deliberate | AI runs through one CCS Codex gateway |
+| Header unread count | Equivalent | `960fa1d2a` renders `notificationApi.unread` |
+| Comment-updated toast | Equivalent | translated key `snackbar.lessons.comment_updated` |
+| Course completion confetti | Equivalent | `bdcda871a` replaced the toggle with `celebrate()` |
+| `appSetup.ts` analytics variants, localhost API guard | Deliberate | `319ec43d0` self-owned deployment; browser calls always use the same-origin proxy for cookies |
+| Org sidebar grouping (Create / Distribute / Tools) | Deliberate, open | fork's per-org feature toggles, `docs/org-feature-toggles.md`; adopting upstream's grouping is an owner decision |
