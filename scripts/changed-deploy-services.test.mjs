@@ -21,6 +21,10 @@ describe('changedDeployServices', () => {
     assert.deepEqual(changedDeployServices(['apps/dashboard/src/routes/(app)/courses/x/+page.svelte']), ['dashboard']);
   });
 
+  it('narrows a packages/ui change to dashboard alone', () => {
+    assert.deepEqual(changedDeployServices(['packages/ui/src/atoms/button/button.svelte']), ['dashboard']);
+  });
+
   it('keeps the migration runner with the API, which shares its image', () => {
     assert.deepEqual(changedDeployServices(['apps/api/src/routes/exam/exam.ts']), ['api']);
   });

@@ -11,6 +11,7 @@ const OWNED = [
   { prefix: 'apps/dashboard/', service: 'dashboard' },
   { prefix: 'apps/jobs/', service: 'jobs' },
   { prefix: 'apps/admin/', service: 'admin' },
+  { prefix: 'packages/ui/', service: 'dashboard' },
   { prefix: 'docker/Dockerfile.api', service: 'api' },
   { prefix: 'docker/Dockerfile.dashboard', service: 'dashboard' },
   { prefix: 'docker/Dockerfile.jobs', service: 'jobs' },
