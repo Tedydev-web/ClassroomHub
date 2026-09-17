@@ -252,6 +252,24 @@
  */
 @source inline('ui:ring-offset-muted{,!}');
 
+/*
+ * The duration scale has five steps, but only the three that components here happen to use were
+ * ever emitted. `slow` and `deliberate` existed as variables and nowhere as utilities, so a
+ * dashboard file writing `ui:duration-(--ui-duration-slow)` got no CSS and silently fell back to
+ * Tailwind's default duration. That happened: the lesson document upload bar was moved onto the
+ * slow token and has run at the default ever since. Publishing all five keeps the scale honest,
+ * including the `data-[state=open|closed]` forms the overlay primitives use.
+ */
+@source inline('ui:duration-(--ui-duration-{instant,fast,base,slow,deliberate}){,!}');
+@source inline('ui:data-[state=open]:duration-(--ui-duration-{instant,fast,base,slow,deliberate})');
+@source inline('ui:data-[state=closed]:duration-(--ui-duration-{instant,fast,base,slow,deliberate})');
+
+/* The same gap for easing: only `ease-ui-out` had a user here, so `in`, `in-out` and `spring`
+ * were variables with no utility behind them. */
+@source inline('ui:ease-ui-{out,in,in-out,spring}{,!}');
+@source inline('ui:data-[state=open]:ease-ui-{out,in,in-out,spring}');
+@source inline('ui:data-[state=closed]:ease-ui-{out,in,in-out,spring}');
+
 @layer base {
   /*
    * Motion durations. Frequency of use sets them: the more often a motion is
