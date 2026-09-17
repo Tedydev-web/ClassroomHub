@@ -350,16 +350,11 @@ describe('a paper holding a question this build cannot score', () => {
                 id: 'ord',
                 kind: 'interaction',
                 interaction: {
-                  kind: 'ordering',
-                  prompt: { html: '<p>order these</p>' },
+                  kind: 'star_rating',
+                  prompt: { html: '<p>rate this</p>' },
                   required: true,
                   maxScore: 1,
-                  config: {
-                    items: [
-                      { id: 'i1', html: '<p>one</p>' },
-                      { id: 'i2', html: '<p>two</p>' }
-                    ]
-                  }
+                  config: { maxStars: 5, correctValue: 4 }
                 }
               }
             ]
@@ -377,7 +372,7 @@ describe('a paper holding a question this build cannot score', () => {
         }
       },
       {
-        // The ordering interaction is left blank. Leniency lets the envelope through, so the
+        // The star rating interaction is left blank. Leniency lets the envelope through, so the
         // scorer is reached and throws on the kind it cannot handle.
         questionId: 2,
         questionRevisionId: 'r2',

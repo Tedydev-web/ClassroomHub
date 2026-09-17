@@ -49,20 +49,14 @@ const unsupportedDefinition: AssessmentItemDefinition = {
   schemaVersion: 1,
   blocks: [
     {
-      id: 'ordering-1',
+      id: 'rating-1',
       kind: 'interaction',
       interaction: {
-        kind: 'ordering',
-        prompt: { format: 'html', html: '<p>Arrange the steps.</p>' },
+        kind: 'star_rating',
+        prompt: { format: 'html', html: '<p>Rate the lesson.</p>' },
         required: true,
         maxScore: 1,
-        config: {
-          options: [
-            { id: 'option-1', html: '<p>First</p>' },
-            { id: 'option-2', html: '<p>Second</p>' }
-          ],
-          correctOrder: ['option-1', 'option-2']
-        }
+        config: { maxStars: 5, correctValue: 4 }
       }
     }
   ],

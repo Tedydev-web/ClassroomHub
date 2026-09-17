@@ -273,17 +273,11 @@ const unsupportedHybridDefinition = {
       id: 'block-1',
       kind: 'interaction',
       interaction: {
-        kind: 'ordering',
-        prompt: { format: 'html', html: 'Arrange the steps' },
+        kind: 'star_rating',
+        prompt: { format: 'html', html: 'Rate the lesson' },
         required: true,
         maxScore: 3,
-        config: {
-          options: [
-            { id: 'option-1', html: 'First' },
-            { id: 'option-2', html: 'Second' }
-          ],
-          correctOrder: ['option-1', 'option-2']
-        }
+        config: { maxStars: 5, correctValue: 4 }
       }
     },
     { ...manualTextDefinition.blocks[0], id: 'block-2' }
@@ -947,7 +941,7 @@ describe('createSubmissionService transaction guards', () => {
     const response = {
       schemaVersion: 1,
       responses: [
-        { interactionId: 'block-1', response: { kind: 'ordering', orderedOptionIds: ['option-1', 'option-2'] } },
+        { interactionId: 'block-1', response: { kind: 'star_rating', value: 4 } },
         { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
       ]
     };
@@ -1028,7 +1022,7 @@ describe('createSubmissionService transaction guards', () => {
     const unsupportedResponse = {
       schemaVersion: 1,
       responses: [
-        { interactionId: 'block-1', response: { kind: 'ordering', orderedOptionIds: ['option-1', 'option-2'] } },
+        { interactionId: 'block-1', response: { kind: 'star_rating', value: 4 } },
         { interactionId: 'block-2', response: { kind: 'text', text: 'Detailed answer' } }
       ]
     };
