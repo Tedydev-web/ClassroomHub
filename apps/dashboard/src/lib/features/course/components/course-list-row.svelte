@@ -262,7 +262,7 @@
       <div class="flex min-w-0 flex-col gap-0.5">
         <div class="flex min-w-0 items-center gap-1.5">
           <p
-            class="ui:text-foreground min-w-0 flex-1 truncate text-[14px] @3xl:line-clamp-2 @3xl:text-base @3xl:wrap-break-word @3xl:whitespace-normal"
+            class="ui:text-foreground min-w-0 flex-1 truncate text-sm @3xl:line-clamp-2 @3xl:text-base @3xl:wrap-break-word @3xl:whitespace-normal"
           >
             {title}
           </p>

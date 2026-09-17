@@ -54,7 +54,7 @@
           <span class="ui:text-muted-foreground text-xs tracking-wider uppercase">
             {$t('course.navItem.certificates.editor.field_template')}
           </span>
-          <Badge variant="secondary" class="text-[10px] uppercase">{templateLabel}</Badge>
+          <Badge variant="secondary" class="ui:text-2xs uppercase">{templateLabel}</Badge>
         </div>
         <div class="flex items-center justify-between">
           <span class="ui:text-muted-foreground text-xs tracking-wider uppercase">

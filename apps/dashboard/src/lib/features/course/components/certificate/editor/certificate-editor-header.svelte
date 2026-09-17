@@ -50,16 +50,16 @@
       </h1>
 
       <div class="flex flex-wrap items-center gap-1">
-        <Badge variant="secondary" class="text-[10px] uppercase">
+        <Badge variant="secondary" class="ui:text-2xs uppercase">
           {templateLabel}
         </Badge>
         {#if isDirty}
-          <Badge variant="outline" class="text-[10px]">
+          <Badge variant="outline" class="ui:text-2xs">
             {$t('course.navItem.certificates.editor.unsaved')}
           </Badge>
         {/if}
         {#if isFreePlan}
-          <Badge variant="outline" class="text-[10px]">
+          <Badge variant="outline" class="ui:text-2xs">
             {$t('course.navItem.certificates.editor.free_plan')}
           </Badge>
         {/if}

@@ -31,7 +31,7 @@
       <TemplateThumb id={template.id} />
       <span
         class={cn(
-          'absolute right-0 bottom-0 left-0 px-2 py-1 text-center text-[9px] font-medium tracking-[0.18em] uppercase',
+          'ui:text-2xs absolute right-0 bottom-0 left-0 px-2 py-1 text-center font-medium tracking-[0.18em] uppercase',
           isActive ? 'ui:bg-primary ui:text-primary-foreground' : 'ui:bg-foreground ui:text-background'
         )}
       >
