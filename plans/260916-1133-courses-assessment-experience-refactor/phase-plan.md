@@ -214,7 +214,7 @@ corrections are folded in.
   validator — `answer-matrix` parses `attemptIds` from the raw body and `print-context` reads
   `lang` from the raw query — so the RPC contract says they take no input and the print loaders'
   correct calls fail the check; the fix belongs in the API as `zValidator`s, not as casts in the
-  dashboard. And the attempt page hands `JSONValue` columns to renderer props. Two stragglers were
+  dashboard. Done in the commit after `5c15f836a`, with `answer-sheets` too: 340 to 337. And the attempt page hands `JSONValue` columns to renderer props. Two stragglers were
   closed in `f44618e99` (a derived read before its declaration, and an unnarrowed raw-HTML
   fallback), taking the check from 343 to 340.
 - **Owner feel checks** — the 24px question-step nudge, and a real drop with reduced motion on.
