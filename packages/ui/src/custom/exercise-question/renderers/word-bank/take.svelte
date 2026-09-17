@@ -160,7 +160,9 @@
 <div class="ui:space-y-4">
   <p class="ui:text-muted-foreground ui:text-xs">{label('word_bank.take.helper')}</p>
 
-  <div class="ui:bg-muted/30 ui:rounded-lg ui:border ui:p-4 ui:font-mono ui:text-sm ui:leading-relaxed">
+  <!-- The sentence is prose a candidate reads, so it takes the reading face. It was monospace, which
+       read as code and made the same question type look different here from the canonical word bank. -->
+  <div class="ui:bg-muted/30 ui:rounded-lg ui:border ui:p-4 ui:text-sm ui:leading-relaxed">
     {#if blankCount === 0}
       <span class="ui:text-muted-foreground">{template || label('common.not_set')}</span>
     {:else}
