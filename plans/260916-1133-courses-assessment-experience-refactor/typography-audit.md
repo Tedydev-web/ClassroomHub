@@ -135,3 +135,39 @@ the screen open.
   siblings are semantic, encoding a band of achievement. They are not greys and are not in the 123.
 - **SVG fills and strokes**, per the criterion's own wording.
 - **The print template**, per constraint 5.
+
+## The last arbitrary sizes, settled — 2026-09-17
+
+The roadmap left one question open: the compact type tier needs "a step below `2xs` or an
+explicit exemption". Measured, the remaining arbitrary sizes in scope fall into three groups, and
+only one of them was a real defect.
+
+**Group 1 — chrome, and a defect. Fixed.** Six sizes that are interface, not artwork: three badges
+in `certificate-editor-header.svelte`, one in `certificate-design.svelte`, a caption in
+`templates-panel.svelte`, and a course title written as `text-[14px]`. The badges now use
+`ui:text-2xs`; the title uses `text-sm`, which *is* 14px, so that one is a rename.
+
+The badges take the **prefixed** token on purpose. `Badge` sets its own size inside
+`packages/ui`, and `tailwind-merge` is configured for the `ui` prefix, so an unprefixed
+`text-2xs` would not be recognised as the same property, both rules would emit, and the base
+would win by cascade. The same trap that made 35 dialogs ignore their own width.
+
+**Group 2 — the compact container-query tier. Exempt, with the reason.** `course-list-row.svelte`
+renders eleven sizes between 8px and 11.5px, but only when its container is narrower than `3xl`;
+every one of them has an `@3xl:` sibling that is already a token. This is not a hierarchy, it is
+one row compressing to fit a sidebar.
+
+Publishing a `3xs` step to cover it would put a 9px token in the shared theme, where the next
+caller has no container query and no reason not to reach for it. The scale's smallest step is
+11px because that is the floor it was designed around; a private compression below that floor is
+a component's business, not the design system's. **The `@3xl:` tier stays the contract; the
+compact tier is exempt.**
+
+**Group 3 — certificate renderings. Exempt.** `template-thumb.svelte` draws miniatures of
+certificate designs at roughly a tenth of their real size, in the faces those designs use —
+Bodoni Moda, Cinzel, Playfair Display, Cormorant Garamond, JetBrains Mono. `text-[6px]` there is
+a picture of type, not type. The product's scale governs the product's own voice; it does not
+govern a thumbnail of somebody's certificate.
+
+Count in scope after this: **0 chrome, 11 compact-tier, 7 certificate rendering** — and every one
+of the eighteen is now argued rather than merely surviving.
