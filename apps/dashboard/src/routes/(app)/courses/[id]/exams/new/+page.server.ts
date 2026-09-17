@@ -1,3 +1,4 @@
+import { sectionMetaTags } from '$lib/utils/functions/document-title';
 import { classroomhub, getApiHeaders } from '$lib/utils/services/api';
 import { safeServerApi } from '$lib/utils/services/api/server';
 
@@ -30,6 +31,9 @@ export const load = async ({ params, cookies }) => {
     // Without this the page tells a teacher the course has no container to deliver and
     // offers to import one — when in fact the list simply did not arrive. Acting on that
     // message creates a container the teacher did not need.
-    loadFailed: !containers.ok || !copyable.ok
+    loadFailed: !containers.ok || !copyable.ok,
+    // The browser tab. Resolved from the locale cookie rather than the `$t` store, which is a
+    // module-level singleton and would share one locale across concurrent requests.
+    pageMetaTags: await sectionMetaTags(cookies.get('classroomhub_locale'), 'exam.manage.create')
   };
 };
