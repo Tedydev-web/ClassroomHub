@@ -410,7 +410,8 @@
       "delete_success": "Видео удалено",
       "delete_in_use": "Это видео все еще прикреплено к уроку. Сначала уберите его оттуда.",
       "delete_failed": "Не удалось удалить видео.",
-      "added_to_lesson": "Видео добавлено в урок"
+      "added_to_lesson": "Видео добавлено в урок",
+      "transcript_unavailable": "Транскрипция недоступна"
     },
     "tags": {
       "group_created": "Группа тегов создана.",
@@ -2302,6 +2303,7 @@
               "empty_description": "Добавляйте видео с YouTube, загружайте их или из своей медиатеки.",
               "google_drive": "Google Drive",
               "generate_transcript": "Сгенерировать транскрипцию",
+              "transcript_in_progress": "Получение транскрипции…",
               "generate_transcript_in_progress": "Транскрибирование…",
               "transcript": {
                 "title": "Транскрипция",
@@ -4565,7 +4567,10 @@
         "generate_course_plan": "Генерация плана курса",
         "ask_template_questions": "Подготовка шаблонной формы",
         "fetch_documentation_url": "Чтение страницы документации",
-        "fetch_documentation_url_with_url": "Чтение {url}"
+        "fetch_documentation_url_with_url": "Чтение {url}",
+        "list_youtube_playlist_videos": "Вывод списка видео из плейлиста",
+        "get_lesson_transcript": "Чтение транскрипции видео",
+        "add_youtube_video_to_lesson": "Встраивание видео с YouTube"
       },
       "meta": {
         "lesson_char_count": "({count, plural, one {# символ} other {# символов}})",
@@ -4597,7 +4602,15 @@
         "go_live_not_published": "Курс не был опубликован",
         "generate_course_plan": "План курса сгенерирован",
         "ask_template_questions": "Шаблон формы готов.",
-        "fetch_documentation_url": "Прочитать {url}"
+        "fetch_documentation_url": "Прочитать {url}",
+        "list_youtube_playlist_videos": "Найдено {count} видео в плейлисте",
+        "list_youtube_playlist_videos_unavailable": "Не удалось вывести список видео из плейлиста",
+        "get_lesson_transcript": "Транскрипция для {title} прочитана",
+        "get_lesson_transcript_fetching": "Получение транскрипции для {title}",
+        "get_lesson_transcript_plan_gated": "Транскрипции доступны на платном тарифе",
+        "get_lesson_transcript_no_credits": "Закончились ИИ-кредиты для получения транскрипций",
+        "get_lesson_transcript_unavailable": "Транскрипция для {title} недоступна",
+        "add_youtube_video_to_lesson": "Встроенное видео: {title}"
       }
     },
     "student_empty_state": "Спросите меня о чем-нибудь об этом курсе — получите объяснения, пройдите тест или подведите итог прочитанному.",

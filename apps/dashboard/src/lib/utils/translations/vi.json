@@ -418,7 +418,8 @@
       "delete_success": "Đã xóa video",
       "delete_in_use": "Video này vẫn được đính kèm với một bài học. Loại bỏ nó ở đó đầu tiên.",
       "delete_failed": "Không thể xóa video",
-      "added_to_lesson": "Video đã được thêm vào bài học"
+      "added_to_lesson": "Video đã được thêm vào bài học",
+      "transcript_unavailable": "Không có bản ghi"
     },
     "tags": {
       "group_created": "Đã tạo nhóm thẻ",
@@ -2357,6 +2358,7 @@
               "google_drive": "Google Drive",
               "generate_transcript": "Tạo bản chép lời",
               "generate_transcript_in_progress": "Đang chép lời…",
+              "transcript_in_progress": "Đang lấy bản ghi…",
               "transcript": {
                 "title": "Bản chép lời",
                 "captions_label": "Phụ đề",
@@ -4634,7 +4636,10 @@
         "generate_course_plan": "Đang tạo kế hoạch khóa học",
         "ask_template_questions": "Chuẩn bị mẫu biểu mẫu",
         "fetch_documentation_url": "Trang đọc tài liệu",
-        "fetch_documentation_url_with_url": "Đang đọc {url}"
+        "fetch_documentation_url_with_url": "Đang đọc {url}",
+        "list_youtube_playlist_videos": "Liệt kê các video trong danh sách phát",
+        "get_lesson_transcript": "Đang đọc bản ghi video",
+        "add_youtube_video_to_lesson": "Nhúng video YouTube"
       },
       "meta": {
         "lesson_char_count": "({count, plural, one {# ký tự} other {# ký tự}})",
@@ -4666,7 +4671,15 @@
         "go_live_not_published": "Khóa học chưa được xuất bản",
         "generate_course_plan": "Đã tạo kế hoạch khóa học",
         "ask_template_questions": "Mẫu biểu đã sẵn sàng",
-        "fetch_documentation_url": "Đọc {url}"
+        "fetch_documentation_url": "Đọc {url}",
+        "list_youtube_playlist_videos": "Đã tìm thấy {count} video trong danh sách phát",
+        "list_youtube_playlist_videos_unavailable": "Không thể liệt kê các video trong danh sách phát",
+        "get_lesson_transcript": "Đã đọc bản ghi cho {title}",
+        "get_lesson_transcript_fetching": "Đang lấy bản ghi cho {title}",
+        "get_lesson_transcript_plan_gated": "Bản ghi yêu cầu gói trả phí",
+        "get_lesson_transcript_no_credits": "Đã hết tín dụng AI để lấy bản ghi",
+        "get_lesson_transcript_unavailable": "Không có bản ghi cho {title}",
+        "add_youtube_video_to_lesson": "Video nhúng: {title}"
       }
     },
     "student_empty_state": "Hãy hỏi tôi bất cứ điều gì về khóa học này - nhận lời giải thích, tự kiểm tra hoặc tóm tắt những gì bạn đang đọc.",

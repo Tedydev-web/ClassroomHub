@@ -410,7 +410,8 @@
       "delete_success": "Vidéo supprimée",
       "delete_in_use": "Cette vidéo est toujours jointe à une leçon. Retirez-le d'abord.",
       "delete_failed": "Échec de la suppression de la vidéo",
-      "added_to_lesson": "Vidéo ajoutée à la leçon"
+      "added_to_lesson": "Vidéo ajoutée à la leçon",
+      "transcript_unavailable": "Transcription indisponible"
     },
     "tags": {
       "group_created": "Groupe de balises créé",
@@ -2302,6 +2303,7 @@
               "empty_description": "Ajoutez des vidéos de YouTube, téléchargez-les ou de votre bibliothèque multimédia",
               "google_drive": "Google Drive",
               "generate_transcript": "Générer la transcription",
+              "transcript_in_progress": "Récupération de la transcription…",
               "generate_transcript_in_progress": "Transcription en cours…",
               "transcript": {
                 "title": "Transcription",
@@ -4565,7 +4567,10 @@
         "generate_course_plan": "Génération du plan de cours",
         "ask_template_questions": "Préparation du formulaire modèle",
         "fetch_documentation_url": "Lecture de la page de documentation",
-        "fetch_documentation_url_with_url": "Lecture de {url}"
+        "fetch_documentation_url_with_url": "Lecture de {url}",
+        "list_youtube_playlist_videos": "Affichage des vidéos de la playlist",
+        "get_lesson_transcript": "Lecture de la transcription de la vidéo",
+        "add_youtube_video_to_lesson": "Intégration de la vidéo YouTube"
       },
       "meta": {
         "lesson_char_count": "({count, plural, one {# caractère} other {# caractères}})",
@@ -4597,7 +4602,15 @@
         "go_live_not_published": "Le cours n'a pas été publié",
         "generate_course_plan": "Plan de cours généré",
         "ask_template_questions": "Formulaire modèle prêt",
-        "fetch_documentation_url": "Lire {url}"
+        "fetch_documentation_url": "Lire {url}",
+        "list_youtube_playlist_videos": "{count} vidéos trouvées dans la playlist",
+        "list_youtube_playlist_videos_unavailable": "Impossible d'afficher les vidéos de la playlist",
+        "get_lesson_transcript": "Transcription de {title} lue",
+        "get_lesson_transcript_fetching": "Récupération de la transcription de {title}",
+        "get_lesson_transcript_plan_gated": "Les transcriptions nécessitent un forfait payant",
+        "get_lesson_transcript_no_credits": "Plus de crédits IA pour récupérer les transcriptions",
+        "get_lesson_transcript_unavailable": "Aucune transcription disponible pour {title}",
+        "add_youtube_video_to_lesson": "Vidéo intégrée : {title}"
       }
     },
     "student_empty_state": "Demandez-moi n'importe quoi sur ce cours : obtenez des explications, posez-vous des questions ou résumez ce que vous lisez.",

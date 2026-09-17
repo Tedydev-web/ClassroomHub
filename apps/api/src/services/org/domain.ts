@@ -2,6 +2,7 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 
 import { env } from '@cio/core/config/env';
 import { isPlatformHost } from '@cio/utils/constants';
+import { isFirstPartyOrgSiteHost } from '@cio/utils/functions';
 import { parse } from 'tldts';
 
 export type DomainSetupStatus =
@@ -200,6 +201,10 @@ export function assertSupportedCustomDomain(domain: string) {
       400,
       'domain'
     );
+  }
+
+  if (isFirstPartyOrgSiteHost(domain, env.FIRST_PARTY_ORG_SITE_HOSTS)) {
+    return;
   }
 
   if (isPlatformHost(domain)) {
