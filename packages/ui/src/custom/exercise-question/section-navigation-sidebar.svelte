@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import { richTextToPlainText } from '../../tools';
 
   interface SectionNavQuestion {
@@ -68,10 +69,20 @@
   }
 </script>
 
-<details class="ui:border-border ui:bg-muted/20 ui:rounded-md ui:border" open={interactive}>
+<!--
+  A read-only outline starts closed, deliberately. But `display: flex` on a <summary> removes the
+  browser's own disclosure triangle, so a closed outline was a titled box with nothing to say it
+  opens — on the course exercise screen it read as an empty panel. The chevron puts that affordance
+  back and turns to show which state it is in.
+-->
+<details class="ui:group ui:border-border ui:bg-muted/20 ui:rounded-md ui:border" open={interactive}>
   <summary
-    class="ui:focus-visible:ring-ring ui:flex ui:min-h-11 ui:cursor-pointer ui:items-center ui:px-4 ui:text-sm ui:font-semibold ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
+    class="ui:focus-visible:ring-ring ui:flex ui:min-h-11 ui:cursor-pointer ui:items-center ui:gap-2 ui:px-4 ui:text-sm ui:font-semibold ui:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2"
   >
+    <ChevronRightIcon
+      class="ui:text-muted-foreground ui:size-4 ui:shrink-0 ui:transition-transform ui:duration-(--ui-duration-fast) ui:ease-ui-out ui:group-open:rotate-90"
+      aria-hidden="true"
+    />
     {navigationLabel}
   </summary>
   <div class="ui:border-border ui:border-t ui:p-3">
