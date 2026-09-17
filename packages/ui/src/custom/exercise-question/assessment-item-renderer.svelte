@@ -1059,12 +1059,23 @@
               {@const currentValue = answersByStatementId.get(statement.id)}
               {@const statementInvalid =
                 invalid && (currentValue === undefined || (!hasMissingStatements && statementIndex === 0))}
+              <!--
+                The unanswered row was already marked for a screen reader and for a test —
+                `aria-invalid` and `data-assessment-invalid` were both set — but nothing drew it,
+                so a sighted candidate read "answer every statement" and then had to find them.
+                The number turns destructive and the row takes a rule down its left edge, which
+                is two signals rather than colour alone.
+              -->
               <div
-                class="ui:grid ui:gap-3 ui:py-4 ui:sm:grid-cols-[minmax(0,1fr)_auto] ui:sm:items-center"
+                class="ui:grid ui:gap-3 ui:py-4 ui:sm:grid-cols-[minmax(0,1fr)_auto] ui:sm:items-center {statementInvalid
+                  ? 'ui:border-l-destructive ui:-ml-3 ui:border-l-2 ui:pl-3'
+                  : ''}"
                 data-assessment-invalid={statementInvalid ? 'true' : undefined}
               >
                 <div id={`${statementElementId}-label`} class="ui:min-w-0 ui:text-sm">
-                  <span class="ui:mr-2 ui:font-medium ui:tabular-nums">{statementIndex + 1}.</span>
+                  <span class="ui:mr-2 ui:font-medium ui:tabular-nums {statementInvalid ? 'ui:text-destructive' : ''}"
+                    >{statementIndex + 1}.</span
+                  >
                   {@html renderAuthoredHtml(statement.html)}
                 </div>
                 <RadioGroup.Root
