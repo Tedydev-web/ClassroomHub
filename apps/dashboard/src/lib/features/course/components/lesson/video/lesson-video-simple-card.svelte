@@ -129,7 +129,7 @@
             {video}
             {onRemove}
             onThumbnailSaved={(url) => lessonApi.updateLessonVideoThumbnail(index, url)}
-            onHlsMetadataUpdated={(metadata) => lessonApi.updateLessonVideoMetadata(index, metadata)}
+            onHlsMetadataUpdated={(metadata, options) => lessonApi.updateLessonVideoMetadata(index, metadata, options)}
             onTranscribingChange={(v) => (isTranscribingForVideo = v)}
             menuPlacement="inline"
           />

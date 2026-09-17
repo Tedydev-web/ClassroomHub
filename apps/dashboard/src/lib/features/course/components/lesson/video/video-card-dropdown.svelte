@@ -31,7 +31,12 @@
     video: LessonVideo;
     onRemove: () => void;
     onThumbnailSaved?: (thumbnailUrl: string) => void;
-    onHlsMetadataUpdated?: (metadata: Record<string, unknown>) => void;
+    /**
+     * `markDirty: false` for metadata read back from the server rather than produced by an action
+     * the author took. Opening this menu refreshes it, and counting that as an edit put the
+     * unsaved-changes dialog in front of a teacher who had only looked at a menu.
+     */
+    onHlsMetadataUpdated?: (metadata: Record<string, unknown>, options?: { markDirty?: boolean }) => void;
     onTranscribingChange?: (value: boolean) => void;
     /** `inline` aligns with the title row (YouTube-style). `corner` is top-right overlay on the nearest `relative` ancestor. */
     menuPlacement?: 'inline' | 'corner';
@@ -114,12 +119,15 @@
     if (!asset?.metadata || typeof asset.metadata !== 'object' || Array.isArray(asset.metadata)) return;
 
     const assetMetadata = asset.metadata as Record<string, unknown>;
-    onHlsMetadataUpdated?.({
-      ...(typeof assetMetadata.sourceWidth === 'number' ? { sourceWidth: assetMetadata.sourceWidth } : {}),
-      ...(typeof assetMetadata.sourceHeight === 'number' ? { sourceHeight: assetMetadata.sourceHeight } : {}),
-      ...(Array.isArray(assetMetadata.hlsRenditions) ? { hlsRenditions: assetMetadata.hlsRenditions } : {}),
-      ...(typeof assetMetadata.hls1080Status === 'string' ? { hls1080Status: assetMetadata.hls1080Status } : {})
-    });
+    onHlsMetadataUpdated?.(
+      {
+        ...(typeof assetMetadata.sourceWidth === 'number' ? { sourceWidth: assetMetadata.sourceWidth } : {}),
+        ...(typeof assetMetadata.sourceHeight === 'number' ? { sourceHeight: assetMetadata.sourceHeight } : {}),
+        ...(Array.isArray(assetMetadata.hlsRenditions) ? { hlsRenditions: assetMetadata.hlsRenditions } : {}),
+        ...(typeof assetMetadata.hls1080Status === 'string' ? { hls1080Status: assetMetadata.hls1080Status } : {})
+      },
+      { markDirty: false }
+    );
   }
 
   async function startTranscriptionPoll(afterAssetId: string) {
