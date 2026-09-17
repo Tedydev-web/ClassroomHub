@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import TrashIcon from '@lucide/svelte/icons/trash';
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
   import InfoIcon from '@lucide/svelte/icons/info';
@@ -65,7 +66,8 @@
   import { countAssessmentQuestions, countSectionQuestions } from './assessment-item-summary';
   import { applyQuestionTypeChange } from './question-type-transition';
 
-  const flipDurationMs = 200;
+  // Reduced motion: flip and the drag library are JavaScript and never see the stylesheet's rule.
+  const flipDurationMs = motionDuration(MOTION_DURATION.base);
   const uploadLimits = getResolvedUploadLimits();
   const platformMaxFileSizeMb = uploadLimits.exerciseFileMb;
   const initialQuestionsLength = $questionnaire.questions.length;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { flip } from 'svelte/animate';
   import { settings } from '../utils/settings-store';
   import { dndzone } from 'svelte-dnd-action';
@@ -11,7 +12,8 @@
 
   let { onchange }: Props = $props();
 
-  const flipDurationMs = 300;
+  // Reduced motion: flip and the drag library are JavaScript and never see the stylesheet's rule.
+  const flipDurationMs = motionDuration(MOTION_DURATION.slow);
 
   function handleDndConsider(e) {
     $settings.tabs = e.detail.items;

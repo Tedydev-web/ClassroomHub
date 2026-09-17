@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { untrack } from 'svelte';
   import { dndzone } from 'svelte-dnd-action';
   import SquareCheckIcon from '@lucide/svelte/icons/square-check';
@@ -13,7 +14,8 @@
   import { filterOutDeleted } from './functions';
   import { t } from '$lib/utils/functions/translations';
 
-  const flipDurationMs = 300;
+  // Reduced motion: flip and the drag library are JavaScript and never see the stylesheet's rule.
+  const flipDurationMs = motionDuration(MOTION_DURATION.slow);
 
   interface Question {
     id: number | string;

@@ -332,10 +332,12 @@
             <span>{$t('course.navItem.lessons.materials.tabs.document.uploading')}</span>
             <span>{$lessonDocUpload.uploadProgress}%</span>
           </div>
-          <div class="ui:bg-muted h-2 w-full rounded-full">
+          <!-- The bar scales on the compositor instead of animating width, which re-ran layout on
+               every progress tick. The track clips it so scaleX does not pinch the rounded end. -->
+          <div class="ui:bg-muted h-2 w-full overflow-hidden rounded-full">
             <div
-              class="ui:duration-(--ui-duration-slow) h-2 rounded-full bg-blue-600 transition-all"
-              style="width: {$lessonDocUpload.uploadProgress}%"
+              class="ui:duration-(--ui-duration-slow) ui:ease-ui-out h-2 w-full origin-left bg-blue-600 transition-transform"
+              style="transform: scaleX({$lessonDocUpload.uploadProgress / 100})"
             ></div>
           </div>
           <div class="mt-3 flex justify-center">

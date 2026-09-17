@@ -5,7 +5,11 @@
   import { flip } from 'svelte/animate';
   import { applyOrderingAnswer, getOrderingItemsFromQuestion, type OrderingRenderItem } from '../ordering-utils';
 
-  const flipDurationMs = 150;
+  // Reduced motion: flip and the drag library are JavaScript and do not see the stylesheet's
+  // prefers-reduced-motion rule. One millisecond rather than zero, matching the dashboard's
+  // motionDuration, so completion callbacks still fire.
+  const flipDurationMs =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 150;
 
   let {
     question,

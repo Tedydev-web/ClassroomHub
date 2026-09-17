@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { page } from '$app/state';
   import { flip } from 'svelte/animate';
   import { goto } from '$app/navigation';
@@ -32,7 +33,8 @@
     failed = false
   }: Props = $props();
 
-  const flipDurationMs = 300;
+  // Reduced motion: flip and the drag library are JavaScript and never see the stylesheet's rule.
+  const flipDurationMs = motionDuration(MOTION_DURATION.slow);
   let sections = $state<SubmissionSection[]>([]);
   let submissionIdData = $state<Record<string, SubmissionIdData>>({});
   let isSaving = $state(false);

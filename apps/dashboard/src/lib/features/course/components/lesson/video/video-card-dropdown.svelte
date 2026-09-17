@@ -321,7 +321,7 @@
 >
   <DropdownMenu.Trigger
     class={menuPlacement === 'corner'
-      ? 'ui:duration-(--ui-duration-base) ui:ease-ui-in-out absolute top-2 right-2 z-40 flex items-center justify-center opacity-0 transition-all delay-150 group-hover:opacity-100 data-[state=open]:opacity-100'
+      ? 'ui:duration-(--ui-duration-base) ui:ease-ui-out absolute top-2 right-2 z-40 flex items-center justify-center opacity-0 transition-opacity delay-150 group-hover:opacity-100 data-[state=open]:opacity-100'
       : '-mt-0.5 -mr-1 flex shrink-0 items-center justify-center opacity-100 data-[state=open]:opacity-100'}
     aria-label={$t('course.navItem.lessons.materials.tabs.video.simple_card.menu_aria')}
     onclick={(e) => e.stopPropagation()}

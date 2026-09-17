@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import { flip } from 'svelte/animate';
@@ -406,7 +407,8 @@
   /**
    * Drag functionality
    */
-  const flipDurationMs = 200;
+  // Reduced motion: flip and the drag library are JavaScript and never see the stylesheet's rule.
+  const flipDurationMs = motionDuration(MOTION_DURATION.base);
 
   function handleDndConsiderColumns(e) {
     sections = e.detail.items as SectionDnd[];

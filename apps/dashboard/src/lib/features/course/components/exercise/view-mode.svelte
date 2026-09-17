@@ -4,7 +4,7 @@
   import { onDestroy, tick, untrack } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { fly } from 'svelte/transition';
-  import { cubicInOut } from 'svelte/easing';
+  import { cubicIn, cubicOut } from 'svelte/easing';
   import { courseApi } from '$features/course/api';
   import {
     assessmentComposerPreviewItems,
@@ -1102,7 +1102,7 @@
     })
   );
 
-  const flyX = $derived(slideDirection === 'next' ? 300 : -300);
+  const flyX = $derived(slideDirection === 'next' ? 24 : -24);
   const flyOutX = $derived(-flyX);
 
   $effect(() => {
@@ -1675,12 +1675,14 @@
         {#key currentTakeItem.id}
           <!-- A whole question sliding across on every step is the largest movement this screen
                makes, and it ran regardless of what the reader asked for: a Svelte transition is
-               JavaScript and never saw the stylesheet's reduced-motion rule. -->
+               JavaScript and never saw the stylesheet's reduced-motion rule. The travel is a 24px
+               nudge rather than a 300px slide because stepping is the most frequent action on this
+               screen, and entrance and exit follow the repo's own curves: ease-out in, ease-in out. -->
           <div
             id="question"
             class="min-w-0 [grid-area:slot]"
-            in:fly={{ x: flyX, duration: motionDuration(MOTION_DURATION.slow), easing: cubicInOut }}
-            out:fly={{ x: flyOutX, duration: motionDuration(MOTION_DURATION.slow), easing: cubicInOut }}
+            in:fly={{ x: flyX, duration: motionDuration(MOTION_DURATION.base), easing: cubicOut }}
+            out:fly={{ x: flyOutX, duration: motionDuration(MOTION_DURATION.fast), easing: cubicIn }}
           >
             {#if currentTakeItem.kind === 'canonical'}
               <div id={getCanonicalQuestionElementId(currentTakeItem.id)}>
