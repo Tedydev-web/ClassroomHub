@@ -125,6 +125,7 @@
     !reorderQuestions && (activeCanonicalQuestionId !== null || newAssessmentComposerSectionId !== undefined)
   );
   const sectionLabels = $derived({
+    title: t.get('course.navItem.lessons.add_lesson.course_section_title'),
     questions: t.get('course.navItem.lessons.exercises.all_exercises.section.questions'),
     shortQuestions: t.get('course.navItem.lessons.exercises.all_exercises.section.short_questions'),
     required: t.get('course.navItem.lessons.exercises.all_exercises.section.required'),
