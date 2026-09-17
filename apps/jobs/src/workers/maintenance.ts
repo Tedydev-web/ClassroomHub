@@ -4,6 +4,7 @@ import { Worker } from 'bullmq';
 
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
+import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
 import { checkStorageHealth } from '../services/storage-health';
 import {
   ANALYTICS_DAILY_ROLLUP_INTERVAL_MS,
@@ -128,6 +129,23 @@ const worker = new Worker(
         });
 
       return health;
+    }
+
+    // The retry path for a role clamp that failed inline. Without this branch the retry was
+    // queued and never run, leaving a demoted admin with course instructor access.
+    if (job.name === JOB_NAMES.maintenance.courseRoleReconcile) {
+      const data = ZCourseRoleReconcilePayload.parse(job.data ?? {});
+      const demoted = await reconcileCourseRolesToOrgRole(data.organizationId, data.profileId);
+
+      if (demoted > 0) {
+        log.warn('course-role-reconcile-demoted', {
+          organizationId: data.organizationId,
+          profileId: data.profileId,
+          demoted
+        });
+      }
+
+      return { demoted };
     }
 
     if (job.name === JOB_NAMES.maintenance.memberActivityReconcile) {
