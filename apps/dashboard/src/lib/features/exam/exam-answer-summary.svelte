@@ -78,7 +78,7 @@
 
               <div class="ui:bg-muted h-2 flex-1 overflow-hidden rounded-full">
                 <div
-                  class={['h-full rounded-full', isKey ? 'bg-emerald-500' : 'bg-muted-foreground/40']}
+                  class={['h-full rounded-full', isKey ? 'bg-emerald-500' : 'ui:bg-muted-foreground/40']}
                   style={`width: ${share(count, question.answered)}%`}
                 ></div>
               </div>
@@ -94,7 +94,7 @@
               <span class="ui:text-muted-foreground w-6 shrink-0 text-center text-xs">—</span>
               <div class="ui:bg-muted h-2 flex-1 overflow-hidden rounded-full">
                 <div
-                  class="bg-muted-foreground/25 h-full rounded-full"
+                  class="ui:bg-muted-foreground/30 h-full rounded-full"
                   style={`width: ${share(question.blank, question.answered)}%`}
                 ></div>
               </div>

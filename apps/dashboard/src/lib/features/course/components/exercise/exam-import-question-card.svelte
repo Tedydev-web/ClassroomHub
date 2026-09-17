@@ -273,7 +273,7 @@
 <article
   id={`exam-import-question-${question.id}`}
   tabindex="-1"
-  class="ui:border-border focus:ring-ring scroll-mt-24 space-y-4 rounded-md border p-4 focus:ring-2 focus:outline-none sm:p-5"
+  class="ui:border-border ui:focus:ring-ring scroll-mt-24 space-y-4 rounded-md border p-4 focus:ring-2 focus:outline-none sm:p-5"
 >
   <header class="flex flex-wrap items-start justify-between gap-3">
     <div class="flex min-w-0 items-center gap-2">

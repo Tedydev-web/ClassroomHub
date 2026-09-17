@@ -238,7 +238,7 @@
           {/if}
         </div>
         <div
-          class="from-background pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t to-transparent"
+          class="ui:from-background pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t to-transparent"
         ></div>
       </div>
 

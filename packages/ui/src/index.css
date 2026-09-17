@@ -251,6 +251,8 @@
  * than on the page background. The section colour picker is the first such place.
  */
 @source inline('ui:ring-offset-muted{,!}');
+@source inline('ui:divide-border');
+@source inline('ui:hover:border-primary/50');
 
 /*
  * The duration scale has five steps, but only the three that components here happen to use were

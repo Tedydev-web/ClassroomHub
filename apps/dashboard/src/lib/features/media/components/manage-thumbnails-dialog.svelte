@@ -249,7 +249,7 @@
                     type="button"
                     onclick={() => selectCandidate(url)}
                     class={`ui:focus-visible:ring-ring relative aspect-video w-full overflow-hidden rounded-md border text-left transition focus-visible:ring-2 focus-visible:outline-none ${
-                      isSelected ? 'ring-primary border-primary ring-2' : 'hover:border-primary/50'
+                      isSelected ? 'ui:ring-primary ui:border-primary ring-2' : 'ui:hover:border-primary/50'
                     }`}
                     aria-pressed={isSelected}
                   >

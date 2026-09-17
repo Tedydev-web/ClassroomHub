@@ -170,7 +170,7 @@
 <Accordion.Root
   type="multiple"
   bind:value={openSections}
-  class="ui:border-border divide-border divide-y rounded-lg border"
+  class="ui:border-border ui:divide-border divide-y rounded-lg border"
 >
   <!-- Brand -->
   <Accordion.Item value="brand" class="border-none px-4 last:border-none">
