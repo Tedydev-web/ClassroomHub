@@ -101,6 +101,31 @@ lost its narrowing at once. **Acceptance:** met on the tool side — 343 unchang
 passing, no frozen file touched. Still owed a look from the owner, like everything else in
 Stage B.
 
+### Stage B, partially unblocked without the owner — 2026-09-17
+
+The claim that these screens could only be judged by a person turned out to be half wrong. There
+is no X server here and no teacher session, so the live app stays out of reach — but **Storybook
+renders the shared components with no authentication at all**, and `google-chrome --headless` is
+on this machine. Built the static Storybook, served it, and screenshotted.
+
+`word_bank` and `ordering` had **no stories**, which is why nobody had looked at either since
+they shipped. Adding them took two minutes and found a real defect in the first frame.
+
+**The defect.** A word bank blank was an outline `Button`, so it had the solid border and rounded
+box of a text input — a candidate's first instinct is to click it and type. Worse, the bank chips
+below it used the same outline. Two roles, one appearance, which is exactly what
+`design-direction.md` rejects under Familiarity. Fixed: an empty blank is a dashed underline with
+no box, a filled one is a solid pill, and a chip stays an outline button because pressing it is
+what it is for. Verified by screenshotting both states.
+
+**A second silent no-op found on the way.** `ui:min-w-24` on the blank was emitting nothing:
+`packages/ui/src/output.css` is generated and the committed copy predated the renderer edit, so a
+class only that file used had never been built. Rebuilding `@cio/ui` published it. Same family as
+the dialog widths — a class that is written, looks right, and does nothing.
+
+This route works for anything rendered by `packages/ui`. It does not reach the eight dashboard
+screens in Stage B, which need a session.
+
 ### Stage E — the remaining interaction kinds, if wanted
 
 `file_upload` and `video_recording` are **not** blocked on UI. `initVideoRecordingUpload`,
