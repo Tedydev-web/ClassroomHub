@@ -44,9 +44,6 @@
   /** Shown only when the rows span papers — see `examTitle` on the row. */
   const showExam = $derived(rows.some((row) => Boolean(row.examTitle)));
 
-  const pickable = $derived(shown.filter((row) => row.status !== 'in_progress'));
-  const allPicked = $derived(pickable.length > 0 && pickable.every((row) => picked.has(row.attemptId)));
-
   function pick(attemptId: string, checked: boolean) {
     const next = new Set(picked);
 
@@ -164,6 +161,9 @@
       return leftName.localeCompare(rightName, $locale, { numeric: true }) * direction;
     });
   });
+
+  const pickable = $derived(shown.filter((row) => row.status !== 'in_progress'));
+  const allPicked = $derived(pickable.length > 0 && pickable.every((row) => picked.has(row.attemptId)));
 
   function sortBy(key: SortKey) {
     if (sortKey === key) {

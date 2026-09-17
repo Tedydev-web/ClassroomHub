@@ -339,7 +339,7 @@
       falseLabel={$t('course.navItem.lessons.exercises.all_exercises.shared_question.true_false.false_label')}
       {questionNumber}
     />
-  {:else}
+  {:else if question.kind === 'unresolved'}
     <div class="prose prose-sm max-w-none">
       <SafeHtmlContent content={question.rawHtml} />
     </div>
