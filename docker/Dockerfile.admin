@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 COPY . .
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --offline --frozen-lockfile --ignore-scripts \
+    pnpm install --frozen-lockfile --ignore-scripts \
     --store-dir /pnpm/store --filter @cio/admin...
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN --mount=type=cache,target=/app/.turbo \

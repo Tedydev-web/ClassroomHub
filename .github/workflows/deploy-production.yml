@@ -32,9 +32,9 @@ on:
           - github-hosted
           - self-hosted
         default: github-hosted
-# Build and change detection run without global pipeline blocking.
-# The host deployment job locks on `deploy-production-host` so only
-# one deployment runs on the VPS at a time, never cancelling midway.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
 
 permissions:
   contents: read
