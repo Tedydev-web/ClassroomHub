@@ -150,6 +150,59 @@
       }
     ]
   });
+  // The two kinds added in September 2026. Delivery shape deliberately: `bankTokens` is what a
+  // candidate receives, with the answers and distractors merged and sorted so the order leaks
+  // nothing, and `correctOrder` is absent from an ordering config at this layer.
+  const wordBankDefinition = {
+    schemaVersion: 1,
+    blocks: [
+      {
+        id: 'word-bank-one',
+        kind: 'interaction',
+        interaction: {
+          kind: 'word_bank',
+          prompt: { format: 'html', html: '<p>Complete the sentence using the word bank.</p>' },
+          required: true,
+          maxScore: 2,
+          config: {
+            template: 'The ___ sat on the ___ and watched the rain.',
+            bankTokens: ['cat', 'hat', 'mat']
+          }
+        }
+      }
+    ],
+    feedback: []
+  };
+  // One blank filled, one empty, so both states are visible in a single shot.
+  let wordBankResponse = $state({
+    schemaVersion: 1,
+    responses: [{ interactionId: 'word-bank-one', response: { kind: 'word_bank', filledBlanks: ['cat', ''] } }]
+  });
+
+  const orderingDefinition = {
+    schemaVersion: 1,
+    blocks: [
+      {
+        id: 'ordering-one',
+        kind: 'interaction',
+        interaction: {
+          kind: 'ordering',
+          prompt: { format: 'html', html: '<p>Put these steps in the right order.</p>' },
+          required: true,
+          maxScore: 3,
+          config: {
+            options: [
+              { id: 'step-a', html: '<p>Boil the water</p>' },
+              { id: 'step-b', html: '<p>Add the leaves</p>' },
+              { id: 'step-c', html: '<p>Let it steep</p>' }
+            ]
+          }
+        }
+      }
+    ],
+    feedback: []
+  };
+  let orderingResponse = $state(undefined);
 </script>
 
 <Story name="Checkbox">
@@ -252,6 +305,36 @@
         trueLabel="True"
         falseLabel="False"
         {passageWorkspaceLabels}
+      />
+    </div>
+  {/snippet}
+</Story>
+
+<Story name="Assessment - Word Bank">
+  {#snippet template()}
+    <div class="ui:max-w-4xl">
+      <ExerciseQuestion.AssessmentItemRenderer
+        definition={wordBankDefinition}
+        response={wordBankResponse}
+        disabled={false}
+        trueLabel="True"
+        falseLabel="False"
+        onResponseChange={(response) => (wordBankResponse = response)}
+      />
+    </div>
+  {/snippet}
+</Story>
+
+<Story name="Assessment - Ordering">
+  {#snippet template()}
+    <div class="ui:max-w-4xl">
+      <ExerciseQuestion.AssessmentItemRenderer
+        definition={orderingDefinition}
+        response={orderingResponse}
+        disabled={false}
+        trueLabel="True"
+        falseLabel="False"
+        onResponseChange={(response) => (orderingResponse = response)}
       />
     </div>
   {/snippet}

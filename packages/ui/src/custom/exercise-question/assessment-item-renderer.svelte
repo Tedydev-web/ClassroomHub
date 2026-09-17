@@ -930,18 +930,25 @@
           <p class="ui:text-sm ui:leading-8">
             {#each segments as segment, segmentIndex (segmentIndex)}
               {#if segment.type === 'text'}<span>{segment.value}</span>{:else}
-                <Button
+                <!--
+                  A blank is a slot, not a field. Rendered as an outline button it had the solid
+                  border and the rounded box of a text input, so a candidate's first instinct was
+                  to click it and type — and the bank chips beneath used the same outline, giving
+                  two different roles one appearance. An empty slot is now a dashed underline with
+                  no box; a filled one is solid and reads as a word that has been placed.
+                -->
+                <button
                   type="button"
-                  variant={blanks[segment.index] ? 'secondary' : 'outline'}
-                  size="sm"
                   {disabled}
                   aria-labelledby={promptElementId}
                   aria-describedby={invalid ? errorElementId : undefined}
-                  class="ui:mx-1 ui:min-w-24"
+                  class={blanks[segment.index]
+                    ? 'ui:bg-secondary ui:text-secondary-foreground ui:mx-1 ui:inline-flex ui:min-w-20 ui:items-center ui:justify-center ui:rounded-md ui:px-2 ui:py-0.5 ui:text-sm ui:font-medium ui:duration-(--ui-duration-instant) ui:ease-ui-out ui:active:scale-[0.98] ui:disabled:pointer-events-none ui:disabled:opacity-60'
+                    : 'ui:border-muted-foreground/60 ui:text-muted-foreground ui:hover:border-foreground ui:mx-1 ui:inline-flex ui:min-w-20 ui:items-center ui:justify-center ui:border-b-2 ui:border-dashed ui:px-2 ui:pb-0.5 ui:text-sm ui:duration-(--ui-duration-instant) ui:ease-ui-out ui:disabled:pointer-events-none ui:disabled:opacity-60'}
                   onclick={() => placeWordBankToken(block.id, interaction.config.template, segment.index)}
                 >
                   {blanks[segment.index] || ' '}
-                </Button>
+                </button>
                 {#if blanks[segment.index]}
                   <span class="ui:sr-only">{wordBankClearBlankLabel}</span>
                 {/if}
