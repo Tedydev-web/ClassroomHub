@@ -4,7 +4,12 @@
   import { DocumentCard } from '../../../document-card';
   import { Button } from '../../../../base/button';
   import { Spinner } from '../../../../base/spinner';
-  import { isFileSizeAllowed, isFileTypeAllowed, normalizeAcceptedFileTypes } from '../file-upload-types';
+  import {
+    formatAcceptedFileTypes,
+    isFileSizeAllowed,
+    isFileTypeAllowed,
+    normalizeAcceptedFileTypes
+  } from '../file-upload-types';
 
   let {
     question,
@@ -123,6 +128,25 @@
       {label('file_upload.take.upload_button')}
     {/if}
   </Button>
+  <!--
+    What the upload has to satisfy, said before it is attempted. Both values were already
+    computed here — one feeds the input's `accept`, the other the size check — and both were
+    shown to the author in preview, but the person who has to meet them saw only a button and
+    found out by being rejected afterwards.
+  -->
+  {#if acceptedTypes.length > 0 || maxSizeMb}
+    <p class="ui:text-muted-foreground ui:text-xs">
+      {#if acceptedTypes.length > 0}
+        {label('file_upload.preview.accepted_types_label')}: {formatAcceptedFileTypes(acceptedTypes)}
+      {/if}
+      {#if acceptedTypes.length > 0 && maxSizeMb}
+        &middot;
+      {/if}
+      {#if maxSizeMb}
+        {label('file_upload.preview.max_size_label')}: {maxSizeMb}
+      {/if}
+    </p>
+  {/if}
   {#if uploadError}
     <p class="ui:text-destructive ui:text-xs">{uploadError}</p>
   {/if}
