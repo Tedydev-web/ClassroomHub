@@ -1,4 +1,5 @@
 <script module lang="ts">
+  import { QUESTION_LABELS } from './question-labels';
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import { ExerciseQuestion } from '@cio/ui';
   import type { AssessmentDeliveryDefinition, AssessmentResponseEnvelope } from '@cio/question-types';
@@ -255,7 +256,7 @@
 
 <Story name="Exercise Sections - Question In Progress">
   {#snippet template()}
-    <div class="grid max-w-5xl gap-6 lg:grid-cols-[190px_minmax(0,1fr)]">
+    <div class="grid max-w-5xl items-start gap-6 lg:grid-cols-[190px_minmax(0,1fr)]">
       <ExerciseQuestion.SectionNavigationSidebar
         navigationLabel="Question outline"
         sections={SECTIONED_EXERCISE_FIXTURE.map((section, sectionIndex) => ({
@@ -288,7 +289,10 @@
             mode: 'take',
             question: SECTIONED_EXERCISE_FIXTURE[0].questions[1],
             answer: TRUE_FALSE_FIXTURE.answer,
-            disabled: false
+            disabled: false,
+            // Without labels every take renderer prints its buttons empty: 148 label calls in the
+            // renderer family carry no fallback, by convention, because every app caller passes them.
+            labels: QUESTION_LABELS
           }}
         />
       </section>
