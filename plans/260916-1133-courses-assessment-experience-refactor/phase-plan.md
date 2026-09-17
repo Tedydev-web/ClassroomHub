@@ -54,9 +54,9 @@ person looking at the screen.
 | Translation keys printing their own path | ? | **0** | |
 | Links to routes that do not exist | ? | **0** | |
 | Debug residue in production | 4 `$inspect`, 4 `console.log` | **0** | one log reported a real failure and became `console.error` |
-| Screens with a document title | 2 of 21 | **13 of 21** | the mechanism existed, was tested, and no course route used it |
-| Tests in `features` | 296 | **470** | |
-| `svelte-check` | 344 | **343** | unchanged across 130 commits except where a fix removed one |
+| Screens with a document title | 2 of 21 | **21 of 21** | the mechanism existed, was tested, and no course route used it; a page-level `<title>` in `<svelte:head>` never reaches the server-rendered head |
+| Tests in `features` | 296 | **482** | |
+| `svelte-check` | 344 | **343** | **measured with fresh generated types.** The 343 quoted earlier was read against stale `.svelte-kit/types`; synced, the true count was 346 — three `never[]` errors in `assessment-delivery-definition.ts`, fixed |
 
 ## The stages that remain
 
@@ -126,31 +126,73 @@ the dialog widths — a class that is written, looks right, and does nothing.
 This route works for anything rendered by `packages/ui`. It does not reach the eight dashboard
 screens in Stage B, which need a session.
 
-### Stage E — the remaining interaction kinds, if wanted
+### Stage E — deferred by decision, 2026-09-17: `file_upload` and `video_recording`
 
-`file_upload` and `video_recording` are **not** blocked on UI. `initVideoRecordingUpload`,
-`completeVideoRecordingUpload` and `getVideoRecordingPlaybackUrl` exist and are routed at
-`apps/api/src/routes/course/exercise.ts:560`, `:588` and `:607` — but each keys on a **legacy
-`questionId`**, not a canonical interaction id. The missing piece is an id bridge on the API side,
-with its own access-control surface. `star_rating` is not recommended: the scorer has exactly two
-paths, automatic and `text`→manual, and a rating fits neither.
+Not built, and not blocked on UI. Decided under the owner's delegation with `kongming` counsel.
+The upload endpoints exist (`apps/api/src/routes/course/exercise.ts`, the `video-recording`
+routes) but `apps/api/src/services/exercise/video-recording.ts:159` throws unless the question's
+`questionTypeId` is the **legacy** `VIDEO_RECORDING`, so a canonical question is refused, and
+completion persists legacy `AnswerData`. Building it needs four things together: widening that
+type check, persisting a canonical response, the access-control surface that comes with it, and
+a rendering decision — canonical kinds draw through `AssessmentItemRenderer`, which the frozen
+exam page uses, so enabling them changes what a candidate sees. That last point is why it is not
+done under a mandate that forbids changing the sitting screen.
 
-### Stage F — the eight screens still without a document title
+The current state is safe and deliberate: `SUPPORTED_ASSESSMENT_VERTICAL_SLICE_INTERACTION_KINDS`
+(`assessment-vertical-slice.ts:17`) refuses the write, the composer does not offer the kinds, and
+the renderer shows a visible "cannot be displayed" notice rather than a blank. `star_rating`
+stays not recommended: the scorer has exactly two paths and a rating fits neither.
 
-Four have no loader at all. Two carry live content as their title. `people/[personId]` needs its
-parent loader. `attempts/[attemptId]` is blocked on typing its endpoint's response: its loader
-calls `safeServerApi` with no success type, so three reads are already errors, and narrowing the
-shape by hand cost eleven more (343 → 354, reverted).
+### Stage F — done, 2026-09-17: every course screen has a browser tab title
 
-### Stage G — the decisions that are the owner's, not the code's
+21 of 21. The last seven: news feed, landing page, AI tutor, certificate designer (two new
+`+page.ts` loaders), new exam, import review, and the attempt page — which names the candidate,
+as its heading does, read by a tested runtime guard (`features/exam/read-candidate-name.ts`)
+rather than a cast.
 
-| Question | What it unblocks |
-|---|---|
-| May the exercise import path change appearance alongside the exam path? | whether the shared review screen is restyled once or gated by target |
-| Does publish belong in the composer header, or is course-level publish authoritative? | composer header design |
-| Is `certificates/editor` meant to stay full-screen outside the course shell? | Stage B for that screen |
-| May `Page.Root`'s width variant reach `org/` and `lms/`? | one shell across the app; 30 usages outside this scope |
-| Two list families — `Item` (13 files) and `ResourceListRow` (6) — collapse or keep? | 19 files across 6 features; neither is wrong today |
+**Two findings on the way.** First, the import review already set `<title>` in `<svelte:head>`,
+and it never rendered: on production `/login` returns exactly one `<title>` and it is the
+platform's, not the page's own. The root layout's meta tags are the only title in the server
+head, so `pageMetaTags` is the one mechanism that works. Second, typing the attempt loader from
+the RPC contract **does** resolve — a probe with a negative control proved the exam client infers
+`attempt | corrections | paper` — but it surfaces four mismatches the page hid behind `unknown`
+(`JSONValue` arriving for jsonb activity and answer-log columns, and a paper question shape two
+helpers do not accept). Reverted, not cast. Recorded below as its own item.
+
+### Stage G — decided, 2026-09-17
+
+The owner delegated these: *"tất cả những vấn đề còn lại … miễn best practices approachs solution
+là được"*. Each was decided with evidence and put to `kongming` before committing; its two
+corrections are folded in.
+
+| Question | Decision | Why |
+|---|---|---|
+| Exercise import appearance alongside exam import? | **One screen, restyled once, never gated by target.** | `pages/exam-import-review.svelte` already serves both; `target` changes only the redirect (`:157`) and the publish call (`:188`). Gating style by target would fork a screen over one behavioural difference. No restyle was pending, so nothing changed. |
+| Publish in the composer header? | **No. Course-level visibility stays authoritative.** | *Corrected reason:* publish does exist per item — `PUT …/question/:questionId/assessment-item` calls `publishQuestionRevision` — but it commits a question **revision** with optimistic concurrency; it is not a visibility switch. There is no per-item visibility concept to put in a header. |
+| `certificates/editor` full-screen outside the course shell? | **Keep.** | The route resets its layout on purpose (`+layout@(app).svelte`) and the header has a back link to the certificates page, so the exit is never lost. A canvas editor is a focus mode. |
+| `Page.Root` width variant into `org/` and `lms/`? | **No.** | 36 usages outside this programme's scope, for no user-visible gain to Courses, Exam or Exercise. |
+| Two list families? | **Keep both; they are one.** | *Corrected framing:* `ResourceListRow` wraps `Item.Root`. The usage rule now sits in the `resource-list-row.svelte` header: divider rows sharing one list surface take `ResourceListRow`, standalone or carded items take `Item`. |
+
+### Closed
+
+- **C5, "Câu hỏi 11" clipped to "u hỏi 11".** Reproducible only between `4d3af49c6` (2026-09-16
+  13:03) and its revert `9ac1ff2c3` (15:38): the two-pane panel was behind a constant that was
+  never `true` in any other commit, its grid was exactly the recorded 288+512px, and it is now
+  deleted. A static sweep of the current authoring files finds no left-edge clipping mechanism.
+  Reopen only if it appears again.
+- **Dead `assessment-passage-rail.svelte`** — zero importers; deleted.
+- **Composer split** — not triggered. The real boundary is the two inlined interaction editors
+  (`choiceInteractionEditor`, `trueFalseGroupInteractionEditor`), which would match word bank and
+  ordering. Take it when either is next edited, not for the line count.
+- **Storybook review** — all 20 assessment stories reviewed, in both themes where it mattered.
+
+### Open, as their own items
+
+- **Exam loader typing.** 22 errors across the exam routes come from untyped `safeServerApi`. The
+  contract infers; the pages it feeds need `JSONValue` handling and a paper-question shape fix
+  first. Scope it as one change to the attempt page's contracts.
+- **Owner feel checks** — the 24px question-step nudge, and a real drop with reduced motion on.
+- **Stage B** — the eight dashboard screens still owed a look; Storybook cannot reach them.
 
 ## The rule this programme earned
 
