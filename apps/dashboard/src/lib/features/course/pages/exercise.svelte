@@ -514,7 +514,12 @@
   $effect(() => {
     if ($isOrgStudent) return;
 
-    const addNewQ = $questionnaire?.questions?.length < 1;
+    // Only an exercise with no questions of either kind needs a starting draft. An imported
+    // exam is canonical-only, so its legacy list is always empty; adding a blank legacy
+    // question there put an empty question into a finished exam on every open, and made the
+    // leave dialog fire on a page where nothing had changed.
+    const addNewQ =
+      ($questionnaire?.questions?.length ?? 0) < 1 && ($questionnaire?.canonicalQuestions?.length ?? 0) < 1;
 
     if (addNewQ) {
       untrack(() => {

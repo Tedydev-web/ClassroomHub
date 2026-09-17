@@ -1,4 +1,5 @@
 import { DEFAULT_QUESTION_TYPE, QUESTION_TEMPLATE } from '$features/ui/question/constants';
+import { NEW_QUESTION_POINTS, isUntouchedQuestionDraft } from './questionnaire-dirty';
 import type {
   AnswerData,
   AssessmentDeliveryDefinition,
@@ -475,7 +476,7 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
           // One, the way upstream creates a question. Zero made every new question on an
           // auto-graded exercise invalid the instant it appeared, so the teacher met a
           // validation error before typing anything.
-          points: 1,
+          points: NEW_QUESTION_POINTS,
           order: nextQuestionOrder,
           exerciseSectionId: nextExerciseSectionId,
           questionType: DEFAULT_QUESTION_TYPE,
@@ -496,21 +497,13 @@ export function handleAddQuestion(exerciseSectionId?: string | null) {
   return nextQuestionId;
 }
 
+/**
+ * Delegates to the shared rule so "untouched" means one thing everywhere. It used to be its own
+ * copy, and when new drafts started at one point this copy still treated any non-zero value as an
+ * edit — so a freshly added draft looked touched and was never cleaned up.
+ */
 function isUntouchedLegacyQuestionDraft(question: Question): boolean {
-  if (typeof question.id !== 'string' || !question.id.endsWith('-form') || question.isDirty) return false;
-
-  const hasTitle = question.title.trim() !== '';
-  const hasPoints = Number(question.points ?? 0) !== 0;
-  const hasAnswer = question.answers.some((answer) => answer !== null && `${answer}`.trim() !== '');
-  const hasOptionContent = question.options.some((option) => {
-    const label = option.label ?? '';
-    const value = option.value ?? '';
-
-    return `${label}`.trim() !== '' || `${value}`.trim() !== '' || option.isCorrect;
-  });
-  const hasSettings = Object.keys(question.settings ?? {}).length > 0;
-
-  return !hasTitle && !hasPoints && !hasAnswer && !hasOptionContent && !hasSettings;
+  return isUntouchedQuestionDraft(question);
 }
 
 export function removeUntouchedLegacyQuestionDrafts(): void {
