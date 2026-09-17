@@ -209,7 +209,7 @@ corrections are folded in.
 
 ### Open, as their own items
 
-- **Exam loader typing.** Re-read 2026-09-17: none of the 27 exam errors is a runtime bug. Three
+- **Exam loader typing.** Re-read 2026-09-17: none of the 26 errors in the teacher exam screens is a runtime bug. Three
   causes. `safeServerApi` returns `unknown` bodies (the bulk). Two API routes read input without a
   validator — `answer-matrix` parses `attemptIds` from the raw body and `print-context` reads
   `lang` from the raw query — so the RPC contract says they take no input and the print loaders'
