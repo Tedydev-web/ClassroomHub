@@ -10,10 +10,12 @@ import type {
 class NotificationApi extends BaseApi {
   items = $state<NotificationItem[]>([]);
   unread = $state(0);
+  /** False until the first fetch settles, so the panel shows a skeleton instead of flashing empty. */
+  hasLoaded = $state(false);
   pagination = $state<NotificationPage['pagination']>({ page: 1, limit: 20, total: 0, totalPages: 0 });
 
   async getNotifications(page = 1) {
-    return this.execute<GetNotificationsRequest>({
+    const result = await this.execute<GetNotificationsRequest>({
       requestFn: () => classroomhub.notifications.$get({ query: { page: `${page}`, limit: '20' } }),
       logContext: 'fetching notifications',
       onSuccess: (response) => {
@@ -22,6 +24,9 @@ class NotificationApi extends BaseApi {
         this.pagination = response.data.pagination;
       }
     });
+    this.hasLoaded = true;
+
+    return result;
   }
 
   async markRead(notificationId: string) {

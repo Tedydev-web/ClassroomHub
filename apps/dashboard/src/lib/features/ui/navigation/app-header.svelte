@@ -3,8 +3,6 @@
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import BellIcon from '@lucide/svelte/icons/bell';
-  import RefreshCcwIcon from '@lucide/svelte/icons/refresh-ccw';
-  import * as Empty from '@cio/ui/base/empty';
   import { Button } from '@cio/ui/base/button';
   import * as Popover from '@cio/ui/base/popover';
   import Search from '$features/ui/search.svelte';
@@ -13,7 +11,7 @@
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import AppSetup from './app-setup.svelte';
   import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
-  import NotificationList from '$features/notification/components/notification-list.svelte';
+  import NotificationsPanel from '$features/notification/components/notifications-panel.svelte';
   import { notificationApi } from '$features/notification/api/notification.svelte';
 
   const siteName = $derived($currentOrg.siteName);
@@ -48,36 +46,27 @@
 
     <Search />
 
-    <Popover.Root>
-      <Popover.Trigger>
-        <Button variant="outline" size="icon">
-          <BellIcon class="custom rounded-full" />
-          {#if notificationApi.unread > 0}
-            <span class="ui:bg-destructive absolute -top-1 -right-1 size-2 rounded-full"></span>
-          {/if}
-        </Button>
-      </Popover.Trigger>
-      <Popover.Content>
-        {#if notificationApi.items.length > 0}
-          <NotificationList />
-        {:else}
-          <Empty.Root class="ui:from-muted/50 ui:to-background ui:h-full ui:bg-gradient-to-b ui:from-30%">
-            <Empty.Header>
-              <Empty.Media variant="icon">
-                <BellIcon />
-              </Empty.Media>
-              <Empty.Title>No Notifications</Empty.Title>
-              <Empty.Description>You're all caught up. New notifications will appear here.</Empty.Description>
-            </Empty.Header>
-            <Empty.Content>
-              <Button variant="outline" size="sm" onclick={() => notificationApi.getNotifications()}>
-                <RefreshCcwIcon />
-                Refresh
-              </Button>
-            </Empty.Content>
-          </Empty.Root>
-        {/if}
-      </Popover.Content>
-    </Popover.Root>
+    <div class="relative">
+      <Popover.Root>
+        <Popover.Trigger>
+          {#snippet child({ props })}
+            <Button {...props} variant="secondary" size="icon" testId="app-notifications-trigger">
+              <BellIcon class="custom rounded-full" />
+            </Button>
+          {/snippet}
+        </Popover.Trigger>
+        <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[460px]">
+          <NotificationsPanel />
+        </Popover.Content>
+      </Popover.Root>
+
+      {#if notificationApi.unread > 0}
+        <span
+          class="ui:bg-primary ui:text-primary-foreground pointer-events-none absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium"
+        >
+          {notificationApi.unread}
+        </span>
+      {/if}
+    </div>
   </div>
 </header>
