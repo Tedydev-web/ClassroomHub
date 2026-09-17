@@ -209,9 +209,14 @@ corrections are folded in.
 
 ### Open, as their own items
 
-- **Exam loader typing.** 22 errors across the exam routes come from untyped `safeServerApi`. The
-  contract infers; the pages it feeds need `JSONValue` handling and a paper-question shape fix
-  first. Scope it as one change to the attempt page's contracts.
+- **Exam loader typing.** Re-read 2026-09-17: none of the 27 exam errors is a runtime bug. Three
+  causes. `safeServerApi` returns `unknown` bodies (the bulk). Two API routes read input without a
+  validator — `answer-matrix` parses `attemptIds` from the raw body and `print-context` reads
+  `lang` from the raw query — so the RPC contract says they take no input and the print loaders'
+  correct calls fail the check; the fix belongs in the API as `zValidator`s, not as casts in the
+  dashboard. And the attempt page hands `JSONValue` columns to renderer props. Two stragglers were
+  closed in `f44618e99` (a derived read before its declaration, and an unnarrowed raw-HTML
+  fallback), taking the check from 343 to 340.
 - **Owner feel checks** — the 24px question-step nudge, and a real drop with reduced motion on.
 - **Stage B** — read statically (above); two defects fixed. A visual pass on production is still the owner's.
 
