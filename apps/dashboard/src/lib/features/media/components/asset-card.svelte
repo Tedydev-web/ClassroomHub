@@ -112,10 +112,10 @@
     </div>
   </Item.Header>
 
-  <Item.Content>
+  <Item.Content class="min-w-0">
     <div class="min-w-0 flex-1">
       <Item.Title class="line-clamp-1 w-full!">
-        <span class="max-w-64 truncate text-base! break-all">{getAssetDisplayName(asset)}</span>
+        <span class="min-w-0 truncate text-base!" title={getAssetDisplayName(asset)}>{getAssetDisplayName(asset)}</span>
       </Item.Title>
     </div>
 
