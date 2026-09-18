@@ -249,13 +249,16 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      max-parallel: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 4 || 3 }}
+      max-parallel: 4
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
         with:
+          name: builder-${{ matrix.image }}
+          driver: docker-container
+          keep-state: true
           cleanup: false
 
       - name: Log in to GitHub Container Registry
@@ -281,7 +284,7 @@ jobs:
             type=gha,scope=${{ matrix.image }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
           cache-to: |
-            type=gha,mode=max,scope=${{ matrix.image }}
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && format('type=gha,mode=max,scope={0}', matrix.image) || '' }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           platforms: linux/amd64
           provenance: false
