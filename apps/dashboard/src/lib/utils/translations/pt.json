@@ -997,7 +997,7 @@
         "content_grouping_title": "Agrupamento de conteúdo",
         "content_grouping_description": "Aulas e exercícios em grupo por seção na lista de conteúdo.",
         "progression_mode_title": "Progressão do aluno",
-        "progression_mode_description": "Controle se os alunos podem acessar todo o conteúdo desbloqueado ou devem concluir os itens em ordem.",
+        "progression_mode_description": "Controle se os alunos podem acessar todo o conteúdo desbloqueado ou se devem completar os itens em ordem. A conclusão da exibição do vídeo rastreia apenas os vídeos enviados.",
         "progression_mode_free": "Livre — conteúdo desbloqueado é acessível",
         "progression_mode_sequential": "Sequencial — concluir itens anteriores para desbloquear o próximo",
         "lesson_download": "Lições baixadas",
@@ -2564,7 +2564,7 @@
           "manual_label": "Manual",
           "manual_description": "Os alunos marcam a lição como concluída.",
           "video_watch_label": "Assistir vídeo",
-          "video_watch_description": "A lição conclui automaticamente depois que os alunos assistem aos vídeos selecionados.",
+          "video_watch_description": "A lição é concluída automaticamente depois que os alunos assistem aos vídeos enviados selecionados. As incorporações externas e do YouTube não podem ser rastreadas.",
           "none_label": "Nenhuma",
           "none_description": "Esta lição não bloqueia a progressão do curso.",
           "watch_threshold": "Limite de visualização (%)"
@@ -2576,9 +2576,11 @@
             "option_guide_heading": "O que cada opção significa",
             "watch_videos_heading": "Vídeos a aplicar",
             "watch_videos_helper": "Apenas vídeos enviados podem ser aplicados. YouTube e incorporações externas não podem ser rastreados.",
-            "watch_videos_empty": "Adicione um vídeo enviado na aba Vídeo para usar o rastreamento de visualização.",
+            "watch_videos_empty": "A exibição de vídeo rastreia apenas os vídeos enviados. As incorporações externas e do YouTube não podem ser rastreadas, portanto esta lição não pode ser concluída automaticamente e os alunos não podem marcá-la como concluída. Carregue o vídeo na guia Vídeo ou defina a regra de conclusão como Manual.",
             "watch_videos_required": "Selecione pelo menos um vídeo para rastreamento de visualização.",
-            "students_only_note": "Estas regras aplicam-se apenas aos alunos. Você pode pré-visualizar e navegar livremente ao ensinar."
+            "students_only_note": "Estas regras aplicam-se apenas aos alunos. Você pode pré-visualizar e navegar livremente ao ensinar.",
+            "watch_videos_no_uploads_title": "Nenhum vídeo enviado nesta lição",
+            "watch_videos_learn_more": "Saber mais"
           },
           "comments": {
             "title": "Comentários da aula",
@@ -4720,7 +4722,7 @@
     "tool": {
       "pending": {
         "working": "Trabalhando",
-        "unknown_tool": "Executando {toolName}",
+        "unknown_tool": "Trabalhando em {toolName}",
         "get_course_structure": "Lendo estrutura do curso",
         "get_lesson_content": "Lendo conteúdo da lição",
         "get_exercise_details": "Lendo exercício",
@@ -4826,14 +4828,14 @@
     "retry": "Tentar novamente",
     "run_monitor_aria": "Geração de curso em andamento",
     "run_summary": {
-      "completed": "Execução concluída.",
-      "completed_with_counts": "Execução concluída — criada {counts}.",
-      "failed": "Falha na execução.",
-      "failed_with_reason": "Falha na execução — {reason}.",
-      "canceled": "Execução cancelada.",
-      "canceled_with_counts": "Execução cancelada — criou {counts} antes de parar.",
-      "paused": "Execução pausada. Retomar para continuar.",
-      "paused_with_counts": "Execução pausada — {counts} criados até agora. Retomar para continuar."
+      "completed": "Geração do curso concluída.",
+      "completed_with_counts": "Geração do curso concluída — criado {counts}.",
+      "failed": "A geração do curso falhou.",
+      "failed_with_reason": "A geração do curso falhou — {reason}.",
+      "canceled": "Geração do curso cancelada.",
+      "canceled_with_counts": "Geração do curso cancelada — criou {counts} antes de parar.",
+      "paused": "Geração do curso pausada. Retome para continuar.",
+      "paused_with_counts": "Geração do curso pausada — criou {counts} até agora. Retome para continuar."
     },
     "changes_card": {
       "summary_count": "{count} itens alterados",
@@ -4860,16 +4862,16 @@
       "collapse": "Recolher plano"
     },
     "run_monitor": {
-      "cancel": "Cancelar execução",
+      "cancel": "Cancelar geração",
       "dismiss": "Dispensar",
       "now_doing": "Agora",
       "input_disabled_hint": "O chat é pausado enquanto o agente termina de criar o curso. Cancele ou aguarde a conclusão.",
       "dismiss_confirm": "Vá embora",
-      "dismiss_cancel": "Continue correndo",
-      "dismiss_confirm_body": "Sair desta corrida cancelada? O botão Continuar desaparecerá – qualquer bate-papo adicional começará do zero e não dará continuidade ao plano.",
+      "dismiss_cancel": "Ficar aqui",
+      "dismiss_confirm_body": "Sair desta geração cancelada? O botão Retomar desaparecerá — qualquer conversa adicional começará do zero e não continuará o plano.",
       "stuck_queued": {
         "title": "O trabalhador não responde",
-        "body": "Esta execução está aguardando há mais de 30 segundos sem nenhuma coleta de trabalhador. O trabalhador em segundo plano pode estar inativo ou reiniciando."
+        "body": "A geração do curso está esperando há mais de 30 segundos sem que nenhum processo em segundo plano a tenha assumido. O processo em segundo plano pode estar parado ou reiniciando."
       }
     },
     "ask_ai": "Pergunte à IA",

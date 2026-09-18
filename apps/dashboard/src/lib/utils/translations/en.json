@@ -2317,7 +2317,7 @@
           "manual_label": "Manual",
           "manual_description": "Students mark the lesson complete themselves.",
           "video_watch_label": "Video watch",
-          "video_watch_description": "The lesson completes automatically after students watch the selected videos.",
+          "video_watch_description": "The lesson completes automatically after students watch the selected uploaded videos. YouTube and external embeds can't be tracked.",
           "none_label": "None",
           "none_description": "This lesson does not block course progression.",
           "watch_threshold": "Watch threshold (%)"
@@ -2329,9 +2329,11 @@
             "option_guide_heading": "What each option means",
             "watch_videos_heading": "Videos to enforce",
             "watch_videos_helper": "Only uploaded videos can be enforced. YouTube and external embeds cannot be tracked.",
-            "watch_videos_empty": "Add an uploaded video in the Video tab to use watch enforcement.",
+            "watch_videos_empty": "Video watch only tracks uploaded videos. YouTube and external embeds can't be tracked, so this lesson can't complete automatically and students can't mark it complete. Upload the video in the Video tab, or set the completion rule to Manual.",
             "watch_videos_required": "Select at least one video when using video watch.",
-            "students_only_note": "These rules apply to students only. You can preview and navigate freely while teaching."
+            "students_only_note": "These rules apply to students only. You can preview and navigate freely while teaching.",
+            "watch_videos_learn_more": "Learn more",
+            "watch_videos_no_uploads_title": "No uploaded videos in this lesson"
           },
           "comments": {
             "title": "Lesson comments",
@@ -3987,7 +3989,7 @@
         "content_grouping_title": "Content grouping",
         "content_grouping_description": "Group lessons and exercises by section in the content list.",
         "progression_mode_title": "Student progression",
-        "progression_mode_description": "Control whether students can access all unlocked content or must complete items in order.",
+        "progression_mode_description": "Control whether students can access all unlocked content or must complete items in order. Video watch completion only tracks uploaded videos.",
         "progression_mode_free": "Free — unlocked content is accessible",
         "progression_mode_sequential": "Sequential — complete prior items to unlock next",
         "lesson_download": "Lessons DownLoad",
@@ -5254,16 +5256,16 @@
     "retry": "Retry",
     "run_monitor_aria": "Course generation in progress",
     "run_monitor": {
-      "cancel": "Cancel run",
+      "cancel": "Cancel generation",
       "dismiss": "Dismiss",
       "dismiss_confirm": "Walk away",
-      "dismiss_cancel": "Keep run",
-      "dismiss_confirm_body": "Walk away from this canceled run? The Resume button will be gone — any further chat will start fresh and won't continue the plan.",
+      "dismiss_cancel": "Stay here",
+      "dismiss_confirm_body": "Walk away from this canceled generation? The Resume button will be gone — any further chat will start fresh and won't continue the plan.",
       "now_doing": "Now",
       "input_disabled_hint": "Chat is paused while the agent finishes building the course. Cancel or wait for it to complete.",
       "stuck_queued": {
         "title": "Worker not responding",
-        "body": "This run has been waiting more than 30 seconds with no worker pickup. The background worker may be down or restarting."
+        "body": "Course generation has been waiting more than 30 seconds with no worker pickup. The background worker may be down or restarting."
       }
     },
     "plan_view": {
@@ -5291,21 +5293,21 @@
       }
     },
     "run_summary": {
-      "completed": "Run completed.",
-      "completed_with_counts": "Run completed — created {counts}.",
-      "failed": "Run failed.",
-      "failed_with_reason": "Run failed — {reason}.",
-      "canceled": "Run canceled.",
-      "canceled_with_counts": "Run canceled — created {counts} before stopping.",
-      "paused": "Run paused. Resume to continue.",
-      "paused_with_counts": "Run paused — created {counts} so far. Resume to continue."
+      "completed": "Course generation completed.",
+      "completed_with_counts": "Course generation completed — created {counts}.",
+      "failed": "Course generation failed.",
+      "failed_with_reason": "Course generation failed — {reason}.",
+      "canceled": "Course generation canceled.",
+      "canceled_with_counts": "Course generation canceled — created {counts} before stopping.",
+      "paused": "Course generation paused. Resume to continue.",
+      "paused_with_counts": "Course generation paused — created {counts} so far. Resume to continue."
     },
     "stopped_content_kept": "Stopped. Created content has been kept.",
     "run_failed_after": "{action} did not finish successfully.",
     "tool": {
       "pending": {
         "working": "Working",
-        "unknown_tool": "Running {toolName}",
+        "unknown_tool": "Working on {toolName}",
         "get_course_structure": "Reading course structure",
         "get_lesson_content": "Reading lesson content",
         "get_exercise_details": "Reading exercise",

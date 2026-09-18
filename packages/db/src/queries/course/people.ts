@@ -327,7 +327,7 @@ export async function updateCourseMember(
     const [updated] = await db
       .update(schema.groupmember)
       .set(data)
-      .where(eq(schema.groupmember.id, memberId))
+      .where(and(eq(schema.groupmember.id, memberId), eq(schema.groupmember.groupId, member.groupId)))
       .returning();
 
     return updated || null;
@@ -386,7 +386,10 @@ export async function deleteCourseMember(courseId: string, memberId: string): Pr
 
       await tx.delete(schema.questionAnswer).where(eq(schema.questionAnswer.groupMemberId, memberId));
 
-      const [row] = await tx.delete(schema.groupmember).where(eq(schema.groupmember.id, memberId)).returning();
+      const [row] = await tx
+        .delete(schema.groupmember)
+        .where(and(eq(schema.groupmember.id, memberId), eq(schema.groupmember.groupId, member.groupId)))
+        .returning();
       return row || null;
     });
 

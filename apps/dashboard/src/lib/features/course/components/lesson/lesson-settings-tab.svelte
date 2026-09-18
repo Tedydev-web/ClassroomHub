@@ -8,7 +8,9 @@
   import * as Field from '@cio/ui/base/field';
   import * as Select from '@cio/ui/base/select';
   import * as Tooltip from '@cio/ui/base/tooltip';
+  import * as Alert from '@cio/ui/base/alert';
   import InfoIcon from '@lucide/svelte/icons/info';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { toast } from '@cio/ui/base/sonner';
   import { classroomhub } from '$lib/utils/services/api';
   import { t } from '$lib/utils/functions/translations';
@@ -387,9 +389,17 @@
             >
 
             {#if enforceableVideos.length === 0}
-              <Field.Description
-                >{$t('course.navItem.lessons.settings.progression.watch_videos_empty')}</Field.Description
-              >
+              <Alert.Root variant="warning">
+                <TriangleAlertIcon />
+                <Alert.Title>
+                  {$t('course.navItem.lessons.settings.progression.watch_videos_no_uploads_title')}
+                </Alert.Title>
+                <Alert.Description>
+                  <p>
+                    {$t('course.navItem.lessons.settings.progression.watch_videos_empty')}
+                  </p>
+                </Alert.Description>
+              </Alert.Root>
             {:else}
               <Field.Group class="gap-3">
                 {#each enforceableVideos as { video, index } (video.assetId ?? index)}
@@ -405,10 +415,10 @@
                   </Field.Field>
                 {/each}
               </Field.Group>
-            {/if}
 
-            {#if showWatchVideosError}
-              <Field.Error>{$t('course.navItem.lessons.settings.progression.watch_videos_required')}</Field.Error>
+              {#if showWatchVideosError}
+                <Field.Error>{$t('course.navItem.lessons.settings.progression.watch_videos_required')}</Field.Error>
+              {/if}
             {/if}
           </Field.Field>
         {/if}

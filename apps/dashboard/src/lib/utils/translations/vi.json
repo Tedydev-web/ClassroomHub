@@ -1007,7 +1007,7 @@
         "content_grouping_title": "Nhóm nội dung",
         "content_grouping_description": "Nhóm các bài học, bài tập theo từng phần trong danh sách nội dung.",
         "progression_mode_title": "Tiến trình học viên",
-        "progression_mode_description": "Kiểm soát học viên có thể truy cập mọi nội dung đã mở khóa hay phải hoàn thành theo thứ tự.",
+        "progression_mode_description": "Kiểm soát xem học sinh có thể truy cập tất cả nội dung đã mở khóa hay phải hoàn thành các mục theo thứ tự. Việc xem xong video chỉ theo dõi các video đã tải lên.",
         "progression_mode_free": "Tự do — nội dung đã mở khóa có thể truy cập",
         "progression_mode_sequential": "Tuần tự — hoàn thành mục trước để mở mục tiếp theo",
         "lesson_download": "Bài học Tải về",
@@ -2602,7 +2602,7 @@
           "manual_label": "Thủ công",
           "manual_description": "Học viên tự đánh dấu bài học là hoàn thành.",
           "video_watch_label": "Xem video",
-          "video_watch_description": "Bài học tự hoàn thành sau khi học viên xem các video đã chọn.",
+          "video_watch_description": "Bài học tự động hoàn thành sau khi học sinh xem các video đã tải lên đã chọn. Không thể theo dõi YouTube và các nội dung nhúng bên ngoài.",
           "none_label": "Không",
           "none_description": "Bài học này không chặn tiến trình khóa học.",
           "watch_threshold": "Ngưỡng xem (%)"
@@ -2614,9 +2614,11 @@
             "option_guide_heading": "Ý nghĩa từng tùy chọn",
             "watch_videos_heading": "Video cần áp dụng",
             "watch_videos_helper": "Chỉ video đã tải lên mới có thể áp dụng. YouTube và nhúng bên ngoài không thể theo dõi.",
-            "watch_videos_empty": "Thêm video đã tải lên trong tab Video để dùng theo dõi xem.",
+            "watch_videos_empty": "Xem video chỉ theo dõi các video đã tải lên. Không thể theo dõi nội dung nhúng trên YouTube và bên ngoài, vì vậy bài học này không thể tự động hoàn thành và học sinh không thể đánh dấu bài học là hoàn thành. Tải video lên trong tab Video hoặc đặt quy tắc hoàn thành thành Thủ công.",
             "watch_videos_required": "Chọn ít nhất một video khi dùng theo dõi xem.",
-            "students_only_note": "Các quy tắc này chỉ áp dụng cho học viên. Giảng viên có thể xem trước và điều hướng tự do."
+            "students_only_note": "Các quy tắc này chỉ áp dụng cho học viên. Giảng viên có thể xem trước và điều hướng tự do.",
+            "watch_videos_no_uploads_title": "Không có video nào được tải lên trong bài học này",
+            "watch_videos_learn_more": "Tìm hiểu thêm"
           },
           "comments": {
             "title": "Bình luận bài học",
@@ -4771,7 +4773,7 @@
     "tool": {
       "pending": {
         "working": "Đang xử lý",
-        "unknown_tool": "Đang chạy {toolName}",
+        "unknown_tool": "Đang làm việc với {toolName}",
         "get_course_structure": "Đang đọc cấu trúc khóa học",
         "get_lesson_content": "Đang đọc nội dung bài học",
         "get_exercise_details": "Đang đọc bài tập",
@@ -4877,14 +4879,14 @@
     "retry": "Thử lại",
     "run_monitor_aria": "Đang tạo khóa học",
     "run_summary": {
-      "completed": "Chạy xong.",
-      "completed_with_counts": "Đã hoàn thành chạy — đã tạo {counts}.",
-      "failed": "Chạy không thành công.",
-      "failed_with_reason": "Chạy không thành công — {reason}.",
-      "canceled": "Cuộc chạy bị hủy.",
-      "canceled_with_counts": "Cuộc chạy đã bị hủy — đã tạo {counts} trước khi dừng.",
-      "paused": "Chạy bị tạm dừng. Tiếp tục để tiếp tục.",
-      "paused_with_counts": "Cuộc chạy bị tạm dừng — đã tạo {counts} cho đến nay. Tiếp tục để tiếp tục."
+      "completed": "Đã tạo xong khóa học.",
+      "completed_with_counts": "Đã tạo xong khóa học — đã tạo {counts}.",
+      "failed": "Tạo khóa học không thành công.",
+      "failed_with_reason": "Tạo khóa học không thành công — {reason}.",
+      "canceled": "Đã hủy tạo khóa học.",
+      "canceled_with_counts": "Đã hủy tạo khóa học — đã tạo {counts} trước khi dừng.",
+      "paused": "Đã tạm dừng tạo khóa học. Tiếp tục để làm tiếp.",
+      "paused_with_counts": "Đã tạm dừng tạo khóa học — đã tạo {counts} cho đến nay. Tiếp tục để làm tiếp."
     },
     "changes_card": {
       "summary_count": "{count} mục đã thay đổi",
@@ -4911,16 +4913,16 @@
       "collapse": "Thu gọn kế hoạch"
     },
     "run_monitor": {
-      "cancel": "Hủy chạy",
+      "cancel": "Hủy tạo khóa học",
       "dismiss": "Loại bỏ",
       "now_doing": "bây giờ",
       "input_disabled_hint": "Cuộc trò chuyện bị tạm dừng trong khi nhân viên hỗ trợ hoàn tất việc xây dựng khóa học. Hủy bỏ hoặc đợi cho đến khi nó hoàn thành.",
       "dismiss_confirm": "Bỏ đi",
-      "dismiss_cancel": "Tiếp tục chạy",
-      "dismiss_confirm_body": "Rời khỏi cuộc chạy bị hủy bỏ này? Nút Tiếp tục sẽ biến mất - mọi cuộc trò chuyện tiếp theo sẽ bắt đầu mới và sẽ không tiếp tục kế hoạch.",
+      "dismiss_cancel": "Ở lại đây",
+      "dismiss_confirm_body": "Rời khỏi lần tạo đã hủy này? Nút Tiếp tục sẽ biến mất — mọi cuộc trò chuyện tiếp theo sẽ bắt đầu lại và không tiếp tục kế hoạch.",
       "stuck_queued": {
         "title": "Công nhân không phản hồi",
-        "body": "Lần chạy này đã chờ hơn 30 giây mà không có công nhân đón. Nhân viên chạy nền có thể không hoạt động hoặc đang khởi động lại."
+        "body": "Việc tạo khóa học đã chờ hơn 30 giây mà không có tiến trình nền nào tiếp nhận. Tiến trình nền có thể đang tắt hoặc đang khởi động lại."
       }
     },
     "ask_ai": "Hỏi AI",

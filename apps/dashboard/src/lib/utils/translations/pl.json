@@ -997,7 +997,7 @@
         "content_grouping_title": "Grupowanie treści",
         "content_grouping_description": "Grupuj lekcje i ćwiczenia według sekcji na liście treści.",
         "progression_mode_title": "Postęp ucznia",
-        "progression_mode_description": "Kontroluj, czy uczniowie mogą uzyskać dostęp do całej odblokowanej treści, czy muszą kończyć elementy po kolei.",
+        "progression_mode_description": "Kontroluj, czy uczniowie mogą uzyskać dostęp do całej odblokowanej zawartości lub czy muszą ukończyć elementy w określonej kolejności. Reguła ukończenia na podstawie oglądania wideo działa tylko dla przesłanych filmów.",
         "progression_mode_free": "Wolny — odblokowana treść jest dostępna",
         "progression_mode_sequential": "Sekwencyjny — ukończ poprzednie elementy, aby odblokować następny",
         "lesson_download": "Lekcje do pobrania",
@@ -2564,7 +2564,7 @@
           "manual_label": "Ręcznie",
           "manual_description": "Uczniowie sami oznaczają lekcję jako ukończoną.",
           "video_watch_label": "Obejrzenie wideo",
-          "video_watch_description": "Lekcja kończy się automatycznie po obejrzeniu wybranych filmów.",
+          "video_watch_description": "Lekcja kończy się automatycznie, gdy uczniowie obejrzą wybrane przesłane filmy. Nie można śledzić filmów z YouTube ani filmów osadzonych na zewnętrznych stronach.",
           "none_label": "Brak",
           "none_description": "Ta lekcja nie blokuje postępu w kursie.",
           "watch_threshold": "Próg obejrzenia (%)"
@@ -2576,9 +2576,11 @@
             "option_guide_heading": "Co oznacza każda opcja",
             "watch_videos_heading": "Filmy do egzekwowania",
             "watch_videos_helper": "Tylko przesłane filmy mogą być egzekwowane. YouTube i zewnętrzne osadzenia nie mogą być śledzone.",
-            "watch_videos_empty": "Dodaj przesłany film w zakładce Wideo, aby użyć egzekwowania obejrzenia.",
+            "watch_videos_empty": "Śledzenie oglądania obejmuje tylko przesłane filmy. Nie można śledzić filmów z YouTube ani filmów osadzonych na zewnętrznych stronach, więc ta lekcja nie może zostać ukończona automatycznie, a uczniowie nie mogą oznaczyć jej jako ukończonej. Prześlij wideo na karcie Wideo lub ustaw regułę ukończenia na Ręcznie.",
             "watch_videos_required": "Wybierz co najmniej jeden film przy egzekwowaniu obejrzenia.",
-            "students_only_note": "Te zasady dotyczą tylko uczniów. Jako nauczyciel możesz swobodnie przeglądać i nawigować."
+            "students_only_note": "Te zasady dotyczą tylko uczniów. Jako nauczyciel możesz swobodnie przeglądać i nawigować.",
+            "watch_videos_no_uploads_title": "Brak przesłanych filmów wideo w tej lekcji",
+            "watch_videos_learn_more": "Dowiedz się więcej"
           },
           "comments": {
             "title": "Komentarze do lekcji",
@@ -4720,7 +4722,7 @@
     "tool": {
       "pending": {
         "working": "Przetwarzanie",
-        "unknown_tool": "Uruchamianie {toolName}",
+        "unknown_tool": "Praca nad {toolName}",
         "get_course_structure": "Odczytywanie struktury kursu",
         "get_lesson_content": "Odczytywanie treści lekcji",
         "get_exercise_details": "Odczytywanie ćwiczenia",
@@ -4826,14 +4828,14 @@
     "retry": "Spróbuj ponownie",
     "run_monitor_aria": "Trwa generowanie kursu",
     "run_summary": {
-      "completed": "Uruchomienie zakończone.",
-      "completed_with_counts": "Uruchomienie zakończone — utworzono {counts}.",
-      "failed": "Uruchomienie nie powiodło się.",
-      "failed_with_reason": "Uruchomienie nie powiodło się — {reason}.",
-      "canceled": "Bieg odwołany.",
-      "canceled_with_counts": "Uruchomienie anulowane — utworzono {counts} przed zatrzymaniem.",
-      "paused": "Uruchomienie wstrzymane. Wznów, aby kontynuować.",
-      "paused_with_counts": "Uruchomienie wstrzymane — do tej pory utworzono {counts}. Wznów, aby kontynuować."
+      "completed": "Generowanie kursu zakończone.",
+      "completed_with_counts": "Generowanie kursu zakończone — utworzono {counts}.",
+      "failed": "Generowanie kursu nie powiodło się.",
+      "failed_with_reason": "Generowanie kursu nie powiodło się — {reason}.",
+      "canceled": "Generowanie kursu anulowane.",
+      "canceled_with_counts": "Generowanie kursu anulowane — utworzono {counts} przed zatrzymaniem.",
+      "paused": "Generowanie kursu wstrzymane. Wznów, aby kontynuować.",
+      "paused_with_counts": "Generowanie kursu wstrzymane — dotychczas utworzono {counts}. Wznów, aby kontynuować."
     },
     "changes_card": {
       "summary_count": "Zmieniono {count} elementów",
@@ -4860,16 +4862,16 @@
       "collapse": "Zwiń plan"
     },
     "run_monitor": {
-      "cancel": "Anuluj bieg",
+      "cancel": "Anuluj generowanie",
       "dismiss": "Odrzuć",
       "now_doing": "Teraz",
       "input_disabled_hint": "Czat zostaje wstrzymany, gdy agent kończy tworzenie kursu. Anuluj lub poczekaj na zakończenie.",
       "dismiss_confirm": "Odejdź",
-      "dismiss_cancel": "Biegnij dalej",
-      "dismiss_confirm_body": "Czy chcesz zrezygnować z tego odwołanego biegu? Przycisk Wznów zniknie — każdy kolejny czat rozpocznie się od nowa i nie będzie kontynuowany planu.",
+      "dismiss_cancel": "Zostań tutaj",
+      "dismiss_confirm_body": "Odejść od tego anulowanego generowania? Przycisk Wznów zniknie — każdy kolejny czat zacznie się od nowa i nie będzie kontynuował planu.",
       "stuck_queued": {
         "title": "Pracownik nie odpowiada",
-        "body": "Ten przebieg czekał ponad 30 sekund bez odbioru pracownika. Proces roboczy działający w tle może być wyłączony lub uruchamiany ponownie."
+        "body": "Generowanie kursu czeka dłużej niż 30 sekund i żaden proces w tle go nie podjął. Proces w tle może być wyłączony lub właśnie się restartuje."
       }
     },
     "ask_ai": "Zapytaj AI",

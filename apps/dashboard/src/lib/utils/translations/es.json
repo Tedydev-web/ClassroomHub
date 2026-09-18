@@ -997,7 +997,7 @@
         "content_grouping_title": "Agrupación de contenidos",
         "content_grouping_description": "Agrupe lecciones y ejercicios por sección en la lista de contenidos.",
         "progression_mode_title": "Progresión del estudiante",
-        "progression_mode_description": "Controla si los estudiantes pueden acceder a todo el contenido desbloqueado o deben completar los elementos en orden.",
+        "progression_mode_description": "Controle si los estudiantes pueden acceder a todo el contenido desbloqueado o deben completar los elementos en orden. La finalización de la visualización del video solo rastrea los videos subidos.",
         "progression_mode_free": "Libre — el contenido desbloqueado es accesible",
         "progression_mode_sequential": "Secuencial — completar elementos previos para desbloquear el siguiente",
         "lesson_download": "Lecciones DescargarCargar",
@@ -2564,7 +2564,7 @@
           "manual_label": "Manual",
           "manual_description": "Los estudiantes marcan la lección como completada.",
           "video_watch_label": "Ver video",
-          "video_watch_description": "La lección se completa automáticamente después de que los estudiantes vean los videos seleccionados.",
+          "video_watch_description": "La lección se completa automáticamente después de que los estudiantes vean los videos cargados seleccionados. No se pueden rastrear YouTube ni las incrustaciones externas.",
           "none_label": "Ninguna",
           "none_description": "Esta lección no bloquea la progresión del curso.",
           "watch_threshold": "Umbral de visualización (%)"
@@ -2576,9 +2576,11 @@
             "option_guide_heading": "Qué significa cada opción",
             "watch_videos_heading": "Videos a aplicar",
             "watch_videos_helper": "Solo los videos subidos pueden aplicarse. YouTube y las incrustaciones externas no se pueden rastrear.",
-            "watch_videos_empty": "Añade un video subido en la pestaña Video para usar el seguimiento de visualización.",
+            "watch_videos_empty": "La visualización de videos solo rastrea los videos subidos. No se puede realizar un seguimiento de YouTube ni de incrustaciones externas, por lo que esta lección no se puede completar automáticamente y los estudiantes no pueden marcarla como completada. Cargue el video en la pestaña Video o establezca la regla de finalización en Manual.",
             "watch_videos_required": "Selecciona al menos un video para el seguimiento de visualización.",
-            "students_only_note": "Estas reglas aplican solo a estudiantes. Puedes previsualizar y navegar libremente al enseñar."
+            "students_only_note": "Estas reglas aplican solo a estudiantes. Puedes previsualizar y navegar libremente al enseñar.",
+            "watch_videos_no_uploads_title": "No hay videos subidos en esta lección.",
+            "watch_videos_learn_more": "Más información"
           },
           "comments": {
             "title": "Comentarios de la lección",
@@ -4720,7 +4722,7 @@
     "tool": {
       "pending": {
         "working": "Trabajando",
-        "unknown_tool": "Ejecutando {toolName}",
+        "unknown_tool": "Trabajando en {toolName}",
         "get_course_structure": "Leyendo estructura del curso",
         "get_lesson_content": "Leyendo contenido de la lección",
         "get_exercise_details": "Leyendo ejercicio",
@@ -4826,14 +4828,14 @@
     "retry": "Reintentar",
     "run_monitor_aria": "Generación de cursos en progreso",
     "run_summary": {
-      "completed": "Ejecución completada.",
-      "completed_with_counts": "Ejecución completada: creada {counts}.",
-      "failed": "La ejecución falló.",
-      "failed_with_reason": "La ejecución falló: {reason}.",
-      "canceled": "Ejecución cancelada.",
-      "canceled_with_counts": "Ejecución cancelada: creó {counts} antes de detenerse.",
-      "paused": "Ejecución pausada. Reanudar para continuar.",
-      "paused_with_counts": "Ejecución pausada: creado {counts} hasta el momento. Reanudar para continuar."
+      "completed": "Generación del curso completada.",
+      "completed_with_counts": "Generación del curso completada — se creó {counts}.",
+      "failed": "La generación del curso falló.",
+      "failed_with_reason": "La generación del curso falló — {reason}.",
+      "canceled": "Generación del curso cancelada.",
+      "canceled_with_counts": "Generación del curso cancelada — se creó {counts} antes de detenerse.",
+      "paused": "Generación del curso pausada. Reanuda para continuar.",
+      "paused_with_counts": "Generación del curso pausada — se creó {counts} hasta ahora. Reanuda para continuar."
     },
     "changes_card": {
       "summary_count": "{count} elementos cambiados",
@@ -4860,16 +4862,16 @@
       "collapse": "Plan de colapso"
     },
     "run_monitor": {
-      "cancel": "Cancelar ejecución",
+      "cancel": "Cancelar generación",
       "dismiss": "Descartar",
       "now_doing": "ahora",
       "input_disabled_hint": "El chat se pausa mientras el agente termina de crear el curso. Cancele o espere a que se complete.",
       "dismiss_confirm": "alejarse",
-      "dismiss_cancel": "seguir corriendo",
-      "dismiss_confirm_body": "¿Abandonarse de esta carrera cancelada? El botón Reanudar desaparecerá; cualquier conversación adicional comenzará de nuevo y no continuará con el plan.",
+      "dismiss_cancel": "Quedarse aquí",
+      "dismiss_confirm_body": "¿Abandonar esta generación cancelada? El botón Reanudar desaparecerá: cualquier conversación adicional empezará de cero y no continuará el plan.",
       "stuck_queued": {
         "title": "trabajador no responde",
-        "body": "Esta ejecución ha estado esperando más de 30 segundos sin que ningún trabajador haya sido recogido. Es posible que el trabajador en segundo plano esté inactivo o reiniciándose."
+        "body": "La generación del curso lleva más de 30 segundos esperando sin que ningún proceso en segundo plano la haya recogido. Es posible que el proceso en segundo plano esté inactivo o reiniciándose."
       }
     },
     "ask_ai": "Pregúntale a la IA",
