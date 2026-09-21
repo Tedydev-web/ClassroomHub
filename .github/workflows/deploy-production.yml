@@ -248,8 +248,8 @@ jobs:
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     timeout-minutes: 60
     strategy:
-      fail-fast: true
-      max-parallel: 4
+      fail-fast: false
+      max-parallel: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 4 || 2 }}
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
