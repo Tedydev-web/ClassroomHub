@@ -63,12 +63,6 @@ export type PromoteUngroupedSectionResponse = InferResponseType<PromoteUngrouped
 export type PromoteUngroupedSectionSuccess = Extract<PromoteUngroupedSectionResponse, { success: true }>;
 export type PromoteUngroupedSectionData = PromoteUngroupedSectionSuccess['data'];
 
-// Reorder lessons types
-export type ReorderLessonsRequest = (typeof classroomhub.course)[':courseId']['lesson']['reorder']['$post'];
-export type ReorderLessonsResponse = InferResponseType<ReorderLessonsRequest>;
-export type ReorderLessonsSuccess = Extract<ReorderLessonsResponse, { success: true }>;
-export type ReorderLessonsData = ReorderLessonsSuccess['data'];
-
 // Course Section type (derived from Course API response which includes course_section array)
 // Since sections are returned as part of Course, we can use CreateCourseSectionData or UpdateCourseSectionData
 // But for consistency, we'll use the create response as the base type
@@ -229,6 +223,13 @@ export type PublishAssessmentItemRequest =
 export type CreateExerciseRequest = (typeof classroomhub.course)[':courseId']['exercise']['$post'];
 export type CreateExerciseFromTemplateRequest =
   (typeof classroomhub.course)[':courseId']['exercise']['from-template']['$post'];
+
+export type CreateExerciseFromTemplateOptions = {
+  lessonId?: string;
+  sectionId?: string;
+  order: number;
+  silent?: boolean;
+};
 export type CreateExerciseFromTemplateResponse = InferResponseType<CreateExerciseFromTemplateRequest>;
 export type CreateExerciseFromTemplateSuccess = Extract<CreateExerciseFromTemplateResponse, { success: true }>;
 export type CreateExerciseFromTemplateData = CreateExerciseFromTemplateSuccess['data'];

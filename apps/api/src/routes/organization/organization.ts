@@ -102,7 +102,7 @@ export const audienceRouter = new Hono()
    * Gets organization audience (students)
    * Requires authentication
    */
-  .get('/', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZGetAudienceQuery), async (c) => {
+  .get('/', authMiddleware, orgAdminMiddleware, zValidator('query', ZGetAudienceQuery), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const query = c.req.valid('query');
@@ -126,7 +126,7 @@ export const audienceRouter = new Hono()
    * Every row matching the scope, for a client-side export. Not paginated —
    * the caller builds the file in the browser, so it needs the whole set.
    */
-  .get('/export', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZAudienceExportQuery), async (c) => {
+  .get('/export', authMiddleware, orgAdminMiddleware, zValidator('query', ZAudienceExportQuery), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const query = c.req.valid('query');
@@ -318,7 +318,7 @@ export const audienceRouter = new Hono()
    * Imports users into the organization as students with optional course assignment
    * Requires authentication and admin role
    */
-  .post('/import', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZImportAudienceMembers), async (c) => {
+  .post('/import', authMiddleware, orgAdminMiddleware, zValidator('json', ZImportAudienceMembers), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const user = c.get('user')!;
@@ -345,7 +345,7 @@ export const audienceRouter = new Hono()
   .post(
     '/assign-courses',
     authMiddleware,
-    orgTeamMemberMiddleware,
+    orgAdminMiddleware,
     zValidator('json', ZAssignAudienceCourses),
     async (c) => {
       try {
@@ -412,7 +412,7 @@ export const organizationRouter = new Hono()
   /**
    * GET /organization/team
    * Gets organization team members (non-students)
-   * Requires authentication
+   * Requires organization admin access
    */
   /**
    * POST /organization/join
@@ -435,7 +435,7 @@ export const organizationRouter = new Hono()
       return handleError(c, error, 'Failed to join organization');
     }
   })
-  .get('/team', authMiddleware, orgTeamMemberMiddleware, async (c) => {
+  .get('/team', authMiddleware, orgAdminMiddleware, async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const team = await getOrgTeam(orgId);

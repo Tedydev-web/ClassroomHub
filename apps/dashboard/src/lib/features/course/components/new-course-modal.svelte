@@ -97,7 +97,7 @@
     if (!isOpen) onClose(page.url.pathname);
   }}
 >
-  <Dialog.Content class="ui:sm:max-w-2xl mx-auto">
+  <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>{$t('courses.new_course_modal.heading')}</Dialog.Title>
     </Dialog.Header>

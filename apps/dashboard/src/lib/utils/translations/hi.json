@@ -334,7 +334,11 @@
         "all_content_already_unlocked": "सभी सामग्री पहले से अनलॉक है",
         "content_grouping_enabled": "सामग्री समूहीकरण सक्षम",
         "content_grouping_disabled": "सामग्री समूहीकरण अक्षम",
-        "link_generated": "पाठ्यक्रम लिंक सफलतापूर्वक अपडेट किया गया"
+        "link_generated": "पाठ्यक्रम लिंक सफलतापूर्वक अपडेट किया गया",
+        "converted_to_public": "पाठ्यक्रम सफलतापूर्वक सार्वजनिक में परिवर्तित हो गया"
+      },
+      "info": {
+        "conversion_blocked": "सार्वजनिक करने की प्रक्रिया पूरी करने के लिए नीचे दिए गए प्रश्नों के उत्तर दें।"
       }
     },
     "people": {
@@ -1033,7 +1037,7 @@
         },
         "compliance": "अनुपालन",
         "public": "सार्वजनिक",
-        "convert_to_public_blocked": "इस पाठ्यक्रम में ऐसे प्रश्न हैं जिन्हें स्वचालित रूप से वर्गीकृत नहीं किया जा सकता है, इसलिए इसे अभी तक सार्वजनिक नहीं किया जा सकता है।",
+        "convert_to_public_blocked": "सार्वजनिक पाठ्यक्रमों के लिए केवल ऑटो-ग्रेडेबल प्रश्नों की आवश्यकता होती है।",
         "fix_blocking_questions": "अवरुद्ध करने वाले प्रश्नों को ठीक करें",
         "slug": {
           "label": "यूआरएल स्लग",
@@ -1086,7 +1090,48 @@
           "description": "छात्रों को इस पाठ्यक्रम के सभी पाठों पर टिप्पणियाँ देखने और जोड़ने की अनुमति दें। अलग-अलग पाठों के लिए टिप्पणियाँ फिर भी बंद की जा सकती हैं।",
           "enabled": "इस पाठ्यक्रम के लिए टिप्पणियाँ चालू हैं",
           "disabled": "इस पाठ्यक्रम के लिए टिप्पणियाँ बंद हैं"
-        }
+        },
+        "remove": "हटाओ",
+        "setup_landing_page": "लैंडिंग पृष्ठ सेटअप करें",
+        "general_card_title": "सामान्य",
+        "content_card_title": "सामग्री",
+        "access_card_title": "पहुँच",
+        "question_in_exercise": "\"{exercise}\" में",
+        "fix_question": "संपादित करें",
+        "convert_to_public_blocked_desc": "सार्वजनिक पाठ्यक्रम में अभ्यासों को ब्राउज़र में स्वचालित रूप से ग्रेड किया जाता है, यही कारण है कि हम केवल ऑटो-ग्रेडेबल प्रश्नों का समर्थन करते हैं। इस पाठ्यक्रम को सार्वजनिक में परिवर्तित करने से पहले निम्नलिखित प्रश्नों को हटा दें या बदल दें:",
+        "fix_in_exercise": "व्यायाम में सुधार करें",
+        "cancel_conversion": "रूपांतरण रद्द करें",
+        "public_conversion": {
+          "banner_title": "पाठ्यक्रम को सार्वजनिक में परिवर्तित करना",
+          "exercise_fixed": "यह एक्सरसाइज तैयार है",
+          "back_to_settings": "सेटिंग्स पर वापस जाएँ",
+          "complete_conversion": "पूर्ण सार्वजनिक रूपांतरण",
+          "jump_to": "पर जाएँ",
+          "blocks_public_conversion": "नॉन-ऑटोग्रेडेबल",
+          "blocks_public_conversion_desc": "सार्वजनिक पाठ्यक्रम केवल ऑटो-ग्रेडेबल प्रश्नों का समर्थन करते हैं। रूपांतरण के साथ आगे बढ़ने के लिए इस प्रश्न का प्रकार बदलें या इसे हटा दें।",
+          "blocks_public_conversion_title": "सार्वजनिक पाठ्यक्रमों में मैन्युअल ग्रेडिंग समर्थित नहीं है।",
+          "aria_label": "सार्वजनिक पाठ्यक्रम रूपांतरण प्रगति",
+          "all_exercises_fixed": "सभी {total} अभ्यास हल हो गए",
+          "ready_to_convert": "रूपांतरण के लिए तैयार!",
+          "questions_left_other_singular": "· अन्य अभ्यासों में {count} प्रश्न शेष हैं",
+          "questions_left_other_plural": "· अन्य अभ्यासों में {count} प्रश्न शेष हैं",
+          "progress_summary_singular": "{resolved}/{total} हल हो गए · {remaining} प्रश्न शेष हैं",
+          "progress_summary_plural": "{resolved}/{total} हल हो गए · {remaining} प्रश्न शेष हैं",
+          "next_exercise": "अगला: {exercise}",
+          "next": "अगला",
+          "question_fallback": "प्रश्न {number}",
+          "question_count_singular": "{count} प्रश्न",
+          "question_count_plural": "{count} प्रश्न",
+          "exercise_count_singular": "{count} अभ्यास",
+          "exercise_count_plural": "{count} अभ्यास",
+          "exercises_fixed": "{resolved}/{total} हल हो गए",
+          "questions_left_singular": "हल हो गए · {count} प्रश्न शेष",
+          "questions_left_plural": "हल हो गए · {count} प्रश्न शेष"
+        },
+        "fix": "हल करना",
+        "save_changes_to_fix_questions": "प्रश्नों के उत्तर देने से पहले अपने असंरक्षित परिवर्तनों को सहेज लें।",
+        "allow_markdown_export": "शिक्षार्थियों को पाठ पृष्ठ Markdown के रूप में कॉपी करने दें",
+        "allow_markdown_export_description": "सक्षम होने पर, सार्वजनिक पाठ पृष्ठ एक पेज कॉपी करें बटन दिखाते हैं जो पाठ सामग्री (वीडियो छोड़कर) को Markdown के रूप में निर्यात करता है। यह प्रत्येक अनलॉक पाठ के लिए एक सार्वजनिक Markdown URL भी प्रकाशित करता है।"
       },
       "analytics": {
         "title": "विश्लेषिकी"
@@ -2641,7 +2686,16 @@
           "link_copied": "लिंक कॉपी किया गया"
         },
         "student_share_your_knowledge": "इस कोर्स में अभी तक कोई पाठ नहीं जोड़ा गया है। कृपया बाद में दोबारा देखें।",
-        "student_body_content": "इस कोर्स में अभी तक कोई पाठ नहीं जोड़ा गया है। कृपया बाद में दोबारा देखें।"
+        "student_body_content": "इस कोर्स में अभी तक कोई पाठ नहीं जोड़ा गया है। कृपया बाद में दोबारा देखें।",
+        "add_content_created_section": "सेक्शन सफलतापूर्वक बन गया है!",
+        "add_content_created_lesson": "पाठ सफलतापूर्वक बन गया है!",
+        "add_content_created_exercise": "अभ्यास सफलतापूर्वक बन गया है!",
+        "add_content_create_another_section": "एक और सेक्शन बनाएँ",
+        "add_content_create_another_lesson": "एक और पाठ बनाएँ",
+        "add_content_create_another_exercise": "एक और अभ्यास बनाएँ",
+        "add_content_open_now": "अभी खोलें",
+        "add_content_later": "बाद में",
+        "add_content_add_to_section": "सामग्री जोड़ें"
       },
       "news_feed": {
         "heading": "समाचार फ़ीड",
@@ -5199,6 +5253,30 @@
     "header": {
       "explore_courses": "पाठ्यक्रमों का अन्वेषण करें",
       "sign_in": "साइन इन करें"
+    },
+    "copy_page": {
+      "copy": "पृष्ठ कॉपी करें",
+      "copied": "कॉपी हो गया",
+      "view_as_markdown": "Markdown के रूप में देखें",
+      "open_in_chatgpt": "ChatGPT में खोलें",
+      "open_in_claude": "Claude में खोलें",
+      "more_actions": "पृष्ठ कॉपी करने की और क्रियाएँ",
+      "copy_failed": "इस पाठ को Markdown के रूप में कॉपी नहीं किया जा सका"
+    },
+    "outline": {
+      "label": "इस पृष्ठ पर"
+    },
+    "rail": {
+      "copy_as_markdown": "Markdown के रूप में कॉपी करें",
+      "open_in_chat": "चैट में खोलें"
+    },
+    "share": {
+      "label": "सोशल मीडिया पर शेयर करें",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "x": "X",
+      "instagram": "Instagram",
+      "instagram_copied": "लिंक कॉपी हो गया। इसे Instagram में पेस्ट करें।"
     }
   },
   "account": {

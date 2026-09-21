@@ -17,13 +17,14 @@ export function getBucketSize(totalDays: number, containerWidth: number): number
   if (totalDays <= 7) return 1;
 
   if (totalDays <= 31) {
-    if (containerWidth >= 800) return 1;
-    if (containerWidth >= 500) return 2;
-    return 3;
+    if (containerWidth >= 800) return 2;
+    if (containerWidth >= 500) return 3;
+    return 4;
   }
 
-  if (containerWidth >= 700) return 5;
-  if (containerWidth >= 450) return 7;
+  if (containerWidth >= 1000) return 4;
+  if (containerWidth >= 700) return 4;
+  if (containerWidth >= 450) return 5;
   return 14;
 }
 
@@ -137,8 +138,11 @@ export function formatChartTooltipDate(date: Date, point?: BucketedChartPoint): 
   const isSameMonth =
     point.date.getMonth() === point.endDate.getMonth() && point.date.getFullYear() === point.endDate.getFullYear();
 
+  // Passing only `day` + `year` to Intl renders a malformed fallback like
+  // "2026 (day: 7)" on some ICU builds, so compose the year manually for
+  // same-month ranges.
   const endFormatted = isSameMonth
-    ? `${point.endDate.getDate()}, ${point.endDate.getFullYear()}`
+    ? `${point.endDate.toLocaleDateString('en-US', { day: 'numeric' })}, ${point.endDate.getFullYear()}`
     : point.endDate.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',

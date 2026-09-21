@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildProxiedApiResponse, proxyRequestToApi, shouldForwardToApi } from './proxy-api-request';
 

@@ -11,9 +11,17 @@ export default defineConfig({
     alias: [
       { find: '$lib', replacement: path.resolve(__dirname, 'src/lib') },
       { find: '$features', replacement: path.resolve(__dirname, 'src/lib/features') },
+      { find: '$mail', replacement: path.resolve(__dirname, 'src/mail') },
       // Workspace packages normally resolve to their built dist. The UI package
       // has no TypeScript build, so unit tests address the source barrel directly.
       { find: '@cio/ui/tools', replacement: path.resolve(__dirname, '../../packages/ui/src/tools/index.ts') },
+      // Plain-TypeScript helpers the landing-page suites import. Mapped one by one
+      // because a blanket @cio/ui rule would also route .svelte modules here, which
+      // this node-environment runner cannot compile.
+      {
+        find: /^@cio\/ui\/custom\/org-landing-page\/(landing-page-link-icons|footer-social-platform|theme-style|types)$/,
+        replacement: `${path.resolve(__dirname, '../../packages/ui/src/custom/org-landing-page')}/$1.ts`
+      },
       // Icon packages are Svelte source, which this node-environment runner
       // cannot compile. The logic suites only need them to resolve, never to
       // render, so both icon sources point at one inert stub rather than

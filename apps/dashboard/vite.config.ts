@@ -2,6 +2,19 @@ import { defineConfig, loadEnv } from 'vite';
 
 import { sveltekit } from '@sveltejs/kit/vite';
 import mkcert from 'vite-plugin-mkcert';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const dashboardDir = path.dirname(fileURLToPath(import.meta.url));
+
+function watchWorkspaceUiSource() {
+  return {
+    name: 'watch-workspace-ui-source',
+    configureServer(server) {
+      server.watcher.add(path.resolve(dashboardDir, '../../packages/ui/src'));
+    }
+  };
+}
 
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
@@ -16,7 +29,12 @@ export default ({ mode }) => {
         }
       }
     },
-    plugins: [redirectToCanonicalOrigin(process.env), sveltekit(), ...(useHttps ? [mkcert()] : [])],
+    plugins: [
+      redirectToCanonicalOrigin(process.env),
+      watchWorkspaceUiSource(),
+      sveltekit(),
+      ...(useHttps ? [mkcert()] : [])
+    ],
     server: {
       host,
       // `getServer` has built this from VITE_ALLOWED_HOST since it was written, but nothing

@@ -44,8 +44,8 @@ export interface BaseStepperProps {
   courseId: string;
   /** Optional section ID when adding content to a specific section */
   sectionId?: string;
-  /** Order/position for the new content */
-  order?: number;
+  /** Order/position for the new content; content order is contiguous and required. */
+  order: number;
   /** Whether the user has permission to create content */
   canCreate: boolean;
   /** Callback when content is successfully created */

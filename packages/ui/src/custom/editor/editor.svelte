@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { HTMLContent, Editor } from '@tiptap/core';
   import type { Transaction } from '@tiptap/pm/state';
+  import type { UnsplashPhoto } from './types';
   import { EdraEditor, EdraToolBar, EdraBubbleMenu, EdraDragHandleExtended } from './ui';
   import PasteFormatNotice from './ui/components/PasteFormatNotice.svelte';
   import EdraToolTip from './ui/components/EdraToolTip.svelte';
@@ -51,6 +52,8 @@
     onContentChange?: (content: HTMLContent) => void;
     onEditorReady?: (editor: Editor) => void;
     onEditorDestroy?: () => void;
+    onImageUpload?: (file: File) => Promise<string>;
+    onSearchUnsplash?: (query: string) => Promise<UnsplashPhoto[]>;
   }
 
   let {
@@ -68,7 +71,9 @@
     placeholder,
     labels,
     onContentChange,
-    onEditorReady
+    onEditorReady,
+    onImageUpload,
+    onSearchUnsplash
   }: Props = $props();
 
   let editor = $state<Editor>();
@@ -252,6 +257,8 @@
       {placeholder}
       {variant}
       onExternalPaste={(preview) => (pastePreview = preview)}
+      {onImageUpload}
+      {onSearchUnsplash}
     />
 
     {#if pastePreview && editable}

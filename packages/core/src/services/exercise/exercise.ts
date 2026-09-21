@@ -1476,7 +1476,7 @@ export async function createExerciseFromTemplate(
   courseId: string,
   lessonId: string | undefined,
   sectionId: string | undefined,
-  order: number | undefined,
+  order: number,
   template: TExerciseTemplate
 ): Promise<TExercise> {
   try {

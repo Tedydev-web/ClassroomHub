@@ -334,7 +334,11 @@
         "all_content_already_unlocked": "Alt indhold er allerede låst op",
         "content_grouping_enabled": "Indholdsgruppering aktiveret",
         "content_grouping_disabled": "Indholdsgruppering deaktiveret",
-        "link_generated": "Kursuslinket blev opdateret"
+        "link_generated": "Kursuslinket blev opdateret",
+        "converted_to_public": "Kurset blev konverteret til offentligt"
+      },
+      "info": {
+        "conversion_blocked": "Ret spørgsmålene nedenfor for at fuldføre konverteringen til Offentlig."
       }
     },
     "people": {
@@ -1033,7 +1037,7 @@
         },
         "compliance": "Overholdelse",
         "public": "Offentlig",
-        "convert_to_public_blocked": "Dette kursus har spørgsmål, der ikke kan automatisk bedømmes, så det kan ikke gøres offentligt endnu.",
+        "convert_to_public_blocked": "Offentlige kurser kræver udelukkende spørgsmål, der bedømmes automatisk.",
         "fix_blocking_questions": "Ret blokerende spørgsmål",
         "slug": {
           "label": "URL-slug",
@@ -1086,7 +1090,48 @@
           "description": "Tillad elever at se og tilføje kommentarer i lektionerne på dette kursus. Kommentarer kan stadig deaktiveres for enkelte lektioner.",
           "enabled": "Kommentarer aktiveret for dette kursus",
           "disabled": "Kommentarer deaktiveret for dette kursus"
-        }
+        },
+        "remove": "Fjern",
+        "setup_landing_page": "Opsæt landingsside",
+        "general_card_title": "Generelt",
+        "content_card_title": "Indhold",
+        "access_card_title": "Adgang",
+        "question_in_exercise": "I \"{exercise}\"",
+        "fix_question": "Rediger",
+        "convert_to_public_blocked_desc": "Øvelser i et offentligt kursus bedømmes automatisk i browseren, hvorfor vi kun understøtter spørgsmål med automatisk bedømmelse. Fjern eller erstat følgende spørgsmål, før du konverterer dette kursus til offentligt:",
+        "fix_in_exercise": "Ret i øvelse",
+        "cancel_conversion": "Annuller konvertering",
+        "public_conversion": {
+          "banner_title": "Konvertering af kursus til offentlig",
+          "exercise_fixed": "Denne øvelse er klar",
+          "back_to_settings": "Tilbage til Indstillinger",
+          "complete_conversion": "Gennemfør offentlig konvertering",
+          "jump_to": "Hop til",
+          "blocks_public_conversion": "Ikke automatisk bedømmelig",
+          "blocks_public_conversion_desc": "Offentlige kurser understøtter kun spørgsmål med automatisk bedømmelse. Skift dette spørgsmåls type eller slet det for at fortsætte med konverteringen.",
+          "blocks_public_conversion_title": "Manuel karaktergivning understøttes ikke i offentlige kurser",
+          "aria_label": "Status for konvertering af offentlige kurser",
+          "all_exercises_fixed": "Alle {total} øvelser rettet",
+          "ready_to_convert": "Klar til at konvertere!",
+          "questions_left_other_singular": "· {count} spørgsmål tilbage i andre øvelser",
+          "questions_left_other_plural": "· {count} spørgsmål tilbage i andre øvelser",
+          "progress_summary_singular": "{resolved}/{total} rettet · {remaining} spørgsmål tilbage",
+          "progress_summary_plural": "{resolved}/{total} rettet · {remaining} spørgsmål tilbage",
+          "next_exercise": "Næste: {exercise}",
+          "next": "Næste",
+          "question_fallback": "Spørgsmål {number}",
+          "question_count_singular": "{count} spørgsmål",
+          "question_count_plural": "{count} spørgsmål",
+          "exercise_count_singular": "{count} øvelse",
+          "exercise_count_plural": "{count} øvelser",
+          "exercises_fixed": "{resolved}/{total} rettet",
+          "questions_left_singular": "rettet · {count} spørgsmål tilbage",
+          "questions_left_plural": "rettet · {count} spørgsmål tilbage"
+        },
+        "fix": "Ret",
+        "save_changes_to_fix_questions": "Gem dine ikke-gemte ændringer, før du navigerer for at rette spørgsmål.",
+        "allow_markdown_export": "Tillad elever at kopiere lektionssider som Markdown",
+        "allow_markdown_export_description": "Når funktionen er slået til, viser offentlige lektionssider en knap til Kopiér side, der eksporterer lektionsindholdet (uden videoer) som Markdown. Det udgiver også en offentlig Markdown-URL for hver ulåst lektion."
       },
       "analytics": {
         "title": "Analyse"
@@ -2641,7 +2686,16 @@
           "link_copied": "Linket er kopieret"
         },
         "student_share_your_knowledge": "Der er endnu ikke tilføjet nogen lektioner til dette kursus. Tjek venligst tilbage senere.",
-        "student_body_content": "Der er endnu ikke tilføjet nogen lektioner til dette kursus. Tjek venligst tilbage senere."
+        "student_body_content": "Der er endnu ikke tilføjet nogen lektioner til dette kursus. Tjek venligst tilbage senere.",
+        "add_content_created_section": "Sektion er oprettet!",
+        "add_content_created_lesson": "Lektion er oprettet!",
+        "add_content_created_exercise": "Øvelse er oprettet!",
+        "add_content_create_another_section": "Opret en anden sektion",
+        "add_content_create_another_lesson": "Opret en anden lektion",
+        "add_content_create_another_exercise": "Opret en anden øvelse",
+        "add_content_open_now": "Åbn nu",
+        "add_content_later": "Senere",
+        "add_content_add_to_section": "Tilføj indhold"
       },
       "news_feed": {
         "heading": "Nyhedsfeed",
@@ -5199,6 +5253,30 @@
     "header": {
       "explore_courses": "Udforsk kurser",
       "sign_in": "Log ind"
+    },
+    "copy_page": {
+      "copy": "Kopiér side",
+      "copied": "Kopieret",
+      "view_as_markdown": "Vis som Markdown",
+      "open_in_chatgpt": "Åbn i ChatGPT",
+      "open_in_claude": "Åbn i Claude",
+      "more_actions": "Flere handlinger til kopi af siden",
+      "copy_failed": "Kunne ikke kopiere denne lektion som Markdown"
+    },
+    "outline": {
+      "label": "På denne side"
+    },
+    "rail": {
+      "copy_as_markdown": "Kopiér som Markdown",
+      "open_in_chat": "Åbn i chat"
+    },
+    "share": {
+      "label": "Del på sociale medier",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "x": "X",
+      "instagram": "Instagram",
+      "instagram_copied": "Link kopieret. Indsæt det i Instagram."
     }
   },
   "account": {

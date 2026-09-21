@@ -112,7 +112,11 @@ const scope = {
 const importId = '00000000-0000-4000-8000-000000000004';
 const exerciseId = '00000000-0000-4000-8000-000000000005';
 const assetId = '00000000-0000-4000-8000-000000000006';
-const transactionClient = {};
+// The publish path reads the course's highest exercise order before inserting, so the
+// transaction stub answers that one select.
+const transactionClient = {
+  select: () => ({ from: () => ({ where: async () => [{ maxOrder: 2 }] }) })
+};
 
 function importRow(status: 'queued' | 'running' | 'waiting_for_ai' | 'draft_ready' | 'published' | 'canceled') {
   return {
@@ -144,7 +148,7 @@ function importRow(status: 'queued' | 'running' | 'waiting_for_ai' | 'draft_read
 describe('exam import service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.transaction.mockImplementation(async (callback: (tx: Record<string, never>) => Promise<unknown>) =>
+    mocks.transaction.mockImplementation(async (callback: (tx: typeof transactionClient) => Promise<unknown>) =>
       callback(transactionClient)
     );
     mocks.getCourseWithOrgData.mockResolvedValue({ orgId: scope.organizationId });
@@ -278,7 +282,7 @@ describe('exam import service', () => {
     });
     expect(mocks.createExerciseFromAuthoringPlan).toHaveBeenCalledWith(
       {
-        exercise: { title: publishPlan.title, courseId: scope.courseId },
+        exercise: { title: publishPlan.title, courseId: scope.courseId, order: 3 },
         sections: publishPlan.sections
       },
       transactionClient

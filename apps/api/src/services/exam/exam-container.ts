@@ -28,6 +28,8 @@ export async function createExamContainer(title: string, dbClient: DbOrTxClient 
       title,
       courseId: null,
       lessonId: null,
+      // A container sits outside any course, so its order never sequences anything.
+      order: 0,
       assignmentMode: 'SELECTED_STUDENTS'
     })
     .returning({ id: schema.exercise.id });

@@ -142,3 +142,7 @@
     overflow-x: hidden;
   }
 }
+
+.prose img {
+  @apply rounded-md;
+}

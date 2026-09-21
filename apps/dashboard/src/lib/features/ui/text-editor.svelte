@@ -20,6 +20,8 @@
   import type { EditorVariant, HTMLContent, TiptapEditor } from '@cio/ui/custom/editor';
   import { cn } from '@cio/ui/tools';
   import { t } from '$lib/utils/functions/translations';
+  import { uploadImage } from '$lib/utils/services/upload';
+  import { queryUnsplash } from './upload-widget/utils';
 
   interface Props {
     placeholder?: string | ((node: unknown) => string);
@@ -111,5 +113,7 @@
     onContentChange={onChange}
     onEditorReady={onReady}
     {onEditorDestroy}
+    onImageUpload={uploadImage}
+    onSearchUnsplash={queryUnsplash}
   />
 {/await}

@@ -341,7 +341,11 @@
         "all_content_already_unlocked": "Tất cả nội dung đã được mở khóa",
         "content_grouping_enabled": "Đã bật nhóm nội dung",
         "content_grouping_disabled": "Đã tắt nhóm nội dung",
-        "link_generated": "Liên kết khóa học được cập nhật thành công"
+        "link_generated": "Liên kết khóa học được cập nhật thành công",
+        "converted_to_public": "Khóa học được chuyển đổi thành công sang Công khai"
+      },
+      "info": {
+        "conversion_blocked": "Vui lòng sửa các câu hỏi bên dưới để hoàn tất chuyển đổi sang chế độ Công khai."
       }
     },
     "people": {
@@ -1043,7 +1047,7 @@
         },
         "compliance": "Tuân thủ",
         "public": "công cộng",
-        "convert_to_public_blocked": "Khóa học này có các câu hỏi không thể tự động chấm điểm nên chưa thể công khai.",
+        "convert_to_public_blocked": "Các khóa học công khai chỉ yêu cầu các câu hỏi có thể tự động phân loại.",
         "fix_blocking_questions": "Sửa câu hỏi chặn",
         "slug": {
           "label": "sên URL",
@@ -1096,7 +1100,48 @@
           "description": "Cho phép học viên xem và thêm bình luận trong các bài học của khóa học này. Bạn vẫn có thể tắt bình luận cho từng bài học.",
           "enabled": "Đã bật bình luận cho khóa học này",
           "disabled": "Đã tắt bình luận cho khóa học này"
-        }
+        },
+        "remove": "Xóa",
+        "setup_landing_page": "Thiết lập landing page",
+        "general_card_title": "Chung",
+        "content_card_title": "Nội dung",
+        "access_card_title": "Truy cập",
+        "question_in_exercise": "Trong \"{exercise}\"",
+        "fix_question": "Chỉnh sửa",
+        "convert_to_public_blocked_desc": "Các bài tập trong khóa học công khai được chấm điểm tự động trong trình duyệt, đó là lý do tại sao chúng tôi chỉ hỗ trợ các câu hỏi có thể tự động chấm điểm. Xóa hoặc thay thế các câu hỏi sau trước khi chuyển khóa học này sang Công khai:",
+        "fix_in_exercise": "Sửa trong bài tập",
+        "cancel_conversion": "Hủy chuyển đổi",
+        "public_conversion": {
+          "banner_title": "Chuyển đổi khóa học sang công khai",
+          "exercise_fixed": "Bài tập này đã sẵn sàng",
+          "back_to_settings": "Quay lại Cài đặt",
+          "complete_conversion": "Hoàn thành chuyển đổi công khai",
+          "jump_to": "Chuyển tới",
+          "blocks_public_conversion": "Không thể tự động phân loại",
+          "blocks_public_conversion_desc": "Các khóa học công khai chỉ hỗ trợ các câu hỏi có thể tự động phân loại. Thay đổi loại câu hỏi này hoặc xóa nó để tiến hành chuyển đổi.",
+          "blocks_public_conversion_title": "Việc chấm điểm thủ công không được hỗ trợ trong các khóa học công khai.",
+          "aria_label": "Tiến độ chuyển đổi khóa học công khai",
+          "all_exercises_fixed": "Tất cả {total} bài tập đã được sửa",
+          "ready_to_convert": "Sẵn sàng chuyển đổi!",
+          "questions_left_other_singular": "· Còn {count} câu hỏi trong các bài tập khác",
+          "questions_left_other_plural": "· Còn {count} câu hỏi trong các bài tập khác",
+          "progress_summary_singular": "{resolved}/{total} câu hỏi đã được sửa · Còn {remaining} câu hỏi",
+          "progress_summary_plural": "{resolved}/{total} câu hỏi đã được sửa · Còn {remaining} câu hỏi",
+          "next_exercise": "Tiếp theo: {exercise}",
+          "next": "Tiếp theo",
+          "question_fallback": "Câu hỏi {number}",
+          "question_count_singular": "{count} câu hỏi",
+          "question_count_plural": "{count} câu hỏi",
+          "exercise_count_singular": "{count} bài tập",
+          "exercise_count_plural": "{count} bài tập",
+          "exercises_fixed": "{resolved}/{total} câu hỏi đã được sửa",
+          "questions_left_singular": "Đã sửa · Còn lại {count} câu hỏi",
+          "questions_left_plural": "Đã sửa · Còn lại {count} câu hỏi"
+        },
+        "fix": "Sửa chữa",
+        "save_changes_to_fix_questions": "Lưu các thay đổi chưa được lưu trước khi chuyển sang phần sửa câu hỏi.",
+        "allow_markdown_export": "Cho phép học viên sao chép trang bài học dưới dạng Markdown",
+        "allow_markdown_export_description": "Khi bật, các trang bài học công khai sẽ hiện nút Sao chép trang để xuất nội dung bài học (không gồm video) dưới dạng Markdown. Thao tác này cũng công khai một URL Markdown cho mỗi bài học đã mở khóa."
       },
       "analytics": {
         "title": "Phân tích"
@@ -2680,7 +2725,16 @@
         },
         "student_share_your_knowledge": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
         "student_body_content": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
-        "title": "Bài học"
+        "title": "Bài học",
+        "add_content_created_section": "Phần đã được tạo thành công!",
+        "add_content_created_lesson": "Bài học đã được tạo thành công!",
+        "add_content_created_exercise": "Bài tập đã được tạo thành công!",
+        "add_content_create_another_section": "Tạo thêm phần khác",
+        "add_content_create_another_lesson": "Tạo thêm bài học khác",
+        "add_content_create_another_exercise": "Tạo thêm bài tập khác",
+        "add_content_open_now": "Mở ngay",
+        "add_content_later": "Để sau",
+        "add_content_add_to_section": "Thêm nội dung"
       },
       "news_feed": {
         "heading": "Nguồn cấp tin tức",
@@ -5250,6 +5304,30 @@
     "header": {
       "explore_courses": "Khám phá các khóa học",
       "sign_in": "Đăng nhập"
+    },
+    "copy_page": {
+      "copy": "Sao chép trang",
+      "copied": "Đã sao chép",
+      "view_as_markdown": "Xem dạng Markdown",
+      "open_in_chatgpt": "Mở trong ChatGPT",
+      "open_in_claude": "Mở trong Claude",
+      "more_actions": "Thêm thao tác sao chép trang",
+      "copy_failed": "Không thể sao chép bài học này dưới dạng Markdown"
+    },
+    "outline": {
+      "label": "Trên trang này"
+    },
+    "rail": {
+      "copy_as_markdown": "Sao chép dạng Markdown",
+      "open_in_chat": "Mở trong chat"
+    },
+    "share": {
+      "label": "Chia sẻ trên mạng xã hội",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "x": "X",
+      "instagram": "Instagram",
+      "instagram_copied": "Đã sao chép liên kết. Dán vào Instagram."
     }
   },
   "account": {

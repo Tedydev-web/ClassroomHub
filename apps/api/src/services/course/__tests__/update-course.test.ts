@@ -26,7 +26,10 @@ describe('updateCourseWithTags', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.transaction.mockImplementation(async (callback) => callback(transactionClient));
-    mocks.updateCourse.mockResolvedValue({ id: 'course-1', title: 'Updated course' });
+    mocks.updateCourse.mockResolvedValue({
+      course: { id: 'course-1', title: 'Updated course' },
+      conversionOffenders: null
+    });
     mocks.replaceCourseTags.mockResolvedValue([{ id: 'tag-1' }]);
   });
 
@@ -49,6 +52,7 @@ describe('updateCourseWithTags', () => {
     );
     expect(result).toEqual({
       course: { id: 'course-1', title: 'Updated course' },
+      conversionOffenders: null,
       tags: [{ id: 'tag-1' }]
     });
   });

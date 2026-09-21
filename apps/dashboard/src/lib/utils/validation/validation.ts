@@ -43,6 +43,13 @@ export function mapZodErrorsToTranslations(error: ZodError, entityName?: string)
 
     let translatedMessage: string | null = null;
     for (const key of translationKeys) {
+      // A custom issue carries its own translation key in `message`, so the generic
+      // fallback resolves that key instead of a `validations.generic.custom` string.
+      if (key === 'validations.generic.custom') {
+        translatedMessage = t.get(issue.message);
+        break;
+      }
+
       if (issue.code === 'invalid_type' && translationParams.received === 'undefined') {
         translatedMessage = t.get('validations.generic.required_field');
         break;

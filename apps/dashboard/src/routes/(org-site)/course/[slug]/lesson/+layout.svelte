@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { PublicCourse } from '@cio/ui';
   import { toPublicSidebarSections } from '$features/course/utils/public-course-mappers';
-  import type { PublicCourseSidebarItem, PublicCourseSidebarSection } from '@cio/ui/custom/public-course';
+  import { type PublicCourseSidebarItem, type PublicCourseSidebarSection } from '@cio/ui/custom/public-course';
   import { t } from '$lib/utils/functions/translations';
   import type { Snippet } from 'svelte';
   import type { LayoutData } from './$types';
@@ -31,7 +31,7 @@
   }
 </script>
 
-{#key data.slug}
+{#key data.tree.course.slug}
   <PublicCourse.PublicCourseShell
     {sections}
     {courseTitle}

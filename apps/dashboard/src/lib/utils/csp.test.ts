@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { PRODUCT_HOSTS } from '@cio/utils/constants';
 
 import { getCspDomains } from './csp-domains';

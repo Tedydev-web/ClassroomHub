@@ -12,9 +12,9 @@ vi.mock('@cio/db/queries/course', () => ({
 }));
 
 import { ErrorCodes } from '@cio/utils/errors';
-import { guardCourseTypeTransition } from '@cio/core/services/course/public-course-guard';
+import { getPublicConversionOffenders } from '@cio/core/services/course/public-course-guard';
 
-describe('guardCourseTypeTransition', () => {
+describe('getPublicConversionOffenders', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.findNonAutoGradableQuestionsInCourse.mockResolvedValue([]);
@@ -25,7 +25,7 @@ describe('guardCourseTypeTransition', () => {
     mocks.hasSelectivelyAssignedExercises.mockResolvedValue(true);
 
     await expect(
-      guardCourseTypeTransition({ courseId: 'course-a', currentType: 'SELF_PACED', nextType: 'PUBLIC' })
+      getPublicConversionOffenders({ courseId: 'course-a', currentType: 'SELF_PACED', nextType: 'PUBLIC' })
     ).rejects.toMatchObject({ code: ErrorCodes.PUBLIC_COURSE_CONVERSION_BLOCKED, statusCode: 400 });
     expect(mocks.findNonAutoGradableQuestionsInCourse).not.toHaveBeenCalled();
   });

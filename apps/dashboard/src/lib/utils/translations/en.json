@@ -261,6 +261,30 @@
       "attempts_select_aria": "Your attempts",
       "privacy_hint": "Graded instantly in your browser — nothing is submitted.",
       "summary_template": "You got [[correct]] / [[total]] correct."
+    },
+    "copy_page": {
+      "copy": "Copy Page",
+      "copied": "Copied",
+      "view_as_markdown": "View as Markdown",
+      "open_in_chatgpt": "Open in ChatGPT",
+      "open_in_claude": "Open in Claude",
+      "more_actions": "More copy page actions",
+      "copy_failed": "Could not copy this lesson as Markdown"
+    },
+    "rail": {
+      "copy_as_markdown": "Copy as Markdown",
+      "open_in_chat": "Open in chat"
+    },
+    "share": {
+      "label": "Share on social media",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "x": "X",
+      "instagram": "Instagram",
+      "instagram_copied": "Link copied. Paste it in Instagram."
+    },
+    "outline": {
+      "label": "On this page"
     }
   },
   "onboarding": {
@@ -3387,7 +3411,16 @@
         },
         "student_share_your_knowledge": "No lessons have been added to this course yet. Please check back later.",
         "student_body_content": "No lessons have been added to this course yet. Check back later.",
-        "title": "Lessons"
+        "title": "Lessons",
+        "add_content_created_section": "Section has been created successfully!",
+        "add_content_created_lesson": "Lesson has been created successfully!",
+        "add_content_created_exercise": "Exercise has been created successfully!",
+        "add_content_create_another_section": "Create another section",
+        "add_content_create_another_lesson": "Create another lesson",
+        "add_content_create_another_exercise": "Create another exercise",
+        "add_content_open_now": "Open now",
+        "add_content_later": "Later",
+        "add_content_add_to_section": "Add content"
       },
       "attendance": {
         "title": "Attendance",
@@ -4020,7 +4053,7 @@
         "self_paced": "Self paced",
         "compliance": "Compliance",
         "public": "Public",
-        "convert_to_public_blocked": "This course has questions that can’t be auto-graded, so it can’t be made Public yet.",
+        "convert_to_public_blocked": "Public courses require only auto-gradable questions.",
         "fix_blocking_questions": "Fix blocking questions",
         "callout": {
           "legend": "Public course callout",
@@ -4070,6 +4103,47 @@
           "description": "Allow students to view and add comments across lessons in this course. Individual lessons can still disable comments.",
           "enabled": "Comments enabled for this course",
           "disabled": "Comments disabled for this course"
+        },
+        "remove": "Remove",
+        "setup_landing_page": "Set up landing page",
+        "general_card_title": "General",
+        "content_card_title": "Content",
+        "access_card_title": "Access",
+        "allow_markdown_export": "Allow learners to copy lesson pages as Markdown",
+        "allow_markdown_export_description": "When enabled, public lesson pages show a Copy Page button that exports the lesson content (excluding videos) as Markdown. This also publishes a public Markdown URL for each unlocked lesson.",
+        "convert_to_public_blocked_desc": "Exercises in a public course are graded automatically in the browser which is why we only support auto-gradable questions. Remove or replace the following questions before converting this course to Public:",
+        "question_in_exercise": "In \"{exercise}\"",
+        "fix_question": "Edit",
+        "fix": "Fix",
+        "fix_in_exercise": "Fix in exercise",
+        "cancel_conversion": "Cancel conversion",
+        "save_changes_to_fix_questions": "Save your unsaved changes before navigating to fix questions.",
+        "public_conversion": {
+          "aria_label": "Public course conversion progress",
+          "banner_title": "Converting course to Public",
+          "all_exercises_fixed": "All {total} exercises fixed",
+          "ready_to_convert": "Ready to convert!",
+          "exercise_fixed": "This exercise is ready",
+          "questions_left_other_singular": "· {count} question left in other exercises",
+          "questions_left_other_plural": "· {count} questions left in other exercises",
+          "exercises_fixed": "{resolved}/{total} fixed",
+          "questions_left_singular": "fixed · {count} question left",
+          "questions_left_plural": "fixed · {count} questions left",
+          "progress_summary_singular": "{resolved}/{total} fixed · {remaining} question left",
+          "progress_summary_plural": "{resolved}/{total} fixed · {remaining} questions left",
+          "next_exercise": "Next: {exercise}",
+          "next": "Next",
+          "back_to_settings": "Back to Settings",
+          "complete_conversion": "Complete Public Conversion",
+          "jump_to": "Jump to",
+          "question_fallback": "Question {number}",
+          "question_count_singular": "{count} question",
+          "question_count_plural": "{count} questions",
+          "exercise_count_singular": "{count} exercise",
+          "exercise_count_plural": "{count} exercises",
+          "blocks_public_conversion": "Non-autogradable",
+          "blocks_public_conversion_title": "Manual grading isn't supported in Public courses",
+          "blocks_public_conversion_desc": "Public courses only support auto-gradable questions. Change this question's type or delete it to proceed with conversion."
         }
       }
     },
@@ -4838,7 +4912,8 @@
         "successful_integration": "Integration successful",
         "successful_deletion": "Integration deleted",
         "update_successful": "Update successful",
-        "link_generated": "Course link updated successfully"
+        "link_generated": "Course link updated successfully",
+        "converted_to_public": "Course successfully converted to Public"
       },
       "error": {
         "not_right": "Something's not right - Please try later",
@@ -4849,6 +4924,9 @@
         "failed_deletion": "Deletion Failed, please try again later",
         "save_failed": "Course settings were not saved - Please try again",
         "link_failed": "The course link was not updated - Please try again"
+      },
+      "info": {
+        "conversion_blocked": "Fix the questions below to complete conversion to Public."
       }
     },
     "course": {

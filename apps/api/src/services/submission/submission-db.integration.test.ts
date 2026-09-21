@@ -237,7 +237,8 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           id: ids.exercise,
           courseId: ids.course,
           title: 'Composite lifecycle exercise',
-          allowMultipleAttempts: true
+          allowMultipleAttempts: true,
+          order: 1
         });
         await db.insert(schema.exerciseSection).values([
           { id: ids.exerciseSectionOne, exerciseId: ids.exercise, title: 'First section', order: 0 },
@@ -546,12 +547,14 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
         await db.insert(schema.courseSection).values({
           id: ids.crossSection,
           courseId: ids.crossCourse,
-          title: 'Cross-course section'
+          title: 'Cross-course section',
+          order: 1
         });
         await db.insert(schema.lesson).values({
           id: ids.crossLesson,
           courseId: ids.crossCourse,
-          title: 'Cross-course lesson'
+          title: 'Cross-course lesson',
+          order: 1
         });
         await db.insert(schema.groupmember).values({
           id: ids.member,
@@ -565,19 +568,22 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             id: ids.invalidExercise,
             courseId: ids.course,
             title: 'Invalid payload exercise',
-            allowMultipleAttempts: true
+            allowMultipleAttempts: true,
+            order: 1
           },
           {
             id: ids.idempotentExercise,
             courseId: ids.course,
             title: 'Idempotent exercise',
-            allowMultipleAttempts: true
+            allowMultipleAttempts: true,
+            order: 2
           },
           {
             id: ids.videoExercise,
             courseId: ids.course,
             title: 'Video rollback exercise',
-            allowMultipleAttempts: true
+            allowMultipleAttempts: true,
+            order: 3
           }
         ]);
         const questions = await db
@@ -777,7 +783,8 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           exerciseServices.createExerciseForCourseService(ids.course, {
             courseId: ids.course,
             lessonId: ids.crossLesson,
-            title: 'Cross-course create attempt'
+            title: 'Cross-course create attempt',
+            order: 1
           })
         ).rejects.toMatchObject({ statusCode: 404 });
         await expect(

@@ -158,6 +158,7 @@ describe.runIf(runDatabaseIntegration)('question container invisibility', () => 
         title: `not-a-container ${randomUUID()}`,
         courseId: seed.courseId,
         lessonId: null,
+        order: 1,
         assignmentMode: 'SELECTED_STUDENTS'
       })
       .returning({ id: schema.exercise.id });

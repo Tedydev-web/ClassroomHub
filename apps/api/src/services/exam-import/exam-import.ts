@@ -46,7 +46,7 @@ import {
 import { enqueueExamImport, enqueueExamImportAiSuggestion } from '@cio/jobs';
 
 import * as schema from '@cio/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { createExamForOrganization, requireExamsEnabled, type ExamSettingsInput } from '@api/services/exam/exam';
 import { AppError, ErrorCodes } from '@api/utils/errors';
@@ -762,11 +762,17 @@ export async function publishExamImportService(
         enabledQuestionKinds: ENABLED_QUESTION_KINDS,
         sanitizeHtml
       });
+      const [orderRow] = await tx
+        .select({ maxOrder: sql<number>`coalesce(max(${schema.exercise.order}), 0)` })
+        .from(schema.exercise)
+        .where(eq(schema.exercise.courseId, scope.courseId));
+
       const exercise = await createExerciseFromAuthoringPlan(
         {
           exercise: {
             title: publishPlan.title,
-            courseId: scope.courseId
+            courseId: scope.courseId,
+            order: Number(orderRow?.maxOrder ?? 0) + 1
           },
           sections: publishPlan.sections
         },

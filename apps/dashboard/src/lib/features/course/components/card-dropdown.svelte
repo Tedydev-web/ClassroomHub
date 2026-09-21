@@ -32,7 +32,10 @@
   <DropdownMenu.Root>
     <DropdownMenu.Trigger
       class="ui:duration-(--ui-duration-base) ui:ease-ui-out absolute top-6 right-6 z-40 flex items-center justify-center opacity-0 transition-opacity delay-150 group-hover:opacity-100 data-[state=open]:opacity-100"
-      onclick={(e) => e.stopPropagation()}
+      onclick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
     >
       <IconButton variant="outline">
         <EllipsisVerticalIcon size={16} />

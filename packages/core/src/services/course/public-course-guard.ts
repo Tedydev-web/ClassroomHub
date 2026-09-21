@@ -11,6 +11,7 @@ import {
   isAutoGradableQuestionTypeId,
   type AssessmentItemDefinition
 } from '@cio/question-types';
+import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 
 /**
  * Throws `QUESTION_TYPE_NOT_ALLOWED_IN_PUBLIC_COURSE` when a non-auto-gradable question
@@ -48,19 +49,19 @@ export async function guardNonAutoGradableQuestionsForCourseType(params: {
 
 /**
  * When converting a course to `PUBLIC`, enumerate any questions whose type is not
- * auto-gradable. Throws `PUBLIC_COURSE_CONVERSION_BLOCKED` with the offending list
- * in `message`; callers should surface the list to the creator so they can fix them.
+ * auto-gradable. Returns the offending list so callers can block the type conversion
+ * while allowing other changes to proceed.
  */
-export async function guardCourseTypeTransition(params: {
+export async function getPublicConversionOffenders(params: {
   courseId: string;
   currentType: string | null;
   nextType: string | null | undefined;
   /** The caller's transaction, so the guard reads the same rows the write will change. */
   dbClient?: DbOrTxClient;
-}): Promise<void> {
-  if (!params.nextType) return;
-  if (params.nextType !== 'PUBLIC') return;
-  if (params.currentType === 'PUBLIC') return;
+}): Promise<NonAutoGradableQuestionOffender[]> {
+  if (!params.nextType) return [];
+  if (params.nextType !== 'PUBLIC') return [];
+  if (params.currentType === 'PUBLIC') return [];
 
   if (await hasSelectivelyAssignedExercises(params.courseId)) {
     throw new AppError(
@@ -76,7 +77,7 @@ export async function guardCourseTypeTransition(params: {
     AUTO_GRADABLE_QUESTION_TYPE_IDS,
     params.dbClient
   );
-  if (offenders.length === 0) return;
+  if (offenders.length === 0) return [];
 
   const preview = offenders.slice(0, 5).map((item) => `"${item.questionTitle}" in "${item.exerciseTitle}"`);
   const more = offenders.length > 5 ? ` (+${offenders.length - 5} more)` : '';

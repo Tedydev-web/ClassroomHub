@@ -367,7 +367,7 @@ export const courseSection = pgTable('course_section', {
   updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
   title: varchar(),
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-  order: bigint({ mode: 'number' }).default(sql`'0'`),
+  order: bigint({ mode: 'number' }).notNull(),
   courseId: uuid('course_id').references(() => course.id, {
     onDelete: 'cascade',
     onUpdate: 'cascade'
@@ -778,6 +778,8 @@ export const course = pgTable(
       allowSelfEnrollment?: boolean;
       /** @deprecated Read-only legacy key; use `allowSelfEnrollment`. Kept because there is no backfill. */
       allowNewStudent?: boolean;
+      /** When true, public lesson pages expose a Copy Page / Markdown export surface. Off by default. */
+      allowMarkdownExport?: boolean;
       /** Teacher-authored HTML sent in the welcome email after a student enrolls. */
       welcomeEmailMessage?: string | null;
       /** IANA timezone for this course's live sessions (display + scheduling). */
@@ -1077,7 +1079,7 @@ export const lesson = pgTable(
     isComplete: boolean('is_complete').default(false),
     callUrl: text('call_url'),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    order: bigint({ mode: 'number' }),
+    order: bigint({ mode: 'number' }).notNull(),
     isUnlocked: boolean('is_unlocked').default(true),
     completionPolicy: varchar('completion_policy').default('manual').notNull(),
     videoWatchThreshold: integer('video_watch_threshold').default(95),
@@ -1414,11 +1416,12 @@ export const exercise = pgTable(
   {
     title: varchar().notNull(),
     description: varchar(),
+    // @deprecated - we no longer support exercises belonging to a lesson
     lessonId: uuid('lesson_id'),
     courseId: uuid('course_id'),
     sectionId: uuid('section_id'),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    order: bigint({ mode: 'number' }),
+    order: bigint({ mode: 'number' }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     id: uuid()

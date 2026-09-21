@@ -1,5 +1,7 @@
 export { default as Editor } from './editor.svelte';
 export type { HTMLContent, Content, Editor as TiptapEditor } from '@tiptap/core';
+export type { UnsplashPhoto } from './types';
+export { default as ImageUploadModal } from './ui/components/image-upload-modal.svelte';
 export { getEditorVariant } from './variants';
 export type { EditorVariant, EditorVariantConfig } from './variants';
 export type { PasteSource } from './extensions/smart-paste/clean-pasted-html';

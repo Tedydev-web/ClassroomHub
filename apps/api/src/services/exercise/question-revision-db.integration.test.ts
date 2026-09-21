@@ -254,13 +254,15 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
           id: ids.exercise,
           courseId: ids.course,
           title: 'Revision lifecycle exercise',
-          allowMultipleAttempts: true
+          allowMultipleAttempts: true,
+          order: 1
         },
         {
           id: ids.draftExercise,
           courseId: ids.course,
           title: 'Draft deletion exercise',
-          allowMultipleAttempts: true
+          allowMultipleAttempts: true,
+          order: 2
         }
       ]);
       const questions = await db
