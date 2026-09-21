@@ -240,6 +240,7 @@
         lessonTabsOrder: $settings.tabs,
         grading: $settings.grading,
         lessonDownload: $settings.lessonDownload,
+        allowMarkdownExport: $settings.allowMarkdownExport,
         allowSelfEnrollment: $settings.allowSelfEnrollment,
         isContentGroupingEnabled: $settings.isContentGroupingEnabled,
         progressionMode: $settings.progressionMode,
@@ -329,6 +330,7 @@
         tabs: course.metadata?.lessonTabsOrder || $settings.tabs,
         grading: !!course.metadata?.grading,
         lessonDownload: !!course.metadata?.lessonDownload,
+        allowMarkdownExport: !!course.metadata?.allowMarkdownExport,
         isPublished: !!course.isPublished,
         allowSelfEnrollment: isSelfEnrollmentAllowed(course.metadata),
         isContentGroupingEnabled: course.metadata?.isContentGroupingEnabled ?? true,
@@ -955,6 +957,27 @@
   </AttentionHighlight>
 
   <Field.Separator />
+
+  <!-- Markdown export only reaches students through the anonymous public-course
+       surface, so the switch appears for PUBLIC courses only. -->
+  {#if $settings.type === 'PUBLIC'}
+    <Field.Set>
+      <Field.Legend>{$t('course.navItem.settings.allow_markdown_export')}</Field.Legend>
+      <Field.Description>{$t('course.navItem.settings.allow_markdown_export_description')}</Field.Description>
+      <Field.Field orientation="horizontal">
+        <Switch
+          id="allow-markdown-export"
+          checked={$settings.allowMarkdownExport}
+          onCheckedChange={(checked) => {
+            $settings.allowMarkdownExport = checked;
+            hasUnsavedChanges = true;
+          }}
+        />
+      </Field.Field>
+    </Field.Set>
+
+    <Field.Separator />
+  {/if}
 
   <Field.Set>
     <Field.Legend>{$t('course.navItem.settings.lesson_download')}</Field.Legend>
