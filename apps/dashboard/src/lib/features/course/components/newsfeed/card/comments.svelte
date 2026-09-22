@@ -14,6 +14,7 @@
   import { Button } from '@cio/ui/base/button';
   import { Textarea } from '@cio/ui/base/textarea';
   import type { Feed } from '$features/course/utils/types';
+  import { reportDialog } from '$features/report';
 
   interface Props {
     courseId?: string;
@@ -225,10 +226,13 @@
                 avatarSize={current.depth === 0 ? 'ui:size-7' : 'ui:size-6'}
                 canEdit={comment.authorProfileId === $profile.id}
                 onEdit={() => handleStartEdit(current.id, comment.content ?? '')}
-                canDelete={comment.authorProfileId === $profile.id || $isOrgAdmin}
+                canDelete={comment.authorProfileId === $profile.id || $isOrgAdmin === true}
                 onDelete={() => onDeleteComment(current.id)}
+                canReport={comment.authorProfileId !== $profile.id}
+                onReport={() => reportDialog.start('course_newsfeed_comment', String(comment.id))}
                 editLabel={$t('course.navItem.news_feed.card.edit')}
                 deleteLabel={$t('course.navItem.news_feed.comments.delete')}
+                reportLabel={$t('report.menu')}
               />
 
               <div class="pl-8">

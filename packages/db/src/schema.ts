@@ -1065,6 +1065,23 @@ export const lesson = pgTable(
     note: varchar(),
     videoUrl: varchar('video_url'),
     slideUrl: varchar('slide_url'),
+    slides: jsonb().default([]).$type<
+      {
+        id: string;
+        src: string;
+        platform:
+          | 'google-slides'
+          | 'canva'
+          | 'powerpoint'
+          | 'keynote'
+          | 'figma'
+          | 'prezi'
+          | 'pitch'
+          | 'gamma'
+          | 'slideshare'
+          | 'beautiful';
+      }[]
+    >(),
     courseId: uuid('course_id').notNull(),
     id: uuid()
       .default(sql`gen_random_uuid()`)
@@ -5065,5 +5082,112 @@ export const examAttempt = pgTable(
       'exam_attempt_has_an_identity',
       sql`${table.profileId} IS NOT NULL OR (${table.displayName} IS NOT NULL AND length(btrim(${table.displayName})) > 0)`
     )
+  ]
+);
+
+export const contentReportTargetType = pgEnum('CONTENT_REPORT_TARGET_TYPE', [
+  'course_newsfeed_post',
+  'course_newsfeed_comment',
+  'cohort_newsfeed_post',
+  'cohort_newsfeed_comment',
+  'community_question',
+  'community_answer',
+  'lesson_comment',
+  'profile'
+]);
+
+export const contentReportReason = pgEnum('CONTENT_REPORT_REASON', [
+  'spam',
+  'harassment',
+  'hate_speech',
+  'sexual_content',
+  'violence',
+  'misinformation',
+  'privacy',
+  'other'
+]);
+
+export const contentReportStatus = pgEnum('CONTENT_REPORT_STATUS', ['open', 'in_review', 'actioned', 'dismissed']);
+
+export const contentReportResolutionCode = pgEnum('CONTENT_REPORT_RESOLUTION_CODE', [
+  'removed',
+  'warned',
+  'restricted',
+  'no_action',
+  'duplicate'
+]);
+
+/**
+ * `content_report` — user-submitted flags of UGC for platform review.
+ * Email alerts notify ops; this row is the source of truth, including a
+ * snapshot of the reported content so evidence survives hard-deletes.
+ */
+export const contentReport = pgTable(
+  'content_report',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    reporterId: uuid('reporter_id'),
+    targetType: contentReportTargetType('target_type').notNull(),
+    targetId: text('target_id').notNull(),
+    targetAuthorId: uuid('target_author_id'),
+    reason: contentReportReason().notNull(),
+    details: text(),
+    status: contentReportStatus().default('open').notNull(),
+    priority: integer().default(2).notNull(),
+    contentSnapshot: jsonb('content_snapshot')
+      .$type<{
+        text: string;
+        title?: string | null;
+        authorId: string | null;
+        authorName: string | null;
+        surface: string;
+        url?: string | null;
+        capturedAt: string;
+      }>()
+      .notNull(),
+    assignedTo: uuid('assigned_to'),
+    resolutionCode: contentReportResolutionCode('resolution_code'),
+    resolutionNote: text('resolution_note'),
+    reviewedBy: uuid('reviewed_by'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true, mode: 'string' })
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'content_report_organization_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.reporterId],
+      foreignColumns: [profile.id],
+      name: 'content_report_reporter_id_fkey'
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.targetAuthorId],
+      foreignColumns: [profile.id],
+      name: 'content_report_target_author_id_fkey'
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.assignedTo],
+      foreignColumns: [profile.id],
+      name: 'content_report_assigned_to_fkey'
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.reviewedBy],
+      foreignColumns: [profile.id],
+      name: 'content_report_reviewed_by_fkey'
+    }).onDelete('set null'),
+    index('idx_content_report_status_priority_created').on(table.status, table.priority, table.createdAt),
+    index('idx_content_report_org_created').on(table.organizationId, table.createdAt),
+    index('idx_content_report_target').on(table.targetType, table.targetId),
+    uniqueIndex('content_report_reporter_target_open_unique')
+      .on(table.organizationId, table.reporterId, table.targetType, table.targetId)
+      .where(sql`${table.reporterId} IS NOT NULL AND ${table.status} IN ('open', 'in_review')`)
   ]
 );

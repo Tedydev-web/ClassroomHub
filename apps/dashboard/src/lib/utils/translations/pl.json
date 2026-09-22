@@ -506,6 +506,11 @@
       "deleted": "Webhook deleted.",
       "test_queued": "Test delivery queued.",
       "redelivery_queued": "Webhook redelivery queued."
+    },
+    "report": {
+      "success": "Dziękujemy. Przejrzymy to zgłoszenie.",
+      "error": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
+      "already_submitted": "Już zgłosiłeś tę treść."
     }
   },
   "explore": {
@@ -1699,7 +1704,9 @@
           "comment_btn": "Komentarz",
           "cancel_btn": "Anuluj",
           "load_more_btn": "Załaduj więcej",
-          "comment_error": "Nie udało się opublikować komentarza. Spróbuj ponownie."
+          "comment_error": "Nie udało się opublikować komentarza. Spróbuj ponownie.",
+          "edit": "Edytuj",
+          "delete": "Usuń"
         },
         "exercises": {
           "heading": "Wszystkie ćwiczenia",
@@ -2546,7 +2553,87 @@
             "slide": {
               "title": "Slajd",
               "slide_link": "Link do slajdu",
-              "helper_message": "Możesz osadzić Prezentacje Google lub Prezentację Canva"
+              "helper_message": "Możesz osadzić Prezentacje Google lub Prezentację Canva",
+              "button": "Dodaj slajd",
+              "remove_slide": "Usuń slajd",
+              "menu_aria": "Akcje slajdu",
+              "empty_title": "Brak slajdów",
+              "empty_description": "Osadź Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare lub Beautiful.ai",
+              "add_slide": {
+                "title": "Dodaj slajd",
+                "search": "Szukaj platform",
+                "empty_prompt": "Wybierz platformę, aby zobaczyć instrukcje krok po kroku i wkleić kod osadzenia.",
+                "embed_code": "Wklej kod osadzenia",
+                "embed_placeholder": "Wklej tutaj pełny kod iframe",
+                "how_to_embed": "Jak osadzić",
+                "preview": "Podgląd",
+                "embed_ready": "Osadzenie gotowe",
+                "invalid_embed": "Wklej pełny kod iframe z tej platformy.",
+                "unsupported": "To osadzenie pochodzi z platformy, której jeszcze nie obsługujemy."
+              },
+              "platforms": {
+                "google-slides": {
+                  "hint": "File → Share → Publish to web → Embed",
+                  "step_1": "Open your deck and choose File → Share → Publish to web.",
+                  "step_2": "Switch to the Embed tab and click Publish.",
+                  "step_3": "Copy the iframe embed code and paste it here."
+                },
+                "canva": {
+                  "hint": "Share → More → Embed",
+                  "step_1": "Above the editor, click Share → More.",
+                  "step_2": "Choose Embed and confirm (this makes the design public).",
+                  "step_3": "Copy the HTML embed code and paste it here."
+                },
+                "powerpoint": {
+                  "hint": "PowerPoint for the web → File → Share → Embed",
+                  "step_1": "Save the deck to OneDrive, then open it in PowerPoint for the web.",
+                  "step_2": "Choose File → Share → Embed and pick your dimensions.",
+                  "step_3": "Copy the iframe embed code and paste it here. We size the player ourselves."
+                },
+                "keynote": {
+                  "hint": "Collaborate → Copy Link, then embed",
+                  "step_1": "Click Collaborate and set access to Anyone with the link · View only.",
+                  "step_2": "Copy the iCloud link, then get the embed code for your website.",
+                  "step_3": "Paste the iframe embed code here."
+                },
+                "figma": {
+                  "hint": "Share a Figma Slides file and copy the embed",
+                  "step_1": "Open your Figma Slides file and enable link sharing.",
+                  "step_2": "Copy the embed code for the /slides or /deck file.",
+                  "step_3": "Paste the iframe embed code here."
+                },
+                "prezi": {
+                  "hint": "Share → Embed",
+                  "step_1": "From the dashboard, open Share on your presentation.",
+                  "step_2": "Click Embed and copy the code.",
+                  "step_3": "Paste the iframe embed code here."
+                },
+                "pitch": {
+                  "hint": "Share externally → Copy embed code",
+                  "step_1": "Click Share → Share externally and create a public link.",
+                  "step_2": "Open the link Options (⋯) and choose Copy embed code.",
+                  "step_3": "Paste the iframe embed code here."
+                },
+                "gamma": {
+                  "hint": "Share → enable public access → copy iframe",
+                  "step_1": "Open Share and toggle Allow public access.",
+                  "step_2": "Copy the generated iframe embed code.",
+                  "step_3": "Paste the iframe embed code here."
+                },
+                "slideshare": {
+                  "hint": "Share → Embed under the deck",
+                  "step_1": "Open the public deck on slideshare.net.",
+                  "step_2": "Click Share under the viewer and open the Embed tab.",
+                  "step_3": "Copy the iframe embed code and paste it here."
+                },
+                "beautiful": {
+                  "hint": "Sharing Settings → Public → Get Embed Code",
+                  "step_1": "Open Sharing Settings and switch the deck to Public.",
+                  "step_2": "Click Get Embed Code.",
+                  "step_3": "Paste the iframe embed code here."
+                }
+              },
+              "frame_title": "{platform} ({index} z {total})"
             },
             "note": {
               "title": "Uwaga",
@@ -5942,5 +6029,27 @@
     "format_json": "JSON",
     "copied": "Skopiowano do schowka",
     "copy_failed": "Nie można skopiować do schowka"
+  },
+  "report": {
+    "menu": "Zgłoś",
+    "title": "Zgłoś treść",
+    "description": "Powiedz nam, co jest nie tak. Nasz zespół przejrzy to zgłoszenie.",
+    "reason_label": "Powód",
+    "reason_placeholder": "Wybierz powód",
+    "reason_required": "Wybierz powód",
+    "details_label": "Dodatkowe szczegóły",
+    "details_placeholder": "Dodaj kontekst, który pomoże nam to sprawdzić (opcjonalnie)",
+    "submit": "Wyślij zgłoszenie",
+    "cancel": "Anuluj",
+    "reasons": {
+      "spam": "Spam",
+      "harassment": "Nękanie lub zastraszanie",
+      "hate_speech": "Mowa nienawiści",
+      "sexual_content": "Treści seksualne",
+      "violence": "Przemoc lub groźby",
+      "misinformation": "Dezinformacja",
+      "privacy": "Naruszenie prywatności",
+      "other": "Inne"
+    }
   }
 }

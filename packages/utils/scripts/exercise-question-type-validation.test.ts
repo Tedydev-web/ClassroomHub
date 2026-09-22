@@ -35,6 +35,7 @@ test('exercise question points stay integers capped at the canonical interaction
   const createPayload = (points: number) => ({
     title: 'Exercise',
     courseId: 'course-a',
+    order: 1,
     questions: [{ question: 'Question', points }]
   });
   assert.equal(ZExerciseCreate.safeParse(createPayload(MAX_INTERACTION_MAX_SCORE)).success, true);

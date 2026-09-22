@@ -12,6 +12,7 @@
   import { calDateDiff } from '$lib/utils/functions/date';
   import { lessonApi } from '$features/course/api';
   import { courseApi } from '$features/course/api';
+  import { ReportMenuItem } from '$features/report';
 
   interface Props {
     lessonId: string;
@@ -127,13 +128,15 @@
               </span>
             </p>
 
-            {#if courseApi.group.memberId === commentItem.groupmemberId}
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger class="ui:hover:bg-accent flex h-8 w-8 items-center justify-center rounded-md">
-                  <EllipsisVerticalIcon class="size-4" />
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end">
-                  <DropdownMenu.Item onclick={() => (editCommentId = commentItem.id)}>Edit</DropdownMenu.Item>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger class="ui:hover:bg-accent flex h-8 w-8 items-center justify-center rounded-md">
+                <EllipsisVerticalIcon class="size-4" />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content align="end">
+                {#if courseApi.group.memberId === commentItem.groupmemberId}
+                  <DropdownMenu.Item onclick={() => (editCommentId = commentItem.id)}>
+                    {$t('course.navItem.lessons.comments.edit')}
+                  </DropdownMenu.Item>
                   <DropdownMenu.Item
                     class="text-red-600"
                     onclick={() => {
@@ -141,11 +144,13 @@
                       openDeleteModal = true;
                     }}
                   >
-                    Delete
+                    {$t('course.navItem.lessons.comments.delete')}
                   </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-            {/if}
+                {:else}
+                  <ReportMenuItem targetType="lesson_comment" targetId={commentItem.id} />
+                {/if}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
 
           {#if editCommentId === commentItem.id}

@@ -24,14 +24,15 @@ test('course import draft question points share the authored integer cap', () =>
 test('course import draft payload enforces the question points cap end to end', () => {
   const draftPayload = (points: number) => ({
     course: { title: 'Imported course', description: 'Imported description', type: 'LIVE_CLASS' },
-    sections: [{ externalId: 'section-1', title: 'Section', order: 0 }],
-    lessons: [{ externalId: 'lesson-1', sectionExternalId: 'section-1', title: 'Lesson', order: 0 }],
+    sections: [{ externalId: 'section-1', title: 'Section', order: 1 }],
+    lessons: [{ externalId: 'lesson-1', sectionExternalId: 'section-1', title: 'Lesson', order: 1 }],
     lessonLanguages: [{ lessonExternalId: 'lesson-1', locale: 'en', content: '<h3>Body</h3>' }],
     exercises: [
       {
         externalId: 'exercise-1',
         lessonExternalId: 'lesson-1',
         title: 'Exercise',
+        order: 1,
         questions: [{ question: 'Question', points }]
       }
     ]

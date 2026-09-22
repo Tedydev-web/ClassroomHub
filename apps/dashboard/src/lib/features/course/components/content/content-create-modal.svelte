@@ -16,6 +16,8 @@
   import type { StepperRef, StepperState } from './types';
   import { DEFAULT_STEPPER_STATE, CONTENT_OPTIONS, EXAM_OPTION_TYPE } from './constants';
   import { t } from '$lib/utils/functions/translations';
+  import { shouldIgnoreGlobalShortcut } from '$lib/utils/functions/keyboard';
+  import { isCourseLearnerView } from '$lib/utils/store/app';
   import { untrack } from 'svelte';
 
   let step = $state(0);
@@ -159,7 +161,29 @@
   async function handleUnifiedNext() {
     await activeStepper?.actions.next();
   }
+
+  // Ctrl/Cmd+Shift+N opens this modal from anywhere in a course, which is the shortcut
+  // the sidebar's add button advertises.
+  function handleAddContentShortcut(event: KeyboardEvent) {
+    if (!(event.metaKey || event.ctrlKey) || !event.shiftKey || event.key.toLowerCase() !== 'n') {
+      return;
+    }
+
+    if ($isCourseLearnerView || !courseApi.course?.id) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if ($contentCreateStore.open || shouldIgnoreGlobalShortcut()) {
+      return;
+    }
+
+    contentCreateStoreUtils.openDefault();
+  }
 </script>
+
+<svelte:window onkeydown={handleAddContentShortcut} />
 
 <Dialog.Root bind:open={$contentCreateStore.open} onOpenChange={(isOpen) => !isOpen && closeModal()}>
   <Dialog.Content class="flex max-h-[680px] w-full! max-w-xl! min-w-[400px] flex-col overflow-hidden">

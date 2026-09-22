@@ -372,6 +372,10 @@
                           class="ui:duration-(--ui-duration-fast) transition-opacity {isHovered
                             ? 'opacity-100'
                             : 'opacity-0'}"
+                          aria-label={$t('course.navItem.lessons.add_content')}
+                          aria-keyshortcuts="Control+Shift+N"
+                          tooltip={$t('course.navItem.lessons.add_content')}
+                          shortcut={['Ctrl', '⇧', 'N']}
                           onclick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
