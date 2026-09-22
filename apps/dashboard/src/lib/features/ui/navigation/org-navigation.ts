@@ -1,5 +1,4 @@
 import {
-  ApiIcon,
   ChartColumnIcon,
   AttachmentIcon,
   CommunityIcon,
@@ -12,12 +11,11 @@ import {
   SettingsIcon,
   SetupIcon,
   TagIcon,
-  ZapIcon
+  WidgetsIcon
 } from '@cio/ui/custom/moving-icons';
 
 import type { AccountOrg } from '$features/app/types';
 import BotIcon from '@lucide/svelte/icons/bot';
-import WebhookIcon from '@lucide/svelte/icons/webhook';
 import PackageOpenIcon from '@lucide/svelte/icons/package-open';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
@@ -68,6 +66,8 @@ export interface NavItemConfig {
   /** Override the default org-nav-* test id derived from `path`. */
   testId?: string;
   group?: string | null; // Group label key for sidebar grouping
+  /** Keep in search/breadcrumbs but do not render in the org sidebar. */
+  hideFromSidebar?: boolean;
   /**
    * Per-org switch that governs this item. Absent means the item is always
    * present — `home` and `settings` deliberately have no key, since an org with
@@ -105,14 +105,14 @@ function resolveNavTestId(path: string, testId?: string): string {
 // Base navigation configuration structure
 export const baseNavConfig: NavItemConfig[] = [
   {
-    group: 'home',
+    group: null,
     titleKey: 'org_navigation.home',
     path: '',
     icon: HomeIcon,
     matchPattern: '^/org/[^/]+/?$'
   },
   {
-    group: 'home',
+    group: null,
     titleKey: 'org_navigation.dashboard',
     featureKey: 'dashboard',
     path: '/dash',
@@ -120,7 +120,7 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/org/[^/]+/dash(/.*)?$'
   },
   {
-    group: 'home',
+    group: null,
     titleKey: 'org_navigation.stats',
     featureKey: 'stats',
     path: '/stats',
@@ -142,7 +142,7 @@ export const baseNavConfig: NavItemConfig[] = [
     ]
   },
   {
-    group: 'home',
+    group: null,
     titleKey: 'org_navigation.setup',
     featureKey: 'setup',
     path: '/setup',
@@ -197,12 +197,29 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/org/[^/]+/tags(/.*)?$'
   },
   {
-    group: 'content',
+    group: 'distribute',
     titleKey: 'org_navigation.widgets',
     featureKey: 'widgets',
     path: '/widgets',
-    icon: LandingPageIcon,
+    icon: WidgetsIcon,
     matchPattern: '^(/org/[^/]+/widgets(/.*)?|/widgets/[^/]+(/.*)?)$'
+  },
+  {
+    group: 'distribute',
+    titleKey: 'settings.tabs.landing_page_tab',
+    path: '/landingpage',
+    icon: LandingPageIcon,
+    requiresAdmin: true,
+    matchPattern: '^/org/[^/]+/landingpage(/.*)?$'
+  },
+  {
+    group: 'people',
+    titleKey: 'org_navigation.audience',
+    featureKey: 'audience',
+    path: '/audience',
+    icon: PeopleIcon,
+    upgradeResource: 'students',
+    matchPattern: '^/org/[^/]+/audience(/.*)?$' // Matches nested routes
   },
   {
     group: 'people',
@@ -220,113 +237,25 @@ export const baseNavConfig: NavItemConfig[] = [
     ]
   },
   {
-    group: 'people',
-    titleKey: 'org_navigation.audience',
-    featureKey: 'audience',
-    path: '/audience',
-    icon: PeopleIcon,
-    upgradeResource: 'students',
-    matchPattern: '^/org/[^/]+/audience(/.*)?$' // Matches nested routes
-  },
-  {
     group: 'automation',
-    titleKey: 'automation.tabs.mcp',
-    featureKey: 'mcp',
-    path: '/mcp',
+    titleKey: 'org_navigation.automation',
+    path: '/automation/mcp',
     icon: BotIcon,
     requiresAdmin: true,
     disableWhenNotAdmin: true,
-    matchPattern: '^/org/[^/]+/mcp(/.*)?$'
-  },
-  {
-    group: 'automation',
-    titleKey: 'automation.tabs.api',
-    featureKey: 'api',
-    path: '/api',
-    icon: ApiIcon,
-    requiresAdmin: true,
-    disableWhenNotAdmin: true,
-    matchPattern: '^/org/[^/]+/api(/.*)?$'
-  },
-  {
-    group: 'automation',
-    titleKey: 'automation.tabs.zapier',
-    featureKey: 'zapier',
-    path: '/zapier',
-    icon: ZapIcon,
-    requiresAdmin: true,
-    disableWhenNotAdmin: true,
-    matchPattern: '^/org/[^/]+/zapier(/.*)?$'
-  },
-  {
-    group: 'automation',
-    titleKey: 'automation.tabs.webhooks',
-    featureKey: 'webhooks',
-    path: '/webhooks',
-    icon: WebhookIcon,
-    requiresAdmin: true,
-    disableWhenNotAdmin: true,
-    matchPattern: '^/org/[^/]+/webhooks(/.*)?$'
+    matchPattern: '^/org/[^/]+/(automation|mcp|api|zapier|webhooks)(/.*)?$',
+    nestedRoutes: [
+      { path: 'mcp', titleKey: 'automation.tabs.mcp' },
+      { path: 'api', titleKey: 'automation.tabs.api' },
+      { path: 'zapier', titleKey: 'automation.tabs.zapier' }
+    ]
   },
   {
     titleKey: 'org_navigation.settings',
     path: '/settings',
     icon: SettingsIcon,
-    useHashUrl: true, // Use '#' for collapsible parent
+    hideFromSidebar: true,
     matchPattern: '^/org/[^/]+/settings(/.*)?$', // Matches nested routes
-    items: [
-      {
-        titleKey: 'settings.tabs.profile_tab',
-        path: '/settings',
-        matchPattern: '^/org/[^/]+/settings/?$'
-      },
-      {
-        titleKey: 'settings.tabs.notifications_tab',
-        path: '/settings/notifications',
-        matchPattern: '^/org/[^/]+/settings/notifications/?$'
-      },
-      {
-        titleKey: 'settings.tabs.organization_tab',
-        path: '/settings/org',
-        matchPattern: '^/org/[^/]+/settings/(org|customize-lms|domains|teams)(/.*)?$',
-        nestedRoutes: [
-          {
-            path: 'domains',
-            titleKey: 'settings.organization.organization_profile.custom_domain.heading'
-          },
-          {
-            path: 'teams',
-            titleKey: 'settings.organization.organization_profile.team.heading'
-          },
-          {
-            path: 'customize-lms',
-            titleKey: 'settings.tabs.customize_lms_tab'
-          }
-        ]
-      },
-      {
-        titleKey: 'settings.tabs.landing_page_tab',
-        path: '/settings/landingpage'
-      },
-      {
-        titleKey: 'settings.tabs.billing_tab',
-        path: '/settings/billing'
-      },
-      {
-        titleKey: 'settings.tabs.ai_credits_tab',
-        path: '/settings/ai-credits'
-      },
-      {
-        titleKey: 'settings.tabs.ai_tutor_tab',
-        path: '/settings/ai-tutor'
-      },
-      {
-        titleKey: 'settings.tabs.auth_tab',
-        matchPattern: '^/org/[^/]+/settings/auth(/.*)?$',
-        path: '/settings/auth',
-        isPaid: true
-      }
-    ],
     nestedRoutes: [
       {
         path: 'notifications',
@@ -343,10 +272,6 @@ export const baseNavConfig: NavItemConfig[] = [
       {
         path: 'ai-tutor',
         titleKey: 'settings.tabs.ai_tutor_tab'
-      },
-      {
-        path: 'customize-lms',
-        titleKey: 'settings.tabs.customize_lms_tab'
       },
       {
         path: 'domains',
@@ -471,11 +396,11 @@ export function getOrgNavigationItems(
 }
 
 const GROUP_ORDER: Array<{ key: string | null; labelKey: string | null }> = [
-  { key: 'home', labelKey: 'org_navigation.home' },
-  { key: 'content', labelKey: 'org_navigation.content' },
+  { key: null, labelKey: null },
+  { key: 'content', labelKey: 'org_navigation.create' },
+  { key: 'distribute', labelKey: 'org_navigation.distribute' },
   { key: 'people', labelKey: 'org_navigation.people' },
-  { key: 'automation', labelKey: 'org_navigation.automation' },
-  { key: null, labelKey: null }
+  { key: 'automation', labelKey: 'org_navigation.tools' }
 ];
 
 /** Reads an org's feature switches out of its settings blob. */
@@ -502,6 +427,23 @@ export function findDisabledOrgFeature(
 
   const features = getOrgFeatureFlags(currentOrg);
   const siteName = currentOrg?.siteName ?? '';
+
+  // Check granular automation sub-features
+  if (!isOrgFeatureEnabled(features, 'mcp') && new RegExp(`^/org/[^/]+/(automation/mcp|mcp)(/.*)?$`).test(pathname)) {
+    return 'mcp';
+  }
+  if (!isOrgFeatureEnabled(features, 'api') && new RegExp(`^/org/[^/]+/(automation/api|api)(/.*)?$`).test(pathname)) {
+    return 'api';
+  }
+  if (
+    !isOrgFeatureEnabled(features, 'zapier') &&
+    new RegExp(`^/org/[^/]+/(automation/zapier|zapier)(/.*)?$`).test(pathname)
+  ) {
+    return 'zapier';
+  }
+  if (!isOrgFeatureEnabled(features, 'webhooks') && new RegExp(`^/org/[^/]+/webhooks(/.*)?$`).test(pathname)) {
+    return 'webhooks';
+  }
 
   for (const config of resolvedNavConfig) {
     if (!config.featureKey) continue;
@@ -537,13 +479,27 @@ export function getOrgNavigationGroups(
 
   const features = getOrgFeatureFlags(currentOrg);
 
-  for (const config of baseNavConfig) {
+  for (const config of resolvedNavConfig) {
+    if (config.hideFromSidebar) {
+      continue;
+    }
+
     if (isSelfOwnedDeployment && config.path === '/settings/billing') {
       continue;
     }
 
     if (config.featureKey && !isOrgFeatureEnabled(features, config.featureKey)) {
       continue;
+    }
+
+    if (config.group === 'automation') {
+      const isMcpOn = isOrgFeatureEnabled(features, 'mcp');
+      const isApiOn = isOrgFeatureEnabled(features, 'api');
+      const isZapierOn = isOrgFeatureEnabled(features, 'zapier');
+      const isWebhooksOn = isOrgFeatureEnabled(features, 'webhooks');
+      if (!isMcpOn && !isApiOn && !isZapierOn && !isWebhooksOn) {
+        continue;
+      }
     }
 
     if (config.requiresAdmin && !isOrgAdmin && !config.disableWhenNotAdmin) {
@@ -559,15 +515,26 @@ export function getOrgNavigationGroups(
       continue;
     }
 
-    const url = config.path === '' ? currentOrgPath : `${currentOrgPath}${config.path}`;
-    const fullPath = config.path === '' ? `/org/${currentOrg.siteName}` : `/org/${currentOrg.siteName}${config.path}`;
+    let itemPath = config.path;
+    if (config.group === 'automation' && config.path === '/automation/mcp') {
+      if (!isOrgFeatureEnabled(features, 'mcp')) {
+        if (isOrgFeatureEnabled(features, 'api')) {
+          itemPath = '/automation/api';
+        } else if (isOrgFeatureEnabled(features, 'zapier')) {
+          itemPath = '/automation/zapier';
+        }
+      }
+    }
+
+    const url = itemPath === '' ? currentOrgPath : `${currentOrgPath}${itemPath}`;
+    const fullPath = itemPath === '' ? `/org/${currentOrg.siteName}` : `/org/${currentOrg.siteName}${itemPath}`;
     const matchPattern =
       typeof config.matchPattern === 'function' ? config.matchPattern(currentOrg.siteName!) : config.matchPattern;
 
     const item: NavItem = {
       title: t(config.titleKey),
       url: config.useHashUrl ? '#' : url,
-      path: config.path,
+      path: itemPath,
       testId: resolveNavTestId(config.path, config.testId),
       icon: config.icon,
       matchPattern,
