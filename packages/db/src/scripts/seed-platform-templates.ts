@@ -1,5 +1,5 @@
 /**
- * Inserts the ClassroomIO launch templates into an existing organization.
+ * Inserts the ClassroomHub launch templates into an existing organization.
  * Skips a template whose seed key is already stored. Exits when the org is missing.
  *
  * Usage:

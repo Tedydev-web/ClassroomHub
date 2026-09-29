@@ -185,7 +185,7 @@ const customerOnboarding: LaunchTemplateFixture = {
           'Clear and practical. I wanted one more worked example in the middle section, but the final exam pulled everything together.'
       }
     ],
-    requirements: 'A ClassroomIO workspace and permission to invite teammates.',
+    requirements: 'A ClassroomHub workspace and permission to invite teammates.',
     description: 'Four short sections that mirror a real customer’s first week.',
     goals: 'Create a workspace, connect data, run one workflow, and invite the team.',
     allowSelfEnrollment: true,
@@ -934,7 +934,7 @@ const publicMiniCourse: LaunchTemplateFixture = {
       'Measuring course impact',
       'Turning learners into advocates'
     ],
-    tools: ['ClassroomIO public courses', 'Course widget', 'Landing page callouts'],
+    tools: ['ClassroomHub public courses', 'Course widget', 'Landing page callouts'],
     reviews: [
       {
         id: 1,
@@ -997,7 +997,7 @@ const publicMiniCourse: LaunchTemplateFixture = {
     title: 'Book a demo',
     description: 'See how this course would look on your own site.',
     buttonLabel: 'Book a demo',
-    buttonUrl: 'https://classroomio.com'
+    buttonUrl: 'https://classroom.io.vn'
   },
   highlights: [
     {
@@ -1446,7 +1446,7 @@ const chatgptWork: LaunchTemplateFixture = {
             'Certificate → Settings › Certificate. Issued when every lesson is complete.',
             'AI tutor → Settings › AI tutor. It answers from the lesson text, so keep the summaries accurate.'
           ],
-          '<h2>Credits</h2><p>Videos are published by OpenAI on YouTube and embedded here. The lesson text and quizzes are ClassroomIO’s summary of them.</p>'
+          '<h2>Credits</h2><p>Videos are published by OpenAI on YouTube and embedded here. The lesson text and quizzes are ClassroomHub’s summary of them.</p>'
         ),
         videoLesson({
           title: 'Getting Started with ChatGPT Work',
@@ -1915,7 +1915,7 @@ const aiFluency: LaunchTemplateFixture = {
             'Certificate → Settings › Certificate. Issued when every lesson is complete.',
             'AI tutor → Settings › AI tutor. A good fit here: learners can practise the 4Ds with it.'
           ],
-          '<h2>Credits</h2><p>Videos are from AI Fluency: Framework and Foundations, developed by Anthropic, Prof. Rick Dakan (Ringling College of Art and Design), and Prof. Joseph Feller (University College Cork), and published on YouTube. The lesson text and quizzes are ClassroomIO’s summary.</p>'
+          '<h2>Credits</h2><p>Videos are from AI Fluency: Framework and Foundations, developed by Anthropic, Prof. Rick Dakan (Ringling College of Art and Design), and Prof. Joseph Feller (University College Cork), and published on YouTube. The lesson text and quizzes are ClassroomHub’s summary.</p>'
         ),
         videoLesson({
           title: 'Introduction to AI Fluency',
@@ -2472,7 +2472,7 @@ const hubspotSalesHub: LaunchTemplateFixture = {
             'Certificate → Settings › Certificate. Issued when every lesson is complete.',
             'Tailor it → add your own pipeline stages and email templates as extra lessons.'
           ],
-          '<h2>Credits</h2><p>Videos are published by HubSpot Academy on YouTube and embedded here. The lesson text and quizzes are ClassroomIO’s summary of them.</p>'
+          '<h2>Credits</h2><p>Videos are published by HubSpot Academy on YouTube and embedded here. The lesson text and quizzes are ClassroomHub’s summary of them.</p>'
         ),
         videoLesson({
           title: 'The Official HubSpot Sales Hub Tutorial',
@@ -2905,7 +2905,7 @@ const salesforceCpq: LaunchTemplateFixture = {
             'Certificate → Settings › Certificate. Issued when every lesson is complete.',
             'Tailor it → add a lesson with your own product catalog and approval rules.'
           ],
-          '<h2>Credits</h2><p>Videos are published by Salesforce on YouTube and embedded here. The lesson text and quizzes are ClassroomIO’s summary of them.</p>'
+          '<h2>Credits</h2><p>Videos are published by Salesforce on YouTube and embedded here. The lesson text and quizzes are ClassroomHub’s summary of them.</p>'
         ),
         videoLesson({
           title: 'Bundled quotes for up-selling and cross-selling',

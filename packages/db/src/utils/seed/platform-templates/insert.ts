@@ -128,9 +128,9 @@ function questionSettings(question: LaunchQuestion) {
 }
 
 async function allocateTemplateSlug(preferred: string, dbClient: DbOrTxClient) {
-  const candidates = [preferred, `${preferred}-classroomio`];
+  const candidates = [preferred, `${preferred}-classroomhub`];
   for (let suffix = 2; suffix < 100; suffix += 1) {
-    candidates.push(`${preferred}-classroomio-${suffix}`);
+    candidates.push(`${preferred}-classroomhub-${suffix}`);
   }
 
   for (const candidate of candidates) {
