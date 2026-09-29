@@ -1,4 +1,5 @@
 import {
+  confirmFailingChecks,
   diffHealthReports,
   readScheduledHealthReport,
   runSystemHealthChecks,
@@ -15,9 +16,15 @@ import { log } from '../../utils/logger';
  * The report is only saved once any alert it owes has been accepted. Saving first would
  * mark a failure as announced even when the announcement itself bounced, and it would
  * never be sent again; not saving means the next scan retries it.
+ *
+ * Failures are re-checked once before they count, so a restart during a deploy is not
+ * reported as an outage.
  */
-export async function scanSystemHealth() {
-  const [previous, report] = await Promise.all([readScheduledHealthReport(), runSystemHealthChecks('jobs')]);
+export const FAILURE_CONFIRM_DELAY_MS = 60_000;
+
+export async function scanSystemHealth(confirmDelayMs = FAILURE_CONFIRM_DELAY_MS) {
+  const [previous, firstPass] = await Promise.all([readScheduledHealthReport(), runSystemHealthChecks('jobs')]);
+  const report = await confirmFailingChecks(firstPass, confirmDelayMs);
   const transitions = diffHealthReports(previous, report);
   const failing = report.checks.filter((check) => check.status === 'fail').map((check) => check.id);
 

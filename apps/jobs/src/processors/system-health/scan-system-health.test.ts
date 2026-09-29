@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
+  confirmFailingChecks: vi.fn(),
   diffHealthReports: vi.fn(),
   readScheduledHealthReport: vi.fn(),
   runSystemHealthChecks: vi.fn(),
@@ -21,6 +22,7 @@ describe('scheduled system health scan', () => {
     vi.clearAllMocks();
     mocks.readScheduledHealthReport.mockResolvedValue(null);
     mocks.runSystemHealthChecks.mockResolvedValue(report);
+    mocks.confirmFailingChecks.mockImplementation(async (value) => value);
   });
 
   it('keeps the report unsaved when the alert it owes is not delivered, so the next scan retries', async () => {
@@ -50,5 +52,17 @@ describe('scheduled system health scan', () => {
 
     expect(mocks.sendHealthAlertEmail).not.toHaveBeenCalled();
     expect(mocks.saveScheduledHealthReport).toHaveBeenCalledWith(report);
+  });
+
+  it('judges the report only after failing checks are re-checked', async () => {
+    const recovered = { ...report, status: 'ok', checks: [{ ...failingCheck, status: 'ok' }] };
+    mocks.confirmFailingChecks.mockResolvedValue(recovered);
+    mocks.diffHealthReports.mockReturnValue({ newlyFailing: [], recovered: [] });
+
+    const result = await scanSystemHealth(0);
+
+    expect(mocks.confirmFailingChecks).toHaveBeenCalledWith(report, 0);
+    expect(mocks.diffHealthReports).toHaveBeenCalledWith(null, recovered);
+    expect(result.failing).toEqual([]);
   });
 });
