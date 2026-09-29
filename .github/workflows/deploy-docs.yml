@@ -17,6 +17,14 @@ on:
       - '.github/workflows/deploy-docs.yml'
   workflow_call:
   workflow_dispatch:
+    inputs:
+      runner_pool:
+        description: Runner pool (self-hosted uses no GitHub minutes; github-hosted needs working Actions billing)
+        type: choice
+        options:
+          - self-hosted
+          - github-hosted
+        default: self-hosted
 
 permissions:
   contents: read
@@ -27,7 +35,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     environment: production
 
     steps:
@@ -86,7 +94,7 @@ jobs:
 
   website:
     needs: deploy
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     environment: production
     steps:
       - name: Checkout code

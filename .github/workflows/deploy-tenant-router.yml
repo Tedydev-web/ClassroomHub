@@ -2,6 +2,14 @@ name: Deploy tenant router
 
 on:
   workflow_dispatch:
+    inputs:
+      runner_pool:
+        description: Runner pool (self-hosted uses no GitHub minutes; github-hosted needs working Actions billing)
+        type: choice
+        options:
+          - self-hosted
+          - github-hosted
+        default: self-hosted
   push:
     branches: [main]
     paths:
@@ -18,7 +26,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     environment: production
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
