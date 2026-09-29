@@ -424,7 +424,7 @@ export type CourseContent = NonNullable<ApiCourse['content']>;
 export type CourseContentSection = CourseContent['sections'][number];
 export type CourseContentItem = CourseContent['items'][number];
 
-export type Course = Omit<ApiCourse, 'metadata' | 'lessons' | 'sections' | 'exercises'> & {
+export type Course = Omit<ApiCourse, 'metadata' | 'lessons' | 'sections' | 'exercises' | 'logo'> & {
   metadata?: CourseMetadata | null;
   certificate?: CourseCertificate | null;
   content: CourseContent;
@@ -657,3 +657,46 @@ export type PublishExamImportRequest =
   (typeof classroomhub.course)[':courseId']['exam-import'][':importId']['publish']['$post'];
 export type PublishExamImportSuccess = Extract<InferResponseType<PublishExamImportRequest>, { success: true }>;
 export type PublishedExamImport = PublishExamImportSuccess['data'];
+
+export type ListCourseTemplatesRequest = (typeof classroomhub.course)['template']['$get'];
+export type ListCourseTemplatesSuccess = Extract<InferResponseType<ListCourseTemplatesRequest>, { success: true }>;
+export type CourseTemplateCards = ListCourseTemplatesSuccess['data'];
+export type CourseTemplateCard = CourseTemplateCards['org'][number];
+
+export type PreviewCourseTemplateRequest = (typeof classroomhub.course)['template'][':templateId']['preview']['$get'];
+export type PreviewCourseTemplateSuccess = Extract<InferResponseType<PreviewCourseTemplateRequest>, { success: true }>;
+export type CourseTemplatePreviewSettings = {
+  certificate: boolean;
+  deadline: string | null;
+  threshold: number | null;
+  finalExercise: { title: string; score: number } | null;
+  sequential: boolean;
+  grading: boolean;
+  commentsOff: boolean;
+  lessonDownload: boolean;
+  selfEnrollment: boolean;
+  aiTutor: boolean;
+  compliance: { months: number; mandatory: boolean } | null;
+};
+export type CourseTemplatePreview = Omit<PreviewCourseTemplateSuccess['data'], 'settings'> & {
+  settings: CourseTemplatePreviewSettings;
+  curated: boolean;
+};
+
+export type CreateCourseFromTemplateRequest =
+  (typeof classroomhub.course)['template'][':templateId']['course']['$post'];
+export type DuplicateCourseTemplateRequest =
+  (typeof classroomhub.course)['template'][':templateId']['duplicate']['$post'];
+export type SaveCourseTemplateRequest = (typeof classroomhub.course)[':courseId']['template']['$post'];
+export type ConvertCourseTemplateRequest = (typeof classroomhub.course)[':courseId']['template']['convert']['$post'];
+export type DeleteCourseTemplateRequest = (typeof classroomhub.course)[':courseId']['$delete'];
+
+export type GetCourseTemplateUpdatesRequest = (typeof classroomhub.course)[':courseId']['template-updates']['$get'];
+export type GetCourseTemplateUpdatesSuccess = Extract<
+  InferResponseType<GetCourseTemplateUpdatesRequest>,
+  { success: true }
+>;
+export type CourseTemplateUpdates = GetCourseTemplateUpdatesSuccess['data'];
+
+export type PullCourseTemplateUpdatesRequest =
+  (typeof classroomhub.course)[':courseId']['template-updates']['pull']['$post'];

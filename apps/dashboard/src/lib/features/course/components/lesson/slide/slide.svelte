@@ -25,6 +25,8 @@
   let { mode = MODES.view }: Props = $props();
 
   let pickerOpen = $state(false);
+  let pickerCanAdd = $state(false);
+  let slidePicker = $state<{ submit: () => void } | null>(null);
   let openDeleteSlideModal = $state(false);
   let slideIndexToDelete = $state<number | null>(null);
 
@@ -132,8 +134,20 @@
         <Dialog.Title>{$t('course.navItem.lessons.materials.tabs.slide.add_slide.title')}</Dialog.Title>
       </Dialog.Header>
       {#if pickerOpen}
-        <SlideEmbedPicker class="ui:min-h-0 ui:flex-1 ui:overflow-hidden" labels={pickerLabels} onAdd={handleAdd} />
+        <SlideEmbedPicker
+          bind:this={slidePicker}
+          bind:canAdd={pickerCanAdd}
+          hideAddButton
+          class="ui:min-h-0 ui:flex-1 ui:overflow-hidden"
+          labels={pickerLabels}
+          onAdd={handleAdd}
+        />
       {/if}
+      <Dialog.Footer sticky class="shrink-0">
+        <Button size="sm" disabled={!pickerCanAdd} onclick={() => slidePicker?.submit()}>
+          {$t('course.navItem.lessons.materials.tabs.slide.button')}
+        </Button>
+      </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Root>
 

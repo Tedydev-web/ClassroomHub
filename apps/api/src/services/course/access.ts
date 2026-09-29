@@ -1,4 +1,4 @@
-import { ContentType } from '@cio/utils/constants';
+import { ContentType, ROLE } from '@cio/utils/constants';
 import { assertStudentCanAccessContent } from '@cio/core/services/course/progression';
 import { exerciseBelongsToCourse } from '@cio/db/queries/course/certification-exercise';
 import { getCourseById, getCourseProgress } from '@cio/db/queries/course/course';
@@ -9,6 +9,28 @@ import { getLessonById } from '@cio/db/queries/lesson';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 const DEFAULT_CONTENT_GROUPING = true;
+
+/**
+ * Blocks a STUDENT-role member from reading an unpublished course at all
+ * (individual content, listings, everything). Non-student roles (tutor/admin
+ * authoring the course) and courses that don't resolve are left untouched.
+ */
+export async function assertEnrolledStudentCourseAccess(params: {
+  courseId: string;
+  profileId: string;
+}): Promise<void> {
+  const [courseRow, progress] = await Promise.all([
+    getCourseById(params.courseId),
+    getCourseProgress(params.courseId, params.profileId)
+  ]);
+
+  const course = courseRow[0];
+  if (!course) return;
+
+  if (progress.roleId === ROLE.STUDENT && !course.isPublished) {
+    throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
+  }
+}
 
 export async function assertEnrolledStudentContentAccess(params: {
   courseId: string;
@@ -39,6 +61,10 @@ export async function assertEnrolledStudentContentAccess(params: {
 
   const course = courseRow[0];
   if (!course) return;
+
+  if (progress.roleId === ROLE.STUDENT && !course.isPublished) {
+    throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
+  }
 
   if (params.type === ContentType.Exercise) {
     const access = await resolveViewerExerciseAccess(params.courseId, params.contentId, params.profileId);

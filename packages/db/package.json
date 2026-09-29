@@ -70,6 +70,7 @@
     "db:rewrite-media-host": "tsx src/scripts/rewrite-media-host.ts",
     "db:login-link": "tsx src/scripts/generate-login-link.ts",
     "db:seed:coursera-students": "tsx src/scripts/seed-coursera-audience-students.ts",
+    "db:seed:platform-templates": "tsx src/scripts/seed-platform-templates.ts",
     "db:create-org": "tsx src/scripts/create-org-with-admin.ts",
     "db:sync-orphaned-profiles": "tsx src/scripts/sync-orphaned-profiles.ts",
     "db:backfill-profile-email-verification": "tsx src/scripts/backfill-profile-email-verification.ts",
@@ -95,6 +96,7 @@
     "db:disable-v1-content-grouping-from-dump": "tsx src/scripts/disable-v1-content-grouping-from-dump.ts",
     "db:fix-landing-courses": "tsx src/scripts/fix-landing-page-courses-links.ts",
     "db:prune-exam-attempts": "tsx src/scripts/prune-exam-attempts.ts",
+    "db:migrate-course-logo-to-banner-image": "tsx src/scripts/migrate-course-logo-to-banner-image.ts",
     "db:remove-landing-contact": "tsx src/scripts/remove-landing-page-contact-nav.ts",
     "db:migrate-landing-primary-action": "tsx src/scripts/migrate-landing-page-primary-action.ts"
   },

@@ -125,6 +125,7 @@
         url: getNavItemRoute(id, 'analytics'),
         isActive: (path || page.url.pathname) === getNavItemRoute(id, 'analytics'),
         show() {
+          if (courseApi.course?.isTemplate) return false;
           return !isStudent;
         },
         icon: getNavIcon(NAV_IDS.ANALYTICS)
@@ -146,6 +147,7 @@
         url: getNavItemRoute(id, 'submissions'),
         isActive: (path || page.url.pathname) === getNavItemRoute(id, 'submissions'),
         show() {
+          if (courseApi.course?.isTemplate) return false;
           if (isStudent) return false;
           return true;
         },
@@ -157,6 +159,7 @@
         url: getNavItemRoute(id, 'marks'),
         isActive: (path || page.url.pathname) === getNavItemRoute(id, 'marks'),
         show() {
+          if (courseApi.course?.isTemplate) return false;
           return isStudent ? ($currentOrg.customization?.['course']?.['grading'] ?? false) : true;
         },
         icon: getNavIcon(NAV_IDS.MARKS)
@@ -187,6 +190,7 @@
         url: getNavItemRoute(id, 'people'),
         isActive: (path || page.url.pathname) === getNavItemRoute(id, 'people'),
         show() {
+          if (courseApi.course?.isTemplate) return false;
           return !isStudent;
         },
         icon: getNavIcon(NAV_IDS.PEOPLE)

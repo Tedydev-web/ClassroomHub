@@ -1,34 +1,55 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { INTERNAL_QUESTION_TYPE_IDS } from '@cio/core/services/exercise/utils';
-import { db } from '@cio/db/drizzle';
-import type { DbOrTxClient } from '@cio/db/drizzle';
-import { TCourse, TCourseSection, TLesson, TNewQuestion } from '@db/types';
+import { db, type DbOrTxClient } from '@db/drizzle';
+import { TAsset, TCourse, TCourseSection, TLesson, TNewQuestion } from '@db/types';
 import {
   addGroupMember,
   createCourse,
+  createCourseSections,
+  createExerciseSections,
   createExercises,
   createGroup,
   createLessonLanguages,
-  createCourseSections,
   createLessons,
   createOptions,
+  createAsset,
   createQuestions,
-  syncOptionIdSequence,
+  createAssetUsage,
+  deleteAssetUsagesByTargetSlots,
+  getActiveAssetBySourceUrl,
+  getAssetsByIds,
   getCourseById,
-  getExercisesByLessonIds,
+  getCourseOrganizationId,
+  getCourseSectionsByCourseId,
+  getExerciseSectionsByExerciseIds,
+  getExercisesByCourseId,
   getLessonLanguagesByLessonIds,
   getLessonsByCourseId,
   getOptionsByQuestionIds,
   getQuestionsByExerciseIds,
-  getCourseSectionsByCourseId,
-  getExerciseSectionsByExerciseIds,
-  createExerciseSections,
+  stampCopiedTemplateUnits,
+  syncOptionIdSequence,
+  updateCourse,
   updateExerciseSection
 } from '@db/queries';
 
 import { ROLE } from '@cio/utils/constants';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
-import { QUESTION_TYPE_IDS } from '@cio/question-types';
+import { transferUploadedAsset, withAssetStorageRollback } from '@cio/core/services/assets/asset-transfer';
+
+const ASSET_ID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi;
+
+export type CloneCourseOptions = {
+  title: string;
+  userId: string;
+  description?: string;
+  slug?: string | null;
+  organizationId?: string;
+  isTemplate?: boolean;
+  isPublished?: boolean;
+  templateId?: string | null;
+  setSourceIds?: boolean;
+};
 
 /**
  * Internal composite items (ASSESSMENT_ITEM) keep their definition in question
@@ -47,346 +68,499 @@ function assertNoInternalQuestions(questions: TNewQuestion[]): void {
   );
 }
 
+function collectAssetIds(value: unknown): string[] {
+  const matches = JSON.stringify(value).match(ASSET_ID_PATTERN);
+  return matches ? [...new Set(matches)] : [];
+}
+
+function replaceAssetIds<T>(value: T, replacements: Map<string, string>): T {
+  if (replacements.size === 0) return value;
+
+  let serialized = JSON.stringify(value);
+  for (const [source, copy] of replacements) {
+    if (source !== copy) {
+      serialized = serialized.split(source).join(copy);
+    }
+  }
+
+  return JSON.parse(serialized) as T;
+}
+
+export async function remapContentAssets<T>(
+  value: T,
+  sourceOrgId: string | null | undefined,
+  targetOrgId: string | null | undefined,
+  userId: string,
+  dbClient: DbOrTxClient = db
+) {
+  if (!sourceOrgId || !targetOrgId || sourceOrgId === targetOrgId) return value;
+
+  const assetIds = collectAssetIds(value);
+  if (assetIds.length === 0) return value;
+
+  const copiedIds = await copyAssetsIntoOrg(assetIds, targetOrgId, userId, sourceOrgId, dbClient);
+  return replaceAssetIds(value, copiedIds);
+}
+
+type LessonAssetRefs = Pick<TLesson, 'id' | 'videos' | 'documents'>;
+
+const LESSON_MEDIA_SLOTS = ['lesson_video', 'lesson_document'];
+
 /**
- * Pre-flight for cloneCourse: runs before any row is written so an unclonable
- * course fails atomically instead of leaving a partial clone behind.
+ * Makes each lesson's `lesson_video` and `lesson_document` usages match the videos
+ * and documents it now points at, so replaced media stops showing as in use and
+ * current media shows as in use in the target org's library. References to assets
+ * outside `organizationId` are skipped. No background media work is queued.
  */
-async function assertLessonExercisesCloneable(oldLessons: TLesson[]): Promise<void> {
-  const lessonIds = oldLessons.map((lesson) => lesson.id);
-  if (lessonIds.length === 0) return;
-
-  const exercises = await getExercisesByLessonIds(lessonIds);
-  if (exercises.length === 0) return;
-
-  const activeQuestions = await getQuestionsByExerciseIds(
-    exercises.map((exercise) => exercise.id),
-    undefined,
-    { questionScope: 'active' }
-  );
-  assertNoInternalQuestions(activeQuestions);
-}
-
-async function cloneLessonLanguages(
-  newLessons: TLesson[],
-  oldLessons: TLesson[],
-  txClient: DbOrTxClient
-): Promise<void> {
-  // Extract old lesson IDs
-  const oldLessonIds = oldLessons.map((lesson) => lesson.id);
-
-  // Fetch all lesson languages for the old lessons
-  const oldLessonLanguages = await getLessonLanguagesByLessonIds(oldLessonIds);
-
-  if (!oldLessonLanguages || oldLessonLanguages.length === 0) {
-    return;
-  }
-
-  // Create a map of old lesson ID to new lesson ID
-  const lessonIdMap = new Map<string, string>();
-  oldLessons.forEach((oldLesson, index) => {
-    lessonIdMap.set(oldLesson.id, newLessons[index].id);
-  });
-
-  // Map lesson languages to new lesson IDs
-  const newLessonLanguages = oldLessonLanguages.map((lang) => ({
-    content: lang.content,
-    locale: lang.locale,
-    lessonId: lessonIdMap.get(lang.lessonId!)!
-  }));
-
-  // Bulk insert lesson languages
-  await createLessonLanguages(newLessonLanguages, txClient);
-}
-
-async function cloneExercises(newLessons: TLesson[], oldLessons: TLesson[], txClient: DbOrTxClient): Promise<void> {
-  // 1. Extract old lesson IDs
-  const oldLessonIds = oldLessons.map((lesson) => lesson.id);
-
-  // 2. Fetch all exercises for old lessons
-  const oldExercises = await getExercisesByLessonIds(oldLessonIds, txClient);
-
-  if (!oldExercises || oldExercises.length === 0) {
-    return;
-  }
-
-  // 3. Create lesson ID map
-  const lessonIdMap = new Map<string, string>();
-  oldLessons.forEach((oldLesson, index) => {
-    lessonIdMap.set(oldLesson.id, newLessons[index].id);
-  });
-
-  // 4. Insert exercises with new lesson IDs
-  const newExercises = await createExercises(
-    oldExercises.map((exercise) => ({
-      title: exercise.title,
-      description: exercise.description,
-      dueBy: new Date().toISOString(),
-      lessonId: lessonIdMap.get(exercise.lessonId!)!,
-      sectionDisplayMode: exercise.sectionDisplayMode,
-      order: exercise.order
+export async function syncLessonAssetUsages(
+  lessons: LessonAssetRefs[],
+  organizationId: string,
+  userId: string,
+  dbClient: DbOrTxClient = db
+) {
+  const slots = lessons.flatMap((lesson) => [
+    ...(lesson.videos ?? []).map((video, position) => ({
+      lessonId: lesson.id,
+      assetId: video.assetId,
+      slotType: 'lesson_video',
+      position
     })),
-    txClient
+    ...(lesson.documents ?? []).map((document, position) => ({
+      lessonId: lesson.id,
+      assetId: document.assetId,
+      slotType: 'lesson_document',
+      position
+    }))
+  ]);
+  const referencedIds = [...new Set(slots.flatMap((slot) => (slot.assetId ? [slot.assetId] : [])))];
+  const ownedAssets = await getAssetsByIds(referencedIds, organizationId, dbClient);
+  const ownedIds = new Set(ownedAssets.map((asset) => asset.id));
+
+  for (const lesson of lessons) {
+    await deleteAssetUsagesByTargetSlots('lesson', lesson.id, LESSON_MEDIA_SLOTS, dbClient);
+  }
+
+  for (const slot of slots) {
+    if (!slot.assetId || !ownedIds.has(slot.assetId)) continue;
+
+    await createAssetUsage(
+      {
+        organizationId,
+        assetId: slot.assetId,
+        targetType: 'lesson',
+        targetId: slot.lessonId,
+        slotType: slot.slotType,
+        position: slot.position,
+        createdByProfileId: userId
+      },
+      dbClient
+    );
+  }
+}
+
+async function copyAssetsIntoOrg(
+  assetIds: string[],
+  organizationId: string,
+  userId: string,
+  sourceOrgId: string,
+  dbClient: DbOrTxClient
+) {
+  const assets = await getAssetsByIds(assetIds, sourceOrgId, dbClient);
+  const replacements = new Map<string, string>();
+
+  for (const asset of assets) {
+    const copied = await copyAsset(asset, organizationId, userId, dbClient);
+    for (const [source, copy] of copied) replacements.set(source, copy);
+  }
+
+  return replacements;
+}
+
+/**
+ * Brings an asset into `organizationId` and returns the source → copy pairs to
+ * rewrite in content. Uploaded files are transferred into storage the target org
+ * owns; external links reuse the org's asset for the same URL when there is one.
+ */
+async function copyAsset(
+  asset: TAsset,
+  organizationId: string,
+  userId: string,
+  dbClient: DbOrTxClient
+): Promise<[string, string][]> {
+  if (asset.organizationId === organizationId) return [];
+
+  if (asset.provider === 'upload') {
+    const transfer = await transferUploadedAsset(asset, organizationId, userId, dbClient);
+    return transfer.replacements;
+  }
+
+  const existing = asset.sourceUrl
+    ? await getActiveAssetBySourceUrl(organizationId, asset.provider, asset.sourceUrl, dbClient)
+    : null;
+  if (existing) return [[asset.id, existing.id]];
+
+  const created = await createAsset(
+    {
+      organizationId,
+      kind: asset.kind,
+      provider: asset.provider,
+      storageProvider: asset.storageProvider,
+      sourceUrl: asset.sourceUrl,
+      mimeType: asset.mimeType,
+      title: asset.title,
+      description: asset.description,
+      thumbnailUrl: asset.thumbnailUrl,
+      durationSeconds: asset.durationSeconds,
+      aspectRatio: asset.aspectRatio,
+      isExternal: asset.isExternal,
+      status: asset.status,
+      metadata: asset.metadata,
+      createdByProfileId: userId
+    },
+    dbClient
   );
 
-  // 5. Create exercise ID map
-  const exerciseIdMap = new Map<string, string>();
-  oldExercises.forEach((oldExercise, index) => {
-    exerciseIdMap.set(oldExercise.id, newExercises[index].id);
+  return [[asset.id, created.id]];
+}
+
+function metadataWithoutReviews(metadata: TCourse['metadata']): TCourse['metadata'] {
+  const next = { ...metadata };
+  delete next.reviews;
+  return next;
+}
+
+export async function cloneCourse(
+  courseId: string,
+  options: CloneCourseOptions,
+  dbClient?: DbOrTxClient
+): Promise<TCourse> {
+  if (dbClient) {
+    const created = await cloneCourseWithClient(courseId, options, dbClient);
+    return created.course;
+  }
+
+  const created = await withAssetStorageRollback(() =>
+    db.transaction(async (tx) => cloneCourseWithClient(courseId, options, tx))
+  );
+  await invalidateOrgStats(created.organizationId);
+
+  return created.course;
+}
+
+async function cloneCourseWithClient(
+  courseId: string,
+  options: CloneCourseOptions,
+  tx: DbOrTxClient
+): Promise<{ course: TCourse; organizationId: string | null }> {
+  const [course] = await getCourseById(courseId, tx);
+  if (!course) {
+    throw new Error('Course not found');
+  }
+
+  const sourceOrgId = await getCourseOrganizationId(courseId, tx);
+  const targetOrgId = options.organizationId ?? sourceOrgId ?? undefined;
+  const crossOrg = Boolean(sourceOrgId && targetOrgId && sourceOrgId !== targetOrgId);
+  const syncedAt = new Date().toISOString();
+  const preserveSchedule = options.isTemplate === true || options.setSourceIds === true;
+
+  const oldSections = await getCourseSectionsByCourseId(courseId, tx);
+  const oldLessons = await getLessonsByCourseId(courseId, tx);
+  const oldExercises = await getExercisesByCourseId(courseId, {}, undefined, tx);
+  const oldLessonIds = oldLessons.map((lesson) => lesson.id);
+  const oldExerciseIds = oldExercises.map((exercise) => exercise.id);
+  const oldLessonLanguages = oldLessonIds.length > 0 ? await getLessonLanguagesByLessonIds(oldLessonIds, tx) : [];
+  const oldExerciseSections =
+    oldExerciseIds.length > 0 ? await getExerciseSectionsByExerciseIds(oldExerciseIds, tx) : [];
+  // Clone only the active graph: archived questions are frozen history of the
+  // source course and must not resurrect in the clone.
+  const oldQuestions =
+    oldExerciseIds.length > 0 ? await getQuestionsByExerciseIds(oldExerciseIds, tx, { questionScope: 'active' }) : [];
+  // Checked before the first write; throwing rolls back the surrounding transaction.
+  assertNoInternalQuestions(oldQuestions);
+  const oldQuestionIds = oldQuestions.map((question) => question.id).filter((id) => id !== undefined);
+  const oldOptions = oldQuestionIds.length > 0 ? await getOptionsByQuestionIds(oldQuestionIds, tx) : [];
+
+  const assetIds =
+    crossOrg && sourceOrgId
+      ? await copyAssetsIntoOrg(
+          collectAssetIds({
+            course,
+            oldLessons,
+            oldLessonLanguages,
+            oldExercises,
+            oldExerciseSections,
+            oldQuestions,
+            oldOptions
+          }),
+          targetOrgId!,
+          options.userId,
+          sourceOrgId,
+          tx
+        )
+      : new Map<string, string>();
+
+  const courseCopy = replaceAssetIds(course, assetIds);
+  const [newGroup] = await createGroup(
+    {
+      name: options.title,
+      description: options.description ?? course.description,
+      organizationId: targetOrgId
+    },
+    tx
+  );
+  if (!newGroup) {
+    throw new Error('Failed to create a group for the copied course');
+  }
+
+  const [newCourse] = await createCourse(
+    {
+      title: options.title,
+      description: options.description ?? courseCopy.description,
+      overview: courseCopy.overview,
+      groupId: newGroup.id,
+      isTemplate: options.isTemplate ?? false,
+      publicForAll: false,
+      templateId: options.templateId ?? null,
+      slug: options.slug ?? null,
+      metadata: metadataWithoutReviews(courseCopy.metadata),
+      cost: courseCopy.cost,
+      currency: courseCopy.currency,
+      bannerImage: courseCopy.bannerImage,
+      isPublished: options.isPublished ?? courseCopy.isPublished,
+      certificate: courseCopy.certificate,
+      compliance: courseCopy.compliance,
+      callout: courseCopy.callout,
+      status: courseCopy.status,
+      type: courseCopy.type
+    },
+    tx
+  );
+  if (!newCourse) {
+    throw new Error('Failed to create the copied course');
+  }
+
+  await addGroupMember(
+    {
+      profileId: options.userId,
+      email: '',
+      groupId: newGroup.id,
+      roleId: ROLE.TUTOR
+    },
+    tx
+  );
+
+  let newSections: TCourseSection[] = [];
+  const sectionMap = new Map<string, string>();
+  if (oldSections.length > 0) {
+    newSections = await createCourseSections(
+      oldSections.map((section) => ({
+        title: section.title,
+        order: section.order,
+        courseId: newCourse.id,
+        sourceId: options.setSourceIds ? section.id : null,
+        sourceSyncedAt: options.setSourceIds ? syncedAt : null
+      })),
+      tx
+    );
+    oldSections.forEach((section, index) => {
+      sectionMap.set(section.id, newSections[index].id);
+    });
+  }
+
+  const lessonCopies = replaceAssetIds(oldLessons, assetIds);
+  const newLessons =
+    lessonCopies.length > 0
+      ? await createLessons(
+          lessonCopies.map((lesson) => ({
+            note: lesson.note,
+            videoUrl: lesson.videoUrl,
+            slideUrl: lesson.slideUrl,
+            slides: lesson.slides,
+            courseId: newCourse.id,
+            title: lesson.title,
+            public: lesson.public,
+            lessonAt: lesson.lessonAt,
+            teacherId: crossOrg ? null : lesson.teacherId,
+            isComplete: false,
+            callUrl: crossOrg ? null : lesson.callUrl,
+            order: lesson.order,
+            isUnlocked: lesson.isUnlocked,
+            completionPolicy: lesson.completionPolicy,
+            videoWatchThreshold: lesson.videoWatchThreshold,
+            commentsEnabled: lesson.commentsEnabled,
+            videos: lesson.videos,
+            documents: lesson.documents,
+            sectionId: lesson.sectionId ? (sectionMap.get(lesson.sectionId) ?? null) : null,
+            slug: lesson.slug,
+            sourceId: options.setSourceIds ? lesson.id : null,
+            sourceSyncedAt: options.setSourceIds ? syncedAt : null
+          })),
+          tx
+        )
+      : [];
+
+  const lessonMap = new Map<string, string>();
+  oldLessons.forEach((lesson, index) => {
+    const created = newLessons[index];
+    if (created) lessonMap.set(lesson.id, created.id);
   });
 
-  // 6. Fetch all questions for old exercises
-  const oldExerciseIds = oldExercises.map((ex) => ex.id);
-  const oldSections = await getExerciseSectionsByExerciseIds(oldExerciseIds, txClient);
-  const exerciseSectionIdMap = new Map<string, string>();
+  if (targetOrgId) {
+    await syncLessonAssetUsages(newLessons, targetOrgId, options.userId, tx);
+  }
 
-  if (oldSections.length > 0) {
-    const newSections = await createExerciseSections(
-      oldSections.map((section) => ({
+  const languageCopies = replaceAssetIds(oldLessonLanguages, assetIds);
+  if (languageCopies.length > 0) {
+    await createLessonLanguages(
+      languageCopies.map((language) => ({
+        content: language.content,
+        locale: language.locale,
+        lessonId: lessonMap.get(language.lessonId!)!
+      })),
+      tx
+    );
+  }
+
+  const exerciseCopies = replaceAssetIds(oldExercises, assetIds);
+  const newExercises =
+    exerciseCopies.length > 0
+      ? await createExercises(
+          exerciseCopies.map((exercise) => ({
+            title: exercise.title,
+            description: exercise.description,
+            dueBy: preserveSchedule ? exercise.dueBy : new Date().toISOString(),
+            lessonId: exercise.lessonId ? (lessonMap.get(exercise.lessonId) ?? null) : null,
+            courseId: newCourse.id,
+            sectionId: exercise.sectionId ? (sectionMap.get(exercise.sectionId) ?? null) : null,
+            sectionDisplayMode: exercise.sectionDisplayMode,
+            order: exercise.order,
+            isUnlocked: exercise.isUnlocked,
+            allowMultipleAttempts: exercise.allowMultipleAttempts,
+            completionPolicy: exercise.completionPolicy,
+            passThreshold: exercise.passThreshold,
+            slug: exercise.slug,
+            sourceId: options.setSourceIds ? exercise.id : null,
+            sourceSyncedAt: options.setSourceIds ? syncedAt : null
+          })),
+          tx
+        )
+      : [];
+
+  const exerciseMap = new Map<string, string>();
+  oldExercises.forEach((exercise, index) => {
+    const created = newExercises[index];
+    if (created) exerciseMap.set(exercise.id, created.id);
+  });
+
+  const exerciseSectionMap = new Map<string, string>();
+  if (oldExerciseSections.length > 0) {
+    const newExerciseSections = await createExerciseSections(
+      oldExerciseSections.map((section) => ({
         title: section.title,
         description: section.description,
         order: section.order,
         colorTheme: section.colorTheme,
         afterBehavior: section.afterBehavior,
-        exerciseId: exerciseIdMap.get(section.exerciseId)!
+        exerciseId: exerciseMap.get(section.exerciseId)!
       })),
-      txClient
+      tx
     );
 
-    oldSections.forEach((oldSection, index) => {
-      const newSection = newSections[index];
-      if (newSection) {
-        exerciseSectionIdMap.set(oldSection.id, newSection.id);
-      }
+    oldExerciseSections.forEach((section, index) => {
+      const created = newExerciseSections[index];
+      if (created) exerciseSectionMap.set(section.id, created.id);
     });
 
     await Promise.all(
-      newSections.map((newSection) => {
-        const behavior = newSection.afterBehavior as { action?: string; exerciseSectionId?: string };
-        if (behavior.action !== 'go_to_section' || !behavior.exerciseSectionId) {
-          return null;
-        }
+      newExerciseSections.map((section) => {
+        const behavior = section.afterBehavior as { action?: string; exerciseSectionId?: string };
+        if (behavior.action !== 'go_to_section' || !behavior.exerciseSectionId) return null;
 
-        const remappedId = exerciseSectionIdMap.get(behavior.exerciseSectionId);
-        if (!remappedId) {
-          return null;
-        }
+        const remappedId = exerciseSectionMap.get(behavior.exerciseSectionId);
+        if (!remappedId) return null;
 
         return updateExerciseSection(
-          newSection.id,
+          section.id,
           {
             afterBehavior: { action: 'go_to_section', exerciseSectionId: remappedId }
           },
-          txClient
+          tx
         );
       })
     );
   }
 
-  // Clone only the active graph: archived questions are frozen history of the
-  // source course and must not resurrect in the clone.
-  const oldQuestions = await getQuestionsByExerciseIds(oldExerciseIds, txClient, { questionScope: 'active' });
+  const questionCopies = replaceAssetIds(oldQuestions, assetIds);
+  const newQuestions =
+    questionCopies.length > 0
+      ? await createQuestions(
+          questionCopies.map((question) => ({
+            name: question.name,
+            title: question.title,
+            points: question.points,
+            order: question.order,
+            questionTypeId: question.questionTypeId,
+            settings: question.settings,
+            exerciseSectionId: question.exerciseSectionId
+              ? (exerciseSectionMap.get(question.exerciseSectionId) ?? null)
+              : null,
+            exerciseId: exerciseMap.get(question.exerciseId)!
+          })),
+          tx
+        )
+      : [];
 
-  if (!oldQuestions || oldQuestions.length === 0) {
-    return;
-  }
-
-  // Backstop for the pre-flight check in cloneCourse: this is the exact set about
-  // to be copied, so an internal item that appeared in between still fails loudly
-  // instead of being cloned without its revision definition. Throwing here aborts
-  // the surrounding transaction, so no partial clone rows survive.
-  assertNoInternalQuestions(oldQuestions);
-
-  // 7. Insert questions with new exercise IDs
-  const newQuestions = await createQuestions(
-    oldQuestions.map((question) => ({
-      name: question.name,
-      title: question.title,
-      points: question.points,
-      order: question.order,
-      questionTypeId: question.questionTypeId,
-      settings: question.settings,
-      exerciseSectionId: question.exerciseSectionId
-        ? (exerciseSectionIdMap.get(question.exerciseSectionId) ?? null)
-        : null,
-      exerciseId: exerciseIdMap.get(question.exerciseId)!
-    })),
-    txClient
-  );
-
-  // 8. Create question ID map
-  const questionIdMap = new Map<number, number>();
-  oldQuestions.forEach((oldQuestion, index) => {
-    const newQuestionId = newQuestions[index]?.id;
-    const oldQuestionId = oldQuestion.id;
-    if (newQuestionId !== undefined && oldQuestionId !== undefined) {
-      questionIdMap.set(oldQuestionId, newQuestionId);
+  const questionMap = new Map<number, number>();
+  oldQuestions.forEach((question, index) => {
+    const createdId = newQuestions[index]?.id;
+    if (question.id !== undefined && createdId !== undefined) {
+      questionMap.set(question.id, createdId);
     }
   });
 
-  // 9. Fetch all options for old questions (except for paragraph type questions)
-  const oldQuestionIds = oldQuestions
-    .filter((q) => q.questionTypeId !== QUESTION_TYPE_IDS.TEXTAREA)
-    .map((q) => q.id)
-    .filter((id) => id !== undefined);
+  const optionCopies = replaceAssetIds(oldOptions, assetIds);
+  const optionsToCreate = optionCopies
+    .map((option) => {
+      const questionId = questionMap.get(option.questionId);
+      if (questionId === undefined) return null;
 
-  if (oldQuestionIds.length === 0) {
-    return;
+      return {
+        value: option.value,
+        label: option.label,
+        isCorrect: option.isCorrect,
+        settings: option.settings,
+        questionId
+      };
+    })
+    .filter((option) => option !== null);
+
+  if (optionsToCreate.length > 0) {
+    await syncOptionIdSequence(tx);
+    await createOptions(optionsToCreate, tx);
   }
 
-  const oldOptions = await getOptionsByQuestionIds(oldQuestionIds, txClient);
-
-  if (!oldOptions || oldOptions.length === 0) {
-    return;
+  const sourceExerciseId = courseCopy.certificate?.requiredExerciseId;
+  if (sourceExerciseId) {
+    const mappedExerciseId = exerciseMap.get(sourceExerciseId) ?? null;
+    const certificate = {
+      ...(courseCopy.certificate ?? {}),
+      requiredExerciseId: mappedExerciseId
+    };
+    await updateCourse(newCourse.id, { certificate }, tx);
   }
 
-  // 10. Insert options with new question IDs
-  await syncOptionIdSequence(txClient);
-  await createOptions(
-    oldOptions
-      .map((option) => {
-        const newQuestionId = questionIdMap.get(option.questionId);
-        if (newQuestionId === undefined) {
-          return null;
-        }
-        return {
-          value: option.value,
-          label: option.label,
-          isCorrect: option.isCorrect,
-          settings: option.settings,
-          questionId: newQuestionId
-        };
-      })
-      .filter((opt) => opt !== null),
-    txClient
-  );
-}
-
-export async function cloneCourse(
-  courseId: string,
-  newTitle: string,
-  userId: string,
-  newDescription?: string,
-  newSlug?: string,
-  organizationId?: string
-): Promise<TCourse> {
-  // 1. fetch old course
-  const [course] = await getCourseById(courseId);
-
-  // Fail before any write when the course cannot be cloned (internal composite items).
-  const oldLessons = await getLessonsByCourseId(courseId);
-  await assertLessonExercisesCloneable(oldLessons);
-
-  // Source-course reads: hoisted before the transaction so the write section
-  // below is pure writes and any failure inside it rolls the whole clone back.
-  const oldSections = await getCourseSectionsByCourseId(courseId);
-
-  // All clone writes run in one transaction: the in-flight internal-question
-  // backstop (or any other mid-clone failure) can never leave partial
-  // group/course/section/lesson rows behind.
-  // Captured inside the transaction, invalidated after it commits: the org-stats
-  // cache (upstream #883) is a Redis side effect and does not belong among the
-  // rollback-safe DB writes.
-  let statsOrgId: string | null | undefined;
-
-  const newCourse = await db.transaction(async (tx) => {
-    const txClient = tx as DbOrTxClient;
-
-    // 2. create group
-    const [newGroup] = await createGroup(
+  if (options.setSourceIds) {
+    const stampedAt = new Date().toISOString();
+    await stampCopiedTemplateUnits(
       {
-        name: newTitle,
-        description: newDescription ?? course.description,
-        organizationId: organizationId
+        sectionIds: newSections.map((section) => section.id),
+        lessonIds: newLessons.map((lesson) => lesson.id),
+        exerciseIds: newExercises.map((exercise) => exercise.id),
+        syncedAt: stampedAt
       },
-      txClient
+      tx
     );
+  }
 
-    statsOrgId = organizationId ?? newGroup.organizationId;
-
-    // 3. create course for that group
-    // Explicitly select only the fields we want to copy (exclude id, createdAt, updatedAt)
-    const [newCourse] = await createCourse(
-      {
-        title: newTitle,
-        description: course.description,
-        overview: course.overview,
-        groupId: newGroup.id,
-        isTemplate: course.isTemplate,
-        logo: course.logo,
-        slug: newSlug ?? null,
-        metadata: course.metadata,
-        cost: course.cost,
-        currency: course.currency,
-        bannerImage: course.bannerImage,
-        isPublished: course.isPublished,
-        certificate: course.certificate,
-        status: course.status,
-        type: course.type
-      },
-      txClient
-    );
-
-    // 4. add group member
-    await addGroupMember(
-      {
-        profileId: userId,
-        email: '',
-        groupId: newGroup.id,
-        roleId: ROLE.TUTOR
-      },
-      txClient
-    );
-
-    // 5. clone sections
-    // Only create sections if there are any
-    let newSections: TCourseSection[] = [];
-    let sectionMap = new Map<string, string>();
-
-    if (oldSections.length > 0) {
-      newSections = await createCourseSections(
-        oldSections.map((section) => ({
-          title: section.title,
-          order: section.order,
-          courseId: newCourse.id
-        })),
-        txClient
-      );
-
-      // create map
-      sectionMap = new Map(oldSections.map((section, index) => [section.id, newSections[index].id]));
-    }
-
-    // 6. clone lessons (fetched above, before the first write)
-    const newLessons = await createLessons(
-      oldLessons.map((lesson) => ({
-        note: lesson.note,
-        videoUrl: lesson.videoUrl,
-        slideUrl: lesson.slideUrl,
-        slides: lesson.slides,
-        courseId: newCourse.id,
-        title: lesson.title,
-        public: lesson.public,
-        lessonAt: lesson.lessonAt,
-        teacherId: lesson.teacherId,
-        isComplete: lesson.isComplete,
-        callUrl: lesson.callUrl,
-        order: lesson.order,
-        isUnlocked: lesson.isUnlocked,
-        videos: lesson.videos,
-        sectionId: lesson.sectionId ? sectionMap.get(lesson.sectionId) : null,
-        documents: lesson.documents
-      })),
-      txClient
-    );
-
-    // 7. clone languages, exercises, questions, options using bulk queries
-    await cloneLessonLanguages(newLessons, oldLessons, txClient);
-    await cloneExercises(newLessons, oldLessons, txClient);
-
-    return newCourse;
-  });
-
-  if (statsOrgId) await invalidateOrgStats(statsOrgId);
-
-  return newCourse;
+  return { course: newCourse, organizationId: targetOrgId ?? newGroup.organizationId };
 }

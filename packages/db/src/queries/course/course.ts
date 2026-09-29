@@ -14,11 +14,24 @@ import {
 import { and, asc, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { ROLE } from '@cio/utils/constants';
+import type { TCourseType } from '@cio/utils/constants/course-type';
 import { db, type DbOrTxClient } from '@db/drizzle';
+import { contentWriteBumpsTimestamp } from './content-timestamp';
 import { getCourseContentItems, type CourseContentItemRow } from './content';
 import { getExerciseVisibilityCondition } from '@db/queries/exercise/assignment';
 import { isExerciseCompletedSql } from './progression';
 import { getUpcomingSessionsForCourseIds, type CourseUpcomingSession } from './session';
+import { resolveCourseBannerImage } from '@cio/utils/functions';
+
+/**
+ * `bannerImage` is the canonical course image and `logo` the deprecated column
+ * it replaced. Every query that returns a raw course row resolves through here,
+ * so a row written before the rename still carries an image for consumers that
+ * only read `bannerImage`.
+ */
+function withResolvedCourseBannerImage<T extends { bannerImage: string | null; logo: string | null }>(course: T): T {
+  return { ...course, bannerImage: resolveCourseBannerImage(course) };
+}
 
 /**
  * Base course type - extends TCourse with lessonCount
@@ -75,7 +88,8 @@ export const getPublishedCoursesBySiteName = async (
     const conditions = [
       eq(schema.organization.siteName, siteName),
       eq(schema.course.status, 'ACTIVE'),
-      eq(schema.course.isPublished, true)
+      eq(schema.course.isPublished, true),
+      eq(schema.course.isTemplate, false)
     ];
 
     if (courseIds && courseIds.length > 0) {
@@ -135,7 +149,7 @@ export const getPublishedCoursesBySiteName = async (
           .orderBy(asc(schema.course.displayOrder), desc(schema.course.createdAt));
 
     return result.map((row) => ({
-      ...row.course,
+      ...withResolvedCourseBannerImage(row.course),
       lessonCount: Number(row.lessonCount),
       exerciseCount: Number(row.exerciseCount)
     }));
@@ -162,7 +176,8 @@ export const countPublishedCoursesBySiteName = async (
     const conditions = [
       eq(schema.organization.siteName, siteName),
       eq(schema.course.status, 'ACTIVE'),
-      eq(schema.course.isPublished, true)
+      eq(schema.course.isPublished, true),
+      eq(schema.course.isTemplate, false)
     ];
 
     if (courseIds && courseIds.length > 0) {
@@ -272,7 +287,12 @@ export const getCoursesById = async (orgId: string): Promise<TCourse[]> => {
       .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
       .leftJoin(schema.lesson, eq(schema.course.id, schema.lesson.courseId))
       .where(
-        and(eq(schema.organization.id, orgId), eq(schema.course.status, 'ACTIVE'), eq(schema.course.isPublished, true))
+        and(
+          eq(schema.organization.id, orgId),
+          eq(schema.course.status, 'ACTIVE'),
+          eq(schema.course.isPublished, true),
+          eq(schema.course.isTemplate, false)
+        )
       )
       .groupBy(
         schema.course.id,
@@ -283,7 +303,7 @@ export const getCoursesById = async (orgId: string): Promise<TCourse[]> => {
       );
 
     return result.map((row) => ({
-      ...row.course,
+      ...withResolvedCourseBannerImage(row.course),
       lessons: [{ count: Number(row.lessonCount) }],
       group: {
         organization: row.organization
@@ -357,16 +377,32 @@ export const getCoursesBySiteNameForSetup = async (siteName: string) => {
     .where(eq(schema.organization.siteName, siteName));
 
   return result.map((row) => ({
-    ...row.course
+    ...withResolvedCourseBannerImage(row.course)
   }));
 };
 export async function getCourseById(courseId: string, dbClient: DbOrTxClient = db) {
   try {
-    return await dbClient.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1);
+    const rows = await dbClient.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1);
+
+    return rows.map(withResolvedCourseBannerImage);
   } catch (error) {
     console.error('getCourseById error:', error);
     throw new Error(
       `Failed to get course by ID "${courseId}": ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Reads a course row and locks it until the surrounding transaction ends. Must be called with a transaction client.
+ */
+export async function getCourseByIdForUpdate(courseId: string, dbClient: DbOrTxClient) {
+  try {
+    return await dbClient.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1).for('update');
+  } catch (error) {
+    console.error('getCourseByIdForUpdate error:', error);
+    throw new Error(
+      `Failed to lock course by ID "${courseId}": ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -516,7 +552,7 @@ export async function getCourseWithRelations(
         : null;
 
     return {
-      ...course,
+      ...withResolvedCourseBannerImage(course),
       group,
       attendance,
       contentItems,
@@ -767,6 +803,10 @@ export async function getCourseCertificationRow(courseId: string): Promise<TCour
   }
 }
 
+type OrgCoursePublishedStatus = 'published' | 'unpublished';
+type OrgCourseSortKey = 'date_created' | 'last_updated_at' | 'published' | 'lessons';
+type OrgCourseSortOrder = 'asc' | 'desc';
+
 interface GetOrgCoursesOptions {
   /** Organization ID (required) */
   orgId: string;
@@ -776,6 +816,10 @@ interface GetOrgCoursesOptions {
   courseIds?: string[];
   /** Optional search query against the course title */
   search?: string;
+  type?: TCourseType;
+  publishedStatus?: OrgCoursePublishedStatus;
+  sortKey?: OrgCourseSortKey;
+  order?: OrgCourseSortOrder;
   /** Page number (1-indexed) */
   page?: number;
   /** Page size */
@@ -790,26 +834,77 @@ export interface GetOrgCoursesResult {
   totalPages: number;
 }
 
+function orgCourseListConditions({
+  orgId,
+  courseIds,
+  search,
+  type,
+  publishedStatus
+}: Pick<GetOrgCoursesOptions, 'orgId' | 'courseIds' | 'search' | 'type' | 'publishedStatus'>) {
+  const conditions = [
+    eq(schema.group.organizationId, orgId),
+    eq(schema.course.status, 'ACTIVE'),
+    eq(schema.course.isTemplate, false)
+  ];
+
+  if (courseIds && courseIds.length > 0) {
+    conditions.push(inArray(schema.course.id, courseIds));
+  }
+
+  if (search?.trim()) {
+    conditions.push(ilike(schema.course.title, `%${search.trim()}%`));
+  }
+
+  if (type) {
+    conditions.push(eq(schema.course.type, type));
+  }
+
+  if (publishedStatus === 'published') {
+    conditions.push(eq(schema.course.isPublished, true));
+  }
+
+  if (publishedStatus === 'unpublished') {
+    conditions.push(eq(schema.course.isPublished, false));
+  }
+
+  return conditions;
+}
+
+function orgCourseListOrderBy(sortKey?: OrgCourseSortKey, order?: OrgCourseSortOrder) {
+  const direction = order === 'asc' ? asc : desc;
+
+  if (sortKey === 'last_updated_at') {
+    return direction(sql`COALESCE(${schema.course.updatedAt}, ${schema.course.createdAt})`);
+  }
+
+  if (sortKey === 'published') {
+    return direction(schema.course.isPublished);
+  }
+
+  if (sortKey === 'lessons') {
+    return direction(sql`COUNT(DISTINCT ${schema.lesson.id})`);
+  }
+
+  return direction(schema.course.createdAt);
+}
+
 export async function countOrgCourses({
   orgId,
   profileId,
   courseIds,
-  search
-}: Pick<GetOrgCoursesOptions, 'orgId' | 'profileId' | 'courseIds' | 'search'>): Promise<number> {
+  search,
+  type,
+  publishedStatus
+}: Pick<
+  GetOrgCoursesOptions,
+  'orgId' | 'profileId' | 'courseIds' | 'search' | 'type' | 'publishedStatus'
+>): Promise<number> {
   try {
     if (courseIds && courseIds.length === 0) {
       return 0;
     }
 
-    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, 'ACTIVE')];
-
-    if (courseIds && courseIds.length > 0) {
-      conditions.push(inArray(schema.course.id, courseIds));
-    }
-
-    if (search?.trim()) {
-      conditions.push(ilike(schema.course.title, `%${search.trim()}%`));
-    }
+    const conditions = orgCourseListConditions({ orgId, courseIds, search, type, publishedStatus });
 
     const totalQuery = profileId
       ? db
@@ -847,6 +942,10 @@ export const getOrgCourses = async ({
   profileId,
   courseIds,
   search,
+  type,
+  publishedStatus,
+  sortKey,
+  order,
   page = 1,
   limit = 20
 }: GetOrgCoursesOptions): Promise<GetOrgCoursesResult> => {
@@ -861,17 +960,8 @@ export const getOrgCourses = async ({
       };
     }
 
-    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, 'ACTIVE')];
-
-    if (courseIds && courseIds.length > 0) {
-      conditions.push(inArray(schema.course.id, courseIds));
-    }
-
-    if (search?.trim()) {
-      conditions.push(ilike(schema.course.title, `%${search.trim()}%`));
-    }
-
-    const total = await countOrgCourses({ orgId, profileId, courseIds, search });
+    const conditions = orgCourseListConditions({ orgId, courseIds, search, type, publishedStatus });
+    const total = await countOrgCourses({ orgId, profileId, courseIds, search, type, publishedStatus });
 
     const baseQuery = db
       .select({
@@ -904,13 +994,13 @@ export const getOrgCourses = async ({
 
     const result = await itemsQuery
       .groupBy(schema.course.id)
-      .orderBy(desc(schema.course.createdAt))
+      .orderBy(orgCourseListOrderBy(sortKey, order))
       .limit(limit)
       .offset((page - 1) * limit);
 
     return {
       items: result.map((row) => ({
-        ...row.course,
+        ...withResolvedCourseBannerImage(row.course),
         lessonCount: Number(row.lessonCount),
         totalStudents: Number(row.studentCount),
         exerciseCount: Number(row.exerciseCount)
@@ -952,6 +1042,7 @@ export async function searchOrgCourses(orgId: string, search: string, limit: num
         and(
           eq(schema.group.organizationId, orgId),
           eq(schema.course.status, 'ACTIVE'),
+          eq(schema.course.isTemplate, false),
           or(ilike(schema.course.title, searchValue), ilike(schema.course.description, searchValue))
         )
       )
@@ -1127,6 +1218,7 @@ export const getEnrolledCourses = async ({
         and(
           eq(schema.group.organizationId, orgId),
           eq(schema.course.status, 'ACTIVE'),
+          eq(schema.course.isTemplate, false),
           or(isNotNull(schema.groupmember.id), isNotNull(schema.programMember.id))
         )
       )
@@ -1137,7 +1229,7 @@ export const getEnrolledCourses = async ({
     const upcomingByCourse = await getUpcomingSessionsForCourseIds(liveCourseIds);
 
     return result.map((row) => ({
-      ...row.course,
+      ...withResolvedCourseBannerImage(row.course),
       lessonCount: Number(row.lessonCount),
       progressRate: Number(row.progressRate),
       exerciseCount: Number(row.exerciseCount),
@@ -1187,6 +1279,7 @@ export const getExploreCourses = async ({
       eq(schema.group.organizationId, orgId),
       eq(schema.course.status, 'ACTIVE'),
       eq(schema.course.isPublished, true),
+      eq(schema.course.isTemplate, false),
       isNull(schema.groupmember.id),
       // Mirrors isSelfEnrollmentAllowed in @cio/utils: current key, then the
       // legacy allowNewStudent, then open. `->>` yields NULL for a JSON null,
@@ -1235,7 +1328,7 @@ export const getExploreCourses = async ({
 
     return {
       data: rows.map((row) => ({
-        ...row.course,
+        ...withResolvedCourseBannerImage(row.course),
         lessonCount: Number(row.lessonCount),
         exerciseCount: Number(row.exerciseCount)
       })),
@@ -1406,9 +1499,9 @@ export async function updateUngroupedLessonsSectionId(
   }
 }
 
-export async function getCourseSectionsByCourseId(courseId: string) {
+export async function getCourseSectionsByCourseId(courseId: string, dbClient: DbOrTxClient = db) {
   try {
-    return db.select().from(schema.courseSection).where(eq(schema.courseSection.courseId, courseId));
+    return dbClient.select().from(schema.courseSection).where(eq(schema.courseSection.courseId, courseId));
   } catch (error) {
     console.error('getCourseSectionsByCourseId error:', error);
     throw new Error(
@@ -1442,11 +1535,19 @@ export async function createCourseSections(values: TNewCourseSection[], dbClient
   }
 }
 
-export async function updateCourseSection(sectionId: string, data: Partial<TCourseSection>) {
+export async function updateCourseSection(
+  sectionId: string,
+  data: Partial<TCourseSection>,
+  dbClient: DbOrTxClient = db
+) {
   try {
-    const [updated] = await db
+    const fields = { ...data };
+    delete fields.updatedAt;
+    const fieldNames = Object.keys(fields);
+    const patch = contentWriteBumpsTimestamp(fieldNames) ? { ...fields, updatedAt: new Date().toISOString() } : fields;
+    const [updated] = await dbClient
       .update(schema.courseSection)
-      .set({ ...data, updatedAt: new Date().toISOString() })
+      .set(patch)
       .where(eq(schema.courseSection.id, sectionId))
       .returning();
     return updated || null;
@@ -1543,10 +1644,23 @@ export async function getOrgCourseGroups(orgId: string, courseIds: string[]) {
   }
 }
 
-/** True when any course row exists with this slug. */
-export async function isCourseSlugTaken(slug: string): Promise<boolean> {
+export async function lockCourseForUpdate(courseId: string, dbClient: DbOrTxClient = db) {
   try {
-    const rows = await db
+    await dbClient
+      .select({ id: schema.course.id })
+      .from(schema.course)
+      .where(eq(schema.course.id, courseId))
+      .for('update');
+  } catch (error) {
+    console.error('lockCourseForUpdate error:', error);
+    throw new Error(`Failed to lock course: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/** True when any course row exists with this slug. */
+export async function isCourseSlugTaken(slug: string, dbClient: DbOrTxClient = db): Promise<boolean> {
+  try {
+    const rows = await dbClient
       .select({ id: schema.course.id })
       .from(schema.course)
       .where(eq(schema.course.slug, slug))
@@ -1556,6 +1670,41 @@ export async function isCourseSlugTaken(slug: string): Promise<boolean> {
   } catch (error) {
     console.error('isCourseSlugTaken error:', error);
     throw new Error(`Failed to check course slug: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/** Course stamped with this launch-template fixture key, if one exists. */
+export async function getCourseBySeedKey(seedKey: string, dbClient: DbOrTxClient = db) {
+  try {
+    const [row] = await dbClient
+      .select({ id: schema.course.id, slug: schema.course.slug, title: schema.course.title })
+      .from(schema.course)
+      .where(eq(schema.course.seedKey, seedKey))
+      .limit(1);
+
+    return row ?? null;
+  } catch (error) {
+    console.error('getCourseBySeedKey error:', error);
+    throw new Error(
+      `Failed to look up course by seed key: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/** Course in this org with this slug, if one exists. */
+export async function getCourseByOrgSlug(orgId: string, slug: string, dbClient: DbOrTxClient = db) {
+  try {
+    const [row] = await dbClient
+      .select({ id: schema.course.id })
+      .from(schema.course)
+      .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
+      .where(and(eq(schema.group.organizationId, orgId), eq(schema.course.slug, slug)))
+      .limit(1);
+
+    return row ?? null;
+  } catch (error) {
+    console.error('getCourseByOrgSlug error:', error);
+    throw new Error(`Failed to get course by org slug: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

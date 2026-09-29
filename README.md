@@ -274,6 +274,29 @@ end-to-end public tunnel probe without placing a URL in repository files, run
    - **Storybook** (`8010`): `pnpm storybook:dev`
    - **embeds** (`8011`): `pnpm embeds:dev`
 
+     On Windows, `nvm` (nvm-windows) switches the Node version globally
+     rather than per-shell, so run this from a separate terminal window than
+     the one running `api`/`dashboard` — switching versions there won't
+     affect processes already started in other terminals.
+
+     The docs' API reference is built from a static OpenAPI spec fetched at
+     dev-server startup from the deployed production API
+     (`apps/docs/scripts/fetch-openapi.mjs`), not from your local `api`. If
+     you're working on public API routes and want to preview unmerged
+     changes in the docs before they're deployed, generate the spec from
+     your local code instead:
+
+     ```bash
+     # from apps/api, with local Redis running (same as normal api dev setup)
+     OPENAPI_SKIP_CDN_PURGE=1 npx tsx scripts/upload-openapi-spec.ts
+     cp dist/openapi/public-api/openapi.json ../docs/openapi/public-api.json
+     ```
+
+     Then start the docs server with `pnpm exec blume dev` from `apps/docs`
+     instead of `pnpm dev --filter=@cio/docs` — the latter re-runs
+     `fetch-openapi.mjs` as a prestep on every start and will overwrite your
+     local copy with the stale remote spec again.
+
 11. Login into `dashboard`:
 
     - Visit [http://localhost:8000/login](http://localhost:8000/login)

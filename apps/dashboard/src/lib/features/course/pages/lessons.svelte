@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   import { Empty } from '@cio/ui/custom/empty';
   import BookOpenIcon from '@lucide/svelte/icons/book-open';
+  import TemplateUpdateAlert from '$features/course/components/template-update-alert.svelte';
   import ContentList from '$features/course/components/lesson/content-list.svelte';
   import ContentSectionList from '$features/course/components/lesson/content-section-list.svelte';
   import ContentExamGroup from '$features/course/components/lesson/content-exam-group.svelte';
@@ -77,6 +78,8 @@
 
   const shouldShowNextPlaceholder = $derived(query.get('next') === 'true');
 </script>
+
+<TemplateUpdateAlert />
 
 {#if shouldShowNextPlaceholder}
   <Empty

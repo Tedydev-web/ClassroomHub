@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 
 const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
@@ -55,6 +56,32 @@ describe('updateCourseWithTags', () => {
       conversionOffenders: null,
       tags: [{ id: 'tag-1' }]
     });
+  });
+
+  it('passes through the conversion offenders updateCourse reports', async () => {
+    const offenders: NonAutoGradableQuestionOffender[] = [
+      {
+        questionId: 'question-1',
+        questionTitle: 'Describe your approach',
+        exerciseId: 'exercise-1',
+        exerciseTitle: 'Week 1 reflection',
+        typeId: 3
+      }
+    ];
+    mocks.updateCourse.mockResolvedValue({
+      course: { id: 'course-1', title: 'Updated course' },
+      conversionOffenders: offenders
+    });
+
+    const result = await updateCourseWithTags({
+      courseId: 'course-1',
+      courseData: { title: 'Updated course' },
+      orgId: 'org-1',
+      updatedByUserId: 'user-1',
+      tagIds: ['tag-1']
+    });
+
+    expect(result.conversionOffenders).toEqual(offenders);
   });
 
   it('propagates tag failures so the transaction can roll back the course update', async () => {

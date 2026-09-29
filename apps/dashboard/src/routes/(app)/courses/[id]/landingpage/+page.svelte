@@ -76,7 +76,7 @@
     out:fly={{ y: 500, duration: motionDuration(MOTION_DURATION.deliberate) }}
   >
     <Sidebar.Provider bind:open={sidebarOpen} style="--sidebar-width: 360px; --sidebar-width-icon: 4rem">
-      <Sidebar.Root side="left" collapsible="icon" class="h-full">
+      <Sidebar.Root side="left" collapsible="offcanvas" class="h-full">
         <Editor
           {courseId}
           bind:course={courseApi.course}
@@ -85,7 +85,7 @@
           onClose={handleClose}
         />
       </Sidebar.Root>
-      <Sidebar.Inset class="relative h-screen! overflow-y-auto">
+      <Sidebar.Inset class="relative h-screen! min-w-0 overflow-y-auto">
         <div class="absolute top-2 left-2 z-60">
           <Sidebar.Trigger variant="secondary" />
         </div>

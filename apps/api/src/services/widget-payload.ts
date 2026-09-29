@@ -22,6 +22,7 @@ import type { TWidget } from '@db/types';
 import * as csstree from 'css-tree';
 import { env } from '@cio/core/config/env';
 import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
+import { resolveCourseBannerImage } from '@cio/utils/functions';
 
 const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const DEFAULT_EMBED_CDN_BASE_URL = EMBED_PUBLIC_BASE_URL;
@@ -196,7 +197,7 @@ export function formatCourseForWidget(
     slug: course.slug ?? course.id,
     title: course.title,
     description: course.description,
-    imageUrl: course.bannerImage || course.logo || null,
+    imageUrl: resolveCourseBannerImage(course),
     isPublished: course.isPublished,
     price: isPaidCourse && course.cost ? `${course.currency} ${course.cost}` : 'Free',
     lessonCount: course.lessonCount,

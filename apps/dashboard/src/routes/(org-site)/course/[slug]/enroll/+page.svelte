@@ -34,7 +34,7 @@
   async function sendVerificationEmail() {
     const email = $profile.email || sessionUser?.email;
     if (!email) {
-      snackbar.error('verify_email_modal.snackbar.error');
+      snackbar.error('verify_email_modal.snackbar_error');
       return;
     }
 
@@ -47,7 +47,7 @@
         callbackURL: callbackURL.toString()
       });
     } catch {
-      snackbar.error('verify_email_modal.snackbar.error');
+      snackbar.error('verify_email_modal.snackbar_error');
     }
   }
 

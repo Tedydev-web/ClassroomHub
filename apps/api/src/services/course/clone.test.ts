@@ -4,6 +4,8 @@ const txStub = {};
 
 const mocks = vi.hoisted(() => ({
   addGroupMember: vi.fn(),
+  createAsset: vi.fn(),
+  createAssetUsage: vi.fn(),
   createCourse: vi.fn(),
   createCourseSections: vi.fn(),
   createExerciseSections: vi.fn(),
@@ -13,21 +15,32 @@ const mocks = vi.hoisted(() => ({
   createLessons: vi.fn(),
   createOptions: vi.fn(),
   createQuestions: vi.fn(),
+  deleteAssetUsagesByTargetSlots: vi.fn(),
+  getActiveAssetBySourceUrl: vi.fn(),
+  getAssetsByIds: vi.fn(),
   getCourseById: vi.fn(),
+  getCourseOrganizationId: vi.fn(),
   getCourseSectionsByCourseId: vi.fn(),
   getExerciseSectionsByExerciseIds: vi.fn(),
-  getExercisesByLessonIds: vi.fn(),
+  getExercisesByCourseId: vi.fn(),
   getLessonLanguagesByLessonIds: vi.fn(),
   getLessonsByCourseId: vi.fn(),
   getOptionsByQuestionIds: vi.fn(),
   getQuestionsByExerciseIds: vi.fn(),
+  stampCopiedTemplateUnits: vi.fn(),
   syncOptionIdSequence: vi.fn(),
   transaction: vi.fn(),
+  updateCourse: vi.fn(),
   updateExerciseSection: vi.fn()
 }));
 
 vi.mock('@db/queries', () => ({ ...mocks }));
-vi.mock('@cio/db/drizzle', () => ({ db: { transaction: mocks.transaction } }));
+vi.mock('@db/drizzle', () => ({ db: { transaction: mocks.transaction } }));
+vi.mock('@cio/core/utils/redis/org-stats-cache', () => ({ invalidateOrgStats: vi.fn() }));
+vi.mock('@cio/core/services/assets/asset-transfer', () => ({
+  transferUploadedAsset: vi.fn(),
+  withAssetStorageRollback: (run: () => Promise<unknown>) => run()
+}));
 // `INTERNAL_QUESTION_TYPE_IDS` comes from core exercise utils, whose module graph
 // pulls in the real exercise query index; stub it so no DB client is created.
 vi.mock('@cio/db/queries/exercise', () => ({
@@ -67,19 +80,23 @@ const internalQuestion = {
 };
 
 describe('cloneCourse archived/internal question hardening', () => {
+  const cloneOptions = { title: 'Cloned course', userId: 'user-a' };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => callback(txStub));
-    mocks.getCourseById.mockResolvedValue([{ id: 'course-a', description: 'Source course' }]);
+    mocks.getCourseById.mockResolvedValue([{ id: 'course-a', description: 'Source course', metadata: {} }]);
+    mocks.getCourseOrganizationId.mockResolvedValue('org-a');
     mocks.getLessonsByCourseId.mockResolvedValue([{ id: 'lesson-a', title: 'Lesson', sectionId: null }]);
-    mocks.getExercisesByLessonIds.mockResolvedValue([
+    mocks.getExercisesByCourseId.mockResolvedValue([
       { id: 'exercise-a', title: 'Exercise', description: null, lessonId: 'lesson-a', sectionDisplayMode: 'all' }
     ]);
     mocks.getCourseSectionsByCourseId.mockResolvedValue([]);
     mocks.getLessonLanguagesByLessonIds.mockResolvedValue([]);
     mocks.getExerciseSectionsByExerciseIds.mockResolvedValue([]);
     mocks.getOptionsByQuestionIds.mockResolvedValue([]);
-    mocks.createGroup.mockResolvedValue([{ id: 'group-b' }]);
+    mocks.getAssetsByIds.mockResolvedValue([]);
+    mocks.createGroup.mockResolvedValue([{ id: 'group-b', organizationId: 'org-a' }]);
     mocks.createCourse.mockResolvedValue([{ id: 'course-b' }]);
     mocks.addGroupMember.mockResolvedValue(undefined);
     mocks.createLessons.mockResolvedValue([{ id: 'lesson-b' }]);
@@ -90,12 +107,12 @@ describe('cloneCourse archived/internal question hardening', () => {
   it('rejects a course containing an internal composite item before any write', async () => {
     mocks.getQuestionsByExerciseIds.mockResolvedValue([internalQuestion]);
 
-    await expect(cloneCourse('course-a', 'Cloned course', 'user-a')).rejects.toMatchObject({
+    await expect(cloneCourse('course-a', cloneOptions)).rejects.toMatchObject({
       code: ErrorCodes.CONFLICT,
       statusCode: 409
     });
 
-    expect(mocks.transaction).not.toHaveBeenCalled();
+    // The check runs on the source reads, so the transaction aborts with nothing written.
     expect(mocks.createGroup).not.toHaveBeenCalled();
     expect(mocks.createCourse).not.toHaveBeenCalled();
     expect(mocks.createLessons).not.toHaveBeenCalled();
@@ -105,40 +122,28 @@ describe('cloneCourse archived/internal question hardening', () => {
   it('clones only the active question graph (archived rows are excluded at the query level)', async () => {
     mocks.getQuestionsByExerciseIds.mockResolvedValue([activeQuestion]);
 
-    const cloned = await cloneCourse('course-a', 'Cloned course', 'user-a');
+    const cloned = await cloneCourse('course-a', cloneOptions);
 
     expect(cloned).toEqual({ id: 'course-b' });
-    // Both the pre-flight check and the actual clone read use the active scope;
-    // the clone-time read additionally runs on the transaction client.
-    expect(mocks.getQuestionsByExerciseIds).toHaveBeenCalledTimes(2);
-    const [preflightCall, cloneCall] = mocks.getQuestionsByExerciseIds.mock.calls;
-    expect(preflightCall).toEqual([['exercise-a'], undefined, { questionScope: 'active' }]);
-    expect(cloneCall).toEqual([['exercise-a'], txStub, { questionScope: 'active' }]);
+    expect(mocks.transaction).toHaveBeenCalledTimes(1);
+    expect(mocks.getQuestionsByExerciseIds).toHaveBeenCalledTimes(1);
+    expect(mocks.getQuestionsByExerciseIds).toHaveBeenCalledWith(['exercise-a'], txStub, { questionScope: 'active' });
     expect(mocks.createQuestions).toHaveBeenCalledWith(
       [expect.objectContaining({ title: 'Active question', questionTypeId: 1, exerciseId: 'exercise-b' })],
       txStub
     );
   });
 
-  it('runs every clone write inside one transaction so the in-flight backstop rolls all rows back', async () => {
-    // Pre-flight sees a clean course; by copy time an internal composite item
-    // appeared (in-flight write between pre-flight and question copy).
-    mocks.getQuestionsByExerciseIds.mockResolvedValueOnce([activeQuestion]).mockResolvedValueOnce([internalQuestion]);
+  it('runs every clone write on the transaction client', async () => {
+    mocks.getQuestionsByExerciseIds.mockResolvedValue([activeQuestion]);
 
-    await expect(cloneCourse('course-a', 'Cloned course', 'user-a')).rejects.toMatchObject({
-      code: ErrorCodes.CONFLICT,
-      statusCode: 409
-    });
+    await cloneCourse('course-a', cloneOptions);
 
-    // Every write received the transaction client, so the backstop throw aborts
-    // the transaction and no partial group/course/lesson rows survive.
-    expect(mocks.transaction).toHaveBeenCalledTimes(1);
     expect(mocks.createGroup).toHaveBeenCalledWith(expect.anything(), txStub);
     expect(mocks.createCourse).toHaveBeenCalledWith(expect.anything(), txStub);
     expect(mocks.addGroupMember).toHaveBeenCalledWith(expect.anything(), txStub);
     expect(mocks.createLessons).toHaveBeenCalledWith(expect.anything(), txStub);
     expect(mocks.createExercises).toHaveBeenCalledWith(expect.anything(), txStub);
-    // The backstop fired before any question row was written.
-    expect(mocks.createQuestions).not.toHaveBeenCalled();
+    expect(mocks.createQuestions).toHaveBeenCalledWith(expect.anything(), txStub);
   });
 });

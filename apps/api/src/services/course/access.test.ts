@@ -65,7 +65,7 @@ describe('assertEnrolledStudentContentAccess', () => {
   it('returns the assignment-specific denial for an unassigned student', async () => {
     mocks.exerciseBelongsToCourse.mockResolvedValue(true);
     mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(false);
-    mocks.getCourseById.mockResolvedValue([{ id: accessParams.courseId, metadata: {} }]);
+    mocks.getCourseById.mockResolvedValue([{ id: accessParams.courseId, isPublished: true, metadata: {} }]);
     mocks.getCourseProgress.mockResolvedValue({ roleId: 3 });
     mocks.getCourseContentItems.mockResolvedValue([]);
     mocks.resolveViewerExerciseAccess.mockResolvedValue({

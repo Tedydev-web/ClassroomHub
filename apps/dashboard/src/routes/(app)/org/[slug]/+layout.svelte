@@ -17,6 +17,7 @@
 
   let { data, children } = $props();
   const isSettingsRoute = $derived(/\/settings(?:\/|$)/.test(page.url.pathname));
+  const isCoursesList = $derived(/\/courses\/?$/.test(page.url.pathname));
 
   function redirect(siteName: string | null) {
     if (!siteName) return;
@@ -78,7 +79,9 @@
       <AppHeader />
     {/if}
 
-    <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4">
+    <div
+      class={isCoursesList ? 'flex w-full flex-1 flex-col' : 'mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4'}
+    >
       {#if data.orgName === '*' || disabledFeature}
         <!-- Also covers the switched-off case: the redirect above is in flight,
              and mounting the page would fire its data loads on the way out. -->

@@ -226,6 +226,10 @@ export async function getCourse(courseId?: string, slug?: string, profileId?: st
       ? (course.group?.members?.find((member) => member.profileId === profileId)?.roleId ?? null)
       : null;
 
+    if (roleId === ROLE.STUDENT && !course.isPublished) {
+      throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
+    }
+
     const content = profileId
       ? await annotateCourseContentWithProgression({
           courseId: course.id,
@@ -392,14 +396,17 @@ export async function updateCourse(
     const existingMetadata = existingCourse?.metadata;
     const mergedMetadata = data.metadata ? { ...existingMetadata, ...omitUndefinedValues(data.metadata) } : undefined;
 
+    const { logo: legacyLogo, ...dataWithoutLegacyLogo } = data;
+    const nextBannerImage = data.bannerImage ?? legacyLogo;
+
     const sanitizedData: Partial<TCourse> = {
-      ...data,
+      ...dataWithoutLegacyLogo,
       description: sanitizeOptionalHtml(data.description),
       overview: sanitizeOptionalHtml(data.overview),
       metadata: sanitizeCourseMetadata(mergedMetadata),
       certificate: sanitizeCourseCertificate(data.certificate),
-      logo: data.logo,
-      slug: data.slug
+      slug: data.slug,
+      ...(nextBannerImage !== undefined ? { bannerImage: nextBannerImage, logo: nextBannerImage } : {})
     };
 
     const [currentCourse] = await getCourseById(courseId, dbClient);
@@ -430,6 +437,10 @@ export async function updateCourse(
         conversionOffenders = offenders;
         delete sanitizedData.type;
       }
+    }
+
+    if (currentCourse.isTemplate && data.isPublished) {
+      throw new AppError('Templates cannot be published', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
     const nextType = sanitizedData.type ?? currentCourse.type;

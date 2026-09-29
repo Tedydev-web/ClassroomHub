@@ -25,26 +25,19 @@ export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent, r
 
   const item = itemResult.body.data;
 
-  const itemTitle = 'title' in item ? item.title : tree.course.title;
-  const itemSummary =
-    item.kind === 'lesson' && typeof item.body === 'string'
-      ? item.body.replace(/<[^>]+>/g, '').slice(0, 155)
-      : (tree.course.description ?? '');
-
   const publicRequestUrl = resolvePublicRequestUrl(url, request.headers);
-  const canonicalUrl = new URL(publicRequestUrl.pathname, publicRequestUrl.origin).href;
-  const fullTitle = `${itemTitle} · ${tree.course.title}`;
-  const description = itemSummary || tree.course.description || '';
+  const courseUrl = new URL(`/course/${tree.course.slug}`, publicRequestUrl.origin).href;
+  const description = tree.course.description || '';
   const ogImage = tree.course.bannerImage || null;
 
   const pageMetaTags = Object.freeze({
-    title: fullTitle,
+    title: tree.course.title,
     description,
-    canonical: canonicalUrl,
+    canonical: courseUrl,
     openGraph: {
-      type: 'article',
-      url: canonicalUrl,
-      title: itemTitle,
+      type: 'website',
+      url: courseUrl,
+      title: tree.course.title,
       description,
       images: ogImage
         ? [
@@ -63,7 +56,7 @@ export const load = async ({ params = { slug: '', itemSlug: '' }, url, parent, r
       handle: '@Tedydev_web',
       site: '@Tedydev_web',
       cardType: 'summary_large_image' as const,
-      title: fullTitle,
+      title: tree.course.title,
       description,
       image: ogImage ?? undefined,
       imageAlt: tree.course.title

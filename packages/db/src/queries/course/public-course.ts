@@ -1,8 +1,9 @@
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 
 import * as schema from '@db/schema';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { pickLessonLanguageBody } from './lesson-language-body';
+import { resolveCourseBannerImage } from '@cio/utils/functions';
 
 /**
  * Queries backing the anonymous public-course surface under
@@ -87,7 +88,7 @@ export async function getCourseRowBySlug(courseSlug: string): Promise<{
         status: schema.course.status
       })
       .from(schema.course)
-      .where(eq(schema.course.slug, courseSlug))
+      .where(and(eq(schema.course.slug, courseSlug), eq(schema.course.isTemplate, false)))
       .limit(1);
 
     return row ?? null;
@@ -112,7 +113,7 @@ export async function getPublicCourseTreeBySlug(courseSlug: string): Promise<Pub
         slug: schema.course.slug,
         title: schema.course.title,
         description: schema.course.description,
-        bannerImage: schema.course.bannerImage,
+        bannerImage: sql<string | null>`coalesce(nullif(${schema.course.bannerImage}, ''), ${schema.course.logo})`,
         callout: schema.course.callout,
         metadata: schema.course.metadata,
         type: schema.course.type,
@@ -121,7 +122,7 @@ export async function getPublicCourseTreeBySlug(courseSlug: string): Promise<Pub
         groupId: schema.course.groupId
       })
       .from(schema.course)
-      .where(eq(schema.course.slug, courseSlug))
+      .where(and(eq(schema.course.slug, courseSlug), eq(schema.course.isTemplate, false)))
       .limit(1);
 
     if (!courseRow) return null;
@@ -270,7 +271,7 @@ export async function getPublicCourseTreeBySlug(courseSlug: string): Promise<Pub
         slug: courseRow.slug,
         title: courseRow.title,
         description: courseRow.description,
-        bannerImage: courseRow.bannerImage,
+        bannerImage: resolveCourseBannerImage(courseRow),
         allowMarkdownExport: courseRow.metadata?.allowMarkdownExport === true,
         callout,
         org
@@ -353,7 +354,7 @@ export async function getPublicCourseItem(
       })
       .from(schema.course)
       .leftJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-      .where(eq(schema.course.slug, courseSlug))
+      .where(and(eq(schema.course.slug, courseSlug), eq(schema.course.isTemplate, false)))
       .limit(1);
 
     if (!courseRow) return null;
@@ -508,7 +509,7 @@ export async function getPublicLessonMarkdownSource(
         status: schema.course.status
       })
       .from(schema.course)
-      .where(eq(schema.course.slug, courseSlug))
+      .where(and(eq(schema.course.slug, courseSlug), eq(schema.course.isTemplate, false)))
       .limit(1);
 
     if (!courseRow) return null;

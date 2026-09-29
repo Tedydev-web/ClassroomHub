@@ -83,6 +83,7 @@ Components in the `custom` directory come from various sources or are built on t
 - `custom/course-creator/` - ChatGPT-style course creation input with level and type selects
 - `custom/attention-highlight/` - Prop-driven focus pulse and smooth scroll wrapper to draw user attention to specific items
 - `custom/question-type-picker/` - Question type picker modal and QuestionTypeIcon glyph/icon component
+- `custom/org-landing-page/` - 11-theme org and course landing page system, including `LearnerMenu` authenticated popover
 
 ### Question type icon (`src/custom/question-type-picker/question-type-icon.svelte`)
 
@@ -170,7 +171,7 @@ Pass copy via `labels: OutlineRailActionLabels`. Render through `PublicLessonVie
 
 ### Page outline (`src/custom/page-outline/`)
 
-Sticky in-page table of contents for long-form content (public lessons, exercises, docs). Pass `items: PageOutlineItem[]` (`id`, `title`, `level` 1–3). Clicking an item updates the URL hash, restores that hash on reload, and highlights the active heading via `IntersectionObserver`. Hierarchy is shown with left-border indent (`h1` / `h2` / `h3`).
+Sticky in-page table of contents for long-form content (public lessons, exercises, docs). Pass `items: PageOutlineItem[]` (`id`, `title`, `level` 1–3). Clicking an item updates the URL hash, restores that hash on reload, and highlights the active heading via `IntersectionObserver`. Hierarchy is shown with indent (`h1` / `h2` / `h3`) along a dotted left rail; the active item uses the primary color.
 
 **Hidden on mobile by default.** `hideBelow` defaults to `lg` (`hidden` below that breakpoint). Pass `never` when the parent already hides the rail (for example `PublicLessonView`'s `aside`). Pin the rail to the **page** edge (a full-width flex sibling of the article column), not next to a centered content max-width. Put copy / share / chat links under the outline via `OutlineRailActions` (see **Public course outline rail actions**). Helpers: `injectHeadingIds(html)` rewrites `h1`–`h3` with unique ids and returns outline entries; `withPageTitle` prefixes the page title; `outlineFromSections` builds a title + subsection list. See `Molecules/PageOutline` in Storybook.
 
@@ -308,11 +309,11 @@ Utility functions and helpers are located in `src/tools/`. The main utility is t
 
 When a dialog has multiple actions in `Dialog.Footer`, use `size="sm"` on every button and follow this variant hierarchy (left to right):
 
-| Position | Role | Variant |
-| -------- | ---- | ------- |
-| Left | External / repeat action (e.g. "Create another …") | `secondary` |
-| Right group (first) | Cancel / dismiss (e.g. "Later", "Cancel") | `outline` |
-| Right group (last) | Main CTA (e.g. "Open now", "Save", "Create") | default primary |
+| Position            | Role                                               | Variant         |
+| ------------------- | -------------------------------------------------- | --------------- |
+| Left                | External / repeat action (e.g. "Create another …") | `secondary`     |
+| Right group (first) | Cancel / dismiss (e.g. "Later", "Cancel")          | `outline`       |
+| Right group (last)  | Main CTA (e.g. "Open now", "Save", "Create")       | default primary |
 
 Place the main CTA on the right; group cancel and primary together when both appear on the right.
 
@@ -437,6 +438,26 @@ Supported today: `InputField`, `TextareaField`, `CheckboxField`, `Button`. Fixed
 ```
 
 Registry and naming rules: `e2e/README.md` and AGENTS.md § E2E test hooks.
+
+## Chevrons up down
+
+`ChevronsUpDownIcon` is the moving chevron pair. Hovering it splits the chevrons apart for 200ms, then they settle. Pass `animate` to play that motion from a parent, and `ariaHidden` when it sits next to a visible label.
+
+```svelte
+<script lang="ts">
+  import { ChevronsUpDownIcon } from '@cio/ui/custom/moving-icons';
+</script>
+
+<ChevronsUpDownIcon size={16} ariaHidden />
+```
+
+## Template card
+
+`TemplateCard` is the small course-template tile used on the courses page and in the template gallery. Pass `blank` for the empty plus tile, which uses a dashed border. Pass `loading` for the skeleton, `typeBadge` for the course-type chip, and `overlay` for a menu that sits outside the button.
+
+```svelte
+<TemplateCard title="Customer Onboarding" subtitle="by ClassroomIO" imageUrl={cover} />
+```
 
 ## Component Exports
 
