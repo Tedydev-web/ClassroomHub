@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
-import { getStorageConfig } from '@cio/core/config/storage';
-import { deleteFromS3, getFromS3, uploadToS3 } from '@cio/core/utils/s3';
+import { getStorageConfig } from '../../config/storage';
+import { deleteFromS3, getFromS3, uploadToS3 } from '../../utils/s3';
 
 /**
  * Proves object storage still accepts writes.

@@ -23,6 +23,12 @@ export const EXAM_IMPORT_RECONCILE_INTERVAL_MS = 60 * 1_000;
 /** Object storage, written to and read back so a revoked credential cannot hide. */
 export const STORAGE_HEALTH_CHECK_INTERVAL_MS = 10 * 60 * 1_000;
 
+/**
+ * The platform health scan. Each run makes one cheap authenticated call per third-party
+ * credential, so fifteen minutes keeps an outage short without spending provider quota.
+ */
+export const SYSTEM_HEALTH_SCAN_INTERVAL_MS = 15 * 60 * 1_000;
+
 /** The daily analytics rollup. */
 export const ANALYTICS_DAILY_ROLLUP_INTERVAL_MS = 24 * 60 * 60 * 1_000;
 
@@ -31,5 +37,6 @@ export const MAINTENANCE_INTERVALS_MS = [
   MEDIA_JOB_REAP_INTERVAL_MS,
   EXAM_IMPORT_RECONCILE_INTERVAL_MS,
   STORAGE_HEALTH_CHECK_INTERVAL_MS,
+  SYSTEM_HEALTH_SCAN_INTERVAL_MS,
   ANALYTICS_DAILY_ROLLUP_INTERVAL_MS
 ] as const;

@@ -11,7 +11,7 @@ vi.mock('@cio/core/config/storage', () => ({
   getStorageConfig: () => ({ bucketDocuments: 'documents', bucketMedia: 'media', bucketVideos: 'videos' })
 }));
 
-import { checkStorageHealth } from './storage-health';
+import { checkStorageHealth } from '@cio/core/services/system-health/storage-health';
 
 describe('storage health', () => {
   beforeEach(() => {

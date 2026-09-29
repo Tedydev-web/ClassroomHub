@@ -63,3 +63,19 @@ export async function sendWithNodemailer(emailData: TEmailData): Promise<EmailRe
     };
   }
 }
+
+/**
+ * Opens and authenticates an SMTP session without sending anything, for health checks.
+ *
+ * Uses its own transport rather than the cached one above, so a probe always measures the
+ * credentials as configured now and never leaves a half-open session in the send path.
+ */
+export async function verifySmtpConnection(): Promise<void> {
+  const probe = nodemailer.createTransport(createSmtpTransportOptions(env));
+
+  try {
+    await probe.verify();
+  } finally {
+    probe.close();
+  }
+}

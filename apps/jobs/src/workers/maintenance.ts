@@ -5,13 +5,15 @@ import { Worker } from 'bullmq';
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
 import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
-import { checkStorageHealth } from '../services/storage-health';
+import { checkStorageHealth } from '@cio/core/services/system-health/storage-health';
 import {
   ANALYTICS_DAILY_ROLLUP_INTERVAL_MS,
   EXAM_IMPORT_RECONCILE_INTERVAL_MS,
   MEDIA_JOB_REAP_INTERVAL_MS,
-  STORAGE_HEALTH_CHECK_INTERVAL_MS
+  STORAGE_HEALTH_CHECK_INTERVAL_MS,
+  SYSTEM_HEALTH_SCAN_INTERVAL_MS
 } from './maintenance-schedule';
+import { scanSystemHealth } from '../processors/system-health/scan-system-health';
 import { pruneDeadLetterJobsOlderThan, reapStuckMediaJobs } from '@cio/db/queries';
 import { reconcileMemberLastActive } from '@cio/db/queries/organization';
 import { capAutoLessonVersionsPerLanguage, pruneAutoLessonVersions } from '@cio/db/queries/lesson/version';
@@ -162,6 +164,10 @@ const worker = new Worker(
       return result;
     }
 
+    if (job.name === JOB_NAMES.maintenance.systemHealthScan) {
+      return scanSystemHealth();
+    }
+
     throw new Error(`Unknown maintenance job: ${job.name}`);
   },
   { connection, concurrency: 1 }
@@ -208,6 +214,16 @@ async function registerSchedulers(): Promise<void> {
     log.info('maintenance-scheduler-registered', {
       name: JOB_NAMES.maintenance.storageHealthCheck,
       everyMs: STORAGE_HEALTH_CHECK_INTERVAL_MS
+    });
+
+    await maintenanceQueue.upsertJobScheduler(
+      'system-health-scan-scheduler',
+      { every: SYSTEM_HEALTH_SCAN_INTERVAL_MS },
+      { name: JOB_NAMES.maintenance.systemHealthScan, data: {} }
+    );
+    log.info('maintenance-scheduler-registered', {
+      name: JOB_NAMES.maintenance.systemHealthScan,
+      everyMs: SYSTEM_HEALTH_SCAN_INTERVAL_MS
     });
 
     await maintenanceQueue.upsertJobScheduler(

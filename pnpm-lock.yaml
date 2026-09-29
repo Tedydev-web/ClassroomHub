@@ -1133,6 +1133,9 @@ importers:
       '@cio/db':
         specifier: workspace:*
         version: link:../db
+      '@cio/email':
+        specifier: workspace:*
+        version: link:../email
       '@cio/jobs':
         specifier: workspace:*
         version: link:../jobs

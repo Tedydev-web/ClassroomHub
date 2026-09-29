@@ -9,7 +9,9 @@ import type {
   GatewayRun,
   GatewaySettings,
   ListUsersResult,
-  OrgFeatures
+  OrgFeatures,
+  SystemHealth,
+  TestEmailResult
 } from './types';
 
 /**
@@ -114,6 +116,16 @@ export class AdminApi {
       method: 'PATCH',
       body: JSON.stringify({ features })
     });
+  }
+
+  // --- System health ---
+
+  systemHealth(): Promise<SystemHealth> {
+    return this.call<SystemHealth>('/health');
+  }
+
+  sendTestEmail(): Promise<TestEmailResult> {
+    return this.call<TestEmailResult>('/health/test-email', { method: 'POST' });
   }
 
   // --- AI gateway ---

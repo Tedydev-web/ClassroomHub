@@ -141,6 +141,9 @@
   .badge-success {
     @apply bg-success-weak text-success;
   }
+  .badge-warning {
+    @apply bg-[#d97706]/15 text-[#b45309] dark:text-[#f59e0b];
+  }
 
   .table-wrap {
     @apply border-border bg-surface overflow-x-auto rounded-[6px] border;

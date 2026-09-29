@@ -66,6 +66,7 @@ export const JOB_NAMES = {
     assetStorageCleanup: 'asset-storage-cleanup',
     storageHealthCheck: 'storage-health-check',
     courseRoleReconcile: 'course-role-reconcile',
-    memberActivityReconcile: 'member-activity-reconcile'
+    memberActivityReconcile: 'member-activity-reconcile',
+    systemHealthScan: 'system-health-scan'
   }
 } as const;

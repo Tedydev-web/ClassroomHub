@@ -1,10 +1,11 @@
 import { Hono } from '@api/utils/hono';
+import { adminHealthRouter } from './health';
 import { adminOrgsRouter } from './orgs';
 import { adminUsersRouter } from './users';
 import { superAdminMiddleware } from '@api/middlewares/super-admin';
 
 /**
- * Aggregate super-admin router for user and org management. The password gate is
+ * Aggregate super-admin router for user and org management and platform health. The password gate is
  * applied once here, so the child routers assume an authorized caller.
  *
  * The AI-gateway operator API mounts separately under `/admin/ai`; keeping these
@@ -13,4 +14,5 @@ import { superAdminMiddleware } from '@api/middlewares/super-admin';
 export const adminRouter = new Hono()
   .use('/*', superAdminMiddleware)
   .route('/', adminUsersRouter)
-  .route('/', adminOrgsRouter);
+  .route('/', adminOrgsRouter)
+  .route('/health', adminHealthRouter);

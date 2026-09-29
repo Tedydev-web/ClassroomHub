@@ -169,3 +169,35 @@ export type GatewayRun = {
   updatedAt: string;
   totalRounds: number;
 };
+
+// --- System health ---
+
+export type HealthStatus = 'ok' | 'warn' | 'fail' | 'unconfigured';
+export type HealthGroup = 'infrastructure' | 'storage' | 'email' | 'ai' | 'integrations' | 'endpoints';
+
+export interface HealthCheck {
+  id: string;
+  group: HealthGroup;
+  label: string;
+  status: HealthStatus;
+  detail: string;
+  latencyMs: number;
+}
+
+export interface HealthReport {
+  status: Exclude<HealthStatus, 'unconfigured'>;
+  source: 'api' | 'jobs';
+  checkedAt: string;
+  durationMs: number;
+  checks: HealthCheck[];
+}
+
+export interface SystemHealth {
+  live: HealthReport;
+  scheduled: HealthReport | null;
+}
+
+export interface TestEmailResult {
+  accepted: boolean;
+  detail: string;
+}

@@ -30,6 +30,8 @@ export type { EmailId, EmailSchemaFor } from './utils/types';
 
 // Re-export low-level utilities
 export { deliverEmail } from './send';
+export { verifySmtpConnection } from './utils/services/nodemailer';
+export { EMAIL_FROM } from './utils/constants';
 export { buildEmailFromName, escapeHtml, sanitizeEmailSubject } from './utils/functions/email-helpers';
 export { getDefaultTemplate } from './templates/default';
 export { buildEmailBranding, resolveThemeColor, ZEmailBranding } from './core/branding';
