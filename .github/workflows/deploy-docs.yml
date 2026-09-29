@@ -104,13 +104,14 @@ jobs:
       # provides. Pin the full toolchain to Debian Bookworm so build and deploy
       # do not depend on the host operating system.
       #
-      # The workspace is bind-mounted rather than taken with `--volumes-from
-      # "$HOSTNAME"`. That form needs the job itself to be running inside a
-      # container of that name; this job runs on `ubuntu-latest`, where $HOSTNAME
-      # is the hosted virtual machine and no such container exists, so every run
-      # since the job moved there has died on `No such container: runnervm…`.
-      # On a hosted runner the Docker daemon is that same machine, so the
-      # workspace path resolves directly.
+      # How the workspace reaches the build container depends on where the job runs.
+      # On a GitHub-hosted runner the Docker daemon is the same machine, so the
+      # workspace path bind-mounts directly. The self-hosted runners are themselves
+      # containers talking to the host's daemon: their workspace path does not exist
+      # on the host, a bind mount comes up empty (`No package.json found`), and the
+      # workspace has to be shared with `--volumes-from` the runner container, whose
+      # id is $HOSTNAME. Probing for that container picks the right form, instead of
+      # hard-coding one and breaking whenever the job changes runner pools.
       - name: Build and deploy website in compatible container
         env:
           R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -122,6 +123,11 @@ jobs:
           dependency_volume="classroomhub-ci-deps-${GITHUB_RUN_ID}-${GITHUB_JOB}"
           docker volume create "$dependency_volume" >/dev/null
           trap 'docker volume rm "$dependency_volume" >/dev/null 2>&1 || true' EXIT
+          if docker container inspect "$HOSTNAME" >/dev/null 2>&1; then
+            workspace_mount=(--volumes-from "$HOSTNAME")
+          else
+            workspace_mount=(--volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE")
+          fi
           docker run --rm \
             --user 0:0 \
             --env HOME=/tmp \
@@ -132,7 +138,7 @@ jobs:
             --env R2_SECRET_ACCESS_KEY \
             --env CLOUDFLARE_ACCOUNT_ID \
             --env CLOUDFLARE_API_TOKEN \
-            --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
+            "${workspace_mount[@]}" \
             --volume "$dependency_volume:$GITHUB_WORKSPACE/node_modules" \
             --workdir "$GITHUB_WORKSPACE" \
             node:22-bookworm-slim \
