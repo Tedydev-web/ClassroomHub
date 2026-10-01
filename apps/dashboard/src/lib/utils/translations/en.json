@@ -6344,7 +6344,16 @@
       "edit_questions_hint_frozen": "This exam already froze its own copy of the questions. Editing the source exercise will not change what candidates sat.",
       "open_source_exercise": "Open the source exercise",
       "draft_paper_note": "This is a preview of the questions as they stand. Edit them in the source exercise; the paper is fixed when you open the exam.",
-      "edit_questions": "Edit questions"
+      "edit_questions": "Edit questions",
+      "step_source": "1. Where the questions come from",
+      "step_settings": "2. Exam settings",
+      "source_exercise_title": "From an exercise",
+      "source_exercise_description": "Use the questions of one of this course's exercises. The exam keeps its own copy.",
+      "source_saved_title": "A saved question set",
+      "source_saved_description": "Reuse a question set already copied for an earlier exam.",
+      "source_document_title": "Upload a document",
+      "source_document_description": "Import questions from a Word or PDF file, then check them before the exam is created.",
+      "document_hint": "Choose a file. You will review the questions and answer keys next, and the exam is created when you publish."
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",

@@ -6353,7 +6353,16 @@
       "edit_questions_hint_frozen": "Đề thi này đã đóng băng bản sao câu hỏi của riêng nó. Sửa bài tập nguồn sẽ không làm thay đổi đề mà thí sinh đã làm.",
       "open_source_exercise": "Mở bài tập nguồn",
       "draft_paper_note": "Đây là bản xem trước câu hỏi hiện tại. Sửa câu hỏi trong bài tập nguồn; đề sẽ được cố định khi bạn mở đề.",
-      "edit_questions": "Sửa câu hỏi"
+      "edit_questions": "Sửa câu hỏi",
+      "step_source": "1. Nguồn câu hỏi",
+      "step_settings": "2. Cài đặt đề thi",
+      "source_exercise_title": "Từ bài tập có sẵn",
+      "source_exercise_description": "Dùng câu hỏi của một bài tập trong khoá. Đề thi giữ bản riêng của nó.",
+      "source_saved_title": "Bộ câu hỏi đã lưu",
+      "source_saved_description": "Dùng lại bộ câu hỏi đã chép cho một đề trước.",
+      "source_document_title": "Tải tài liệu lên",
+      "source_document_description": "Nhập câu hỏi từ tệp Word hoặc PDF, kiểm tra lại rồi mới tạo đề.",
+      "document_hint": "Chọn tệp tài liệu. Bước tiếp theo bạn kiểm tra câu hỏi và đáp án; đề thi được tạo khi bạn bấm xuất bản."
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
