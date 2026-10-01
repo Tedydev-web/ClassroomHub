@@ -6254,7 +6254,10 @@
       "settings_tab": "Settings",
       "paper_tab": "Paper",
       "load_failed_title": "The exam papers could not be loaded",
-      "load_failed_description": "The list did not come back. This is not the same as the course having no papers — try again."
+      "load_failed_description": "The list did not come back. This is not the same as the course having no papers — try again.",
+      "exam_link": "Exam link",
+      "open_confirm_title": "Open this exam?",
+      "open_confirm_description": "Opening fixes the paper and gives you a link to share. Questions edited after this will not change what candidates sit."
     },
     "settings": {
       "title": "Exam title",
@@ -6339,7 +6342,9 @@
       "paper_not_frozen_yet": "This exam has not opened, so its paper is not frozen yet. Questions can still be changed.",
       "edit_questions_hint_draft": "The questions live in the exercise this exam was built from. Edit them there before you open the exam.",
       "edit_questions_hint_frozen": "This exam already froze its own copy of the questions. Editing the source exercise will not change what candidates sat.",
-      "open_source_exercise": "Open the source exercise"
+      "open_source_exercise": "Open the source exercise",
+      "draft_paper_note": "This is a preview of the questions as they stand. Edit them in the source exercise; the paper is fixed when you open the exam.",
+      "edit_questions": "Edit questions"
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",

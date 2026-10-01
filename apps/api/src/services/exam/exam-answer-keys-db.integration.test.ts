@@ -118,6 +118,26 @@ describe.runIf(runDatabaseIntegration)('the answer key of a sat paper', () => {
     return { examId: exam.id as string, by: user.id as string };
   }
 
+  it('marks a frozen paper as frozen', async () => {
+    const { db, schema, keys } = await load();
+    const { examId } = await seedSatExam(db, schema);
+
+    const result = await keys.listExamAnswerKeysService(examId);
+
+    expect(result.frozen).toBe(true);
+  });
+
+  it('serves a draft live from its container instead of refusing it, and says when it is empty', async () => {
+    const { db, schema, keys } = await load();
+    const { examId } = await seedSatExam(db, schema);
+    // A draft has frozen nothing; its container (created empty by the seed) is its paper.
+    await db.update(schema.exam).set({ status: 'draft', paperSnapshot: null }).where(eq(schema.exam.id, examId));
+
+    // Not the old "no frozen paper" refusal: the draft is read live, and an empty
+    // container is reported as exactly that.
+    await expect(keys.listExamAnswerKeysService(examId)).rejects.toThrow(/no questions/);
+  });
+
   it('reports the key in force, with the labels a candidate saw', async () => {
     const { db, schema, keys } = await load();
     const { examId } = await seedSatExam(db, schema);

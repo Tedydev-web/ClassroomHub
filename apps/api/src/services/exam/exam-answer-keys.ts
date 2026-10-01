@@ -10,6 +10,7 @@ import { buildAnswerWorkbookSheets } from './exam-answer-workbook';
 import { resolveExportLocale, WORKBOOK_LABELS } from './exam-export-labels';
 import { buildXlsx } from './exam-workbook-xlsx';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
+import { freezeExamPaper } from './exam-container';
 import { requireExamsEnabled } from './exam';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
@@ -155,12 +156,21 @@ export async function listExamAnswerKeysService(examId: string) {
   const exam = await getExamById(examId);
   if (!exam) throw new AppError('Exam not found', ErrorCodes.NOT_FOUND, 404);
 
-  const snapshot = exam.paperSnapshot as ExamPaperSnapshot | null;
+  // A draft has not frozen its paper yet, which used to make this a 409 and left the
+  // teacher's paper tab empty at exactly the moment they were checking it. Build the paper
+  // from the container as it stands now, the same way the preview does; `frozen` tells the
+  // screen that this is a live view and corrections do not apply to it yet.
+  const frozen = Boolean(exam.paperSnapshot);
+  const snapshot = frozen
+    ? (exam.paperSnapshot as ExamPaperSnapshot)
+    : exam.exerciseId
+      ? await freezeExamPaper(exam.exerciseId)
+      : null;
   if (!snapshot || !snapshot.questions?.length) {
-    throw new AppError('This exam has no frozen paper', ErrorCodes.VALIDATION_ERROR, 409);
+    throw new AppError('This exam has no questions yet', ErrorCodes.VALIDATION_ERROR, 409);
   }
 
-  const corrections = (exam.corrections as ExamCorrection[]) ?? [];
+  const corrections = frozen ? ((exam.corrections as ExamCorrection[]) ?? []) : [];
   const corrected = applyCorrections(snapshot, corrections);
 
   const kindsByQuestion = new Map<number, Set<ExamCorrection['kind']>>();
@@ -171,6 +181,7 @@ export async function listExamAnswerKeysService(examId: string) {
   }
 
   return {
+    frozen,
     questions: buildAnswerKeyRows(corrected.questions, kindsByQuestion),
     /**
      * The paper itself, corrected, with its keys intact.

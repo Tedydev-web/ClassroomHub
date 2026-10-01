@@ -57,6 +57,8 @@ export const load = async ({ params, cookies }) => {
       id: exam.id,
       title: exam.title,
       status: exam.status,
+      // The public sitting address. Not a secret: it is the link the teacher hands out.
+      slug: exam.slug ?? null,
       // The exercise holding this exam's questions. An exam's paper is a copy taken from a
       // container exercise, so "edit the questions" means editing that exercise — and until
       // now no screen said so or offered a way there. An id carries no answer key, so it
@@ -78,10 +80,11 @@ export const load = async ({ params, cookies }) => {
       autoSubmitAfterLeaves: exam.autoSubmitAfterLeaves,
       supportContact: exam.supportContact
     },
-    // An exam that never opened has no frozen paper, and the endpoint says so with a 409
-    // rather than an empty list. The tab states that instead of failing to load.
+    // A draft is served live from its source exercise; an exam with no questions at all
+    // still answers 409, and the tab says so instead of failing to load.
     questions: keysResult.ok ? keysResult.body.data.questions : [],
     paper: keysResult.ok ? keysResult.body.data.paper : null,
+    paperFrozen: keysResult.ok ? Boolean((keysResult.body as { data?: { frozen?: boolean } }).data?.frozen) : false,
     rows: rowsResult.ok ? rowsResult.body.data : [],
     // Told apart from "nobody sat it", which an empty list on a failed fetch would
     // otherwise claim to a teacher who has no way to know the difference.

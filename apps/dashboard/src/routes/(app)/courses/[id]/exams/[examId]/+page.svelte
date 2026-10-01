@@ -11,6 +11,7 @@
   import ExamPaperTab from '$features/exam/exam-paper-tab.svelte';
   import ExamSettingsForm from '$features/exam/exam-settings-form.svelte';
   import ExamAttemptsTab from '$features/exam/exam-attempts-tab.svelte';
+  import ExamStatusActions from '$features/exam/exam-status-actions.svelte';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -98,6 +99,9 @@
         {STATUS_LABEL[data.exam.status] ?? data.exam.status}
       </Badge>
     </Page.HeaderContent>
+    <Page.Action>
+      <ExamStatusActions exam={data.exam} />
+    </Page.Action>
   </Page.Header>
 
   <Page.Body>
@@ -114,47 +118,22 @@
 
         <UnderlineTabs.Content value="paper" class="w-full">
           <!--
-            Why the questions are not edited here, said once and plainly. An exam freezes its
-            paper when it opens and the class sits that frozen copy; changing a question
-            afterwards would leave every mark already given measured against a paper nobody
-            answered. The key is a different matter, and correcting one re-marks the class.
-
-            None of that is true before the exam opens, which the copy below now distinguishes
-            — a draft was being told its paper was fixed while the tab under the notice sat
-            empty, because the frozen paper it was trying to show does not exist yet.
+            One line about where the questions live. A draft shows its questions live from the
+            source exercise and is edited there; an opened exam shows the copy it froze, where
+            only the answer key can still be corrected (which re-marks the class).
           -->
-          <Alert.Root class="mb-4">
-            <Alert.Description>
-              <!--
-                A draft has frozen nothing yet, so telling its author the paper is fixed was
-                simply untrue — and the tab under it was empty anyway, because the endpoint
-                409s until an exam opens. Two states, two sentences.
-              -->
-              {$t(data.exam.status === 'draft' ? 'exam.settings.paper_not_frozen_yet' : 'exam.settings.paper_is_fixed')}
-            </Alert.Description>
-          </Alert.Root>
-
-          <!--
-            Where the questions actually live. An exam's paper is a copy taken from a container
-            exercise, so editing the questions means editing that exercise — a relationship the
-            product held in the database and had never once said out loud.
-          -->
-          {#if data.exam.exerciseId}
-            <div class="ui:border-border mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border p-4">
-              <p class="ui:text-muted-foreground text-sm">
-                {$t(
-                  data.exam.status === 'draft'
-                    ? 'exam.settings.edit_questions_hint_draft'
-                    : 'exam.settings.edit_questions_hint_frozen'
-                )}
-              </p>
+          <div class="ui:border-border mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border p-4">
+            <p class="ui:text-muted-foreground text-sm">
+              {$t(data.paperFrozen ? 'exam.settings.edit_questions_hint_frozen' : 'exam.settings.draft_paper_note')}
+            </p>
+            {#if data.exam.exerciseId && !data.paperFrozen}
               <Button variant="secondary" href={`/courses/${data.courseId}/exercises/${data.exam.exerciseId}`}>
-                {$t('exam.settings.open_source_exercise')}
+                {$t('exam.settings.edit_questions')}
               </Button>
-            </div>
-          {/if}
+            {/if}
+          </div>
 
-          <ExamPaperTab examId={data.examId} questions={data.questions} paper={data.paper} />
+          <ExamPaperTab examId={data.examId} questions={data.questions} paper={data.paper} frozen={data.paperFrozen} />
         </UnderlineTabs.Content>
 
         <UnderlineTabs.Content value="settings">

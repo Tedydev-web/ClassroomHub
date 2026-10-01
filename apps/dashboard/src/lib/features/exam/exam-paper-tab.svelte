@@ -29,11 +29,17 @@
   let {
     examId,
     questions: initialQuestions,
-    paper: initialPaper
+    paper: initialPaper,
+    frozen = true
   }: {
     examId: string;
     questions: AnswerKeyQuestion[];
     paper: { questions: PaperQuestion[] } | null;
+    /**
+     * False on a draft: the paper is drawn live from the source exercise, so there is no
+     * sitting to re-mark and the correction tools would act on nothing.
+     */
+    frozen?: boolean;
   } = $props();
 
   // Seeded from the loader and replaced by the server's own view after every correction, so
@@ -122,9 +128,11 @@
 </script>
 
 <div class="ui:space-y-6">
-  <Alert.Root>
-    <Alert.Description>{$t('exam.corrections.help')}</Alert.Description>
-  </Alert.Root>
+  {#if frozen}
+    <Alert.Root>
+      <Alert.Description>{$t('exam.corrections.help')}</Alert.Description>
+    </Alert.Root>
+  {/if}
 
   {#if items.length === 0}
     <p class="ui:text-muted-foreground ui:text-sm">{$t('exam.corrections.empty')}</p>
@@ -172,7 +180,7 @@
 
 {#snippet questionActions({ interactionId }: { interactionId: string; questionNumber: number })}
   {@const question = rowByInteractionId.get(interactionId)}
-  {#if question}
+  {#if question && frozen}
     <ExamCorrectionActions
       {question}
       busy={busyQuestionId === question.questionId}
