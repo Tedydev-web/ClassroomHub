@@ -38,6 +38,32 @@ const getRadianAngle = (degreeValue: number) => {
   return (degreeValue * Math.PI) / 180;
 };
 
+/**
+ * Longest side a cropped image is saved at.
+ *
+ * Everything cropped here is a logo, avatar, signature or portrait shown at a few hundred
+ * pixels at most. Kept at the source resolution, a 4096px logo was embedded at full size on
+ * every page of a printed answer sheet, so 25 sheets took a minute to render and timed out.
+ */
+const MAX_CROPPED_SIDE_PX = 1024;
+
+function scaleDownToMaxSide(source: HTMLCanvasElement, maxSide: number): HTMLCanvasElement {
+  const scale = maxSide / Math.max(source.width, source.height);
+  if (scale >= 1) return source;
+
+  const scaled = document.createElement('canvas');
+  scaled.width = Math.round(source.width * scale);
+  scaled.height = Math.round(source.height * scale);
+
+  const ctx = scaled.getContext('2d');
+  if (!ctx) throw new Error('Error getting 2d rendering context');
+
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, scaled.width, scaled.height);
+
+  return scaled;
+}
+
 /** Gets the cropped image from the src using the cropped area
  *
  * @param imageSrc
@@ -87,8 +113,10 @@ export const getCroppedImg = async (
     Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
   );
 
+  const output = scaleDownToMaxSide(canvas, MAX_CROPPED_SIDE_PX);
+
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
+    output.toBlob(
       (file) => {
         if (!file) {
           reject(new Error('Failed to create cropped image'));
