@@ -254,7 +254,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      - id: buildx
+        uses: docker/setup-buildx-action@v3
         with:
           name: builder-${{ matrix.image }}
           driver: docker-container
@@ -271,6 +272,10 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          # The runners share one buildx config, so the "current" builder is whichever
+          # image's setup ran last. Naming it here keeps each image on its own builder
+          # instead of piling every build onto one.
+          builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ${{ matrix.dockerfile }}
           build-args: |
@@ -280,8 +285,10 @@ jobs:
             "TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}"
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:sha-${{ github.sha }}
+          # The Actions cache is only read where it is written: on GitHub-hosted runners.
+          # Read from the self-hosted pool it stalled the build before its first step.
           cache-from: |
-            type=gha,scope=${{ matrix.image }}
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && format('type=gha,scope={0}', matrix.image) || '' }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
           cache-to: |
             ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && format('type=gha,mode=max,scope={0}', matrix.image) || '' }}
