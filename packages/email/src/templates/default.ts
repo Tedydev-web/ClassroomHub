@@ -1,5 +1,6 @@
 import type { EmailBranding } from '../core/branding';
 import { PRODUCT_HOSTS, PRODUCT_LOGO_URL, PRODUCT_NAME } from '@cio/utils/constants';
+import type { EmailLocale, StudentEmailLocaleCopy } from '@cio/utils/email';
 
 /**
  * Shared shell for every transactional email.
@@ -34,6 +35,12 @@ const SURFACE_MUTED = '#F5F5F5';
 // the stack falls through to whatever the reader's OS considers native.
 const FONT_STACK =
   "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const DEFAULT_FOOTER_COPY: StudentEmailLocaleCopy['footer'] = {
+  rightsReserved: 'All rights reserved.',
+  website: 'Website',
+  terms: 'Terms',
+  privacy: 'Privacy'
+};
 
 function escapeHtmlAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -77,13 +84,18 @@ function buildMasthead(branding: EmailBranding): string {
   return `<a href="${PRODUCT_WEBSITE_URL}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${PRODUCT_WORDMARK_URL}" width="180" height="46" alt="${PRODUCT_NAME}" style="display:block;width:180px;height:auto;" /></a>`;
 }
 
-export const getDefaultTemplate = (content: string, branding?: EmailBranding): string => {
+export const getDefaultTemplate = (
+  content: string,
+  branding?: EmailBranding,
+  locale?: EmailLocale,
+  footerCopy: StudentEmailLocaleCopy['footer'] = DEFAULT_FOOTER_COPY
+): string => {
   const accentColor = branding?.themeColor || DEFAULT_BUTTON_COLOR;
   const masthead = buildMasthead(branding);
   const year = new Date().getFullYear();
 
   return `<!DOCTYPE html>
-<html>
+<html lang="${locale ?? 'en'}">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -227,12 +239,12 @@ export const getDefaultTemplate = (content: string, branding?: EmailBranding): s
     </div>
 
     <div class="footer" style="text-align:center;font-size:12px;line-height:20px;color:${TEXT_MUTED};padding:24px 16px 0;">
-      <a href="${PRODUCT_WEBSITE_URL}" style="color:${TEXT_MUTED};text-decoration:none;">Website</a>
+      <a href="${PRODUCT_WEBSITE_URL}" style="color:${TEXT_MUTED};text-decoration:none;">${footerCopy.website}</a>
       &nbsp;&middot;&nbsp;
-      <a href="${PRODUCT_WEBSITE_URL}/tos" style="color:${TEXT_MUTED};text-decoration:none;">Terms</a>
+      <a href="${PRODUCT_WEBSITE_URL}/tos" style="color:${TEXT_MUTED};text-decoration:none;">${footerCopy.terms}</a>
       &nbsp;&middot;&nbsp;
-      <a href="${PRODUCT_WEBSITE_URL}/privacy" style="color:${TEXT_MUTED};text-decoration:none;">Privacy</a>
-      <div style="margin-top:8px;">&copy; ${year} ${PRODUCT_NAME}. All rights reserved.</div>
+      <a href="${PRODUCT_WEBSITE_URL}/privacy" style="color:${TEXT_MUTED};text-decoration:none;">${footerCopy.privacy}</a>
+      <div style="margin-top:8px;">&copy; ${year} ${PRODUCT_NAME}. ${footerCopy.rightsReserved}</div>
     </div>
 
   </div>

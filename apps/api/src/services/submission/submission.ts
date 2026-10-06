@@ -1624,7 +1624,6 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
 
   const orgName = orgResult?.orgName || 'ClassroomHub';
 
-  const statusText = LEGACY_BOARD_STATUS_LABELS[newStatusId] || 'Updated';
   const baseUrl = getDashboardBaseUrl({
     siteName: orgResult?.orgSiteName,
     customDomain: orgResult?.orgCustomDomain,
@@ -1649,6 +1648,8 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
 
   const isGraded = newStatusId === 3;
   const score = isGraded ? `${totalMark}/${maxMark}` : undefined;
+  // The in-app notification still names the status; the email resolves its own copy from statusId.
+  const statusText = LEGACY_BOARD_STATUS_LABELS[newStatusId] || 'Updated';
 
   try {
     if (orgResult?.orgId) {
@@ -1674,7 +1675,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
         studentName: fullSubmission.groupmember.profile.fullname || 'Student',
         exerciseTitle: fullSubmission.exercise.title,
         courseName: course.title,
-        statusText,
+        statusId: newStatusId,
         exerciseLink,
         score,
         lessonTitle: fullSubmission.lesson?.title,

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { PLANS } from '@cio/utils/plans';
-  import { PricingCard } from '@cio/ui/custom/pricing-card';
   import { PricingToggle } from '@cio/ui/custom/pricing-toggle';
 
-  import { PageSignupCTA, PageHeader } from '$lib/components';
+  import { PageSignupCTA, PageHeader, PricingPlanCard } from '$lib/components';
   import { t } from '$lib/i18n';
   import { FEATURE_KEYS } from '$lib/i18n/plan-copy';
   import { env } from '$env/dynamic/public';
@@ -30,7 +29,12 @@
         ...(planName === 'ENTERPRISE' ? { MONTHLY: $t(`${key}.price`), YEARLY: $t(`${key}.price`) } : {})
       },
       FEATURES: plan.FEATURES.map((feature) => $t(`pricing.features.${FEATURE_KEYS[feature]}`)),
-      CTA: { ...plan.CTA, LABEL: $t(`${key}.cta`) }
+      // A self-owned install has no hosted checkout to send the reader to.
+      CTA: {
+        ...plan.CTA,
+        LABEL: $t(`${key}.cta`),
+        LINK: env.PUBLIC_IS_SELF_OWNED === 'true' ? '/signup' : plan.CTA.LINK
+      }
     };
   }
 </script>
@@ -40,12 +44,12 @@
 </svelte:head>
 
 <section>
-  <PageHeader className="flex flex-col items-center justify-center text-center">
-    <h1 class="mx-auto flex flex-col items-center text-4xl text-slate-900 md:text-6xl">
+  <PageHeader className="max-w-content mx-auto flex flex-col items-center px-6 text-center md:px-10 xl:px-0">
+    <h1 class="text-title flex flex-col items-center font-medium text-slate-900 lg:text-[64px]">
       <span>{$t('pricing.heading_lead')}</span>
       <span class="relative text-blue-700">{$t('pricing.heading_accent')}</span>
     </h1>
-    <p class="mt-10 w-[90%] text-center text-lg font-normal text-slate-700 md:w-[60%] lg:mt-7">
+    <p class="text-lead mt-6 max-w-[580px] text-slate-700">
       {$t('pricing.subhead')}
     </p>
     <div class="mt-8">
@@ -64,7 +68,7 @@
         async
       ></script>
       <div
-        class="senja-embed mt-5"
+        class="senja-embed mt-10"
         data-id="b43ac234-427e-4d6f-8c23-633208154e54"
         data-mode="shadow"
         data-lazyload="false"
@@ -73,30 +77,17 @@
     {/if}
   </PageHeader>
 
-  <div class="w-full px-2 py-16">
-    <div class="mx-auto max-w-7xl">
-      <div class="flex w-full flex-wrap justify-evenly gap-2">
-        {#each planNames as planName}
-          {@const plan = translated(planName)}
-          {@const isPopular = planName === 'EARLY_ADOPTER'}
-
-          <PricingCard
-            {plan}
-            {planName}
-            {isPopular}
+  <div class="w-full px-6 py-20 md:px-10">
+    <div class="max-w-content mx-auto">
+      <div class="mx-auto grid max-w-sm gap-6 lg:max-w-none lg:grid-cols-3">
+        {#each planNames as planName (planName)}
+          <PricingPlanCard
+            plan={translated(planName)}
+            isPopular={planName === 'EARLY_ADOPTER'}
             {isYearlyPlan}
-            className="mx-auto lg:mx-0 w-full max-w-xs! lg:max-w-sm!"
-            ctaLabel={plan.CTA.LABEL}
-            isDisabled={false}
             perOrgLabel={isYearlyPlan ? $t('pricing.per_year') : $t('pricing.per_month')}
-            handleClick={() => {
-              if (env.PUBLIC_IS_SELF_OWNED === 'true') {
-                window.location.assign('/signup');
-                return;
-              }
-
-              window.open(plan.CTA.LINK, '_blank');
-            }}
+            popularLabel={$t('pricing.popular')}
+            featuresLabel={$t('pricing.included')}
           />
         {/each}
       </div>

@@ -1,11 +1,15 @@
 <script lang="ts">
   import XIcon from '@lucide/svelte/icons/x';
+  import { getExerciseQuestionLabel, type ExerciseQuestionLabels } from '@cio/question-types';
   import { IconButton } from '../../icon-button';
+  import { ImageLightbox, ZoomableImage } from '../../image-lightbox';
+  import { getQuestionLightboxLabels } from '../lightbox-labels';
 
   let {
     src,
     alt,
     variant = 'preview',
+    labels,
     onRemove,
     disabled = false,
     removeTooltip = '',
@@ -15,6 +19,7 @@
     src: string | null;
     alt: string;
     variant?: 'preview' | 'take' | 'edit';
+    labels?: ExerciseQuestionLabels;
     onRemove?: () => void;
     disabled?: boolean;
     removeTooltip?: string;
@@ -23,7 +28,6 @@
   } = $props();
 
   const sizeClass = $derived(variant === 'edit' ? 'ui:h-24 ui:w-24' : 'ui:h-28 ui:w-28');
-  const containerClass = $derived(`${sizeClass} ui:overflow-hidden ui:rounded-md ui:border ui:border-border`);
 
   /**
    * An image that fails to load falls back to the same muted box a missing one already uses.
@@ -37,6 +41,7 @@
    */
   let failedSrc = $state<string | null>(null);
   const isBroken = $derived(src !== null && failedSrc === src);
+  let isLightboxOpen = $state(false);
 </script>
 
 {#if variant === 'edit'}
@@ -63,9 +68,17 @@
     </div>
   {/if}
 {:else if hasAnyImageInOptions}
-  <div class="{containerClass} {src && !isBroken ? '' : 'ui:bg-muted'}">
-    {#if src && !isBroken}
-      <img {src} {alt} class="ui:h-full ui:w-full ui:object-cover" onerror={() => (failedSrc = src)} />
-    {/if}
-  </div>
+  {#if src && !isBroken}
+    <ZoomableImage
+      {src}
+      {alt}
+      enlargeLabel={getExerciseQuestionLabel(labels, 'question.media.enlarge_image', 'Click to enlarge')}
+      class="ui:aspect-video"
+      onclick={() => (isLightboxOpen = true)}
+      onerror={() => (failedSrc = src)}
+    />
+    <ImageLightbox images={[{ src, alt }]} labels={getQuestionLightboxLabels(labels)} bind:open={isLightboxOpen} />
+  {:else}
+    <div class="ui:aspect-video ui:w-full ui:rounded-md ui:border ui:bg-muted"></div>
+  {/if}
 {/if}

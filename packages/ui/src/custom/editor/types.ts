@@ -6,6 +6,8 @@ import type { Snippet } from 'svelte';
 import type { SmartPastePreview } from './extensions/smart-paste/smart-paste';
 import type { EditorVariant } from './variants';
 
+export type EditorToolbarPreset = 'default' | 'email';
+
 export interface EdraEditorProps {
   placeholder?: string | ((node: any) => string);
   content?: Content;
@@ -18,6 +20,7 @@ export interface EdraEditorProps {
   onExternalPaste?: (preview: SmartPastePreview | null) => void;
   onImageUpload?: (file: File) => Promise<string>;
   onSearchUnsplash?: (query: string) => Promise<UnsplashPhoto[]>;
+  emailSafe?: boolean;
 }
 
 export interface EditorProps {
@@ -25,6 +28,8 @@ export interface EditorProps {
   content?: Content;
   // Whether the toolbar should be visible
   showToolBar?: boolean;
+  toolbarPreset?: EditorToolbarPreset;
+  toolbarTrailing?: Snippet<[]>;
   // Whether the editor is editable
   editable?: boolean;
   // Whether to enable localStorage persistence
@@ -42,10 +47,17 @@ export interface EditorProps {
   onEditorReady?: (editor: Editor) => void;
   onEditorDestroy?: () => void;
   onImageUpload?: (file: File) => Promise<string>;
+  showDragHandle?: boolean;
+  expandable?: boolean;
+  expanded?: boolean;
+  expandedTitle?: string;
+  expandedDescription?: string;
 }
 
 export interface EdraToolbarProps {
   editor: Editor;
+  preset?: EditorToolbarPreset;
+  trailingContent?: Snippet<[]>;
   class?: string;
   excludedCommands?: string[];
   /** Replaces the whole command set. */

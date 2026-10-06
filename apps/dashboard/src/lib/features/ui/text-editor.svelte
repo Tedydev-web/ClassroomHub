@@ -17,7 +17,8 @@
 
 <script lang="ts">
   // Type-only imports are erased at build time — no static TipTap dependency.
-  import type { EditorVariant, HTMLContent, TiptapEditor } from '@cio/ui/custom/editor';
+  import type { EditorToolbarPreset, EditorVariant, HTMLContent, TiptapEditor } from '@cio/ui/custom/editor';
+  import type { Snippet } from 'svelte';
   import { cn } from '@cio/ui/tools';
   import { t } from '$lib/utils/functions/translations';
   import { uploadImage } from '$lib/utils/services/upload';
@@ -32,6 +33,8 @@
      */
     variant?: EditorVariant;
     showToolBar?: boolean;
+    toolbarPreset?: EditorToolbarPreset;
+    toolbarTrailing?: Snippet<[]>;
     editable?: boolean;
     /** Overrides the variant's default; `inline` fields opt out by default. */
     expandable?: boolean;
@@ -44,12 +47,16 @@
     onChange?: (content: HTMLContent) => void;
     onReady?: (editor: TiptapEditor) => void;
     onEditorDestroy?: () => void;
+    expandedTitle?: string;
+    expandedDescription?: string;
   }
 
   let {
     content = '',
     variant = 'full',
     showToolBar = true,
+    toolbarPreset = 'default',
+    toolbarTrailing,
     editable = true,
     expandable,
     expanded = $bindable(false),
@@ -61,7 +68,9 @@
     placeholder = 'Welcome to ClassroomHub',
     onChange,
     onReady,
-    onEditorDestroy
+    onEditorDestroy,
+    expandedTitle = '',
+    expandedDescription = ''
   }: Props = $props();
 
   // The editor package ships English defaults; the app owns the translations.
@@ -100,6 +109,8 @@
     {content}
     {variant}
     {showToolBar}
+    {toolbarPreset}
+    {toolbarTrailing}
     {editable}
     {expandable}
     bind:expanded
@@ -115,5 +126,7 @@
     {onEditorDestroy}
     onImageUpload={uploadImage}
     onSearchUnsplash={queryUnsplash}
+    {expandedTitle}
+    {expandedDescription}
   />
 {/await}

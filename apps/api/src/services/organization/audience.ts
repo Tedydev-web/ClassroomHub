@@ -411,6 +411,7 @@ async function createStudentOrgInvitesAndSendEmails(input: {
             branding: buildEmailBranding(organization)
           },
           from: buildEmailFromName(`${organization.name} (via ClassroomHub)`),
+          organizationId: orgId,
           idempotencyKey: `student-org-invite:${invite.id}`
         });
 
@@ -764,6 +765,7 @@ export async function resendAudienceInvite(orgId: string, data: TAudienceInviteB
         branding: buildEmailBranding(organization)
       },
       from: buildEmailFromName(`${organization.name} (via ClassroomHub)`),
+      organizationId: orgId,
       idempotencyKey: `student-org-invite:${invite.id}`
     });
 

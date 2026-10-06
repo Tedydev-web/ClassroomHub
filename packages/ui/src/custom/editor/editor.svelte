@@ -2,6 +2,7 @@
   import type { HTMLContent, Editor } from '@tiptap/core';
   import type { Transaction } from '@tiptap/pm/state';
   import type { UnsplashPhoto } from './types';
+  import type { Snippet } from 'svelte';
   import { EdraEditor, EdraToolBar, EdraBubbleMenu, EdraDragHandleExtended } from './ui';
   import PasteFormatNotice from './ui/components/PasteFormatNotice.svelte';
   import EdraToolTip from './ui/components/EdraToolTip.svelte';
@@ -22,6 +23,8 @@
     variant?: EditorVariant;
     // Whether the toolbar should be visible
     showToolBar?: boolean;
+    toolbarPreset?: 'default' | 'email';
+    toolbarTrailing?: Snippet<[]>;
     // Whether the editor is editable
     editable?: boolean;
     // Whether to offer the expand-to-fullscreen control (defaults per variant)
@@ -54,12 +57,18 @@
     onEditorDestroy?: () => void;
     onImageUpload?: (file: File) => Promise<string>;
     onSearchUnsplash?: (query: string) => Promise<UnsplashPhoto[]>;
+    showDragHandle?: boolean;
+    // Heading shown above the toolbar while the editor is expanded
+    expandedTitle?: string;
+    expandedDescription?: string;
   }
 
   let {
     content = $bindable(''),
     variant = 'full',
     showToolBar = true,
+    toolbarPreset = 'default',
+    toolbarTrailing,
     editable = true,
     expandable,
     expanded = $bindable(false),
@@ -73,7 +82,10 @@
     onContentChange,
     onEditorReady,
     onImageUpload,
-    onSearchUnsplash
+    onSearchUnsplash,
+    showDragHandle = true,
+    expandedTitle = '',
+    expandedDescription = ''
   }: Props = $props();
 
   let editor = $state<Editor>();
@@ -145,7 +157,7 @@
 
     if (currentContent === nextContent) return;
 
-    editor.commands.setContent(nextContent, false);
+    editor.commands.setContent(nextContent, { emitUpdate: false });
   });
 
   $effect(() => lockBodyScroll(expanded));
@@ -212,6 +224,14 @@
       className
     )}
   >
+    {#if expanded && expandedTitle}
+      <div class="ui:border-b ui:px-4 ui:py-3">
+        <p class="ui:text-base ui:font-semibold">{expandedTitle}</p>
+        {#if expandedDescription}
+          <p class="ui:text-muted-foreground ui:text-sm">{expandedDescription}</p>
+        {/if}
+      </div>
+    {/if}
     {#if editor && !editor.isDestroyed}
       {#if showToolBar}
         <div transition:slide>
@@ -219,6 +239,8 @@
             class="ui:bg-secondary/50 ui:w-full ui:border-b ui:border-dashed ui:p-0.5"
             {editor}
             excludedCommands={config.excludedCommands}
+            preset={toolbarPreset}
+            trailingContent={toolbarTrailing}
           >
             {#snippet trailing()}
               {#if canExpand}
@@ -237,9 +259,11 @@
           </EdraToolBar>
         </div>
       {/if}
-      <EdraBubbleMenu {editor} />
+      {#if toolbarPreset !== 'email'}
+        <EdraBubbleMenu {editor} />
+      {/if}
 
-      {#if editable && config.allowsBlockTools}
+      {#if editable && showDragHandle && config.allowsBlockTools && toolbarPreset !== 'email'}
         <EdraDragHandleExtended {editor} />
       {/if}
     {/if}
@@ -252,6 +276,7 @@
       )}
       bind:editor
       {editable}
+      emailSafe={toolbarPreset === 'email'}
       {content}
       {onUpdate}
       {placeholder}

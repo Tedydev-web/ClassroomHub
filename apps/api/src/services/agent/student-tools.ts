@@ -10,6 +10,7 @@ import { getLesson } from '@cio/core/services/lesson/lesson';
 import { getLessonVideoTranscript } from '@cio/core/services/agent/lesson-transcript';
 import { getExercise } from '@cio/core/services/exercise/exercise';
 import { listCourseSections } from '@cio/core/services/course/section';
+import { getStudentSubmissionReview } from '@api/services/submission/student-submission';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { AgentEvent, trackAgentEvent } from '@cio/core/utils/tinybird';
 import { verifyExerciseBelongsToCourse, verifyLessonBelongsToCourse } from '@cio/core/services/agent/chat-context';
@@ -124,6 +125,10 @@ function makeSnippet(text: string, query: string, radius: number = SEARCH_SNIPPE
 const listCourseOutlineParam = z.object({});
 const readLessonParam = z.object({ lessonId: z.string() });
 const readExerciseParam = z.object({ exerciseId: z.string() });
+const readMySubmissionsParam = z.object({
+  exerciseId: z.string(),
+  attempt: z.number().int().min(1).optional()
+});
 const searchCourseParam = z.object({
   query: z.string().min(1).max(200),
   limit: z.number().int().min(1).max(20).default(8)
@@ -140,6 +145,7 @@ export async function assertStudentExerciseAccess(
   }
 }
 
+/** Builds the read-only student tools scoped to one course and learner. */
 export function buildStudentAgentTools(orgId: string, userId: string, courseId: string, _settings: AiTutorSettings) {
   return {
     list_course_outline: tool({
@@ -236,6 +242,23 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
             description: exercise.description,
             questions
           };
+        });
+      }
+    }),
+
+    read_my_submissions: tool({
+      description:
+        "Read this learner's own submitted result for an exercise. Use this before answering questions such as 'what did I miss?', 'what was my score?', or 'what feedback did I get?'. Returns the latest attempt unless an attempt number is supplied. It never returns answer keys or another learner's data.",
+      inputSchema: readMySubmissionsParam,
+      execute: async (args) => {
+        return executeStudentTool('read_my_submissions', { orgId, userId, courseId, args }, async () => {
+          await assertStudentExerciseAccess(courseId, args.exerciseId, userId);
+          return getStudentSubmissionReview({
+            courseId,
+            profileId: userId,
+            exerciseId: args.exerciseId,
+            attempt: args.attempt
+          });
         });
       }
     }),

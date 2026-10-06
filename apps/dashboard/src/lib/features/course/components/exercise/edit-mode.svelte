@@ -566,6 +566,7 @@
       <ExerciseQuestion.QuestionRenderer
         showContainer={false}
         titleError={getQuestionErrorMsg(errors, question, 'title')}
+        exerciseTitle={$questionnaire.title ?? undefined}
         contract={{
           mode: 'edit',
           question: toExerciseQuestionModel(question),

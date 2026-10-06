@@ -56,7 +56,7 @@
 
 <div
   bind:this={stageEl}
-  class="relative overflow-hidden rounded-2xl border border-gray-200 shadow-2xl/10"
+  class="relative overflow-hidden rounded-xl border border-gray-200"
   style="aspect-ratio: {NATIVE_W} / {NATIVE_H};"
 >
   <iframe

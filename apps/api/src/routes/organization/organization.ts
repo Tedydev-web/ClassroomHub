@@ -95,6 +95,7 @@ import { webhooksRouter } from '@api/routes/organization/webhooks';
 import { scormRouter } from '@api/routes/organization/scorm';
 import { zValidator } from '@hono/zod-validator';
 import { ZGetRecommendedCourses } from '@cio/utils/validation/course';
+import { studentEmailTemplatesRouter } from '@api/routes/organization/email-templates';
 
 export const audienceRouter = new Hono()
   /**
@@ -949,6 +950,7 @@ export const organizationRouter = new Hono()
   })
   .route('/audience', audienceRouter)
   .route('/automation', automationRouter)
+  .route('/email-templates', studentEmailTemplatesRouter)
   .route('/course-import', courseImportRouter)
   .route('/search', searchRouter)
   .route('/tags', tagsRouter)

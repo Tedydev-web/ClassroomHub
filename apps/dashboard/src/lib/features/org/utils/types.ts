@@ -1,4 +1,6 @@
 import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+import type { TLocale } from '@cio/db/types';
+import type { AccountOrg } from '$features/app/types';
 
 export type GetOrganizationRequest = typeof classroomhub.organization.$get;
 export type GetOrganizationResponse = InferResponseType<GetOrganizationRequest> | null;
@@ -151,6 +153,42 @@ export type DeleteAudienceMemberSuccess = Extract<InferResponseType<DeleteAudien
 export type UpdateOrganizationRequest = (typeof classroomhub.organization)['$put'];
 export type UpdateOrganizationResponse = InferResponseType<UpdateOrganizationRequest>;
 export type UpdateOrganizationSuccess = Extract<UpdateOrganizationResponse, { success: true }>;
+export type GetStudentEmailTemplatesRequest = (typeof classroomhub.organization)['email-templates']['$get'];
+export type StudentEmailTemplateRecord = Extract<
+  InferResponseType<GetStudentEmailTemplatesRequest>,
+  { success: true }
+>['data'][number];
+export type SaveStudentEmailTemplateRequest =
+  (typeof classroomhub.organization)['email-templates'][':emailId'][':locale']['$put'];
+export type ResetStudentEmailTemplateRequest =
+  (typeof classroomhub.organization)['email-templates'][':emailId'][':locale']['$delete'];
+export type SendStudentEmailTemplateTestRequest =
+  (typeof classroomhub.organization)['email-templates'][':emailId'][':locale']['test']['$post'];
+export type StudentEmailTemplateTestDraft = InferRequestType<SendStudentEmailTemplateTestRequest>['json'];
+export type StudentEmailTemplateTestInput = Omit<StudentEmailTemplateTestDraft, 'recipientEmails'> & {
+  recipients: string;
+};
+export interface TOrgUpdateForm {
+  name?: string;
+  avatar?: string | File | undefined;
+  favicon?: string | File | null | undefined;
+  theme?: string;
+  landingpage?: AccountOrg['landingpage'];
+  siteName?: string;
+  customDomain?: string | null;
+  isCustomDomainVerified?: boolean;
+  customization?: AccountOrg['customization'];
+  disableSignup?: boolean;
+  disableSignupMessage?: string;
+  disableEmailPassword?: boolean;
+  disableGoogleAuth?: boolean;
+  settings?: {
+    signup?: { inviteOnly?: boolean };
+    language?: { locale?: TLocale; enforced?: boolean };
+    emailNotifications?: Record<string, boolean>;
+    examImport?: { aiEnabled?: boolean; scanVisionEnabled?: boolean };
+  };
+}
 
 // domain request types
 export type DomainRequestRequest = typeof classroomhub.domain.$post;

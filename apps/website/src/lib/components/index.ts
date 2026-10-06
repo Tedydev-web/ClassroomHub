@@ -33,6 +33,7 @@ export { default as PageHeader } from './page-header.svelte';
 export { default as PageSignupCTA } from './page-signup-cta.svelte';
 export { default as ParticleField } from './particle-field.svelte';
 export { default as PillList } from './pill-list.svelte';
+export { default as PricingPlanCard } from './pricing-plan-card.svelte';
 export { default as QuestionTypes } from './question-types.svelte';
 export { default as RoiBand } from './roi-band.svelte';
 export { default as SplitFeatureSection } from './split-feature-section.svelte';

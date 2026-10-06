@@ -1,6 +1,14 @@
 import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
 import type { TLocale } from '@cio/db/types';
+import type {
+  TCoursePeopleActivityWindow,
+  TCoursePeopleEnrolledWindow,
+  TCoursePeopleMembership,
+  TCoursePeopleProgress,
+  TCoursePeopleSortBy,
+  TCoursePeopleSortOrder
+} from '@cio/utils/validation/course/people';
 
 // List lessons types
 export type ListLessonsRequest = (typeof classroomhub.course)[':courseId']['lesson']['$get'];
@@ -461,7 +469,22 @@ export type ListPeopleQuery = {
   limit: number;
   search?: string;
   roleId?: number;
+  sortBy: TCoursePeopleSortBy;
+  sortOrder: TCoursePeopleSortOrder;
+  progress?: TCoursePeopleProgress;
+  membership?: TCoursePeopleMembership;
+  enrolledWithin?: TCoursePeopleEnrolledWindow;
+  lastLoginBefore?: TCoursePeopleActivityWindow;
+  certificateEarned?: boolean;
 };
+
+export type CoursePeopleView =
+  | 'all'
+  | 'not_started'
+  | 'in_progress'
+  | 'completed'
+  | 'never_logged_in'
+  | 'awaiting_certificate';
 
 export type AddPeopleRequest = (typeof classroomhub.course)[':courseId']['members']['$post'];
 export type AddPeopleResponse = InferResponseType<AddPeopleRequest>;

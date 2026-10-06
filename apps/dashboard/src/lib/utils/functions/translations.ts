@@ -65,6 +65,11 @@ export const config = {
       locale: 'da',
       key: '',
       loader: async () => (await import('../translations/da.json')).default
+    },
+    {
+      locale: 'tr',
+      key: '',
+      loader: async () => (await import('../translations/tr.json')).default
     }
   ]
 };
@@ -110,12 +115,15 @@ function primeLocale(targetLocale: string): Promise<unknown> {
  * Load a locale's translations once per process, then activate it for this
  * render. Use this instead of calling `loadTranslations` directly.
  */
-export async function ensureTranslations(targetLocale: string): Promise<void> {
+export async function ensureTranslations(
+  targetLocale: string,
+  shouldActivate: () => boolean = () => true
+): Promise<void> {
   await primeLocale(targetLocale);
 
   // `locale.set` re-enters the library's loader trigger; `forceSet` just marks
   // the active locale for the strings we already hold.
-  locale.forceSet(targetLocale);
+  if (shouldActivate()) locale.forceSet(targetLocale);
 }
 
 export function handleLocaleChange(newLocale: TLocale) {
@@ -128,6 +136,13 @@ export function handleLocaleChange(newLocale: TLocale) {
   selectedLocale.set(newLocale);
 
   persistLocale(newLocale);
+}
+
+export function activateLocale(newLocale: TLocale) {
+  if (!newLocale) return;
+
+  locale.set(newLocale);
+  selectedLocale.set(newLocale);
 }
 
 export function getPersistedLocale(): string | null {

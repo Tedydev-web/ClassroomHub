@@ -14,7 +14,7 @@
     WorkflowSteps
   } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
-  import { Button } from '@cio/ui/base/button';
+  import { CtaButton, Section, SectionHeader } from '$lib/components/ui';
   import { Meteors } from '@cio/ui/custom/animation/meteors';
   import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
   import BadgeCheck from '@lucide/svelte/icons/badge-check';
@@ -133,8 +133,8 @@
 </svelte:head>
 
 <section class="bg-white">
-  <PageHeader className="px-6 lg:px-12">
-    <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
+  <PageHeader className="px-6 md:px-10">
+    <div class="mx-auto flex max-w-[960px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <span class="relative flex h-2 w-2">
           <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75"></span>
@@ -142,20 +142,22 @@
         </span>
         {$t('compliance_training.compliance_training')}
       </Badge>
-      <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
+      <h1 class="text-title font-medium text-balance text-gray-950">
         {$t('compliance_training.keep_your_employees_compliant_and')}
         <em class="text-blue-700 not-italic">track who's falling behind.</em>
       </h1>
       <HeroSubtitle class="mx-auto">
         {$t('compliance_training.turn_policies_sops_docs_and_videos')}
       </HeroSubtitle>
-      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >{$t('compliance_training.book_a_demo')}</Button
+      <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <CtaButton data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
+          >{$t('compliance_training.book_a_demo')}</CtaButton
         >
-        <Button href="/signup" variant="outline">{$t('compliance_training.start_free')}</Button>
+        <CtaButton href="/signup" variant="secondary">{$t('compliance_training.start_free')}</CtaButton>
       </div>
-      <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
+      <div
+        class="text-label mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-gray-500 uppercase"
+      >
         <span class="flex items-center gap-1.5"
           ><span class="font-medium text-blue-700">✓</span> {$t('compliance_training.soc_2_friendly')}</span
         >
@@ -168,8 +170,8 @@
       </div>
     </div>
 
-    <div class="mx-auto mt-14 w-full max-w-[1100px]">
-      <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
+    <div class="max-w-content mx-auto mt-16 w-full">
+      <div class="overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/compliance-training/org-compliance.jpeg"
           alt={$t('compliance_training.compliance_dashboard_required_learners_grouped_by')}
@@ -216,7 +218,6 @@
     {features}
   />
 
-  <!-- Renewal split feature -->
   <SplitFeatureSection
     bgClass="bg-gray-50"
     eyebrow={$t('compliance_training.renewals_on_autopilot')}
@@ -245,74 +246,70 @@
     {/snippet}
   </SplitFeatureSection>
 
-  <!-- Question types showcase -->
-  <section class="px-6 py-12 lg:px-12 lg:py-16">
-    <div class="mx-auto max-w-[1100px]">
-      <div class="mb-10 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">Assessments</div>
-        <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          15 question types. Twelve auto-graded.
-        </h2>
-        <p class="mt-5 text-base leading-relaxed text-gray-500">
-          {$t('compliance_training.don_t_settle_for_multiple_choice')}
-        </p>
-        <div class="mt-6 flex flex-wrap gap-2">
-          <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
-            >{$t('compliance_training.auto_graded_12')}</span
-          >
-          <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700"
-            >{$t('compliance_training.partial_credit_9')}</span
-          >
-          <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
-            >{$t('compliance_training.manual_review_3')}</span
-          >
-        </div>
-      </div>
-
-      <div class="flex justify-center">
-        <div data-cio-widget="question-type-picker" class="w-full max-w-[900px]"></div>
-      </div>
+  <Section>
+    <SectionHeader
+      eyebrow="Assessments"
+      eyebrowClass="text-blue-700"
+      titleClass=""
+      ledeClass="text-gray-500"
+      lede={$t('compliance_training.don_t_settle_for_multiple_choice')}
+    >
+      {#snippet title()}15 question types. Twelve auto-graded.{/snippet}
+    </SectionHeader>
+    <div class="mt-8 flex flex-wrap justify-center gap-2">
+      <span class="text-label rounded-full bg-blue-50 px-3 py-1 font-mono text-blue-700 uppercase"
+        >{$t('compliance_training.auto_graded_12')}</span
+      >
+      <span class="text-label rounded-full bg-amber-50 px-3 py-1 font-mono text-amber-700 uppercase"
+        >{$t('compliance_training.partial_credit_9')}</span
+      >
+      <span class="text-label rounded-full bg-gray-100 px-3 py-1 font-mono text-gray-700 uppercase"
+        >{$t('compliance_training.manual_review_3')}</span
+      >
     </div>
-  </section>
 
-  <!-- Certificates split -->
-  <section class="bg-gray-50 px-6 py-12 lg:px-12 lg:py-16">
-    <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
-      <div class="order-2 lg:order-1">
-        <CertificateMock
-          recipient="Sarah Chen"
-          achievement="Annual Security Training 2026"
-          issued="11 May 2026"
-          verifyValue="CIO-2026-05-0142"
-        />
-      </div>
-      <div class="order-1 lg:order-2">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
-          {$t('compliance_training.certificates_evidence')}
-        </div>
-        <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          {$t('compliance_training.proof_of_training_designed_for_your')}
-        </h2>
-        <p class="mt-5 text-base leading-relaxed text-gray-500">
-          {$t('compliance_training.configure_the_certificate_id_format_the')}
-        </p>
-        <ul class="mt-6 space-y-3 text-sm text-gray-700">
-          <li class="flex items-start gap-2">
-            <GraduationCap size={16} class="mt-0.5 text-blue-700" />
-            {$t('compliance_training.templated_and_branded_with_your_logo')}
-          </li>
-          <li class="flex items-start gap-2">
-            <BadgeCheck size={16} class="mt-0.5 text-blue-700" />
-            {$t('compliance_training.tied_to_a_required_passing_score')}
-          </li>
-          <li class="flex items-start gap-2">
-            <AlertTriangle size={16} class="mt-0.5 text-blue-700" />
-            {$t('compliance_training.auto_revokes_when_a_renewal_lapses')}
-          </li>
-        </ul>
-      </div>
+    <div class="mt-12 flex justify-center md:mt-16">
+      <div data-cio-widget="question-type-picker" class="w-full max-w-[900px]"></div>
     </div>
-  </section>
+  </Section>
+
+  <Section class="bg-gray-50" innerClass="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <div class="order-2 lg:order-1">
+      <CertificateMock
+        recipient="Sarah Chen"
+        achievement="Annual Security Training 2026"
+        issued="11 May 2026"
+        verifyValue="CIO-2026-05-0142"
+      />
+    </div>
+    <div class="order-1 lg:order-2">
+      <SectionHeader
+        align="left"
+        size="h3"
+        eyebrow={$t('compliance_training.certificates_evidence')}
+        eyebrowClass="text-blue-700"
+        titleClass=""
+        ledeClass="text-gray-500"
+        lede={$t('compliance_training.configure_the_certificate_id_format_the')}
+      >
+        {#snippet title()}{$t('compliance_training.proof_of_training_designed_for_your')}{/snippet}
+      </SectionHeader>
+      <ul class="mt-8 space-y-3 text-[15px] text-gray-700">
+        <li class="flex items-start gap-2">
+          <GraduationCap size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('compliance_training.templated_and_branded_with_your_logo')}
+        </li>
+        <li class="flex items-start gap-2">
+          <BadgeCheck size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('compliance_training.tied_to_a_required_passing_score')}
+        </li>
+        <li class="flex items-start gap-2">
+          <AlertTriangle size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('compliance_training.auto_revokes_when_a_renewal_lapses')}
+        </li>
+      </ul>
+    </div>
+  </Section>
 
   <AiTutorSection
     accent="In your dashboard"
@@ -322,38 +319,36 @@
     imageAlt="Course builder — plan, approve, implement. Templates, in-editor chat, and MCP."
   />
 
-  <!-- Use cases -->
-  <section class="px-6 py-12 lg:px-12 lg:py-16">
-    <div class="mx-auto max-w-[1100px]">
-      <div class="mb-10 max-w-[640px]">
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
-          {$t('compliance_training.use_cases')}
-        </div>
-        <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          {$t('compliance_training.training_for_the_work_people_are')}
-        </h2>
-      </div>
+  <Section>
+    <SectionHeader
+      eyebrow={$t('compliance_training.use_cases')}
+      eyebrowClass="text-blue-700"
+      titleClass=""
+      class="mb-12 md:mb-16"
+    >
+      {#snippet title()}{$t('compliance_training.training_for_the_work_people_are')}{/snippet}
+    </SectionHeader>
 
-      <div class="overflow-hidden border border-gray-200 bg-white">
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 [&>*:nth-child(2n)]:sm:border-r-0 [&>*:nth-child(2n)]:lg:border-r [&>*:nth-child(3n)]:lg:border-r-0 [&>*:nth-last-child(-n+2)]:sm:border-b-0 [&>*:nth-last-child(-n+3)]:lg:border-b-0"
-        >
-          {#each useCases as useCase, i}
-            <div
-              class="group relative flex items-center gap-3 border-b border-gray-200 p-6 transition-colors hover:bg-gray-50/60 sm:border-r"
-            >
-              <span class="font-mono text-[11px] tracking-[0.15em] text-gray-400">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span class="text-sm font-medium text-gray-900">{useCase}</span>
-            </div>
-          {/each}
-        </div>
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 [&>*:nth-child(2n)]:sm:border-r-0 [&>*:nth-child(2n)]:lg:border-r [&>*:nth-child(3n)]:lg:border-r-0 [&>*:nth-last-child(-n+2)]:sm:border-b-0 [&>*:nth-last-child(-n+3)]:lg:border-b-0"
+      >
+        {#each useCases as useCase, i}
+          <div
+            class="group relative flex items-center gap-4 border-b border-gray-200 p-6 transition-colors hover:bg-gray-50/60 sm:border-r"
+          >
+            <span class="text-tag font-mono text-gray-400">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span class="text-[15px] font-medium text-gray-900">{useCase}</span>
+          </div>
+        {/each}
       </div>
     </div>
-  </section>
+  </Section>
 
   <PageSignupCTA
+    variant="brand"
     header={$t('compliance_training.keep_your_employees_compliant_and_track')}
     subText={$t('compliance_training.build_certified_training_from_your_existing')}
     btnLabel={$t('compliance_training.book_a_demo')}

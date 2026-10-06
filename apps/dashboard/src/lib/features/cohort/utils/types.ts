@@ -1,4 +1,10 @@
 import { classroomhub, type InferResponseType } from '$lib/utils/services/api';
+import type {
+  TCohortPeopleActivityWindow,
+  TCohortPeopleMembership,
+  TCohortPeopleSortBy,
+  TCohortPeopleSortOrder
+} from '@cio/utils/validation/cohort/people';
 
 type CohortListResponse = InferResponseType<typeof classroomhub.cohort.$get>;
 type CohortListSuccess = Extract<CohortListResponse, { success: true }>;
@@ -11,6 +17,24 @@ export type CohortDetail = CohortSuccess['data'];
 type CohortMembersResponse = InferResponseType<(typeof classroomhub.cohort)[':cohortId']['members']['$get']>;
 type CohortMembersSuccess = Extract<CohortMembersResponse, { success: true }>;
 export type CohortMember = CohortMembersSuccess['data'][number];
+
+export type ListCohortPeopleRequest = (typeof classroomhub.cohort)[':cohortId']['people']['$get'];
+type ListCohortPeopleResponse = InferResponseType<ListCohortPeopleRequest>;
+type ListCohortPeopleSuccess = Extract<ListCohortPeopleResponse, { success: true }>;
+export type CohortPerson = ListCohortPeopleSuccess['data'][number];
+export type CohortPeoplePagination = ListCohortPeopleSuccess['pagination'];
+export type ListCohortPeopleQuery = {
+  page: number;
+  limit: number;
+  search?: string;
+  roleId?: number;
+  sortBy: TCohortPeopleSortBy;
+  sortOrder: TCohortPeopleSortOrder;
+  membership?: TCohortPeopleMembership;
+  lastLoginBefore?: TCohortPeopleActivityWindow;
+};
+
+export type CohortPeopleView = 'all' | 'tutors' | 'students' | 'pending_invites' | 'never_logged_in';
 
 type CohortCoursesResponse = InferResponseType<(typeof classroomhub.cohort)[':cohortId']['courses']['$get']>;
 type CohortCoursesSuccess = Extract<CohortCoursesResponse, { success: true }>;

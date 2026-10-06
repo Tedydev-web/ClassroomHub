@@ -40,6 +40,7 @@ import {
   incrementStudentTutorCount
 } from '@api/services/agent/tutor-usage';
 import { assertStudentExerciseAccess, buildStudentAgentTools } from '@api/services/agent/student-tools';
+import { getStudentSubmissionReview } from '@api/services/submission/student-submission';
 import { parseAndStoreDocument } from '@cio/core/services/agent/document';
 import { recordCreditPurchase } from '@api/services/agent/credit-purchase';
 import { generateCourseMeta } from '@api/services/agent/title-generation';
@@ -550,6 +551,22 @@ const agentCoreRouter = new Hono()
         }
       }
 
+      const studentAgentTools =
+        role === AgentRole.STUDENT ? buildStudentAgentTools(orgId, user.id, courseId, studentPolicy!.settings) : null;
+      let studentSubmission: unknown;
+      // Only an exercise the access check above admitted reaches the submission lookup.
+      if (role === AgentRole.STUDENT && accessibleExerciseId) {
+        try {
+          studentSubmission = await getStudentSubmissionReview({
+            courseId,
+            profileId: user.id,
+            exerciseId: accessibleExerciseId
+          });
+        } catch {
+          studentSubmission = undefined;
+        }
+      }
+
       const agentContext: AgentContext = {
         orgId,
         courseId,
@@ -563,6 +580,7 @@ const agentCoreRouter = new Hono()
         lessonContent,
         exerciseId: accessibleExerciseId,
         exerciseTitle,
+        studentSubmission,
         documentId: context?.documentId,
         documentText,
         documentAssets,
@@ -599,12 +617,15 @@ const agentCoreRouter = new Hono()
         approvedPlan
       });
 
-      const agentTools =
-        role === AgentRole.STUDENT
-          ? buildStudentAgentTools(orgId, user.id, courseId, studentPolicy!.settings)
-          : filterToolsForChatMode(
-              buildAgentTools(orgId, user.id, courseId, messages, { isOrgOnPaidPlan: isOrgPaid, documentAssets })
-            );
+      const agentTools = studentAgentTools
+        ? studentAgentTools
+        : filterToolsForChatMode(
+            buildAgentTools(orgId, user.id, courseId, messages, { isOrgOnPaidPlan: isOrgPaid, documentAssets }),
+            {
+              activeTemplateId,
+              hasDocuments: documentAssets.length > 0
+            }
+          );
 
       const contextManaged = await buildModelContextMessages({
         conversationId,

@@ -109,7 +109,7 @@
     "cta_subtext": "Launch a branded academy on your own domain in a few days."
   },
   "ai_builds": {
-    "heading_lead": "AI that turns company knowledge into trainings that drive",
+    "heading_lead": "Turn company knowledge into trainings that drive",
     "heading_accent": "business outcome",
     "subhead": "Feed it your docs, policies, videos, and internal knowledge. AI drafts the structure, lessons, and quizzes. You review and approve every step before learners see it.",
     "image_alt": "Course builder — plan, approve, implement. Templates, in-editor chat, and MCP.",
@@ -184,7 +184,9 @@
     "mcp": {
       "title": "MCP server",
       "description": "Course authoring as agent tools. Works with Cursor, Claude Code, Codex, OpenCode."
-    }
+    },
+    "eyebrow": "For developers",
+    "machine_label": "Events wired from ClassroomHub to a CRM and a help desk, retrying when one gives no response"
   },
   "ai_tutor": {
     "control": "(you have full control over what i say and do)"
@@ -246,7 +248,9 @@
       "sso": "SSO",
       "support_247": "24/7 Support",
       "enterprise_contact": "Custom limits, procurement, and a named contact. Talk to us."
-    }
+    },
+    "popular": "Popular",
+    "included": "What's included:"
   },
   "teach": {
     "title": "Teach | ClassroomHub",

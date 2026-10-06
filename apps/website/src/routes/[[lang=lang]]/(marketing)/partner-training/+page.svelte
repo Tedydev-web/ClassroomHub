@@ -13,7 +13,7 @@
     WorkflowSteps
   } from '$lib/components';
   import { Badge } from '@cio/ui/base/badge';
-  import { Button } from '@cio/ui/base/button';
+  import { CtaButton, Section, SectionHeader } from '$lib/components/ui';
   import { Meteors } from '@cio/ui/custom/animation/meteors';
   import BadgeCheck from '@lucide/svelte/icons/badge-check';
   import BookOpenCheck from '@lucide/svelte/icons/book-open-check';
@@ -180,26 +180,28 @@
 </svelte:head>
 
 <section class="bg-white">
-  <PageHeader className="px-6 lg:px-12">
-    <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
+  <PageHeader className="px-6 md:px-10">
+    <div class="mx-auto flex max-w-[1000px] flex-col items-center text-center">
       <Badge variant="outline" class="mb-6 gap-2! bg-white px-3.5! py-1.5!">
         <Trophy size={14} class="text-blue-700" />
         {$t('partner_training.partner_training')}
       </Badge>
-      <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.1] font-medium tracking-tight text-gray-950">
+      <h1 class="text-display text-balance text-gray-950">
         {$t('partner_training.train_the_partners')}
         <em class="text-blue-700 not-italic">who sell your product.</em>
       </h1>
       <HeroSubtitle class="mx-auto">
         {$t('partner_training.run_a_partner_workspace_alongside_your')}
       </HeroSubtitle>
-      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
-          >{$t('partner_training.book_a_demo')}</Button
+      <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <CtaButton data-cal-config="'layout':'month_view'" href="mailto:{SALES_EMAIL}?subject=ClassroomHub demo"
+          >{$t('partner_training.book_a_demo')}</CtaButton
         >
-        <Button href="/signup" variant="outline">{$t('partner_training.start_free')}</Button>
+        <CtaButton href="/signup" variant="secondary">{$t('partner_training.start_free')}</CtaButton>
       </div>
-      <div class="mt-7 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-500">
+      <div
+        class="text-label mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-gray-500 uppercase"
+      >
         <span class="flex items-center gap-1.5"
           ><span class="font-medium text-blue-700">✓</span> {$t('partner_training.custom_domain')}</span
         >
@@ -210,8 +212,8 @@
       </div>
     </div>
 
-    <div class="mx-auto mt-14 w-full max-w-[1100px]">
-      <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
+    <div class="max-w-content mx-auto mt-16 w-full">
+      <div class="overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
         <img
           src="/assets/assets/www/partner-training/latest-courses.jpeg"
           alt={$t('partner_training.partner_academy_latest_courses_cohort_structure')}
@@ -292,71 +294,70 @@
     footerLabel="8 lessons"
   />
 
-  <!-- Analytics split -->
-  <section class="px-6 py-12 lg:px-12 lg:py-16">
-    <div class="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
-      <div>
-        <div class="mb-2 text-xs font-medium tracking-widest text-blue-700 uppercase">
-          {$t('partner_training.readiness_analytics')}
-        </div>
-        <h2 class="text-[clamp(1.75rem,2.6vw,2.2rem)] leading-[1.15] font-medium tracking-tight">
-          {$t('partner_training.see_which_partners_are_ready_to')}
-        </h2>
-        <p class="mt-5 text-base leading-relaxed text-gray-500">
-          {$t('partner_training.drill_into_completion_rates_time_to')}
-        </p>
-        <ul class="mt-6 space-y-3 text-sm text-gray-700">
-          <li class="flex items-start gap-2">
-            <BookOpenCheck size={16} class="mt-0.5 text-blue-700" />
-            {$t('partner_training.course_level_and_cohort_level_dashboards')}
-          </li>
-          <li class="flex items-start gap-2">
-            <ChartNoAxesCombined size={16} class="mt-0.5 text-blue-700" />
-            {$t('partner_training.per_learner_gradebook_with_manual_override')}
-          </li>
-          <li class="flex items-start gap-2">
-            <MessageSquareText size={16} class="mt-0.5 text-blue-700" />
-            {$t('partner_training.newsfeed_activity_and_q_a_participation')}
-          </li>
-        </ul>
-      </div>
-      <!-- IMAGE STUB: partner-analytics-dashboard.png -->
-      <div class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl/5">
-        <div class="aspect-[4/3] w-full bg-gradient-to-br from-blue-50 via-white to-gray-50 p-6">
-          <div class="grid h-full grid-cols-2 gap-3">
-            <div class="rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="text-[10px] text-gray-500">{$t('partner_training.time_to_certify')}</p>
-              <p class="mt-1 text-xl font-medium text-gray-950">11.2d</p>
-              <p class="text-[10px] text-green-600">↓ 2.4d</p>
-            </div>
-            <div class="rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="text-[10px] text-gray-500">{$t('partner_training.pass_rate')}</p>
-              <p class="mt-1 text-xl font-medium text-blue-700">87%</p>
-            </div>
-            <div class="col-span-2 rounded-xl bg-white p-3 ring-1 ring-gray-100">
-              <p class="mb-2 text-[10px] text-gray-500">{$t('partner_training.completion_by_partner_org')}</p>
-              <div class="space-y-1.5">
-                {#each [{ n: 'Northwind', v: 92 }, { n: 'Acme Resellers', v: 78 }, { n: 'Globex Implements', v: 64 }] as row}
-                  <div class="flex items-center gap-2">
-                    <span class="w-24 text-[10px] text-gray-600">{row.n}</span>
-                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                      <div class="h-full rounded-full bg-blue-700" style="width: {row.v}%"></div>
-                    </div>
-                    <span class="text-[10px] font-medium text-gray-700">{row.v}%</span>
+  <Section innerClass="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <div>
+      <SectionHeader
+        align="left"
+        size="h3"
+        eyebrow={$t('partner_training.readiness_analytics')}
+        eyebrowClass="text-blue-700"
+        titleClass=""
+        ledeClass="text-gray-500"
+        lede={$t('partner_training.drill_into_completion_rates_time_to')}
+      >
+        {#snippet title()}{$t('partner_training.see_which_partners_are_ready_to')}{/snippet}
+      </SectionHeader>
+      <ul class="mt-8 space-y-3 text-[15px] text-gray-700">
+        <li class="flex items-start gap-2">
+          <BookOpenCheck size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('partner_training.course_level_and_cohort_level_dashboards')}
+        </li>
+        <li class="flex items-start gap-2">
+          <ChartNoAxesCombined size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('partner_training.per_learner_gradebook_with_manual_override')}
+        </li>
+        <li class="flex items-start gap-2">
+          <MessageSquareText size={16} class="mt-1 shrink-0 text-blue-700" />
+          {$t('partner_training.newsfeed_activity_and_q_a_participation')}
+        </li>
+      </ul>
+    </div>
+    <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div class="aspect-[4/3] w-full bg-gradient-to-br from-blue-50 via-white to-gray-50 p-6">
+        <div class="grid h-full grid-cols-2 gap-3">
+          <div class="rounded-md bg-white p-3 ring-1 ring-gray-100">
+            <p class="text-[10px] text-gray-500">{$t('partner_training.time_to_certify')}</p>
+            <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950">11.2d</p>
+            <p class="text-[10px] text-green-600">↓ 2.4d</p>
+          </div>
+          <div class="rounded-md bg-white p-3 ring-1 ring-gray-100">
+            <p class="text-[10px] text-gray-500">{$t('partner_training.pass_rate')}</p>
+            <p class="mt-1 text-xl font-semibold tracking-tight text-blue-700">87%</p>
+          </div>
+          <div class="col-span-2 rounded-md bg-white p-3 ring-1 ring-gray-100">
+            <p class="mb-2 text-[10px] text-gray-500">{$t('partner_training.completion_by_partner_org')}</p>
+            <div class="space-y-1.5">
+              {#each [{ n: 'Northwind', v: 92 }, { n: 'Acme Resellers', v: 78 }, { n: 'Globex Implements', v: 64 }] as row}
+                <div class="flex items-center gap-2">
+                  <span class="w-24 text-[10px] text-gray-600">{row.n}</span>
+                  <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <div class="h-full rounded-full bg-blue-700" style="width: {row.v}%"></div>
                   </div>
-                {/each}
-              </div>
+                  <span class="font-mono text-[10px] font-medium text-gray-700">{row.v}%</span>
+                </div>
+              {/each}
             </div>
           </div>
         </div>
-        <p class="pb-3 text-center text-xs text-gray-400">
-          {$t('partner_training.replace_with_static_partner_analytics_dashboard')}
-        </p>
       </div>
+      <p class="pb-3 text-center text-xs text-gray-400">
+        {$t('partner_training.replace_with_static_partner_analytics_dashboard')}
+      </p>
     </div>
-  </section>
+  </Section>
 
   <PageSignupCTA
+    variant="brand"
     header={$t('partner_training.certify_your_next_partner_cohort')}
     subText={$t('partner_training.turn_your_product_knowledge_into_a')}
     btnLabel={$t('partner_training.book_a_demo')}

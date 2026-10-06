@@ -53,7 +53,8 @@
     variant = 'full',
     onExternalPaste,
     onImageUpload,
-    onSearchUnsplash
+    onSearchUnsplash,
+    emailSafe = false
   }: EdraEditorProps = $props();
 
   const config = $derived(getEditorVariant(variant));
@@ -61,8 +62,15 @@
   let isImageModalOpen = $state(false);
 
   onMount(() => {
-    // Node-view extensions live here because they need Svelte components; the
-    // variant decides which of them the schema should admit at all.
+    // Image nodes are shared with the email preset; the rest of the node-view
+    // extensions need room to lay out, so the variant decides whether the
+    // schema admits them at all.
+    const imageExtensions = [
+      ImagePlaceholder(ImagePlaceholderComp).configure({
+        onOpenModal: () => (isImageModalOpen = true)
+      }),
+      ImageExtended(ImageExtendedComp)
+    ];
     const richNodeExtensions = [
       CodeBlockLowlight.configure({
         lowlight
@@ -71,10 +79,7 @@
           return SvelteNodeViewRenderer(CodeBlock);
         }
       }),
-      ImagePlaceholder(ImagePlaceholderComp).configure({
-        onOpenModal: () => (isImageModalOpen = true)
-      }),
-      ImageExtended(ImageExtendedComp),
+      ...imageExtensions,
       VideoPlaceholder(VideoPlaceHolderComp),
       VideoExtended(VideoExtendedComp),
       AudioPlaceholder(AudioPlaceHolderComp),
@@ -89,10 +94,13 @@
       variant,
       placeholder,
       onExternalPaste,
-      extensions: [
-        ...(config.allowsRichNodes ? richNodeExtensions : []),
-        ...(config.allowsBlockTools ? [slashcommand(SlashCommandList)] : [])
-      ],
+      emailSafe,
+      extensions: emailSafe
+        ? imageExtensions
+        : [
+            ...(config.allowsRichNodes ? richNodeExtensions : []),
+            ...(config.allowsBlockTools ? [slashcommand(SlashCommandList)] : [])
+          ],
       options: {
         onUpdate,
         editable,

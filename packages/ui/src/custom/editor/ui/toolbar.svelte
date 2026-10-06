@@ -9,7 +9,15 @@
   import SearchAndReplace from './components/toolbar/SearchAndReplace.svelte';
   import ToolBarIcon from './components/ToolBarIcon.svelte';
 
-  const { editor, class: className, excludedCommands, children, trailing }: EdraToolbarProps = $props();
+  const {
+    editor,
+    class: className,
+    excludedCommands,
+    children,
+    trailing,
+    preset = 'default',
+    trailingContent
+  }: EdraToolbarProps = $props();
 
   // Exclusions match either a whole group ('media') or a single command
   // ('bold'), so a variant can drop one button without listing the rest.
@@ -21,6 +29,13 @@
       // A group whose commands are all excluded would render as an empty gap.
       .filter((group) => commands[group].some((command) => !isExcluded(command.name)))
   );
+
+  // The email preset keeps only what survives in an email client.
+  const emailFormatting = commands['text-formatting'].filter((command) =>
+    ['bold', 'italic', 'underline', 'link'].includes(command.name)
+  );
+  const emailLists = commands.lists.filter((command) => ['bulletList', 'orderedList'].includes(command.name));
+  const emailImages = commands.media.filter((command) => command.name === 'image-placeholder');
 </script>
 
 <div class={cn('edra-toolbar ui:flex ui:min-w-0 ui:items-center', className)}>
@@ -29,6 +44,19 @@
   <div class="ui:flex ui:min-w-0 ui:flex-1 ui:items-center ui:overflow-x-auto">
     {#if children}
       {@render children()}
+    {:else if preset === 'email'}
+      {#each emailFormatting as command (command.name)}
+        <ToolBarIcon {editor} {command} />
+      {/each}
+      <Headings {editor} />
+      {#each emailLists as command (command.name)}
+        <ToolBarIcon {editor} {command} />
+      {/each}
+      {#each emailImages as command (command.name)}
+        <ToolBarIcon {editor} {command} />
+      {/each}
+      <Alignment {editor} />
+      {@render trailingContent?.()}
     {:else}
       {#each toolbarCommands as cmd (cmd)}
         {#if cmd === 'headings'}

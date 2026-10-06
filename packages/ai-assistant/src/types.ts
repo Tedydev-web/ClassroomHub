@@ -39,6 +39,7 @@ export interface AgentContext {
   lessonContent?: string;
   exerciseId?: string;
   exerciseTitle?: string;
+  studentSubmission?: unknown;
   documentId?: string;
   documentText?: string;
   /** Metadata for documents attached to this conversation — used to attach originals to lessons. */
@@ -147,6 +148,7 @@ export const ToolName = {
   LIST_COURSE_OUTLINE: 'list_course_outline',
   READ_LESSON: 'read_lesson',
   READ_EXERCISE: 'read_exercise',
+  READ_MY_SUBMISSIONS: 'read_my_submissions',
   SEARCH_COURSE: 'search_course'
 } as const;
 

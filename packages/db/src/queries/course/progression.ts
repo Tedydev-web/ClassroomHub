@@ -9,7 +9,8 @@ import {
   submissionHistoricalMaxPointsSql
 } from './certification-exercise';
 
-export type ExerciseCompletionMember = { profileId: string } | { groupMemberId: string };
+/** A member reference is either a literal id or a column correlated to the outer row. */
+export type ExerciseCompletionMember = { profileId: string | SQL<string> } | { groupMemberId: string | SQL<string> };
 
 /** Allowed aliases for the exercise table in queries embedding the completion predicate. */
 export type ExerciseAlias = 'exercise' | 'ex';

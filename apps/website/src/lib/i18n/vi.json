@@ -109,7 +109,7 @@
     "cta_subtext": "Ra mắt học viện mang thương hiệu riêng trên tên miền của bạn chỉ trong vài ngày."
   },
   "ai_builds": {
-    "heading_lead": "AI biến kiến thức của doanh nghiệp thành khoá đào tạo tạo ra",
+    "heading_lead": "Biến kiến thức của doanh nghiệp thành khoá đào tạo tạo ra",
     "heading_accent": "kết quả kinh doanh",
     "subhead": "Đưa vào tài liệu, quy định, video và kiến thức nội bộ của bạn. AI phác thảo cấu trúc, bài học và câu hỏi. Bạn duyệt từng bước trước khi học viên nhìn thấy.",
     "image_alt": "Trình soạn khoá học — lập kế hoạch, duyệt, triển khai. Mẫu có sẵn, trò chuyện ngay trong trình soạn, và MCP.",
@@ -184,7 +184,9 @@
     "mcp": {
       "title": "Máy chủ MCP",
       "description": "Soạn khoá học như một bộ công cụ cho agent. Dùng được với Cursor, Claude Code, Codex, OpenCode."
-    }
+    },
+    "eyebrow": "Dành cho lập trình viên",
+    "machine_label": "Sự kiện được nối từ ClassroomHub tới CRM và hệ thống hỗ trợ, tự thử lại khi một bên không phản hồi"
   },
   "ai_tutor": {
     "control": "(bạn toàn quyền quyết định tôi nói gì và làm gì)"
@@ -246,7 +248,9 @@
       "sso": "SSO",
       "support_247": "Hỗ trợ 24/7",
       "enterprise_contact": "Hạn mức riêng, thủ tục mua sắm, và một đầu mối liên hệ cố định. Hãy trao đổi với chúng tôi."
-    }
+    },
+    "popular": "Phổ biến",
+    "included": "Bao gồm:"
   },
   "teach": {
     "title": "Giảng dạy | ClassroomHub",

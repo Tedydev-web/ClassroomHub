@@ -7,7 +7,7 @@
   import { cubicOut } from 'svelte/easing';
   import { MOTION_DURATION, motionDuration } from '$lib/utils/motion';
   import { Empty } from '@cio/ui/custom/empty';
-  import { Spinner } from '@cio/ui/base/spinner';
+  import { BlockLoader } from '@cio/ui/custom/block-loader';
   import { CourseSidebar } from '$features/course/components/sidebar';
   import { CourseHeader } from '$features/course/components';
   import type { Course } from '$features/course/types';
@@ -280,12 +280,10 @@
       </div>
     {:else if !isCourseReady}
       <div class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center">
-        <Empty
-          title={$t('course.shell.loading_title')}
-          description={$t('course.shell.loading_description')}
-          icon={Spinner}
-          iconClass="h-8 w-8"
-          variant="page"
+        <BlockLoader
+          blockText={false}
+          title={$t('common.loading_states.opening_course.title')}
+          caption={$t('common.loading_states.opening_course.caption')}
         />
       </div>
     {:else}
