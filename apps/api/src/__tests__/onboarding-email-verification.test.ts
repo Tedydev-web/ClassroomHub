@@ -6,6 +6,8 @@ vi.mock('@cio/email', () => ({
   sendEmail: vi.fn()
 }));
 
+vi.mock('@cio/jobs', () => ({ enqueueEmailSend: vi.fn() }));
+
 vi.mock('../../../../packages/db/src/queries/auth/profile', () => ({
   clearWelcomeEmailPending: vi.fn(),
   getProfileById: vi.fn(),
@@ -15,10 +17,13 @@ vi.mock('../../../../packages/db/src/auth/resolve-verification-org', () => ({ re
 
 import {
   sendChangeEmailConfirmation,
+  sendVerificationEmail,
   sendWelcomeEmailAfterVerification,
   type WelcomeEmailDependencies
 } from '../../../../packages/db/src/auth/email-verification';
 import { clearWelcomeEmailPending } from '../../../../packages/db/src/queries/auth/profile';
+import { enqueueEmailSend } from '@cio/jobs';
+import { sendEmail } from '@cio/email';
 
 const user = {
   id: 'user-1',
@@ -85,5 +90,72 @@ describe('sendWelcomeEmailAfterVerification', () => {
     } as never);
 
     expect(clearWelcomeEmailPending).toHaveBeenCalledWith(user.id);
+  });
+});
+
+describe('verification email delivery', () => {
+  const token = 'secret-verification-token';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('queues the app-triggered verification email for retry instead of sending inline', async () => {
+    await sendVerificationEmail({
+      user: { id: user.id, email: user.email, name: 'Ada' },
+      url: `https://app.example.com/verify?token=${token}&trigger=app`,
+      token
+    } as never);
+
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(enqueueEmailSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'template',
+        template: 'verifyEmail',
+        to: user.email,
+        fields: expect.objectContaining({
+          link: `https://app.example.com/verify?token=${token}&`,
+          userName: 'Ada',
+          orgName: 'ClassroomHub'
+        })
+      })
+    );
+  });
+
+  it('queues the change-email confirmation with the new address', async () => {
+    await sendChangeEmailConfirmation({
+      user: { id: user.id, email: user.email, name: 'Ada' },
+      newEmail: 'new@example.com',
+      url: `https://app.example.com/verify?token=${token}`,
+      token
+    } as never);
+
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(enqueueEmailSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        template: 'verifyEmail',
+        to: user.email,
+        fields: expect.objectContaining({ newEmail: 'new@example.com' })
+      })
+    );
+  });
+
+  it('never writes the verification token to the log', async () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    await sendVerificationEmail({
+      user: { id: user.id, email: user.email, name: 'Ada' },
+      url: `https://app.example.com/verify?token=${token}&trigger=app`,
+      token
+    } as never);
+    await sendChangeEmailConfirmation({
+      user: { id: user.id, email: user.email, name: 'Ada' },
+      newEmail: 'new@example.com',
+      url: `https://app.example.com/verify?token=${token}`,
+      token
+    } as never);
+
+    expect(JSON.stringify(consoleLog.mock.calls)).not.toContain(token);
+    consoleLog.mockRestore();
   });
 });

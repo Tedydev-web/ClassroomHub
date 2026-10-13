@@ -1,5 +1,5 @@
 import { type BetterAuthOptions } from 'better-auth';
-import { buildEmailBranding, buildEmailFromName, sendEmail } from '@cio/email';
+import { buildEmailBranding, buildEmailFromName } from '@cio/email';
 import { enqueueEmailSend } from '@cio/jobs';
 
 import { clearWelcomeEmailPending, getProfileById, markWelcomeEmailSent } from '../queries/auth/profile';
@@ -62,7 +62,9 @@ async function sendOrgAwareVerifyEmail(options: {
   const orgName = org?.name?.trim() || 'ClassroomHub';
   const branding = buildEmailBranding(org ? { name: org.name, avatarUrl: org.avatarUrl, theme: org.theme } : undefined);
 
-  await sendEmail('verifyEmail', {
+  await enqueueEmailSend({
+    kind: 'template',
+    template: 'verifyEmail',
     to: options.to,
     from: org?.name ? buildEmailFromName(`${org.name} (via ClassroomHub)`) : undefined,
     subject: org?.name ? `Confirm your email for ${org.name}` : undefined,
@@ -83,7 +85,6 @@ async function sendOrgAwareVerifyEmail(options: {
  */
 export const sendVerificationEmail = async (options: EmailVerificationOptions) => {
   const { user, url } = options;
-  console.log('\nsendVerificationEmail', options);
 
   // The purpose of this is to prevent verification email trigger from better-auth because we already have a flow in the UI for triggering this email.
   if (!url.includes('trigger=app') && !url.includes('trigger%3Dapp')) {
@@ -153,7 +154,6 @@ export async function retryPendingWelcomeEmail(userId: string): Promise<void> {
  */
 export const sendChangeEmailConfirmation = async (options: ChangeEmailConfirmationOptions) => {
   const { user, newEmail, url } = options;
-  console.log('\nsendChangeEmailConfirmation', options);
 
   await clearWelcomeEmailPending(user.id);
 
