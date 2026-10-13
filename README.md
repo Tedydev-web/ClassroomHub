@@ -61,7 +61,7 @@ For what's coming next, see the [public roadmap](https://classroom.tedydev.io.vn
 
 You can book a quick 15 min demo to see if ClassroomHub is a good fit for you
 
-Contact [hieudat2310.bh@gmail.com](mailto:hieudat2310.bh@gmail.com) to schedule a demo.
+Contact [support@classroom.io.vn](mailto:support@classroom.io.vn) to schedule a demo.
 
 <!-- GETTING STARTED -->
 

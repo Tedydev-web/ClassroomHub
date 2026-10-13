@@ -29,7 +29,7 @@ or public Discord channel.
 
 Please use one of these private channels:
 
-- Email: [security@classroomio.com](mailto:security@classroomio.com)
+- Email: [support@classroom.io.vn](mailto:support@classroom.io.vn)
 - GitHub: [Private vulnerability reporting](https://github.com/classroomio/classroomio/security/advisories/new)
 - Discord: [ClassroomIO community](https://dub.sh/ciodiscord). Ask a maintainer for a private conversation; do not post vulnerability details in a public channel.
 

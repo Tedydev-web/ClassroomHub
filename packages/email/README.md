@@ -42,7 +42,7 @@ await send('forgotPassword', {
     link: 'https://hub.classroom.io.vn/reset?token=abc123'
   },
   from: '"Support Team" <support@classroom.io.vn>',
-  replyTo: 'help@classroom.io.vn'
+  replyTo: 'support@classroom.io.vn'
 });
 ```
 
