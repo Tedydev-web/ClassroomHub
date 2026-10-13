@@ -257,6 +257,7 @@ services:
       # refuse.
       CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
       CLOUDFLARE_RENDERING_API_KEY: ${CLOUDFLARE_RENDERING_API_KEY:-}
+      MODERATION_EMAIL: ${MODERATION_EMAIL:-support@classroom.io.vn}
       # Gate on the super-admin endpoints, which the operator console in `apps/admin`
       # is the only caller of. Empty means the gate stays shut: the middleware refuses
       # every request with a 503 rather than admitting one, so an unset value cannot be

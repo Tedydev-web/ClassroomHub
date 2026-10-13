@@ -22,7 +22,7 @@ import type {
 } from '@cio/utils/validation/report';
 
 const HIGH_PRIORITY_REASONS = new Set<TContentReportReason>(['hate_speech', 'sexual_content', 'violence']);
-const DEFAULT_MODERATION_EMAIL = 'help@classroomio.com';
+const DEFAULT_MODERATION_EMAIL = 'support@classroom.io.vn';
 const EXCERPT_MAX_LENGTH = 280;
 
 function toAbsoluteContentUrl(path: string | null | undefined): string | undefined {
