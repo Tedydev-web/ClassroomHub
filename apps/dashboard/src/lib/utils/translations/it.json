@@ -239,7 +239,7 @@
     },
     "powered_by": {
       "label": "Offerto da",
-      "brand": "ClassroomIO"
+      "brand": "ClassroomHub"
     },
     "exercise": {
       "submit": "Controlla le mie risposte",
@@ -317,7 +317,7 @@
       "subtitle": "Quale ci ha consigliato?"
     },
     "use_cases": {
-      "label": "Per cosa vuoi usare ClassroomIO?",
+      "label": "Per cosa vuoi usare ClassroomHub?",
       "subtitle": "Scegli tutto ciò che si applica. Daremo forma alla tua organizzazione attorno ad esso.",
       "customer_training": "Formare i miei clienti sul mio prodotto",
       "customer_certification": "Certificare clienti o partner",
@@ -679,7 +679,7 @@
       "dynamic_content_description": "Inserisci valori o un collegamento opzionale in corrispondenza del cursore. Mantenere invariate le parentesi graffe in modo che il valore possa essere aggiunto al momento dell'invio.",
       "dynamic_link": "Inserisci collegamento dinamico",
       "protected_content": "Contenuti e-mail protetti",
-      "protected_content_description": "Il pulsante di azione, la destinazione, il branding e il piè di pagina richiesti sono gestiti da ClassroomIO e non possono essere rimossi.",
+      "protected_content_description": "Il pulsante di azione, la destinazione, il branding e il piè di pagina richiesti sono gestiti da ClassroomHub e non possono essere rimossi.",
       "reset": "Ripristina le impostazioni predefinite tradotte",
       "templates": {
         "studentCourseInvite": "Invito al corso",
@@ -697,7 +697,7 @@
       }
     },
     "profile": {
-      "page_subtitle": "Il tuo nome, email e come appari ovunque lavori in ClassroomIO.",
+      "page_subtitle": "Il tuo nome, email e come appari ovunque lavori in ClassroomHub.",
       "profile_picture": {
         "heading": "Immagine del profilo",
         "upload_image": "Carica immagine",
@@ -727,7 +727,7 @@
       "heading": "Notifiche",
       "page_title": "Notifiche",
       "page_subtitle": "Scegli quali notifiche email ricevere e, in qualità di amministratore, quali email invia la tua organizzazione.",
-      "personal_page_subtitle": "Scegli quali notifiche email ricevere da ClassroomIO.",
+      "personal_page_subtitle": "Scegli quali notifiche email ricevere da ClassroomHub.",
       "personal": {
         "heading": "Le tue preferenze e-mail",
         "description": "Questi si applicano alle email inviate all'utente in questa organizzazione. La tua organizzazione potrebbe comunque disattivare determinati messaggi di posta elettronica per tutti.",
@@ -1033,7 +1033,7 @@
       "gallery": {
         "heading": "Temi popolari",
         "description": "Realizzato con funzionalità principali facilmente personalizzabili, senza bisogno di codifica.",
-        "by_classroomio": "di ClassroomIO",
+        "by_classroomio": "di ClassroomHub",
         "add": "Aggiungere",
         "upgrade": "Aggiornamento",
         "apply_theme": "Applica tema",
@@ -1317,7 +1317,7 @@
       "page_subtitle": "Collega Telegram per ricevere notifiche quando accadono cose importanti.",
       "heading": "Telegramma",
       "sub_heading": "Collega il tuo account a Telegram per ricevere una notifica di qualsiasi modifica all'interno dell'applicazione.",
-      "step_authenticate": "Passaggio 1: autentica il tuo account tramite il bot ClassroomIO.",
+      "step_authenticate": "Passaggio 1: autentica il tuo account tramite il bot ClassroomHub.",
       "open_bot_button": "Apri Bot",
       "step_chatId": "Passaggio 2: inserisci l'ID chat che ti è stato fornito dal bot.",
       "connect_button": "Collegare",
@@ -1325,7 +1325,7 @@
       "disconnect": "Disconnetti"
     },
     "billing": {
-      "page_subtitle": "Il tuo piano, il portale di fatturazione e la modalità di pagamento per ClassroomIO.",
+      "page_subtitle": "Il tuo piano, il portale di fatturazione e la modalità di pagamento per ClassroomHub.",
       "sub_title": "Dettagli di fatturazione",
       "manage": "Gestisci la tua fatturazione",
       "active": "Non hai alcuna fatturazione attiva",
@@ -1396,7 +1396,7 @@
     }
   },
   "media_manager": {
-    "page_title": "Direttore multimediale - ClassroomIO",
+    "page_title": "Direttore multimediale - ClassroomHub",
     "heading": "Direttore multimediale",
     "page_subtitle": "Conserva file, video e collegamenti ai tuoi corsi in un'unica libreria.",
     "empty": "Nessuna risorsa trovata",
@@ -1540,7 +1540,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Tag - ClassroomIO",
+    "page_title": "Tag - ClassroomHub",
     "heading": "Tag",
     "page_subtitle": "Organizza i corsi con etichette in modo che filtri ed elenchi siano facili da scansionare.",
     "create": "Creare",
@@ -1593,7 +1593,7 @@
     }
   },
   "public_courses": {
-    "page_title": "Corsi - ClassroomIO",
+    "page_title": "Corsi - ClassroomHub",
     "heading": "Corsi",
     "subtitle": "Sfoglia tutti i corsi pubblicati",
     "clear_filters": "Cancella filtri",
@@ -1679,7 +1679,7 @@
         "eyebrow_today": "Tariffa Early Adopter · Termina oggi",
         "title": "Prezzo basso di proposito. Non per molto.",
         "title_closing": "Prezzo basso di proposito. Sta per finire.",
-        "body": "Manteniamo ClassroomIO accessibile perché lo costruiamo insieme ai nostri clienti, non solo per loro. Blocca la tariffa di oggi prima del {date}. Dopo quella data il piano Early Adopter chiude e si applicano i nuovi prezzi.",
+        "body": "Manteniamo ClassroomHub accessibile perché lo costruiamo insieme ai nostri clienti, non solo per loro. Blocca la tariffa di oggi prima del {date}. Dopo quella data il piano Early Adopter chiude e si applicano i nuovi prezzi.",
         "link": "Scopri perché lo facciamo"
       }
     }
@@ -1885,7 +1885,7 @@
       "border_radius": "Raggio del confine",
       "font_family": "Famiglia di caratteri",
       "font_scale": "Scala delle dimensioni dei caratteri",
-      "show_powered_by": "Mostra il marchio Classroomio",
+      "show_powered_by": "Mostra il marchio ClassroomHub",
       "custom_css": "CSS personalizzato",
       "custom_css_locked": "Esegui l'upgrade per abilitare CSS personalizzati.",
       "custom_css_hint": "Massimo 5.000 caratteri.",
@@ -1970,14 +1970,14 @@
     "goto": "Vai a",
     "courses": "Corsi",
     "home": "Home",
-    "classroomio_home": "Home ClassroomIO",
+    "classroomio_home": "Home ClassroomHub",
     "dashboard": "Pannello di controllo",
     "discussion": "Discussione",
     "people": "Persone",
     "goto_lms": "Vai a LMS",
     "goto_dashboard": "Pannello di controllo",
     "join_academy": "Iscriviti all'Accademia",
-    "goto_home": "Vai a ClassroomIO Casa",
+    "goto_home": "Vai a ClassroomHub Casa",
     "login": "Login",
     "signup": "Iscrizione",
     "redirecting": "Reindirizzamento",
@@ -2031,7 +2031,7 @@
         "save": "Salva",
         "your_domain": "Il tuo dominio",
         "custom_domain_error": "Non puoi aggiungere un dominio di primo livello come dominio personalizzato. Utilizza invece un sottodominio come \"corsi.[il tuo sito web].com\" o \"www.[il tuo sito web].com\".",
-        "custom_domain_not_classroomio": "Il dominio non può contenere \"classroomio\"",
+        "custom_domain_not_classroomio": "Il dominio non può contenere \"classroomhub\"",
         "custom_domain_success": "Dominio personalizzato aggiunto correttamente",
         "dns_description": "Imposta il seguente record sul tuo provider DNS per continuare:",
         "dns_type": "Tipo",
@@ -2291,7 +2291,7 @@
   "course": {
     "creator": {
       "heading": "Che corso vuoi creare?",
-      "placeholder": "Chiedi a ClassroomIO di creare un corso per te...",
+      "placeholder": "Chiedi a ClassroomHub di creare un corso per te...",
       "drafting": {
         "heading": "Elaborazione dell'idea del corso",
         "subtext": "Stiamo trasformando il tuo messaggio nel titolo del corso e in uno spazio di lavoro.",
@@ -3870,7 +3870,7 @@
           "audit_actor": "Attore",
           "audit_ip": "IP",
           "scan_qr": "Scansione QR",
-          "classroomio_brand": "ClassroomIO.com",
+          "classroomio_brand": "ClassroomHub.com",
           "snackbar_invite_link_copied": "Link di invito copiato",
           "snackbar_invite_link_regenerated": "È stato generato un nuovo collegamento di invito",
           "snackbar_failed_generate_link": "Impossibile generare il collegamento di invito",
@@ -4899,7 +4899,7 @@
       "rotate_confirm": "Ruotare questa chiave di automazione?"
     },
     "mcp": {
-      "page_subtitle": "Collega gli strumenti AI a ClassroomIO con chiavi con ambito organizzazione che puoi ruotare in qualsiasi momento.",
+      "page_subtitle": "Collega gli strumenti AI a ClassroomHub con chiavi con ambito organizzazione che puoi ruotare in qualsiasi momento.",
       "usage": {
         "title": "Utilizzo e limiti",
         "description": "MCP è disponibile su ogni piano. L'utilizzo è controllato da limiti chiave e limiti di velocità.",
@@ -4911,14 +4911,14 @@
       },
       "keys": {
         "title": "Chiavi MCP",
-        "description": "Queste chiavi autenticano l'organizzazione corrente quando un client MCP chiama ClassroomIO tramite `@classroomio/mcp`.",
+        "description": "Queste chiavi autenticano l'organizzazione corrente quando un client MCP chiama ClassroomHub tramite `@tedydev/classroom-mcp`.",
         "generate": "Genera la chiave MCP",
         "secret_once": "Questo segreto viene mostrato una volta. Copialo ora nel tuo client MCP.",
         "modal": {
           "title": "Crea chiave MCP",
           "description": "Scegli un nome per questa chiave MCP prima che venga generata.",
           "name_label": "Nome chiave",
-          "name_placeholder": "ClassroomIOOpenCode",
+          "name_placeholder": "ClassroomHubOpenCode",
           "cancel": "Annulla",
           "save": "Crea chiave"
         }
@@ -4926,22 +4926,22 @@
       "setup": {
         "title": "Configurazione del cliente",
         "description": "Utilizza una chiave con ambito organizzazione per integrazione. Se una chiave viene ruotata o revocata, il client smette di funzionare finché non viene configurato il nuovo segreto.",
-        "claude_code_description": "Registra `@classroomio/mcp` con Claude Code utilizzando la chiave con ambito org generata.",
-        "codex_description": "Aggiunge il server MCP ClassroomIO al Codex con la stessa chiave con ambito organizzazione.",
+        "claude_code_description": "Registra `@tedydev/classroom-mcp` con Claude Code utilizzando la chiave con ambito org generata.",
+        "codex_description": "Aggiunge il server MCP ClassroomHub al Codex con la stessa chiave con ambito organizzazione.",
         "cursor_description": "Incollalo in \"~/.cursor/mcp.json\" o nella configurazione MCP dello spazio di lavoro.",
         "opencode_description": "Aggiungilo a `opencode.json` nella root del tuo progetto o a `~/.config/opencode/opencode.json`."
       },
       "view_docs": "Visualizza documenti"
     },
     "api": {
-      "subtitle": "Gestisci le chiavi API per l'integrazione con l'API pubblica ClassroomIO.",
+      "subtitle": "Gestisci le chiavi API per l'integrazione con l'API pubblica ClassroomHub.",
       "keys": {
         "title": "Chiavi API",
-        "description": "Queste chiavi autenticano l'organizzazione corrente quando si chiama l'API pubblica ClassroomIO.",
+        "description": "Queste chiavi autenticano l'organizzazione corrente quando si chiama l'API pubblica ClassroomHub.",
         "generate": "Genera chiave API",
         "secret_once": "Questo segreto viene mostrato una volta. Copialo e conservalo in modo sicuro.",
         "empty_title": "Nessuna chiave API ancora",
-        "empty_description": "Crea la prima chiave API con ambito organizzazione per utilizzare l'API pubblica ClassroomIO.",
+        "empty_description": "Crea la prima chiave API con ambito organizzazione per utilizzare l'API pubblica ClassroomHub.",
         "modal": {
           "title": "Crea chiave API",
           "description": "Scegli un nome per questa chiave API prima che venga generata.",
@@ -4958,7 +4958,7 @@
       "view_docs": "Visualizza documenti"
     },
     "zapier": {
-      "page_subtitle": "Automatizza ClassroomIO con migliaia di app tramite Zapier. Prossimamente."
+      "page_subtitle": "Automatizza ClassroomHub con migliaia di app tramite Zapier. Prossimamente."
     }
   },
   "lms_navigation": {
@@ -5352,7 +5352,7 @@
   },
   "invite": {
     "organization": {
-      "page_title": "Giuntura {orgName} su ClassroomIO",
+      "page_title": "Giuntura {orgName} su ClassroomHub",
       "invitation_student": "Sei stato invitato a entrare {orgName} come studente.",
       "invitation_teacher": "Sei stato invitato a entrare {orgName} come insegnante.",
       "invitation_admin": "Sei stato invitato a entrare {orgName} come amministratore.",
@@ -5380,7 +5380,7 @@
       "loading": "Caricamento invito..."
     },
     "link": {
-      "page_title": "Giuntura {orgName} su ClassroomIO",
+      "page_title": "Giuntura {orgName} su ClassroomHub",
       "invitation_student": "Sei stato invitato a partecipare {orgName} come studente.",
       "invitation_teacher": "Sei stato invitato a partecipare {orgName} come insegnante.",
       "invitation_admin": "Sei stato invitato a partecipare {orgName} come amministratore.",
@@ -5971,7 +5971,7 @@
     "generate_failed": "Impossibile creare il collegamento di invito",
     "toggle_failed": "Impossibile aggiornare il collegamento di invito",
     "join": {
-      "page_title": "Giuntura {resourceName} su ClassroomIO",
+      "page_title": "Giuntura {resourceName} su ClassroomHub",
       "invitation": "Sei stato invitato a partecipare {resourceName} A {orgName}.",
       "course_button": "Iscriviti al corso",
       "cohort_button": "Unisciti alla coorte",
@@ -6064,14 +6064,14 @@
     "gallery": {
       "back": "Tutti i corsi",
       "title": "Galleria di modelli",
-      "subtitle": "Inizia un corso da uno dei tuoi modelli o da uno creato da ClassroomIO.",
+      "subtitle": "Inizia un corso da uno dei tuoi modelli o da uno creato da ClassroomHub.",
       "search": "Trova modello",
       "scope_all": "Tutti i modelli",
       "scope_org": "I miei modelli",
-      "scope_global": "ClassroomIO",
+      "scope_global": "ClassroomHub",
       "empty_org": "Non hai ancora creato alcun modello. Salva qualsiasi corso come modello dal suo menu ⋯.",
       "no_match": "Nessun modello corrisponde a \"{query}”.",
-      "empty_global": "Nessun modello ClassroomIO ancora."
+      "empty_global": "Nessun modello ClassroomHub ancora."
     },
     "preview": {
       "course_name": "Nome del corso",
@@ -6128,7 +6128,7 @@
     },
     "empty": {
       "title": "Nessun corso ancora",
-      "description": "Scegli un modello per vedere come si presenta un fantastico corso ClassroomIO oppure inizia da un corso vuoto.",
+      "description": "Scegli un modello per vedere come si presenta un fantastico corso ClassroomHub oppure inizia da un corso vuoto.",
       "browse": "Sfoglia i modelli"
     },
     "editor": {

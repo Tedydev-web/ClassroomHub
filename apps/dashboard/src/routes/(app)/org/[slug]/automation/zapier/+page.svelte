@@ -4,7 +4,7 @@
   import * as Page from '@cio/ui/base/page';
 </script>
 
-<svelte:head><title>{t.get('automation.tabs.zapier')} - ClassroomIO</title></svelte:head>
+<svelte:head><title>{t.get('automation.tabs.zapier')} - ClassroomHub</title></svelte:head>
 <Page.Header
   ><Page.HeaderContent
     ><Page.Title>{$t('automation.tabs.zapier')}</Page.Title><Page.Subtitle

@@ -53,7 +53,6 @@
     footerNextLabel={$t('public_course.footer_nav.next')}
     courseSlug={data.tree.course.slug}
     poweredByLabel={$t('public_course.powered_by.label')}
-    poweredByBrand="ClassroomIO"
     onItemClick={navigateTo}
     onPrev={() => navigateTo(prevItem)}
     onNext={() => navigateTo(nextItem)}

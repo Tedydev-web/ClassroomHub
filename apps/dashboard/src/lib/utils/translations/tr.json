@@ -239,7 +239,7 @@
     },
     "powered_by": {
       "label": "Powered by",
-      "brand": "ClassroomIO"
+      "brand": "ClassroomHub"
     },
     "exercise": {
       "submit": "Yanıtlarımı kontrol et",
@@ -352,7 +352,7 @@
       "no_training": "Henüz eğitimimiz yok"
     },
     "use_cases": {
-      "label": "ClassroomIO'yu ne için kullanmak istiyorsunuz?",
+      "label": "ClassroomHub'yu ne için kullanmak istiyorsunuz?",
       "customer_training": "Müşterilerimi ürünüm hakkında eğitin",
       "customer_certification": "Müşterileri veya iş ortaklarını sertifikalandırın",
       "partner_training": "İş ortaklarını veya satıcıları eğitin",
@@ -642,7 +642,7 @@
       "heading": "Bildirimler",
       "page_title": "Bildirimler",
       "page_subtitle": "Hangi e-posta bildirimlerini alacağınızı seçin ve yönetici olarak kuruluşunuzun gönderdiği e-postaları seçin.",
-      "personal_page_subtitle": "ClassroomIO'dan hangi e-posta bildirimlerini alacağınızı seçin.",
+      "personal_page_subtitle": "ClassroomHub'dan hangi e-posta bildirimlerini alacağınızı seçin.",
       "personal": {
         "heading": "E-posta tercihleriniz",
         "description": "Bunlar, bu kuruluşta size gönderilen e-postalar için geçerlidir. Kuruluşunuz yine de belirli e-postaları herkes için devre dışı bırakabilir.",
@@ -948,7 +948,7 @@
       "gallery": {
         "heading": "Popüler temalar",
         "description": "Kolayca özelleştirebileceğiniz temel özelliklerle üretilmiştir; kodlamaya gerek yoktur.",
-        "by_classroomio": "ClassroomIO",
+        "by_classroomio": "ClassroomHub",
         "add": "Add",
         "upgrade": "Yükseltme",
         "apply_theme": "Temayı Uygula",
@@ -1232,7 +1232,7 @@
       "page_subtitle": "Önemli şeyler olduğunda bildirim almak için Telegram'a bağlanın olur.",
       "heading": "Telegram",
       "sub_heading": "Uygulama içindeki herhangi bir değişiklikten haberdar olmak için hesabınızı telegrama bağlayın.",
-      "step_authenticate": "1. Adım: ClassroomIO bot aracılığıyla hesabınızı doğrulayın.",
+      "step_authenticate": "1. Adım: ClassroomHub bot aracılığıyla hesabınızı doğrulayın.",
       "open_bot_button": "Open Bot",
       "step_chatId": "2. Adım: Size verilen Sohbet Kimliğini girin. bot.",
       "connect_button": "Connect",
@@ -1315,7 +1315,7 @@
       "dynamic_content_description": "İmlecin üzerine değerler veya isteğe bağlı bir bağlantı ekleyin. Değerin gönderme sırasında eklenebilmesi için parantezleri değiştirmeden bırakın.",
       "dynamic_link": "Dinamik bağlantı ekle",
       "protected_content": "Korumalı e-posta içeriği",
-      "protected_content_description": "Gerekli eylem düğmesi, hedef, markalama ve alt bilgi ClassroomIO tarafından yönetilir ve kaldırılamaz.",
+      "protected_content_description": "Gerekli eylem düğmesi, hedef, markalama ve alt bilgi ClassroomHub tarafından yönetilir ve kaldırılamaz.",
       "reset": "Çevrilen varsayılana sıfırla",
       "templates": {
         "studentCourseInvite": "Kurs daveti",
@@ -1550,7 +1550,7 @@
     }
   },
   "tags_admin": {
-    "page_title": "Tags - ClassroomIO",
+    "page_title": "Tags - ClassroomHub",
     "heading": "Tags",
     "page_subtitle": "Filtrelerin ve listelerin taranmasının kolay olması için dersleri etiketlerle düzenleyin.",
     "create": "Create",
@@ -1689,7 +1689,7 @@
         "eyebrow_today": "Early Adopter fiyatı · Bugün bitiyor",
         "title": "Bilerek düşük fiyat. Uzun sürmeyecek.",
         "title_closing": "Bilerek düşük fiyat. Yakında kapanıyor.",
-        "body": "ClassroomIO’yu uygun fiyatlı tutuyoruz çünkü onu yalnızca müşterilerimiz için değil, müşterilerimizle birlikte geliştiriyoruz. Bugünkü fiyatı {date} tarihinden önce sabitleyin. Ardından Early Adopter planı kapanır ve yeni fiyatlar geçerli olur.",
+        "body": "ClassroomHub’yu uygun fiyatlı tutuyoruz çünkü onu yalnızca müşterilerimiz için değil, müşterilerimizle birlikte geliştiriyoruz. Bugünkü fiyatı {date} tarihinden önce sabitleyin. Ardından Early Adopter planı kapanır ve yeni fiyatlar geçerli olur.",
         "link": "Bunu neden yaptığımızı okuyun"
       }
     }
@@ -1895,7 +1895,7 @@
       "border_radius": "Kenarlık yarıçapı",
       "font_family": "Yazı tipi ailesi",
       "font_scale": "Yazı tipi boyutu ölçeği",
-      "show_powered_by": "Göster Classroomio markalama",
+      "show_powered_by": "Göster ClassroomHub markalama",
       "custom_css": "Özel CSS",
       "custom_css_locked": "Özel CSS'yi etkinleştirmek için yükseltme.",
       "custom_css_hint": "Maksimum 5.000 karakter.",
@@ -1980,7 +1980,7 @@
     "goto": "Şuraya gidin",
     "courses": "Kurslar",
     "home": "Ana Sayfa",
-    "classroomio_home": "ClassroomIO Ana Sayfa",
+    "classroomio_home": "ClassroomHub Ana Sayfa",
     "dashboard": "Dashboard",
     "discussion": "Tartışma",
     "people": "Kişiler",
@@ -2041,7 +2041,7 @@
         "save": "Save",
         "your_domain": "Alan Adınız",
         "custom_domain_error": "Üst düzey bir alan adını özel alan adı olarak ekleyemezsiniz. Bunun yerine, 'courses.[websiteniz].com' veya 'www.[websiteniz].com' gibi bir alt alan adı kullanın.",
-        "custom_domain_not_classroomio": "Domain, 'classroomio' içeremez",
+        "custom_domain_not_classroomio": "Domain, 'classroomhub' içeremez",
         "custom_domain_success": "Özel alan adı başarıyla eklendi",
         "dns_description": "Devam etmek için DNS sağlayıcınızda aşağıdaki kaydı ayarlayın:",
         "dns_type": "Type",
@@ -2301,7 +2301,7 @@
   "course": {
     "creator": {
       "heading": "Hangi kursu oluşturmak istiyorsunuz?",
-      "placeholder": "ClassroomIO'dan sizin için bir kurs oluşturmasını isteyin...",
+      "placeholder": "ClassroomHub'dan sizin için bir kurs oluşturmasını isteyin...",
       "drafting": {
         "heading": "Kurs fikrinizin taslağını oluşturma",
         "subtext": "İsteminizi ders başlığına ve çalışma alanına dönüştürüyoruz.",
@@ -3880,7 +3880,7 @@
           "audit_actor": "Actor",
           "audit_ip": "IP",
           "scan_qr": "Scan QR",
-          "classroomio_brand": "ClassroomIO.com",
+          "classroomio_brand": "ClassroomHub.com",
           "snackbar_invite_link_copied": "Davet bağlantısı kopyalandı",
           "snackbar_invite_link_regenerated": "Yeni bir davet bağlantısı oluşturuldu",
           "snackbar_failed_generate_link": "Davet bağlantısı oluşturulamadı",
@@ -4909,7 +4909,7 @@
       "rotate_confirm": "Bu otomasyon anahtarı döndürülsün mü?"
     },
     "mcp": {
-      "page_subtitle": "Döndürebileceğiniz kuruluş kapsamlı anahtarlarla AI araçlarını ClassroomIO'ya bağlayın istediğiniz zaman.",
+      "page_subtitle": "Döndürebileceğiniz kuruluş kapsamlı anahtarlarla AI araçlarını ClassroomHub'ya bağlayın istediğiniz zaman.",
       "usage": {
         "title": "Kullanım ve sınırlar",
         "description": "MCP her planda mevcuttur. Kullanım, anahtar limitleri ve hız limitleri tarafından kontrol edilir.",
@@ -4921,14 +4921,14 @@
       },
       "keys": {
         "title": "MCP anahtarları",
-        "description": "Bu anahtarlar, bir MCP istemcisi `@classroomio/mcp` aracılığıyla ClassroomIO'yu aradığında mevcut organizasyonun kimliğini doğrular.",
+        "description": "Bu anahtarlar, bir MCP istemcisi `@tedydev/classroom-mcp` aracılığıyla ClassroomHub'yu aradığında mevcut organizasyonun kimliğini doğrular.",
         "generate": "MCP anahtarını oluştur",
         "secret_once": "Bu sır bir kez gösterilir. Şimdi MCP istemcinize kopyalayın.",
         "modal": {
           "title": "MCP anahtarı oluştur",
           "description": "Oluşturulmadan önce bu MCP anahtarı için bir ad seçin.",
           "name_label": "Anahtar adı",
-          "name_placeholder": "ClassroomIO OpenCode",
+          "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "İptal",
           "save": "Anahtar oluştur"
         }
@@ -4936,22 +4936,22 @@
       "setup": {
         "title": "İstemci kurulumu",
         "description": "Entegrasyon başına bir kuruluş kapsamlı anahtar kullanın. Bir anahtar döndürülür veya iptal edilirse, istemci yeni gizli dizi yapılandırılana kadar çalışmayı durdurur.",
-        "claude_code_description": "Oluşturulan kuruluş kapsamlı anahtarı kullanarak `@classroomio/mcp'yi Claude Koduyla kaydeder.",
-        "codex_description": "ClassroomIO MCP sunucusunu aynı kuruluş kapsamlı anahtarla Codex'e ekler.",
+        "claude_code_description": "Oluşturulan kuruluş kapsamlı anahtarı kullanarak `@tedydev/classroom-mcp'yi Claude Koduyla kaydeder.",
+        "codex_description": "ClassroomHub MCP sunucusunu aynı kuruluş kapsamlı anahtarla Codex'e ekler.",
         "cursor_description": "Bunu şuraya yapıştırın: `~/.cursor/mcp.json` veya çalışma alanınız MCP config.",
         "opencode_description": "Bunu proje kökünüzdeki `opencode.json'a veya `~/.config/opencode/opencode.json`a ekleyin."
       },
       "view_docs": "Dokümanları Görüntüle"
     },
     "api": {
-      "subtitle": "ClassroomIO genel API'si ile entegre olmak için API anahtarlarını yönetin.",
+      "subtitle": "ClassroomHub genel API'si ile entegre olmak için API anahtarlarını yönetin.",
       "keys": {
         "title": "API anahtarları",
-        "description": "Bu anahtarlar, ClassroomIO genel API'si çağrılırken mevcut kuruluşun kimliğini doğrular.",
+        "description": "Bu anahtarlar, ClassroomHub genel API'si çağrılırken mevcut kuruluşun kimliğini doğrular.",
         "generate": "API anahtarı oluştur",
         "secret_once": "Bu sır bir kez gösterilir. Kopyalayın ve güvenli bir şekilde saklayın.",
         "empty_title": "Henüz API anahtarı yok",
-        "empty_description": "ClassroomIO genel API'sini kullanmak için ilk kuruluş kapsamlı API anahtarını oluşturun.",
+        "empty_description": "ClassroomHub genel API'sini kullanmak için ilk kuruluş kapsamlı API anahtarını oluşturun.",
         "modal": {
           "title": "API anahtarı oluşturun",
           "description": "Oluşturulmadan önce bu API anahtarı için bir ad seçin.",
@@ -4968,7 +4968,7 @@
       "view_docs": "Belgeleri Görüntüleyin"
     },
     "zapier": {
-      "page_subtitle": "ClassroomIO'yu Zapier aracılığıyla binlerce uygulamayla otomatikleştirin. Çok yakında."
+      "page_subtitle": "ClassroomHub'yu Zapier aracılığıyla binlerce uygulamayla otomatikleştirin. Çok yakında."
     }
   },
   "lms_navigation": {
@@ -6074,14 +6074,14 @@
     "gallery": {
       "back": "Tüm kurslar",
       "title": "Şablon galerisi",
-      "subtitle": "Şablonlarınızın birinden bir kurs başlatın veya ClassroomIO.",
+      "subtitle": "Şablonlarınızın birinden bir kurs başlatın veya ClassroomHub.",
       "search": "Şablon bul",
       "scope_all": "Tüm şablonlar",
       "scope_org": "Şablonlarım",
-      "scope_global": "ClassroomIO",
+      "scope_global": "ClassroomHub",
       "empty_org": "Henüz herhangi bir şablon oluşturmadınız. ⋯ menüsünden herhangi bir kursu şablon olarak kaydedin.",
       "no_match": "“{query}” ile eşleşen şablon yok.",
-      "empty_global": "Henüz ClassroomIO şablonu yok."
+      "empty_global": "Henüz ClassroomHub şablonu yok."
     },
     "preview": {
       "course_name": "Ders adı",
@@ -6138,7 +6138,7 @@
     },
     "empty": {
       "title": "Henüz kurs yok",
-      "description": "Harika bir ClassroomIO kursunun neye benzediğini görmek için bir şablon seçin veya boş bir kurstan başlayın.",
+      "description": "Harika bir ClassroomHub kursunun neye benzediğini görmek için bir şablon seçin veya boş bir kurstan başlayın.",
       "browse": "Göz at şablonlar"
     },
     "editor": {

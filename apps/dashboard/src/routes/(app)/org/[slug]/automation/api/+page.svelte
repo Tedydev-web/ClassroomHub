@@ -10,7 +10,7 @@
   });
 </script>
 
-<svelte:head><title>{t.get('automation.tabs.api')} - ClassroomIO</title></svelte:head>
+<svelte:head><title>{t.get('automation.tabs.api')} - ClassroomHub</title></svelte:head>
 <Page.Header
   ><Page.HeaderContent
     ><Page.Title>{$t('automation.tabs.api')}</Page.Title><Page.Subtitle>{$t('automation.api.subtitle')}</Page.Subtitle
