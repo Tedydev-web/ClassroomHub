@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 import { db, eq } from '@db/drizzle';
 import { type BetterAuthOptions } from 'better-auth';
-import { sendEmail } from '@cio/email';
+import { enqueueEmailSend } from '@cio/jobs';
 
 /**
  * Configuration for the email and password options
@@ -41,7 +41,9 @@ async function sendResetPassword(options: ResetPasswordOptions) {
     throw new Error('Profile not found');
   }
 
-  await sendEmail('forgotPassword', {
+  await enqueueEmailSend({
+    kind: 'template',
+    template: 'forgotPassword',
     to: user.email,
     fields: {
       name: profile.fullname,
@@ -59,7 +61,9 @@ async function onPasswordReset(options: OnPasswordResetEmail) {
     throw new Error('Profile not found');
   }
 
-  await sendEmail('onPasswordReset', {
+  await enqueueEmailSend({
+    kind: 'template',
+    template: 'onPasswordReset',
     to: user.email,
     fields: {
       name: profile.fullname
