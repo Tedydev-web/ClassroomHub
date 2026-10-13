@@ -1,18 +1,18 @@
 # Editing the Help Center — writer's guide
 
-This is for writers updating [classroomio.com/help](https://classroomio.com/help) content without
+This is for writers updating [classroom.io.vn/help](https://classroom.io.vn/help) content without
 cloning the repo or using Git directly.
 
 ## Who this is for, and getting access
 
 You'll log in with your GitHub account, and you need to already be a **collaborator on the
-`classroomio/classroomio` repository** — ask whoever manages repo access to add you. Without
+`Tedydev-web/ClassroomHub` repository** — ask whoever manages repo access to add you. Without
 collaborator access, login will succeed but saving a change will fail, because the CMS opens pull
 requests by pushing a branch directly into the repo.
 
 ## Logging in
 
-1. Go to [classroomio.com/help/admin](https://classroomio.com/help/admin).
+1. Go to [classroom.io.vn/help/admin](https://classroom.io.vn/help/admin).
 2. Click **Login with GitHub** and approve the popup.
 3. You'll land on the content list, grouped by section (Get Started, Build a Course, Live
    Classes, etc.) — the same sections you see in the Help Center's sidebar.

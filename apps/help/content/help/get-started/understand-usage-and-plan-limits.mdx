@@ -1,10 +1,10 @@
 ---
 title: 'Understand usage and plan limits'
-description: 'See how ClassroomIO counts students, AI credits, and organizations and what happens when your account reaches a limit.'
+description: 'See how ClassroomHub counts students, AI credits, and organizations and what happens when your account reaches a limit.'
 last_reviewed: '2026-09-21'
 ---
 
-ClassroomIO limits three account resources: students, included monthly AI credits, and organizations. Student and organization limits do not reset; included AI credits reset on the first day of each calendar month.
+ClassroomHub limits three account resources: students, included monthly AI credits, and organizations. Student and organization limits do not reset; included AI credits reset on the first day of each calendar month.
 
 ![AI credits settings with the included and purchased usage cards and the monthly usage panel](./images/understand-usage-and-plan-limits/ai-credits.webp)
 
@@ -20,7 +20,7 @@ For plan features and current prices, see [Compare plans and feature limits](/ge
 
 ## How the student limit works
 
-ClassroomIO counts every non-archived organization member whose role is **Student**. The count is organization-wide rather than the sum of course enrollments, so the same student in several courses occupies one plan seat.
+ClassroomHub counts every non-archived organization member whose role is **Student**. The count is organization-wide rather than the sum of course enrollments, so the same student in several courses occupies one plan seat.
 
 Member status changes affect seats differently:
 
@@ -31,7 +31,7 @@ Member status changes affect seats differently:
 | **Reactivate** | The student regains access                 | The existing seat remains occupied |
 | **Unarchive**  | The student regains access                 | A seat is required again           |
 
-ClassroomIO checks capacity before direct additions, invitations that create a student, self-enrollment, course joins, cohort assignments, and imports. An action can fill the final available seat, but an action that would exceed the limit is blocked.
+ClassroomHub checks capacity before direct additions, invitations that create a student, self-enrollment, course joins, cohort assignments, and imports. An action can fill the final available seat, but an action that would exceed the limit is blocked.
 
 Administrators receive a one-time notification when an addition crosses half of a finite student allowance and another when it reaches the allowance.
 
@@ -39,7 +39,7 @@ On the Free plan, the **Upgrade** control in the organization sidebar shows the 
 
 ## How AI credits work
 
-AI credits measure the organization's use of ClassroomIO AI features. Usage is weighted by the model's cost, so the displayed credit total is not always the raw number of text tokens sent and received.
+AI credits measure the organization's use of ClassroomHub AI features. Usage is weighted by the model's cost, so the displayed credit total is not always the raw number of text tokens sent and received.
 
 Open **Settings → AI credits** to see:
 
@@ -51,7 +51,7 @@ Open **Settings → AI credits** to see:
 
 Included credits reset on the first day of the next calendar month. Unused included credits do not roll over.
 
-Purchased credits are different: they roll over until used. ClassroomIO uses the included monthly allowance first, then drains the purchased balance for usage beyond that allowance. AI actions stop when both sources have no remaining credits.
+Purchased credits are different: they roll over until used. ClassroomHub uses the included monthly allowance first, then drains the purchased balance for usage beyond that allowance. AI actions stop when both sources have no remaining credits.
 
 :::note[Model choice changes credit usage]
 The **AI credits** page shows the current model-cost weighting. A request made with a higher-cost model can consume more credit units than the same raw token count on the baseline model.

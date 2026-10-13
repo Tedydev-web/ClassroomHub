@@ -1,11 +1,11 @@
 /**
- * Frames a help-center screenshot in the ClassroomIO browser board: browser
+ * Frames a help-center screenshot in the ClassroomHub browser board: browser
  * chrome, rounded board, shelf and feet. The board is 840 units wide and hugs
  * the screenshot's height, so any aspect ratio fits without cropping.
  *
  * Usage:
  *   pnpm --filter @cio/help frame-screenshot <input> <output.webp|png>
- *     [--url app.classroomio.com] [--max-width 1600]
+ *     [--url hub.classroom.io.vn] [--max-width 1600]
  *
  * The screenshot keeps its own pixels. The whole frame is shrunk to
  * --max-width only when it is wider than that (never enlarged). The background
@@ -36,7 +36,7 @@ const PAD_BOTTOM = 16;
 const { values: options, positionals } = parseArgs({
   allowPositionals: true,
   options: {
-    url: { type: 'string', default: 'app.classroomio.com' },
+    url: { type: 'string', default: 'hub.classroom.io.vn' },
     'max-width': { type: 'string', default: '1600' }
   }
 });

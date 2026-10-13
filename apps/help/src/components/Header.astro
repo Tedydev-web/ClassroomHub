@@ -22,6 +22,7 @@ import { activeTabForRoute } from 'blume/components/layout/nav-utils.ts';
 import NavSelector from 'blume/components/layout/NavSelector.astro';
 import { resolveSlot } from 'blume/components/layout/overrides.ts';
 import Search from 'blume/components/layout/Search.astro';
+import { OPERATOR_EMAIL, PRODUCT_URLS } from '@cio/utils/constants/product-identity';
 
 interface Props {
   site: { title: string };
@@ -147,13 +148,13 @@ const clickScript = `(()=>{const dr=()=>{const h=document.querySelector("[data-b
   }
   <a
     class="hidden rounded-full px-3 py-1.5 font-medium text-muted-foreground text-sm transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-    href="mailto:help@classroomio.com"
+    href={`mailto:${OPERATOR_EMAIL}`}
   >
     Support
   </a>
   <a
     class="hidden h-9 items-center rounded-full bg-accent px-3.5 font-medium text-accent-foreground text-sm transition hover:bg-accent/90 sm:inline-flex"
-    href="https://app.classroomio.com"
+    href={PRODUCT_URLS.dashboard}
   >
     Dashboard
   </a>

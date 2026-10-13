@@ -1,4 +1,4 @@
-# Sveltia CMS config for the ClassroomIO Help Center (apps/help).
+# Sveltia CMS config for the ClassroomHub Help Center (apps/help).
 # Docs: https://github.com/sveltia/sveltia-cms#configuration
 #
 # Adding a page here does NOT add it to the sidebar — that's the separate
@@ -6,7 +6,7 @@
 
 backend:
   name: github
-  repo: classroomio/classroomio
+  repo: Tedydev-web/ClassroomHub
   branch: main
   base_url: https://cio-help-cms.digdippa.workers.dev # apps/help-cms's deployed Worker
   auth_endpoint: auth
@@ -166,7 +166,7 @@ collections:
       - { label: Body, name: body, widget: markdown }
 
   - name: student_guides
-    label: 'For Students: Using ClassroomIO'
+    label: 'For Students: Using ClassroomHub'
     folder: apps/help/content/help/student-guides
     extension: mdx
     format: frontmatter

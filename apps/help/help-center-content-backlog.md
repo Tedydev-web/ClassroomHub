@@ -13,10 +13,10 @@ Media notes:
 
 ## Get started
 
-### `content/help/get-started/what-is-classroomio.mdx` — What is ClassroomIO?
+### `content/help/get-started/what-is-classroomhub.mdx` — What is ClassroomHub?
 
 - **Article type:** Product overview and decision guide.
-- **Cover:** Who ClassroomIO serves; the relationship between an organization, academy, LMS, courses, students, tutors, and administrators; the typical create-publish-enroll-deliver-report journey; where administrators and students sign in.
+- **Cover:** Who ClassroomHub serves; the relationship between an organization, academy, LMS, courses, students, tutors, and administrators; the typical create-publish-enroll-deliver-report journey; where administrators and students sign in.
 - **Images:** One annotated ecosystem diagram showing the organization, public academy, admin dashboard, and student LMS relationship. Avoid a transient dashboard screenshot.
 - **Video:** Recommended—a short product tour showing the administrator and student experiences without attempting to teach setup.
 
@@ -538,18 +538,18 @@ Media notes:
 
 ## Integrations and automation
 
-### `content/help/integrations-and-automation/understand-classroomio-integrations.mdx` — Understand ClassroomIO integrations
+### `content/help/integrations-and-automation/understand-classroomhub-integrations.mdx` — Understand ClassroomHub integrations
 
 - **Article type:** Overview and routing guide.
 - **Cover:** Available integration surfaces; when to use built-in integrations, MCP, API, SSO, embeds, or webhooks if shipped; permissions and credential ownership; data-access boundaries; links to focused setup guides.
 - **Images:** Architecture/decision diagram rather than a transient integrations gallery.
 - **Video:** No video.
 
-### `content/help/integrations-and-automation/understand-classroomio-mcp.mdx` — Understand ClassroomIO MCP
+### `content/help/integrations-and-automation/understand-classroomhub-mcp.mdx` — Understand ClassroomHub MCP
 
 - **Article type:** Concept and security reference.
-- **Cover:** What Model Context Protocol (MCP) enables; supported ClassroomIO capabilities; who can create access; authentication model; permission and data scope; limits; suitable and unsuitable use cases; revocation.
-- **Images:** MCP relationship diagram connecting an AI client, ClassroomIO MCP, and organization data.
+- **Cover:** What Model Context Protocol (MCP) enables; supported ClassroomHub capabilities; who can create access; authentication model; permission and data scope; limits; suitable and unsuitable use cases; revocation.
+- **Images:** MCP relationship diagram connecting an AI client, ClassroomHub MCP, and organization data.
 - **Video:** No video.
 
 ### `content/help/integrations-and-automation/create-rotate-and-revoke-mcp-keys.mdx` — Create, rotate, and revoke MCP keys
@@ -679,7 +679,7 @@ Media notes:
 
 - **Article type:** Troubleshooting decision tree.
 - **Cover:** Required DNS records; conflicting records; apex/subdomain differences; verification and propagation; SSL pending/error; redirect loops; cached results; preserving the default academy URL; safe DNS evidence for support.
-- **Images:** ClassroomIO domain status, expected record table with demo values, and representative registrar DNS fields.
+- **Images:** ClassroomHub domain status, expected record table with demo values, and representative registrar DNS fields.
 - **Video:** No video; registrar interfaces vary and age quickly.
 
 ### `content/help/troubleshooting-and-reference/troubleshoot-course-publishing-and-visibility.mdx` — Troubleshoot course publishing and visibility
@@ -696,7 +696,7 @@ Media notes:
 - **Images:** No image. Keep the compatibility matrix textual and maintainable.
 - **Video:** No video.
 
-### `content/help/troubleshooting-and-reference/contact-classroomio-support.mdx` — Contact ClassroomIO support
+### `content/help/troubleshooting-and-reference/contact-classroomhub-support.mdx` — Contact ClassroomHub support
 
 - **Article type:** Support escalation guide.
 - **Cover:** Available official support channels and hours/plan differences if verified; when to use each; information to include; how to capture safe diagnostics; expected status/response communication without unsupported promises; security and privacy exclusions.
@@ -726,7 +726,7 @@ Media notes:
 
 ## Suggested production order
 
-1. Write foundational concept pages that other guides need to link to: ClassroomIO, organization structure, content hierarchy, course locking, and compliance concepts.
+1. Write foundational concept pages that other guides need to link to: ClassroomHub, organization structure, content hierarchy, course locking, and compliance concepts.
 2. Complete the highest-frequency setup journeys: plans/billing, course creation, lesson creation, people management, authentication, and student sign-in/course-taking.
 3. Complete feature families together so screenshots and terminology remain consistent: AI Tutor, compliance, widgets, analytics, and LMS customization.
 4. Write troubleshooting pages after their canonical task guides so diagnostics can link to stable instructions instead of repeating them.
