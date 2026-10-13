@@ -26,12 +26,12 @@ on:
         type: boolean
         default: false
       runner_pool:
-        description: Runner pool for building (use 'self-hosted' to consume 0 GitHub minutes)
+        description: Runner pool for building images (github-hosted is faster; self-hosted uses no GitHub minutes)
         type: choice
         options:
           - self-hosted
           - github-hosted
-        default: self-hosted
+        default: github-hosted
 concurrency:
   group: deploy-production
   cancel-in-progress: true
@@ -245,11 +245,11 @@ jobs:
     name: Build ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.any == 'true'
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
+    runs-on: ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      max-parallel: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 4 || 2 }}
+      max-parallel: ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 4 || 2 }}
       matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
@@ -288,10 +288,10 @@ jobs:
           # The Actions cache is only read where it is written: on GitHub-hosted runners.
           # Read from the self-hosted pool it stalled the build before its first step.
           cache-from: |
-            ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && format('type=gha,scope={0}', matrix.image) || '' }}
+            ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && format('type=gha,scope={0}', matrix.image) || '' }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
           cache-to: |
-            ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && format('type=gha,mode=max,scope={0}', matrix.image) || '' }}
+            ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && format('type=gha,mode=max,scope={0}', matrix.image) || '' }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           platforms: linux/amd64
           provenance: false

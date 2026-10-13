@@ -15,7 +15,7 @@ on:
         options:
           - self-hosted
           - github-hosted
-        default: self-hosted
+        default: github-hosted
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   build-and-deploy-embeds:
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'github-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
+    runs-on: ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}
     environment: production
 
     steps:
