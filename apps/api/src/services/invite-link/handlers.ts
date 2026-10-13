@@ -91,7 +91,7 @@ async function sendCohortWelcomeEmail(input: {
         loginUrl,
         branding
       },
-      from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
+      from: buildEmailFromName(`${organization.name} (via ClassroomHub)`),
       idempotencyKey: `invite-link-cohort-welcome:${cohortId}:${profileId}`,
       preference: { organizationId: organization.id, recipientProfileId: profileId }
     });
