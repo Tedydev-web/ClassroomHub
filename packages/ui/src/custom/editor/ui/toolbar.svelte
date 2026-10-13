@@ -4,6 +4,7 @@
   import type { EdraToolbarProps } from '../types';
   import Alignment from './components/toolbar/Alignment.svelte';
   import FontSize from './components/toolbar/FontSize.svelte';
+  import CalloutMenu from './components/toolbar/callout.svelte';
   import Headings from './components/toolbar/Headings.svelte';
   import QuickColors from './components/toolbar/QuickColors.svelte';
   import SearchAndReplace from './components/toolbar/SearchAndReplace.svelte';
@@ -74,6 +75,9 @@
       {/each}
       {#if !isExcluded('font-size')}
         <FontSize {editor} />
+      {/if}
+      {#if !isExcluded('callout')}
+        <CalloutMenu {editor} />
       {/if}
       {#if !isExcluded('quick-colors')}
         <QuickColors {editor} />

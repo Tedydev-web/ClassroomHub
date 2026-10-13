@@ -347,7 +347,10 @@
       "user_exists": "Người dùng đã tồn tại",
       "invite_fail": "Không gửi được lời mời, vui lòng thử lại",
       "remove_fail": "Không xóa được người dùng, vui lòng thử lại",
-      "remove_success": "Đã xóa thành viên thành công"
+      "remove_success": "Đã xóa thành viên thành công",
+      "role_updated": "Đã cập nhật vai trò",
+      "role_update_failed": "Không cập nhật được vai trò",
+      "last_admin": "Tổ chức này cần ít nhất một quản trị viên"
     },
     "lms": {
       "error": {
@@ -1182,7 +1185,66 @@
         "fix": "Sửa chữa",
         "save_changes_to_fix_questions": "Lưu các thay đổi chưa được lưu trước khi chuyển sang phần sửa câu hỏi.",
         "allow_markdown_export": "Cho phép học viên sao chép trang bài học dưới dạng Markdown",
-        "allow_markdown_export_description": "Khi bật, các trang bài học công khai sẽ hiện nút Sao chép trang để xuất nội dung bài học (không gồm video) dưới dạng Markdown. Thao tác này cũng công khai một URL Markdown cho mỗi bài học đã mở khóa."
+        "allow_markdown_export_description": "Khi bật, các trang bài học công khai sẽ hiện nút Sao chép trang để xuất nội dung bài học (không gồm video) dưới dạng Markdown. Thao tác này cũng công khai một URL Markdown cho mỗi bài học đã mở khóa.",
+        "live_session_reminders": {
+          "legend": "Email nhắc phiên học",
+          "description": "Chọn thời điểm học viên đã đăng ký nhận email kèm liên kết tham gia trước mỗi phiên trực tiếp.",
+          "empty": "Không có lời nhắc. Học viên sẽ không nhận email trước các phiên trực tiếp.",
+          "add": "Thêm lời nhắc",
+          "presets_label": "Thêm nhanh:",
+          "remove": "Xóa lời nhắc",
+          "unit_label": "Đơn vị",
+          "units": {
+            "days": "Ngày",
+            "hours": "Giờ",
+            "minutes": "Phút"
+          },
+          "duration": {
+            "days": "{count, plural, other {# ngày}}",
+            "hours": "{count, plural, other {# giờ}}",
+            "minutes": "{count, plural, other {# phút}}"
+          },
+          "preview": "{duration} trước mỗi phiên",
+          "offset_before": "{duration} trước",
+          "max_count": "Bạn có thể thêm tối đa {count} lời nhắc.",
+          "validation": {
+            "amount": "Nhập một số nguyên từ 1 trở lên.",
+            "min": "Lời nhắc phải trước phiên ít nhất 15 phút.",
+            "max": "Lời nhắc chỉ có thể trước phiên tối đa 7 ngày.",
+            "duplicate": "Bạn đã có một lời nhắc vào thời điểm này.",
+            "fix_errors": "Hãy sửa lỗi của lời nhắc phiên trước khi lưu."
+          },
+          "log": {
+            "title": "Nhật ký gửi",
+            "description": "Email nhắc cho các phiên trong 30 ngày qua và các phiên sắp tới.",
+            "view": "Xem nhật ký",
+            "empty": "Chưa có lời nhắc nào. Chúng sẽ xuất hiện ở đây khi các phiên đến gần.",
+            "load_error": "Không thể tải nhật ký gửi lời nhắc.",
+            "columns": {
+              "session": "Phiên",
+              "student": "Học viên",
+              "reminder": "Lời nhắc",
+              "status": "Trạng thái",
+              "detail": "Chi tiết"
+            }
+          },
+          "statuses": {
+            "pending": "Đang chờ",
+            "queued": "Trong hàng đợi",
+            "sent": "Đã gửi",
+            "failed": "Thất bại",
+            "skipped": "Đã bỏ qua"
+          },
+          "skip_reasons": {
+            "preferences": "Học viên đã tắt email nhắc phiên.",
+            "no_email": "Học viên không có địa chỉ email.",
+            "lesson_past": "Phiên đã bắt đầu.",
+            "offset_removed": "Lời nhắc này đã bị xóa khỏi cài đặt khóa học.",
+            "lesson_rescheduled": "Thời gian hoặc liên kết tham gia của phiên đã thay đổi.",
+            "window_passed": "Thời điểm nhắc đã qua khi lời nhắc được lên lịch.",
+            "unenrolled": "Học viên không còn đăng ký khóa học."
+          }
+        }
       },
       "analytics": {
         "title": "Phân tích"
@@ -1308,7 +1370,8 @@
               "name": {
                 "min_char": "Tên quá ngắn, tối thiểu 5 ký tự"
               }
-            }
+            },
+            "validation_error": "Một hoặc nhiều bài đánh giá không hợp lệ. Hãy mở từng bài đánh giá và sửa tên, hình đại diện, xếp hạng và mô tả trước khi lưu."
           },
           "header_form": {
             "title": "Tiêu đề",
@@ -1473,6 +1536,13 @@
             "toggle_label": "Liên kết lời mời đang hoạt động",
             "disabled_notice": "Liên kết này bị vô hiệu hóa. Kích hoạt nó để cho phép thành viên mới tham gia thông qua liên kết.",
             "select_role": "Chọn một vai trò"
+          },
+          "change_role": {
+            "label": "Vai trò của {email}",
+            "title": "Đổi vai trò",
+            "description": "Đổi {email} từ {currentRole} sang {nextRole}?",
+            "cancel": "Hủy",
+            "approve": "Phê duyệt"
           }
         },
         "roles": {
@@ -1654,6 +1724,10 @@
       },
       "submissions": {
         "title": "Bài tập đã gửi",
+        "access": {
+          "denied_title": "Bạn không thể chấm bài nộp của khóa học này",
+          "denied_description": "Hãy nhờ quản trị viên thêm bạn làm trợ giảng khóa học hoặc cố vấn của một nhóm học bao gồm khóa học này."
+        },
         "grading_modal": {
           "details": "Chi tiết",
           "early": "Sớm",
@@ -1688,6 +1762,22 @@
           "awaiting_manual_hint": "Cần xem xét thủ công",
           "failed_hint": "Tự động chấm điểm không thành công. Chuyển nội dung gửi này trở lại Đã gửi để thử lại.",
           "invalid_transition": "Việc di chuyển trạng thái này không được phép bởi quy trình chấm điểm"
+        },
+        "filter": {
+          "student": "Student",
+          "exercise": "Exercise",
+          "students": "Students",
+          "exercises": "Exercises",
+          "selected_value": "{label}: {name}",
+          "search_students": "Search students",
+          "search_exercises": "Search exercises",
+          "select_all": "Select all",
+          "clear": "Clear",
+          "only": "Only",
+          "reset": "Reset",
+          "visible_of_total": "{visible} of {total} submissions",
+          "no_matches": "No matches",
+          "unknown_student": "Unknown student"
         },
         "tab_exercises": "Bài tập",
         "tab_exams": "Bài thi",
@@ -1872,7 +1962,9 @@
                 "responses": "Phản hồi",
                 "no_responses": "Chưa có phản hồi nào",
                 "other": "Khác",
-                "attempts": "Lần làm"
+                "attempts": "Lần làm",
+                "unknown_student": "Unknown student",
+                "no_file": "No file"
               },
               "loading_submissions": "Đang tải nội dung gửi...",
               "empty_title": "Chưa có bài nộp nào",
@@ -2060,6 +2152,10 @@
                 "edit": {
                   "accepted_types_placeholder": "Các loại được chấp nhận (ví dụ: pdf, docx)",
                   "max_size_placeholder": "Kích thước tối đa (MB)"
+                },
+                "review": {
+                  "empty": "No file was submitted.",
+                  "unavailable": "This file cannot be opened."
                 }
               },
               "fill_blank": {
@@ -2571,7 +2667,7 @@
                 "size": "(Tối đa 500 MB)",
                 "oops": "Rất tiếc `😬, không thể tải video lên",
                 "big_file": "Rất tiếc, video của chúng tôi chưa được tải lên. Kích thước tập tin quá lớn,",
-                "maximum_size": "kích thước tối đa là 30 MB. Hãy thử lại!",
+                "maximum_size": "kích thước tối đa là {size}. Hãy thử lại!",
                 "button": "Hãy thử một tập tin khác",
                 "try_again": "Vui lòng thử lại",
                 "unsupported_format": "Rất tiếc, video của chúng tôi không được tải lên, định dạng tệp không được hỗ trợ hoặc đã xảy ra lỗi trên máy chủ.",
@@ -2860,7 +2956,7 @@
         "session": {
           "join": "Tham gia phiên",
           "heading": "Phiên trực tiếp",
-          "intro": "Đặt liên kết tham gia và thời gian dự kiến cho lớp học trực tiếp này. Học sinh nhận được lời nhắc 24 giờ và 1 giờ trước.",
+          "intro": "Đặt liên kết tham gia và thời gian dự kiến cho lớp học trực tiếp này. Học viên nhận email nhắc trước mỗi phiên. Chọn thời điểm trong cài đặt khóa học.",
           "link_label": "Liên kết tham gia (Zoom, Meet, v.v.)",
           "datetime_label": "Ngày và giờ",
           "timezone_label": "Múi giờ",
@@ -2890,7 +2986,15 @@
           "add_apple": "Lịch Apple (.ics)",
           "starts_in": "Bắt đầu vào",
           "session_ended": "Phiên kết thúc",
-          "link_copied": "Đã sao chép liên kết"
+          "link_copied": "Đã sao chép liên kết",
+          "duration_label": "Thời lượng dự kiến của buổi học (phút)",
+          "duration_helper": "Dùng để hiển thị khi nào buổi học đang diễn ra và khi nào đã kết thúc.",
+          "recording_url_label": "Liên kết bản ghi",
+          "recording_url_helper": "Hiển thị cho học viên sau khi buổi học kết thúc.",
+          "recording_url_invalid": "Nhập liên kết bắt đầu bằng http:// hoặc https://",
+          "recording_url_needs_session": "Thêm liên kết cuộc họp và thời gian bắt đầu trước khi thêm bản ghi",
+          "past_sessions_heading": "Các buổi học đã qua",
+          "watch_recording": "Xem bản ghi"
         },
         "student_share_your_knowledge": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
         "student_body_content": "Chưa có bài học nào được thêm vào khóa học này. Vui lòng kiểm tra lại sau.",
@@ -2903,7 +3007,9 @@
         "add_content_create_another_exercise": "Tạo thêm bài tập khác",
         "add_content_open_now": "Mở ngay",
         "add_content_later": "Để sau",
-        "add_content_add_to_section": "Thêm nội dung"
+        "add_content_add_to_section": "Thêm nội dung",
+        "expand_content": "Mở rộng nội dung",
+        "collapse_content": "Thu gọn nội dung"
       },
       "news_feed": {
         "heading": "Nguồn cấp tin tức",
@@ -3613,7 +3719,16 @@
       "monthly": "hàng tháng",
       "annually": "Hàng năm",
       "popular": "phổ biến",
-      "per_org": "Mỗi tổ chức"
+      "per_org": "Mỗi tổ chức",
+      "priced_low": {
+        "eyebrow_open": "Giá Early Adopter · Còn {days, plural, other {# ngày}}",
+        "eyebrow_closing": "Giá Early Adopter · {days} ngày cuối",
+        "eyebrow_today": "Giá Early Adopter · Kết thúc hôm nay",
+        "title": "Giá thấp có chủ đích. Không kéo dài lâu.",
+        "title_closing": "Giá thấp có chủ đích. Sắp đóng.",
+        "body": "Chúng tôi giữ ClassroomHub ở mức giá phải chăng vì chúng tôi xây dựng nó cùng khách hàng, không chỉ dành cho họ. Hãy chốt mức giá hôm nay trước {date}. Sau đó, gói Early Adopter sẽ đóng và giá mới sẽ được áp dụng.",
+        "link": "Đọc lý do chúng tôi làm vậy"
+      }
     },
     "plan_names": {
       "free": "miễn phí",
@@ -3748,7 +3863,6 @@
     },
     "filters": {
       "search_placeholder": "Tìm kiếm nội dung",
-      "apply": "Áp dụng",
       "status_options": {
         "all": "Tất cả trạng thái",
         "active": "Đang hoạt động",
@@ -7105,5 +7219,30 @@
       "description": "Một khóa học hoàn chỉnh với các bài học, bài tập và cài đặt. Sao chép nó, sau đó biến nó thành của bạn.",
       "browse": "Duyệt qua tất cả các mẫu"
     }
+  },
+  "early_adopter_claim": {
+    "page": {
+      "title": "Đã nhận thanh toán. Còn một bước nữa.",
+      "body": "Tạo tài khoản hoặc đăng nhập, và chúng tôi sẽ tự động kết nối gói Early Adopter với học viện của bạn.",
+      "sign_up": "Tạo tài khoản",
+      "log_in": "Đăng nhập",
+      "continue": "Tiếp tục đến học viện của tôi"
+    },
+    "success": {
+      "title": "Gói Early Adopter của bạn đã được kích hoạt",
+      "body": "Mức giá của bạn đã được giữ cố định và mọi tính năng Early Adopter đã được mở cho học viện của bạn.",
+      "continue": "Bắt đầu xây dựng"
+    },
+    "errors": {
+      "invalid": "Liên kết này không hợp lệ. Hãy kiểm tra email chúng tôi đã gửi hoặc liên hệ hỗ trợ.",
+      "expired": "Liên kết này đã hết hạn. Hãy liên hệ hỗ trợ và chúng tôi sẽ giúp bạn kết nối gói.",
+      "unavailable": "Liên kết gói này đã được dùng hoặc không còn hiệu lực. Hãy liên hệ hỗ trợ nếu đây là nhầm lẫn.",
+      "conflict": "Học viện này đã có gói trả phí nên chúng tôi không thể kết nối gói này. Hãy liên hệ hỗ trợ và chúng tôi sẽ giúp."
+    }
+  },
+  "whats_new": {
+    "new_badge": "Mới",
+    "read_full": "Đọc toàn bộ nhật ký thay đổi",
+    "close": "Đóng"
   }
 }

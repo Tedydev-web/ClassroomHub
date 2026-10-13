@@ -2,10 +2,12 @@
   import { SubmissionsPage } from '$features/course/pages';
   import CourseExamAttempts from '$features/exam/course-exam-attempts.svelte';
   import ExamList from '$features/exam/exam-list.svelte';
-  import { RefreshPageData, RoleBasedSecurity } from '$features/ui';
+  import { RefreshPageData } from '$features/ui';
   import { Button } from '@cio/ui/base/button';
+  import { Empty } from '@cio/ui/custom/empty';
   import * as Page from '@cio/ui/base/page';
   import * as UnderlineTabs from '@cio/ui/custom/underline-tabs';
+  import LockKeyhole from '@lucide/svelte/icons/lock-keyhole';
   import { t } from '$lib/utils/functions/translations';
 
   /**
@@ -25,7 +27,28 @@
   let tab = $state<'exams' | 'exercises' | 'papers'>('exams');
 </script>
 
-<RoleBasedSecurity allowedRoles={[1, 2]}>
+{#if data.gradingAccess === 'denied'}
+  <Page.Root class="mx-auto flex w-full md:w-[calc(95vw-var(--sidebar-width))]!">
+    <Page.Header>
+      <Page.HeaderContent>
+        <Page.Title>
+          {$t('course.navItem.submissions.title')}
+        </Page.Title>
+      </Page.HeaderContent>
+    </Page.Header>
+
+    <Page.Body>
+      {#snippet child()}
+        <Empty
+          title={$t('course.navItem.submissions.access.denied_title')}
+          description={$t('course.navItem.submissions.access.denied_description')}
+          icon={LockKeyhole}
+          variant="page"
+        />
+      {/snippet}
+    </Page.Body>
+  </Page.Root>
+{:else}
   <Page.Root class="mx-auto flex w-full md:w-[calc(95vw-var(--sidebar-width))]!">
     <Page.Header>
       <Page.HeaderContent>
@@ -88,4 +111,4 @@
       {/snippet}
     </Page.Body>
   </Page.Root>
-</RoleBasedSecurity>
+{/if}

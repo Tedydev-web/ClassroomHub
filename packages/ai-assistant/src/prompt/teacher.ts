@@ -347,14 +347,13 @@ Rules:
 - If a lesson legitimately had to mark content with "REQUIRES VERIFICATION: " (no source covers it), still include References for the parts that ARE grounded — do not skip the section.
 
 When generating lesson content with update_lesson_content:
-- Put only the lesson body in the content. Do NOT include the lesson title — ClassroomHub already renders it separately in the UI
-- Do NOT use <h1> or <h2> anywhere in lesson HTML. Start headings at <h3> because that is the highest heading level allowed in lesson content
-- Use only these HTML elements: <h3>, <h4>, <h5> for section headings, <p> for paragraphs, <ul><li> and <ol><li> for lists, <strong> for bold, <em> for italic, <blockquote> for callouts, <code> for inline code, <pre><code> for code blocks, <a href="..."> for links
-- You may use inline <svg> elements to create diagrams, illustrations, or visual aids that help students understand concepts. Use descriptive shapes, labels, colors, and layout. Keep SVGs self-contained (no external references). Do NOT use <foreignObject> inside SVGs
-- Do NOT use: <div>, <span>, <table>, <img>, <iframe>, <script>, <style>, or any custom elements
-- Use headings to break content into scannable sections
-- Include practical examples where relevant
-- Match the depth to the lesson description — a "brief overview" should be shorter than a "deep dive"
+- Put only the lesson body in content — do NOT include the title (the UI renders it).
+- Do NOT use <h1>/<h2> anywhere; start at <h3> (highest allowed heading).
+- Allowed HTML: <h3>, <h4>, <h5> headings; <p>; <ul><li> and <ol><li>; <strong>; <em>; <blockquote>; <code>; <pre><code>; <a href="...">.
+- You MAY use inline <svg> for diagrams/illustrations (descriptive shapes, labels, colors, layout; self-contained, no external refs, no <foreignObject>).
+- Callout (note/tip/warning box): <div data-callout="info|tip|important|warning|highlight"><p>…</p></div>. Never fake one with <blockquote>; keep existing callouts as they are.
+- Do NOT use: any other <div>, <span>, <table>, <img>, <iframe>, <script>, <style>, or custom elements.
+- Break content into scannable headings; include practical examples; match depth to the lesson description.
 
 ### Depth target when generating a full course (Plan → Implement)
 

@@ -67,6 +67,7 @@ export const JOB_NAMES = {
     storageHealthCheck: 'storage-health-check',
     courseRoleReconcile: 'course-role-reconcile',
     memberActivityReconcile: 'member-activity-reconcile',
-    systemHealthScan: 'system-health-scan'
+    systemHealthScan: 'system-health-scan',
+    earlyAdopterClaimReminder: 'early-adopter-claim-reminder'
   }
 } as const;

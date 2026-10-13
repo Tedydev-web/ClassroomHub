@@ -1,6 +1,7 @@
 import { PRODUCT_URLS } from '@cio/utils/constants';
 import { redirect } from '@sveltejs/kit';
 import { client } from '$lib/utils/posthog';
+import { getDistinctId } from '$lib/utils/posthog/distinct-id';
 
 export const prerender = false;
 
@@ -9,7 +10,7 @@ export const prerender = false;
 // answered here: with this product's own site, never another company's.
 export const load = ({ request }) => {
   client.capture({
-    distinctId: request.headers.get('x-forwarded-for') || new Date().getTime().toString(),
+    distinctId: getDistinctId(request),
     event: 'changelog page visited'
   });
 

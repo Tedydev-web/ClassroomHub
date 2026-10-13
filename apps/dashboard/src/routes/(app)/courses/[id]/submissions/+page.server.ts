@@ -29,7 +29,8 @@ export const load = async ({ params, cookies }) => {
       attemptsFailed: false,
       exams: [],
       submissionsFailed: false,
-      examsFailed: false
+      examsFailed: false,
+      gradingAccess: 'allowed' as const
     };
   }
 
@@ -56,6 +57,7 @@ export const load = async ({ params, cookies }) => {
     // and no paper exists, which a teacher has no way to tell apart from a failed fetch.
     submissionsFailed: !result.ok,
     examsFailed: !exams.ok,
+    gradingAccess: !result.ok && result.status === 403 ? ('denied' as const) : ('allowed' as const),
     // The browser tab. Resolved from the locale cookie rather than the `$t` store, which is a
     // module-level singleton and would share one locale across concurrent requests.
     pageMetaTags: await sectionMetaTags(cookies.get('classroomhub_locale'), 'course.navItem.submissions.title')

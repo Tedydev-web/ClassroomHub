@@ -4,7 +4,9 @@
   import { Button } from '@cio/ui/base/button';
   import * as ButtonGroup from '@cio/ui/base/button-group';
   import * as UnderlineTabs from '@cio/ui/custom/underline-tabs';
+  import { Empty } from '@cio/ui/custom/empty';
   import EyeIcon from '@lucide/svelte/icons/eye';
+  import LockKeyhole from '@lucide/svelte/icons/lock-keyhole';
   import PencilIcon from '@lucide/svelte/icons/pencil';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
@@ -82,6 +84,7 @@
     isFetching?: boolean;
     submissions: SubmissionListItem[];
     mySubmissions?: SubmissionListItem[];
+    canGradeSubmissions?: boolean;
   }
 
   let {
@@ -89,7 +92,8 @@
     goBack = () => {},
     isFetching = false,
     submissions,
-    mySubmissions = []
+    mySubmissions = [],
+    canGradeSubmissions = false
   }: Props = $props();
 
   const showMobileBottomNav = $derived(
@@ -788,7 +792,16 @@
             />
           </UnderlineTabs.Content>
           <UnderlineTabs.Content value="submissions">
-            <Submissions bind:exerciseId {submissions} {enrolledStudentKeys} />
+            {#if canGradeSubmissions}
+              <Submissions bind:exerciseId {submissions} {enrolledStudentKeys} />
+            {:else}
+              <Empty
+                title={$t('course.navItem.submissions.access.denied_title')}
+                description={$t('course.navItem.submissions.access.denied_description')}
+                icon={LockKeyhole}
+                variant="page"
+              />
+            {/if}
           </UnderlineTabs.Content>
         </UnderlineTabs.Root>
 

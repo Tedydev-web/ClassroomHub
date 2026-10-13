@@ -7,10 +7,12 @@
   interface Props {
     hasUnsavedChanges?: boolean;
     skipPrompt?: boolean;
+    /** Runs after the user confirms abandoning unsaved changes, so owners can revert drafts. */
+    onAbandon?: () => void;
     children?: import('svelte').Snippet;
   }
 
-  let { hasUnsavedChanges = $bindable(false), skipPrompt = false, children }: Props = $props();
+  let { hasUnsavedChanges = $bindable(false), skipPrompt = false, onAbandon, children }: Props = $props();
 
   let open = $state(false);
   let pendingUrl = $state<URL | null>(null);
@@ -41,6 +43,7 @@
     pendingUrl = null;
     // Cleared first, so the navigation this is about to start is not caught again by
     // the guard that produced the dialog.
+    if (hasUnsavedChanges) onAbandon?.();
     hasUnsavedChanges = false;
 
     if (url) void goto(url);

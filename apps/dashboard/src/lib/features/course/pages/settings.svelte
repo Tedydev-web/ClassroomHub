@@ -15,9 +15,18 @@
   import CertificateDeadlineRequiredDialog from '$features/course/components/certificate-deadline-required-dialog.svelte';
   import { CourseTagPicker } from '$features/course/components';
   import TemplateSettingsSection from '$features/course/components/template-settings-section.svelte';
+  import ReminderPicker from '$features/course/components/live-session-reminders/reminder-picker.svelte';
+  import DeliveryLogSheet from '$features/course/components/live-session-reminders/delivery-log-sheet.svelte';
+  import {
+    createReminderRow,
+    getReminderRowErrors,
+    reminderRowsToOffsets
+  } from '$features/course/utils/live-session-reminder-utils';
+  import { resolveLiveSessionReminderOffsets } from '@cio/utils/constants/live-session-reminder';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
   import { InputField } from '@cio/ui/custom/input-field';
+  import { NumberField } from '@cio/ui/custom/number-field';
   import { Input } from '@cio/ui/base/input';
   import * as Field from '@cio/ui/base/field';
   import { UpgradeBanner, UnsavedChanges, UploadWidget, TextEditor, AttentionHighlight } from '$features/ui';
@@ -211,6 +220,14 @@
       return;
     }
 
+    if (
+      $settings.type === 'LIVE_CLASS' &&
+      Object.keys(getReminderRowErrors($settings.liveSessionReminders)).length > 0
+    ) {
+      snackbar.error('course.navItem.settings.live_session_reminders.validation.fix_errors');
+      return;
+    }
+
     if (Number(courseApi.course?.cost) > 0 && !(courseApi.course?.metadata?.paymentLink ?? '').trim()) {
       snackbar.error('course.navItem.landing_page.editor.pricing_form.payment_required');
       return;
@@ -241,8 +258,10 @@
         courseApi.course.slug = generateSlug($settings.courseTitle, { appendTimestamp: true });
       }
 
+      const reminderOffsetsPayload = getReminderOffsetsPayload(courseApi.course);
       const metadataPayload = {
         ...(isObject(courseApi.course.metadata) ? courseApi.course.metadata : {}),
+        ...reminderOffsetsPayload,
         lessonTabsOrder: $settings.tabs,
         grading: $settings.grading,
         lessonDownload: $settings.lessonDownload,
@@ -284,19 +303,32 @@
         ...(hasTagChanges ? { tagIds: normalizedSelectedTagIds } : {})
       };
 
+      const draftAtSave = JSON.stringify({
+        settings: $settings,
+        tagIds: [...selectedTagIds].sort(),
+        avatar
+      });
+
       const response = await courseApi.update(courseApi.course.id, updatePayload, {
         showSuccessToast: !hasTagChanges
       });
 
       if (courseApi.success && response) {
+        const draftUnchanged =
+          JSON.stringify({ settings: $settings, tagIds: [...selectedTagIds].sort(), avatar }) === draftAtSave;
+
         if (hasTagChanges) {
+          // The server stored the submitted tags; keep the user's newer toggles selected.
           initialTagIds = normalizedSelectedTagIds;
-          selectedTagIds = normalizedSelectedTagIds;
+          if (draftUnchanged) {
+            selectedTagIds = normalizedSelectedTagIds;
+          }
           snackbar.success('snackbar.course_settings.success.update_successful');
         }
 
-        // courseApi.update() already updates courseApi.course internally
-        hasUnsavedChanges = false;
+        if (draftUnchanged) {
+          hasUnsavedChanges = false;
+        }
       }
     } catch (error) {
       console.error(error);
@@ -344,6 +376,9 @@
         commentsEnabled: course.metadata?.commentsEnabled ?? true,
         callout: normalizeCallout(course.callout),
         welcomeEmailMessage: course.metadata?.welcomeEmailMessage ?? '',
+        liveSessionReminders: resolveLiveSessionReminderOffsets(course.metadata?.liveSessionReminderOffsetsMinutes).map(
+          createReminderRow
+        ),
         certificate: {
           deadline: course.certificate?.deadline ?? null,
           threshold: typeof course.certificate?.threshold === 'number' ? course.certificate.threshold : 100,
@@ -357,6 +392,19 @@
         }
       });
     });
+  }
+
+  function getReminderOffsetsPayload(course: Course) {
+    if ($settings.type !== 'LIVE_CLASS') return {};
+
+    const nextOffsets = reminderRowsToOffsets($settings.liveSessionReminders);
+    const currentOffsets = resolveLiveSessionReminderOffsets(course.metadata?.liveSessionReminderOffsetsMinutes);
+    const isUnchanged =
+      nextOffsets.length === currentOffsets.length &&
+      nextOffsets.every((offsetMinutes) => currentOffsets.includes(offsetMinutes));
+    if (isUnchanged) return {};
+
+    return { liveSessionReminderOffsetsMinutes: nextOffsets };
   }
 
   export function handleDiscard() {
@@ -517,12 +565,6 @@
     hasUnsavedChanges = true;
   }
 
-  function onThresholdInput(e: Event) {
-    const value = Number((e.currentTarget as HTMLInputElement).value);
-    $settings.certificate.threshold = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100;
-    hasUnsavedChanges = true;
-  }
-
   function onFinalExerciseChange(value: string) {
     $settings.certificate.requiredExerciseId = value && value !== 'none' ? value : null;
 
@@ -532,12 +574,6 @@
       $settings.certificate.exerciseMinScorePercent = 100;
     }
 
-    hasUnsavedChanges = true;
-  }
-
-  function onMinExerciseScoreInput(e: Event) {
-    const value = Number((e.currentTarget as HTMLInputElement).value);
-    $settings.certificate.exerciseMinScorePercent = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100;
     hasUnsavedChanges = true;
   }
 </script>
@@ -595,8 +631,10 @@
           className="w-full"
           isRequired
           bind:value={$settings.courseTitle}
-          errorMessage={errors?.title}
-          onInputChange={() => {
+          errorMessage={errors?.title || courseApi.errors?.title}
+          onInput={() => {
+            errors.title = undefined;
+            delete courseApi.errors.title;
             hasUnsavedChanges = true;
           }}
         />
@@ -741,14 +779,18 @@
         <Field.Label for="course-completion-threshold">
           {$t('course.certification.threshold_label')}
         </Field.Label>
-        <Input
-          id="course-completion-threshold"
-          type="number"
+        <NumberField
+          name="course-completion-threshold"
+          integer
           min={0}
           max={100}
-          class="w-full"
-          value={String($settings.certificate.threshold)}
-          oninput={onThresholdInput}
+          className="w-full"
+          value={$settings.certificate.threshold ?? 100}
+          onValueChange={(next) => {
+            $settings.certificate.threshold = next ?? 100;
+            courseApi.clearError('certificate.threshold');
+            hasUnsavedChanges = true;
+          }}
         />
         <Field.Description>{$t('course.certification.threshold_helper')}</Field.Description>
         {#if courseApi.errors['certificate.threshold']}
@@ -790,14 +832,18 @@
           <Field.Label for="course-min-exercise-score">
             {$t('course.certification.min_exercise_score_label')}
           </Field.Label>
-          <Input
-            id="course-min-exercise-score"
-            type="number"
+          <NumberField
+            name="course-min-exercise-score"
+            integer
             min={0}
             max={100}
-            class="w-full"
-            value={String($settings.certificate.exerciseMinScorePercent ?? 100)}
-            oninput={onMinExerciseScoreInput}
+            className="w-full"
+            value={$settings.certificate.exerciseMinScorePercent ?? 100}
+            onValueChange={(next) => {
+              $settings.certificate.exerciseMinScorePercent = next ?? 100;
+              courseApi.clearError('certificate.exerciseMinScorePercent');
+              hasUnsavedChanges = true;
+            }}
           />
           <Field.Description>{$t('course.certification.min_exercise_score_helper')}</Field.Description>
           {#if courseApi.errors['certificate.exerciseMinScorePercent']}
@@ -809,6 +855,22 @@
   </Field.Set>
 
   <Field.Separator />
+
+  {#if $settings.type === 'LIVE_CLASS' && courseApi.course?.id}
+    <Field.Set id="live-session-reminders">
+      <Field.Legend>{$t('course.navItem.settings.live_session_reminders.legend')}</Field.Legend>
+      <Field.Description>{$t('course.navItem.settings.live_session_reminders.description')}</Field.Description>
+      <ReminderPicker
+        bind:rows={$settings.liveSessionReminders}
+        onchange={() => {
+          hasUnsavedChanges = true;
+        }}
+      />
+      <DeliveryLogSheet courseId={courseApi.course.id} timezone={courseApi.course.metadata?.sessionTimezone} />
+    </Field.Set>
+
+    <Field.Separator />
+  {/if}
 
   <Field.Set>
     <Field.Legend>{$t('course.navItem.settings.welcome_email.title')}</Field.Legend>
@@ -1037,7 +1099,7 @@
           <Field.Label>{$t('course.navItem.settings.callout.title_label')}</Field.Label>
           <InputField
             bind:value={$settings.callout.title}
-            onInputChange={() => (hasUnsavedChanges = true)}
+            onInput={() => (hasUnsavedChanges = true)}
             placeholder={$t('course.navItem.settings.callout.title_placeholder')}
           />
         </Field.Field>
@@ -1056,7 +1118,7 @@
           <Field.Label>{$t('course.navItem.settings.callout.button_label')}</Field.Label>
           <InputField
             bind:value={$settings.callout.buttonLabel}
-            onInputChange={() => (hasUnsavedChanges = true)}
+            onInput={() => (hasUnsavedChanges = true)}
             placeholder={$t('course.navItem.settings.callout.button_label_placeholder')}
           />
         </Field.Field>
@@ -1065,7 +1127,7 @@
           <Field.Label>{$t('course.navItem.settings.callout.button_url_label')}</Field.Label>
           <InputField
             bind:value={$settings.callout.buttonUrl}
-            onInputChange={() => (hasUnsavedChanges = true)}
+            onInput={() => (hasUnsavedChanges = true)}
             placeholder={$t('course.navItem.settings.callout.button_url_placeholder')}
             type="url"
           />

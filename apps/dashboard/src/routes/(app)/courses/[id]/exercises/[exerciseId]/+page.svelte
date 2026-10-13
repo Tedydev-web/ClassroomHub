@@ -95,6 +95,7 @@
       isFetching={false}
       submissions={data.submissions ?? []}
       mySubmissions={data.mySubmissions ?? []}
+      canGradeSubmissions={data.canGradeSubmissions ?? false}
     />
   {/if}
 </Page.Root>

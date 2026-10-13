@@ -14,3 +14,4 @@ export * from './people.svelte';
 export * from './presign.svelte';
 export * from './scorm.svelte';
 export * from './submission.svelte';
+export * from './live-session-reminder.svelte';

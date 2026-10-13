@@ -60,6 +60,8 @@ import { inviteTeamMembers as inviteTeamMembersSecure } from './organization/inv
 import { trustCustomDomainHostname, untrustCustomDomainHostname } from '@cio/db/utils';
 import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
 
+export { updateTeamMemberRole } from './organization/team-role';
+
 const PUBLIC_ORG_LANDING_PAGE_COURSE_LIMIT = 4;
 const ORG_COURSES_PAGE_SIZE = 6;
 

@@ -64,6 +64,12 @@ export class MediaApi extends BaseApiWithErrors {
     total: number;
     totalPages: number;
   } | null>(null);
+  private activeListAssetsRequestController: AbortController | null = null;
+
+  cancelListAssetsRequest() {
+    this.activeListAssetsRequestController?.abort();
+    this.activeListAssetsRequestController = null;
+  }
 
   private normalizeDurationSeconds(value: number | null | undefined): number | undefined {
     if (value == null || !Number.isFinite(value)) {
@@ -73,7 +79,7 @@ export class MediaApi extends BaseApiWithErrors {
     return Math.max(0, Math.round(value));
   }
 
-  async listAssets(query: Partial<TAssetListQuery> = {}) {
+  async listAssets(query: Partial<TAssetListQuery> = {}, options: { abortPrevious?: boolean } = {}) {
     const parsed = ZAssetListQuery.partial().safeParse(query);
     if (!parsed.success) {
       this.errors = mapZodErrorsToTranslations(parsed.error);
@@ -90,8 +96,16 @@ export class MediaApi extends BaseApiWithErrors {
       ...(search !== undefined ? { search } : {})
     };
 
+    let requestSignal: AbortSignal | undefined;
+    if (options.abortPrevious) {
+      this.cancelListAssetsRequest();
+      const requestController = new AbortController();
+      this.activeListAssetsRequestController = requestController;
+      requestSignal = requestController.signal;
+    }
+
     await this.execute<ListAssetsRequest>({
-      requestFn: () => classroomhub.organization.assets.$get({ query: rpcQuery }),
+      requestFn: () => classroomhub.organization.assets.$get({ query: rpcQuery }, { init: { signal: requestSignal } }),
       logContext: 'listing organization assets',
       onSuccess: (response) => {
         this.assets = response.data;

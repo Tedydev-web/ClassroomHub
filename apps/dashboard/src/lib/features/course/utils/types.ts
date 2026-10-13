@@ -432,7 +432,8 @@ export type CourseContent = NonNullable<ApiCourse['content']>;
 export type CourseContentSection = CourseContent['sections'][number];
 export type CourseContentItem = CourseContent['items'][number];
 
-export type Course = Omit<ApiCourse, 'metadata' | 'lessons' | 'sections' | 'exercises' | 'logo'> & {
+export type Course = Omit<ApiCourse, 'metadata' | 'lessons' | 'sections' | 'exercises' | 'logo' | 'canGrade'> & {
+  canGrade?: boolean;
   metadata?: CourseMetadata | null;
   certificate?: CourseCertificate | null;
   content: CourseContent;
@@ -723,3 +724,23 @@ export type CourseTemplateUpdates = GetCourseTemplateUpdatesSuccess['data'];
 
 export type PullCourseTemplateUpdatesRequest =
   (typeof classroomhub.course)[':courseId']['template-updates']['pull']['$post'];
+
+// Live session reminder types
+export type ListLiveSessionReminderDeliveriesRequest =
+  (typeof classroomhub.course)[':courseId']['live-session-reminders']['deliveries']['$get'];
+export type ListLiveSessionReminderDeliveriesSuccess = Extract<
+  InferResponseType<ListLiveSessionReminderDeliveriesRequest>,
+  { success: true }
+>;
+export type LiveSessionReminderDelivery = ListLiveSessionReminderDeliveriesSuccess['data'][number];
+export type LiveSessionReminderDeliveriesPagination = ListLiveSessionReminderDeliveriesSuccess['pagination'];
+
+export type LiveSessionReminderUnit = 'days' | 'hours' | 'minutes';
+
+export type LiveSessionReminderRow = {
+  id: string;
+  amount: number;
+  unit: LiveSessionReminderUnit;
+};
+
+export type LiveSessionReminderRowError = 'amount' | 'min' | 'max' | 'duplicate';

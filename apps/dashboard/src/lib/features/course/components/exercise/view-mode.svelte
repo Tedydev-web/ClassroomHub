@@ -752,15 +752,21 @@
     saveCurrentExerciseDraft();
   }
 
-  function onSectionQuestionAnswerChange(question: Question, answerValue: AnswerData) {
+  function onSectionQuestionAnswerChange(question: Question, answerValue: AnswerData | null) {
     const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(question));
-    questionnaireMetaData.update((metaData) => ({
-      ...metaData,
-      answers: {
-        ...metaData.answers,
-        [questionKey]: answerValue
+    questionnaireMetaData.update((metaData) => {
+      const answers = { ...metaData.answers };
+      if (answerValue === null) {
+        delete answers[questionKey];
+      } else {
+        answers[questionKey] = answerValue;
       }
-    }));
+
+      return {
+        ...metaData,
+        answers
+      };
+    });
     scheduleExerciseDraftSave();
   }
 

@@ -58,7 +58,7 @@ import {
   materializeLegacyQuestionRevision,
   resolveAttemptedQuestionSet
 } from '@cio/core/services/assessment/question-revision';
-import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { canAccessCourseSubmissions, getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUrls } from '@cio/core/utils/s3';
@@ -597,12 +597,11 @@ export async function listSubmissionsByExercise(
 export type ExerciseSubmissionsOverview = {
   mySubmission: Awaited<ReturnType<typeof listSubmissionsByExercise>>;
   allSubmissions: Awaited<ReturnType<typeof listSubmissionsByExercise>>;
+  canGrade: boolean;
 };
 
 /**
- * Returns submission overview for an exercise based on user role.
- * - Students: mySubmission = their submission(s), allSubmissions = []
- * - Instructors: mySubmission = [], allSubmissions = all submissions in exercise
+ * Students receive only their own submissions. Graders also receive every submission in the exercise.
  */
 export async function listExerciseSubmissionsOverview(
   courseId: string,
@@ -610,20 +609,20 @@ export async function listExerciseSubmissionsOverview(
   profileId: string
 ): Promise<ExerciseSubmissionsOverview> {
   try {
-    const [groupMemberId, isInstructor] = await Promise.all([
+    const [groupMemberId, canGrade] = await Promise.all([
       getGroupMemberIdByCourseAndProfile(courseId, profileId),
-      isCourseTeamMemberOrOrgAdmin(courseId, profileId)
+      canAccessCourseSubmissions(courseId, profileId)
     ]);
 
     const mySubmission = groupMemberId ? await listSubmissionsByExercise(courseId, exerciseId, groupMemberId) : [];
 
-    if (!isInstructor) {
-      return { mySubmission, allSubmissions: [] };
+    if (!canGrade) {
+      return { mySubmission, allSubmissions: [], canGrade: false };
     }
 
     const allSubmissions = await listSubmissionsByExercise(courseId, exerciseId);
 
-    return { mySubmission, allSubmissions };
+    return { mySubmission, allSubmissions, canGrade: true };
   } catch (error) {
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to list exercise submissions overview',
@@ -1300,8 +1299,9 @@ export async function createSubmissionService(
 }
 
 /**
- * Updates a submission
+ * Updates a submission in the given course.
  * @param submissionId Submission ID
+ * @param courseId Course the caller is allowed to grade
  * @param data Partial submission update data
  * @returns Updated submission
  */
@@ -1373,6 +1373,7 @@ export async function updateSubmissionService(
 /**
  * Updates a question answer in a submission
  * @param submissionId Submission ID
+ * @param courseId Course the caller is allowed to grade
  * @param questionId Question ID
  * @param data Question answer update data
  * @returns Updated question answer
@@ -1565,6 +1566,7 @@ async function emitSubmissionWebhook(
 /**
  * Deletes a submission
  * @param submissionId Submission ID
+ * @param courseId Course the caller is allowed to grade
  * @returns Deleted submission
  */
 export async function deleteSubmissionService(courseId: string, submissionId: string): Promise<TSubmission> {

@@ -57,7 +57,7 @@
     type="number"
     min="0"
     step="0.01"
-    oninput={clearValidationState}
+    onInput={clearValidationState}
   />
   <InputField
     bind:value={block.interaction.config.template}
@@ -67,7 +67,7 @@
       'course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.template_placeholder'
     )}
     errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'template'])}
-    oninput={() => {
+    onInput={() => {
       clearValidationState();
       updateWordBankConfig(block.id, syncWordBankAnswers);
     }}
@@ -96,7 +96,7 @@
             'correctAnswers',
             answerIndex
           ])}
-          oninput={clearValidationState}
+          onInput={clearValidationState}
         />
       {/each}
     </Field.Group>
@@ -112,7 +112,7 @@
             bind:value={block.interaction.config.distractors[distractorIndex]}
             name={getBlockDomId(block.id, `word-bank-distractor-${distractorIndex}`)}
             label={`${$t('course.navItem.lessons.exercises.all_exercises.shared_question.word_bank.edit.distractor_placeholder')} ${distractorIndex + 1}`}
-            oninput={clearValidationState}
+            onInput={clearValidationState}
           />
           <IconButton
             type="button"

@@ -270,6 +270,8 @@
 @source inline('ui:ring-offset-muted{,!}');
 @source inline('ui:divide-border');
 @source inline('ui:hover:border-primary/50');
+@source inline('ui:sm:max-w-3xl');
+@source inline('ui:w-[96vw]');
 
 /*
  * The duration scale has five steps, but only the three that components here happen to use were

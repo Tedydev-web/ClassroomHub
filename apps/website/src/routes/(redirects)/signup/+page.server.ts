@@ -1,12 +1,13 @@
 import { PRODUCT_URLS } from '@cio/utils/constants';
 import { client } from '$lib/utils/posthog';
+import { getDistinctId } from '$lib/utils/posthog/distinct-id';
 import { redirect } from '@sveltejs/kit';
 
 export const prerender = false;
 
 export const load = ({ request, url }) => {
   client.capture({
-    distinctId: request.headers.get('x-forwarded-for') || new Date().getTime().toString(),
+    distinctId: getDistinctId(request),
     event: 'signup'
   });
 

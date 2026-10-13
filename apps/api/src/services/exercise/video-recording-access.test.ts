@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   getVideoObjectMetadata: vi.fn(),
   getQuestionAnswersBySubmissionId: vi.fn(),
   getSubmissionById: vi.fn(),
-  isCourseTeamMemberOrOrgAdmin: vi.fn(),
+  canAccessCourseSubmissions: vi.fn(),
   resolveGroupMemberExerciseAccess: vi.fn()
 }));
 
@@ -37,7 +37,7 @@ vi.mock('@cio/db/queries/submission', () => ({
 }));
 vi.mock('@cio/db/queries/group', () => ({
   getGroupMemberIdByCourseAndProfile: mocks.getGroupMemberIdByCourseAndProfile,
-  isCourseTeamMemberOrOrgAdmin: mocks.isCourseTeamMemberOrOrgAdmin
+  canAccessCourseSubmissions: mocks.canAccessCourseSubmissions
 }));
 vi.mock('@cio/db/queries/tag', () => ({ getCourseOrganizationId: vi.fn(() => 'org-a') }));
 
@@ -54,7 +54,7 @@ describe('getVideoRecordingPlaybackUrl assignment access', () => {
       submittedBy: 'member-a'
     });
     mocks.getGroupMemberIdByCourseAndProfile.mockResolvedValue('member-a');
-    mocks.isCourseTeamMemberOrOrgAdmin.mockResolvedValue(false);
+    mocks.canAccessCourseSubmissions.mockResolvedValue(false);
     mocks.getExerciseWithRelationsOptimized.mockResolvedValue({
       exercise: { id: 'exercise-a', courseId: 'course-a' },
       questions: [{ id: 1, questionTypeId: 13, settings: { maxDurationSeconds: 60 } }]

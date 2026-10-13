@@ -7,7 +7,15 @@ export const load = async ({ params, cookies }) => {
   const exerciseId = params.exerciseId || '';
 
   if (!courseId || !exerciseId) {
-    return { courseId, exerciseId, exercise: null, submissions: [], mySubmissions: [], loadFailed: false };
+    return {
+      courseId,
+      exerciseId,
+      exercise: null,
+      submissions: [],
+      mySubmissions: [],
+      loadFailed: false,
+      canGradeSubmissions: false
+    };
   }
 
   const headers = getApiHeaders(cookies);
@@ -25,7 +33,9 @@ export const load = async ({ params, cookies }) => {
   ]);
   const exercise = exerciseResult.ok && exerciseResult.body.data ? exerciseResult.body.data : null;
   const overview =
-    overviewResult.ok && overviewResult.body.data ? overviewResult.body.data : { mySubmission: [], allSubmissions: [] };
+    overviewResult.ok && overviewResult.body.data
+      ? overviewResult.body.data
+      : { mySubmission: [], allSubmissions: [], canGrade: false };
 
   const mySubmissionData = Array.isArray(overview.mySubmission) ? overview.mySubmission : [];
   const mySubmissions = mySubmissionData;
@@ -48,6 +58,7 @@ export const load = async ({ params, cookies }) => {
      * identical tabs and a useless history. Only the title is set; everything else still
      * falls back to the site defaults.
      */
-    pageMetaTags: exercise?.title ? Object.freeze({ title: exercise.title }) : undefined
+    pageMetaTags: exercise?.title ? Object.freeze({ title: exercise.title }) : undefined,
+    canGradeSubmissions: overview.canGrade
   };
 };

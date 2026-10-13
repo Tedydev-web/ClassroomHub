@@ -69,7 +69,7 @@
     type="number"
     min="0"
     step="0.01"
-    oninput={clearValidationState}
+    onInput={clearValidationState}
   />
   <Field.Set>
     <Field.Legend>
@@ -95,7 +95,7 @@
               optionIndex,
               'html'
             ])}
-            oninput={clearValidationState}
+            onInput={clearValidationState}
           />
           <IconButton
             type="button"

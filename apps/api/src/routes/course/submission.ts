@@ -13,12 +13,12 @@ import {
 } from '@api/services/submission';
 
 import { Hono } from '@api/utils/hono';
-import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
+import { courseGraderMiddleware } from '@api/middlewares/course-grader';
 import { handleError } from '@api/utils/errors';
 import { zValidator } from '@hono/zod-validator';
 
 export const submissionRouter = new Hono()
-  .get('/for-grading', courseTeamMemberMiddleware, async (c) => {
+  .get('/for-grading', courseGraderMiddleware, async (c) => {
     try {
       const courseId = c.req.param('courseId')!;
       const data = await listSubmissionsForGrading(courseId);
@@ -30,7 +30,7 @@ export const submissionRouter = new Hono()
   })
   .put(
     '/:submissionId',
-    courseTeamMemberMiddleware,
+    courseGraderMiddleware,
     zValidator('param', ZSubmissionGetParam),
     zValidator('json', ZSubmissionUpdate),
     async (c) => {
@@ -47,7 +47,7 @@ export const submissionRouter = new Hono()
       }
     }
   )
-  .delete('/:submissionId', courseTeamMemberMiddleware, zValidator('param', ZSubmissionGetParam), async (c) => {
+  .delete('/:submissionId', courseGraderMiddleware, zValidator('param', ZSubmissionGetParam), async (c) => {
     try {
       const courseId = c.req.param('courseId')!;
       const { submissionId } = c.req.valid('param');
@@ -60,7 +60,7 @@ export const submissionRouter = new Hono()
   })
   .put(
     '/:submissionId/answer',
-    courseTeamMemberMiddleware,
+    courseGraderMiddleware,
     zValidator('param', ZSubmissionGetParam),
     zValidator('json', ZSubmissionAnswerUpdate),
     async (c) => {
@@ -79,7 +79,7 @@ export const submissionRouter = new Hono()
   )
   .put(
     '/:submissionId/grades',
-    courseTeamMemberMiddleware,
+    courseGraderMiddleware,
     zValidator('param', ZSubmissionGetParam),
     zValidator('json', ZSubmissionGradesUpdate),
     async (c) => {

@@ -4,6 +4,8 @@ export const FILE_UPLOAD_MIME_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/msword',
+  'text/csv',
+  'application/x-ipynb+json',
   'image/jpeg',
   'image/png',
   'image/webp',
@@ -25,6 +27,18 @@ export const FILE_UPLOAD_SUPPORTED_TYPES = [
     extension: 'docx'
   },
   { value: 'application/msword', label: 'DOC (.doc)', aliases: ['doc', '.doc'], extension: 'doc' },
+  {
+    value: 'text/csv',
+    label: 'CSV (.csv)',
+    aliases: ['csv', '.csv', 'application/csv', 'application/vnd.ms-excel'],
+    extension: 'csv'
+  },
+  {
+    value: 'application/x-ipynb+json',
+    label: 'Jupyter Notebook (.ipynb)',
+    aliases: ['ipynb', '.ipynb', 'application/json'],
+    extension: 'ipynb'
+  },
   {
     value: 'image/jpeg',
     label: 'JPEG (.jpg, .jpeg)',
@@ -50,6 +64,8 @@ type SupportedFileUploadType = (typeof FILE_UPLOAD_SUPPORTED_TYPES)[number];
 const SUPPORTED_TYPE_BY_VALUE = new Map<FileUploadMimeType, SupportedFileUploadType>(
   FILE_UPLOAD_SUPPORTED_TYPES.map((entry) => [entry.value, entry])
 );
+
+const EXTENSION_BOUND_MIME_TYPES = new Set(['application/json', 'application/vnd.ms-excel']);
 
 function normalizeToken(value: string): string {
   return value.trim().toLowerCase();
@@ -108,6 +124,7 @@ export function resolveCanonicalFileUploadMimeType(input: {
   const extension = getFileExtension(input.fileName);
   const extensionMimeType = extension ? toCanonicalAcceptedType(extension) : null;
   if (mimeType && extensionMimeType && mimeType !== extensionMimeType) return null;
+  if (EXTENSION_BOUND_MIME_TYPES.has(normalizedMimeType) && extensionMimeType !== mimeType) return null;
 
   return mimeType ?? extensionMimeType;
 }
@@ -127,6 +144,15 @@ export function isFileUploadTypeAllowed(
   const normalizedAcceptedTypes = normalizeAcceptedFileTypes(acceptedTypes);
   const allowedTypes = normalizedAcceptedTypes.length > 0 ? normalizedAcceptedTypes : FILE_UPLOAD_MIME_TYPES;
   return allowedTypes.includes(canonicalMimeType);
+}
+
+export function getFileUploadAcceptAttribute(acceptedTypes: readonly string[]): string {
+  return normalizeAcceptedFileTypes(acceptedTypes)
+    .flatMap((mimeType) => {
+      const supportedType = SUPPORTED_TYPE_BY_VALUE.get(mimeType);
+      return supportedType ? [supportedType.value, `.${supportedType.extension}`] : [];
+    })
+    .join(',');
 }
 
 export function getFileUploadExtension(mimeType: FileUploadMimeType): string {

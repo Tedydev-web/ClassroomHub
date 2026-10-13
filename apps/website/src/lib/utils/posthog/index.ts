@@ -1,12 +1,7 @@
 import { PostHog } from 'posthog-node';
-import { env } from '$env/dynamic/public';
+import { isPosthogEnabled, POSTHOG_HOST, POSTHOG_KEY } from './constants';
 
-const posthog =
-  env.PUBLIC_IS_SELF_OWNED === 'true' || !env.PUBLIC_POSTHOG_KEY?.trim()
-    ? null
-    : new PostHog(env.PUBLIC_POSTHOG_KEY, {
-        host: env.PUBLIC_POSTHOG_HOST?.trim() || 'https://app.posthog.com'
-      });
+const posthog = isPosthogEnabled ? new PostHog(POSTHOG_KEY, { host: POSTHOG_HOST }) : null;
 
 export const client = {
   capture(properties: Parameters<PostHog['capture']>[0]): void {

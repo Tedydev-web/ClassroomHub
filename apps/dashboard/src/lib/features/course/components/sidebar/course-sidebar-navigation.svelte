@@ -54,6 +54,15 @@
 
   const coursesListPath = $derived($isStudentExperience ? '/lms/mylearning' : `${$currentOrgPath}/courses`);
 
+  const currentPath = $derived(path || page.url.pathname);
+  const lessonsRoute = $derived(getLessonsRoute(id));
+  const isOnContentRoute = $derived(
+    currentPath.includes('/lessons') || currentPath.includes('/exercises') || currentPath === lessonsRoute
+  );
+
+  let contentTreeCollapsed = $state(false);
+  let trackedContentKey = $state('');
+
   const contentData = $derived(getCourseContent(courseApi.course));
   const sidebar = useSidebar();
 
@@ -78,6 +87,7 @@
     };
   });
   const showContentCount = $derived(sidebar.open && !sidebar.isMobile && contentCount.total > 0);
+  const isContentTreeExpanded = $derived(!contentTreeCollapsed);
   const studentComplianceRecord = $derived(complianceApi.learnerHistory?.currentRecord ?? null);
   const showComplianceBanner = $derived(
     isStudent && courseApi.course?.type === 'COMPLIANCE' && (sidebar.open || sidebar.isMobile)
@@ -89,7 +99,7 @@
         id: NAV_IDS.NEWS_FEED,
         title: $t('course.navItems.nav_news_feed'),
         url: getNavItemRoute(id),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id),
+        isActive: currentPath === getNavItemRoute(id),
         show() {
           return isStudent ? $currentOrg.customization?.['course']?.['newsfeed'] : true;
         },
@@ -98,11 +108,8 @@
       {
         id: NAV_IDS.LESSONS,
         title: $t('course.navItems.nav_content'),
-        url: getLessonsRoute(id),
-        isActive:
-          (path || page.url.pathname).includes('/lessons') ||
-          (path || page.url.pathname).includes('/exercises') ||
-          (path || page.url.pathname) === getLessonsRoute(id),
+        url: lessonsRoute,
+        isActive: isOnContentRoute,
         isLesson: true,
         icon: getNavIcon(NAV_IDS.LESSONS)
       },
@@ -110,7 +117,7 @@
         id: NAV_IDS.CERTIFICATES,
         title: $t('course.navItems.nav_certificates'),
         url: getNavItemRoute(id, 'certificates'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'certificates'),
+        isActive: currentPath === getNavItemRoute(id, 'certificates'),
         show() {
           if (isStudent && $isFreePlan) {
             return false;
@@ -123,7 +130,7 @@
         id: NAV_IDS.ANALYTICS,
         title: $t('course.navItems.nav_analytics'),
         url: getNavItemRoute(id, 'analytics'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'analytics'),
+        isActive: currentPath === getNavItemRoute(id, 'analytics'),
         show() {
           if (courseApi.course?.isTemplate) return false;
           return !isStudent;
@@ -134,7 +141,7 @@
         id: NAV_IDS.ATTENDANCE,
         title: $t('course.navItems.nav_attendance'),
         url: getNavItemRoute(id, 'attendance'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'attendance'),
+        isActive: currentPath === getNavItemRoute(id, 'attendance'),
         show() {
           if (courseApi.course?.type !== 'LIVE_CLASS') return false;
           return true;
@@ -145,11 +152,12 @@
         id: NAV_IDS.SUBMISSIONS,
         title: $t('course.navItems.nav_submissions'),
         url: getNavItemRoute(id, 'submissions'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'submissions'),
+        isActive: currentPath === getNavItemRoute(id, 'submissions'),
         show() {
           if (courseApi.course?.isTemplate) return false;
           if (isStudent) return false;
-          return true;
+
+          return courseApi.course?.canGrade === true;
         },
         icon: getNavIcon(NAV_IDS.SUBMISSIONS)
       },
@@ -157,7 +165,7 @@
         id: NAV_IDS.MARKS,
         title: $t('course.navItems.nav_marks'),
         url: getNavItemRoute(id, 'marks'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'marks'),
+        isActive: currentPath === getNavItemRoute(id, 'marks'),
         show() {
           if (courseApi.course?.isTemplate) return false;
           return isStudent ? ($currentOrg.customization?.['course']?.['grading'] ?? false) : true;
@@ -168,7 +176,7 @@
         id: NAV_IDS.COMPLIANCE,
         title: $t('course.navItems.nav_compliance'),
         url: getNavItemRoute(id, 'compliance'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'compliance'),
+        isActive: currentPath === getNavItemRoute(id, 'compliance'),
         show() {
           return courseApi.course?.type === 'COMPLIANCE';
         },
@@ -178,7 +186,7 @@
         id: NAV_IDS.LANDING_PAGE,
         title: $t('course.navItems.nav_landing_page'),
         url: getNavItemRoute(id, 'landingpage'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'landingpage'),
+        isActive: currentPath === getNavItemRoute(id, 'landingpage'),
         show() {
           return !isStudent;
         },
@@ -188,7 +196,7 @@
         id: NAV_IDS.PEOPLE,
         title: $t('course.navItems.nav_people'),
         url: getNavItemRoute(id, 'people'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'people'),
+        isActive: currentPath === getNavItemRoute(id, 'people'),
         show() {
           if (courseApi.course?.isTemplate) return false;
           return !isStudent;
@@ -199,7 +207,7 @@
         id: NAV_IDS.AI_ASSISTANT,
         title: $t('course.navItems.nav_ai_tutor'),
         url: getNavItemRoute(id, 'ai-tutor'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'ai-tutor'),
+        isActive: currentPath === getNavItemRoute(id, 'ai-tutor'),
         show() {
           return !isStudent && IS_AI_ENABLED;
         },
@@ -209,7 +217,7 @@
         id: NAV_IDS.SETTINGS,
         title: $t('course.navItems.nav_settings'),
         url: getNavItemRoute(id, 'settings'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'settings'),
+        isActive: currentPath === getNavItemRoute(id, 'settings'),
         show() {
           return !isStudent;
         },
@@ -217,6 +225,17 @@
       }
     ].filter((item) => !item.show || item.show())
   );
+
+  $effect(() => {
+    const contentKey = `${id}${currentPath}`;
+
+    if (contentKey === trackedContentKey) {
+      return;
+    }
+
+    trackedContentKey = contentKey;
+    contentTreeCollapsed = false;
+  });
 
   $effect(() => {
     if (!isStudent || courseApi.course?.type !== 'COMPLIANCE' || !courseApi.course?.id || !$profile.id) {
@@ -240,6 +259,16 @@
     } else {
       contentCreateStoreUtils.openDefault();
     }
+  }
+
+  function handleContentNavClick() {
+    contentTreeCollapsed = false;
+  }
+
+  function handleContentTreeToggle(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    contentTreeCollapsed = !contentTreeCollapsed;
   }
 
   function openSectionEditor(courseId: string, sectionId: string) {
@@ -360,7 +389,12 @@
             {#snippet child({ props })}
               <HoverableItem class="">
                 {#snippet children(isHovered)}
-                  <a href={resolve(item.url, {})} {...props}>
+                  <a
+                    href={resolve(item.url, {})}
+                    data-testid="course-content-nav"
+                    {...props}
+                    onclick={handleContentNavClick}
+                  >
                     {#if item.icon}
                       {@const Icon = item.icon}
                       <Icon size={16} {isHovered} />
@@ -397,9 +431,20 @@
                         />
                       {/if}
 
-                      <IconButton variant="ghost" size="icon-xs">
+                      <IconButton
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-expanded={isContentTreeExpanded}
+                        aria-label={$t(
+                          isContentTreeExpanded
+                            ? 'course.navItem.lessons.collapse_content'
+                            : 'course.navItem.lessons.expand_content'
+                        )}
+                        testId="course-content-nav-toggle"
+                        onclick={handleContentTreeToggle}
+                      >
                         <ChevronRightIcon
-                          class="ui:duration-(--ui-duration-base) transition-transform {item.isActive
+                          class="ui:duration-(--ui-duration-base) transition-transform {isContentTreeExpanded
                             ? 'rotate-90'
                             : ''}"
                         />
@@ -411,7 +456,7 @@
             {/snippet}
           </Sidebar.MenuButton>
 
-          {#if item.isActive}
+          {#if isContentTreeExpanded}
             <CourseContentTree
               {path}
               {id}

@@ -233,7 +233,7 @@ services are healthy, `Cloudflared` is `Running`, and the development task is
 |------|---------|-----------|-------|
 | Node.js | 22.x LTS (`.nvmrc` = v22.23.1) | **Required** | `nvm install && nvm use` |
 | pnpm | 10.x | **Required** | The package scripts call `pnpm` directly (e.g. `build:clean` runs `pnpm run build`) — npm/yarn are not supported substitutes. `corepack enable` then `corepack prepare pnpm@latest --activate`, or `npm i -g pnpm` |
-| Docker (Desktop) | latest | **Required** | Runs Postgres + Redis (and optionally MinIO). No local install of those needed. |
+| Docker (Desktop) | latest | **Required** | Runs Postgres + Redis (and optionally the bundled SeaweedFS object storage). No local install of those needed. |
 | Git | latest | **Required** | Windows: includes Git Bash |
 | ffmpeg / ffprobe | latest | Optional | Only for media/thumbnail background jobs |
 

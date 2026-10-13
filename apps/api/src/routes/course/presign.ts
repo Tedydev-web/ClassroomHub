@@ -18,6 +18,8 @@ import { generateFileKey } from '@cio/core/utils/upload';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { MAX_DOCUMENT_SIZE, MAX_FILE_SIZE } from '@api/constants/upload';
 import type { Context } from 'hono';
+import { isFileTypeAllowed, normalizeAcceptedFileTypes } from '@cio/utils/file-upload';
+import { ALLOWED_DOCUMENT_TYPES } from '@cio/utils/validation/constants';
 
 const PresignForbiddenResponse = {
   description: 'One or more requested keys belong to an organization the caller is not a member of'
@@ -146,7 +148,22 @@ export const presignRouter = new Hono()
     async (c) => {
       const body = c.req.valid('json');
 
-      const { fileName, fileType, fileSize } = body;
+      const { fileName, fileType, fileSize, acceptedTypes } = body;
+      const normalizedAcceptedTypes = normalizeAcceptedFileTypes(acceptedTypes);
+
+      const isLegacyDocumentType =
+        normalizedAcceptedTypes.length === 0 && (ALLOWED_DOCUMENT_TYPES as readonly string[]).includes(fileType);
+
+      if (!isLegacyDocumentType && !isFileTypeAllowed({ name: fileName, type: fileType }, normalizedAcceptedTypes)) {
+        return c.json(
+          {
+            success: false,
+            error: 'File type is not allowed',
+            code: ErrorCodes.FILE_TYPE_NOT_ALLOWED
+          },
+          400
+        );
+      }
 
       assertPresignFileSizeWithinLimit(fileSize, MAX_DOCUMENT_SIZE);
 

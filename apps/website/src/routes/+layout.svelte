@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   import { Footer, Navigation, NotFound } from '$lib/components';
   import { applyGeoLocale } from '$lib/i18n/geo-locale';
+  import { initPosthog } from '$lib/utils/posthog/browser';
   import { initUserJot } from '$lib/utils/userjot';
   import extend from 'just-extend';
   import { onMount } from 'svelte';
@@ -20,6 +21,7 @@
       return;
     }
 
+    initPosthog();
     initUserJot();
   });
 

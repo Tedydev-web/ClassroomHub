@@ -980,7 +980,7 @@
             min="0"
             step="0.01"
             errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
-            oninput={clearValidationState}
+            onInput={clearValidationState}
           />
           <Field.Field orientation="horizontal">
             <Checkbox
@@ -1006,7 +1006,7 @@
         min="0"
         step="0.01"
         errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
-        oninput={clearValidationState}
+        onInput={clearValidationState}
       />
       <div class="flex items-center gap-2">
         <Checkbox
@@ -1151,7 +1151,7 @@
           min="0"
           step="0.01"
           errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
-          oninput={clearValidationState}
+          onInput={clearValidationState}
         />
       </Field.Set>
     {:else}
@@ -1163,7 +1163,7 @@
         min="0"
         step="0.01"
         errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
-        oninput={clearValidationState}
+        onInput={clearValidationState}
       />
     {/if}
   {/if}
@@ -1192,7 +1192,7 @@
           min="0"
           step="0.01"
           errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'maxScore'])}
-          oninput={clearValidationState}
+          onInput={clearValidationState}
         />
         <Field.Field>
           <Field.Label for={getBlockDomId(block.id, 'scoring-mode')}>
@@ -1323,7 +1323,7 @@
               max="1"
               step="0.01"
               errorMessage={getValidationError(['blocks', blockIndex, 'interaction', 'config', 'scoring', 'tiers'])}
-              oninput={clearValidationState}
+              onInput={clearValidationState}
             />
           {/each}
         </Field.Group>
@@ -1351,14 +1351,14 @@
         type="number"
         min="0"
         step="0.01"
-        oninput={clearValidationState}
+        onInput={clearValidationState}
       />
       <InputField
         bind:value={block.interaction.config.correctValue}
         name={getBlockDomId(block.id, 'correct-value')}
         label={$t('course.navItem.lessons.exercises.all_exercises.shared_question.numeric.edit.correct_value_label')}
         type="number"
-        oninput={clearValidationState}
+        onInput={clearValidationState}
       />
       <InputField
         bind:value={block.interaction.config.tolerance}
@@ -1367,7 +1367,7 @@
         type="number"
         min="0"
         step="0.01"
-        oninput={clearValidationState}
+        onInput={clearValidationState}
       />
     </Field.Group>
   {/if}
@@ -1386,7 +1386,7 @@
       type="number"
       min="0"
       step="0.01"
-      oninput={clearValidationState}
+      onInput={clearValidationState}
     />
     <Field.Set>
       <Field.Legend>{$t('course.navItem.lessons.exercises.all_exercises.shared_question.answer_key')}</Field.Legend>
@@ -1405,7 +1405,7 @@
                 'acceptedAnswers',
                 answerIndex
               ])}
-              oninput={clearValidationState}
+              onInput={clearValidationState}
             />
             {#if block.interaction.config.acceptedAnswers.length > 1}
               <IconButton

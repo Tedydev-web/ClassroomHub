@@ -31,7 +31,7 @@ import {
 import { getStudentCourseProgressImpactCounts } from '@cio/db/queries/course/reset-progress';
 import { getCourseGroupId } from '@cio/db/queries/course/people';
 
-import { ContentType, ROLE } from '@cio/utils/constants';
+import { ContentType, ROLE, resolveLiveSessionReminderOffsets } from '@cio/utils/constants';
 import { isPublishedComplianceMissingDeadline, resolveCourseCertificateDeadline } from '@cio/utils/functions';
 import type { TCourse } from '@cio/db/types';
 import type { DbOrTxClient } from '@cio/db/drizzle';
@@ -44,6 +44,7 @@ import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { exerciseBelongsToCourse } from '@cio/db/queries/course/certification-exercise';
+import { skipRemovedOffsetReminderDeliveries } from '@cio/db/queries/course/live-session-reminder';
 import { updateExercise, updateExercisesSectionId } from '@cio/db/queries/exercise/exercise';
 import { getProfileById } from '@cio/db/queries/auth';
 import {
@@ -476,6 +477,11 @@ export async function updateCourse(
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
     }
 
+    if (data.metadata?.liveSessionReminderOffsetsMinutes !== undefined) {
+      const keptOffsets = resolveLiveSessionReminderOffsets(updated.metadata?.liveSessionReminderOffsetsMinutes);
+      await skipRemovedOffsetReminderDeliveries(courseId, keptOffsets, dbClient);
+    }
+
     const isContentGroupingEnabled = (updated.metadata?.isContentGroupingEnabled ?? DEFAULT_CONTENT_GROUPING) === true;
 
     if (isContentGroupingEnabled) {
@@ -589,6 +595,83 @@ export async function getCourseProgress(courseId: string, profileId: string) {
   }
 }
 
+type TCourseAnalyticsMember = {
+  profileId: string | null;
+  profile?: { fullname?: string | null; email?: string | null; avatarUrl?: string | null } | null;
+};
+
+/**
+ * Builds per-student progress, exercise and grade rows for the given course members. Members without a profile,
+ * and members whose stats fail to load, are left out. With `failOnError`, a failed load throws instead.
+ */
+export async function buildCourseStudentAnalytics(
+  courseId: string,
+  students: TCourseAnalyticsMember[],
+  options: { failOnError?: boolean } = {}
+) {
+  const studentsWithProfile = students.filter(
+    (student): student is TCourseAnalyticsMember & { profileId: string } => student.profileId !== null
+  );
+  const lastSeenByProfileId = await getLastSeenForUserIds(studentsWithProfile.map((student) => student.profileId));
+
+  const studentAnalytics = await Promise.all(
+    studentsWithProfile.map(async (student) => {
+      try {
+        const [courseProgress, userExercisesStats] = await Promise.all([
+          getCourseProgressQuery(courseId, student.profileId),
+          getUserExercisesStats(courseId, student.profileId, options)
+        ]);
+
+        if (!courseProgress) {
+          return null;
+        }
+
+        const completedExercises = userExercisesStats?.filter((exercise) => exercise.isCompleted)?.length || 0;
+        const totalExercises = userExercisesStats?.length || 0;
+
+        const totalEarnedPoints = userExercisesStats?.reduce((sum, exercise) => sum + exercise.score, 0) || 0;
+        const totalPoints = userExercisesStats?.reduce((sum, exercise) => sum + exercise.totalPoints, 0) || 0;
+        const averageGrade = calcPercentageWithRounding(totalEarnedPoints, totalPoints);
+
+        const lessonsCompleted = courseProgress.lessonsCompleted || 0;
+        const totalLessons = courseProgress.lessonsCount || 0;
+        // Lessons and exercises together, matching `calcCourseProgress` in
+        // the dashboard and the audience roster. Counting lessons alone
+        // reported a learner who had submitted nothing as fully complete.
+        const progressPercentage = calcPercentageWithRounding(
+          lessonsCompleted + completedExercises,
+          totalLessons + totalExercises
+        );
+        const lastSeen = lastSeenByProfileId.get(student.profileId) ?? undefined;
+
+        return {
+          id: student.profileId,
+          profile: {
+            fullname: student.profile?.fullname || 'Unknown',
+            email: student.profile?.email || '',
+            avatar_url: student.profile?.avatarUrl || ''
+          },
+          lessonsCompleted,
+          totalLessons,
+          exercisesSubmitted: completedExercises,
+          totalExercises,
+          averageGrade,
+          lastSeen,
+          progressPercentage
+        };
+      } catch (error) {
+        console.error('Error getting student overview:', error);
+        if (options.failOnError) {
+          throw new AppError('Failed to load student analytics', ErrorCodes.INTERNAL_ERROR, 500);
+        }
+        return null;
+      }
+    })
+  );
+
+  return studentAnalytics.filter((student): student is NonNullable<typeof student> => student !== null);
+}
+
 /**
  * Gets course analytics including student progress, completion rates, and grades
  * @param courseId Course ID
@@ -613,69 +696,7 @@ export async function getCourseAnalytics(courseId: string) {
     const lessons = course.contentItems.filter((item) => item.type === ContentType.Lesson);
     const exercises = course.contentItems.filter((item) => item.type === ContentType.Exercise);
 
-    // Get student analytics
-    const studentProfileIds = students
-      .map((student) => student.profileId)
-      .filter((profileId): profileId is string => profileId !== null);
-    const lastSeenByProfileId = await getLastSeenForUserIds(studentProfileIds);
-
-    const studentAnalytics = await Promise.all(
-      students
-        .filter((student) => student.profileId !== null)
-        .map(async (student) => {
-          try {
-            const [courseProgress, userExercisesStats] = await Promise.all([
-              getCourseProgressQuery(courseId, student.profileId!),
-              getUserExercisesStats(courseId, student.profileId!)
-            ]);
-
-            if (!courseProgress) {
-              return null;
-            }
-
-            const completedExercises = userExercisesStats?.filter((exercise) => exercise.isCompleted)?.length || 0;
-            const totalExercises = userExercisesStats?.length || 0;
-
-            const totalEarnedPoints = userExercisesStats?.reduce((sum, exercise) => sum + exercise.score, 0) || 0;
-            const totalPoints = userExercisesStats?.reduce((sum, exercise) => sum + exercise.totalPoints, 0) || 0;
-            const averageGrade = calcPercentageWithRounding(totalEarnedPoints, totalPoints);
-
-            const lessonsCompleted = courseProgress.lessonsCompleted || 0;
-            const totalLessons = courseProgress.lessonsCount || 0;
-            // Lessons and exercises together, matching `calcCourseProgress` in
-            // the dashboard and the audience roster. Counting lessons alone
-            // reported a learner who had submitted nothing as fully complete.
-            const progressPercentage = calcPercentageWithRounding(
-              lessonsCompleted + completedExercises,
-              totalLessons + totalExercises
-            );
-            const lastSeen = lastSeenByProfileId.get(student.profileId!) ?? undefined;
-
-            return {
-              id: student.profileId,
-              profile: {
-                fullname: student.profile?.fullname || 'Unknown',
-                email: student.profile?.email || '',
-                avatar_url: student.profile?.avatarUrl || ''
-              },
-              lessonsCompleted,
-              totalLessons,
-              exercisesSubmitted: completedExercises,
-              totalExercises,
-              averageGrade,
-              lastSeen,
-              progressPercentage
-            };
-          } catch (error) {
-            console.error('Error getting student overview:', error);
-            return null;
-          }
-        })
-    );
-
-    const validStudentAnalytics = studentAnalytics.filter(
-      (student): student is NonNullable<typeof student> => student !== null
-    );
+    const validStudentAnalytics = await buildCourseStudentAnalytics(courseId, students);
 
     // Calculate aggregated metrics
     let lessonCompletionRate = 0;

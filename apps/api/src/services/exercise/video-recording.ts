@@ -10,7 +10,7 @@ import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { createAsset, getAssetById, lockAssetById, updateAsset } from '@cio/db/queries/assets';
 import { getExerciseWithRelationsOptimized, resolveGroupMemberExerciseAccess } from '@cio/db/queries/exercise';
 import { getQuestionAnswersBySubmissionId, getSubmissionById } from '@cio/db/queries/submission';
-import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { canAccessCourseSubmissions, getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 import { getCourseOrganizationId as getCourseOrganizationIdFromDb } from '@cio/db/queries/tag';
 import { randomUUID } from 'node:crypto';
 import type { VideoRecordingAnswerData } from '@cio/question-types';
@@ -315,7 +315,7 @@ export async function getVideoRecordingPlaybackUrl(
   const [submission, groupMemberId, isReviewer] = await Promise.all([
     getSubmissionById(submissionId),
     getGroupMemberIdByCourseAndProfile(courseId, profileId),
-    isCourseTeamMemberOrOrgAdmin(courseId, profileId)
+    canAccessCourseSubmissions(courseId, profileId)
   ]);
 
   if (!submission || submission.courseId !== courseId || submission.exerciseId !== exerciseId) {

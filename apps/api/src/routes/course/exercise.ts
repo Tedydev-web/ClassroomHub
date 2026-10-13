@@ -35,7 +35,11 @@ import {
   publishAssessmentItemForCourseService
 } from '@cio/core/services/exercise/assessment-item';
 import { fetchAllTemplatesMetadata, fetchTemplateById, fetchTemplatesByTag } from '@api/services/exercise/template';
-import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import {
+  canAccessCourseSubmissions,
+  getGroupMemberIdByCourseAndProfile,
+  isCourseTeamMemberOrOrgAdmin
+} from '@cio/db/queries/group';
 import {
   completeVideoRecordingUpload,
   getVideoRecordingPlaybackUrl,
@@ -51,6 +55,10 @@ import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { authOrAutomationKeyMiddleware } from '@api/middlewares/auth-or-automation-key';
+import {
+  courseMemberGraderOrAutomationKeyMiddleware,
+  courseMemberOrGraderMiddleware
+} from '@api/middlewares/course-grader';
 import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-member-or-automation-key';
 import { courseTeamMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-team-member-or-automation-key';
@@ -98,7 +106,7 @@ export const exerciseRouter = new Hono()
   .get(
     '/:exerciseId/submissions',
     authMiddleware,
-    courseMemberMiddleware,
+    courseMemberOrGraderMiddleware,
     zValidator('param', ZExerciseGetParam),
     async (c) => {
       try {
@@ -106,12 +114,14 @@ export const exerciseRouter = new Hono()
         const { exerciseId } = c.req.valid('param');
         const user = c.get('user')!;
 
-        await assertEnrolledStudentContentAccess({
-          courseId,
-          profileId: user.id,
-          contentId: exerciseId,
-          type: ContentType.Exercise
-        });
+        if (!(await canAccessCourseSubmissions(courseId, user.id))) {
+          await assertEnrolledStudentContentAccess({
+            courseId,
+            profileId: user.id,
+            contentId: exerciseId,
+            type: ContentType.Exercise
+          });
+        }
 
         const data = await listExerciseSubmissionsOverview(courseId, exerciseId, user.id);
         return c.json({ success: true, data }, 200);
@@ -263,7 +273,7 @@ export const exerciseRouter = new Hono()
   .get(
     '/:exerciseId',
     authOrAutomationKeyMiddleware,
-    courseMemberOrAutomationKeyMiddleware(['course:exercise:read']),
+    courseMemberGraderOrAutomationKeyMiddleware(['course:exercise:read']),
     zValidator('param', ZExerciseGetParam),
     async (c) => {
       try {
@@ -600,7 +610,7 @@ export const exerciseRouter = new Hono()
   .get(
     '/:exerciseId/submission/:submissionId/question/:questionId/video-recording/playback',
     authMiddleware,
-    courseMemberMiddleware,
+    courseMemberOrGraderMiddleware,
     zValidator('param', ZExerciseVideoRecordingPlaybackParam),
     async (c) => {
       try {

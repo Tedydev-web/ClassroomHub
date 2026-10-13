@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -7,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   root: __dirname,
+  plugins: [svelte()],
   resolve: {
     alias: [
       { find: '$lib', replacement: path.resolve(__dirname, 'src/lib') },
@@ -15,6 +17,14 @@ export default defineConfig({
       // Workspace packages normally resolve to their built dist. The UI package
       // has no TypeScript build, so unit tests address the source barrel directly.
       { find: '@cio/ui/tools', replacement: path.resolve(__dirname, '../../packages/ui/src/tools/index.ts') },
+      {
+        find: /^@cio\/ui\/hooks\/(.*)$/,
+        replacement: `${path.resolve(__dirname, '../../packages/ui/src/hooks')}/$1`
+      },
+      {
+        find: /^@cio\/utils\/validation\/auth\/(.*)$/,
+        replacement: `${path.resolve(__dirname, '../../packages/utils/src/validation/auth')}/$1`
+      },
       // Plain-TypeScript helpers the landing-page suites import. Mapped one by one
       // because a blanket @cio/ui rule would also route .svelte modules here, which
       // this node-environment runner cannot compile.

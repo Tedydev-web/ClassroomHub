@@ -8,11 +8,14 @@
   import ContentList from '$features/course/components/lesson/content-list.svelte';
   import ContentSectionList from '$features/course/components/lesson/content-section-list.svelte';
   import ContentExamGroup from '$features/course/components/lesson/content-exam-group.svelte';
+  import PastSessionsSection from '$features/course/components/lesson/past-sessions-section.svelte';
   import CourseContentIcon from '$features/course/components/course-content-icon.svelte';
   import { courseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
   import { isCourseLearnerView, isOrgStudent } from '$lib/utils/store/app';
+  import { profile } from '$lib/utils/store/user';
   import { courseExams } from '$features/course/api/exams.svelte';
+  import { getPastLiveSessions, liveSessionClock } from '$features/course/utils/live-session-phase';
   import { getCourseContent } from '$features/course/utils/content';
   import { getFirstIncompleteNavigableContent } from '$features/course/utils/content-navigation';
   import { ContentType } from '@cio/utils/constants/content';
@@ -36,6 +39,7 @@
   const sectionsTotal = $derived(
     contentData.grouped ? contentData.sections.filter((section) => section.id !== 'ungrouped').length : 0
   );
+  const isLiveCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
   const lessonsTotal = $derived(contentItems.filter((item) => item.type === ContentType.Lesson).length);
   const exercisesTotal = $derived(contentItems.filter((item) => item.type === ContentType.Exercise).length);
 
@@ -61,6 +65,20 @@
   const isNextRequested = $derived(page.url.searchParams.get('next') === 'true');
   const hasNoNavigableContent = $derived(isCourseLoadedForThisPage && navigableContentItems.length === 0);
   const isResolvingNext = $derived(isNextRequested && !hasNoNavigableContent);
+
+  let observedEndedSessions: { courseId: string; count: number } | null = null;
+
+  $effect(() => {
+    if (!isCourseLoadedForThisPage || !isLiveCourse) return;
+
+    const count = getPastLiveSessions(contentItems, $liveSessionClock).length;
+    const previous = observedEndedSessions;
+    observedEndedSessions = { courseId, count };
+    const sessionJustEnded = previous?.courseId === courseId && count > previous.count;
+    if (!sessionJustEnded || !$profile.id) return;
+
+    void courseApi.refreshCourse(courseId, $profile.id);
+  });
 
   $effect(() => {
     if (!canResolveNext || isFetching || !isNextRequested) return;
@@ -122,6 +140,10 @@
       </div>
     {/if}
   </div>
+
+  {#if isLiveCourse && !reorder}
+    <PastSessionsSection {courseId} items={contentItems} />
+  {/if}
 
   {#if reorder}
     <p class="ui:text-muted-foreground text-center text-xs italic">

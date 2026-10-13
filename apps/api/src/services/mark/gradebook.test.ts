@@ -33,6 +33,8 @@ function makeExerciseContentItem(id: string, title: string): CourseContentItem {
     isComplete: null,
     lessonAt: null,
     callUrl: null,
+    sessionDurationMinutes: null,
+    recordingUrl: null,
     hasNoteContent: null,
     hasSlideContent: null,
     videosCount: null,

@@ -73,8 +73,14 @@ export class LessonApi extends BaseApiWithErrors {
   currentLocale = $state<TLocale>('en');
   isSaving = $state(false);
   isDirty = $state(false);
+  revision = 0;
   isCommenting = $state(false);
   isUpdatingComment = $state(false);
+
+  markDirty() {
+    this.isDirty = true;
+    this.revision += 1;
+  }
 
   translations = $state<Record<string, Record<TLocale, string>>>({});
   note = $state('');
@@ -170,6 +176,7 @@ export class LessonApi extends BaseApiWithErrors {
     }
 
     this.isSaving = true;
+    const revisionAtRequest = this.revision;
 
     const response = await this.execute<UpdateLessonRequest>({
       requestFn: () =>
@@ -180,6 +187,8 @@ export class LessonApi extends BaseApiWithErrors {
       logContext: 'updating lesson',
       onSuccess: () => {
         this.errors = {};
+
+        if (this.revision !== revisionAtRequest) return;
 
         if (this.lesson?.id === lessonId) {
           this.lesson = { ...this.lesson, ...result.data } as Lesson;
@@ -780,7 +789,7 @@ export class LessonApi extends BaseApiWithErrors {
       ...this.lesson,
       videos: videos.filter((_v, i) => i !== videoIndex)
     };
-    this.isDirty = true;
+    this.markDirty();
   }
 
   /**
@@ -824,7 +833,7 @@ export class LessonApi extends BaseApiWithErrors {
     this.lesson = { ...this.lesson, videos };
 
     if (options.markDirty ?? true) {
-      this.isDirty = true;
+      this.markDirty();
     }
   }
 
@@ -850,7 +859,7 @@ export class LessonApi extends BaseApiWithErrors {
       ...this.lesson,
       documents: documents.filter((_d, i) => i !== documentIndex)
     };
-    this.isDirty = true;
+    this.markDirty();
   }
 
   /**
@@ -882,7 +891,7 @@ export class LessonApi extends BaseApiWithErrors {
         [field]: value as Lesson[K]
       };
     }
-    this.isDirty = true;
+    this.markDirty();
   }
 
   /**
