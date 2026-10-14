@@ -56,7 +56,7 @@
   import { collectLockedContentItems } from '$features/course/utils/content-lock-utils';
   import { tagApi } from '$features/tag/api';
   import { uploadImage } from '$lib/utils/services/upload';
-  import { copyToClipboard } from '$lib/utils/functions/formatYoutubeVideo';
+  import { shareLink } from '$lib/utils/functions/share-link';
   import { handleOpenWidget } from '$features/ui/course-landing-page/store';
   import { currentOrgDomain, currentOrgPath, isFreePlan } from '$lib/utils/store/org';
   import { page } from '$app/stores';
@@ -530,6 +530,17 @@
 
   let courseLink = $derived(courseApi.course?.slug ? `${$currentOrgDomain}/course/${courseApi.course.slug}` : '#');
 
+  async function shareCourseLink() {
+    try {
+      if ((await shareLink(courseLink, courseApi.course?.title)) === 'copied') {
+        snackbar.success('snackbar.people.success.copied');
+      }
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      snackbar.error('snackbar.public_course.url_copy_failed');
+    }
+  }
+
   const PEOPLE_LINK_MARKER = '@@people@@';
 
   const peoplePageHref = $derived(courseApi.course?.id ? resolve(`/courses/${courseApi.course.id}/people`, {}) : '#');
@@ -680,7 +691,7 @@
             <p class="text-sm">{courseLink}</p>
             <IconButton
               onclick={() => {
-                copyToClipboard(courseLink);
+                void shareCourseLink();
               }}
               disabled={isGeneratingLink}
               tooltip={$t('course.navItem.settings.copy_link')}

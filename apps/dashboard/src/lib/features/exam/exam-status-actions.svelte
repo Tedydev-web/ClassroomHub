@@ -4,6 +4,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
+  import { shareLink } from '$lib/utils/functions/share-link';
   import { Button } from '@cio/ui/base/button';
   import { Input } from '@cio/ui/base/input';
   import * as Dialog from '@cio/ui/base/dialog';
@@ -70,8 +71,7 @@
   }
 
   async function copyLink() {
-    await navigator.clipboard.writeText(examLink);
-    snackbar.success($t('exam.manage.link_copied'));
+    if ((await shareLink(examLink)) === 'copied') snackbar.success($t('exam.manage.link_copied'));
   }
 </script>
 

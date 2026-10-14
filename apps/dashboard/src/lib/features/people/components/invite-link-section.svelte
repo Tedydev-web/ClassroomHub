@@ -8,6 +8,7 @@
   import CopyIcon from '@lucide/svelte/icons/copy';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
+  import { shareLink } from '$lib/utils/functions/share-link';
 
   interface Props {
     /** Empty until a link has been generated. */
@@ -39,7 +40,7 @@
     if (!link) return;
 
     try {
-      await navigator.clipboard.writeText(link);
+      if ((await shareLink(link)) !== 'copied') return;
       snackbar.success('invite_link.copied');
 
       hasCopied = true;

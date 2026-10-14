@@ -905,3 +905,9 @@ body[data-theme='violet'] {
   left: auto !important;
   margin: 0 !important;
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--ui-duration-base);
+  animation-timing-function: var(--ui-motion-ease-out);
+}

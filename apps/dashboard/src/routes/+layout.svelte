@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
+  import { onNavigate } from '$app/navigation';
 
   import { Snackbar } from '$features/ui';
   import { appInitApi } from '$features/app/init.svelte';
@@ -29,6 +30,23 @@
   setUploadLimitsContext(data.uploadLimits);
 
   const metaTags = $derived(resolveMetaTags(data.baseMetaTags, page.data.pageMetaTags));
+
+  onNavigate((navigation) => {
+    if (
+      !document.startViewTransition ||
+      matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      navigation.from?.url.pathname === navigation.to?.url.pathname
+    ) {
+      return;
+    }
+
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 
   onMount(() => {
     const sessionUser = data?.locals?.user;

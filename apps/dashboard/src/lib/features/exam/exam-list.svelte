@@ -18,6 +18,7 @@
   import { examWindowState } from '$features/exam/exam-window';
   import { classroomhub } from '$lib/utils/services/api';
   import { snackbar } from '$features/ui/snackbar/store';
+  import { shareLink } from '$lib/utils/functions/share-link';
 
   /** One row as the list needs it; the loader hands these straight through. */
   type ExamRow = {
@@ -241,8 +242,9 @@
   }
 
   async function copyLink(slug: string) {
-    await navigator.clipboard.writeText(`${window.location.origin}/exam/${slug}`);
-    snackbar.success($t('exam.manage.link_copied'));
+    if ((await shareLink(`${window.location.origin}/exam/${slug}`)) === 'copied') {
+      snackbar.success($t('exam.manage.link_copied'));
+    }
   }
 
   const STATUS_LABEL: Record<string, string> = {

@@ -19,6 +19,7 @@
   import { ComingSoon, UpgradeBanner } from '$features/ui';
   import * as Dialog from '@cio/ui/base/dialog';
   import * as Field from '@cio/ui/base/field';
+  import { shareLink } from '$lib/utils/functions/share-link';
 
   let emails = $state<string[]>([]);
   let errorMessage = $state('');
@@ -48,7 +49,7 @@
 
     if (!linkInviteToken) return;
 
-    await navigator.clipboard.writeText(buildLinkInviteUrl(linkInviteToken));
+    await shareLink(buildLinkInviteUrl(linkInviteToken));
   }
 
   async function onSendInvite() {
