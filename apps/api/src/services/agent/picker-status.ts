@@ -1,6 +1,17 @@
-import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID, FALLBACK_MODEL_IDS } from '@cio/utils/agent-models';
+import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID, FALLBACK_MODEL_IDS, type AgentModelId } from '@cio/utils/agent-models';
 import type { PickerModelSummary } from '@cio/ai-assistant';
+import type { GatewaySettings } from '@cio/core/services/agent/gateway-settings';
 import { getGatewaySettings } from '@cio/core/services/agent/gateway-settings-store';
+
+function isKnownAgentModelId(id: string | null): id is AgentModelId {
+  return id !== null && Object.hasOwn(AGENT_MODELS, id);
+}
+
+export function resolveStudentTutorModelId(
+  settings: Pick<GatewaySettings, 'lightModelId' | 'defaultModelId'>
+): AgentModelId {
+  return [settings.lightModelId, settings.defaultModelId].find(isKnownAgentModelId) ?? DEFAULT_PICKER_MODEL_ID;
+}
 import { resolveDefaultPickerModelId, resolvePickerModels } from '@cio/core/services/agent/picker-models';
 
 /**

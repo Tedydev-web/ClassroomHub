@@ -66,7 +66,8 @@ import {
 import { assertChatAdmitted, describeAdmissionRejection } from '@cio/core/services/agent/gateway-run-admission';
 import { getOrgGatewayUsage } from '@cio/core/services/agent/gateway-org-usage';
 import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID } from '@cio/utils/agent-models';
-import { resolvePickerStatus } from '@api/services/agent/picker-status';
+import { resolvePickerStatus, resolveStudentTutorModelId } from '@api/services/agent/picker-status';
+import { getGatewaySettings } from '@cio/core/services/agent/gateway-settings-store';
 import { buildSystemPrompt, buildContextMessage } from '@cio/ai-assistant/prompt';
 import { trackAgentEvent, AgentEvent } from '@cio/core/utils/tinybird';
 import { redis } from '@cio/core/utils/redis/redis';
@@ -431,7 +432,9 @@ const agentCoreRouter = new Hono()
       // default avoids exposing premium models to learners and keeps per-message
       // cost predictable for fair-use accounting.
       const modelId =
-        role === AgentRole.STUDENT ? DEFAULT_PICKER_MODEL_ID : (requestedModel ?? DEFAULT_PICKER_MODEL_ID);
+        role === AgentRole.STUDENT
+          ? resolveStudentTutorModelId(await getGatewaySettings())
+          : (requestedModel ?? DEFAULT_PICKER_MODEL_ID);
       const modelDescriptor = AGENT_MODELS[modelId];
       // Resolved before demanding an official key: a subscription-only deployment
       // has no provider keys, and rejecting there would refuse work the gateway
