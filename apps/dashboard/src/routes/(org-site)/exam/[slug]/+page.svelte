@@ -37,6 +37,7 @@
   import * as Dialog from '@cio/ui/base/dialog';
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus, type ActivityEvent } from '$features/exam/exam-activity';
+  import { holdScreenAwake } from '$features/exam/exam-wake-lock';
   import { queueActivity, settleActivity } from '$features/exam/exam-activity-outbox';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
@@ -361,6 +362,12 @@
         void reportActivity([{ kind: 'returned', at }]);
       }
     });
+  });
+
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    return holdScreenAwake();
   });
 
   async function submit({ celebrated = true }: { celebrated?: boolean } = {}) {
