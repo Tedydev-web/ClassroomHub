@@ -22,6 +22,15 @@ describe('answersMissingFromServer', () => {
     ]);
   });
 
+  it('treats the same answer as saved when the server returns its keys in another order', () => {
+    const fromServer = {
+      responses: [{ response: { selectedOptionIds: ['a'], kind: 'choice' }, interactionId: 'b1' }],
+      schemaVersion: 1
+    };
+
+    expect(answersMissingFromServer([{ questionId: 1, answerData: fromServer }], { 1: choice('a') })).toEqual([]);
+  });
+
   it('leaves server answers alone when nothing is kept on the device', () => {
     expect(answersMissingFromServer([{ questionId: 1, answerData: choice('a') }], {})).toEqual([]);
   });

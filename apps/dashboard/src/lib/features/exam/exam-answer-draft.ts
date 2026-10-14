@@ -57,10 +57,19 @@ export async function clearExamDraft(attemptId: string): Promise<void> {
   }
 }
 
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([key, inner]) => `${JSON.stringify(key)}:${canonical(inner)}`).join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
+}
+
 export function answersMissingFromServer(saved: PendingAnswer[], draft: ExamAnswerDraft): PendingAnswer[] {
-  const onServer = new Map(saved.map((answer) => [answer.questionId, JSON.stringify(answer.answerData)]));
+  const onServer = new Map(saved.map((answer) => [answer.questionId, canonical(answer.answerData)]));
 
   return Object.entries(draft)
     .map(([questionId, answerData]) => ({ questionId: Number(questionId), answerData }))
-    .filter((answer) => onServer.get(answer.questionId) !== JSON.stringify(answer.answerData));
+    .filter((answer) => onServer.get(answer.questionId) !== canonical(answer.answerData));
 }
