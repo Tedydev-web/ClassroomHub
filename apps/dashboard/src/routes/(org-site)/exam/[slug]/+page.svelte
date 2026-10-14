@@ -42,6 +42,12 @@
   import ExamWatermark from '$features/exam/exam-watermark.svelte';
   import { queueActivity, settleActivity } from '$features/exam/exam-activity-outbox';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
+  import {
+    answersMissingFromServer,
+    clearExamDraft,
+    readExamDraft,
+    saveExamDraft
+  } from '$features/exam/exam-answer-draft';
   import { Confetti } from '$features/ui';
   import { celebrate } from '$features/ui/confetti/store';
   import { isSittingOver, refusalKey, refusalMessage } from '$features/exam/exam-refusals';
@@ -163,6 +169,33 @@
     return () => clearInterval(timer);
   });
 
+  let online = $state(true);
+
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    online = navigator.onLine;
+    const onOnline = async () => {
+      online = true;
+      if (pendingActivity.length > 0) void reportActivity();
+      await queue.flush();
+      saveState = queue.state();
+    };
+    const onOffline = () => (online = false);
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  });
+
+  $effect(() => {
+    if (stage === 'submitted' && attemptId) void clearExamDraft(attemptId);
+  });
+
   /** Server refusals a sitter can meet, mapped to the phrasing they should read. */
   /**
    * What the server actually said.
@@ -280,6 +313,7 @@
     responses[questionId] = response;
     queue.enqueue({ questionId, answerData: response });
     saveState = 'unsaved';
+    if (attemptId) void saveExamDraft(attemptId, $state.snapshot(responses));
   }
 
   /**
@@ -541,6 +575,13 @@
       for (const saved of body.data.answers ?? []) {
         responses[saved.questionId] = saved.answerData;
       }
+
+      const keptOnDevice = answersMissingFromServer(body.data.answers ?? [], await readExamDraft(body.data.attemptId));
+      for (const kept of keptOnDevice) {
+        responses[kept.questionId] = kept.answerData as AssessmentResponseEnvelope;
+        queue.enqueue(kept);
+      }
+      if (keptOnDevice.length > 0) saveState = 'unsaved';
 
       stage = 'sitting';
     } catch (error) {
@@ -917,14 +958,16 @@
         <span
           class={[
             'ui:text-muted-foreground ui:text-xs',
-            saveState === 'saved' ? 'ui:hidden ui:sm:inline' : 'ui:text-foreground ui:font-medium'
+            online && saveState === 'saved' ? 'ui:hidden ui:sm:inline' : 'ui:text-foreground ui:font-medium'
           ]}
         >
-          {saveState === 'saved'
-            ? $t('exam.sitting.saved')
-            : saveState === 'saving'
-              ? $t('exam.sitting.saving')
-              : $t('exam.sitting.unsaved')}
+          {!online
+            ? $t('exam.sitting.offline')
+            : saveState === 'saved'
+              ? $t('exam.sitting.saved')
+              : saveState === 'saving'
+                ? $t('exam.sitting.saving')
+                : $t('exam.sitting.unsaved')}
         </span>
         <!--
           Beside the clock, because a candidate in trouble looks at the clock first. It says
