@@ -20,6 +20,23 @@ function deferred<T>() {
 }
 
 describe('the autosave queue', () => {
+  it('lists what is still owed without sending or dropping it', async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    const queue = createAutosaveQueue({ send, debounceMs: 0 });
+
+    queue.enqueue({ questionId: 1, answerData: 'A' });
+    queue.enqueue({ questionId: 2, answerData: 'B' });
+
+    expect(queue.pending()).toEqual([
+      { questionId: 1, answerData: 'A' },
+      { questionId: 2, answerData: 'B' }
+    ]);
+    expect(send).not.toHaveBeenCalled();
+
+    await queue.flush();
+    expect(queue.pending()).toEqual([]);
+  });
+
   it('coalesces two rapid changes into one request', async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     const queue = createAutosaveQueue({ send, debounceMs: 0 });

@@ -20,6 +20,7 @@ export type AutosaveQueue = {
   flush: () => Promise<void>;
   state: () => AutosaveState;
   pendingCount: () => number;
+  pending: () => PendingAnswer[];
 };
 
 export type AutosaveOptions = {
@@ -89,7 +90,8 @@ export function createAutosaveQueue(options: AutosaveOptions): AutosaveQueue {
     enqueue,
     flush,
     state: () => state,
-    pendingCount: () => pending.size
+    pendingCount: () => pending.size,
+    pending: () => [...pending.values()]
   };
 }
 

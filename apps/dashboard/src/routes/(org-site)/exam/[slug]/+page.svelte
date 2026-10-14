@@ -196,6 +196,39 @@
     if (stage === 'submitted' && attemptId) void clearExamDraft(attemptId);
   });
 
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    const sendBeforeLeaving = () => {
+      const answers = queue.pending();
+      if (!attemptId || answers.length === 0) return;
+
+      void classroomhub['exam-sitting'].attempt[':attemptId'].answers
+        .$put(
+          { param: { attemptId }, json: { answers } },
+          { headers: { 'x-exam-sitting': '1' }, init: { keepalive: true } }
+        )
+        .catch((error) => console.warn('Answers not sent on leaving the page:', error));
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') sendBeforeLeaving();
+    };
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', sendBeforeLeaving);
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', sendBeforeLeaving);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
+  });
+
   /** Server refusals a sitter can meet, mapped to the phrasing they should read. */
   /**
    * What the server actually said.
