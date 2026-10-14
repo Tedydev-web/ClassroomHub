@@ -38,6 +38,8 @@
   import { Textarea } from '@cio/ui/base/textarea';
   import { watchFocus, type ActivityEvent } from '$features/exam/exam-activity';
   import { holdScreenAwake } from '$features/exam/exam-wake-lock';
+  import { readExamDeviceSignals } from '$features/exam/exam-device-signals';
+  import ExamWatermark from '$features/exam/exam-watermark.svelte';
   import { queueActivity, settleActivity } from '$features/exam/exam-activity-outbox';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import { Confetti } from '$features/ui';
@@ -82,7 +84,10 @@
   });
 
   const windowState = $derived(
-    examWindowState({ opensAt: data.exam.opensAt ?? null, closesAt: data.exam.closesAt ?? null }, windowNow)
+    examWindowState(
+      { opensAt: data.exam.opensAt ?? null, closesAt: data.exam.startsUntil ?? data.exam.closesAt ?? null },
+      windowNow
+    )
   );
 
   /**
@@ -128,6 +133,11 @@
   let timeUp = $state(false);
   // Only ever set when the teacher chose to show it; the server decides, not this page.
   let revealedResult = $state<{ score: string; total: string } | null>(null);
+  let heldForReview = $state(false);
+  let sitterName = $state('');
+  const watermarkText = $derived(
+    data.exam.watermark && attemptId ? `${sitterName} · ${attemptId.slice(0, 8).toUpperCase()}` : ''
+  );
 
   const queue = createAutosaveQueue({
     send: async (answers) => {
@@ -225,7 +235,7 @@
 
     try {
       const response = await classroomhub['exam-sitting'][':slug'].start.$post(
-        { param: { slug: data.slug }, json: details },
+        { param: { slug: data.slug }, json: { ...details, device: await readExamDeviceSignals() } },
         { headers: { 'x-exam-sitting': '1' } }
       );
       const body = await response.json();
@@ -246,6 +256,8 @@
 
       attemptId = body.data.attemptId;
       paper = body.data.paper;
+      heldForReview = body.data.review === 'held';
+      sitterName = details.displayName;
       expiresAt = body.data.expiresAt ?? null;
       // Measured once, so a device whose clock has drifted still sees the server's time.
       offset = clockOffsetMs(body.data.serverNow ?? new Date().toISOString());
@@ -405,6 +417,7 @@
 
       if ('success' in body && body.success) {
         revealedResult = body.data.result ?? null;
+        heldForReview = body.data.review === 'held';
       } else if (isSittingOver(body)) {
         // Already over on the server. Say so, rather than leaving them on a live paper.
         stage = 'submitted';
@@ -520,6 +533,8 @@
 
       attemptId = body.data.attemptId;
       paper = body.data.paper;
+      heldForReview = body.data.review === 'held';
+      sitterName = resumable?.displayName ?? '';
       expiresAt = body.data.expiresAt ?? null;
       offset = clockOffsetMs(body.data.serverNow);
 
@@ -930,6 +945,19 @@
       </div>
     </header>
 
+    {#if heldForReview}
+      <p
+        role="status"
+        class="ui:shrink-0 ui:border-b ui:px-3 ui:py-2 ui:text-xs ui:sm:px-6 border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+      >
+        {$t('exam.sitting.held_notice')}
+      </p>
+    {/if}
+
+    {#if watermarkText}
+      <ExamWatermark text={watermarkText} />
+    {/if}
+
     <!--
       The paper takes the width it is given. A passage on the left and its questions on
       the right is the whole point of this layout, and capping the page at a reading
@@ -1100,6 +1128,10 @@
     <h1 class="ui:text-xl ui:font-semibold">
       {timedOutOffline ? $t('exam.sitting.timed_out_title') : $t('exam.sitting.submitted_title')}
     </h1>
+
+    {#if heldForReview}
+      <p class="ui:text-sm text-amber-700 dark:text-amber-300">{$t('exam.sitting.held_notice')}</p>
+    {/if}
 
     {#if revealedResult}
       <p class="ui:tabular-nums ui:text-3xl ui:font-semibold">

@@ -14,6 +14,7 @@
 export const REFUSAL_KEYS: Record<string, string> = {
   'You have used all your attempts at this paper': 'attempts_used',
   'This exam is not open': 'not_open',
+  'The time to start this exam has passed': 'start_window_passed',
   'Your time is up': 'time_up',
   'This attempt is already finished': 'already_finished',
   'Your full name is required': 'name_required',

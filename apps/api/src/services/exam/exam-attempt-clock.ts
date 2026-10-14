@@ -61,3 +61,15 @@ export function secondsRemaining(expiresAt: Date | null, now: Date): number | nu
 
   return Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
 }
+
+export function startDeadline(input: {
+  opensAt: Date | null;
+  closesAt: Date | null;
+  startWindowMinutes: number | null;
+}): Date | null {
+  const { opensAt, closesAt, startWindowMinutes } = input;
+  if (!opensAt || !startWindowMinutes) return closesAt;
+
+  const windowEnd = new Date(opensAt.getTime() + startWindowMinutes * 60_000);
+  return closesAt && closesAt.getTime() < windowEnd.getTime() ? closesAt : windowEnd;
+}

@@ -316,6 +316,13 @@
       "when": 1791626490131,
       "tag": "0032_early_adopter_claim",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791953233010,
+      "tag": "0033_exam_anti_proxy_sitting",
+      "breakpoints": true
     }
   ]
 }

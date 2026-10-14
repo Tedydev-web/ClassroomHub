@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GRACE_SECONDS, computeExpiry, isWithinWritingWindow, canStartNow } from './exam-attempt-clock';
+import { GRACE_SECONDS, computeExpiry, isWithinWritingWindow, canStartNow, startDeadline } from './exam-attempt-clock';
 
 /**
  * The clock, as arithmetic. Every branch of the formula gets a case, and both boundaries
@@ -109,5 +109,34 @@ describe('starting an attempt', () => {
 
   it('accepts when there is no window at all', () => {
     expect(canStartNow({ opensAt: null, closesAt: null }, now)).toBe(true);
+  });
+});
+
+describe('start deadline', () => {
+  const closesAt = new Date('2026-08-12T12:00:00.000Z');
+
+  it('is the closing time when the teacher set no start window', () => {
+    expect(startDeadline({ opensAt: OPENED, closesAt, startWindowMinutes: null })).toEqual(closesAt);
+  });
+
+  it('is the closing time when the window has nothing to count from', () => {
+    expect(startDeadline({ opensAt: null, closesAt, startWindowMinutes: 15 })).toEqual(closesAt);
+  });
+
+  it('is the opening time plus the window', () => {
+    expect(startDeadline({ opensAt: OPENED, closesAt, startWindowMinutes: 15 })).toEqual(
+      new Date('2026-08-12T09:15:00.000Z')
+    );
+  });
+
+  it('never runs past the closing time', () => {
+    expect(startDeadline({ opensAt: OPENED, closesAt, startWindowMinutes: 600 })).toEqual(closesAt);
+  });
+
+  it('refuses a start one second after the window', () => {
+    const deadline = startDeadline({ opensAt: OPENED, closesAt, startWindowMinutes: 15 });
+
+    expect(canStartNow({ opensAt: OPENED, closesAt: deadline }, new Date('2026-08-12T09:15:00.000Z'))).toBe(true);
+    expect(canStartNow({ opensAt: OPENED, closesAt: deadline }, new Date('2026-08-12T09:15:01.000Z'))).toBe(false);
   });
 });

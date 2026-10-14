@@ -3,9 +3,15 @@ import { createHash, randomBytes } from 'node:crypto';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
-import { and, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, or, sql } from 'drizzle-orm';
 
-import { canStartNow, computeExpiry, isWithinWritingWindow, secondsRemaining } from './exam-attempt-clock';
+import {
+  canStartNow,
+  computeExpiry,
+  isWithinWritingWindow,
+  secondsRemaining,
+  startDeadline
+} from './exam-attempt-clock';
 import { getAttemptByToken } from '@cio/db/queries/exam/exam-attempt';
 import { verifyExamPassword } from './exam-password';
 import { scoreSubmittedAttempt } from './exam-finalisation';
@@ -13,8 +19,10 @@ import {
   paperQuestionIds,
   revisionForQuestion,
   toExamSittingPaper,
-  type ExamPaperSnapshot
+  type ExamPaperSnapshot,
+  type ExamSittingPaper
 } from './exam-paper-serializer';
+import { shufflePaper } from './exam-paper-shuffle';
 
 /**
  * Sitting an exam: starting, saving, submitting.
@@ -141,8 +149,23 @@ export type StartAttemptInput = {
   password: string | null;
   ipHash: string | null;
   userAgent: string | null;
+  deviceHash: string | null;
+  fingerprintHash: string | null;
+  priorAttemptsOnDevice: number;
   now: Date;
 };
+
+export const START_WINDOW_PASSED = 'The time to start this exam has passed';
+
+export function sittingPaperFor(
+  exam: Pick<typeof schema.exam.$inferSelect, 'paperSnapshot' | 'shuffleQuestions' | 'shuffleOptions'>,
+  attemptId: string
+): ExamSittingPaper {
+  return shufflePaper(toExamSittingPaper(exam.paperSnapshot as ExamPaperSnapshot | null), attemptId, {
+    questions: exam.shuffleQuestions,
+    options: exam.shuffleOptions
+  });
+}
 
 export async function startAttemptService(input: StartAttemptInput) {
   const { exam, identity, profileId, now } = input;
@@ -159,16 +182,20 @@ export async function startAttemptService(input: StartAttemptInput) {
     }
   }
 
+  const opensAt = exam.opensAt ? new Date(exam.opensAt) : null;
+  const closesAt = exam.closesAt ? new Date(exam.closesAt) : null;
+
+  if (!canStartNow({ opensAt, closesAt }, now)) {
+    throw new AppError('This exam is not open', ErrorCodes.VALIDATION_ERROR, 403);
+  }
+
   if (
     !canStartNow(
-      {
-        opensAt: exam.opensAt ? new Date(exam.opensAt) : null,
-        closesAt: exam.closesAt ? new Date(exam.closesAt) : null
-      },
+      { opensAt, closesAt: startDeadline({ opensAt, closesAt, startWindowMinutes: exam.startWindowMinutes }) },
       now
     )
   ) {
-    throw new AppError('This exam is not open', ErrorCodes.VALIDATION_ERROR, 403);
+    throw new AppError(START_WINDOW_PASSED, ErrorCodes.VALIDATION_ERROR, 403);
   }
 
   if (exam.mode === 'public') {
@@ -208,14 +235,17 @@ export async function startAttemptService(input: StartAttemptInput) {
       startedAt: now.toISOString(),
       expiresAt: expiresAt?.toISOString() ?? null,
       ipHash: input.ipHash,
-      userAgent: input.userAgent
+      userAgent: input.userAgent,
+      deviceHash: input.deviceHash,
+      fingerprintHash: input.fingerprintHash,
+      reviewStatus: exam.holdSharedDevice && input.priorAttemptsOnDevice > 0 ? ('held' as const) : null
     })
     .returning();
 
   return {
     attempt,
     resumeToken: token.raw,
-    paper: toExamSittingPaper(snapshot),
+    paper: sittingPaperFor(exam, attempt.id),
     secondsRemaining: secondsRemaining(expiresAt, now)
   };
 }
@@ -443,12 +473,20 @@ async function notifyFirstSubmission(examId: string): Promise<void> {
   }
 }
 
-/** Counted per cookie, so it is an honest limit rather than an enforced one. */
-export async function countAttemptsForToken(examId: string, tokenHash: string): Promise<number> {
+export async function countAttemptsOnDevice(
+  examId: string,
+  device: { tokenHash: string | null; deviceHash: string | null }
+): Promise<number> {
+  const matches = [
+    device.tokenHash ? eq(schema.examAttempt.tokenHash, device.tokenHash) : undefined,
+    device.deviceHash ? eq(schema.examAttempt.deviceHash, device.deviceHash) : undefined
+  ].filter((condition) => condition !== undefined);
+  if (matches.length === 0) return 0;
+
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(schema.examAttempt)
-    .where(and(eq(schema.examAttempt.examId, examId), eq(schema.examAttempt.tokenHash, tokenHash)));
+    .where(and(eq(schema.examAttempt.examId, examId), or(...matches)));
 
   return row?.count ?? 0;
 }

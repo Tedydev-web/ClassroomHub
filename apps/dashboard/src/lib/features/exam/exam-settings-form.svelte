@@ -44,6 +44,11 @@
     hasPassword: boolean;
     autoSubmitAfterLeaves: number | null;
     supportContact: string | null;
+    startWindowMinutes: number | null;
+    shuffleQuestions: boolean;
+    shuffleOptions: boolean;
+    holdSharedDevice: boolean;
+    watermark: boolean;
   };
 
   let {
@@ -100,6 +105,11 @@
 
   let supportContact = $state(initial?.supportContact ?? '');
   let autoSubmitLeaves = $state(initial?.autoSubmitAfterLeaves ? String(initial.autoSubmitAfterLeaves) : '');
+  let startWindowMinutes = $state(initial?.startWindowMinutes ? String(initial.startWindowMinutes) : '');
+  let shuffleQuestions = $state(initial?.shuffleQuestions ?? false);
+  let shuffleOptions = $state(initial?.shuffleOptions ?? false);
+  let holdSharedDevice = $state(initial?.holdSharedDevice ?? false);
+  let watermark = $state(initial?.watermark ?? false);
 
   /**
    * Two ways to say the same closing time. A teacher who knows "it runs for three days"
@@ -175,6 +185,15 @@
       }
     }
 
+    if (startWindowMinutes.trim()) {
+      const minutes = Number(startWindowMinutes);
+      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) {
+        found.push($t('exam.settings.start_window_range'));
+      } else if (!opensAt) {
+        found.push($t('exam.settings.start_window_needs_open'));
+      }
+    }
+
     if (closeMode === 'after') {
       const days = Number(closeAfterDays);
 
@@ -209,7 +228,12 @@
       // password it already has. An empty box that was touched removes it.
       ...(initial && !passwordTouched ? {} : { password: password.trim() || null }),
       supportContact: supportContact.trim() || null,
-      autoSubmitAfterLeaves: autoSubmitLeaves.trim() ? Number(autoSubmitLeaves) : null
+      autoSubmitAfterLeaves: autoSubmitLeaves.trim() ? Number(autoSubmitLeaves) : null,
+      startWindowMinutes: startWindowMinutes.trim() ? Number(startWindowMinutes) : null,
+      shuffleQuestions,
+      shuffleOptions,
+      holdSharedDevice,
+      watermark
     });
   }
 </script>
@@ -378,6 +402,55 @@
         <Alert.Root>
           <Alert.Description class="ui:text-xs">{$t('exam.settings.auto_submit_warning')}</Alert.Description>
         </Alert.Root>
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Header>
+      <Card.Title class="ui:text-base">{$t('exam.settings.section_integrity')}</Card.Title>
+      <Card.Description>{$t('exam.settings.integrity_help')}</Card.Description>
+    </Card.Header>
+    <Card.Content class="ui:space-y-4">
+      <div class="ui:flex ui:items-start ui:gap-3">
+        <Checkbox id="exam-hold-shared-device" bind:checked={holdSharedDevice} class="ui:mt-0.5" />
+        <div class="ui:space-y-1">
+          <Label for="exam-hold-shared-device" class="ui:font-medium">{$t('exam.settings.hold_shared_device')}</Label>
+          <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.hold_shared_device_help')}</p>
+        </div>
+      </div>
+      <div class="ui:flex ui:items-start ui:gap-3">
+        <Checkbox id="exam-shuffle-questions" bind:checked={shuffleQuestions} class="ui:mt-0.5" />
+        <div class="ui:space-y-1">
+          <Label for="exam-shuffle-questions" class="ui:font-medium">{$t('exam.settings.shuffle_questions')}</Label>
+          <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.shuffle_questions_help')}</p>
+        </div>
+      </div>
+      <div class="ui:flex ui:items-start ui:gap-3">
+        <Checkbox id="exam-shuffle-options" bind:checked={shuffleOptions} class="ui:mt-0.5" />
+        <div class="ui:space-y-1">
+          <Label for="exam-shuffle-options" class="ui:font-medium">{$t('exam.settings.shuffle_options')}</Label>
+          <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.shuffle_options_help')}</p>
+        </div>
+      </div>
+      <div class="ui:flex ui:items-start ui:gap-3">
+        <Checkbox id="exam-watermark" bind:checked={watermark} class="ui:mt-0.5" />
+        <div class="ui:space-y-1">
+          <Label for="exam-watermark" class="ui:font-medium">{$t('exam.settings.watermark')}</Label>
+          <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.watermark_help')}</p>
+        </div>
+      </div>
+
+      <div class="ui:space-y-2">
+        <Label for="exam-start-window">{$t('exam.settings.start_window')}</Label>
+        <Input
+          id="exam-start-window"
+          inputmode="numeric"
+          bind:value={startWindowMinutes}
+          placeholder={$t('exam.settings.start_window_off')}
+          class="max-w-48"
+        />
+        <p class="ui:text-muted-foreground ui:text-xs">{$t('exam.settings.start_window_help')}</p>
       </div>
     </Card.Content>
   </Card.Root>

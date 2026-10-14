@@ -2,6 +2,8 @@ import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 
+import { linkAttempts, type AttemptLinkage } from './exam-attempt-links';
+
 /**
  * Every sitting handed in across one course, newest first.
  *
@@ -45,6 +47,8 @@ export type CourseAttemptRow = {
   leaves: number;
   duplicateName: boolean;
   duplicateAddress: boolean;
+  reviewStatus: 'held' | 'accepted' | null;
+  linkage: AttemptLinkage;
 };
 
 export async function listCourseAttemptsService(courseId: string): Promise<CourseAttemptRow[]> {
@@ -65,6 +69,9 @@ export async function listCourseAttemptsService(courseId: string): Promise<Cours
       startedAt: schema.examAttempt.startedAt,
       submittedAt: schema.examAttempt.submittedAt,
       ipHash: schema.examAttempt.ipHash,
+      deviceHash: schema.examAttempt.deviceHash,
+      fingerprintHash: schema.examAttempt.fingerprintHash,
+      reviewStatus: schema.examAttempt.reviewStatus,
       // Counted in the database, as the per-exam list counts it: the log itself is never
       // selected here, and one integer is all a teacher needs to choose who to read first.
       leaves: sql<number>`(
@@ -88,21 +95,25 @@ export async function listCourseAttemptsService(courseId: string): Promise<Cours
    * teacher wants flagged, and the same argument holds for an address.
    */
   const names = new Map<string, number>();
-  const addresses = new Map<string, number>();
 
   for (const row of rows) {
     const name = row.displayName?.trim().toLowerCase();
 
     if (name) names.set(`${row.examId}:${name}`, (names.get(`${row.examId}:${name}`) ?? 0) + 1);
-    if (row.ipHash)
-      addresses.set(`${row.examId}:${row.ipHash}`, (addresses.get(`${row.examId}:${row.ipHash}`) ?? 0) + 1);
   }
 
-  return rows.map(({ ipHash, ...row }) => ({
-    ...row,
-    duplicateName: Boolean(
-      row.displayName && (names.get(`${row.examId}:${row.displayName.trim().toLowerCase()}`) ?? 0) > 1
-    ),
-    duplicateAddress: Boolean(ipHash && (addresses.get(`${row.examId}:${ipHash}`) ?? 0) > 1)
-  })) as CourseAttemptRow[];
+  const linkages = linkAttempts(rows);
+
+  return rows.map(({ ipHash: _ipHash, deviceHash: _deviceHash, fingerprintHash: _fingerprintHash, ...row }) => {
+    const linkage = linkages.get(row.attemptId) ?? { links: [], startedAfterSubmitOf: null };
+
+    return {
+      ...row,
+      duplicateName: Boolean(
+        row.displayName && (names.get(`${row.examId}:${row.displayName.trim().toLowerCase()}`) ?? 0) > 1
+      ),
+      duplicateAddress: linkage.links.length > 0,
+      linkage
+    };
+  }) as CourseAttemptRow[];
 }

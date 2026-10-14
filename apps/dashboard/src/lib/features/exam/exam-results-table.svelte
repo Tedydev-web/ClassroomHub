@@ -11,12 +11,14 @@
   import { Checkbox } from '@cio/ui/base/checkbox';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { ExamResultRow } from '$features/exam/exam-result-row';
+  import ExamAttemptLinks from '$features/exam/exam-attempt-links.svelte';
 
   let {
     rows,
     onopen,
     onreopen,
     ondelete,
+    onaccept,
     onprintanswers,
     printingAnswers = false,
     showSummary = true
@@ -25,6 +27,7 @@
     onopen: (attemptId: string) => void;
     onreopen: (attemptId: string) => void;
     ondelete: (attemptId: string, displayName: string | null) => void;
+    onaccept?: (attemptId: string) => void;
     /** The papers a teacher takes away, as one PDF answer sheet each; empty means every finished sitting shown. */
     onprintanswers?: (attemptIds: string[]) => void;
     printingAnswers?: boolean;
@@ -68,7 +71,7 @@
     onprintanswers?.(chosenAttempts());
   }
 
-  type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual';
+  type Filter = 'all' | 'in_progress' | 'expired' | 'submitted' | 'awaiting_manual' | 'held';
   let filter = $state<Filter>('all');
 
   type SortKey = 'name' | 'score' | 'time' | 'leaves';
@@ -91,7 +94,9 @@
    */
   const summary = $derived.by(() => {
     const finished = rows.filter((row) => row.status !== 'in_progress');
-    const scored = finished.filter((row) => row.score !== null && row.gradingState === 'complete');
+    const scored = finished.filter(
+      (row) => row.score !== null && row.gradingState === 'complete' && row.reviewStatus !== 'held'
+    );
     const totalScore = scored.reduce((sum, row) => sum + Number(row.score ?? 0), 0);
 
     return {
@@ -107,18 +112,22 @@
     };
   });
 
-  const FILTERS: Array<{ value: Filter; label: string }> = [
+  const FILTERS: Array<{ value: Filter; label: string }> = $derived([
     { value: 'all', label: $t('exam.status.all') },
     { value: 'in_progress', label: $t('exam.status.in_progress') },
     { value: 'expired', label: $t('exam.status.expired') },
     { value: 'submitted', label: $t('exam.status.submitted') },
-    { value: 'awaiting_manual', label: $t('exam.status.awaiting_manual') }
-  ];
+    { value: 'awaiting_manual', label: $t('exam.status.awaiting_manual') },
+    ...(rows.some((row) => row.reviewStatus === 'held')
+      ? [{ value: 'held' as const, label: $t('exam.status.held') }]
+      : [])
+  ]);
 
   const shown = $derived.by(() => {
     const filtered = rows.filter((row) => {
       if (filter === 'all') return true;
       if (filter === 'awaiting_manual') return row.gradingState === 'awaiting_manual';
+      if (filter === 'held') return row.reviewStatus === 'held';
 
       return row.status === filter;
     });
@@ -219,7 +228,7 @@
           ...(showExam ? [row.examTitle ?? ''] : []),
           row.className ?? '',
           row.candidateNumber ?? '',
-          statusLabel(row),
+          row.reviewStatus === 'held' ? `${statusLabel(row)} (${$t('exam.status.held')})` : statusLabel(row),
           row.score === null ? '' : `${row.score}/${row.total ?? ''}`,
           minutesOf(row) === null ? '' : String(minutesOf(row)),
           clockOf(row.startedAt),
@@ -498,7 +507,9 @@
                 {#if row.duplicateName}
                   <Badge variant="secondary" class="ui:ml-2">{$t('exam.results.duplicate_name')}</Badge>
                 {/if}
-                {#if row.duplicateAddress}
+                {#if row.linkage}
+                  <ExamAttemptLinks linkage={row.linkage} {onopen} />
+                {:else if row.duplicateAddress}
                   <!-- With the context, because without it a whole class on one school
                        wifi reads as a whole class under suspicion. -->
                   <Badge variant="secondary" class="ui:ml-1" title={$t('exam.results.duplicate_address_help')}>
@@ -513,6 +524,11 @@
               <Table.Cell class="ui:text-muted-foreground ui:tabular-nums">{row.candidateNumber ?? '—'}</Table.Cell>
               <Table.Cell>
                 <Badge variant={statusVariant(row)}>{statusLabel(row)}</Badge>
+                {#if row.reviewStatus === 'held'}
+                  <Badge variant="destructive" class="ui:ml-1" title={$t('exam.results.held_help')}>
+                    {$t('exam.status.held')}
+                  </Badge>
+                {/if}
               </Table.Cell>
               <!-- Numbers right-aligned with tabular figures, so columns of marks line up. -->
               <Table.Cell class="ui:text-right ui:font-medium ui:tabular-nums">{scoreLabel(row)}</Table.Cell>
@@ -534,6 +550,11 @@
               </Table.Cell>
               <Table.Cell class="ui:text-right">
                 <div class="ui:flex ui:items-center ui:justify-end ui:gap-1">
+                  {#if row.reviewStatus === 'held' && onaccept}
+                    <Button size="sm" variant="outline" onclick={() => onaccept(row.attemptId)}>
+                      {$t('exam.results.accept_held')}
+                    </Button>
+                  {/if}
                   <Button size="sm" variant="ghost" onclick={() => onopen(row.attemptId)}>
                     {$t('exam.results.open_attempt')}
                   </Button>

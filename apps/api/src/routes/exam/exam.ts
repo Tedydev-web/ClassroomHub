@@ -36,6 +36,7 @@ import {
 } from '@api/services/exam/exam-container';
 import {
   addCorrectionService,
+  acceptHeldAttemptService,
   deleteAttemptService,
   getExamAttemptDetailService,
   listExamResultsService,
@@ -75,7 +76,12 @@ const createExamSchema = z.object({
   password: z.string().min(1).max(200).nullable().default(null),
   // `null` is off, and off is the default. See the column's own note for why.
   autoSubmitAfterLeaves: z.number().int().positive().max(50).nullable().default(null),
-  supportContact: z.string().max(300).nullable().default(null)
+  supportContact: z.string().max(300).nullable().default(null),
+  startWindowMinutes: z.number().int().positive().max(1440).nullable().default(null),
+  shuffleQuestions: z.boolean().default(false),
+  shuffleOptions: z.boolean().default(false),
+  holdSharedDevice: z.boolean().default(false),
+  watermark: z.boolean().default(false)
 });
 
 /**
@@ -126,7 +132,12 @@ export const updateExamSchema = z.object({
   // exam's title would clear its password.
   password: z.string().min(1).max(200).nullable().optional(),
   autoSubmitAfterLeaves: z.number().int().positive().max(50).nullable().optional(),
-  supportContact: z.string().max(300).nullable().optional()
+  supportContact: z.string().max(300).nullable().optional(),
+  startWindowMinutes: z.number().int().positive().max(1440).nullable().optional(),
+  shuffleQuestions: z.boolean().optional(),
+  shuffleOptions: z.boolean().optional(),
+  holdSharedDevice: z.boolean().optional(),
+  watermark: z.boolean().optional()
 });
 
 export const examRouter = new Hono()
@@ -528,6 +539,15 @@ export const examRouter = new Hono()
       }
     }
   )
+  .post('/attempt/:attemptId/accept', authMiddleware, examAttemptTeamMemberMiddleware, async (c) => {
+    try {
+      const accepted = await acceptHeldAttemptService(c.req.param('attemptId'));
+
+      return c.json({ success: true as const, data: accepted });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   // Throwing a sitting away, so the paper can be sat again from nothing. Reopening is the
   // other remedy and keeps the answers; this one is for a paper that should not exist.
   .delete('/attempt/:attemptId', authMiddleware, examAttemptTeamMemberMiddleware, async (c) => {

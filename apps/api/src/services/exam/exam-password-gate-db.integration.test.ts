@@ -80,6 +80,9 @@ describe.runIf(runDatabaseIntegration)('sitting a password-protected exam', () =
       password,
       ipHash: null,
       userAgent: null,
+      deviceHash: null,
+      fingerprintHash: null,
+      priorAttemptsOnDevice: 0,
       now: new Date()
     };
   }

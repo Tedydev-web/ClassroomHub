@@ -87,7 +87,12 @@
     revealThreshold: data.exam.revealThreshold,
     hasPassword: data.exam.hasPassword,
     autoSubmitAfterLeaves: data.exam.autoSubmitAfterLeaves,
-    supportContact: data.exam.supportContact
+    supportContact: data.exam.supportContact,
+    startWindowMinutes: data.exam.startWindowMinutes,
+    shuffleQuestions: data.exam.shuffleQuestions,
+    shuffleOptions: data.exam.shuffleOptions,
+    holdSharedDevice: data.exam.holdSharedDevice,
+    watermark: data.exam.watermark
   });
 </script>
 

@@ -62,6 +62,7 @@ export const examStatus = pgEnum('EXAM_STATUS', ['draft', 'open', 'closed']);
 export const examReveal = pgEnum('EXAM_REVEAL', ['never', 'on_submit', 'after_everyone', 'above_threshold']);
 export const examAttemptStatus = pgEnum('EXAM_ATTEMPT_STATUS', ['in_progress', 'submitted', 'expired']);
 export const examGradingState = pgEnum('EXAM_GRADING_STATE', ['complete', 'awaiting_manual', 'unscoreable']);
+export const examAttemptReview = pgEnum('EXAM_ATTEMPT_REVIEW', ['held', 'accepted']);
 export const organizationApiKeyType = pgEnum('ORGANIZATION_API_KEY_TYPE', ['mcp', 'api', 'zapier']);
 export const automationUsageCategory = pgEnum('AUTOMATION_USAGE_CATEGORY', ['read', 'write', 'publish']);
 export const aiAgentRunStatus = pgEnum('AI_AGENT_RUN_STATUS', [
@@ -5086,7 +5087,6 @@ export const exam = pgTable(
     workingSeconds: integer('working_seconds'),
     opensAt: timestamp('opens_at', { withTimezone: true, mode: 'string' }),
     closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }),
-    /** Null means unlimited. Counted per cookie, so it is honest rather than enforced. */
     maxAttempts: integer('max_attempts'),
     /** The cheapest answer to a link forwarded outside the class. */
     passwordHash: text('password_hash'),
@@ -5107,6 +5107,11 @@ export const exam = pgTable(
      * school, and an empty one simply shows nothing.
      */
     supportContact: text('support_contact'),
+    startWindowMinutes: integer('start_window_minutes'),
+    shuffleQuestions: boolean('shuffle_questions').default(false).notNull(),
+    shuffleOptions: boolean('shuffle_options').default(false).notNull(),
+    holdSharedDevice: boolean('hold_shared_device').default(false).notNull(),
+    watermark: boolean().default(false).notNull(),
     requiresName: boolean('requires_name').default(true).notNull(),
     requiresClass: boolean('requires_class').default(false).notNull(),
     requiresCandidateNumber: boolean('requires_candidate_number').default(false).notNull(),
@@ -5203,8 +5208,10 @@ export const examAttempt = pgTable(
     total: numeric(),
     /** Salted hash, never an address. Exists to spot duplicates, not to identify anyone. */
     ipHash: text('ip_hash'),
-    /** The request header, nothing more — no fingerprinting. */
     userAgent: text('user_agent'),
+    deviceHash: text('device_hash'),
+    fingerprintHash: text('fingerprint_hash'),
+    reviewStatus: examAttemptReview('review_status'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
   },
@@ -5222,6 +5229,9 @@ export const examAttempt = pgTable(
     unique('exam_attempt_exam_token_key').on(table.examId, table.tokenHash),
     index('idx_exam_attempt_exam_id').on(table.examId),
     index('idx_exam_attempt_exam_status').on(table.examId, table.status),
+    index('idx_exam_attempt_exam_device')
+      .on(table.examId, table.deviceHash)
+      .where(sql`${table.deviceHash} IS NOT NULL`),
     check(
       'exam_attempt_has_an_identity',
       sql`${table.profileId} IS NOT NULL OR (${table.displayName} IS NOT NULL AND length(btrim(${table.displayName})) > 0)`

@@ -172,6 +172,9 @@
     <p class="ui:text-muted-foreground ui:text-xs">
       {$t('exam.entry.no_history_notice')}
     </p>
+    <p class="ui:text-muted-foreground ui:text-xs">
+      {$t('exam.entry.device_notice')}
+    </p>
 
     {#if error}
       <p class="ui:text-destructive ui:text-sm" role="alert">{error}</p>

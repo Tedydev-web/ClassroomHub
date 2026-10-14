@@ -67,6 +67,11 @@ export type ExamSettingsInput = {
   autoSubmitAfterLeaves: number | null;
   /** Where a candidate turns if something goes wrong mid-paper. */
   supportContact: string | null;
+  startWindowMinutes: number | null;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  holdSharedDevice: boolean;
+  watermark: boolean;
 };
 
 /**
@@ -105,6 +110,10 @@ export function validateExamSettings(input: ExamSettingsInput): string[] {
 
   if (input.workingSeconds !== null && input.workingSeconds <= 0) {
     issues.push('Working time must be a positive number of seconds, or empty for no limit');
+  }
+
+  if (input.startWindowMinutes !== null && !input.opensAt) {
+    issues.push('A start window counts from the opening time, so the exam needs one');
   }
 
   return issues;
@@ -213,6 +222,11 @@ export async function createExamForOrganization(
       revealThreshold: input.revealThreshold,
       autoSubmitAfterLeaves: input.autoSubmitAfterLeaves,
       supportContact: input.supportContact,
+      startWindowMinutes: input.startWindowMinutes,
+      shuffleQuestions: input.shuffleQuestions,
+      shuffleOptions: input.shuffleOptions,
+      holdSharedDevice: input.holdSharedDevice,
+      watermark: input.watermark,
       passwordHash: input.password ? await hashExamPassword(input.password) : null,
       createdBy
     })
@@ -272,7 +286,13 @@ export async function updateExamSettingsService(id: string, patch: ExamSettingsP
       settingsPatch.autoSubmitAfterLeaves !== undefined
         ? settingsPatch.autoSubmitAfterLeaves
         : exam.autoSubmitAfterLeaves,
-    supportContact: settingsPatch.supportContact !== undefined ? settingsPatch.supportContact : exam.supportContact
+    supportContact: settingsPatch.supportContact !== undefined ? settingsPatch.supportContact : exam.supportContact,
+    startWindowMinutes:
+      settingsPatch.startWindowMinutes !== undefined ? settingsPatch.startWindowMinutes : exam.startWindowMinutes,
+    shuffleQuestions: settingsPatch.shuffleQuestions ?? exam.shuffleQuestions,
+    shuffleOptions: settingsPatch.shuffleOptions ?? exam.shuffleOptions,
+    holdSharedDevice: settingsPatch.holdSharedDevice ?? exam.holdSharedDevice,
+    watermark: settingsPatch.watermark ?? exam.watermark
   };
 
   const issues = validateExamSettings(merged);

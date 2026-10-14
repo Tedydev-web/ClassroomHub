@@ -78,7 +78,12 @@ export const load = async ({ params, cookies }) => {
       revealThreshold: exam.revealThreshold,
       hasPassword: exam.hasPassword,
       autoSubmitAfterLeaves: exam.autoSubmitAfterLeaves,
-      supportContact: exam.supportContact
+      supportContact: exam.supportContact,
+      startWindowMinutes: exam.startWindowMinutes,
+      shuffleQuestions: exam.shuffleQuestions,
+      shuffleOptions: exam.shuffleOptions,
+      holdSharedDevice: exam.holdSharedDevice,
+      watermark: exam.watermark
     },
     // A draft is served live from its source exercise; an exam with no questions at all
     // still answers 409, and the tab says so instead of failing to load.

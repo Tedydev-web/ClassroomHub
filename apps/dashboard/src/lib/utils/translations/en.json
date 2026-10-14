@@ -6447,7 +6447,8 @@
       "nickname": "Nickname (optional)",
       "nickname_placeholder": "Only if someone in your class shares your name",
       "nickname_help": "Shown to your teacher beside your name, so two people with the same name are not confused.",
-      "shared_device": "This phone or computer belongs to someone else who already sat this paper. I have not sat it yet."
+      "shared_device": "This phone or computer belongs to someone else who already sat this paper. I have not sat it yet.",
+      "device_notice": "To prevent sitting on someone else’s behalf, this browser keeps a random code (hashed, with no personal details)."
     },
     "sitting": {
       "saved": "Saved",
@@ -6469,7 +6470,8 @@
       "go_to_question": "Go to question {number}",
       "timed_out_title": "Time is up",
       "timed_out_offline_body": "We could not reach the server to hand your paper in, but the answers you had saved are already on it. They will be marked. You do not need to do anything else.",
-      "time_up_closing": "Time is up. Your answers are already on the server; this paper is being handed in."
+      "time_up_closing": "Time is up. Your answers are already on the server; this paper is being handed in.",
+      "held_notice": "This device has already sat this paper. Carry on as normal; your teacher will confirm the sitting before it is marked."
     },
     "status": {
       "in_progress": "Sitting",
@@ -6478,7 +6480,8 @@
       "awaiting_manual": "Awaiting marking",
       "marked": "Marked",
       "unscoreable": "Could not be scored",
-      "all": "All"
+      "all": "All",
+      "held": "Awaiting confirmation"
     },
     "results": {
       "empty": "Nobody has sat this yet.",
@@ -6577,7 +6580,20 @@
       "export_paper_a4": "A4",
       "print_with_key": "Sheets with answer key",
       "print_without_key": "Sheets without answer key",
-      "revert_mark": "Revert"
+      "revert_mark": "Revert",
+      "link_device": "Same device as {name}",
+      "link_device_likely": "Probably the same computer as {name}",
+      "link_network": "Same network as {name}",
+      "retake_after": "Started {minutes} min after {name} handed in",
+      "links_heading": "Related sittings",
+      "signal_device": "Same device",
+      "signal_device_likely": "Probably the same computer (identical browser and network)",
+      "signal_network": "Same network",
+      "links_note": "\"Same device\" means the same browser for certain. \"Probably the same computer\" is usually a private window on the same machine, but a lab of identical computers produces it too. \"Same network\" is normal when a class shares one wifi.",
+      "held_help": "This device already sat the paper. The score is hidden from the candidate and left out of the average.",
+      "accept_held": "Confirm",
+      "accepted": "Sitting confirmed.",
+      "accept_failed": "Could not confirm the sitting. Please try again."
     },
     "manage": {
       "title": "Exams",
@@ -6747,7 +6763,22 @@
       "source_saved_description": "Reuse a question set already copied for an earlier exam.",
       "source_document_title": "Upload a document",
       "source_document_description": "Import questions from a Word or PDF file, then check them before the exam is created.",
-      "document_hint": "Choose a file. You will review the questions and answer keys next, and the exam is created when you publish."
+      "document_hint": "Choose a file. You will review the questions and answer keys next, and the exam is created when you publish.",
+      "section_integrity": "Stop practice runs and stand-ins",
+      "integrity_help": "Options that make one candidate’s paper hard to copy or preview. All of them are off by default.",
+      "hold_shared_device": "Hold a second sitting on the same device",
+      "hold_shared_device_help": "If a device already sat this paper (even under another name), the new sitting runs normally but is marked \"Awaiting confirmation\": its score is hidden from the candidate and left out of the average until you confirm it. Use it when students might sit once under a made-up name to preview the paper.",
+      "shuffle_questions": "Shuffle question order",
+      "shuffle_questions_help": "Each sitting gets its own order, kept across reloads. Section headings stay put and questions only move within their section; a passage keeps its questions together.",
+      "shuffle_options": "Shuffle answer options",
+      "shuffle_options_help": "A, B, C, D are reordered per sitting; marking is unaffected. True/false questions and questions with options such as \"All of the above\" keep their order.",
+      "watermark": "Watermark the paper with the candidate’s name",
+      "watermark_help": "The name and sitting code show faintly behind the paper, so a screenshot shared outside tells you which sitting it came from.",
+      "start_window": "Only allow starting within (minutes) of opening",
+      "start_window_off": "Empty: no limit",
+      "start_window_help": "For example 15: nobody can start more than 15 minutes after the paper opens, which leaves no time for a practice run before the real one. Only useful when the paper opens at a fixed time and everyone sits together.",
+      "start_window_range": "The start window must be a number of minutes from 1 to 1440.",
+      "start_window_needs_open": "A start window needs an opening time."
     },
     "refusal": {
       "attempts_used": "You have used all your attempts at this paper.",
@@ -6757,7 +6788,8 @@
       "name_required": "Please enter your full name.",
       "class_required": "Please enter your class.",
       "candidate_required": "Please enter your candidate number.",
-      "password_required": "This exam needs the password your teacher gave you."
+      "password_required": "This exam needs the password your teacher gave you.",
+      "start_window_passed": "The time to start this exam has passed."
     },
     "resume": {
       "heading": "This device has a paper already open",
@@ -6894,7 +6926,8 @@
       "opens_label": "Opens",
       "closed_label": "Closed",
       "check_again": "Check again",
-      "support": "Need help? Contact {contact}"
+      "support": "Need help? Contact {contact}",
+      "start_by": "Must start before {at}"
     }
   },
   "error_page": {

@@ -6470,7 +6470,8 @@
       "nickname": "Biệt danh (không bắt buộc)",
       "nickname_placeholder": "Chỉ cần điền nếu lớp bạn có người trùng tên",
       "nickname_help": "Hiện cho thầy cô ngay cạnh tên bạn, để hai người trùng tên không bị lẫn.",
-      "shared_device": "Máy này là của bạn khác đã thi rồi. Tôi chưa thi lần nào."
+      "shared_device": "Máy này là của bạn khác đã thi rồi. Tôi chưa thi lần nào.",
+      "device_notice": "Để chống làm bài hộ, hệ thống ghi nhận một mã ngẫu nhiên của trình duyệt này (đã được mã hóa, không chứa thông tin cá nhân)."
     },
     "sitting": {
       "saved": "Đã lưu",
@@ -6492,7 +6493,8 @@
       "go_to_question": "Tới câu {number}",
       "timed_out_title": "Đã hết giờ",
       "timed_out_offline_body": "Không kết nối được tới máy chủ để nộp bài, nhưng những câu bạn đã lưu thì đã nằm trên máy chủ rồi và sẽ được chấm. Bạn không cần làm gì thêm.",
-      "time_up_closing": "Đã hết giờ. Các câu bạn trả lời đã nằm trên máy chủ; bài đang được nộp."
+      "time_up_closing": "Đã hết giờ. Các câu bạn trả lời đã nằm trên máy chủ; bài đang được nộp.",
+      "held_notice": "Thiết bị này đã có một lượt làm khác của đề này. Bạn vẫn làm bài bình thường; giáo viên sẽ xác nhận trước khi tính điểm."
     },
     "status": {
       "in_progress": "Đang thi",
@@ -6501,7 +6503,8 @@
       "awaiting_manual": "Chưa chấm",
       "marked": "Đã chấm",
       "unscoreable": "Lỗi, cần xem lại",
-      "all": "Tất cả"
+      "all": "Tất cả",
+      "held": "Chờ xác nhận"
     },
     "results": {
       "empty": "Chưa có ai làm bài.",
@@ -6600,7 +6603,20 @@
       "export_paper_a4": "A4",
       "print_with_key": "Phiếu có đáp án",
       "print_without_key": "Phiếu không đáp án",
-      "revert_mark": "Hoàn tác"
+      "revert_mark": "Hoàn tác",
+      "link_device": "Cùng thiết bị với {name}",
+      "link_device_likely": "Có thể cùng máy với {name}",
+      "link_network": "Cùng mạng với {name}",
+      "retake_after": "Bắt đầu {minutes} phút sau khi {name} nộp bài",
+      "links_heading": "Các lượt làm có liên quan",
+      "signal_device": "Cùng thiết bị",
+      "signal_device_likely": "Có thể cùng máy (trình duyệt và mạng giống hệt)",
+      "signal_network": "Cùng mạng",
+      "links_note": "\"Cùng thiết bị\" là chắc chắn cùng một trình duyệt. \"Có thể cùng máy\" thường là tab ẩn danh trên cùng máy, nhưng phòng máy có các máy giống hệt nhau cũng cho ra kết quả này. \"Cùng mạng\" là bình thường khi cả lớp dùng chung wifi.",
+      "held_help": "Thiết bị này đã có một lượt làm khác của đề. Điểm chưa hiện cho thí sinh và chưa tính vào điểm trung bình.",
+      "accept_held": "Xác nhận",
+      "accepted": "Đã xác nhận lượt làm.",
+      "accept_failed": "Không xác nhận được lượt làm. Vui lòng thử lại."
     },
     "manage": {
       "title": "Đề thi",
@@ -6770,7 +6786,22 @@
       "source_saved_description": "Dùng lại bộ câu hỏi đã chép cho một đề trước.",
       "source_document_title": "Tải tài liệu lên",
       "source_document_description": "Nhập câu hỏi từ tệp Word hoặc PDF, kiểm tra lại rồi mới tạo đề.",
-      "document_hint": "Chọn tệp tài liệu. Bước tiếp theo bạn kiểm tra câu hỏi và đáp án; đề thi được tạo khi bạn bấm xuất bản."
+      "document_hint": "Chọn tệp tài liệu. Bước tiếp theo bạn kiểm tra câu hỏi và đáp án; đề thi được tạo khi bạn bấm xuất bản.",
+      "section_integrity": "Chống làm hộ, làm thử",
+      "integrity_help": "Các lựa chọn giúp bài làm của mỗi thí sinh khó bị sao chép hoặc dò trước. Tất cả đều tắt mặc định.",
+      "hold_shared_device": "Giữ lại lượt làm thứ hai trên cùng một thiết bị",
+      "hold_shared_device_help": "Nếu một máy đã có lượt làm khác của đề này (kể cả khi đổi tên), lượt mới vẫn được làm bình thường nhưng ở trạng thái \"Chờ xác nhận\": điểm không hiện cho thí sinh và không tính vào điểm trung bình cho tới khi bạn bấm xác nhận. Phù hợp khi học sinh có thể dùng một tên lạ làm thử rồi làm lại bằng tên thật.",
+      "shuffle_questions": "Trộn thứ tự câu hỏi",
+      "shuffle_questions_help": "Mỗi lượt làm nhận một thứ tự riêng và giữ nguyên khi tải lại trang. Tiêu đề phần (không có câu trả lời) đứng yên, câu hỏi chỉ đổi chỗ trong phần của nó; đoạn văn nhiều câu hỏi luôn đi cùng nhau.",
+      "shuffle_options": "Trộn thứ tự đáp án",
+      "shuffle_options_help": "Các lựa chọn A, B, C, D được đảo theo từng lượt làm; chấm điểm không bị ảnh hưởng. Câu Đúng/Sai và câu có lựa chọn kiểu \"Tất cả các đáp án trên\", \"Cả A và B\" được giữ nguyên thứ tự.",
+      "watermark": "In mờ tên thí sinh lên đề",
+      "watermark_help": "Tên và mã lượt làm hiện mờ phía sau đề, nên ảnh chụp màn hình bị chia sẻ ra ngoài sẽ cho biết từ lượt nào.",
+      "start_window": "Chỉ cho bắt đầu trong (phút) sau giờ mở đề",
+      "start_window_off": "Để trống: không giới hạn",
+      "start_window_help": "Ví dụ 15: sau 15 phút kể từ giờ mở đề không ai bắt đầu được nữa, nên không kịp làm thử một lượt rồi mới làm thật. Chỉ có tác dụng khi đề có giờ mở cố định và thí sinh làm cùng lúc.",
+      "start_window_range": "Thời gian cho bắt đầu phải là số phút từ 1 đến 1440.",
+      "start_window_needs_open": "Giới hạn thời gian bắt đầu cần đặt giờ mở đề."
     },
     "refusal": {
       "attempts_used": "Bạn đã dùng hết số lượt làm bài của đề này.",
@@ -6780,7 +6811,8 @@
       "name_required": "Vui lòng nhập họ và tên.",
       "class_required": "Vui lòng nhập lớp.",
       "candidate_required": "Vui lòng nhập số báo danh.",
-      "password_required": "Đề này cần mật khẩu giáo viên đọc cho bạn."
+      "password_required": "Đề này cần mật khẩu giáo viên đọc cho bạn.",
+      "start_window_passed": "Đã hết thời gian vào làm bài của đề này."
     },
     "resume": {
       "heading": "Máy này đang có một bài làm dở",
@@ -6917,7 +6949,8 @@
       "opens_label": "Mở lúc",
       "closed_label": "Đã đóng lúc",
       "check_again": "Kiểm tra lại",
-      "support": "Cần hỗ trợ, liên hệ: {contact}"
+      "support": "Cần hỗ trợ, liên hệ: {contact}",
+      "start_by": "Phải bắt đầu trước {at}"
     }
   },
   "error_page": {

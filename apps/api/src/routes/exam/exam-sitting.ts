@@ -1,25 +1,25 @@
-import { createHash } from 'node:crypto';
-
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
 import { Hono } from '@api/utils/hono';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { eq } from 'drizzle-orm';
-import { env } from '@cio/core/config/env';
 import { zValidator } from '@hono/zod-validator';
 import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 
 import { getPublicExamService, requireExamsEnabled } from '@api/services/exam/exam';
-import { toExamSittingPaper, type ExamPaperSnapshot } from '@api/services/exam/exam-paper-serializer';
+import type { ExamPaperSnapshot } from '@api/services/exam/exam-paper-serializer';
+import { startDeadline } from '@api/services/exam/exam-attempt-clock';
+import { hashSittingSignal } from '@api/services/exam/exam-sitting-signals';
 import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
 import { examRateLimiter } from '@api/services/exam/exam-abuse-limits';
 import { requireSittingRequest } from './exam-sitting-guard';
 import { scoreSubmittedAttempt } from '@api/services/exam/exam-finalisation';
 import { revealedScoreForSitterService } from '@api/services/exam/exam-results';
 import {
-  countAttemptsForToken,
+  countAttemptsOnDevice,
   resumeAttemptService,
+  sittingPaperFor,
   hashResumeToken,
   resumeCookieName,
   recordActivityService,
@@ -54,26 +54,14 @@ const startSchema = z.object({
   // Optional on every paper: two candidates in one class may share a name, and a nickname
   // is the only thing that tells them apart where the school issues no candidate numbers.
   nickname: z.string().max(120).optional(),
-  /**
-   * Set when a candidate says this device belongs to somebody else who has already sat.
-   * It skips the per-cookie attempt count and nothing else; the attempt is recorded like
-   * any other, so a teacher reading the results sees both sittings.
-   */
   sameDeviceDifferentPerson: z.boolean().optional(),
-  password: z.string().max(200).optional()
+  password: z.string().max(200).optional(),
+  device: z.object({ id: z.string().max(100), fingerprint: z.string().max(500) }).optional()
 });
 
 const saveSchema = z.object({
   answers: z.array(z.object({ questionId: z.number().int().positive(), answerData: z.unknown() })).max(500)
 });
-
-/** Salted, so it can spot a duplicate without identifying anybody. */
-function hashAddress(address: string | undefined): string | null {
-  if (!address) return null;
-
-  const salt = env.PRIVATE_SERVER_KEY ?? '';
-  return createHash('sha256').update(`${salt}:${address}`).digest('hex');
-}
 
 /**
  * The number of answerable questions in a frozen paper.
@@ -140,6 +128,13 @@ export const examSittingRouter = new Hono()
           // will actually happen, rather than a threat nobody configured.
           autoSubmitAfterLeaves: exam.autoSubmitAfterLeaves,
           supportContact: exam.supportContact,
+          startsUntil:
+            startDeadline({
+              opensAt: exam.opensAt ? new Date(exam.opensAt) : null,
+              closesAt: exam.closesAt ? new Date(exam.closesAt) : null,
+              startWindowMinutes: exam.startWindowMinutes
+            })?.toISOString() ?? null,
+          watermark: exam.watermark,
           // How many questions, counted the way a candidate counts them: a passage holding
           // six is six, not one. Told before the clock starts, because "how long is this
           // paper" is the first thing anybody asks and the answer is not a secret.
@@ -221,13 +216,12 @@ export const examSittingRouter = new Hono()
         return c.json({ success: true as const, data: null });
       }
 
-      const snapshot = exam.paperSnapshot as Parameters<typeof toExamSittingPaper>[0];
-
       return c.json({
         success: true as const,
         data: {
           attemptId: resumed.attempt.id,
-          paper: toExamSittingPaper(snapshot),
+          paper: sittingPaperFor(exam, resumed.attempt.id),
+          review: resumed.attempt.reviewStatus,
           answers: resumed.attempt.answers,
           expiresAt: resumed.attempt.expiresAt,
           secondsRemaining: resumed.secondsRemaining,
@@ -247,20 +241,15 @@ export const examSittingRouter = new Hono()
       const body = c.req.valid('json');
       const now = new Date();
 
-      // Counted per cookie, and only per cookie: the limit never reads a name, a class or a
-      // network address, so a room full of candidates on one school wifi — several of whom
-      // share a name, which is ordinary — are counted separately and correctly.
-      //
-      // What one cookie cannot tell apart is one person sitting twice from one device that
-      // two people share. A candidate who says the device is not theirs is believed: the
-      // limit is a courtesy, not a gate, and anybody minded to defeat it can clear a cookie
-      // without being offered the button. Refusing them would only stop the honest ones.
       const existingToken = getCookie(c, resumeCookieName(exam.id));
-      if (existingToken && exam.maxAttempts !== null && !body.sameDeviceDifferentPerson) {
-        const taken = await countAttemptsForToken(exam.id, hashResumeToken(existingToken));
-        if (taken >= exam.maxAttempts) {
-          throw new AppError('You have used all your attempts at this paper', ErrorCodes.FORBIDDEN, 403);
-        }
+      const deviceHash = hashSittingSignal(body.device?.id);
+      const priorAttemptsOnDevice = await countAttemptsOnDevice(exam.id, {
+        tokenHash: existingToken ? hashResumeToken(existingToken) : null,
+        deviceHash
+      });
+
+      if (exam.maxAttempts !== null && !body.sameDeviceDifferentPerson && priorAttemptsOnDevice >= exam.maxAttempts) {
+        throw new AppError('You have used all your attempts at this paper', ErrorCodes.FORBIDDEN, 403);
       }
 
       const started = await startAttemptService({
@@ -268,8 +257,11 @@ export const examSittingRouter = new Hono()
         identity: body,
         profileId: null,
         password: body.password ?? null,
-        ipHash: hashAddress(c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for')),
+        ipHash: hashSittingSignal(c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for')),
         userAgent: c.req.header('user-agent') ?? null,
+        deviceHash,
+        fingerprintHash: hashSittingSignal(body.device?.fingerprint),
+        priorAttemptsOnDevice,
         now
       });
 
@@ -287,6 +279,7 @@ export const examSittingRouter = new Hono()
         data: {
           attemptId: started.attempt.id,
           paper: started.paper,
+          review: started.attempt.reviewStatus,
           expiresAt: started.attempt.expiresAt,
           secondsRemaining: started.secondsRemaining,
           // The client measures its own drift against this, so a phone running minutes
@@ -350,7 +343,12 @@ export const examSittingRouter = new Hono()
 
       return c.json({
         success: true as const,
-        data: { attemptId: attempt.id, submittedAt: attempt.submittedAt, result: revealed }
+        data: {
+          attemptId: attempt.id,
+          submittedAt: attempt.submittedAt,
+          result: revealed,
+          review: attempt.reviewStatus
+        }
       });
     } catch (error) {
       return handleError(c, error);

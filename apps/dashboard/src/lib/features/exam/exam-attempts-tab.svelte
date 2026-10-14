@@ -80,7 +80,9 @@
    */
   const summary = $derived.by(() => {
     const finished = rows.filter((row) => row.status !== 'in_progress');
-    const scored = finished.filter((row) => row.score !== null && row.gradingState === 'complete');
+    const scored = finished.filter(
+      (row) => row.score !== null && row.gradingState === 'complete' && row.reviewStatus !== 'held'
+    );
     const totalScore = scored.reduce((sum, row) => sum + Number(row.score ?? 0), 0);
 
     return {
@@ -164,6 +166,17 @@
       await refresh();
     } else {
       snackbar.error($t('exam.results.reopen_failed'));
+    }
+  }
+
+  async function accept(attemptId: string) {
+    const response = await classroomhub.exam.attempt[':attemptId'].accept.$post({ param: { attemptId } });
+
+    if (response.ok) {
+      snackbar.success($t('exam.results.accepted'));
+      await refresh();
+    } else {
+      snackbar.error($t('exam.results.accept_failed'));
     }
   }
 
@@ -288,6 +301,7 @@
           onopen={openAttempt}
           onreopen={reopen}
           ondelete={remove}
+          onaccept={accept}
           onprintanswers={printAnswers}
           {printingAnswers}
         />

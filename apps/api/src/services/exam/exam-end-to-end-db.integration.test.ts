@@ -152,7 +152,12 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
         commentVisibility: 'never',
         revealThreshold: null,
         autoSubmitAfterLeaves: null,
-        supportContact: null
+        supportContact: null,
+        startWindowMinutes: null,
+        shuffleQuestions: false,
+        shuffleOptions: false,
+        holdSharedDevice: false,
+        watermark: false
       },
       courseId,
       teacherId
@@ -176,6 +181,9 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
       password: null,
       ipHash: 'school-network',
       userAgent: 'test-agent',
+      deviceHash: null,
+      fingerprintHash: null,
+      priorAttemptsOnDevice: 0,
       now: new Date()
     });
 
@@ -237,7 +245,12 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
         commentVisibility: 'never',
         revealThreshold: null,
         autoSubmitAfterLeaves: null,
-        supportContact: null
+        supportContact: null,
+        startWindowMinutes: null,
+        shuffleQuestions: false,
+        shuffleOptions: false,
+        holdSharedDevice: false,
+        watermark: false
       },
       courseId,
       teacherId
@@ -254,6 +267,9 @@ describe.runIf(runDatabaseIntegration)('a paper from creation to a score', () =>
       password: null,
       ipHash: null,
       userAgent: null,
+      deviceHash: null,
+      fingerprintHash: null,
+      priorAttemptsOnDevice: 0,
       now: new Date()
     });
 

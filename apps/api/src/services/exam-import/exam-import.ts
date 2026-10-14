@@ -709,7 +709,12 @@ function examSettingsForImport(title: string, exerciseId: string): ExamSettingsI
     commentVisibility: 'never',
     revealThreshold: null,
     autoSubmitAfterLeaves: null,
-    supportContact: null
+    supportContact: null,
+    startWindowMinutes: null,
+    shuffleQuestions: false,
+    shuffleOptions: false,
+    holdSharedDevice: false,
+    watermark: false
   };
 }
 

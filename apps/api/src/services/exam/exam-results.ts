@@ -20,6 +20,7 @@ import {
 import { isRevealed, type ExamRevealValue } from './exam-reveal-policy';
 import { getAssessmentInteractionBlocks, type AssessmentItemDefinition } from '@cio/question-types';
 import type { ExamPaperSnapshot } from './exam-paper-serializer';
+import { linkAttempts, type AttemptLinkage } from './exam-attempt-links';
 
 /**
  * What a teacher reads after an exam, and the two things they can do about it.
@@ -45,6 +46,8 @@ export type ExamResultRow = {
   /** Someone else on this paper typed the same name, or came from the same network. */
   duplicateName: boolean;
   duplicateAddress: boolean;
+  reviewStatus: 'held' | 'accepted' | null;
+  linkage: AttemptLinkage;
   /**
    * How many times the paper stopped being the visible window on this candidate's device.
    *
@@ -71,13 +74,14 @@ export async function revealedScoreForSitterService(
       status: schema.examAttempt.status,
       gradingState: schema.examAttempt.gradingState,
       score: schema.examAttempt.score,
-      total: schema.examAttempt.total
+      total: schema.examAttempt.total,
+      reviewStatus: schema.examAttempt.reviewStatus
     })
     .from(schema.examAttempt)
     .where(eq(schema.examAttempt.id, attemptId))
     .limit(1);
 
-  if (!attempt) return null;
+  if (!attempt || attempt.reviewStatus === 'held') return null;
 
   const exam = await getExamById(attempt.examId);
   if (!exam) return null;
@@ -129,6 +133,9 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
       startedAt: schema.examAttempt.startedAt,
       submittedAt: schema.examAttempt.submittedAt,
       ipHash: schema.examAttempt.ipHash,
+      deviceHash: schema.examAttempt.deviceHash,
+      fingerprintHash: schema.examAttempt.fingerprintHash,
+      reviewStatus: schema.examAttempt.reviewStatus,
       // Counted in the database rather than sent and counted here. The list deliberately
       // carries no `answers` and no `answerLog`; the activity log is far smaller but the
       // same argument applies at four hundred sittings, and two integers are all the list
@@ -146,19 +153,24 @@ export async function listExamResultsService(examId: string): Promise<ExamResult
   // Surfaced, never blocked. Two sitters may legitimately share a name, and refusing the
   // second is worse than showing a teacher both and letting a person decide.
   const nameCounts = new Map<string, number>();
-  const addressCounts = new Map<string, number>();
 
   for (const row of rows) {
     const name = row.displayName?.trim().toLowerCase();
     if (name) nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
-    if (row.ipHash) addressCounts.set(row.ipHash, (addressCounts.get(row.ipHash) ?? 0) + 1);
   }
 
-  return rows.map(({ ipHash, ...row }) => ({
-    ...row,
-    duplicateName: Boolean(row.displayName && (nameCounts.get(row.displayName.trim().toLowerCase()) ?? 0) > 1),
-    duplicateAddress: Boolean(ipHash && (addressCounts.get(ipHash) ?? 0) > 1)
-  }));
+  const linkages = linkAttempts(rows.map((row) => ({ ...row, examId })));
+
+  return rows.map(({ ipHash: _ipHash, deviceHash: _deviceHash, fingerprintHash: _fingerprintHash, ...row }) => {
+    const linkage = linkages.get(row.attemptId) ?? { links: [], startedAfterSubmitOf: null };
+
+    return {
+      ...row,
+      duplicateName: Boolean(row.displayName && (nameCounts.get(row.displayName.trim().toLowerCase()) ?? 0) > 1),
+      duplicateAddress: linkage.links.length > 0,
+      linkage
+    };
+  });
 }
 
 /** One attempt in full, including the answer trail a dispute would need. */
@@ -289,6 +301,18 @@ export async function deleteAttemptService(attemptId: string) {
   if (!deleted) throw new AppError('That attempt no longer exists', ErrorCodes.NOT_FOUND, 404);
 
   return deleted;
+}
+
+export async function acceptHeldAttemptService(attemptId: string) {
+  const [accepted] = await db
+    .update(schema.examAttempt)
+    .set({ reviewStatus: 'accepted', updatedAt: new Date().toISOString() })
+    .where(and(eq(schema.examAttempt.id, attemptId), eq(schema.examAttempt.reviewStatus, 'held')))
+    .returning({ id: schema.examAttempt.id, reviewStatus: schema.examAttempt.reviewStatus });
+
+  if (!accepted) throw new AppError('That attempt is not waiting for review', ErrorCodes.NOT_FOUND, 404);
+
+  return accepted;
 }
 
 /** The choice key a question currently carries, or `null` where it has no choice part. */
