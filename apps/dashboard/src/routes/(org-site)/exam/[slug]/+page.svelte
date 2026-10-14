@@ -40,6 +40,7 @@
   import { holdScreenAwake } from '$features/exam/exam-wake-lock';
   import { readExamDeviceSignals } from '$features/exam/exam-device-signals';
   import ExamWatermark from '$features/exam/exam-watermark.svelte';
+  import { holdSittingTab, type SittingTab } from '$features/exam/exam-sitting-tab';
   import { queueActivity, settleActivity } from '$features/exam/exam-activity-outbox';
   import { clockOffsetMs, createAutosaveQueue, remainingSeconds } from '$features/exam/exam-autosave';
   import {
@@ -196,6 +197,53 @@
     if (stage === 'submitted' && attemptId) void clearExamDraft(attemptId);
   });
 
+  let takenElsewhere = $state(false);
+  let sittingTab: SittingTab | null = null;
+
+  $effect(() => {
+    if (stage !== 'sitting') return;
+
+    const tab = holdSittingTab(data.slug, {
+      onTakenElsewhere: async () => {
+        takenElsewhere = true;
+        await queue.flush();
+        saveState = queue.state();
+      },
+      onReleasedToUs: () => void reloadSavedAnswers()
+    });
+    sittingTab = tab;
+    tab.claim();
+
+    return () => {
+      tab.close();
+      sittingTab = null;
+    };
+  });
+
+  async function reloadSavedAnswers() {
+    try {
+      const response = await classroomhub['exam-sitting'][':slug'].resume.$post(
+        { param: { slug: data.slug } },
+        { headers: { 'x-exam-sitting': '1' } }
+      );
+      const body = await response.json();
+      if (!('success' in body) || !body.success || !body.data) return;
+
+      const owed = new Set(queue.pending().map((answer) => answer.questionId));
+      for (const saved of body.data.answers ?? []) {
+        if (!owed.has(saved.questionId)) responses[saved.questionId] = saved.answerData;
+      }
+    } catch (error) {
+      console.warn('Answers saved from the other tab could not be loaded:', error);
+    }
+  }
+
+  function sitInThisTab() {
+    takenElsewhere = false;
+    sittingTab?.claim();
+    void reloadSavedAnswers();
+  }
+
   $effect(() => {
     if (stage !== 'sitting') return;
 
@@ -214,6 +262,7 @@
       if (document.visibilityState === 'hidden') sendBeforeLeaving();
     };
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (takenElsewhere) return;
       event.preventDefault();
       event.returnValue = '';
     };
@@ -435,8 +484,11 @@
     if (stage !== 'sitting') return;
 
     return watchFocus({
-      onLeft: (at) => void reportActivity([{ kind: 'left', at }]),
+      onLeft: (at) => {
+        if (!takenElsewhere) void reportActivity([{ kind: 'left', at }]);
+      },
       onReturned: (at) => {
+        if (takenElsewhere) return;
         warningOpen = true;
         void reportActivity([{ kind: 'returned', at }]);
       }
@@ -1032,6 +1084,18 @@
 
     {#if watermarkText}
       <ExamWatermark text={watermarkText} />
+    {/if}
+
+    {#if takenElsewhere}
+      <div
+        role="alertdialog"
+        aria-labelledby="exam-other-tab-title"
+        class="ui:bg-background ui:fixed ui:inset-0 ui:z-50 ui:flex ui:flex-col ui:items-center ui:justify-center ui:gap-4 ui:p-6 ui:text-center"
+      >
+        <p id="exam-other-tab-title" class="ui:text-base ui:font-medium">{$t('exam.sitting.other_tab_title')}</p>
+        <p class="ui:text-muted-foreground ui:max-w-sm ui:text-sm">{$t('exam.sitting.other_tab_body')}</p>
+        <Button type="button" onclick={sitInThisTab}>{$t('exam.sitting.other_tab_use_here')}</Button>
+      </div>
     {/if}
 
     <!--
