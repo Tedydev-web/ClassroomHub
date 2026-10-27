@@ -1489,7 +1489,8 @@
     },
     "status": {
       "active": "Active",
-      "archived": "Archived"
+      "archived": "Archived",
+      "processing": "Processing"
     },
     "table": {
       "title": "Title",
@@ -5514,7 +5515,8 @@
       },
       "info": {
         "conversion_blocked": "Fix the questions below to complete conversion to Public."
-      }
+      },
+      "sections_reorder_failed": "Could not reorder sections"
     },
     "course": {
       "success": {
