@@ -43,6 +43,8 @@
   import { richTextToPlainText } from '@cio/ui/tools';
   import DeleteConfirmationModal from './delete-confirmation.svelte';
   import { QuestionContainer } from '$features/course/components';
+  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { uploadImage } from '$lib/utils/services/upload';
   import {
     getExerciseEditorQuestionTypeLabel,
@@ -532,13 +534,14 @@
 
 {#snippet questionEditor(question, index)}
   {@const questionStoreIndex = $questionnaire.questions.findIndex((item) => item.id === question.id)}
+  {@const isNonAutoGradableInConversion = !isQuestionAutoGradable(question) && publicConversionFlow.isActive}
   <QuestionContainer
     elementId={getQuestionElementId(question.id)}
     key={String(question.id ?? `new-${index}`)}
     onClose={onInitDeleteClicked(question.id)}
     scrollToQuestion={shouldScrollToLast(question.id, $questionnaire.questions)}
     bind:points={$questionnaire.questions[questionStoreIndex].points}
-    hasError={!!errors[question.id]}
+    hasError={!!errors[question.id] || isNonAutoGradableInConversion}
     errorMsg={getQuestionErrorMsg(errors, question, 'points')}
     pointsHint={isQuestionAutoGradable(question) && requiresPositivePointsForAutoGrade
       ? $t('course.navItem.lessons.exercises.all_exercises.points_required_auto_grade')
@@ -561,6 +564,22 @@
     {/if}
 
     {@render gradingBadge(question)}
+
+    {#if isNonAutoGradableInConversion}
+      <div
+        class="ui:border-border ui:text-foreground ui:dark:bg-muted/30 mt-2 mb-3 flex items-start gap-2.5 rounded-md border p-2.5 text-xs"
+      >
+        <TriangleAlertIcon class="ui:text-muted-foreground mt-0.5 size-4 shrink-0" />
+        <div class="min-w-0 flex-1">
+          <p class="font-medium">
+            {$t('course.navItem.settings.public_conversion.blocks_public_conversion_title')}
+          </p>
+          <p class="ui:text-muted-foreground ui:text-2xs mt-0.5 leading-relaxed">
+            {$t('course.navItem.settings.public_conversion.blocks_public_conversion_desc')}
+          </p>
+        </div>
+      </div>
+    {/if}
 
     <div class="mt-2 flex flex-col">
       <ExerciseQuestion.QuestionRenderer

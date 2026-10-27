@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ContentType } from '@cio/utils/constants';
 import type { Mark } from '@cio/db/queries/mark';
 import { buildExercises, buildStudentMarksByExerciseId } from './gradebook';
-import type { CourseContentItem } from '@api/services/course/utils';
+import type { CourseContentItem } from '@cio/core/services/course/utils';
 
 function makeMark(overrides: Partial<Mark>): Mark {
   return {

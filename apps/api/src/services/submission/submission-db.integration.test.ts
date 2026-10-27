@@ -8,7 +8,7 @@ import { QUESTION_TYPE_IDS, type AssessmentItemDefinition } from '@cio/question-
 config();
 
 const postCommitMocks = vi.hoisted(() => ({
-  emitWebhookEvent: vi.fn().mockResolvedValue(undefined),
+  emitCourseWebhookEvent: vi.fn().mockResolvedValue(undefined),
   enqueueTransactionalEmail: vi.fn().mockResolvedValue(undefined),
   evaluateCourseCertification: vi.fn().mockResolvedValue(undefined),
   syncComplianceProgressFromSubmission: vi.fn().mockResolvedValue(undefined)
@@ -30,8 +30,8 @@ vi.mock('@api/services/course/compliance', () => ({
 vi.mock('@api/services/course/completion', () => ({
   evaluateCourseCertification: postCommitMocks.evaluateCourseCertification
 }));
-vi.mock('@api/services/webhook', () => ({
-  emitWebhookEvent: postCommitMocks.emitWebhookEvent
+vi.mock('@cio/core/services/webhook/emit', () => ({
+  emitCourseWebhookEvent: postCommitMocks.emitCourseWebhookEvent
 }));
 vi.mock('@cio/jobs', () => ({
   enqueueAssetStorageCleanup: storageCleanupMocks.enqueueAssetStorageCleanup,
@@ -237,6 +237,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           id: ids.exercise,
           courseId: ids.course,
           title: 'Composite lifecycle exercise',
+          slug: 'test-item',
           allowMultipleAttempts: true,
           order: 1
         });
@@ -346,7 +347,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
                 response: canonicalResponse
               }
             ],
-            randomUUID()
+            { idempotencyKey: randomUUID() }
           )
         ).rejects.toMatchObject({ code: 'CONFLICT', statusCode: 409 });
         const submissionsAfterStaleAttempt = await db
@@ -375,7 +376,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
               response: canonicalResponse
             }
           ],
-          randomUUID()
+          { idempotencyKey: randomUUID() }
         );
         expect(submission).toMatchObject({
           overallStatus: 'hybrid',
@@ -408,7 +409,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
         });
         expect(publishedItem.definition).not.toEqual(definitionOne);
 
-        const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(ids.course, submission.id, {
+        const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(submission.id, ids.course, {
           answers: [{ questionId: createdItem.questionId, points: 4.5 }],
           total: 4.5,
           feedback: 'Automatic choice score reviewed with the written response.'
@@ -554,6 +555,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           id: ids.crossLesson,
           courseId: ids.crossCourse,
           title: 'Cross-course lesson',
+          slug: 'test-item',
           order: 1
         });
         await db.insert(schema.groupmember).values({
@@ -568,6 +570,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             id: ids.invalidExercise,
             courseId: ids.course,
             title: 'Invalid payload exercise',
+            slug: 'test-item',
             allowMultipleAttempts: true,
             order: 1
           },
@@ -575,6 +578,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             id: ids.idempotentExercise,
             courseId: ids.course,
             title: 'Idempotent exercise',
+            slug: 'test-item',
             allowMultipleAttempts: true,
             order: 2
           },
@@ -582,6 +586,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             id: ids.videoExercise,
             courseId: ids.course,
             title: 'Video rollback exercise',
+            slug: 'test-item',
             allowMultipleAttempts: true,
             order: 3
           }
@@ -632,7 +637,9 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
         ];
         for (const answers of invalidRequests) {
           await expect(
-            createSubmissionService(ids.course, ids.invalidExercise, ids.member, answers, randomUUID())
+            createSubmissionService(ids.course, ids.invalidExercise, ids.member, answers, {
+              idempotencyKey: randomUUID()
+            })
           ).rejects.toMatchObject({ statusCode: 400 });
         }
 
@@ -675,7 +682,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           ids.invalidExercise,
           ids.member,
           [{ questionId: invalidQuestion.id, answer: 'too short' }],
-          randomUUID()
+          { idempotencyKey: randomUUID() }
         );
         authoringBarrier.release();
 
@@ -712,14 +719,14 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             ids.idempotentExercise,
             ids.member,
             [{ questionId: idempotentQuestion.id, answer: 'same intent' }],
-            idempotencyKey
+            { idempotencyKey }
           ),
           createSubmissionService(
             ids.course,
             ids.idempotentExercise,
             ids.member,
             [{ questionId: idempotentQuestion.id, answer: 'same intent' }],
-            idempotencyKey
+            { idempotencyKey }
           )
         ]);
         expect(retriedAttempt.id).toBe(firstAttempt.id);
@@ -817,7 +824,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
             ids.videoExercise,
             ids.member,
             [{ questionId: videoQuestion.id, answer: JSON.stringify(videoAnswer) }],
-            randomUUID()
+            { idempotencyKey: randomUUID() }
           )
         ).rejects.toMatchObject({ statusCode: 400 });
 
@@ -881,7 +888,7 @@ describe.runIf(runDatabaseIntegration)('createSubmissionService database transac
           ids.videoExercise,
           ids.member,
           [{ questionId: videoQuestion.id, answer: JSON.stringify(validVideoAnswer) }],
-          randomUUID()
+          { idempotencyKey: randomUUID() }
         );
         // Racing the barrier against the submission turns a pre-barrier
         // rejection into an immediate failure instead of a full test timeout.

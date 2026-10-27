@@ -26,6 +26,7 @@ import {
 
 import type { AnswerData } from '@cio/question-types';
 import { COURSE_TYPE_VALUES } from '@cio/utils/constants/course-type';
+import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
 import { EMAIL_LOCALES } from '@cio/utils/email';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
 import {
@@ -117,13 +118,6 @@ export const notificationType = pgEnum('NOTIFICATION_TYPE', [
   'COURSE_INVITE',
   'ORGANIZATION_INVITE',
   'EXAM_SUBMITTED'
-]);
-export const webhookDeliveryStatus = pgEnum('WEBHOOK_DELIVERY_STATUS', [
-  'PENDING',
-  'RETRYING',
-  'SUCCESS',
-  'FAILED',
-  'GAVE_UP'
 ]);
 export const scormVersion = pgEnum('SCORM_VERSION', ['1.2', '2004', 'unknown']);
 export const scormPackageStatus = pgEnum('SCORM_PACKAGE_STATUS', ['uploaded', 'parsed', 'failed', 'ready', 'archived']);
@@ -461,31 +455,6 @@ export const currency = pgTable('currency', {
   name: varchar()
 });
 
-export const appsPollOption = pgTable(
-  'apps_poll_option',
-  {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
-      name: 'apps_poll_option_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      cache: 1
-    }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }),
-    pollId: uuid('poll_id'),
-    label: varchar()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.pollId],
-      foreignColumns: [appsPoll.id],
-      name: 'apps_poll_option_poll_id_fkey'
-    })
-  ]
-);
-
 export const profile = pgTable(
   'profile',
   {
@@ -699,6 +668,7 @@ export const submission = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     exerciseId: uuid('exercise_id').notNull(),
     submittedBy: uuid('submitted_by'),
+    gradedBy: uuid('graded_by'),
     courseId: uuid('course_id'),
     idempotencyKey: uuid('idempotency_key'),
     feedback: text()
@@ -821,7 +791,7 @@ export const course = pgTable(
       sectionDisplay?: Record<string, boolean>;
       isContentGroupingEnabled?: boolean;
       /** `free` = all unlocked content is accessible; `sequential` = prior items must be complete. */
-      progressionMode?: 'free' | 'sequential';
+      progressionMode?: CourseProgressionMode;
       /** Course-wide switch for lesson comments. Missing legacy values are treated as enabled. */
       commentsEnabled?: boolean;
       /** Per-course AI tutor override; missing fields inherit from org defaults. */
@@ -870,9 +840,6 @@ export const course = pgTable(
         idFormat?: string;
       };
       deadline?: string | null;
-      threshold?: number;
-      requiredExerciseId?: string | null;
-      exerciseMinScorePercent?: number | null;
       emailMessage?: string | null;
     }>(),
     compliance: jsonb().$type<{
@@ -882,7 +849,6 @@ export const course = pgTable(
       isMandatory?: boolean;
       framework?: 'HIPAA' | 'OSHA' | 'SOX' | 'GDPR' | 'PCI_DSS' | 'FERPA' | 'ISO' | 'CUSTOM' | null;
       maxRetakeAttempts?: number | null;
-      passingScore?: number;
     }>(),
     status: text().default('ACTIVE').notNull(),
     type: courseType().default('SELF_PACED'),
@@ -1058,33 +1024,6 @@ export const courseCertificateIssue = pgTable(
   ]
 );
 
-export const appsPoll = pgTable(
-  'apps_poll',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
-    question: text(),
-    authorId: uuid(),
-    isPublic: boolean(),
-    status: varchar().default('draft'),
-    expiration: timestamp({ withTimezone: true, mode: 'string' }),
-    courseId: uuid()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.authorId],
-      foreignColumns: [groupmember.id],
-      name: 'apps_poll_authorId_fkey'
-    }),
-    foreignKey({
-      columns: [table.courseId],
-      foreignColumns: [course.id],
-      name: 'apps_poll_courseId_fkey'
-    })
-  ]
-);
-
 export const videoTranscripts = pgTable('video_transcripts', {
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
   id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
@@ -1205,7 +1144,7 @@ export const lesson = pgTable(
       onDelete: 'cascade',
       onUpdate: 'cascade'
     }),
-    slug: varchar(),
+    slug: varchar().notNull(),
     sourceId: uuid('source_id').references((): AnyPgColumn => lesson.id, { onDelete: 'set null' }),
     sourceSyncedAt: timestamp('source_synced_at', { withTimezone: true, mode: 'string' })
   },
@@ -1256,6 +1195,7 @@ export const asset = pgTable(
     aspectRatio: text('aspect_ratio'),
     isExternal: boolean('is_external').default(false).notNull(),
     status: varchar().default('active').notNull(),
+    hlsStatus: varchar('hls_status').default('none').notNull(),
     metadata: jsonb().default({}),
     createdByProfileId: uuid('created_by_profile_id'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -1465,42 +1405,6 @@ export const assetUsage = pgTable(
   ]
 );
 
-export const appsPollSubmission = pgTable(
-  'apps_poll_submission',
-  {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
-      name: 'apps_poll_submision_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      cache: 1
-    }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    pollOptionId: bigint('poll_option_id', { mode: 'number' }),
-    selectedById: uuid('selected_by_id'),
-    pollId: uuid('poll_id')
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.pollId],
-      foreignColumns: [appsPoll.id],
-      name: 'apps_poll_submission_poll_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.pollOptionId],
-      foreignColumns: [appsPollOption.id],
-      name: 'apps_poll_submission_poll_option_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.selectedById],
-      foreignColumns: [groupmember.id],
-      name: 'apps_poll_submission_selected_by_id_fkey'
-    })
-  ]
-);
-
 export const exercise = pgTable(
   'exercise',
   {
@@ -1525,7 +1429,7 @@ export const exercise = pgTable(
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),
     assignmentMode: exerciseAssignmentMode('assignment_mode').default('ALL_STUDENTS').notNull(),
-    slug: varchar(),
+    slug: varchar().notNull(),
     sourceId: uuid('source_id').references((): AnyPgColumn => exercise.id, { onDelete: 'set null' }),
     sourceSyncedAt: timestamp('source_synced_at', { withTimezone: true, mode: 'string' })
   },
@@ -1592,6 +1496,7 @@ export const groupmember = pgTable(
     email: varchar(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     assignedStudentId: varchar('assigned_student_id'),
+    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
     certificateEarnedAt: timestamp('certificate_earned_at', { withTimezone: true, mode: 'string' }),
     certificationEmailSentAt: timestamp('certification_email_sent_at', { withTimezone: true, mode: 'string' })
   },
@@ -2336,6 +2241,23 @@ export const earlyAdopterClaim = pgTable(
   ]
 );
 
+/**
+ * Single row holding this install's anonymous ID, reported in self-hosted usage pings.
+ */
+export const instance = pgTable(
+  'instance',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    singleton: boolean().default(true).notNull(),
+    firstReportedAt: timestamp('first_reported_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    unique('instance_singleton_key').on(table.singleton),
+    check('instance_singleton_check', sql`${table.singleton}`)
+  ]
+);
+
 export const lessonLanguage = pgTable(
   'lesson_language',
   {
@@ -2883,7 +2805,7 @@ export const organization = pgTable(
       .notNull(),
     customization: json()
       .default({
-        apps: { poll: true, comments: true },
+        apps: { comments: true },
         course: { grading: true, newsfeed: true },
         dashboard: { exercise: true, community: true, bannerText: '', bannerImage: '' }
       })
@@ -2899,7 +2821,6 @@ export const organization = pgTable(
           grading: boolean;
         };
         apps: {
-          poll: boolean;
           comments: boolean;
         };
       }>()
@@ -3004,111 +2925,6 @@ export const notification = pgTable(
     }).onDelete('cascade'),
     index('idx_notification_profile_org_created').on(table.profileId, table.organizationId, table.createdAt),
     index('idx_notification_profile_org_unread').on(table.profileId, table.organizationId, table.isRead)
-  ]
-);
-
-export const webhookEndpoint = pgTable(
-  'webhook_endpoint',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    organizationId: uuid('organization_id').notNull(),
-    name: varchar({ length: 100 }).notNull(),
-    payloadUrl: text('payload_url').notNull(),
-    secretCiphertext: text('secret_ciphertext'),
-    secretLast4: varchar('secret_last4', { length: 4 }),
-    verifySsl: boolean('verify_ssl').default(true).notNull(),
-    isActive: boolean('is_active').default(true).notNull(),
-    consecutiveFailures: integer('consecutive_failures').default(0).notNull(),
-    createdByProfileId: uuid('created_by_profile_id').notNull(),
-    updatedByProfileId: uuid('updated_by_profile_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.organizationId],
-      foreignColumns: [organization.id],
-      name: 'webhook_endpoint_organization_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.createdByProfileId],
-      foreignColumns: [profile.id],
-      name: 'webhook_endpoint_created_by_profile_id_fkey'
-    }).onDelete('restrict'),
-    foreignKey({
-      columns: [table.updatedByProfileId],
-      foreignColumns: [profile.id],
-      name: 'webhook_endpoint_updated_by_profile_id_fkey'
-    }).onDelete('restrict'),
-    index('idx_webhook_endpoint_org').on(table.organizationId)
-  ]
-);
-
-export const webhookSubscription = pgTable(
-  'webhook_subscription',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    webhookId: uuid('webhook_id').notNull(),
-    eventType: varchar('event_type', { length: 100 }).notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.webhookId],
-      foreignColumns: [webhookEndpoint.id],
-      name: 'webhook_subscription_webhook_id_fkey'
-    }).onDelete('cascade'),
-    unique('webhook_subscription_webhook_event_unique').on(table.webhookId, table.eventType)
-  ]
-);
-
-export const webhookEvent = pgTable(
-  'webhook_event',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    organizationId: uuid('organization_id').notNull(),
-    eventType: varchar('event_type', { length: 100 }).notNull(),
-    payload: jsonb().notNull().$type<Record<string, unknown>>(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.organizationId],
-      foreignColumns: [organization.id],
-      name: 'webhook_event_organization_id_fkey'
-    }).onDelete('cascade'),
-    index('idx_webhook_event_org_created').on(table.organizationId, table.createdAt)
-  ]
-);
-
-export const webhookDelivery = pgTable(
-  'webhook_delivery',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    webhookId: uuid('webhook_id').notNull(),
-    eventId: uuid('event_id').notNull(),
-    status: webhookDeliveryStatus().default('PENDING').notNull(),
-    attempt: integer().default(0).notNull(),
-    responseStatus: integer('response_status'),
-    responseBody: text('response_body'),
-    errorMessage: text('error_message'),
-    durationMs: integer('duration_ms'),
-    deliveredAt: timestamp('delivered_at', { withTimezone: true, mode: 'string' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.webhookId],
-      foreignColumns: [webhookEndpoint.id],
-      name: 'webhook_delivery_webhook_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.eventId],
-      foreignColumns: [webhookEvent.id],
-      name: 'webhook_delivery_event_id_fkey'
-    }).onDelete('cascade'),
-    index('idx_webhook_delivery_webhook_created').on(table.webhookId, table.createdAt),
-    index('idx_webhook_delivery_status').on(table.status)
   ]
 );
 
@@ -5408,5 +5224,100 @@ export const liveSessionReminderDelivery = pgTable(
     index('idx_live_session_reminder_delivery_course_lesson_at').on(table.courseId, table.lessonAt),
     index('idx_live_session_reminder_delivery_profile_id').on(table.profileId),
     index('idx_live_session_reminder_delivery_status_lesson_at').on(table.status, table.lessonAt)
+  ]
+);
+
+export const webhookDeliveryStatus = pgEnum('WEBHOOK_DELIVERY_STATUS', ['PENDING', 'SUCCESS', 'FAILED', 'GAVE_UP']);
+
+export const webhookEndpoint = pgTable(
+  'webhook_endpoint',
+  {
+    id: uuid('id')
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 120 }).notNull(),
+    payloadUrl: text('payload_url').notNull(),
+    secretCiphertext: text('secret_ciphertext'),
+    secretLast4: varchar('secret_last4', { length: 4 }),
+    verifySsl: boolean('verify_ssl').default(true).notNull(),
+    eventMode: varchar('event_mode', { length: 16 }).default('selected').notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    consecutiveFailures: integer('consecutive_failures').default(0).notNull(),
+    autoDisabledAt: timestamp('auto_disabled_at', { withTimezone: true, mode: 'string' }),
+    lastDeliveryStatus: webhookDeliveryStatus('last_delivery_status'),
+    lastDeliveryAt: timestamp('last_delivery_at', { withTimezone: true, mode: 'string' }),
+    createdByProfileId: uuid('created_by_profile_id').references(() => profile.id, { onDelete: 'set null' }),
+    updatedByProfileId: uuid('updated_by_profile_id').references(() => profile.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [index('idx_webhook_endpoint_org_id').on(table.organizationId)]
+);
+
+export const webhookSubscription = pgTable(
+  'webhook_subscription',
+  {
+    id: uuid('id')
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    webhookId: uuid('webhook_id')
+      .notNull()
+      .references(() => webhookEndpoint.id, { onDelete: 'cascade' }),
+    eventType: varchar('event_type', { length: 64 }).notNull()
+  },
+  (table) => [
+    unique('webhook_subscription_webhook_event_key').on(table.webhookId, table.eventType),
+    index('idx_webhook_subscription_event_type').on(table.eventType)
+  ]
+);
+
+export const webhookEvent = pgTable(
+  'webhook_event',
+  {
+    id: text('id').primaryKey().notNull(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id, { onDelete: 'cascade' }),
+    eventType: varchar('event_type', { length: 64 }).notNull(),
+    payload: jsonb('payload').notNull().$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    index('idx_webhook_event_created_at').on(table.createdAt),
+    index('idx_webhook_event_org_created_at').on(table.organizationId, table.createdAt)
+  ]
+);
+
+export const webhookDelivery = pgTable(
+  'webhook_delivery',
+  {
+    id: text('id').primaryKey().notNull(),
+    webhookId: uuid('webhook_id')
+      .notNull()
+      .references(() => webhookEndpoint.id, { onDelete: 'cascade' }),
+    eventId: text('event_id')
+      .notNull()
+      .references(() => webhookEvent.id, { onDelete: 'cascade' }),
+    attempt: integer('attempt').default(0).notNull(),
+    status: webhookDeliveryStatus('status').default('PENDING').notNull(),
+    isTest: boolean('is_test').default(false).notNull(),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true, mode: 'string' }),
+    requestHeaders: jsonb('request_headers').$type<Record<string, string>>(),
+    responseStatus: integer('response_status'),
+    responseBody: text('response_body'),
+    errorMessage: text('error_message'),
+    durationMs: integer('duration_ms'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    index('idx_webhook_delivery_webhook_created_at').on(table.webhookId, table.createdAt),
+    index('idx_webhook_delivery_status_next_attempt').on(table.status, table.nextAttemptAt),
+    index('idx_webhook_delivery_event_id').on(table.eventId)
   ]
 );

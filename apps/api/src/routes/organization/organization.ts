@@ -13,6 +13,7 @@ import {
   ZBulkAudienceAction,
   ZGetAudienceQuery,
   ZGetCoursesBySiteName,
+  ZGetLinkInvite,
   ZGetOrgSetup,
   ZGetOrganizationCoursesQuery,
   ZGetOrganizations,
@@ -92,7 +93,6 @@ import {
   toggleOrgLinkInvite
 } from '@api/services/organization/invite';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
-import { orgAdminOrAutomationKeyMiddleware } from '@api/middlewares/org-admin-or-automation-key';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgMemberOrAutomationKeyMiddleware } from '@api/middlewares/org-member-or-automation-key';
 import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
@@ -362,7 +362,7 @@ export const audienceRouter = new Hono()
         const orgId = c.req.header('cio-org-id')!;
         const data = c.req.valid('json');
 
-        const result = await assignAudienceToCourses(orgId, data);
+        const result = await assignAudienceToCourses(orgId, data, 'dashboard', c.get('user')?.id ?? null);
 
         return c.json(
           {
@@ -477,16 +477,17 @@ export const organizationRouter = new Hono()
     try {
       const orgId = c.req.header('cio-org-id')!;
       const user = c.get('user')!;
-      const { emails, roleId } = c.req.valid('json');
+      const { emails, roleId, confirmedStudentEmails } = c.req.valid('json');
 
-      const members = await inviteTeamMembers(orgId, emails, roleId, user.id);
+      const result = await inviteTeamMembers(orgId, emails, roleId, user.id, confirmedStudentEmails);
+      const status = result.requiresConfirmation || result.existingTeamMembers.length > 0 ? 200 : 201;
 
       return c.json(
         {
           success: true,
-          data: members
+          data: result
         },
-        201
+        status
       );
     } catch (error) {
       return handleError(c, error, 'Failed to invite team members');
@@ -494,12 +495,13 @@ export const organizationRouter = new Hono()
   })
   /**
    * GET /organization/link-invite
-   * Returns the current org link invite (null if none created yet)
+   * Returns the active link for the requested role (null if none exists)
    */
-  .get('/link-invite', authMiddleware, orgAdminMiddleware, async (c) => {
+  .get('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('query', ZGetLinkInvite), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
-      const data = await fetchOrgLinkInvite(orgId);
+      const { roleId } = c.req.valid('query');
+      const data = await fetchOrgLinkInvite(orgId, roleId);
       return c.json({ success: true, data }, 200);
     } catch (error) {
       return handleError(c, error, 'Failed to fetch link invite');
@@ -507,7 +509,7 @@ export const organizationRouter = new Hono()
   })
   /**
    * POST /organization/link-invite
-   * Get-or-create the org link invite
+   * Get or create a link for the requested role
    */
   .post('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('json', ZCreateLinkInvite), async (c) => {
     try {
@@ -522,14 +524,14 @@ export const organizationRouter = new Hono()
   })
   /**
    * PATCH /organization/link-invite
-   * Enable or disable the org link invite
+   * Enable or disable the requested role's link
    */
   .patch('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('json', ZToggleLinkInvite), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const user = c.get('user')!;
-      const { isRevoked } = c.req.valid('json');
-      const data = await toggleOrgLinkInvite(orgId, isRevoked, user.id);
+      const { roleId, isRevoked } = c.req.valid('json');
+      const data = await toggleOrgLinkInvite(orgId, roleId, isRevoked, user.id);
       return c.json({ success: true, data }, 200);
     } catch (error) {
       return handleError(c, error, 'Failed to update link invite');
@@ -618,26 +620,20 @@ export const organizationRouter = new Hono()
   /**
    * POST /organization/courses/reorder
    * Persists the manual display order of organization courses (landing page + public catalog)
-   * Requires authentication and organization administrator privileges (or automation key with `course:write`)
+   * Requires authentication and organization administrator privileges. Automation keys use PUT /public-api/v1/organization/landing-page/featured-courses
    */
-  .post(
-    '/courses/reorder',
-    authOrAutomationKeyMiddleware,
-    orgAdminOrAutomationKeyMiddleware(['course:write']),
-    zValidator('json', ZCourseReorder),
-    async (c) => {
-      try {
-        const { courses } = c.req.valid('json');
-        const orgId = c.get('orgId')!;
+  .post('/courses/reorder', authMiddleware, orgAdminMiddleware, zValidator('json', ZCourseReorder), async (c) => {
+    try {
+      const { courses } = c.req.valid('json');
+      const orgId = c.req.header('cio-org-id')!;
 
-        await reorderOrgCourses(orgId, courses);
+      await reorderOrgCourses(orgId, courses);
 
-        return c.json({ success: true }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to reorder courses');
-      }
+      return c.json({ success: true }, 200);
+    } catch (error) {
+      return handleError(c, error, 'Failed to reorder courses');
     }
-  )
+  })
   /**
    * GET /organization/courses/enrolled
    * Gets enrolled courses for a user in an organization (used in lms)

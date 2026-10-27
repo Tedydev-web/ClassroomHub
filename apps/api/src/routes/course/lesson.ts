@@ -22,6 +22,7 @@ import {
   getLessonCommentsPaginated,
   getLessonCompletionService,
   getLessonHistoryService,
+  getLessonVideoHlsStatusesService,
   getLessonWatchProgressService,
   hideLessonRecordingsFromLearners,
   listLessons,
@@ -44,8 +45,6 @@ import { notifyCourseSessionUpdateService } from '@api/services/course/notify-se
 import { generateLessonPdf } from '@api/utils/lesson';
 import { ensureCourseGroupMemberId } from '@cio/core/services/course/course';
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
-import { getCourseWithOrgData } from '@cio/db/queries/course';
-import { emitWebhookEvent } from '@api/services/webhook';
 import { lessonLanguageRouter } from '@api/routes/course/lesson-language';
 import { zValidator } from '@hono/zod-validator';
 import {
@@ -97,13 +96,33 @@ export const lessonRouter = new Hono()
       return handleError(c, error, 'Failed to fetch lesson');
     }
   })
+  .get(
+    '/:lessonId/video-status',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZLessonGetParam),
+    async (c) => {
+      try {
+        const { lessonId } = c.req.valid('param');
+        const statuses = await getLessonVideoHlsStatusesService(lessonId);
+
+        return c.json({ success: true, data: { statuses } }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch lesson video status');
+      }
+    }
+  )
   .post('/', authMiddleware, courseMemberMiddleware, zValidator('json', ZLessonCreate), async (c) => {
     try {
       const user = c.get('user')!;
       const courseId = c.req.param('courseId')!;
       const data = c.req.valid('json');
 
-      const createdLesson = await createLesson(courseId, { ...data, courseId });
+      const createdLesson = await createLesson(
+        courseId,
+        { ...data, courseId },
+        { actorProfileId: c.get('user')?.id ?? null }
+      );
       const [lesson] = await hideLessonRecordingsFromLearners(courseId, user.id, [createdLesson]);
 
       return c.json({ success: true, data: lesson }, 201);
@@ -124,7 +143,7 @@ export const lessonRouter = new Hono()
         const { lessonId } = c.req.valid('param');
         const data = c.req.valid('json');
 
-        const updatedLesson = await updateLessonService(lessonId, data);
+        const updatedLesson = await updateLessonService(lessonId, data, { actorProfileId: c.get('user')?.id ?? null });
         const [lesson] = await hideLessonRecordingsFromLearners(courseId, user.id, [updatedLesson]);
 
         return c.json({ success: true, data: lesson }, 200);
@@ -280,21 +299,6 @@ export const lessonRouter = new Hono()
         });
 
         const completion = await upsertLessonCompletionService(lessonId, user.id, isComplete);
-
-        void getCourseWithOrgData(courseId)
-          .then((course) => {
-            if (!course?.orgId) return;
-
-            return emitWebhookEvent(course.orgId, 'lesson.completion.updated', {
-              courseId,
-              isComplete,
-              lessonId,
-              profileId: user.id
-            });
-          })
-          .catch((error) => {
-            console.error('Failed to emit lesson completion webhook:', error);
-          });
 
         if (isComplete) {
           void evaluateCourseCertification(courseId, user.id).catch((certError) => {

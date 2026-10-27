@@ -100,7 +100,7 @@ vi.mock('@api/services/course/compliance', () => ({
 vi.mock('@api/services/course/completion', () => ({
   evaluateCourseCertification: mocks.evaluateCourseCertification
 }));
-vi.mock('@api/services/webhook', () => ({ emitWebhookEvent: vi.fn() }));
+vi.mock('@cio/core/services/webhook/emit', () => ({ emitCourseWebhookEvent: vi.fn() }));
 
 import { ErrorCodes } from '@api/utils/errors';
 import { createSubmissionService } from './submission';
@@ -350,7 +350,7 @@ describe('createSubmissionService transaction guards', () => {
           { questionId: 1, optionId: 11 },
           { questionId: 1, optionId: 11 }
         ],
-        '019cdef0-1234-7abc-8def-1234567890ab'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ab' }
       )
     ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
     expect(mocks.createSubmission).not.toHaveBeenCalled();
@@ -408,13 +408,9 @@ describe('createSubmissionService transaction guards', () => {
     mocks.getQuestionAnswersBySubmissionId.mockResolvedValue(existingAnswers);
 
     await expect(
-      createSubmissionService(
-        courseId,
-        exerciseId,
-        submittedBy,
-        [{ questionId: 1, optionId: 11 }],
-        '019cdef0-1234-7abc-8def-1234567890ab'
-      )
+      createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: 1, optionId: 11 }], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ab'
+      })
     ).resolves.toMatchObject({ id: existingSubmission.id, answers: existingAnswers });
     expect(mocks.createSubmission).not.toHaveBeenCalled();
     expect(mocks.insertQuestionAnswersBatch).not.toHaveBeenCalled();
@@ -453,13 +449,9 @@ describe('createSubmissionService transaction guards', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     await expect(
-      createSubmissionService(
-        courseId,
-        exerciseId,
-        submittedBy,
-        [{ questionId: 1, optionId: 11 }],
-        '019cdef0-1234-7abc-8def-1234567890ab'
-      )
+      createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: 1, optionId: 11 }], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ab'
+      })
     ).resolves.toMatchObject({ id: createdSubmission.id, score: 2 });
     await vi.waitFor(() => {
       expect(consoleError).toHaveBeenCalledWith(
@@ -513,13 +505,9 @@ describe('createSubmissionService transaction guards', () => {
       orgTheme: null
     });
 
-    await createSubmissionService(
-      courseId,
-      exerciseId,
-      submittedBy,
-      [{ questionId: question.id, optionId: 11 }],
-      '019cdef0-1234-7abc-8def-1234567890b0'
-    );
+    await createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+      idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b0'
+    });
 
     await vi.waitFor(() => {
       expect(mocks.enqueueTransactionalEmail).toHaveBeenCalledWith(
@@ -587,7 +575,7 @@ describe('createSubmissionService transaction guards', () => {
           { questionId: question.id, optionId: 11 },
           { questionId: manualQuestion.id, answer: 'Detailed answer' }
         ],
-        '019cdef0-1234-7abc-8def-1234567890ae'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ae' }
       )
     ).resolves.toMatchObject({
       id: createdSubmission.id,
@@ -651,7 +639,7 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [{ questionId: numericQuestion.id, answer: JSON.stringify({ type: 'NUMERIC', value: 42 }) }],
-        '019cdef0-1234-7abc-8def-1234567890c0'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890c0' }
       )
     ).resolves.toMatchObject({
       id: createdSubmission.id,
@@ -750,7 +738,7 @@ describe('createSubmissionService transaction guards', () => {
             response: answerData.response
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890af'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890af' }
       )
     ).resolves.toMatchObject({ overallStatus: 'hybrid', gradingState: 'awaiting_manual', score: 3 });
     expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
@@ -855,7 +843,7 @@ describe('createSubmissionService transaction guards', () => {
             response
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890b2'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b2' }
       )
     ).resolves.toMatchObject({ overallStatus: 'auto_graded', gradingState: 'completed', score: 2, total: 2 });
     expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
@@ -919,7 +907,7 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [{ questionId: compositeQuestion.id, questionRevisionId: deliveredRevisionId, response }],
-        '019cdef0-1234-7abc-8def-1234567890bf'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890bf' }
       )
     ).rejects.toMatchObject({ code: ErrorCodes.CONFLICT, statusCode: 409 });
     expect(mocks.createSubmission).not.toHaveBeenCalled();
@@ -993,7 +981,7 @@ describe('createSubmissionService transaction guards', () => {
             response
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890b0'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b0' }
       )
     ).resolves.toMatchObject({ overallStatus: 'manual_required', gradingState: 'awaiting_manual', score: 0 });
     expect(mocks.createSubmission).toHaveBeenCalledWith(
@@ -1101,7 +1089,7 @@ describe('createSubmissionService transaction guards', () => {
             response: unsupportedResponse
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890b1'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b1' }
       )
     ).resolves.toMatchObject({ overallStatus: 'hybrid', gradingState: 'awaiting_manual', score: 3 });
     expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
@@ -1163,7 +1151,7 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [{ questionId: legacyManualQuestion.id, answer: 'Detailed answer' }],
-        '019cdef0-1234-7abc-8def-1234567890af'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890af' }
       )
     ).resolves.toMatchObject({
       id: createdSubmission.id,
@@ -1243,7 +1231,7 @@ describe('createSubmissionService transaction guards', () => {
       exerciseId,
       submittedBy,
       [{ questionId: videoQuestion.id, answer: JSON.stringify(videoAnswer) }],
-      '019cdef0-1234-7abc-8def-1234567890ac'
+      { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ac' }
     );
 
     expect(mocks.lockAssetById).toHaveBeenCalledWith(videoAnswer.assetId, 'org-a', transactionClient);
@@ -1300,7 +1288,7 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [{ questionId: videoQuestion.id, answer: JSON.stringify(videoAnswer) }],
-        '019cdef0-1234-7abc-8def-1234567890ad'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ad' }
       )
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.createAssetUsage).not.toHaveBeenCalled();
@@ -1368,7 +1356,7 @@ describe('createSubmissionService transaction guards', () => {
       exerciseId,
       submittedBy,
       [{ questionId: fileQuestion.id, answer: JSON.stringify(fileAnswer) }],
-      '019cdef0-1234-7abc-8def-1234567890b0'
+      { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b0' }
     );
 
     expect(mocks.lockAssetById).toHaveBeenCalledWith(fileAnswer.assetId, 'org-a', transactionClient);
@@ -1426,7 +1414,7 @@ describe('createSubmissionService transaction guards', () => {
         exerciseId,
         submittedBy,
         [{ questionId: fileQuestion.id, answer: JSON.stringify(fileAnswer) }],
-        '019cdef0-1234-7abc-8def-1234567890b1'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b1' }
       )
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.createAssetUsage).not.toHaveBeenCalled();
@@ -1495,7 +1483,7 @@ describe('createSubmissionService transaction guards', () => {
         { questionId: question.id, optionId: 11 },
         { questionId: manualQuestion.id, answer: 'Detailed answer' }
       ],
-      '019cdef0-1234-7abc-8def-1234567890b2'
+      { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b2' }
     );
 
     expect(questionRevisionGatewayMocks.materializeLegacyQuestionRevision).toHaveBeenCalledTimes(2);
@@ -1537,13 +1525,9 @@ describe('createSubmissionService transaction guards', () => {
     ]);
 
     await expect(
-      createSubmissionService(
-        courseId,
-        exerciseId,
-        submittedBy,
-        [{ questionId: question.id, optionId: 11 }],
-        '019cdef0-1234-7abc-8def-1234567890b3'
-      )
+      createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b3'
+      })
     ).resolves.toMatchObject({ id: existingSubmission.id });
     // Replay must stay write-free: no revision materialization, no publish,
     // and no answer inserts for an already-stored keyed attempt.
@@ -1572,13 +1556,9 @@ describe('createSubmissionService transaction guards', () => {
     mocks.insertQuestionAnswersBatch.mockResolvedValue([]);
     mocks.updateSubmissionGrades.mockResolvedValue({ id: 'submission-scope', score: 2, total: 2 });
 
-    await createSubmissionService(
-      courseId,
-      exerciseId,
-      submittedBy,
-      [{ questionId: question.id, optionId: 11 }],
-      '019cdef0-1234-7abc-8def-1234567890b4'
-    );
+    await createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+      idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b4'
+    });
 
     expect(mocks.getExerciseWithRelationsOptimized).toHaveBeenCalledWith(exerciseId, transactionClient, {
       questionScope: 'active'
@@ -1600,13 +1580,9 @@ describe('createSubmissionService transaction guards', () => {
     // The composite item is omitted from the payload on purpose: the request
     // must still fail so hidden composite content cannot be bypassed.
     await expect(
-      createSubmissionService(
-        courseId,
-        exerciseId,
-        submittedBy,
-        [{ questionId: question.id, optionId: 11 }],
-        '019cdef0-1234-7abc-8def-1234567890b5'
-      )
+      createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b5'
+      })
     ).rejects.toMatchObject({ code: ErrorCodes.VALIDATION_ERROR, statusCode: 400 });
     expect(mocks.createSubmission).not.toHaveBeenCalled();
     expect(mocks.insertQuestionAnswersBatch).not.toHaveBeenCalled();
@@ -1646,13 +1622,9 @@ describe('createSubmissionService transaction guards', () => {
     );
     mocks.updateSubmissionGrades.mockResolvedValue({ ...createdSubmission, score: 2, total: 2 });
 
-    await createSubmissionService(
-      courseId,
-      exerciseId,
-      submittedBy,
-      [{ questionId: question.id, optionId: 11 }],
-      '019cdef0-1234-7abc-8def-1234567890b6'
-    );
+    await createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+      idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b6'
+    });
 
     const insertedRows = mocks.insertQuestionAnswersBatch.mock.calls[0]?.[0] as
       | Array<{ questionId: number; answerData: unknown; questionRevisionId?: string }>
@@ -1724,7 +1696,7 @@ describe('createSubmissionService transaction guards', () => {
           }
         }
       ],
-      '019cdef0-1234-7abc-8def-1234567890b7'
+      { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b7' }
     );
 
     expect(mocks.createSubmission).toHaveBeenCalledWith(
@@ -1748,7 +1720,9 @@ describe('createSubmissionService transaction guards', () => {
     mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
 
     await expect(
-      createSubmissionService(courseId, exerciseId, submittedBy, [], '019cdef0-1234-7abc-8def-1234567890b8')
+      createSubmissionService(courseId, exerciseId, submittedBy, [], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b8'
+      })
     ).rejects.toMatchObject({ code: ErrorCodes.CONFLICT, statusCode: 409 });
     expect(questionRevisionGatewayMocks.materializeLegacyQuestionRevision).not.toHaveBeenCalled();
     expect(mocks.createSubmission).not.toHaveBeenCalled();
@@ -1764,13 +1738,9 @@ describe('createSubmissionService transaction guards', () => {
     mocks.getSubmissionByIdempotencyKey.mockResolvedValue(null);
 
     await expect(
-      createSubmissionService(
-        courseId,
-        exerciseId,
-        submittedBy,
-        [{ questionId: question.id, optionId: 11 }],
-        '019cdef0-1234-7abc-8def-1234567890b9'
-      )
+      createSubmissionService(courseId, exerciseId, submittedBy, [{ questionId: question.id, optionId: 11 }], {
+        idempotencyKey: '019cdef0-1234-7abc-8def-1234567890b9'
+      })
     ).rejects.toMatchObject({ code: ErrorCodes.INTERNAL_ERROR, statusCode: 500 });
     expect(mocks.createSubmission).not.toHaveBeenCalled();
     expect(mocks.insertQuestionAnswersBatch).not.toHaveBeenCalled();
@@ -1840,7 +1810,7 @@ describe('createSubmissionService transaction guards', () => {
             answer: JSON.stringify({ ...fileAnswer, fileName: 'answer-key-approved.pdf' })
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890ba'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890ba' }
       )
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.createAssetUsage).not.toHaveBeenCalled();
@@ -1910,7 +1880,7 @@ describe('createSubmissionService transaction guards', () => {
             answer: JSON.stringify({ ...videoAnswer, fileName: 'graded-reference.webm' })
           }
         ],
-        '019cdef0-1234-7abc-8def-1234567890bb'
+        { idempotencyKey: '019cdef0-1234-7abc-8def-1234567890bb' }
       )
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.createAssetUsage).not.toHaveBeenCalled();

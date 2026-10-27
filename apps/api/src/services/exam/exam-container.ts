@@ -5,6 +5,7 @@ import { getQuestionTypeById, isExerciseAutoGradable } from '@cio/question-types
 import { insertNextQuestionRevision, promoteQuestionCurrentRevision } from '@cio/db/queries/exercise/revision';
 import { listExerciseQuestionsInDeliveryOrder } from '@cio/db/queries/exercise/delivery-order';
 import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
+import { slugifyTitle } from '@cio/utils/validation/shared';
 
 import type { ExamPaperQuestionSnapshot, ExamPaperSnapshot } from './exam-paper-serializer';
 
@@ -26,6 +27,7 @@ export async function createExamContainer(title: string, dbClient: DbOrTxClient 
     .insert(schema.exercise)
     .values({
       title,
+      slug: slugifyTitle(title),
       courseId: null,
       lessonId: null,
       // A container sits outside any course, so its order never sequences anything.

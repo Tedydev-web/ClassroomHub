@@ -74,7 +74,7 @@
     "ky": "^1.10.0",
     "lodash": "^4.17.21",
     "marked": "^7.0.5",
-    "mediabunny": "^1.45.2",
+    "mediabunny": "^1.62.0",
     "openai-edge": "^1.2.2",
     "papaparse": "^5.4.1",
     "pluralize": "^8.0.0",
@@ -110,7 +110,7 @@
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/svelte": "^4.0.5",
     "@types/lodash": "^4.14.196",
-    "@types/node": "^22.15.0",
+    "@types/node": "^24.10.1",
     "all-object-keys": "^2.2.0",
     "cross-env": "^10.1.0",
     "diff": "^5.2.0",
@@ -141,7 +141,7 @@
   },
   "type": "module",
   "engines": {
-    "node": "^22.23.1"
+    "node": "^24.22.1"
   },
   "browser": {
     "crypto": false

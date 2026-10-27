@@ -9,6 +9,9 @@ on:
       - "packages/storybook/package.json"
   workflow_dispatch:
 
+env:
+  NODE_VERSION: "24.22.1"
+
 permissions:
   contents: read
 

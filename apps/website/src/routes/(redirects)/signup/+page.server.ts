@@ -1,15 +1,7 @@
 import { PRODUCT_URLS } from '@cio/utils/constants';
-import { client } from '$lib/utils/posthog';
-import { getDistinctId } from '$lib/utils/posthog/distinct-id';
-import { redirect } from '@sveltejs/kit';
+import { trackAndRedirect } from '$lib/utils/posthog/track-redirect';
 
 export const prerender = false;
 
-export const load = ({ request, url }) => {
-  client.capture({
-    distinctId: getDistinctId(request),
-    event: 'signup'
-  });
-
-  redirect(307, `${PRODUCT_URLS.dashboard}/signup${url.search ?? ''}`);
-};
+export const load = ({ request, url, platform }) =>
+  trackAndRedirect({ request, platform }, 'signup', `${PRODUCT_URLS.dashboard}/signup${url.search}`);

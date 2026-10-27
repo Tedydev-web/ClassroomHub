@@ -1,15 +1,7 @@
 import { PRODUCT_URLS } from '@cio/utils/constants';
-import { redirect } from '@sveltejs/kit';
-import { client } from '$lib/utils/posthog';
-import { getDistinctId } from '$lib/utils/posthog/distinct-id';
+import { trackAndRedirect } from '$lib/utils/posthog/track-redirect';
 
 export const prerender = false;
 
-export const load = ({ request }) => {
-  client.capture({
-    distinctId: getDistinctId(request),
-    event: 'cal.com page visited'
-  });
-
-  redirect(307, PRODUCT_URLS.marketing);
-};
+export const load = ({ request, platform }) =>
+  trackAndRedirect({ request, platform }, 'cal.com page visited', PRODUCT_URLS.marketing);

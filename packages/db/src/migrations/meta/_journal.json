@@ -323,6 +323,76 @@
       "when": 1791953233010,
       "tag": "0033_exam_anti_proxy_sitting",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791960000000,
+      "tag": "0033_media_upload_pipeline",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791971013728,
+      "tag": "0034_restore_missing_unique_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792160611625,
+      "tag": "0035_public_api_scopes_and_instance",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792266230279,
+      "tag": "0036_mixed_course_outline",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792300000000,
+      "tag": "0036_drop_fork_webhook_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792391198034,
+      "tag": "0037_webhooks",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792497761466,
+      "tag": "0038_remove_final_exercise_and_completion_threshold",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792741679148,
+      "tag": "0039_remove_poll_feature",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792952625947,
+      "tag": "0040_groupmember_completed_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792960500700,
+      "tag": "0041_mcp_key_organization_scopes",
+      "breakpoints": true
     }
   ]
 }

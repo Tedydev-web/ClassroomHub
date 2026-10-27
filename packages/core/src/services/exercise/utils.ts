@@ -508,7 +508,7 @@ export async function createNewQuestionsWithOptions(
   exerciseId: string,
   newQuestions: NonNullable<TExerciseUpdate['questions']>,
   txClient: DbOrTxClient
-): Promise<void> {
+): Promise<number[]> {
   const normalizedQuestions = newQuestions.map((question) => normalizeBinaryBooleanQuestion(question));
   const createdQuestions = await createQuestions(
     normalizedQuestions.map((q) => ({
@@ -547,6 +547,8 @@ export async function createNewQuestionsWithOptions(
   if (newOptions.length > 0) {
     await createOptions(newOptions, txClient);
   }
+
+  return createdQuestions.map((question) => question.id);
 }
 
 /**

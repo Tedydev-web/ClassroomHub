@@ -21,7 +21,7 @@ vi.mock('@cio/db/queries/newsfeed', () => ({
 }));
 vi.mock('@cio/core/utils/sanitize-html', () => ({ sanitizeHtml: (content: string) => content }));
 vi.mock('@api/services/jobs', () => ({ enqueueTransactionalEmail: vi.fn() }));
-vi.mock('@api/services/webhook', () => ({ emitWebhookEvent: vi.fn() }));
+vi.mock('@cio/core/services/webhook/emit', () => ({ emitCourseWebhookEvent: vi.fn() }));
 vi.mock('@cio/db/queries/notifications', () => ({ createNotification: vi.fn(), createNotifications: vi.fn() }));
 
 import { ErrorCodes } from '@api/utils/errors';

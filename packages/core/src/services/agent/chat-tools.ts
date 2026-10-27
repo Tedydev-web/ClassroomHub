@@ -2,15 +2,10 @@ import { createHash } from 'node:crypto';
 
 import { tool } from 'ai';
 import { CoursePlanSchema, getCourseTemplate } from '@cio/ai-assistant';
-import {
-  ADD_QUESTIONS_TOOL_DESCRIPTION,
-  ENABLED_QUESTION_TYPE_REGISTRY,
-  PREMIUM_QUESTION_TYPE_KEYS,
-  QUESTION_TYPE_ID_TO_KEY,
-  QUESTION_TYPE_REGISTRY,
-  UPDATE_QUESTIONS_BINARY_TYPES_HINT
-} from '@cio/question-types';
+import { getBlockRecipeMarkup } from '@cio/ai-assistant/tools';
+import { ADD_QUESTIONS_TOOL_DESCRIPTION, UPDATE_QUESTIONS_BINARY_TYPES_HINT } from '@cio/question-types';
 import { AppError } from '@cio/utils/errors';
+import { assertNoPremiumQuestionTypes } from '../exercise/premium-guard';
 import { trackAgentEvent, AgentEvent } from '../../utils/tinybird';
 import {
   createAgentRunEvent,
@@ -58,6 +53,7 @@ import {
   emptyParam,
   exerciseReadParam,
   fetchDocumentationUrlParam,
+  getBlockRecipeParam,
   goLiveParam,
   lessonReadParam,
   lessonTranscriptParam,
@@ -430,38 +426,6 @@ async function executeAgentToolBase<TArgs, TResult>(
   }
 }
 
-function assertNoPremiumQuestionTypes(
-  questionTypeIds: ReadonlyArray<number | undefined | null>,
-  isOrgOnPaidPlan: boolean
-): void {
-  if (isOrgOnPaidPlan) return;
-
-  const blockedTypenames = new Set<string>();
-  for (const typeId of questionTypeIds) {
-    if (typeId == null) continue;
-
-    const key = QUESTION_TYPE_ID_TO_KEY[typeId];
-    if (key && PREMIUM_QUESTION_TYPE_KEYS.has(key)) {
-      const registry = ENABLED_QUESTION_TYPE_REGISTRY.find((t) => t.id === typeId);
-      blockedTypenames.add(registry?.typename ?? key);
-    }
-  }
-
-  if (blockedTypenames.size === 0) return;
-
-  // Suggest only author-selectable types: `disabled` and `internal` entries
-  // must never appear in the upgrade-error guidance.
-  const allowed = ENABLED_QUESTION_TYPE_REGISTRY.filter((t) => !PREMIUM_QUESTION_TYPE_KEYS.has(t.key))
-    .map((t) => t.typename)
-    .join(', ');
-
-  throw new AppError(
-    `Question type(s) ${Array.from(blockedTypenames).join(', ')} require a paid plan and are not available on this org. Use one of: ${allowed}.`,
-    'UPGRADE_REQUIRED',
-    403
-  );
-}
-
 /**
  * YouTube video titles are attacker-controlled text (anyone can name a video).
  * Wrapping them in the same delimiters `fetch_documentation_url` uses keeps the
@@ -547,6 +511,17 @@ export function buildAgentTools(
       }
     }),
 
+    get_block_recipe: tool({
+      description:
+        'Get the exact markup for a lesson-body block type not spelled out in the system prompt (see the block type list there). Call this once per distinct block type, right before its first use in update_lesson_content — a lesson needing both a table and math needs two separate calls. Treat the result as a template: replace any placeholder or example content with values that fit the lesson, and emit only the final HTML fragment, never the recipe\'s prose or its "Example:" line. Never write this markup from memory.',
+      inputSchema: getBlockRecipeParam,
+      execute: async (args) => {
+        return executeAgentTool('get_block_recipe', { orgId, userId, courseId, args }, async () => {
+          return { blockType: args.blockType, markup: getBlockRecipeMarkup(args.blockType) };
+        });
+      }
+    }),
+
     create_section: tool({
       description: 'Create a new section in this course.',
       inputSchema: createSectionParam,
@@ -621,7 +596,7 @@ export function buildAgentTools(
 
     update_lesson_content: tool({
       description:
-        'Update the text content of a lesson in this course. Replaces full lesson HTML for the given locale. For lesson HTML, put only the lesson body in the content. Do not include the lesson title. Do not use h1 or h2 anywhere in lesson HTML. Start headings at h3 because that is the highest heading level allowed in lesson content. Write callouts as <div data-callout="tip"><p>…</p></div>, never as a blockquote.',
+        'Update the text content of a lesson in this course. Replaces full lesson HTML for the given locale. For lesson HTML, put only the lesson body in the content. Do not include the lesson title. Do not use h1 or h2 anywhere in lesson HTML. Start headings at h3 because that is the highest heading level allowed in lesson content. Write callouts as <div data-callout="tip"><p>…</p></div>, never as a blockquote. For any other block type (see the system prompt list), call get_block_recipe first and use the returned markup as a template, substituting any placeholder or example content for real values — never the recipe\'s prose.',
       inputSchema: updateContentParam,
       execute: async (args) => {
         return executeAgentTool('update_lesson_content', { orgId, userId, courseId, args }, async () => {
@@ -1026,7 +1001,7 @@ export function buildAgentTools(
       inputSchema: goLiveParam,
       execute: async (args) => {
         return executeAgentTool('go_live_course', { orgId, userId, courseId, args }, async () => {
-          const result = await publishCourseWhenReady(courseId);
+          const result = await publishCourseWhenReady(courseId, userId);
 
           return {
             courseId: result.course.id,

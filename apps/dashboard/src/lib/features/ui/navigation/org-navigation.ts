@@ -47,6 +47,7 @@ export interface NavItem {
   useHashUrl?: boolean; // Use '#' as URL (for collapsible items like settings)
   nestedRoutes?: NestedRouteConfig[]; // Static nested routes (like community/ask, settings/customize-lms)
   supportsDynamicSegment?: boolean; // Supports dynamic segments (like [slug])
+  isNew?: boolean;
 }
 
 export interface NavItemConfig {
@@ -76,6 +77,8 @@ export interface NavItemConfig {
   featureKey?: OrgFeatureKey;
   /** When set, the org sidebar shows the matching total from org nav counts. */
   countKey?: OrgNavCountKey;
+  /** Show a "New" badge on the org sidebar. */
+  isNew?: boolean;
 }
 
 export interface NavGroup {
@@ -244,6 +247,7 @@ export const baseNavConfig: NavItemConfig[] = [
     icon: BotIcon,
     requiresAdmin: true,
     disableWhenNotAdmin: true,
+    isNew: true,
     matchPattern: '^/org/[^/]+/(automation|mcp|api|zapier|webhooks)(/.*)?$',
     nestedRoutes: [
       { path: 'mcp', titleKey: 'automation.tabs.mcp' },
@@ -365,7 +369,8 @@ export function getOrgNavigationItems(
       useHashUrl: config.useHashUrl,
       nestedRoutes: config.nestedRoutes,
       supportsDynamicSegment: config.supportsDynamicSegment,
-      isPaid: config.isPaid
+      isPaid: config.isPaid,
+      isNew: config.isNew
     };
 
     // Handle nested items (like settings sub-items)
@@ -442,7 +447,10 @@ export function findDisabledOrgFeature(
   ) {
     return 'zapier';
   }
-  if (!isOrgFeatureEnabled(features, 'webhooks') && new RegExp(`^/org/[^/]+/webhooks(/.*)?$`).test(pathname)) {
+  if (
+    !isOrgFeatureEnabled(features, 'webhooks') &&
+    new RegExp(`^/org/[^/]+/(automation/webhooks|webhooks)(/.*)?$`).test(pathname)
+  ) {
     return 'webhooks';
   }
 
@@ -547,7 +555,8 @@ export function getOrgNavigationGroups(
       supportsDynamicSegment: config.supportsDynamicSegment,
       isPaid: config.isPaid,
       upgrade: config.upgradeResource ? Boolean(limitsReached[config.upgradeResource]) : undefined,
-      count: config.countKey && counts ? counts[config.countKey] : undefined
+      count: config.countKey && counts ? counts[config.countKey] : undefined,
+      isNew: config.isNew
     };
 
     if (visibleSubConfigs.length > 0) {

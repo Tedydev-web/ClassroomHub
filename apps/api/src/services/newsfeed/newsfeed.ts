@@ -25,7 +25,8 @@ import { env } from '@cio/core/config/env';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { createNotification, createNotifications } from '@cio/db/queries/notifications';
-import { emitWebhookEvent } from '@api/services/webhook';
+import { emitCourseWebhookEvent } from '@cio/core/services/webhook/emit';
+import type { TWebhookEventInput } from '@cio/utils/validation/webhook';
 
 /**
  * Bounds pathological chains. Far beyond any real conversation — nesting is not
@@ -544,18 +545,15 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string, 
   }
 }
 
-async function emitNewsfeedWebhook(
+async function emitNewsfeedWebhook<TEvent extends 'course.newsfeed.post.created' | 'course.newsfeed.comment.created'>(
   feedId: string,
-  eventType: 'course.newsfeed.post.created' | 'course.newsfeed.comment.created',
-  data: Record<string, unknown>
+  eventType: TEvent,
+  data: Omit<TWebhookEventInput<TEvent>, 'courseId'>
 ) {
   const feedData = await getNewsfeedForEmail(feedId);
   if (!feedData?.organization || !feedData.courseId) {
     return;
   }
 
-  await emitWebhookEvent(feedData.organization.id, eventType, {
-    ...data,
-    courseId: feedData.courseId
-  });
+  await emitCourseWebhookEvent(feedData.courseId, eventType, data);
 }

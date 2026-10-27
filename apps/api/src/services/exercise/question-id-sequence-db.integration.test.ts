@@ -48,7 +48,13 @@ describe.runIf(runDatabaseIntegration)('the question id sequence', () => {
 
     const [exercise] = await db
       .insert(schema.exercise)
-      .values({ title: `Paper ${randomUUID().slice(0, 8)}`, courseId: null, lessonId: null, order: 1 })
+      .values({
+        title: `Paper ${randomUUID().slice(0, 8)}`,
+        slug: 'test-item',
+        courseId: null,
+        lessonId: null,
+        order: 1
+      })
       .returning({ id: schema.exercise.id });
 
     // A restored row carries its own id and does not touch the sequence — the situation

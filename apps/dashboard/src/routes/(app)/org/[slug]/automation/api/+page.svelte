@@ -3,6 +3,7 @@
   import { automationApi } from '$features/automation/api/automation.svelte';
   import { t } from '$lib/utils/functions/translations';
   import * as Page from '@cio/ui/base/page';
+
   let { data } = $props();
   $effect(() => {
     automationApi.keys = data.keys;
@@ -11,10 +12,10 @@
 </script>
 
 <svelte:head><title>{t.get('automation.tabs.api')} - ClassroomHub</title></svelte:head>
-<Page.Header
-  ><Page.HeaderContent
-    ><Page.Title>{$t('automation.tabs.api')}</Page.Title><Page.Subtitle>{$t('automation.api.subtitle')}</Page.Subtitle
-    ></Page.HeaderContent
-  ></Page.Header
->
+<Page.Header>
+  <Page.HeaderContent>
+    <Page.Title>{$t('automation.tabs.api')}</Page.Title>
+    <Page.Subtitle>{$t('automation.api.subtitle')}</Page.Subtitle>
+  </Page.HeaderContent>
+</Page.Header>
 <Page.Body>{#snippet child()}<ApiAutomationPage />{/snippet}</Page.Body>

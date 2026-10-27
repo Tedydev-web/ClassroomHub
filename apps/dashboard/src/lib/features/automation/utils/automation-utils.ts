@@ -125,13 +125,14 @@ export function getOpenCodeSnippet(secret: string | null) {
   return `{
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "classroomhub": {
-      "type": "local",
-      "command": ["npx", "-y", "@tedydev/classroom-mcp"],
-      "enabled": true,
-      "environment": {
-        "CLASSROOM_API_URL": "${PRODUCT_URLS.api}",
-        "CLASSROOM_API_KEY": "${apiKey}"
+    "servers": {
+      "classroomhub": {
+        "type": "local",
+        "command": ["npx", "-y", "@tedydev/classroom-mcp"],
+        "environment": {
+          "CLASSROOM_API_URL": "${PRODUCT_URLS.api}",
+          "CLASSROOM_API_KEY": "${apiKey}"
+        }
       }
     }
   }

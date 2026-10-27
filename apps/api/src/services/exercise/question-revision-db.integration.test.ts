@@ -8,7 +8,7 @@ import { parseAssessmentItemDefinition } from '@cio/question-types';
 config();
 
 const postCommitMocks = vi.hoisted(() => ({
-  emitWebhookEvent: vi.fn().mockResolvedValue(undefined),
+  emitCourseWebhookEvent: vi.fn().mockResolvedValue(undefined),
   enqueueTransactionalEmail: vi.fn().mockResolvedValue(undefined),
   evaluateCourseCertification: vi.fn().mockResolvedValue(undefined),
   syncComplianceProgressFromSubmission: vi.fn().mockResolvedValue(undefined)
@@ -23,8 +23,8 @@ vi.mock('@api/services/course/compliance', () => ({
 vi.mock('@api/services/course/completion', () => ({
   evaluateCourseCertification: postCommitMocks.evaluateCourseCertification
 }));
-vi.mock('@api/services/webhook', () => ({
-  emitWebhookEvent: postCommitMocks.emitWebhookEvent
+vi.mock('@cio/core/services/webhook/emit', () => ({
+  emitCourseWebhookEvent: postCommitMocks.emitCourseWebhookEvent
 }));
 vi.mock('@cio/db/queries/course', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@cio/db/queries/course')>();
@@ -254,6 +254,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
           id: ids.exercise,
           courseId: ids.course,
           title: 'Revision lifecycle exercise',
+          slug: 'test-item',
           allowMultipleAttempts: true,
           order: 1
         },
@@ -261,6 +262,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
           id: ids.draftExercise,
           courseId: ids.course,
           title: 'Draft deletion exercise',
+          slug: 'test-item',
           allowMultipleAttempts: true,
           order: 2
         }
@@ -308,14 +310,12 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
         { questionId: keptQuestion.id, answer: 'first attempt answer two' }
       ];
       const [firstAttempt, replayedAttempt] = await Promise.all([
-        submissionServices.createSubmissionService(
-          ids.course,
-          ids.exercise,
-          ids.member,
-          answersPayload,
+        submissionServices.createSubmissionService(ids.course, ids.exercise, ids.member, answersPayload, {
           idempotencyKey
-        ),
-        submissionServices.createSubmissionService(ids.course, ids.exercise, ids.member, answersPayload, idempotencyKey)
+        }),
+        submissionServices.createSubmissionService(ids.course, ids.exercise, ids.member, answersPayload, {
+          idempotencyKey
+        })
       ]);
       expect(replayedAttempt.id).toBe(firstAttempt.id);
 
@@ -350,7 +350,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
           { questionId: attemptedQuestion.id, answer: 'second attempt answer one' },
           { questionId: keptQuestion.id, answer: 'second attempt answer two' }
         ],
-        randomUUID()
+        { idempotencyKey: randomUUID() }
       );
       expect((await listQuestionRevisions(attemptedQuestion.id)).map((revision) => revision.revision)).toEqual([1]);
       const secondAttemptLinks = await listAnswerRevisionLinks(secondAttempt.id);
@@ -563,7 +563,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
         ids.exercise,
         ids.member,
         [{ questionId: keptQuestion.id, answer: 'post-archive answer' }],
-        randomUUID()
+        { idempotencyKey: randomUUID() }
       );
       const postArchiveLinks = await listAnswerRevisionLinks(postArchiveAttempt.id);
       expect(postArchiveLinks).toEqual([
@@ -579,7 +579,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
             { questionId: attemptedQuestion.id, answer: 'answer for an archived question' },
             { questionId: keptQuestion.id, answer: 'kept answer' }
           ],
-          randomUUID()
+          { idempotencyKey: randomUUID() }
         )
       ).rejects.toMatchObject({ statusCode: 400 });
 
@@ -608,7 +608,7 @@ describe.runIf(runDatabaseIntegration)('question revision persistence and archiv
       expect(attemptedEntry?.capabilities.manualGradingRequired).toBe(true);
       expect(keptEntry?.maxScore).toBe(2);
 
-      const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(ids.course, firstAttempt.id, {
+      const gradedSubmission = await submissionServices.updateSubmissionGradesBatch(firstAttempt.id, ids.course, {
         answers: [
           { questionId: attemptedQuestion.id, points: 1.5 },
           { questionId: keptQuestion.id, points: 2 }

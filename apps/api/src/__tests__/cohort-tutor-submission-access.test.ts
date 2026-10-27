@@ -141,11 +141,11 @@ describe.skipIf(!hasDatabase)('cohort tutor submission access', () => {
     await db.insert(schema.cohortCourse).values({ cohortId, courseId: linkedCourseId });
     const [linkedExercise] = await db
       .insert(schema.exercise)
-      .values({ title: 'Linked quiz', order: 1, courseId: linkedCourseId })
+      .values({ title: 'Linked quiz', slug: 'linked-quiz', order: 1, courseId: linkedCourseId })
       .returning();
     const [addedExercise] = await db
       .insert(schema.exercise)
-      .values({ title: 'Added quiz', order: 1, courseId: addedCourseId })
+      .values({ title: 'Added quiz', slug: 'added-quiz', order: 1, courseId: addedCourseId })
       .returning();
     exerciseId = linkedExercise.id;
 
@@ -280,10 +280,10 @@ describe.skipIf(!hasDatabase)('cohort tutor submission access', () => {
     expect(listBody.success).toBe(true);
     expect(listBody.data.sections).toHaveLength(3);
 
-    const gradeResponse = await appAs(mentorId).request(`/course/${linkedCourseId}/submission/${submissionId}`, {
+    const gradeResponse = await appAs(mentorId).request(`/course/${linkedCourseId}/submission/${submissionId}/grades`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ feedback: 'Reviewed by mentor', gradingState: 'completed' })
+      body: JSON.stringify({ answers: [], total: 0, feedback: 'Reviewed by mentor', statusId: 3 })
     });
 
     expect(gradeResponse.status).toBe(200);

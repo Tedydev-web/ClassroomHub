@@ -1,6 +1,7 @@
 import { classroomhub, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
 import type { TLocale } from '@cio/db/types';
+import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 import type {
   TCoursePeopleActivityWindow,
   TCoursePeopleEnrolledWindow,
@@ -19,6 +20,12 @@ export type ListLessons = ListLessonsSuccess['data'];
 // Get lesson types
 export type GetLessonRequest = (typeof classroomhub.course)[':courseId']['lesson'][':lessonId']['$get'];
 export type GetLessonResponse = InferResponseType<GetLessonRequest> | null;
+export type GetLessonVideoStatusRequest =
+  (typeof classroomhub.course)[':courseId']['lesson'][':lessonId']['video-status']['$get'];
+export type GetLessonVideoStatusSuccess = Extract<InferResponseType<GetLessonVideoStatusRequest>, { success: true }>;
+export type LessonVideoHlsStatuses = GetLessonVideoStatusSuccess['data']['statuses'];
+export type LessonVideoHlsStatus = LessonVideoHlsStatuses[string];
+
 export type GetLessonSuccess = Extract<InferResponseType<GetLessonRequest>, { success: true }>;
 export type Lesson = GetLessonSuccess['data'];
 
@@ -682,6 +689,35 @@ export type PublishExamImportRequest =
 export type PublishExamImportSuccess = Extract<InferResponseType<PublishExamImportRequest>, { success: true }>;
 export type PublishedExamImport = PublishExamImportSuccess['data'];
 
+export interface ExerciseConversionGroup {
+  exerciseId: string;
+  exerciseTitle: string;
+  questions: Array<{
+    questionId: string | number;
+    questionTitle: string;
+    typeId: number;
+  }>;
+}
+
+export interface PublicConversionCountdown {
+  totalExercises: number;
+  resolvedExercises: number;
+  remainingExercises: number;
+  totalQuestions: number;
+  resolvedQuestions: number;
+  remainingQuestions: number;
+  percentComplete: number;
+  isFullyResolved: boolean;
+}
+
+export interface PublicConversionPersistedState {
+  isActive: boolean;
+  courseId: string | null;
+  initialOffenders: NonAutoGradableQuestionOffender[];
+  offenders: NonAutoGradableQuestionOffender[];
+  resolvedExerciseIds: string[];
+}
+
 export type ListCourseTemplatesRequest = (typeof classroomhub.course)['template']['$get'];
 export type ListCourseTemplatesSuccess = Extract<InferResponseType<ListCourseTemplatesRequest>, { success: true }>;
 export type CourseTemplateCards = ListCourseTemplatesSuccess['data'];
@@ -692,8 +728,6 @@ export type PreviewCourseTemplateSuccess = Extract<InferResponseType<PreviewCour
 export type CourseTemplatePreviewSettings = {
   certificate: boolean;
   deadline: string | null;
-  threshold: number | null;
-  finalExercise: { title: string; score: number } | null;
   sequential: boolean;
   grading: boolean;
   commentsOff: boolean;
@@ -744,3 +778,17 @@ export type LiveSessionReminderRow = {
 };
 
 export type LiveSessionReminderRowError = 'amount' | 'min' | 'max' | 'duplicate';
+
+export type ReorderCourseContentRequest = (typeof classroomhub.course)[':courseId']['content']['reorder']['$put'];
+export type SidebarOutlineEntry =
+  | { id: string; kind: 'item'; order: number; item: CourseContentItem }
+  | {
+      id: string;
+      kind: 'section';
+      order: number;
+      section: Omit<CourseContentSection, 'items'>;
+      items: SidebarOutlineEntry[];
+    };
+/** A lesson or exercise as a contents-page drag zone holds it: `id` is the drag key, `contentId` the item id. */
+export type ContentDndItem = CourseContentItem & { contentId: string };
+export type SidebarDeleteTarget = { kind: 'section'; sectionId: string } | { kind: 'item'; item: CourseContentItem };

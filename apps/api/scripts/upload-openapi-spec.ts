@@ -156,10 +156,6 @@ class OpenAPISpecGenerator {
             {
               url: PRODUCT_URLS.api,
               description: 'Production environment'
-            },
-            {
-              url: 'http://localhost:8001',
-              description: 'Development environment'
             }
           ]
         }

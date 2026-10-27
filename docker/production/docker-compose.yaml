@@ -232,7 +232,6 @@ services:
 
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET to a generated production secret}
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set PRIVATE_SERVER_KEY to a generated production secret}
-      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set WEBHOOK_ENCRYPTION_KEY to a generated production secret}
       # Must match the tenant-router Worker secret, or signed HLS playback fails.
       HLS_SIGNING_SECRET: ${HLS_SIGNING_SECRET:?set HLS_SIGNING_SECRET to the value shared with the tenant-router Worker}
 
@@ -433,7 +432,7 @@ services:
       # Workers build absolute links for outbound email; without this they would
       # fall back to a non-production host.
       DASHBOARD_ORIGIN: ${DASHBOARD_ORIGIN:?set DASHBOARD_ORIGIN to the public dashboard origin}
-      WEBHOOK_ENCRYPTION_KEY: ${WEBHOOK_ENCRYPTION_KEY:?set WEBHOOK_ENCRYPTION_KEY to a generated production secret}
+      PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set PRIVATE_SERVER_KEY to a generated production secret}
 
       OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:?set OBJECT_STORAGE_ENDPOINT to the R2 S3 API endpoint}
       OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:?set OBJECT_STORAGE_PUBLIC_ENDPOINT to the R2 S3 API endpoint}

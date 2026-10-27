@@ -22,7 +22,7 @@ import { isSelfOwnedDeployment } from '$lib/utils/deployment';
 
 /** Deep-merge with this when hydrating an org from the API so nested `customization` keys stay stable. */
 export const DEFAULT_ORG_CUSTOMIZATION = {
-  apps: { poll: true, comments: true },
+  apps: { comments: true },
   course: { grading: true, newsfeed: true },
   dashboard: { exercise: true, community: true, bannerText: '', bannerImage: '' },
   auth: { backgroundImage: '' }

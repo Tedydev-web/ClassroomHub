@@ -1,10 +1,24 @@
 import { BaseApiWithErrors, classroomhub } from '$lib/utils/services/api';
 import { getErrMsg } from '$lib/utils/services/api/utils';
 import { snackbar } from '$features/ui/snackbar/store';
-import type { DeleteCourseContentRequest, UpdateCourseContentRequest } from '../utils/types';
+import type {
+  DeleteCourseContentRequest,
+  UpdateCourseContentRequest,
+  ReorderCourseContentRequest
+} from '../utils/types';
+import type { TCourseContentReorder } from '@cio/utils/validation/course';
 import { ContentType } from '@cio/utils/constants/content';
 
 export class ContentApi extends BaseApiWithErrors {
+  async reorder(courseId: string, payload: TCourseContentReorder) {
+    const result = await this.execute<ReorderCourseContentRequest>({
+      requestFn: () => classroomhub.course[':courseId'].content.reorder.$put({ param: { courseId }, json: payload }),
+      logContext: 'reordering course outline',
+      onError: () => snackbar.error('snackbar.course_settings.sections_reorder_failed')
+    });
+    return Boolean(result?.success);
+  }
+
   async updateContent(
     courseId: string,
     items: Array<{

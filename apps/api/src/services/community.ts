@@ -17,7 +17,7 @@ import {
 import { getEnrolledCourses, getOrgCourses } from '@cio/db/queries/course';
 
 import { ROLE } from '@cio/utils/constants';
-import { emitWebhookEvent } from '@api/services/webhook';
+import { emitWebhookEvent } from '@cio/core/services/webhook/emit';
 
 export async function fetchCommunityQuestions(
   orgId: string,

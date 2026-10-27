@@ -2,6 +2,7 @@
   import { Toaster } from '$lib/components/ui/sonner';
   import { Navigation } from '$lib/components/navigation';
   import posthog from 'posthog-js';
+  import { dev } from '$app/environment';
 
   import '../app.css';
   import { onMount } from 'svelte';
@@ -10,6 +11,7 @@
   let { children } = $props();
 
   onMount(() => {
+    if (dev) return;
     if (env.PUBLIC_IS_SELF_OWNED === 'true') return;
 
     const apiKey = env.PUBLIC_POSTHOG_KEY?.trim();

@@ -119,6 +119,7 @@ describe('read_my_submissions', () => {
         score: null,
         idempotencyKey: null,
         reviewerId: null,
+        gradedBy: null,
         feedback: null,
         groupmember: null,
         answers: []
@@ -137,6 +138,7 @@ describe('read_my_submissions', () => {
         score: null,
         idempotencyKey: null,
         reviewerId: null,
+        gradedBy: null,
         feedback: 'Review special return types.',
         groupmember: null,
         answers: [
@@ -214,6 +216,7 @@ describe('read_my_submissions', () => {
         score: null,
         idempotencyKey: null,
         reviewerId: null,
+        gradedBy: null,
         feedback: 'Draft feedback',
         groupmember: null,
         answers: []
@@ -252,6 +255,7 @@ describe('read_my_submissions', () => {
         score: null,
         idempotencyKey: null,
         reviewerId: null,
+        gradedBy: null,
         feedback: null,
         groupmember: null,
         answers: [
@@ -318,6 +322,7 @@ describe('read_my_submissions', () => {
         total: 1,
         score: 1.5,
         idempotencyKey: null,
+        gradedBy: null,
         reviewerId: null,
         feedback: null,
         groupmember: null,

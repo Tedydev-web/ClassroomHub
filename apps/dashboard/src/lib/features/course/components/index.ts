@@ -10,3 +10,4 @@ export { default as CourseListRow } from './course-list-row.svelte';
 export { default as CourseTagsOverflow } from './course-tags-overflow.svelte';
 export { default as NewCourseModal } from './new-course-modal.svelte';
 export { default as QuestionContainer } from './question-container.svelte';
+export * from './public-conversion';

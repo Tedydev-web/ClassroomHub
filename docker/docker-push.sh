@@ -69,6 +69,7 @@ echo -e "${GREEN}Building + pushing Jobs worker image...${NC}"
 docker buildx build \
     --platform "${PLATFORMS}" \
     -f docker/Dockerfile.jobs \
+    --build-arg "CIO_VERSION=${VERSION}" \
     -t ${IMAGE_NAMESPACE}/classroom-jobs:${VERSION} \
     --push \
     .

@@ -24,6 +24,9 @@ concurrency:
   group: deploy-embeds-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: "24.22.1"
+
 jobs:
   build-and-deploy-embeds:
     runs-on: ${{ !(github.event_name == 'workflow_dispatch' && inputs.runner_pool == 'self-hosted') && 'ubuntu-latest' || fromJson('["self-hosted", "Linux", "deploy"]') }}

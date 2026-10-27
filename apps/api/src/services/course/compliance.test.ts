@@ -29,21 +29,11 @@ vi.mock('@cio/db/queries/course/people', () => ({ getProfileByGroupMemberId: vi.
 vi.mock('@cio/db/queries/group/group', () => ({ getUserCourseRole: vi.fn() }));
 vi.mock('./completion', () => ({ evaluateCourseCertification: vi.fn() }));
 
-import { getComplianceCompletionSnapshot } from './compliance';
+import { getComplianceExerciseSnapshot } from './compliance';
 
-describe('getComplianceCompletionSnapshot historical denominators', () => {
+describe('getComplianceExerciseSnapshot historical denominators', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('returns null score and attempts without a required exercise', async () => {
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: null
-    });
-
-    expect(snapshot).toEqual({ score: null, attempts: null });
-    expect(mocks.getStudentSubmissionsForExercise).not.toHaveBeenCalled();
   });
 
   it('scores each completed submission against its own attempted maximum when maxima diverge', async () => {
@@ -59,10 +49,7 @@ describe('getComplianceCompletionSnapshot historical denominators', () => {
       ])
     );
 
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: 'exercise-a'
-    });
+    const snapshot = await getComplianceExerciseSnapshot('exercise-a', 'member-a');
 
     // Best attempt is sub-2 at 3/3, not 3/4 against another attempt's max.
     expect(snapshot).toEqual({ score: 100, attempts: 3 });
@@ -75,10 +62,7 @@ describe('getComplianceCompletionSnapshot historical denominators', () => {
     mocks.getStudentSubmissionsForExercise.mockResolvedValue([{ id: 'sub-1', gradingState: 'completed', score: 3 }]);
     mocks.getHistoricalMaxPointsBySubmissionIds.mockResolvedValue(new Map([['sub-1', 3]]));
 
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: 'exercise-a'
-    });
+    const snapshot = await getComplianceExerciseSnapshot('exercise-a', 'member-a');
 
     expect(snapshot).toEqual({ score: 100, attempts: 1 });
   });
@@ -87,10 +71,7 @@ describe('getComplianceCompletionSnapshot historical denominators', () => {
     mocks.getStudentSubmissionsForExercise.mockResolvedValue([{ id: 'sub-1', gradingState: 'completed', score: 0 }]);
     mocks.getHistoricalMaxPointsBySubmissionIds.mockResolvedValue(new Map([['sub-1', 0]]));
 
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: 'exercise-a'
-    });
+    const snapshot = await getComplianceExerciseSnapshot('exercise-a', 'member-a');
 
     expect(snapshot).toEqual({ score: null, attempts: 1 });
   });
@@ -107,10 +88,7 @@ describe('getComplianceCompletionSnapshot historical denominators', () => {
       ])
     );
 
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: 'exercise-a'
-    });
+    const snapshot = await getComplianceExerciseSnapshot('exercise-a', 'member-a');
 
     expect(snapshot).toEqual({ score: 50, attempts: 2 });
   });
@@ -118,10 +96,7 @@ describe('getComplianceCompletionSnapshot historical denominators', () => {
   it('returns null score with attempt count when no submission is completed', async () => {
     mocks.getStudentSubmissionsForExercise.mockResolvedValue([{ id: 'sub-1', gradingState: 'pending', score: 0 }]);
 
-    const snapshot = await getComplianceCompletionSnapshot({
-      groupMemberId: 'member-a',
-      requiredExerciseId: 'exercise-a'
-    });
+    const snapshot = await getComplianceExerciseSnapshot('exercise-a', 'member-a');
 
     expect(snapshot).toEqual({ score: null, attempts: 1 });
     expect(mocks.getHistoricalMaxPointsBySubmissionIds).not.toHaveBeenCalled();

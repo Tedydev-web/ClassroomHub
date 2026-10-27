@@ -13,6 +13,7 @@
   import { EXERCISE_TEMPLATE_TAGS } from '$features/course/utils/constants';
   import { courseApi, examImportApi, exerciseApi } from '$features/course/api';
   import { profile } from '$lib/utils/store/user';
+  import { ContentType } from '@cio/utils/constants/content';
   import { lessonDocUpload } from '$features/course/components/lesson/store';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
   import { env } from '$env/dynamic/public';
@@ -33,6 +34,7 @@
     onCreated,
     onImportCreated,
     canCreate,
+    session,
     stepperState = $bindable(EXERCISE_STEPPER_DEFAULT_STATE)
   }: Props = $props();
 
@@ -122,6 +124,7 @@
 
   async function handleTemplateSelection() {
     if (!canCreate) return;
+    const startedSession = session;
     isTemplateFinishedLoading = true;
     const template = exerciseTemplateApi.templates?.find((t) => t.id === Number(selectedTemplateId));
 
@@ -131,16 +134,31 @@
     }
 
     try {
-      await exerciseApi.createFromTemplate(courseId, String(template.id), { sectionId, order });
-      if (exerciseApi.success && exerciseApi.exercise) {
+      const createdExercise = await exerciseApi.createFromTemplate(courseId, String(template.id), {
+        sectionId,
+        order: order ?? 1,
+        silent: true
+      });
+      if (createdExercise) {
         const profileId = $profile?.id;
         if (profileId) {
-          await courseApi.refreshCourse(courseId, profileId);
+          void courseApi.refreshCourse(courseId, profileId).catch((refreshError) => {
+            console.error('Failed to refresh course after exercise create:', refreshError);
+          });
         }
-        onCreated(exerciseApi.exercise.id);
+
+        onCreated(
+          {
+            id: createdExercise.id,
+            title: createdExercise.title ?? template.title ?? '',
+            type: ContentType.Exercise,
+            order
+          },
+          startedSession
+        );
       }
     } catch (error) {
-      console.error('Error creating exercise from template', error);
+      console.log('Error creating exercise from template', error);
       snackbar.error($t('course.navItem.lessons.exercises.new_exercise_modal.errors.template_fetch'));
     } finally {
       isTemplateFinishedLoading = false;
@@ -156,20 +174,37 @@
   async function handleAddExercise() {
     if (!title.trim() || !canCreate || isLoading) return;
 
+    const startedSession = session;
     isLoading = true;
     try {
-      await exerciseApi.create(courseId, {
-        title: title.trim(),
-        sectionId,
-        order
-      });
+      const trimmedTitle = title.trim();
+      const createdExercise = await exerciseApi.create(
+        courseId,
+        {
+          title: trimmedTitle,
+          sectionId,
+          order
+        },
+        { silent: true }
+      );
 
-      if (exerciseApi.success && exerciseApi.exercise) {
+      if (createdExercise) {
         const profileId = $profile?.id;
         if (profileId) {
-          await courseApi.refreshCourse(courseId, profileId);
+          void courseApi.refreshCourse(courseId, profileId).catch((refreshError) => {
+            console.error('Failed to refresh course after exercise create:', refreshError);
+          });
         }
-        onCreated(exerciseApi.exercise.id);
+
+        onCreated(
+          {
+            id: createdExercise.id,
+            title: createdExercise.title ?? trimmedTitle,
+            type: ContentType.Exercise,
+            order
+          },
+          startedSession
+        );
       }
     } finally {
       isLoading = false;
@@ -332,7 +367,7 @@
       </Label>
 
       <div>
-        <div class="mb-5 flex items-center gap-2">
+        <div class="mb-5 flex flex-wrap items-center gap-2">
           {#each tags as tag (tag)}
             <Badge
               variant={selectedTag === tag ? 'default' : 'secondary'}
@@ -346,7 +381,7 @@
 
         <div class="max-h-[320px] overflow-y-auto pr-1">
           {#if exerciseTemplateApi.isLoading}
-            <div class="grid grid-cols-2 items-start gap-4 lg:grid-cols-3 xl:grid-cols-4">
+            <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {#each Array(16) as _, index (index)}
                 <div class="ui:border-border ui:bg-muted h-[140px] w-full rounded-md border p-5">
                   <div class="flex h-full flex-col justify-evenly">
@@ -363,7 +398,7 @@
             <RadioOptionCardGroup
               bind:value={selectedTemplateId}
               options={templateRadioOptions}
-              class="grid-cols-2! lg:grid-cols-3! xl:grid-cols-4!"
+              class="grid-cols-1! sm:grid-cols-2! lg:grid-cols-3! xl:grid-cols-4!"
             />
           {:else}
             <p class="ui:text-muted-foreground text-sm">

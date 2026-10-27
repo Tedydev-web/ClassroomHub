@@ -16,6 +16,16 @@ import type { TGroupmember } from '@cio/db/types';
 import type { PaginatedCourseMember, PaginatedCourseMembersOptions } from '@cio/db/queries/course/people';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
+import {
+  buildMemberSource,
+  emitCourseMemberAddedWebhookEvent,
+  emitCourseMemberRemovedWebhookEvent,
+  emitCourseWebhookEvent,
+  type TWebhookMemberSource
+} from '@cio/core/services/webhook/emit';
+import { getCourseProgress } from '@cio/db/queries/course/course';
+import { getWebhookLastActiveAt } from '@cio/db/queries/webhook';
+import { calcCourseProgressPercent } from '@api/utils/course-completion';
 import { getCourseWithOrgData, getOrgIdByCourseId } from '@cio/db/queries/course';
 import { getProfileById } from '@cio/db/queries/auth';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
@@ -23,7 +33,8 @@ import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { ensureComplianceEnrollmentRecordsForProfiles } from './compliance';
 import { getCourseMemberProgressSummaries } from './member-progress';
 import { getWelcomeSessionIcs } from './session-invite';
-import { emitWebhookEvent } from '@api/services/webhook';
+import type { TEventSource } from '@cio/core/services/posthog';
+import { captureLearnersEnrolled } from '@api/services/product-events';
 
 /**
  * Attaches only `stage` to a page of members.
@@ -84,6 +95,39 @@ export async function listPaginatedCourseMembers(courseId: string, query: Pagina
   }
 }
 
+export type TMemberWebhookContext = { source?: TWebhookMemberSource; actorProfileId?: string | null };
+
+async function findLastActiveAt(organizationId: string | null, profileId: string) {
+  if (!organizationId) return null;
+
+  return getWebhookLastActiveAt(organizationId, profileId);
+}
+
+async function readProgressAtRemoval(courseId: string, memberId: string) {
+  try {
+    const member = await getCourseMember(courseId, memberId);
+
+    if (!member?.profileId || member.roleId !== ROLE.STUDENT) return null;
+
+    const progress = await getCourseProgress(courseId, member.profileId);
+    const percent = calcCourseProgressPercent({
+      lessonsCompleted: progress.lessonsCompleted,
+      totalLessons: progress.lessonsCount,
+      exercisesCompleted: progress.exercisesCompleted,
+      exercisesCount: progress.exercisesCount
+    });
+
+    const organizationId = await getOrgIdByCourseId(courseId);
+    const lastActiveAt = await findLastActiveAt(organizationId, member.profileId);
+
+    return { percent, completed: progress.completedAt !== null, lastActiveAt };
+  } catch (error) {
+    console.error('readProgressAtRemoval error:', error);
+
+    return null;
+  }
+}
+
 /**
  * Adds a course member (person) to a course
  * @param courseId Course ID
@@ -92,7 +136,8 @@ export async function listPaginatedCourseMembers(courseId: string, query: Pagina
  */
 export async function addMember(
   courseId: string,
-  data: { profileId?: string; roleId: number; email?: string; name?: string }
+  data: { profileId?: string; roleId: number; email?: string; name?: string },
+  context: TMemberWebhookContext = {}
 ) {
   try {
     if (!data.profileId && !data.email) {
@@ -100,9 +145,9 @@ export async function addMember(
     }
 
     const addedMember = await addCourseMember(courseId, data);
-
-    void emitCourseMemberAddedWebhook(courseId, addedMember.id, data).catch((error) => {
-      console.error('Failed to emit course member added webhook:', error);
+    await emitCourseMemberAddedWebhookEvent(courseId, addedMember, {
+      source: context.source ?? buildMemberSource('admin'),
+      actorProfileId: context.actorProfileId
     });
 
     if (data.roleId === ROLE.STUDENT) {
@@ -224,7 +269,12 @@ export async function addMember(
  * @param members Array of member data
  * @returns Array of created members
  */
-export async function addMembers(courseId: string, members: TAddCourseMembers) {
+export async function addMembers(
+  courseId: string,
+  members: TAddCourseMembers,
+  source: TEventSource = 'dashboard',
+  context: TMemberWebhookContext = {}
+) {
   try {
     if (members.length === 0) {
       throw new AppError('At least one member must be provided', ErrorCodes.VALIDATION_ERROR, 400);
@@ -257,8 +307,7 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
       theme: courseOrgData.orgTheme
     });
 
-    // Add members sequentially so a partial failure still invalidates stats for the
-    // inserts that did land, and each successful insert still emits its webhook.
+    // Add members sequentially so partial failures still invalidate stats for successful inserts.
     const addedMembers = [];
     let addedStudentMember = false;
 
@@ -266,9 +315,9 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
       for (const member of members) {
         const addedMember = await addCourseMember(courseId, member);
         addedMembers.push(addedMember);
-
-        void emitCourseMemberAddedWebhook(courseId, addedMember.id, member).catch((error) => {
-          console.error('Failed to emit course member added webhook:', error);
+        await emitCourseMemberAddedWebhookEvent(courseId, addedMember, {
+          source: context.source ?? buildMemberSource('admin'),
+          actorProfileId: context.actorProfileId
         });
 
         if (member.roleId === ROLE.STUDENT) {
@@ -279,6 +328,8 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
       if (addedStudentMember) {
         await invalidateOrgStats(courseOrgData.orgId);
       }
+
+      captureLearnersEnrolled(addedMembers, 'admin', source);
     }
 
     const studentProfileIds = members
@@ -351,22 +402,6 @@ export async function addMembers(courseId: string, members: TAddCourseMembers) {
   }
 }
 
-async function emitCourseMemberAddedWebhook(
-  courseId: string,
-  memberId: string,
-  member: { profileId?: string; roleId: number; email?: string; name?: string }
-) {
-  const course = await getCourseWithOrgData(courseId);
-  if (!course?.orgId) return;
-
-  await emitWebhookEvent(course.orgId, 'course.member.added', {
-    courseId,
-    memberId,
-    profileId: member.profileId ?? null,
-    roleId: member.roleId
-  });
-}
-
 /**
  * Updates a course member
  * @param courseId Course ID
@@ -418,8 +453,13 @@ export async function updateMember(courseId: string, memberId: string, data: Par
  * @param memberId Member ID
  * @returns Deleted member
  */
-export async function deleteMember(courseId: string, memberId: string) {
+export async function deleteMember(
+  courseId: string,
+  memberId: string,
+  context: { actorProfileId?: string | null; reason?: string | null } = {}
+) {
   try {
+    const progressBeforeRemoval = await readProgressAtRemoval(courseId, memberId);
     const deleted = await deleteCourseMember(courseId, memberId);
     if (!deleted) {
       throw new AppError('Course member not found', ErrorCodes.NOT_FOUND, 404);
@@ -429,6 +469,12 @@ export async function deleteMember(courseId: string, memberId: string) {
       const statsOrgId = await getOrgIdByCourseId(courseId);
       await invalidateOrgStats(statsOrgId);
     }
+
+    await emitCourseMemberRemovedWebhookEvent(courseId, deleted, {
+      actorProfileId: context.actorProfileId,
+      reason: context.reason,
+      progressAtRemoval: progressBeforeRemoval
+    });
 
     return deleted;
   } catch (error) {
@@ -457,7 +503,7 @@ export async function resetMemberCourseProgress(courseId: string, memberId: stri
       throw new AppError('Only student progress can be reset', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
-    const summary = await resetStudentCourseProgress({
+    const { summary, resetLessonIds, resetExerciseIds } = await resetStudentCourseProgress({
       courseId,
       groupMemberId: memberId,
       profileId: member.profileId
@@ -472,6 +518,23 @@ export async function resetMemberCourseProgress(courseId: string, memberId: stri
 
     const statsOrgId = await getOrgIdByCourseId(courseId);
     await invalidateOrgStats(statsOrgId);
+
+    const profileId = member.profileId;
+    const lessonResetEvents = profileId
+      ? resetLessonIds.map((lessonId) =>
+          emitCourseWebhookEvent(courseId, 'lesson.completion.updated', { lessonId, profileId, isComplete: false })
+        )
+      : [];
+    const exerciseResetEvents = resetExerciseIds.map((exerciseId) =>
+      emitCourseWebhookEvent(courseId, 'exercise.completion.updated', {
+        exerciseId,
+        memberId,
+        profileId,
+        isComplete: false
+      })
+    );
+
+    await Promise.all([...lessonResetEvents, ...exerciseResetEvents]);
 
     return summary;
   } catch (error) {

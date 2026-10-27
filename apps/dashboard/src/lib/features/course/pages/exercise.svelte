@@ -46,6 +46,9 @@
   import UpdateDescription from '$features/course/components/exercise/update-description.svelte';
   import { hasDirtyQuestionnaire as isQuestionnaireDirty } from '$features/course/components/exercise/questionnaire-dirty';
   import { ContentNavigationActions } from '$features/course/components/lesson';
+  import { PublicConversionBanner } from '$features/course/components';
+  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
+  import { getManualQuestionsFromList } from '$features/course/utils/public-conversion-utils';
   import {
     // RefreshPageData,
     RoleBasedSecurity,
@@ -341,7 +344,8 @@
     return true;
   }
 
-  async function handleSave() {
+  async function handleSave(options?: { silent?: boolean }) {
+    const silent = options?.silent ?? false;
     if ($isOrgStudent || !courseApi.course?.id) return;
 
     // Transform questionnaire to API format for validation
@@ -447,7 +451,17 @@
         }
         hasUnsavedChanges = false;
         patchExerciseListItemLocally();
-        snackbar.success('snackbar.exercise.success');
+        if (!silent) {
+          snackbar.success('snackbar.exercise.success');
+        }
+
+        if (publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id) {
+          const activeQuestions = getActiveExerciseQuestions($questionnaire.questions ?? []);
+          const manualQuestions = getManualQuestionsFromList(activeQuestions);
+          const exerciseTitle = exerciseApi.exercise?.title || $questionnaire.title || 'Untitled Exercise';
+
+          publicConversionFlow.syncExerciseQuestions(exerciseId, manualQuestions, exerciseTitle);
+        }
       }
     } catch {
       snackbar.error();
@@ -476,6 +490,12 @@
       hasUnsavedChanges = false;
     })
   );
+
+  $effect(() => {
+    if (courseApi.course?.id) {
+      publicConversionFlow.restoreForCourse(courseApi.course.id);
+    }
+  });
 
   $effect(() => {
     const nextTab = normalizeExerciseTab(page.url.searchParams.get('tab'));
@@ -612,9 +632,13 @@
     preview = !preview;
     reorderQuestions = false;
   }
+
+  const isConversionActive = $derived(
+    publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id
+  );
 </script>
 
-<Page.Header isSticky={true} class="ui:z-app-bar top-12! min-h-[36px]">
+<Page.Header isSticky={!isConversionActive} class={`min-h-9 ${isConversionActive ? '' : 'ui:z-app-bar top-12!'}`}>
   <Page.HeaderContent>
     <Page.Title class="flex flex-col gap-2">
       <span>{exerciseDisplayTitle}</span>
@@ -681,7 +705,7 @@
               </ButtonGroup.Root>
 
               <ButtonGroup.Root>
-                <Button size="sm" onclick={handleSave} loading={isSaving}>
+                <Button size="sm" onclick={() => handleSave()} loading={isSaving}>
                   {$t('course.navItem.lessons.exercises.all_exercises.save')}
                 </Button>
                 <ButtonGroup.Separator />
@@ -740,6 +764,18 @@
     </div>
   </Page.Action>
 </Page.Header>
+
+{#if !$isStudentExperience}
+  <PublicConversionBanner
+    {exerciseId}
+    onJumpToQuestion={() => {
+      selectedTab = 'questions';
+      preview = false;
+      reorderQuestions = false;
+    }}
+    onSave={handleSave}
+  />
+{/if}
 
 <Page.Body>
   {#snippet child()}

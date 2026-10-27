@@ -14,6 +14,7 @@ import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 
 import { AppError } from '@cio/utils/errors';
 import { isSelfOwnedDeployment } from '../../config/deployment';
+import { capturePlanLimitReached } from '../posthog';
 
 function startOfCurrentMonth(): Date {
   const date = new Date();
@@ -127,6 +128,17 @@ export async function enforceTokenBalance(orgId: string): Promise<TokenBalance> 
   const balance = await getTokenBalance(orgId);
 
   if (balance.remaining <= 0) {
+    const { planName } = await getPlanAllowance(orgId);
+
+    capturePlanLimitReached({
+      orgId,
+      limitType: 'ai_tokens',
+      plan: planName,
+      limit: balance.allowance,
+      current: balance.used,
+      blocked: true
+    });
+
     throw new AppError('Token limit reached', 'TOKEN_LIMIT_REACHED', 402);
   }
 

@@ -20,7 +20,6 @@ import type { TCourseType } from '@cio/db/types';
 import { ZCourseCreate, ZCourseUpdate, type TCourseUpdate } from '@cio/utils/validation/course/course';
 import { DEFAULT_COMPLIANCE_SETTINGS } from '../utils/compliance-utils';
 import { syncProgressionAccessToCourse } from '../utils/progression-utils';
-import { capturePosthogEvent } from '$lib/utils/services/posthog';
 import { currentOrg } from '$lib/utils/store/org';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
@@ -30,10 +29,12 @@ import { resolve } from '$app/paths';
 import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
 import { coursesApi } from './courses.svelte';
+import { publicConversionFlow } from '../store/public-conversion.svelte';
 import { orgNavCountsApi } from '$features/ui/sidebar/org-sidebar/org-nav-counts.svelte';
 import { ROLE, ErrorCodes } from '@cio/utils/constants';
 import { ContentType } from '@cio/utils/constants/content';
 import type { CourseMembers } from '../utils/types';
+import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 
 type GroupStore = {
   id?: string;
@@ -55,6 +56,12 @@ interface UpdateCourseOptions {
 export class CourseApi extends BaseApiWithErrors {
   course = $state<Course | null>(null);
   courseAnalytics = $state<CourseAnalytics | null>(null);
+  get publicConversionOffenders(): NonAutoGradableQuestionOffender[] {
+    return publicConversionFlow.offenders;
+  }
+  set publicConversionOffenders(value: NonAutoGradableQuestionOffender[]) {
+    publicConversionFlow.offenders = value;
+  }
   group = $state<GroupStore>({
     id: '',
     tutors: [],
@@ -62,6 +69,11 @@ export class CourseApi extends BaseApiWithErrors {
     people: [],
     memberId: ''
   });
+
+  override reset() {
+    super.reset();
+    publicConversionFlow.reset();
+  }
 
   private loadedCourseId = $state<string | null>(null);
   private isCourseDirty = $state(false);
@@ -426,7 +438,6 @@ export class CourseApi extends BaseApiWithErrors {
     onCreated?: (courseId: string) => void
   ) {
     const org = get(currentOrg);
-    const userProfile = get(profile);
 
     // Prepare data for validation
     const data = {
@@ -453,17 +464,6 @@ export class CourseApi extends BaseApiWithErrors {
       onSuccess: (response) => {
         if (response.data?.course) {
           const newCourse = response.data.course;
-
-          // Capture PostHog event
-          capturePosthogEvent('course_created', {
-            course_id: newCourse.id,
-            courseTitle: newCourse.title,
-            courseDescription: newCourse.description,
-            organization_id: org.id,
-            organization_name: org.name,
-            user_id: userProfile.id,
-            user_email: userProfile.email
-          });
 
           orgNavCountsApi.adjustCount('courses', 1);
 
@@ -520,6 +520,8 @@ export class CourseApi extends BaseApiWithErrors {
       return null;
     }
 
+    let conversionOffenders: NonAutoGradableQuestionOffender[] = [];
+
     const courseAtRequest = this.course;
     const snapshotAtRequest = courseAtRequest ? JSON.stringify(courseAtRequest) : null;
     let changedDuringRequest = false;
@@ -542,8 +544,21 @@ export class CourseApi extends BaseApiWithErrors {
           } else {
             this.course = response.data as Course;
           }
-          if (showSuccessToast) {
-            snackbar.success('Course updated successfully');
+
+          conversionOffenders =
+            'conversionBlocked' in response && Array.isArray(response.conversionBlocked)
+              ? (response.conversionBlocked as NonAutoGradableQuestionOffender[])
+              : [];
+
+          if (conversionOffenders.length > 0) {
+            publicConversionFlow.start(courseId, conversionOffenders);
+            snackbar.info('snackbar.course_settings.info.conversion_blocked');
+          } else if (publicConversionFlow.isActive && publicConversionFlow.courseId === courseId) {
+            publicConversionFlow.reset();
+          }
+
+          if (showSuccessToast && conversionOffenders.length === 0) {
+            snackbar.success('snackbar.course_settings.success.update_successful');
           }
           this.success = true;
           this.errors = {};

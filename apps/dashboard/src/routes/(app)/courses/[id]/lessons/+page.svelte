@@ -13,6 +13,13 @@
 
   let reorder = $state(false);
 
+  $effect(() => {
+    const activeCourseId = courseApi.course?.id;
+    if (activeCourseId !== data.courseId) {
+      reorder = false;
+    }
+  });
+
   function addContent() {
     const contentGroupingEnabled = courseApi.course?.metadata?.isContentGroupingEnabled ?? true;
     if (contentGroupingEnabled) {

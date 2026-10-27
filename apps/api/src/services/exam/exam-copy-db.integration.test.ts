@@ -181,7 +181,7 @@ describe.runIf(runDatabaseIntegration)('copying an exercise into an exam contain
     const courseId = await seedCourse(db, schema);
     const [empty] = await db
       .insert(schema.exercise)
-      .values({ title: 'Bài tập rỗng', courseId, lessonId: null, order: 1 })
+      .values({ title: 'Bài tập rỗng', slug: 'test-item', courseId, lessonId: null, order: 1 })
       .returning({ id: schema.exercise.id });
 
     await expect(container.copyExerciseIntoContainer(empty.id, courseId, db)).rejects.toThrow(/no questions/);

@@ -549,12 +549,6 @@ export async function deleteCourseMember(courseId: string, memberId: string): Pr
     // Removing a course member hard-deletes their `groupmember` row, but several
     // tables reference it without ON DELETE handling, so a member with any
     // activity would otherwise trip a foreign-key violation (HTTP 500).
-    //
-    // Follows the standard LMS policy: keep course history and anonymize the
-    // removed member (submissions, discussion, newsfeed, polls, attendance are
-    // detached via SET NULL) rather than destroying it. Quiz answers cannot be
-    // detached (`group_member_id` is NOT NULL), so they are removed — matching
-    // the exercise-assignment and completion-record FKs that already cascade.
     const deleted = await db.transaction(async (tx) => {
       await tx.update(schema.submission).set({ submittedBy: null }).where(eq(schema.submission.submittedBy, memberId));
       await tx
@@ -573,11 +567,6 @@ export async function deleteCourseMember(courseId: string, memberId: string): Pr
         .update(schema.courseNewsfeedComment)
         .set({ authorId: null })
         .where(eq(schema.courseNewsfeedComment.authorId, memberId));
-      await tx.update(schema.appsPoll).set({ authorId: null }).where(eq(schema.appsPoll.authorId, memberId));
-      await tx
-        .update(schema.appsPollSubmission)
-        .set({ selectedById: null })
-        .where(eq(schema.appsPollSubmission.selectedById, memberId));
 
       await tx.delete(schema.questionAnswer).where(eq(schema.questionAnswer.groupMemberId, memberId));
 
@@ -635,7 +624,7 @@ export async function getProfileByGroupMemberId(groupMemberId: string): Promise<
 }
 
 /**
- * Sets when the learner first met certification threshold for this course membership.
+ * Sets when the learner first met the certification requirements for this course membership.
  */
 export async function setMemberCertificateEarned(memberId: string, earnedAt: string): Promise<TGroupmember | null> {
   try {
@@ -667,6 +656,24 @@ export async function claimMemberCertificateEarned(memberId: string, earnedAt: s
   } catch (error) {
     console.error('claimMemberCertificateEarned error:', error);
     throw new Error(`Failed to claim certificate earned: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Atomically marks the member's course completion as announced.
+ * Returns true when this caller won the claim, so `course.completed` fires exactly once.
+ */
+export async function claimMemberCompleted(memberId: string, completedAt: string): Promise<boolean> {
+  try {
+    const updated = await db
+      .update(schema.groupmember)
+      .set({ completedAt })
+      .where(and(eq(schema.groupmember.id, memberId), isNull(schema.groupmember.completedAt)))
+      .returning({ id: schema.groupmember.id });
+    return updated.length > 0;
+  } catch (error) {
+    console.error('claimMemberCompleted error:', error);
+    throw new Error(`Failed to claim course completion: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

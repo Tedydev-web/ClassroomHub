@@ -93,7 +93,7 @@ vi.mock('@api/services/course/compliance', () => ({
 vi.mock('@api/services/course/completion', () => ({
   evaluateCourseCertification: mocks.evaluateCourseCertification
 }));
-vi.mock('@api/services/webhook', () => ({ emitWebhookEvent: vi.fn() }));
+vi.mock('@cio/core/services/webhook/emit', () => ({ emitCourseWebhookEvent: vi.fn() }));
 vi.mock('./submission-ownership', () => ({
   getCourseSubmissionOrThrow: mocks.getCourseSubmissionOrThrow,
   lockCourseSubmissionOrThrow: mocks.lockCourseSubmissionOrThrow
@@ -183,7 +183,7 @@ describe('submission grading transaction locks', () => {
   });
 
   it('locks the exercise before validating and updating one answer score', async () => {
-    await updateSubmissionAnswer(courseId, submissionId, 11, { questionId: 11, points: 1.25 });
+    await updateSubmissionAnswer(submissionId, courseId, 11, { questionId: 11, points: 1.25 });
 
     expect(mocks.lockCourseSubmissionOrThrow).toHaveBeenCalledWith(courseId, submissionId, transactionClient);
     expect(mocks.lockExerciseAssignmentState).toHaveBeenCalledWith(exerciseId, transactionClient);
@@ -196,7 +196,7 @@ describe('submission grading transaction locks', () => {
     mocks.lockCourseSubmissionOrThrow.mockResolvedValue({ ...submission, gradingState: 'completed', statusId: 3 });
 
     await expect(
-      updateSubmissionAnswer(courseId, submissionId, 11, { questionId: 11, points: 1.25 })
+      updateSubmissionAnswer(submissionId, courseId, 11, { questionId: 11, points: 1.25 })
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(mocks.updateSubmissionGrades).not.toHaveBeenCalled();
   });
@@ -207,7 +207,7 @@ describe('submission grading transaction locks', () => {
     ]);
 
     await expect(
-      updateSubmissionAnswer(courseId, submissionId, 11, { questionId: 11, points: 1.25 })
+      updateSubmissionAnswer(submissionId, courseId, 11, { questionId: 11, points: 1.25 })
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.updateSubmissionGrades).not.toHaveBeenCalled();
   });
@@ -223,7 +223,7 @@ describe('submission grading transaction locks', () => {
       { ...attemptedEntry, archivedAt: '2026-07-16T00:00:00.000Z' }
     ]);
 
-    await updateSubmissionAnswer(courseId, submissionId, 11, { questionId: 11, points: 1.25 });
+    await updateSubmissionAnswer(submissionId, courseId, 11, { questionId: 11, points: 1.25 });
 
     expect(mocks.updateSubmissionGrades).toHaveBeenCalledWith(
       courseId,
@@ -242,13 +242,13 @@ describe('submission grading transaction locks', () => {
     questionRevisionGatewayMocks.resolveAttemptedQuestionSet.mockResolvedValue([{ ...attemptedEntry, maxScore: 1 }]);
 
     await expect(
-      updateSubmissionAnswer(courseId, submissionId, 11, { questionId: 11, points: 2 })
+      updateSubmissionAnswer(submissionId, courseId, 11, { questionId: 11, points: 2 })
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mocks.updateSubmissionGrades).not.toHaveBeenCalled();
   });
 
   it('locks the exercise before validating and updating a complete grade batch', async () => {
-    await updateSubmissionGradesBatch(courseId, submissionId, {
+    await updateSubmissionGradesBatch(submissionId, courseId, {
       answers: [{ questionId: 11, points: 1.25 }],
       total: 1.25
     });
@@ -272,7 +272,7 @@ describe('submission grading transaction locks', () => {
       { ...attemptedEntry, archivedAt: '2026-07-16T00:00:00.000Z' }
     ]);
 
-    await updateSubmissionGradesBatch(courseId, submissionId, {
+    await updateSubmissionGradesBatch(submissionId, courseId, {
       answers: [{ questionId: 11, points: 2.5 }],
       total: 2.5
     });
@@ -311,7 +311,7 @@ describe('submission grading transaction locks', () => {
       orgTheme: null
     });
 
-    await updateSubmissionGradesBatch(courseId, submissionId, {
+    await updateSubmissionGradesBatch(submissionId, courseId, {
       answers: [{ questionId: 11, points: 1.25 }],
       total: 1.25
     });
@@ -361,7 +361,7 @@ describe('submission grading transaction locks', () => {
       orgTheme: null
     });
 
-    await updateSubmissionGradesBatch(courseId, submissionId, {
+    await updateSubmissionGradesBatch(submissionId, courseId, {
       answers: [
         { questionId: 11, points: 0.1 },
         { questionId: 12, points: 0.2 }
@@ -380,7 +380,7 @@ describe('submission grading transaction locks', () => {
   });
 
   it('locks the submission while validating a generic workflow update', async () => {
-    await updateSubmissionService(courseId, submissionId, { feedback: 'Reviewed' });
+    await updateSubmissionService(submissionId, courseId, { feedback: 'Reviewed' });
 
     expect(mocks.lockCourseSubmissionOrThrow).toHaveBeenCalledWith(courseId, submissionId, transactionClient);
     expect(mocks.updateSubmission).toHaveBeenCalledWith(
@@ -392,7 +392,7 @@ describe('submission grading transaction locks', () => {
   });
 
   it('requires the authoritative grading endpoint to complete a manual submission', async () => {
-    await expect(updateSubmissionService(courseId, submissionId, { statusId: 3 })).rejects.toMatchObject({
+    await expect(updateSubmissionService(submissionId, courseId, { statusId: 3 })).rejects.toMatchObject({
       statusCode: 400
     });
 

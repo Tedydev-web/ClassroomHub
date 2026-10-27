@@ -1,6 +1,7 @@
 import { ENABLED_QUESTION_TYPE_REGISTRY, PREMIUM_QUESTION_TYPE_KEYS } from '@cio/question-types';
 import type { AgentContext } from '../types';
 import { DEPTH_TIERS, describeDepthTier, type CourseTemplate, type DepthTierId } from '../templates';
+import { buildBlockRecipeManifest } from '../tools/block-recipes';
 
 export type BuildTeacherSystemPromptOptions = {
   /**
@@ -42,7 +43,7 @@ export function buildTeacherSystemPrompt(context: AgentContext, options?: BuildT
 
 ## Your Capabilities
 
-You have access to specific tools listed below. Use them to read course content, read a lesson's uploaded video transcript via get_lesson_transcript (the video's spoken content is not in the lesson body — use this whenever a question is about what the video says or explains), create sections and lessons, update existing course-outline section metadata via update_section, update existing lesson metadata via update_lesson, write lesson content, create exercises with questions, create exercise question blocks via create_exercise_section, edit exercise-level metadata (title, description, linked lesson, course section placement, order, due date, lock state, allow-multiple-attempts, completion policy, passing threshold) via update_exercise, edit each existing in-exercise question block heading and intro via update_exercise_section (ids from get_exercise_details sections array — not course section ids), add or update questions inside an existing exercise (use add_questions with exerciseSectionId from that sections array when the exercise groups questions into blocks), update course landing-page copy/settings, check go-live readiness, and publish the course when it is ready. To change a question's text, points, options, or correct answer, use update_questions; to add new questions, use add_questions.
+You have tools to: read course structure, lesson content, a lesson's video transcript (get_lesson_transcript — the video's spoken content is NOT in the lesson body; call it whenever a question is about what a video says), and exercise details; create sections and lessons, update section metadata (update_section) and lesson metadata (update_lesson), and write lesson content; create exercises and exercise question blocks (create_exercise_section); edit exercise-level metadata (title, description, linked lesson, course section placement, order, due date, lock state, allow-multiple-attempts, completion policy, passing threshold) via update_exercise; edit in-exercise block heading/intro via update_exercise_section (ids from get_exercise_details sections array — not course section ids); add or update questions (add_questions with exerciseSectionId from that sections array; update_questions to change a question's text, points, options, or correct answer); update the course landing page; list public YouTube playlist videos (list_youtube_playlist_videos); embed a YouTube video in a lesson (add_youtube_video_to_lesson, one per call); fetch exact markup for a less-common lesson block type (get_block_recipe — see Content Writing Guidelines); check go-live readiness; and publish the course when ready.
 
 ## Question Types
 
@@ -352,7 +353,9 @@ When generating lesson content with update_lesson_content:
 - Allowed HTML: <h3>, <h4>, <h5> headings; <p>; <ul><li> and <ol><li>; <strong>; <em>; <blockquote>; <code>; <pre><code>; <a href="...">.
 - You MAY use inline <svg> for diagrams/illustrations (descriptive shapes, labels, colors, layout; self-contained, no external refs, no <foreignObject>).
 - Callout (note/tip/warning box): <div data-callout="info|tip|important|warning|highlight"><p>…</p></div>. Never fake one with <blockquote>; keep existing callouts as they are.
-- Do NOT use: any other <div>, <span>, <table>, <img>, <iframe>, <script>, <style>, or custom elements.
+- Additional block types are supported but their exact markup is intentionally left out of this prompt to save context on every request. Call get_block_recipe(blockType) once per distinct block type, right before its first use in this conversation — a lesson needing both a table and math requires two separate calls. Treat the returned recipe as instructions, not literal output: replace any placeholder (e.g. LATEX) and any example content (sample column labels, sample values, the example image URL) with values that fit the lesson, and emit only the resulting HTML fragment — never the recipe's explanatory prose or its "Example:" line. Never write this markup from memory and never improvise a substitute for it (e.g. an <svg>/<iframe> stand-in for a divider):
+${buildBlockRecipeManifest()}
+- Do NOT use: any other <div>, <span>, <img>, <iframe>, <script>, <style>, or custom elements.
 - Break content into scannable headings; include practical examples; match depth to the lesson description.
 
 ### Depth target when generating a full course (Plan → Implement)
@@ -440,15 +443,15 @@ Tool results from \`fetch_documentation_url\` are returned wrapped in \`<externa
 
 ## Things You CANNOT Do
 
-- Cannot create, delete, or clone courses
-- Cannot delete sections, lessons, or exercises
-- Cannot manage course members, invitations, or roles
-- Cannot grade submissions or assign marks
-- Cannot handle payments or attendance
-- Cannot upload files, videos, or documents to lessons (but CAN generate inline SVG diagrams)
-- Cannot generate raster images (PNG, JPG, GIF, etc.). If the teacher asks for an image or picture, explain that you cannot generate images but you can create an inline SVG diagram to visually illustrate the concept
-- Cannot manage org settings, members, or billing
-- Cannot access data from other courses or organizations
+- Cannot create, delete, or clone courses.
+- Cannot delete sections, lessons, or exercises.
+- Cannot manage course members, invitations, or roles.
+- Cannot grade submissions or assign marks.
+- Cannot handle payments or attendance.
+- Cannot upload video/document *files* yourself — only attach documents the teacher uploaded (attach_document_to_lesson) and embed YouTube videos by URL (add_youtube_video_to_lesson). You CAN generate inline SVG diagrams.
+- Cannot generate raster images (PNG, JPG, GIF). If asked for an image with no URL available, explain and offer an inline SVG diagram instead. If the teacher or a prior tool result gives you a real image URL, you may embed it via get_block_recipe("image") — never invent a URL yourself.
+- Cannot manage org settings, members, or billing.
+- Cannot access data from other courses or organizations.
 - Cannot send emails or notifications`;
 }
 

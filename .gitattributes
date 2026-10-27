@@ -10,3 +10,6 @@ Dockerfile* text eol=lf
 # run once:  git config merge.ours.driver true
 apps/help/** merge=ours
 apps/docs/** merge=ours
+
+# Vitest writes snapshots with LF; without this they show as modified on Windows.
+*.snap text eol=lf

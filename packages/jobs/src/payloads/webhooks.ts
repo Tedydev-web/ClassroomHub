@@ -1,7 +1,6 @@
 import * as z from 'zod';
 
-export const ZWebhookDeliveryPayload = z.object({
-  deliveryId: z.uuid()
+export const ZDeliverWebhookPayload = z.object({
+  webhookId: z.string().uuid()
 });
-
-export type WebhookDeliveryPayload = z.infer<typeof ZWebhookDeliveryPayload>;
+export type TDeliverWebhookPayload = z.infer<typeof ZDeliverWebhookPayload>;

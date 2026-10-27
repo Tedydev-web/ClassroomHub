@@ -35,6 +35,7 @@
     },
     "discard": "Odrzuć",
     "save_changes": "Zapisz zmiany",
+    "cancel": "Anuluj",
     "scroll_to_top": "Przewiń do góry",
     "app_update": {
       "title": "Dostępna jest nowa wersja.",
@@ -63,7 +64,8 @@
         "title": "Otwierasz swoją akademię…",
         "caption": "Przygotowujemy Twoje kursy, uczniów i ustawienia."
       }
-    }
+    },
+    "back": "Powrót"
   },
   "validations": {
     "generic": {
@@ -188,6 +190,14 @@
       },
       "question": {
         "too_small": "Tytuł pytania jest wymagany"
+      }
+    },
+    "webhook": {
+      "payload_url": {
+        "protocol": "URL ładunku musi zaczynać się od http:// lub https://"
+      },
+      "event_types": {
+        "required": "Wybierz co najmniej jedno zdarzenie"
       }
     }
   },
@@ -415,18 +425,8 @@
       "passed_requires_points": "Ukończenie przez zaliczenie wymaga co najmniej jednego dostępnego punktu.",
       "draft_restored": "Przywróciliśmy niezapisane zmiany, które pozostawiłeś"
     },
-    "poll": {
-      "info": {
-        "not_published": "Ankieta nie została jeszcze opublikowana",
-        "vote_once": "Można głosować tylko raz"
-      },
-      "error": {
-        "creating_poll": "Wystąpił błąd podczas tworzenia ankiety",
-        "updating_poll": "Wystąpił błąd podczas aktualizowania stanu ankiety",
-        "submitting_poll": "Wystąpił błąd podczas przesyłania ankiety"
-      }
-    },
     "media_manager": {
+      "video_added": "Film dodany do biblioteki",
       "list_failed": "Nie udało się załadować zasobów multimedialnych",
       "storage_failed": "Nie udało się wczytać podsumowania miejsca na dane",
       "create_failed": "Nie udało się utworzyć zasobu multimedialnego",
@@ -542,8 +542,16 @@
       }
     },
     "webhooks": {
+      "created": "Webhook utworzony. Skopiuj teraz klucz podpisu, ponieważ jest pokazywany tylko raz.",
+      "updated": "Webhook zaktualizowany.",
+      "enabled": "Webhook włączony.",
+      "disabled": "Webhook wyłączony.",
       "saved": "Webhook saved.",
       "deleted": "Webhook deleted.",
+      "secret_regenerated": "Klucz podpisu wygenerowany ponownie. Skopiuj go teraz, ponieważ jest pokazywany tylko raz.",
+      "test_success": "Zdarzenie testowe zostało dostarczone.",
+      "test_failed": "Zdarzenie testowe nie powiodło się. Otwórz dziennik dostarczeń, aby zobaczyć powód.",
+      "redelivered": "Zdarzenie dodane do kolejki ponownego dostarczenia.",
       "test_queued": "Test delivery queued.",
       "redelivery_queued": "Webhook redelivery queued."
     },
@@ -611,7 +619,8 @@
     "required": "Wymagana aktualizacja",
     "enterprise_required": "Ta funkcja wymaga planu Enterprise.",
     "public_api_required": "Uaktualnij do Early Adopter lub Enterprise, aby uzyskać dostęp do publicznego API.",
-    "unlock_field": "Uaktualnij, aby odblokować to ustawienie"
+    "unlock_field": "Uaktualnij, aby odblokować to ustawienie",
+    "webhooks_required": "Przejdź na plan Early Adopter lub Enterprise, aby korzystać z webhooków."
   },
   "analytics": {
     "title": "Analityka",
@@ -833,6 +842,7 @@
       "status": {
         "ready": "Gotowe",
         "already_member": "Już w grupie",
+        "invite_resent": "Zaproszenie wysłane ponownie",
         "invalid_email": "Nieprawidłowy adres e-mail",
         "duplicate_in_file": "Duplikat w pliku",
         "over_seat_limit": "Brak wolnych miejsc",
@@ -966,7 +976,10 @@
       "empty_description": "Spróbuj poszerzyć zakres dat lub wyczyścić filtr.",
       "exclude_recent_joiners_hint": "Pomija studentów, którzy dołączyli zbyt niedawno, by zostać uznani za nieaktywnych.",
       "empty_title": "Żaden student nie spełnia tych kryteriów",
-      "invite_status": "Status zaproszenia"
+      "invite_status": "Status zaproszenia",
+      "certificate": "Certyfikat",
+      "certificate_earned": "Zdobyty",
+      "certificate_not_earned": "Niezdobyty"
     },
     "views": {
       "never_logged_in": "Nigdy się nie logował",
@@ -977,7 +990,9 @@
       "custom": "Filtry niestandardowe",
       "all": "Wszyscy studenci"
     },
-    "learner_count": "{count} studentów"
+    "learner_count": "{count} studentów",
+    "certificate_earned": "Zdobyto {count} certyfikat",
+    "certificates_earned": "Zdobyto {count} certyfikatów"
   },
   "community": {
     "title": "Społeczność",
@@ -1110,6 +1125,9 @@
           "animation_none": "Żadne"
         },
         "course_type_learn_more": "Dowiedz się więcej",
+        "completion_rules_card_title": "Zasady ukończenia",
+        "completion_rules_card_desc": "Określ, kiedy uczniowie kończą ten kurs i otrzymują jego certyfikat. Kursy zgodności używają też tego terminu jako terminu dla każdego ucznia.",
+        "back_to_certificate_settings": "Wróć do ustawień certyfikatu",
         "welcome_email": {
           "title": "Witamy e-mail",
           "description": "Dostosuj wiadomość e-mail otrzymywaną przez uczniów po zarejestrowaniu się. Dodaj osobistą notatkę, instrukcje lub link do sesji na żywo.",
@@ -1129,7 +1147,7 @@
         "copy_link": "Skopiuj link",
         "go_to_completion_deadline": "Przejdź do terminu ukończenia",
         "completion_deadline_label": "Termin zakończenia kursu",
-        "completion_deadline_helper": "Studenci muszą osiągnąć procent ukończenia przed tą datą (czasu lokalnego). Pozostaw puste bez terminu.",
+        "completion_deadline_helper": "Uczniowie muszą ukończyć kurs przed tą datą i godziną (czas lokalny). Pozostaw puste, jeśli nie ma terminu.",
         "comments": {
           "title": "Komentarze do lekcji",
           "description": "Zezwól uczniom na wyświetlanie i dodawanie komentarzy w lekcjach tego kursu. Komentarze można nadal wyłączyć dla poszczególnych lekcji.",
@@ -1826,34 +1844,6 @@
           },
           "by_author": "Autor: {name}",
           "empty": "Brak wersji"
-        },
-        "poll": {
-          "voted": "Zagłosowano",
-          "created_by": "Stworzony przez",
-          "status": "Status",
-          "draft": "Wersja robocza",
-          "publish": "Publikuj",
-          "expiration": "Wygaśnięcie",
-          "total_voted": "Całkowita liczba głosów",
-          "responses": "Odpowiedzi",
-          "expires": "Wygasa",
-          "today": "Dzisiaj",
-          "back": "Powrót",
-          "result": "Wynik",
-          "delete": "Usuń",
-          "create_poll": "Utwórz ankietę",
-          "question": "Pytanie",
-          "options": "Opcje",
-          "option_label": "Etykieta opcji",
-          "cancel": "Anuluj",
-          "poll_question": "Pytanie w ankiecie"
-        },
-        "polls": {
-          "title": "Ankieta",
-          "active_polls": "Aktywne ankiety",
-          "expired_polls": "Wygasłe ankiety",
-          "loading": "Ładowanie...",
-          "no_polls": "Brak ankiet do wyświetlenia"
         },
         "comments": {
           "title": "Komentarze",
@@ -2727,7 +2717,15 @@
               "loading": "Ładowanie wideo…",
               "playback_auth_error": "Twoja sesja wygasła. Aby obejrzeć ten film, zaloguj się ponownie.",
               "playback_auth_action": "Zalogować się",
-              "vimeo_link": "Link do Vimeo"
+              "vimeo_link": "Link do Vimeo",
+              "hls_status": {
+                "encoding": "Kodowanie",
+                "ready": "Gotowy",
+                "failed": "Niepowodzenie",
+                "skipped": "Niezakodowano",
+                "failed_hint": "Kodowanie nie powiodło się. Film nadal odtwarza się w oryginalnej jakości.",
+                "skipped_hint": "Kodowanie adaptacyjne jest wyłączone, więc film odtwarza się w oryginalnej jakości."
+              }
             },
             "slide": {
               "title": "Slajd",
@@ -2971,7 +2969,8 @@
         "add_content_later": "Później",
         "add_content_add_to_section": "Dodaj treść",
         "expand_content": "Rozwiń treść",
-        "collapse_content": "Zwiń zawartość"
+        "collapse_content": "Zwiń zawartość",
+        "no_section": "Brak sekcji"
       },
       "news_feed": {
         "heading": "Kanał wiadomości",
@@ -3186,7 +3185,6 @@
         "later": "Zamknij",
         "checking": "Sprawdzam uprawnienia…",
         "not_eligible_title": "Prawie tam",
-        "retake_exercise": "Powtórz ćwiczenie",
         "subtitle_no_certificate": "Gratulacje — ukończyłeś ten kurs."
       }
     },
@@ -3196,24 +3194,18 @@
     "certification": {
       "rules_heading": "Zasady",
       "deadline_label": "Termin certyfikacji",
-      "deadline_helper": "Studenci muszą osiągnąć procent ukończenia przed tą datą (czasu lokalnego). Pozostaw puste bez terminu.",
-      "threshold_label": "Minimalne ukończenie (%)",
-      "threshold_helper": "Do uzyskania certyfikatu wymagany jest łączny postęp w lekcjach i ćwiczeniach (0–100). Wartość domyślna to 100%.",
-      "final_exercise_label": "Ćwiczenie końcowe (opcjonalnie)",
-      "final_exercise_none": "żaden",
-      "final_exercise_helper": "Jeśli ta opcja jest ustawiona, uczniowie muszą osiągnąć co najmniej minimalny wynik w tym ćwiczeniu (liczą się najlepsze próby) oprócz powyższego procentu ukończenia.",
-      "min_exercise_score_label": "Minimalny wynik w ćwiczeniu końcowym (%)",
-      "min_exercise_score_helper": "Wynik to procent wszystkich punktów możliwych do uzyskania w tym ćwiczeniu (0–100).",
+      "deadline_helper": "Uczniowie muszą ukończyć kurs przed tą datą i godziną (czas lokalny). Pozostaw puste, jeśli nie ma terminu.",
+      "completion_rules_heading": "Zasady ukończenia",
+      "completion_rules_description": "Te zasady decydują, kto otrzyma ten certyfikat. Ustawia się je na karcie Ustawienia kursu.",
+      "completion_rules_deadline": "Ukończ najpóźniej {date}",
+      "completion_rules_no_deadline": "Brak terminu",
+      "completion_rules_edit": "Edytuj zasady ukończenia",
+      "completion_rules_upgrade": "Uaktualnij plan, aby edytować zasady ukończenia",
       "blocker_progress": "Twój postęp w kursie wynosi {current}%; Wymagany jest {required}%.",
       "blocker_deadline": "Termin certyfikacji minął.",
       "blocker_no_content": "Ten kurs nie zawiera żadnych lekcji ani ćwiczeń do ukończenia.",
-      "blocker_final_not_submitted": "Wykonaj wymagane ćwiczenie „{exerciseTitle}”, aby zakwalifikować się do certyfikatu.",
-      "blocker_final_pending": "Twoje podejście do zadania „{exerciseTitle}” jest nadal oceniane.",
-      "blocker_final_score": "Twój najlepszy wynik w „{exerciseTitle}” to {bestPercent}%; Wymagany jest {requiredPercent}%.",
-      "blocker_final_misconfigured": "W ćwiczeniu certyfikacyjnym „{exerciseTitle}” nie skonfigurowano żadnych punktów; poproś instruktora, żeby to naprawił.",
       "email_message_label": "Wiadomość e-mail",
       "email_message_placeholder": "np. Jesteśmy dumni z Twoich postępów — ucz się dalej!",
-      "final_exercise_multiple_attempts_note": "Studenci będą mieli nieograniczoną liczbę prób wykonania wybranego ćwiczenia.",
       "deadline_required": "Termin certyfikatu jest wymagany, gdy certyfikaty można pobrać.",
       "deadline_required_enroll": "Kursy zgodności wymagają terminu certyfikatu przed zapisaniem uczestników.",
       "deadline_invalid": "Termin ukończenia kursu jest nieprawidłowy."
@@ -3478,7 +3470,6 @@
         "save": "Zapisz zmiany",
         "apps": {
           "title": "Aplikacje",
-          "poll": "Ankieta",
           "live_comment": "Komentarze na żywo"
         },
         "course": {
@@ -3830,6 +3821,11 @@
         "other": "Inne"
       },
       "refresh": "Odświeżać"
+    },
+    "upload": {
+      "videos": "Prześlij filmy",
+      "documents": "Prześlij dokumenty",
+      "more_options": "Więcej opcji przesyłania"
     },
     "storage": {
       "total_bytes": "Całkowita pamięć",
@@ -4476,7 +4472,16 @@
       "actions_menu": "Akcje uwierzytelniania tokenu"
     },
     "teams": {
-      "page_subtitle": "Zaproś współpracowników i kontroluj, kto pomaga zarządzać tą organizacją."
+      "page_subtitle": "Zaproś współpracowników i kontroluj, kto pomaga zarządzać tą organizacją.",
+      "permission": {
+        "title": "Nie masz uprawnień do wyświetlania tej strony",
+        "description": "Tylko administratorzy organizacji mogą wyświetlać zespół i nim zarządzać. Jeśli potrzebujesz dostępu, skontaktuj się z administratorem."
+      },
+      "invite": {
+        "confirm_title": "{count, plural, =1 {Zaprosić tego ucznia do zespołu?} other {Zaprosić tych uczniów do zespołu?}}",
+        "confirm_description": "{count, plural, =1 {Ta osoba jest już uczniem w tej organizacji: {emails}. Czy wysłać zaproszenie z rolą {role}? Rola zmieni się dopiero po zaakceptowaniu zaproszenia.} other {Te osoby są już uczniami w tej organizacji: {emails}. Czy wysłać im zaproszenie z rolą {role}? Ich role zmienią się dopiero po zaakceptowaniu zaproszenia.}}",
+        "existing": "Te osoby są już w zespole: {members}. Aby zmienić ich rolę, użyj wyboru roli na liście członków zespołu."
+      }
     },
     "ai_credits": {
       "sub_title": "Kredyty AI",
@@ -5105,6 +5110,7 @@
     "title": "Automatyzacja",
     "subtitle": "Połącz teraz klientów MCP, korzystając z Zapiera i publicznego interfejsu API w tym samym systemie kluczy o zasięgu organizacji.",
     "coming_soon": "Już wkrótce",
+    "read_docs": "Przeczytaj dokumentację",
     "mcp": {
       "setup": {
         "title": "Konfiguracja klienta",
@@ -5118,7 +5124,6 @@
         "title": "Klucze MCP",
         "description": "Te klucze uwierzytelniają bieżącą organizację, gdy klient MCP wywołuje ClassroomHub poprzez `@tedydev/classroom-mcp`.",
         "generate": "Wygeneruj klucz MCP",
-        "secret_once": "Sekret ten zostaje pokazany raz. Skopiuj go teraz do swojego klienta MCP.",
         "modal": {
           "title": "Utwórz klucz MCP",
           "description": "Wybierz nazwę tego klucza MCP przed jego wygenerowaniem.",
@@ -5126,7 +5131,8 @@
           "name_placeholder": "ClassroomHub OpenCode",
           "cancel": "Anuluj",
           "save": "Utwórz klucz"
-        }
+        },
+        "reveal_title": "Twój nowy klucz MCP"
       },
       "usage": {
         "title": "Zastosowanie i ograniczenia",
@@ -5139,8 +5145,7 @@
         "rate_limits_description": "Żądania odczytu/zapisu/publikowania dozwolone na minutę.",
         "used_label": "Używane:"
       },
-      "page_subtitle": "Połącz narzędzia AI z ClassroomHub za pomocą kluczy o zasięgu organizacji, które możesz w dowolnym momencie obrócić.",
-      "view_docs": "Zobacz dokumentację"
+      "page_subtitle": "Połącz narzędzia AI z ClassroomHub za pomocą kluczy o zasięgu organizacji, które możesz w dowolnym momencie obrócić."
     },
     "api": {
       "subtitle": "Zarządzaj kluczami API, aby integrować się z publicznym API ClassroomHub.",
@@ -5148,7 +5153,6 @@
         "title": "Klucze API",
         "description": "Te klucze uwierzytelniają bieżącą organizację podczas wywoływania publicznego API ClassroomHub.",
         "generate": "Wygeneruj klucz API",
-        "secret_once": "Ten sekret jest wyświetlany tylko raz. Skopiuj go i przechowuj bezpiecznie.",
         "empty_title": "Brak kluczy API",
         "empty_description": "Utwórz pierwszy klucz API o zasięgu organizacji, aby korzystać z publicznego API ClassroomHub.",
         "modal": {
@@ -5158,13 +5162,13 @@
           "name_placeholder": "Moja integracja API",
           "cancel": "Anuluj",
           "save": "Utwórz klucz"
-        }
+        },
+        "reveal_title": "Twój nowy klucz API"
       },
       "setup": {
         "title": "Szybki start",
         "description": "Używaj klucza API jako tokena Bearer w każdym żądaniu. Zamień symbol zastępczy na klucz z powyższej listy lub wklej sekret zaraz po wygenerowaniu."
-      },
-      "view_docs": "Zobacz dokumentację"
+      }
     },
     "keys": {
       "active": "Aktywny",
@@ -5182,7 +5186,14 @@
       "table_key": "Klucz",
       "table_status": "Status",
       "table_created": "Utworzono",
-      "table_last_used": "Ostatnio używany"
+      "table_last_used": "Ostatnio używany",
+      "reveal": {
+        "description": "Skopiuj ten klucz teraz. Nie będzie już widoczny.",
+        "copy": "Kopiuj",
+        "copied": "Skopiowano",
+        "how_to_use": "Jak używać tego klucza",
+        "close": "Zamknij"
+      }
     },
     "clients": {
       "claude_code": "Claude Code",
@@ -5198,7 +5209,8 @@
       "mcp": "MCP",
       "zapier": "Zapier",
       "api": "API",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "new_badge": "Nowy"
     },
     "permissions": {
       "disabled_title": "Dostęp tylko do odczytu",
@@ -5208,41 +5220,145 @@
       "page_subtitle": "Automatyzuj ClassroomHub z tysiącami aplikacji przez Zapier. Wkrótce."
     },
     "webhooks": {
-      "subtitle": "Send signed ClassroomHub events to your external systems.",
-      "endpoints_title": "Webhook endpoints",
-      "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
-      "add": "Add webhook",
-      "edit": "Edit webhook",
-      "delete": "Delete",
-      "delete_confirm": "Delete this webhook endpoint and its delivery history?",
-      "send_test": "Send test",
-      "deliveries": "Deliveries",
-      "actions": "Webhook actions",
-      "name": "Name",
-      "payload_url": "Payload URL",
-      "events": "Events",
-      "active": "Active",
-      "all_events": "All",
-      "secret": "Signing secret",
-      "secret_help": "Leave blank to generate a secure secret automatically.",
-      "secret_unchanged": "Leave blank to keep the current secret.",
-      "secret_once": "This signing secret is shown once. Store it securely.",
-      "events_help": "Select no events to receive every supported event.",
-      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
-      "save": "Save webhook",
-      "cancel": "Cancel",
-      "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
-      "event": "Event",
-      "status": "Status",
-      "attempt": "Attempt",
-      "http_status": "HTTP status",
-      "no_deliveries": "No deliveries yet.",
-      "details": "Details",
-      "redeliver": "Redeliver",
-      "request_payload": "Request payload",
-      "response": "Response",
-      "no_response": "No response was recorded."
+      "page_subtitle": "Wysyłaj zdarzenia ClassroomHub w czasie rzeczywistym do Slacka, Twojego CRM lub własnego backendu.",
+      "description": "ClassroomHub wysyła podpisane żądanie HTTP POST na Twój URL za każdym razem, gdy wystąpi wybrane zdarzenie. Nieudane dostarczenia są ponawiane automatycznie.",
+      "permissions_description": "Tylko administratorzy organizacji mogą tworzyć, edytować i usuwać webhooki.",
+      "create": "Nowy webhook",
+      "empty_title": "Brak webhooków",
+      "empty_description": "Utwórz webhook, aby przesyłać zaproszenia, zapisy, ukończenia i zgłoszenia do swoich innych narzędzi.",
+      "reveal_title": "Twój nowy klucz podpisu",
+      "reveal_description": "Skopiuj ten klucz podpisu teraz. Nie zostanie pokazany ponownie, a będzie potrzebny do weryfikowania żądań.",
+      "reveal_docs": "Jak weryfikować żądania",
+      "delete_confirm": "Usunąć webhook \"{name}\"? Jego historia dostarczeń również zostanie usunięta.",
+      "regenerate_confirm": "Wygenerować klucz podpisu ponownie? Obecny klucz przestanie działać natychmiast.",
+      "events_all": "Wszystkie zdarzenia",
+      "events_count_one": "{count} zdarzenie",
+      "events_count_other": "{count} zdarzeń",
+      "no_deliveries": "Brak dostarczeń",
+      "retrying_hint": "Ponawianie nieudanych dostarczeń",
+      "table": {
+        "name": "Miejsce docelowe",
+        "events": "Zdarzenia",
+        "health": "Status",
+        "active": "Aktywny",
+        "error_rate": "Odsetek błędów (24 godz.)",
+        "error_rate_detail": "Niepowodzenia: {failed} z {total}",
+        "no_recent_deliveries": "Brak dostarczeń w ciągu 24 godz."
+      },
+      "health": {
+        "healthy": "Działa poprawnie",
+        "retrying": "Ponawianie",
+        "degraded": "Błędy",
+        "disabled": "Wyłączony automatycznie"
+      },
+      "actions": {
+        "label": "Akcje webhooka",
+        "edit": "Edytuj",
+        "test": "Wyślij zdarzenie testowe",
+        "deliveries": "Zobacz dostarczenia",
+        "regenerate_secret": "Wygeneruj klucz ponownie",
+        "delete": "Usuń"
+      },
+      "form": {
+        "create_title": "Nowy webhook",
+        "edit_title": "Edytuj webhook",
+        "description": "Wybierz, dokąd ClassroomHub ma wysyłać zdarzenia i które zdarzenia wysyłać.",
+        "sections": {
+          "endpoint": "Punkt końcowy",
+          "events": "Zdarzenia"
+        },
+        "name": "Nazwa",
+        "name_placeholder": "Synchronizacja CRM",
+        "payload_url": "URL ładunku",
+        "payload_url_help": "Musi to być publiczny URL HTTPS, który zwraca odpowiedź 2xx w ciągu 10 sekund.",
+        "secret": "Klucz podpisu",
+        "secret_placeholder": "Pozostaw puste, aby wygenerować",
+        "secret_help": "Służy do podpisywania każdego żądania, aby można było zweryfikować, że pochodzi z ClassroomHub.",
+        "secret_edit_placeholder": "Pozostaw puste, aby zachować obecny klucz",
+        "secret_edit_help": "Wprowadź nową wartość, aby zastąpić klucz. Obecny klucz nigdy nie jest wyświetlany.",
+        "verify_ssl": "Weryfikuj certyfikat SSL",
+        "verify_ssl_help": "Pozostaw włączone, chyba że testujesz z certyfikatem z podpisem własnym.",
+        "active": "Aktywny",
+        "events_help": "Wybierz zdarzenia, które mają uruchamiać ten webhook.",
+        "mode_all": "Wysyłaj wszystko",
+        "mode_selected": "Wybiorę poszczególne zdarzenia",
+        "cancel": "Anuluj",
+        "save": "Zapisz webhook",
+        "select_all": "Zaznacz wszystko",
+        "events_selected": "Wybrano {selected} z {total}"
+      },
+      "event_groups": {
+        "organization": "Organizacja",
+        "course": "Kursy",
+        "learning": "Postępy w nauce",
+        "cohort": "Kohorty",
+        "compliance": "Zgodność",
+        "community": "Społeczność"
+      },
+      "events": {
+        "organization_invite_created": "Wysłano zaproszenie do zespołu",
+        "organization_invite_accepted": "Zaproszenie do zespołu zostało przyjęte",
+        "organization_invite_revoked": "Zaproszenie do zespołu zostało cofnięte lub zastąpione",
+        "course_invite_created": "Utworzono zaproszenie dla studenta",
+        "course_invite_accepted": "Student przyjmuje zaproszenie i zapisuje się",
+        "course_invite_revoked": "Zaproszenie dla studenta zostało cofnięte",
+        "course_member_added": "Dodano uczestnika do kursu",
+        "course_member_removed": "Usunięto uczestnika z kursu",
+        "course_completed": "Student kończy kurs",
+        "course_certificate_issued": "Zdobyto certyfikat",
+        "course_submission_created": "Utworzono zgłoszenie ćwiczenia",
+        "course_submission_status_changed": "Zmienia się status zgłoszenia, na przykład po jego ocenieniu",
+        "lesson_completion_updated": "Lekcja została oznaczona jako ukończona lub zresetowana",
+        "exercise_completion_updated": "Ćwiczenie zostało ukończone lub zresetowane",
+        "compliance_record_status_changed": "Zmienia się status zgodności studenta",
+        "compliance_record_waived": "Wymóg zgodności studenta zostaje uchylony",
+        "organization_member_added": "Osoba dołącza do organizacji",
+        "organization_member_removed": "Osoba zostaje usunięta z organizacji",
+        "organization_member_updated": "Zmienia się rola lub status osoby",
+        "course_published": "Kurs zostaje opublikowany",
+        "course_unpublished": "Publikacja kursu zostaje wycofana",
+        "cohort_member_added": "Osoba zostaje dodana do kohorty",
+        "cohort_member_removed": "Osoba zostaje usunięta z kohorty",
+        "lesson_session_scheduled": "Sesja na żywo zostaje zaplanowana lub przesunięta",
+        "course_payment_request_created": "Student prosi o możliwość opłacenia kursu",
+        "course_newsfeed_post_created": "W aktualnościach kursu pojawia się nowy wpis",
+        "course_newsfeed_comment_created": "Ktoś komentuje wpis w aktualnościach kursu",
+        "community_question_created": "W społeczności zadano pytanie",
+        "community_answer_created": "Pytanie w społeczności otrzymuje odpowiedź"
+      },
+      "deliveries": {
+        "title": "Dostarczenia",
+        "description": "Zdarzenia z ostatnich 30 dni",
+        "back": "Wróć do dostarczeń",
+        "filter_all": "Wszystkie statusy",
+        "empty": "Żadne dostarczenia nie pasują do tego filtra.",
+        "load_error": "Nie udało się wczytać dostarczeń. Spróbuj ponownie.",
+        "redeliver": "Dostarcz ponownie",
+        "test_badge": "Test",
+        "status": {
+          "PENDING": "Ponawianie",
+          "SUCCESS": "Sukces",
+          "FAILED": "Niepowodzenie",
+          "GAVE_UP": "Niepowodzenie"
+        },
+        "columns": {
+          "event": "Zdarzenie",
+          "event_id": "ID zdarzenia",
+          "status": "Status",
+          "attempt": "Próba",
+          "http": "Status HTTP",
+          "duration": "Czas odpowiedzi",
+          "time": "Wysłano",
+          "next_attempt": "Następna próba"
+        },
+        "detail": {
+          "error": "Błąd",
+          "request_headers": "Nagłówki żądania",
+          "payload": "Ładunek",
+          "response_body": "Odpowiedź",
+          "no_response": "Nie otrzymano odpowiedzi."
+        }
+      }
     }
   },
   "ai_assistant": {
@@ -5681,6 +5797,20 @@
     "delete_modal": {
       "title": "Usuń widżet trwale",
       "description": "Czy na pewno chcesz trwale usunąć „{name}”? Tej czynności nie można cofnąć."
+    },
+    "filters": {
+      "filter": "Filtruj",
+      "popover_title": "Filtry",
+      "clear_all": "Wyczyść wszystko",
+      "search_placeholder": "Wyszukaj widżety według nazwy",
+      "status": "Stan",
+      "layout_type": "Typ układu",
+      "selection_mode": "Tryb selekcji",
+      "no_results_title": "Żaden widżet nie pasuje do Twoich filtrów",
+      "no_results_description": "Wypróbuj inne wyszukiwane hasło lub wyczyść filtry, aby zobaczyć wszystko ponownie.",
+      "no_results_page_title": "Nic na tej stronie",
+      "no_results_page_description": "Te filtry pasują do mniejszej liczby widżetów, niż zaczyna się ta strona.",
+      "back_to_first_page": "Powrót do pierwszej strony"
     }
   },
   "side_panel": {
@@ -6540,8 +6670,6 @@
       "settings": "Ustawienia",
       "certificate": "Certyfikat włączony",
       "deadline": "Termin {date}",
-      "threshold": "Ukończ {percent}% kursu",
-      "final_exercise": "Przekaż „{title}” za {percent}%",
       "sequential": "Lekcje odblokowują się w kolejności",
       "grading": "Nauczyciel ocenia przesłane prace",
       "comments_off": "Komentarze do lekcji są wyłączone",
@@ -6634,8 +6762,6 @@
         "bannerImage": "Obraz na okładce",
         "welcomeEmail": "Witamy e-mail",
         "completionDeadline": "Termin realizacji",
-        "completionThreshold": "Próg ukończenia",
-        "finalExercise": "Ćwiczenie końcowe",
         "lessonTabsOrder": "Zakładki z lekcjami",
         "contentGrouping": "Grupowanie treści",
         "progression": "Postęp",
@@ -6664,8 +6790,7 @@
       "value": {
         "free": "Dowolnie",
         "sequential": "Sekwencyjnie",
-        "no_price": "Bezpłatny",
-        "pass_mark": "Wynik pozytywny {score}"
+        "no_price": "Bezpłatny"
       },
       "template_label": "Szablon",
       "yours_label": "Twój"

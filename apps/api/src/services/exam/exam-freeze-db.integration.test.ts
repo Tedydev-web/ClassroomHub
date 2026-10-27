@@ -98,7 +98,7 @@ describe.runIf(runDatabaseIntegration)('freezing an exam paper', () => {
     const { db, schema, container } = await load();
     const [working] = await db
       .insert(schema.exercise)
-      .values({ title: 'A real exercise', courseId: null, lessonId: randomUUID(), order: 1 })
+      .values({ title: 'A real exercise', slug: 'test-item', courseId: null, lessonId: randomUUID(), order: 1 })
       .returning({ id: schema.exercise.id })
       .catch(() => [null]);
 

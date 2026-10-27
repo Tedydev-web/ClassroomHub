@@ -334,7 +334,6 @@
           allContentItems.every((item) => item.isComplete);
 
         if (allComplete && courseApi.course?.id) {
-          const requiredExerciseId = courseApi.course?.certificate?.requiredExerciseId ?? undefined;
           openCourseCompletionModal(courseApi.course.id);
 
           const certRes = await courseApi.getCertificationEvaluation(courseApi.course.id);
@@ -343,8 +342,7 @@
             updateCourseCompletionModal(
               courseApi.course.id,
               hasCompletedCourse ? 'eligible' : 'not-eligible',
-              certRes.data,
-              requiredExerciseId
+              certRes.data
             );
           } else {
             closeCourseCompletionModal();

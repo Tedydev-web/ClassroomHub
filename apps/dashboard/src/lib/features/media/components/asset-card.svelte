@@ -19,6 +19,7 @@
     getKindIcon,
     type OrganizationAsset
   } from '$features/media/utils';
+  import { Tooltip } from '@cio/ui';
 
   interface Props {
     asset: OrganizationAsset;
@@ -112,12 +113,25 @@
     </div>
   </Item.Header>
 
-  <Item.Content class="min-w-0">
-    <div class="min-w-0 flex-1">
-      <Item.Title class="line-clamp-1 w-full!">
-        <span class="min-w-0 truncate text-base!" title={getAssetDisplayName(asset)}>{getAssetDisplayName(asset)}</span>
-      </Item.Title>
-    </div>
+  <Item.Content>
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <div class="min-w-0 flex-1">
+            <Item.Title class="line-clamp-1 w-full!">
+              <span class="max-w-64 text-base! break-all">{getAssetDisplayName(asset)}</span>
+            </Item.Title>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content
+          side="top"
+          sideOffset={4}
+          class="max-w-[min(24rem,calc(100vw_-_2rem))] text-wrap! wrap-anywhere"
+        >
+          {getAssetDisplayName(asset)}
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
 
     <div class="mt-3 flex flex-wrap gap-2">
       <Badge variant="outline">{$t(`media_manager.kind.${asset.kind}`)}</Badge>

@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono';
 
 import type { LicenseFeatureId } from '@cio/utils/license';
-import { isFeatureLicensed } from '@api/services/license';
+import { isFeatureLicensed } from '@cio/core/services/license';
 
 /**
  * Middleware that returns 403 when this deployment does not own the requested capability.

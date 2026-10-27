@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Alert from '@cio/ui/base/alert';
   import { DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
-  import * as Field from '@cio/ui/base/field';
+  import { SettingsCard } from '$features/ui';
   import { courseApi, courseTemplateApi } from '$features/course/api';
   import TemplateReviewSheet from './template-review-sheet.svelte';
   import { formatTemplateUsedDate } from '$features/course/utils/template-display';
@@ -46,13 +46,11 @@
 </script>
 
 {#if visible && updates}
-  <!-- Rendered as one more section of the course settings field group, so the
-       separator lives here and disappears with the section when it is hidden. -->
-  <Field.Separator />
-
-  <Field.Set id="template">
-    <Field.Legend>{$t('course_templates.sync.section_title')}</Field.Legend>
-    <Field.Description>{$t('course_templates.sync.section_description')}</Field.Description>
+  <SettingsCard
+    id="template"
+    title={$t('course_templates.sync.section_title')}
+    description={$t('course_templates.sync.section_description')}
+  >
     {#if !updates.template || updates.template.deleted}
       <Alert.Root>
         <Alert.Title>{$t('course_templates.sync.deleted_title')}</Alert.Title>
@@ -96,5 +94,5 @@
         </Alert.Root>
       {/if}
     {/if}
-  </Field.Set>
+  </SettingsCard>
 {/if}

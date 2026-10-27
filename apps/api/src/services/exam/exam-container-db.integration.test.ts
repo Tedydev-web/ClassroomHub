@@ -156,6 +156,7 @@ describe.runIf(runDatabaseIntegration)('question container invisibility', () => 
       .insert(schema.exercise)
       .values({
         title: `not-a-container ${randomUUID()}`,
+        slug: 'test-item',
         courseId: seed.courseId,
         lessonId: null,
         order: 1,

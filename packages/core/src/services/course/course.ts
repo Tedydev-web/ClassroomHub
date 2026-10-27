@@ -3,15 +3,13 @@ import { sanitizeHtml, sanitizeOptionalHtml, sanitizeUnknownStrings } from '../.
 import {
   createCourseNewsfeed,
   createCourse as createCourseQuery,
-  createCourseSections,
   deleteCourse as deleteCourseQuery,
   getCourseById,
   getCourseContentItems,
   getCourseProgress as getCourseProgressQuery,
   getCourseWithRelations,
   getOrgIdByCourseId,
-  updateCourse as updateCourseQuery,
-  updateLessonsSectionId
+  updateCourse as updateCourseQuery
 } from '@cio/db/queries/course';
 import {
   addGroupMember,
@@ -43,9 +41,7 @@ import {
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { exerciseBelongsToCourse } from '@cio/db/queries/course/certification-exercise';
 import { skipRemovedOffsetReminderDeliveries } from '@cio/db/queries/course/live-session-reminder';
-import { updateExercise, updateExercisesSectionId } from '@cio/db/queries/exercise/exercise';
 import { getProfileById } from '@cio/db/queries/auth';
 import {
   countActiveStudents,
@@ -56,13 +52,23 @@ import {
 import { getStudentLimit } from '@cio/utils/plans';
 import { hasFullProductEntitlements } from '../../config/deployment';
 import { invalidateOrgStats } from '../../utils/redis/org-stats-cache';
+import { captureCourseEvent, captureServerEvent, type TEventSource } from '../posthog';
 import { annotateCourseContentWithProgression } from './progression';
-import { buildCourseContent, calcPercentageWithRounding, type CourseContent } from './utils';
+import { buildCourseContent, calcPercentageWithRounding, DEFAULT_CONTENT_GROUPING, type CourseContent } from './utils';
 import { getPublicConversionOffenders } from './public-course-guard';
+
+function resolvePublishChange(before: boolean | null, after: boolean | null): 'published' | 'unpublished' | null {
+  if (Boolean(before) === Boolean(after)) return null;
+
+  return after ? 'published' : 'unpublished';
+}
 
 export interface UpdateCourseResult {
   course: TCourse;
   conversionOffenders?: NonAutoGradableQuestionOffender[] | null;
+  /** True when this update took the course from unpublished to published. */
+  publishedNow: boolean;
+  publishChange?: 'published' | 'unpublished' | null;
 }
 
 /**
@@ -80,9 +86,6 @@ async function isStudentLimitReached(orgId: string): Promise<boolean> {
   const currentCount = await countActiveStudents(orgId);
   return currentCount + 1 > limit;
 }
-
-const DEFAULT_CONTENT_GROUPING = true;
-const DEFAULT_SECTION_TITLE = 'First Section [edit me]';
 
 export async function ensureProgramCourseAccess(courseId: string, profileId: string) {
   const access = await getCourseProgramAccess(courseId, profileId);
@@ -291,7 +294,8 @@ export async function getCourse(courseId?: string, slug?: string, profileId?: st
  */
 export async function createCourse(
   profileId: string,
-  data: TCourseCreate
+  data: TCourseCreate,
+  source: TEventSource = 'dashboard'
 ): Promise<{ course: TCourse; groupId: string; memberId: string }> {
   try {
     const description = sanitizeHtml(data.description);
@@ -357,6 +361,18 @@ export async function createCourse(
     });
 
     await invalidateOrgStats(data.organizationId);
+
+    captureServerEvent({
+      event: 'course_created',
+      distinctId: profileId,
+      orgId: data.organizationId,
+      properties: {
+        course_id: result.course.id,
+        course_type: result.course.type,
+        is_published: !!result.course.isPublished,
+        source
+      }
+    });
 
     return result;
   } catch (error) {
@@ -463,15 +479,6 @@ export async function updateCourse(
       );
     }
 
-    if (data.certificate?.requiredExerciseId) {
-      const ok = await exerciseBelongsToCourse(data.certificate.requiredExerciseId, courseId, dbClient);
-      if (!ok) {
-        throw new AppError('Certification exercise must belong to this course', ErrorCodes.VALIDATION_ERROR, 400);
-      }
-
-      await updateExercise(data.certificate.requiredExerciseId, { allowMultipleAttempts: true }, dbClient);
-    }
-
     const updated = await updateCourseQuery(courseId, sanitizeUnknownStrings(sanitizedData), dbClient);
     if (!updated) {
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
@@ -482,57 +489,19 @@ export async function updateCourse(
       await skipRemovedOffsetReminderDeliveries(courseId, keptOffsets, dbClient);
     }
 
-    const isContentGroupingEnabled = (updated.metadata?.isContentGroupingEnabled ?? DEFAULT_CONTENT_GROUPING) === true;
-
-    if (isContentGroupingEnabled) {
-      const courseWithRelations = dbClient === db ? await getCourseWithRelations(courseId) : null;
-      const contentItems =
-        dbClient === db
-          ? courseWithRelations?.contentItems
-          : await getCourseContentItems(courseId, undefined, dbClient);
-
-      if (contentItems) {
-        const hasSections = contentItems.some((item) => item.type === ContentType.Section);
-        const hasUngroupedItems = contentItems.some(
-          (item) => (item.type === ContentType.Lesson || item.type === ContentType.Exercise) && item.sectionId === null
-        );
-
-        if (!hasSections && hasUngroupedItems) {
-          const createSectionAndMoveContent = async (transactionClient: DbOrTxClient) => {
-            const [section] = await createCourseSections(
-              [
-                {
-                  title: DEFAULT_SECTION_TITLE,
-                  order: 1,
-                  courseId
-                }
-              ],
-              transactionClient
-            );
-
-            if (!section) {
-              throw new AppError('Failed to create course section', ErrorCodes.COURSE_SECTION_NOT_FOUND, 500);
-            }
-
-            await updateLessonsSectionId(courseId, section.id, transactionClient);
-            await updateExercisesSectionId(courseId, section.id, transactionClient);
-          };
-
-          if (dbClient === db) {
-            await db.transaction((tx) => createSectionAndMoveContent(tx));
-          } else {
-            await createSectionAndMoveContent(dbClient);
-          }
-        }
-      }
-    }
-
     if (data.status !== undefined) {
       const statsOrgId = await getOrgIdByCourseId(courseId, dbClient);
       await invalidateOrgStats(statsOrgId);
     }
 
-    return { course: updated, conversionOffenders };
+    const publishChange = resolvePublishChange(currentCourse.isPublished, updated.isPublished);
+
+    return {
+      course: updated,
+      conversionOffenders,
+      publishedNow: !currentCourse.isPublished && !!updated.isPublished,
+      publishChange
+    };
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
@@ -543,6 +512,20 @@ export async function updateCourse(
       500
     );
   }
+}
+
+export function captureCoursePublished(
+  course: Pick<TCourse, 'id' | 'type' | 'cost'>,
+  profileId: string | null | undefined,
+  source: TEventSource
+): void {
+  const isPaid = Number(course.cost ?? 0) > 0;
+
+  captureCourseEvent(course.id, {
+    event: 'course_published',
+    distinctId: profileId,
+    properties: { course_type: course.type, is_paid: isPaid, source }
+  });
 }
 
 /**

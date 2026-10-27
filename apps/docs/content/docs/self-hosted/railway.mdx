@@ -1,0 +1,253 @@
+---
+title: Railway
+description: Deploy ClassroomIO on Railway with the one-click template.
+---
+
+The quickest hosted deployment is the [Railway Template](https://railway.com/deploy/classroomio-1?referralCode=8OyIj5). It provisions the API, dashboard, and jobs worker services plus the Postgres and Redis plugins for you.
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/classroomio-1?referralCode=8OyIj5)
+
+## Watch the walkthrough
+
+Prefer to follow along? This video walks through the whole deployment end to end. The written steps below mirror it, and the [Environment variable reference](#environment-variable-reference) has every value to copy.
+
+<YouTube id="JQZ1ZikLM20" />
+
+## Prerequisites
+
+- A **Railway account** (a paid plan is recommended, since the stack runs several always-on services).
+- An **SMTP provider** (or Zoho/ZeptoMail) for signup verification, password reset, and invite emails. See [SMTP Setup](#smtp-setup).
+- **External S3-compatible storage** (Cloudflare R2 or AWS S3) with three buckets: `videos`, `documents`, and a public `media`. See [Object storage & uploads](/self-hosted/configuration/storage#option-2-external-s3--cloudflare-r2).
+- *Optional:* a **custom domain** for the dashboard, an **OpenAI API key** (transcription + AI course generation), and Google OAuth / Unsplash keys.
+
+:::note[Two secrets to generate first]
+You'll reuse `BETTER_AUTH_SECRET` and `PRIVATE_SERVER_KEY` across services. Generate them once and keep them handy:
+
+```zsh title="Terminal"
+openssl rand -hex 32   # BETTER_AUTH_SECRET
+openssl rand -hex 32   # PRIVATE_SERVER_KEY  (must be identical in cio-api and cio-dashboard)
+```
+
+See [Configuration → Environment & secrets](/self-hosted/configuration/secrets) for what each does.
+:::
+
+## Step-by-step walkthrough
+
+:::warning[The template's `cio-minio` service no longer deploys]
+MinIO removed its images from Docker Hub, so the `cio-minio` service in the template fails to pull.
+Until the template is updated, use **external storage** on Railway: step 4 points `cio-api` and
+`cio-jobs` at your own bucket, and step 7 deletes the failed `cio-minio` service. The Docker and
+Coolify stacks have moved to a bundled SeaweedFS store instead
+([Migrating from MinIO](/self-hosted/migrating-from-minio)).
+:::
+
+The one-click template provisions the services for you: Postgres, Redis, `cio-api`, `cio-dashboard`, `cio-jobs`, and `cio-minio` (which you will delete). The flow is: **configure a few values → deploy → delete `cio-minio` → connect the dashboard domain → sign up**.
+
+
+### 1. Click "Deploy on Railway"
+
+Click the **Deploy on Railway** button above. Railway opens the template page where all of the ClassroomIO services are listed and ready to configure.
+
+![Railway template page for ClassroomIO after clicking Deploy](/docs/railway-01-deploy-template.webp)
+
+### 2. Review the preconfigured services
+
+The template comes with every service preconfigured: most need nothing from you:
+
+- **Redis** and **Postgres**: no configuration required.
+- **cio-dashboard**: no required configuration (optionally set branding such as the public OG image; not required).
+
+The next three steps cover what **does** need input: `cio-jobs`, object storage, and `cio-api`.
+
+![The Railway template listing all preconfigured ClassroomIO services](/docs/railway-02-services-overview.webp)
+
+### 3. Configure cio-jobs (SMTP)
+
+`cio-jobs` sends invites, notifications, verification, and password-reset emails, so it needs SMTP credentials. Fill these in:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_SENDER`
+- `SMTP_PASSWORD`
+
+![Entering the SMTP variables on the cio-jobs service in the template](/docs/railway-03-jobs-smtp.webp)
+
+### 4. Point cio-api and cio-jobs at external storage
+
+The template presets the `OBJECT_STORAGE_*` variables on `cio-api` and `cio-jobs` to reference
+`cio-minio`. Replace them on **both** services with your own bucket's values:
+
+```zsh title="env"
+OBJECT_STORAGE_ENDPOINT=https://<account>.r2.cloudflarestorage.com   # or your S3 endpoint
+OBJECT_STORAGE_PUBLIC_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+OBJECT_STORAGE_ACCESS_KEY_ID=<access key>
+OBJECT_STORAGE_SECRET_ACCESS_KEY=<secret key>
+OBJECT_STORAGE_REGION=auto                                           # `auto` for R2
+OBJECT_STORAGE_FORCE_PATH_STYLE=false
+OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=https://<public media domain>
+```
+
+The `cio-minio` service still appears on the template page. If it asks for `MINIO_ROOT_USER` /
+`MINIO_ROOT_PASSWORD`, enter any placeholder; you delete the service in step 7.
+
+### 5. Configure cio-api
+
+On `cio-api`, set the SMTP host and any additional values you want. See the [Environment variable reference](#environment-variable-reference) below for the full list (object storage, auth secrets, dashboard origin, and more).
+
+![Configuring the cio-api service variables in the template](/docs/railway-05-api-config.webp)
+![Additional cio-api configuration options](/docs/railway-06-api-config-additional.webp)
+
+### 6. Deploy
+
+Click **Deploy**. Railway begins building and bringing the services online: Redis, Postgres, and the rest come up first.
+
+![Railway deploying the ClassroomIO services after clicking Deploy](/docs/railway-07-deploying.webp)
+
+### 7. Delete cio-minio; first boot may crash
+
+`cio-minio` fails to deploy because its image no longer exists. Delete it: open the **project
+Settings**, scroll to the **Danger** section, and delete the `cio-minio` service. The other services
+don't depend on it once step 4 is done.
+
+:::warning[Only if you use the Railway-generated subdomain]
+On the first deploy, `cio-api` can crash. This is expected **only when you rely on the Railway-generated subdomain**: the API needs the dashboard's public domain (Better Auth's base URL), which doesn't exist yet. If you're using your **own custom subdomain**, this crash doesn't happen. Skip ahead to signing up.
+:::
+
+![cio-api crashing on first boot before the dashboard domain exists](/docs/railway-08-first-boot-crash.webp)
+
+### 8. Generate the dashboard domain
+
+Open **cio-dashboard → Settings → Networking** and click **Generate Domain**. Railway assigns the public domain the API needs.
+
+![cio-dashboard Settings and Networking with the Generate Domain button](/docs/railway-09-generate-domain.webp)
+
+### 9. Redeploy cio-dashboard and cio-api
+
+Redeploy **cio-dashboard**, then **cio-api**, so both pick up the newly generated domain. They should now boot cleanly.
+
+![Redeploying the cio-dashboard](/docs/railway-10-redeploy-dashboard.webp)
+![Redeploying the cio-api](/docs/railway-11-redeploy-api.webp)
+
+### 10. Open the app and sign up
+
+Open the generated dashboard URL in a **new browser tab** and **sign up** to create your first account.
+
+![The running ClassroomIO dashboard sign-up page on the Railway domain](/docs/railway-12-signup.webp)
+
+## Environment variable reference
+
+You set these values **while configuring each service on the template page** (the configure steps above); you don't enter them again after deploying. Use this section as the reference for what each service's variables should be.
+
+### cio-api
+
+```zsh title="env"
+DATABASE_URL="${{db.DATABASE_URL}}"
+REDIS_URL="${{Redis.REDIS_URL}}"
+BETTER_AUTH_SECRET="<generate-with-openssl-rand-hex-32>"
+PRIVATE_SERVER_KEY="<generate-with-openssl-rand-hex-32>"   # must be identical in cio-api and cio-dashboard
+PUBLIC_IS_SELFHOSTED="true"
+
+# Dashboard URL for invite/email links. Reference the dashboard service's Railway domain
+# so it stays correct automatically. (For a custom domain, hardcode it: https://app.yourdomain.com)
+DASHBOARD_ORIGIN="https://${{cio-dashboard.RAILWAY_PUBLIC_DOMAIN}}"
+
+# Optional direct public API URL. Normal dashboard auth/API calls use the
+# dashboard proxy and do not require API/dashboard cookie-domain matching.
+PUBLIC_SERVER_URL="https://api.yourdomain.com"
+TRUSTED_ORIGINS=
+
+# Email (configure SMTP)
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_SENDER=
+
+# Object storage → your external bucket (see step 4)
+OBJECT_STORAGE_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+OBJECT_STORAGE_PUBLIC_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+OBJECT_STORAGE_ACCESS_KEY_ID=<access key>
+OBJECT_STORAGE_SECRET_ACCESS_KEY=<secret key>
+OBJECT_STORAGE_REGION=auto
+OBJECT_STORAGE_FORCE_PATH_STYLE=false
+OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=https://<public media domain>
+```
+
+Optional: add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` for OAuth, `UNSPLASH_API_KEY` for image search, or `LICENSE_KEY` for enterprise features.
+
+### cio-dashboard
+
+```zsh title="env"
+# RAILWAY_PUBLIC_DOMAIN here = this dashboard service's own public domain.
+# For a custom domain, hardcode app.yourdomain.com in ORIGIN / PRIVATE_APP_HOST instead.
+ORIGIN="https://${{RAILWAY_PUBLIC_DOMAIN}}"
+PRIVATE_APP_HOST="${{RAILWAY_PUBLIC_DOMAIN}}"
+PUBLIC_IS_SELFHOSTED="true"
+PRIVATE_SERVER_URL="http://${{cio-api.RAILWAY_PRIVATE_DOMAIN}}:${{cio-api.PORT}}"
+PRIVATE_SERVER_KEY="${{cio-api.PRIVATE_SERVER_KEY}}"   # same value as cio-api
+ALLOWED_EXTERNAL_DOMAINS="https://fonts.googleapis.com"
+```
+
+Optional: add `PUBLIC_APP_TITLE`, `PUBLIC_APP_DESCRIPTION`, `PUBLIC_OG_IMAGE_URL` for custom branding. You can also use per-directive CSP vars (`CSP_SCRIPT_SRC_DOMAINS`, `CSP_MEDIA_SRC_DOMAINS`, etc.) instead of `ALLOWED_EXTERNAL_DOMAINS` for finer control.
+
+**Upload size limits** (optional): add the same `UPLOAD_MAX_*_MB` values to **cio-api** and **cio-dashboard** (e.g. `UPLOAD_MAX_DOCUMENT_MB=50`). See [Configuration → Upload file size limits](/self-hosted/configuration/storage#upload-file-size-limits).
+
+### cio-jobs (background worker)
+
+The jobs worker has **no public domain**: it drains the Redis queue (video processing, transcription, AI course generation, and emails). It shares the same Postgres, Redis, storage, email, and OpenAI settings as the API:
+
+```zsh title="env"
+DATABASE_URL="${{db.DATABASE_URL}}"
+REDIS_URL="${{Redis.REDIS_URL}}"
+
+# Object storage — same external bucket and values as cio-api
+OBJECT_STORAGE_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+OBJECT_STORAGE_PUBLIC_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+OBJECT_STORAGE_ACCESS_KEY_ID=<access key>
+OBJECT_STORAGE_SECRET_ACCESS_KEY=<secret key>
+OBJECT_STORAGE_REGION=auto
+OBJECT_STORAGE_FORCE_PATH_STYLE=false
+OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL=https://<public media domain>
+
+# Email (worker sends invites, notifications, etc.)
+SMTP_HOST=  SMTP_PORT=  SMTP_USER=  SMTP_PASSWORD=  SMTP_SENDER=
+
+# Transcription + OpenAI-backed AI course generation
+OPENAI_API_KEY=
+
+# Anonymous usage ping (see Self-hosting 101). CIO_TELEMETRY_DISABLED=true turns it off.
+PUBLIC_IS_SELFHOSTED=true
+CIO_DEPLOYMENT_METHOD=railway
+```
+
+:::note[PRIVATE_SERVER_KEY]
+`PRIVATE_SERVER_KEY` must be the same value in both API and dashboard. It authenticates server-side dashboard requests to the API. Referencing `${{cio-api.PRIVATE_SERVER_KEY}}` in the dashboard keeps them in sync.
+:::
+
+### Object storage
+
+Railway deployments use **external storage** for now (step 4). Two things to check:
+
+- **CORS on the bucket:** allow your dashboard origin for `PUT` and `GET`, or browser uploads are blocked. For R2, follow the [Cloudflare Setup](/contributing/cloudflare-setup) guide.
+- **CSP on `cio-dashboard`:** add your storage and media domains to `ALLOWED_EXTERNAL_DOMAINS` so the browser may load and upload media:
+
+```zsh title="env"
+ALLOWED_EXTERNAL_DOMAINS=https://<account>.r2.cloudflarestorage.com,https://<public media domain>
+```
+
+A bundled SeaweedFS service for the Railway template is planned; see [Object storage & uploads](/self-hosted/configuration/storage) for how the bundled store works elsewhere.
+
+### SMTP Setup
+
+See [Configuration → Email (SMTP)](/self-hosted/configuration/email) for the SMTP variables and provider setup.
+
+### SSO (Enterprise)
+
+SSO requires a `LICENSE_KEY` on the `cio-api` service. See [Enterprise & licensing](/self-hosted/enterprise).
+
+## Upgrades
+
+Set `CIO_VERSION` on the ClassroomIO services to pin a release, then redeploy to upgrade. See
+[Configuration → Versions & upgrades](/self-hosted/configuration/versions) for pinning, rollback, and
+the pre-upgrade backup steps.

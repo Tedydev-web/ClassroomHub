@@ -13,6 +13,8 @@ import { ROLE } from '@cio/utils/constants';
 import type { TOrganization } from '@cio/db/types';
 import { checkSiteNameExists } from '@cio/db/queries/organization';
 import { isSelfOwnedDeployment } from '@cio/core/config/deployment';
+import { captureOrganizationCreated } from '@api/services/product-events';
+import { capturePlanLimitReached } from '@cio/core/services/posthog';
 
 const SELF_OWNED_WORKSPACE_ALLOWANCE = Number.MAX_SAFE_INTEGER;
 
@@ -63,6 +65,16 @@ export async function createWorkspaceForAccount(
   const allowance = isSelfOwned ? SELF_OWNED_WORKSPACE_ALLOWANCE : getWorkspaceAllowance(planName);
   const current = await countWorkspacesForAccount(primary.id);
   if (current >= allowance) {
+    capturePlanLimitReached({
+      orgId: primary.id,
+      profileId: ownerProfileId,
+      limitType: 'workspaces',
+      plan: planName,
+      limit: allowance,
+      current,
+      blocked: true
+    });
+
     throw new AppError(
       `Workspace limit reached (${allowance} per Enterprise account)`,
       ErrorCodes.WORKSPACE_LIMIT_REACHED,
@@ -83,6 +95,8 @@ export async function createWorkspaceForAccount(
       ownerProfileId,
       ownerRoleId: ROLE.ADMIN
     });
+
+    captureOrganizationCreated(ownerProfileId, created, 'workspace', planName ?? undefined);
 
     return { ...created, isPrimary: false };
   } catch (error) {

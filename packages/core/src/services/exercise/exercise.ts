@@ -25,6 +25,7 @@ import {
   getQuestionRevisionsByIds,
   getLMSExercises,
   lockExerciseAssignmentState,
+  lockExerciseSectionForUpdate,
   createExerciseSections,
   deleteExerciseSectionsByIds,
   updateExerciseSection,
@@ -43,6 +44,7 @@ import {
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getCourseSectionById, touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
+import { claimItemOrder } from '../course/root-order';
 import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
 import { applyAssessmentItemMutationsForExercise, type AssessmentItemMutationResult } from './assessment-item';
 
@@ -497,7 +499,7 @@ async function syncCanonicalQuestionPlacements(
   await updateQuestions(placementUpdates, exerciseId, txClient);
 }
 
-async function resolveExerciseCourseId(exercise: TExercise): Promise<string | null> {
+export async function resolveExerciseCourseId(exercise: TExercise): Promise<string | null> {
   if (exercise.courseId) {
     return exercise.courseId;
   }
@@ -525,6 +527,22 @@ async function assertExercisePlacementBelongsToCourse(
   if (placement.sectionId && (!section || section.courseId !== courseId)) {
     throw new AppError('Section does not belong to this course', ErrorCodes.NOT_FOUND, 404);
   }
+}
+
+/**
+ * Frees the requested position when an updated exercise ends up in its course's shared list (see `claimItemOrder`).
+ */
+async function claimUpdatedExerciseOrder(
+  existing: TExercise | null | undefined,
+  data: TExerciseUpdate,
+  txClient: DbOrTxClient
+) {
+  if (data.order === undefined || !existing?.courseId) return data.order;
+
+  const sectionId = data.sectionId === undefined ? existing.sectionId : data.sectionId || null;
+  const lessonId = data.lessonId === undefined ? existing.lessonId : data.lessonId || null;
+
+  return claimItemOrder(existing.courseId, { sectionId, lessonId }, data.order, existing.id, txClient);
 }
 
 /**
@@ -560,7 +578,14 @@ async function createExerciseWithClient(data: TExerciseCreate, txClient: DbOrTxC
     slug
   };
 
-  const [exercise] = await createExercises([exerciseData], txClient);
+  const order = await claimItemOrder(
+    exerciseData.courseId,
+    { sectionId: exerciseData.sectionId, lessonId: exerciseData.lessonId },
+    exerciseData.order,
+    null,
+    txClient
+  );
+  const [exercise] = await createExercises([{ ...exerciseData, order }], txClient);
   if (!exercise) {
     throw new AppError('Failed to create exercise', ErrorCodes.INTERNAL_ERROR, 500);
   }
@@ -914,13 +939,13 @@ export async function getExerciseForCourseService(
  * Only updates what has changed by querying the current state first and computing a diff.
  * @param exerciseId Exercise ID
  * @param data Partial exercise update data
- * @returns Updated exercise
+ * @returns Updated exercise, with the ids of the questions this update created
  */
 export async function updateExerciseService(
   exerciseId: string,
   data: TExerciseUpdate,
   profileId?: string
-): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations>> {
+): Promise<ExerciseWithQuestions<VisibleQuestionWithRelations> & { createdQuestionIds: number[] }> {
   try {
     const sanitizedData = sanitizeExercisePayload(data);
     validateSectionQuestionAssignments(sanitizedData);
@@ -946,9 +971,11 @@ export async function updateExerciseService(
       });
     }
 
+    let createdQuestionIds: number[] = [];
     const result = await db.transaction(async (tx) => {
       const txClient = tx as DbOrTxClient;
       await lockExerciseAssignmentState(exerciseId, txClient);
+      sanitizedData.order = await claimUpdatedExerciseOrder(existing, sanitizedData, txClient);
 
       // Update exercise basic fields only if they changed
       const exerciseUpdate = buildExerciseUpdateFields(sanitizedData);
@@ -1070,7 +1097,7 @@ export async function updateExerciseService(
         }
 
         if (hasNewQuestions) {
-          await createNewQuestionsWithOptions(exerciseId, diff.questions.newQuestions, txClient);
+          createdQuestionIds = await createNewQuestionsWithOptions(exerciseId, diff.questions.newQuestions, txClient);
         }
       }
 
@@ -1106,7 +1133,7 @@ export async function updateExerciseService(
       await touchCourseUpdatedAt(courseId);
     }
 
-    return result;
+    return { ...result, createdQuestionIds };
   } catch (error) {
     console.error('updateExerciseService error:', error);
     if (error instanceof AppError) {
@@ -1274,6 +1301,119 @@ export async function createExerciseSectionService(
   }
 }
 
+type ExerciseSectionAfterBehavior =
+  | { action: 'continue' }
+  | { action: 'submit' }
+  | { action: 'go_to_section'; exerciseSectionId: string };
+
+type ExerciseSectionPatch = {
+  title?: string;
+  description?: string | null;
+  order?: number;
+  colorTheme?: 'blue' | 'green' | 'amber' | 'rose' | 'violet' | 'slate';
+  afterBehavior?: ExerciseSectionAfterBehavior;
+};
+
+function exerciseSectionNotFound() {
+  return new AppError('Exercise section not found in this exercise', ErrorCodes.NOT_FOUND, 404);
+}
+
+/** Updates one exercise section. Throws 404 if the section or a go_to_section target is not on the exercise. */
+export async function updateExerciseSectionService(
+  exerciseId: string,
+  exerciseSectionId: string,
+  data: ExerciseSectionPatch
+) {
+  const sections = await getExerciseSectionsByExerciseId(exerciseId);
+  if (!sections.some((section) => section.id === exerciseSectionId)) {
+    throw exerciseSectionNotFound();
+  }
+
+  const target = data.afterBehavior?.action === 'go_to_section' ? data.afterBehavior.exerciseSectionId : null;
+  if (target && (target === exerciseSectionId || !sections.some((section) => section.id === target))) {
+    throw new AppError(
+      'afterBehavior must go to another section of this exercise',
+      ErrorCodes.VALIDATION_ERROR,
+      400,
+      'afterBehavior'
+    );
+  }
+
+  const title = data.title !== undefined ? sanitizeHtml(data.title) : undefined;
+  const description =
+    data.description === undefined
+      ? undefined
+      : data.description === null || data.description === ''
+        ? null
+        : (sanitizeOptionalHtml(data.description) ?? null);
+  const patch = {
+    ...(title !== undefined && { title }),
+    ...(description !== undefined && { description }),
+    ...(data.order !== undefined && { order: data.order }),
+    ...(data.colorTheme !== undefined && { colorTheme: data.colorTheme }),
+    ...(data.afterBehavior !== undefined && { afterBehavior: data.afterBehavior })
+  };
+
+  const updated = await updateExerciseSection(exerciseSectionId, patch);
+  if (!updated) {
+    throw exerciseSectionNotFound();
+  }
+
+  const exercise = await getExerciseById(exerciseId);
+  if (exercise?.courseId) {
+    await touchCourseUpdatedAt(exercise.courseId);
+  }
+
+  return updated;
+}
+
+/**
+ * Deletes one empty exercise section. Throws 404 if it is not on the exercise, and 409 if it still holds questions or
+ * another section's afterBehavior goes to it.
+ */
+export async function deleteExerciseSectionService(exerciseId: string, exerciseSectionId: string) {
+  const deleted = await db.transaction(async (tx) => {
+    if (!(await lockExerciseSectionForUpdate(exerciseId, exerciseSectionId, tx))) {
+      throw exerciseSectionNotFound();
+    }
+
+    const sections = await getExerciseSectionsByExerciseId(exerciseId, tx);
+    const section = sections.find((candidate) => candidate.id === exerciseSectionId);
+    if (!section) {
+      throw exerciseSectionNotFound();
+    }
+
+    const questions = await getQuestionsByExerciseIds([exerciseId], tx);
+    if (questions.some((question) => question.exerciseSectionId === exerciseSectionId)) {
+      throw new AppError('This section still holds questions: move or delete them first', ErrorCodes.CONFLICT, 409);
+    }
+
+    const pointsHere = sections.some((candidate) => {
+      const behavior = candidate.afterBehavior as ExerciseSectionAfterBehavior | null;
+
+      return behavior?.action === 'go_to_section' && behavior.exerciseSectionId === exerciseSectionId;
+    });
+    if (pointsHere) {
+      throw new AppError(
+        "Another section's afterBehavior goes to this section: change it first",
+        ErrorCodes.CONFLICT,
+        409
+      );
+    }
+
+    await deleteExerciseSectionsByIds([exerciseSectionId], tx);
+
+    return section;
+  });
+
+  const exercise = await getExerciseById(exerciseId);
+  if (exercise?.courseId) {
+    await touchCourseUpdatedAt(exercise.courseId);
+  }
+
+  return deleted;
+}
+
 /**
  * Replaces an exercise's questions and options with the provided payload.
  * Existing questions are deleted and recreated from the replacement payload.
@@ -1288,6 +1428,7 @@ export async function replaceExerciseService(exerciseId: string, data: TExercise
       const txClient = tx as DbOrTxClient;
       await lockExerciseAssignmentState(exerciseId, txClient);
       await assertExerciseQuestionGraphMutable(exerciseId, txClient);
+      sanitizedData.order = await claimUpdatedExerciseOrder(existing, sanitizedData, txClient);
 
       const exerciseUpdate = buildExerciseUpdateFields(sanitizedData);
       if (Object.keys(exerciseUpdate).length > 0) {
@@ -1492,14 +1633,18 @@ export async function createExerciseFromTemplate(
       courseId
     };
 
-    const exercise = await createExercise(exerciseData);
-
-    // Process the questionnaire to create questions and options
     const { questions } = template.questionnaire!;
 
-    if (questions && questions.length > 0) {
-      await db.transaction(async (tx) => {
-        const txClient = tx as DbOrTxClient;
+    await guardNonAutoGradableQuestionsForCourseType({
+      courseId,
+      questionTypeIds: (questions ?? []).map((question) => question.question_type.id)
+    });
+
+    const exercise = await db.transaction(async (tx) => {
+      const txClient = tx as DbOrTxClient;
+      const exercise = await createExerciseWithClient(exerciseData, txClient);
+
+      if (questions && questions.length > 0) {
         const hasTemplateOptions = questions.some(
           (question) => question.question_type.id !== 3 && (question.options?.length ?? 0) > 0
         );
@@ -1546,8 +1691,12 @@ export async function createExerciseFromTemplate(
             await createOptions(optionsData, txClient);
           }
         }
-      });
-    }
+      }
+
+      return exercise;
+    });
+
+    await touchCourseUpdatedAt(courseId);
 
     // Fetch the complete exercise with questions and options
     return await getExercise(exercise.id);

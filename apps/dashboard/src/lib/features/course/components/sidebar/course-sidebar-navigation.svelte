@@ -26,6 +26,7 @@
   } from '@cio/ui/custom/moving-icons';
   import { ContentType } from '@cio/utils/constants/content';
   import { contentCreateStoreUtils, contentEditingStore } from '$features/course/components/content/store';
+  import { openAddContentModal } from '$features/course/components/content/open-content-create';
   import { getCourseContent } from '$features/course/utils/content';
   import CourseContentTree from './course-content-tree.svelte';
   import CourseExamTree from './course-exam-tree.svelte';
@@ -245,22 +246,6 @@
     void complianceApi.ensureLearnerHistory(courseApi.course.id, $profile.id);
   });
 
-  function openContentModal(courseId: string, sectionId = '') {
-    goto(resolve(`/courses/${courseId}/lessons`, {}));
-    contentEditingStore.set(undefined);
-    contentCreateStoreUtils.close();
-
-    const contentGroupingEnabled = courseApi.course?.metadata?.isContentGroupingEnabled ?? true;
-
-    if (sectionId) {
-      contentCreateStoreUtils.openContentUnit(sectionId);
-    } else if (contentGroupingEnabled) {
-      contentCreateStoreUtils.openSection();
-    } else {
-      contentCreateStoreUtils.openDefault();
-    }
-  }
-
   function handleContentNavClick() {
     contentTreeCollapsed = false;
   }
@@ -402,12 +387,12 @@
 
                     <span>{item.title}</span>
 
-                    <div class="ml-auto flex items-center gap-1">
+                    <div class="ml-auto flex items-center gap-2">
                       {#if !isStudent}
                         <IconButton
-                          variant="ghost-outline"
-                          size="icon-xs"
-                          class="ui:duration-(--ui-duration-fast) transition-opacity {isHovered
+                          variant="ghost"
+                          size="icon-2xs"
+                          class="ui:text-muted-foreground ui:hover:text-foreground ui:duration-(--ui-duration-fast) transition-opacity {isHovered
                             ? 'opacity-100'
                             : 'opacity-0'}"
                           aria-label={$t('course.navItem.lessons.add_content')}
@@ -417,10 +402,10 @@
                           onclick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            openContentModal(id);
+                            openAddContentModal(id);
                           }}
                         >
-                          <Plus size={8} />
+                          <Plus class="size-3.5" />
                         </IconButton>
                       {/if}
                       {#if showContentCount}
@@ -433,7 +418,8 @@
 
                       <IconButton
                         variant="ghost"
-                        size="icon-xs"
+                        size="icon-2xs"
+                        class="ui:text-muted-foreground ui:hover:text-foreground"
                         aria-expanded={isContentTreeExpanded}
                         aria-label={$t(
                           isContentTreeExpanded
@@ -444,7 +430,7 @@
                         onclick={handleContentTreeToggle}
                       >
                         <ChevronRightIcon
-                          class="ui:duration-(--ui-duration-base) transition-transform {isContentTreeExpanded
+                          class="ui:duration-(--ui-duration-base) size-3.5 transition-transform {isContentTreeExpanded
                             ? 'rotate-90'
                             : ''}"
                         />
@@ -462,7 +448,7 @@
               {id}
               {isStudent}
               className="mt-1 ml-2"
-              onOpenContentModal={isStudent ? undefined : (sectionId) => openContentModal(id, sectionId)}
+              onOpenContentModal={isStudent ? undefined : (sectionId) => openAddContentModal(id, sectionId)}
               onEditSection={isStudent ? undefined : (sectionId) => openSectionEditor(id, sectionId)}
             />
 

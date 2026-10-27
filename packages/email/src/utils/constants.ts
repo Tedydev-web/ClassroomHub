@@ -18,6 +18,8 @@ export const EMAIL_IDS = [
   'studentLimitReached',
   'studentLimitApproaching',
   'contentReportAlert',
+  'webhookFailing',
+  'webhookDisabled',
   'studentCourseInvite',
   'studentCourseCompletion',
   'studentCourseWelcome',

@@ -15,6 +15,7 @@
   import type { CourseMember, CourseMembers, CourseContentItem } from '$features/course/utils/types';
   import { getCourseContent } from '$features/course/utils/content';
   import { ContentType } from '@cio/utils/constants/content';
+  import { flattenNavigableItems } from '@cio/utils/functions/course-progression';
 
   interface Props {
     courseId: string;
@@ -27,20 +28,19 @@
       ? courseApi.group.people.filter((person) => !!person.profile && person.profile.id === $profile.id)
       : courseApi.group.people.filter((person) => !!person.profile && Number(person.roleId) === ROLE.STUDENT)
   );
+
+  const canManageAttendance = $derived($isOrgStudent === false);
+
   let searchValue = $state('');
   let currentPage = $state(1);
   let pageSize = $state(10);
 
-  const filteredStudents = $derived(searchStudents(searchValue, students));
-  const totalStudents = $derived(filteredStudents.length);
-  const paginatedStudents = $derived(filteredStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+  const searchedStudents = $derived(searchStudents(searchValue, students));
+  const totalStudents = $derived(searchedStudents.length);
+  const paginatedStudents = $derived(searchedStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize));
 
   const contentData = $derived(getCourseContent(courseApi.course));
-  const lessonItems = $derived(
-    (contentData.grouped ? contentData.sections.flatMap((section) => section.items) : contentData.items).filter(
-      (item) => item.type === ContentType.Lesson
-    )
-  );
+  const lessonItems = $derived(flattenNavigableItems(contentData).filter((item) => item.type === ContentType.Lesson));
 
   const attendanceLookup = $derived.by(() => {
     if (!courseApi.course?.attendance) return {};
@@ -70,8 +70,10 @@
     return attendanceLookup[studentId]?.[lessonId]?.isPresent ?? false;
   }
 
-  async function handleAttendanceChange(isPresent: boolean, student: CourseMember, lesson: CourseContentItem) {
-    if ($isOrgStudent) return;
+  async function handleAttendanceChange(e: any, student: CourseMember, lesson: CourseContentItem) {
+    if (!canManageAttendance) return;
+
+    const isPresent = e.target.checked;
 
     const result = await attendanceApi.upsert({
       courseId,
@@ -118,7 +120,6 @@
     }
   }
 
-  // function for the searchbar
   function searchStudents(query: string, _students: CourseMembers) {
     const lowercaseQuery = query.toLowerCase();
     return _students.filter((student) => student.profile?.fullname?.toLowerCase()?.includes(lowercaseQuery));
@@ -129,7 +130,7 @@
   <div class="flex w-full flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
     <div class="flex gap-5">
       <p class="flex items-center gap-2">
-        <Checkbox disabled />
+        <Checkbox disabled checked />
         <span>{$t('course.navItem.attendance.present')}</span>
       </p>
       <p class="flex items-center gap-2">
@@ -138,11 +139,13 @@
       </p>
     </div>
 
-    <Search
-      placeholder={$t('course.navItem.attendance.search_students')}
-      bind:value={searchValue}
-      onValueChange={() => (currentPage = 1)}
-    />
+    {#if canManageAttendance}
+      <Search
+        placeholder={$t('course.navItem.attendance.search_students')}
+        bind:value={searchValue}
+        onValueChange={() => (currentPage = 1)}
+      />
+    {/if}
   </div>
 </section>
 
@@ -152,7 +155,7 @@
       <Table.Header>
         <Table.Row>
           <Table.Head class="w-1/4">{$t('course.navItem.attendance.student')}</Table.Head>
-          {#each lessonItems as lesson, index (lesson.id)}
+          {#each lessonItems as _lesson, index}
             <Table.Head class="text-center"
               >{$t('course.navItem.attendance.lesson')} 0{getLectureNo(index + 1)}</Table.Head
             >
@@ -160,19 +163,20 @@
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {#each paginatedStudents as student (student.id)}
+        {#each paginatedStudents as student}
           <Table.Row>
             <Table.Cell class="font-semibold">
               {student.profile?.fullname}
             </Table.Cell>
-            {#each lessonItems as lesson (lesson.id)}
+            {#each lessonItems as lesson}
               <Table.Cell class="text-center">
                 <div class="flex justify-center">
                   <Checkbox
-                    disabled={$isOrgStudent}
+                    disabled={!canManageAttendance}
                     checked={getAttendanceStatus(student.id, lesson.id)}
                     onCheckedChange={(checked) => {
-                      handleAttendanceChange(checked, student, lesson);
+                      const e = { target: { checked } };
+                      handleAttendanceChange(e, student, lesson);
                     }}
                   />
                 </div>
@@ -186,7 +190,7 @@
   {#if students.length === 0}
     <Empty title={$t('course.navItem.attendance.no_student')} icon={UserXIcon} variant="page" />
   {/if}
-  {#if totalStudents > 0}
+  {#if canManageAttendance && totalStudents > 0}
     <div class="mt-4">
       <Pagination.Root
         count={totalStudents}

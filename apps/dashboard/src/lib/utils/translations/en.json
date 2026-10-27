@@ -449,6 +449,7 @@
     },
     "discard": "Discard",
     "save_changes": "Save changes",
+    "cancel": "Cancel",
     "refresh": "Refresh",
     "scroll_to_top": "Scroll to top",
     "app_update": {
@@ -468,6 +469,7 @@
       "untitled_lesson": "Untitled lesson",
       "format": "Format"
     },
+    "back": "Back",
     "remove": "Remove",
     "loading": "Loading…",
     "loading_states": {
@@ -871,7 +873,16 @@
       "actions_menu": "Token auth actions"
     },
     "teams": {
-      "page_subtitle": "Invite teammates and control who helps run this organization."
+      "permission": {
+        "title": "You don’t have permission to view this page",
+        "description": "Only organization administrators can view and manage the team. Contact an administrator if you need access."
+      },
+      "page_subtitle": "Invite teammates and control who helps run this organization.",
+      "invite": {
+        "confirm_title": "{count, plural, =1 {Invite this student to the team?} other {Invite these students to the team?}}",
+        "confirm_description": "{count, plural, =1 {This person is already a student in this organization: {emails}. Send them an invitation to become {role}? Their role will change only after they accept.} other {These people are already students in this organization: {emails}. Send them an invitation to become {role}? Their roles will change only after they accept.}}",
+        "existing": "Already on the team: {members}. Use the role control in Team members to change their role."
+      }
     },
     "auth": {
       "page_subtitle": "Control sign-up, login, SSO, and token-based access for this org.",
@@ -1433,6 +1444,11 @@
     "common": {
       "not_available": "N/A"
     },
+    "upload": {
+      "videos": "Upload videos",
+      "documents": "Upload documents",
+      "more_options": "More upload options"
+    },
     "storage": {
       "total_bytes": "Total Storage",
       "internal_bytes": "Internal Storage",
@@ -1946,6 +1962,20 @@
       "all": "All",
       "unpublished": "Unpublished",
       "course_type": "Course Type"
+    },
+    "filters": {
+      "filter": "Filter",
+      "popover_title": "Filters",
+      "clear_all": "Clear all",
+      "search_placeholder": "Search by name",
+      "status": "Status",
+      "layout_type": "Layout type",
+      "selection_mode": "Selection mode",
+      "no_results_title": "No widgets match your filters",
+      "no_results_description": "Try a different search term or clear your filters to see everything again.",
+      "no_results_page_title": "Nothing on this page",
+      "no_results_page_description": "These filters match fewer widgets than this page starts at.",
+      "back_to_first_page": "Back to first page"
     }
   },
   "setup": {
@@ -2133,7 +2163,6 @@
         },
         "apps": {
           "title": "Apps",
-          "poll": "Poll",
           "live_comment": "Live comments"
         },
         "auth_background": {
@@ -2435,27 +2464,21 @@
     "certification": {
       "rules_heading": "Rules",
       "deadline_label": "Certification deadline",
-      "deadline_helper": "Students must meet the completion percentage before this datetime (local time). Leave empty for no deadline.",
+      "deadline_helper": "Students must complete the course before this datetime (local time). Leave empty for no deadline.",
       "deadline_required": "Certificate deadline is required when certificates are downloadable.",
       "deadline_required_enroll": "Compliance courses require a certificate deadline before learners can be enrolled.",
-      "threshold_label": "Minimum completion (%)",
-      "threshold_helper": "Combined lesson and exercise progress required to earn the certificate (0–100). Default is 100%.",
-      "final_exercise_label": "Final exercise (optional)",
-      "final_exercise_none": "none",
-      "final_exercise_helper": "When set, students must reach at least the minimum score on this exercise (best attempt counts) in addition to the completion percentage above.",
-      "final_exercise_multiple_attempts_note": "Students will be allowed unlimited attempts on the selected exercise.",
-      "min_exercise_score_label": "Minimum score on final exercise (%)",
-      "min_exercise_score_helper": "Score is a percentage of the total points possible on that exercise (0–100).",
       "blocker_progress": "Your course progress is {current}%; {required}% is required.",
       "blocker_deadline": "The certification deadline has passed.",
       "blocker_no_content": "This course has no lessons or exercises to complete.",
-      "blocker_final_not_submitted": "Submit the required exercise \"{exerciseTitle}\" to qualify for the certificate.",
-      "blocker_final_pending": "Your attempt on \"{exerciseTitle}\" is still being graded.",
-      "blocker_final_score": "Your best score on \"{exerciseTitle}\" is {bestPercent}%; {requiredPercent}% is required.",
-      "blocker_final_misconfigured": "The certification exercise \"{exerciseTitle}\" has no points configured; ask your instructor to fix it.",
       "email_message_label": "Email Message",
       "email_message_placeholder": "e.g. We are proud of your progress — keep learning!",
-      "deadline_invalid": "The course completion deadline is invalid."
+      "deadline_invalid": "The course completion deadline is invalid.",
+      "completion_rules_heading": "Completion rules",
+      "completion_rules_description": "These rules decide who earns this certificate. They are set on the course Settings tab.",
+      "completion_rules_deadline": "Complete by {date}",
+      "completion_rules_no_deadline": "No deadline",
+      "completion_rules_edit": "Edit completion rules",
+      "completion_rules_upgrade": "Upgrade to edit completion rules"
     },
     "completion": {
       "modal": {
@@ -2465,8 +2488,7 @@
         "view_certificate": "View certificate",
         "later": "Close",
         "checking": "Checking eligibility…",
-        "not_eligible_title": "Almost there",
-        "retake_exercise": "Retake exercise"
+        "not_eligible_title": "Almost there"
       }
     },
     "header": {
@@ -2961,6 +2983,14 @@
                 "video_nav_label": "Video {number}",
                 "previous_video": "Previous video transcript",
                 "next_video": "Next video transcript"
+              },
+              "hls_status": {
+                "encoding": "Encoding",
+                "ready": "Ready",
+                "failed": "Failed",
+                "skipped": "Not encoded",
+                "failed_hint": "Encoding failed. The video still plays, at its original quality.",
+                "skipped_hint": "Adaptive encoding is off, so this plays at its original quality."
               }
             },
             "document": {
@@ -3714,34 +3744,6 @@
           "edit": "Edit",
           "delete": "Delete"
         },
-        "polls": {
-          "title": "Poll",
-          "active_polls": "Active Polls",
-          "expired_polls": "Expired Polls",
-          "loading": "Loading...",
-          "no_polls": "No polls to display"
-        },
-        "poll": {
-          "voted": "Voted",
-          "created_by": "Created by",
-          "status": "Status",
-          "draft": "Draft",
-          "publish": "Publish",
-          "expiration": "Expiration",
-          "total_voted": "Total Votes",
-          "responses": "Responses",
-          "expires": "Expires",
-          "today": "Today",
-          "back": "Back",
-          "result": "Result",
-          "delete": "Delete",
-          "create_poll": "Create poll",
-          "question": "Question",
-          "options": "Options",
-          "option_label": "Option Label",
-          "cancel": "Cancel",
-          "poll_question": "Poll Question"
-        },
         "version_history": {
           "title": "Version history",
           "fetch_more_versions": "Fetch more versions",
@@ -3758,6 +3760,7 @@
           "by_author": "by {name}",
           "empty": "No versions yet"
         },
+        "no_section": "No section",
         "student_share_your_knowledge": "No lessons have been added to this course yet. Please check back later.",
         "student_body_content": "No lessons have been added to this course yet. Check back later.",
         "title": "Lessons",
@@ -4455,6 +4458,9 @@
         "type": "Course type",
         "course_type_desc": "Update the course type for a more personalized experience.",
         "course_type_learn_more": "Learn more",
+        "completion_rules_card_title": "Completion rules",
+        "completion_rules_card_desc": "Decide when students complete this course and earn its certificate. Compliance courses also use the deadline as each student's due date.",
+        "back_to_certificate_settings": "Back to certificate settings",
         "live_class": "Live class",
         "self_paced": "Self paced",
         "compliance": "Compliance",
@@ -4562,7 +4568,7 @@
         },
         "go_to_completion_deadline": "Go to Completion Deadline",
         "completion_deadline_label": "Course Completion Deadline",
-        "completion_deadline_helper": "Students must meet the completion percentage before this datetime (local time). Leave empty for no deadline.",
+        "completion_deadline_helper": "Students must complete the course before this datetime (local time). Leave empty for no deadline.",
         "comments": {
           "title": "Lesson comments",
           "description": "Allow students to view and add comments across lessons in this course. Individual lessons can still disable comments.",
@@ -4679,6 +4685,8 @@
     "status_expired": "Expired",
     "status_revoked": "Revoked",
     "date_joined": "Date Joined",
+    "certificate_earned": "{count} certificate earned",
+    "certificates_earned": "{count} certificates earned",
     "upgrade": "Upgrade your plan to invite more students",
     "select_all": "Select all",
     "selected_count": "{count} selected",
@@ -4763,6 +4771,7 @@
       "status": {
         "ready": "Ready",
         "already_member": "Already in audience",
+        "invite_resent": "Invite resent",
         "invalid_email": "Invalid email",
         "duplicate_in_file": "Duplicate in file",
         "is_staff": "Staff, not a student",
@@ -4824,6 +4833,9 @@
       "not_started": "Not started",
       "in_progress": "In progress",
       "completed": "Completed",
+      "certificate": "Certificate",
+      "certificate_earned": "Earned",
+      "certificate_not_earned": "Not earned",
       "exclude_recent_joiners": "Exclude recent joiners",
       "exclude_recent_joiners_hint": "Leaves out students who joined too recently to be judged inactive.",
       "clear": "Clear filters",
@@ -5042,12 +5054,14 @@
     "required": "Upgrade Required",
     "enterprise_required": "This feature requires an Enterprise plan.",
     "public_api_required": "Upgrade to Early Adopter or Enterprise to access the public API.",
+    "webhooks_required": "Upgrade to Early Adopter or Enterprise to use webhooks.",
     "unlock_field": "Upgrade to unlock this setting"
   },
   "automation": {
     "title": "Automation",
     "subtitle": "Connect MCP clients now, with Zapier and the public API following on the same org-scoped key system.",
     "coming_soon": "Coming soon",
+    "read_docs": "Read docs",
     "permissions": {
       "disabled_title": "Read-only access",
       "disabled_description": "Only organization admins can create, rotate, or revoke automation keys. Teachers can review the setup instructions here."
@@ -5056,7 +5070,8 @@
       "mcp": "MCP",
       "zapier": "Zapier",
       "api": "API",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "new_badge": "New"
     },
     "clients": {
       "claude_code": "Claude Code",
@@ -5084,7 +5099,14 @@
       "table_last_used": "Last used",
       "scopes_label": "Scopes:",
       "revoke_confirm": "Revoke this automation key?",
-      "rotate_confirm": "Rotate this automation key?"
+      "rotate_confirm": "Rotate this automation key?",
+      "reveal": {
+        "description": "Copy this key now. It won't be shown again.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "how_to_use": "How to use this key",
+        "close": "Close"
+      }
     },
     "mcp": {
       "page_subtitle": "Connect AI tools to ClassroomHub with org-scoped keys you can rotate anytime.",
@@ -5103,7 +5125,7 @@
         "title": "MCP keys",
         "description": "These keys authenticate the current organization when an MCP client calls ClassroomHub through `@tedydev/classroom-mcp`.",
         "generate": "Generate MCP key",
-        "secret_once": "This secret is shown once. Copy it into your MCP client now.",
+        "reveal_title": "Your new MCP key",
         "modal": {
           "title": "Create MCP key",
           "description": "Choose a name for this MCP key before it is generated.",
@@ -5120,8 +5142,7 @@
         "codex_description": "Adds the ClassroomHub MCP server to Codex with the same org-scoped key.",
         "cursor_description": "Paste this into `~/.cursor/mcp.json` or your workspace MCP config.",
         "opencode_description": "Add this to `opencode.json` in your project root or `~/.config/opencode/opencode.json`."
-      },
-      "view_docs": "View Docs"
+      }
     },
     "api": {
       "subtitle": "Manage API keys to integrate with the ClassroomHub public API.",
@@ -5129,7 +5150,7 @@
         "title": "API keys",
         "description": "These keys authenticate the current organization when calling the ClassroomHub public API.",
         "generate": "Generate API key",
-        "secret_once": "This secret is shown once. Copy it and store it securely.",
+        "reveal_title": "Your new API key",
         "empty_title": "No API keys yet",
         "empty_description": "Create the first org-scoped API key to use the ClassroomHub public API.",
         "modal": {
@@ -5144,48 +5165,151 @@
       "setup": {
         "title": "Quick start",
         "description": "Use your API key as a Bearer token on every request. Replace the placeholder with a key from above, or paste the secret immediately after you generate one."
-      },
-      "view_docs": "View Docs"
+      }
     },
     "zapier": {
       "page_subtitle": "Automate ClassroomHub with thousands of apps through Zapier. Coming soon."
     },
     "webhooks": {
-      "subtitle": "Send signed ClassroomHub events to your external systems.",
-      "endpoints_title": "Webhook endpoints",
-      "endpoints_description": "Manage destinations, event subscriptions, test deliveries, and delivery history.",
-      "add": "Add webhook",
-      "edit": "Edit webhook",
-      "delete": "Delete",
-      "delete_confirm": "Delete this webhook endpoint and its delivery history?",
-      "send_test": "Send test",
-      "deliveries": "Deliveries",
-      "actions": "Webhook actions",
-      "name": "Name",
-      "payload_url": "Payload URL",
-      "events": "Events",
-      "active": "Active",
-      "all_events": "All",
-      "secret": "Signing secret",
-      "secret_help": "Leave blank to generate a secure secret automatically.",
-      "secret_unchanged": "Leave blank to keep the current secret.",
-      "secret_once": "This signing secret is shown once. Store it securely.",
-      "events_help": "Select no events to receive every supported event.",
-      "form_description": "ClassroomHub sends JSON requests signed with HMAC-SHA256.",
-      "save": "Save webhook",
-      "cancel": "Cancel",
-      "empty_title": "No webhook endpoints",
-      "empty_description": "Add an endpoint to connect ClassroomHub events to another system.",
-      "event": "Event",
-      "status": "Status",
-      "attempt": "Attempt",
-      "http_status": "HTTP status",
-      "details": "Details",
-      "redeliver": "Redeliver",
-      "request_payload": "Request payload",
-      "response": "Response",
-      "no_response": "No response was recorded.",
-      "no_deliveries": "No deliveries yet."
+      "page_subtitle": "Send real-time ClassroomHub events to Slack, your CRM, or your own backend.",
+      "description": "ClassroomHub sends a signed HTTP POST to your URL whenever a selected event happens. Failed deliveries are retried automatically.",
+      "permissions_description": "Only organization admins can create, edit, or delete webhooks.",
+      "create": "New webhook",
+      "empty_title": "No webhooks yet",
+      "empty_description": "Create a webhook to push invites, enrollments, completions, and submissions to your other tools.",
+      "reveal_title": "Your new signing secret",
+      "reveal_description": "Copy this signing secret now. It won't be shown again, and you'll need it to verify requests.",
+      "reveal_docs": "How to verify requests",
+      "delete_confirm": "Delete the webhook \"{name}\"? Its delivery history will be removed too.",
+      "regenerate_confirm": "Regenerate the signing secret? The current secret stops working immediately.",
+      "events_all": "All events",
+      "events_count_one": "{count} event",
+      "events_count_other": "{count} events",
+      "no_deliveries": "No deliveries yet",
+      "retrying_hint": "Retrying failed deliveries",
+      "table": {
+        "name": "Destination",
+        "events": "Events",
+        "health": "Status",
+        "active": "Active",
+        "error_rate": "Error rate (24h)",
+        "error_rate_detail": "{failed} of {total} failed",
+        "no_recent_deliveries": "No deliveries in 24h"
+      },
+      "health": {
+        "healthy": "Healthy",
+        "retrying": "Retrying",
+        "degraded": "Failing",
+        "disabled": "Auto-disabled"
+      },
+      "actions": {
+        "label": "Webhook actions",
+        "edit": "Edit",
+        "test": "Send test event",
+        "deliveries": "View deliveries",
+        "regenerate_secret": "Regenerate secret",
+        "delete": "Delete"
+      },
+      "form": {
+        "create_title": "New webhook",
+        "edit_title": "Edit webhook",
+        "description": "Choose where ClassroomHub sends events and which events to send.",
+        "sections": {
+          "endpoint": "Endpoint",
+          "events": "Events"
+        },
+        "name": "Name",
+        "name_placeholder": "CRM sync",
+        "payload_url": "Payload URL",
+        "payload_url_help": "Must be a public HTTPS URL that returns a 2xx response within 10 seconds.",
+        "secret": "Signing secret",
+        "secret_placeholder": "Leave blank to generate one",
+        "secret_help": "Used to sign every request so you can verify it came from ClassroomHub.",
+        "secret_edit_placeholder": "Leave blank to keep the current secret",
+        "secret_edit_help": "Enter a new value to replace the secret. The current one is never shown.",
+        "verify_ssl": "Verify SSL certificate",
+        "verify_ssl_help": "Keep this on unless you are testing against a self-signed certificate.",
+        "active": "Active",
+        "events_help": "Pick the events that should trigger this webhook.",
+        "mode_all": "Send me everything",
+        "mode_selected": "Let me select individual events",
+        "cancel": "Cancel",
+        "save": "Save webhook",
+        "select_all": "Select all",
+        "events_selected": "{selected} of {total} selected"
+      },
+      "event_groups": {
+        "organization": "Organization",
+        "course": "Courses",
+        "cohort": "Cohorts",
+        "compliance": "Compliance",
+        "learning": "Learning progress",
+        "community": "Community"
+      },
+      "events": {
+        "organization_invite_created": "A team invite is sent",
+        "organization_invite_accepted": "A team invite is accepted",
+        "organization_invite_revoked": "A team invite is revoked or replaced",
+        "course_invite_created": "A student invite is created",
+        "course_invite_accepted": "A student accepts an invite and enrolls",
+        "course_invite_revoked": "A student invite is revoked",
+        "course_member_added": "A member is added to a course",
+        "course_member_removed": "A member is removed from a course",
+        "course_completed": "A student completes a course",
+        "course_certificate_issued": "A certificate is earned",
+        "course_submission_created": "An exercise submission is created",
+        "course_submission_status_changed": "A submission status changes, such as when it is graded",
+        "lesson_completion_updated": "A lesson is marked complete or reset",
+        "exercise_completion_updated": "An exercise is completed or reset",
+        "compliance_record_status_changed": "A student's compliance status changes",
+        "compliance_record_waived": "A student's compliance requirement is waived",
+        "organization_member_added": "A person joins the organization",
+        "organization_member_removed": "A person is removed from the organization",
+        "organization_member_updated": "A person's role or status changes",
+        "course_published": "A course is published",
+        "course_unpublished": "A course is unpublished",
+        "cohort_member_added": "A person is added to a cohort",
+        "cohort_member_removed": "A person is removed from a cohort",
+        "lesson_session_scheduled": "A live session is scheduled or moved",
+        "course_payment_request_created": "A student requests to pay for a course",
+        "course_newsfeed_post_created": "A post is published in a course newsfeed",
+        "course_newsfeed_comment_created": "Someone comments on a course newsfeed post",
+        "community_question_created": "A question is asked in the community",
+        "community_answer_created": "A community question gets an answer"
+      },
+      "deliveries": {
+        "title": "Deliveries",
+        "description": "Events from the last 30 days",
+        "back": "Back to deliveries",
+        "filter_all": "All statuses",
+        "empty": "No deliveries match this filter.",
+        "load_error": "Could not load deliveries. Please try again.",
+        "redeliver": "Redeliver",
+        "test_badge": "Test",
+        "status": {
+          "PENDING": "Retrying",
+          "SUCCESS": "Success",
+          "FAILED": "Failed",
+          "GAVE_UP": "Failed"
+        },
+        "columns": {
+          "event": "Event",
+          "event_id": "Event ID",
+          "status": "Status",
+          "attempt": "Attempt",
+          "http": "HTTP status",
+          "duration": "Response time",
+          "time": "Sent",
+          "next_attempt": "Next retry"
+        },
+        "detail": {
+          "error": "Error",
+          "request_headers": "Request headers",
+          "payload": "Payload",
+          "response_body": "Response",
+          "no_response": "No response was received."
+        }
+      }
     }
   },
   "lms_navigation": {
@@ -5250,8 +5374,16 @@
       "revoked": "Automation key revoked."
     },
     "webhooks": {
+      "created": "Webhook created. Copy the signing secret now because it is only shown once.",
+      "updated": "Webhook updated.",
+      "enabled": "Webhook enabled.",
+      "disabled": "Webhook disabled.",
       "saved": "Webhook saved.",
       "deleted": "Webhook deleted.",
+      "secret_regenerated": "Signing secret regenerated. Copy it now because it is only shown once.",
+      "test_success": "Test event delivered successfully.",
+      "test_failed": "The test event failed. Open the delivery log to see why.",
+      "redelivered": "Event queued for redelivery.",
       "test_queued": "Test delivery queued.",
       "redelivery_queued": "Webhook redelivery queued."
     },
@@ -5286,6 +5418,7 @@
     "update": "Update",
     "update_failed": "Update failed",
     "media_manager": {
+      "video_added": "Video added to your library",
       "list_failed": "Failed to load media assets",
       "storage_failed": "Failed to load storage summary",
       "create_failed": "Failed to create media asset",
@@ -5320,17 +5453,6 @@
     "lesson_video": {
       "generate_1080_completed": "1080p rendition added",
       "generate_1080_failed": "Could not generate 1080p rendition"
-    },
-    "poll": {
-      "error": {
-        "creating_poll": "An error occurred while creating poll",
-        "updating_poll": "An error occurred while updating poll status",
-        "submitting_poll": "An error occurred while submitting poll"
-      },
-      "info": {
-        "not_published": "Poll is not published yet",
-        "vote_once": "You can only vote once"
-      }
     },
     "exercise": {
       "validation_errors": "Please fix all validation errors before saving.",
@@ -5641,6 +5763,14 @@
     "progress": "Progress"
   },
   "validations": {
+    "webhook": {
+      "payload_url": {
+        "protocol": "Payload URL must start with http:// or https://"
+      },
+      "event_types": {
+        "required": "Select at least one event"
+      }
+    },
     "user_profile": {
       "email": "Invalid email address",
       "username": "Username cannot be empty",
@@ -7093,8 +7223,6 @@
       "settings": "Settings",
       "certificate": "Certificate enabled",
       "deadline": "Deadline {date}",
-      "threshold": "Complete {percent}% of the course",
-      "final_exercise": "Pass “{title}” at {percent}%",
       "sequential": "Lessons unlock in order",
       "grading": "A tutor grades submissions",
       "comments_off": "Lesson comments are off",
@@ -7189,8 +7317,6 @@
         "bannerImage": "Cover image",
         "welcomeEmail": "Welcome email",
         "completionDeadline": "Completion deadline",
-        "completionThreshold": "Completion threshold",
-        "finalExercise": "Final exercise",
         "lessonTabsOrder": "Lesson tabs",
         "contentGrouping": "Content grouping",
         "progression": "Progression",
@@ -7219,8 +7345,7 @@
       "value": {
         "free": "Free",
         "sequential": "Sequential",
-        "no_price": "Free",
-        "pass_mark": "Pass mark {score}"
+        "no_price": "Free"
       },
       "template_label": "Template",
       "yours_label": "Yours"

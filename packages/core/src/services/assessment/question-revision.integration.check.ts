@@ -123,9 +123,13 @@ export async function runQuestionRevisionGatewayCheck(): Promise<void> {
     await db
       .insert(schema.groupmember)
       .values({ id: ids.member, groupId: ids.group, roleId: 3, profileId: ids.profile, email });
-    await db
-      .insert(schema.exercise)
-      .values({ id: ids.exercise, courseId: ids.course, title: 'Gateway check exercise', order: 1 });
+    await db.insert(schema.exercise).values({
+      id: ids.exercise,
+      courseId: ids.course,
+      title: 'Gateway check exercise',
+      slug: 'gateway-check-exercise',
+      order: 1
+    });
     const questions = await db
       .insert(schema.question)
       .values([

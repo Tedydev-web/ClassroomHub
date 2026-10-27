@@ -153,6 +153,7 @@ describe.runIf(runDatabaseIntegration)('exam import publish persistence', () => 
           .values({
             id: ids.exercise,
             title: 'Imported exam',
+            slug: 'test-item',
             courseId: ids.course,
             order: 1
           })
@@ -267,6 +268,7 @@ describe.runIf(runDatabaseIntegration)('exam import publish persistence', () => 
           .values({
             id: ids.exercise,
             title: 'Imported paper',
+            slug: 'test-item',
             courseId: ids.course,
             order: 1
           })

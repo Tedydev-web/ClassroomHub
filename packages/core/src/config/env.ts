@@ -46,7 +46,6 @@ const envSchema = z.object({
   ZOHO_TOKEN: z.string().optional(),
   TRUSTED_ORIGINS: z.string().optional(),
   PRIVATE_SERVER_KEY: z.string().optional(),
-  WEBHOOK_ENCRYPTION_KEY: z.string().optional(),
   PROJECT_ID_VERCEL: z.string().optional(),
   TEAM_ID_VERCEL: z.string().optional(),
   UNSPLASH_API_KEY: z.string().optional(),
@@ -54,6 +53,15 @@ const envSchema = z.object({
   PUBLIC_IS_SELFHOSTED: z.string().optional(),
   /** When 'true', this deployment owns product entitlements and does not enforce upstream commercial plan limits. */
   PUBLIC_IS_SELF_OWNED: z.string().optional(),
+  WEBHOOK_ALLOW_PRIVATE_NETWORKS: z.string().optional(),
+  /** License key for enterprise features (SSO, token-auth, no-tracking, etc.) */
+  LICENSE_KEY: z.string().optional(),
+  /** Reported in the self-hosted usage ping. Baked into the published jobs image; unset when run from source. */
+  CIO_VERSION: z.string().optional(),
+  /** How the instance was deployed (docker, railway, coolify, dokploy, digitalocean). */
+  CIO_DEPLOYMENT_METHOD: z.string().optional(),
+  /** Set to 'true' to stop the self-hosted usage ping. */
+  CIO_TELEMETRY_DISABLED: z.string().optional(),
   /** Dashboard origin for invite/email links. When set, all email links use this deployment-specific origin. */
   DASHBOARD_ORIGIN: z.string().optional(),
   /**

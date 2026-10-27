@@ -2,38 +2,49 @@ import './../bootstrap';
 
 import { Worker } from 'bullmq';
 
+import { processWebhookEndpoint } from '@cio/core/services/webhook/deliver';
 import { recordDeadLetterJob } from '@cio/db/queries';
-import { JOB_NAMES, QUEUE_NAMES, createRedisConnection } from '@cio/jobs';
+import { JOB_NAMES, QUEUE_NAMES, ZDeliverWebhookPayload, createRedisConnection } from '@cio/jobs';
 
 import { errorMessage } from '../utils/cancel';
+import { env } from '../config/env';
 import { log } from '../utils/logger';
-import { processWebhookDelivery } from '../processors/webhooks';
 
+const concurrency = Number.parseInt(env.WEBHOOK_WORKER_CONCURRENCY ?? '10', 10) || 10;
 const connection = createRedisConnection();
 
-// ponytail: global ordering is intentionally conservative; use per-endpoint BullMQ groups when measured throughput requires it.
 const worker = new Worker(
   QUEUE_NAMES.webhooks,
   async (job) => {
-    if (job.name !== JOB_NAMES.webhooks.deliver) {
-      throw new Error(`Unknown webhooks job: ${job.name}`);
-    }
+    switch (job.name) {
+      case JOB_NAMES.webhooks.deliver: {
+        const { webhookId } = ZDeliverWebhookPayload.parse(job.data);
+        const result = await processWebhookEndpoint(webhookId);
 
-    return processWebhookDelivery(job.data, job.attemptsMade + 1, job.opts.attempts ?? 1);
+        log.info('webhook-job-done', { bullmqJobId: job.id, webhookId, processed: result.processed });
+
+        return result;
+      }
+      default:
+        throw new Error(`Unknown webhooks job: ${job.name}`);
+    }
   },
-  { connection, concurrency: 1 }
+  { connection, concurrency }
 );
 
-worker.on('failed', async (job, error) => {
-  if (!job || job.attemptsMade < (job.opts.attempts ?? 1)) {
-    return;
-  }
+worker.on('failed', async (job, err) => {
+  if (!job) return;
 
-  log.error('webhook-delivery-exhausted', {
+  log.error('webhook-job-failed', {
+    jobName: job.name,
     bullmqJobId: job.id,
-    deliveryId: job.data.deliveryId,
-    error: errorMessage(error)
+    attempt: job.attemptsMade,
+    error: errorMessage(err)
   });
+
+  const isFinalAttempt = job.attemptsMade >= (job.opts.attempts ?? 1);
+  if (!isFinalAttempt) return;
+
   await recordDeadLetterJob({
     organizationId: null,
     domain: 'webhooks',
@@ -42,20 +53,20 @@ worker.on('failed', async (job, error) => {
     jobName: job.name,
     bullmqJobId: job.id ?? null,
     payload: job.data as Record<string, unknown>,
-    error: { code: 'WORKER_EXHAUSTED_RETRIES', message: errorMessage(error), stack: error.stack },
+    error: { code: 'WORKER_EXHAUSTED_RETRIES', message: errorMessage(err), stack: err.stack },
     attempts: job.attemptsMade
   });
 });
 
-worker.on('ready', () => log.info('webhooks-worker-ready'));
-worker.on('error', (error) => log.error('webhooks-worker-error', { error: errorMessage(error) }));
+worker.on('ready', () => log.info('webhook-worker-ready', { concurrency, queue: QUEUE_NAMES.webhooks }));
+worker.on('error', (err) => log.error('webhook-worker-error', { error: errorMessage(err) }));
 
-async function shutdown(signal: string) {
-  log.info('webhooks-worker-shutdown', { signal });
+const shutdown = async (signal: string) => {
+  log.info('webhook-worker-shutdown', { signal });
   await worker.close();
   await connection.quit();
   process.exit(0);
-}
+};
 
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 process.on('SIGINT', () => void shutdown('SIGINT'));

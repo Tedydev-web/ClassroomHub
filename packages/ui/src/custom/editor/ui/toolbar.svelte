@@ -65,19 +65,21 @@
         {:else if cmd === 'alignment'}
           <Alignment {editor} />
         {:else}
-          {@const commandGroup = commands[cmd].filter((command) => !isExcluded(command.name))}
+          {@const commandGroup = commands[cmd].filter(
+            (command) => !isExcluded(command.name) && command.name !== 'audio-placeholder'
+          )}
           <!-- Keyed by identity, not name: the maths group registers two entries
                under the same `mathematics` name (inline and block). -->
           {#each commandGroup as command (command)}
             <ToolBarIcon {editor} {command} />
+            {#if command.name === 'blockQuote' && !isExcluded('callout')}
+              <CalloutMenu {editor} />
+            {/if}
           {/each}
         {/if}
       {/each}
       {#if !isExcluded('font-size')}
         <FontSize {editor} />
-      {/if}
-      {#if !isExcluded('callout')}
-        <CalloutMenu {editor} />
       {/if}
       {#if !isExcluded('quick-colors')}
         <QuickColors {editor} />

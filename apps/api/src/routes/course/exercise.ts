@@ -69,6 +69,8 @@ import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
 import { getExerciseAssignmentsService, updateExerciseAssignmentsService } from '@api/services/exercise/assignment';
 
+// Published @classroomio/mcp clients up to 0.0.10 call these routes with a cio_mcp_ key. Key support stays for one
+// release so they can move to /public-api/v1/courses/:courseId/exercises, then goes with the middlewares it uses.
 export const exerciseRouter = new Hono()
   // Exercise CRUD routes
   .get(
@@ -543,7 +545,9 @@ export const exerciseRouter = new Hono()
           type: ContentType.Exercise
         });
 
-        const submission = await createSubmissionService(courseId, exerciseId, groupMemberId, answers, idempotencyKey);
+        const submission = await createSubmissionService(courseId, exerciseId, groupMemberId, answers, {
+          idempotencyKey
+        });
 
         return c.json({ success: true, data: submission }, 201);
       } catch (error) {

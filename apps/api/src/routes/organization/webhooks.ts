@@ -1,102 +1,161 @@
 import {
   ZCreateWebhook,
+  ZRedeliverWebhookDeliveryParams,
   ZUpdateWebhook,
   ZWebhookDeliveryListQuery,
-  ZWebhookDeliveryParams,
   ZWebhookParams
 } from '@cio/utils/validation/webhook';
 import {
-  createOrganizationWebhook,
-  getOrganizationWebhook,
-  getOrganizationWebhookDeliveries,
-  listOrganizationWebhooks,
-  redeliverOrganizationWebhook,
-  removeOrganizationWebhook,
-  sendOrganizationWebhookTest,
-  updateOrganizationWebhook
-} from '@api/services/webhook';
+  createWebhookService,
+  deleteWebhookService,
+  getWebhookDeliveryService,
+  getWebhookService,
+  listWebhookDeliveriesService,
+  listWebhooksService,
+  redeliverWebhookService,
+  regenerateWebhookSecretService,
+  sendTestWebhookService,
+  updateWebhookService
+} from '@api/services/webhook/webhook';
 
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
+import { createRateLimiter } from '@api/middlewares/rate-limiter';
 import { handleError } from '@api/utils/errors';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { zValidator } from '@hono/zod-validator';
 
+const webhookMutationRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 30,
+  message: 'Too many webhook changes. Please try again shortly.',
+  keyGenerator: (c) => `webhook_mutation:${c.req.header('cio-org-id') ?? 'unknown'}`
+});
+
+const webhookTestRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 10,
+  message: 'Too many test events. Please try again shortly.',
+  keyGenerator: (c) => `webhook_test:${c.req.header('cio-org-id') ?? 'unknown'}`
+});
+
 export const webhooksRouter = new Hono()
   .get('/', authMiddleware, orgAdminMiddleware, async (c) => {
     try {
-      const organizationId = c.get('orgId')!;
-      const endpoints = await listOrganizationWebhooks(organizationId);
+      const orgId = c.req.header('cio-org-id')!;
+      const data = await listWebhooksService(orgId);
 
-      return c.json({ success: true, data: endpoints }, 200);
+      return c.json({ success: true, data }, 200);
     } catch (error) {
       return handleError(c, error, 'Failed to list webhooks');
     }
   })
-  .post('/', authMiddleware, orgAdminMiddleware, zValidator('json', ZCreateWebhook), async (c) => {
-    try {
-      const organizationId = c.get('orgId')!;
-      const user = c.get('user')!;
-      const endpoint = await createOrganizationWebhook(organizationId, user.id, c.req.valid('json'));
+  .post(
+    '/',
+    authMiddleware,
+    orgAdminMiddleware,
+    webhookMutationRateLimit,
+    zValidator('json', ZCreateWebhook),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const user = c.get('user')!;
+        const payload = c.req.valid('json');
+        const data = await createWebhookService(orgId, user.id, payload);
 
-      return c.json({ success: true, data: endpoint }, 201);
-    } catch (error) {
-      return handleError(c, error, 'Failed to create webhook');
+        return c.json({ success: true, data }, 201);
+      } catch (error) {
+        return handleError(c, error, 'Failed to create webhook');
+      }
     }
-  })
+  )
   .get('/:webhookId', authMiddleware, orgAdminMiddleware, zValidator('param', ZWebhookParams), async (c) => {
     try {
-      const organizationId = c.get('orgId')!;
-      const endpoint = await getOrganizationWebhook(organizationId, c.req.valid('param').webhookId);
+      const orgId = c.req.header('cio-org-id')!;
+      const { webhookId } = c.req.valid('param');
+      const data = await getWebhookService(orgId, webhookId);
 
-      return c.json({ success: true, data: endpoint }, 200);
+      return c.json({ success: true, data }, 200);
     } catch (error) {
-      return handleError(c, error, 'Failed to get webhook');
+      return handleError(c, error, 'Failed to load webhook');
     }
   })
   .put(
     '/:webhookId',
     authMiddleware,
     orgAdminMiddleware,
+    webhookMutationRateLimit,
     zValidator('param', ZWebhookParams),
     zValidator('json', ZUpdateWebhook),
     async (c) => {
       try {
-        const organizationId = c.get('orgId')!;
+        const orgId = c.req.header('cio-org-id')!;
         const user = c.get('user')!;
-        const endpoint = await updateOrganizationWebhook(
-          organizationId,
-          user.id,
-          c.req.valid('param').webhookId,
-          c.req.valid('json')
-        );
+        const { webhookId } = c.req.valid('param');
+        const payload = c.req.valid('json');
+        const data = await updateWebhookService(orgId, webhookId, user.id, payload);
 
-        return c.json({ success: true, data: endpoint }, 200);
+        return c.json({ success: true, data }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to update webhook');
       }
     }
   )
-  .delete('/:webhookId', authMiddleware, orgAdminMiddleware, zValidator('param', ZWebhookParams), async (c) => {
-    try {
-      const organizationId = c.get('orgId')!;
-      const result = await removeOrganizationWebhook(organizationId, c.req.valid('param').webhookId);
+  .delete(
+    '/:webhookId',
+    authMiddleware,
+    orgAdminMiddleware,
+    webhookMutationRateLimit,
+    zValidator('param', ZWebhookParams),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const { webhookId } = c.req.valid('param');
+        await deleteWebhookService(orgId, webhookId);
 
-      return c.json({ success: true, data: result }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to delete webhook');
+        return c.json({ success: true, data: { id: webhookId } }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to delete webhook');
+      }
     }
-  })
-  .post('/:webhookId/test', authMiddleware, orgAdminMiddleware, zValidator('param', ZWebhookParams), async (c) => {
-    try {
-      const organizationId = c.get('orgId')!;
-      const delivery = await sendOrganizationWebhookTest(organizationId, c.req.valid('param').webhookId);
+  )
+  .post(
+    '/:webhookId/secret',
+    authMiddleware,
+    orgAdminMiddleware,
+    webhookMutationRateLimit,
+    zValidator('param', ZWebhookParams),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const user = c.get('user')!;
+        const { webhookId } = c.req.valid('param');
+        const data = await regenerateWebhookSecretService(orgId, webhookId, user.id);
 
-      return c.json({ success: true, data: delivery }, 202);
-    } catch (error) {
-      return handleError(c, error, 'Failed to send webhook test');
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to regenerate webhook secret');
+      }
     }
-  })
+  )
+  .post(
+    '/:webhookId/test',
+    authMiddleware,
+    orgAdminMiddleware,
+    webhookTestRateLimit,
+    zValidator('param', ZWebhookParams),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const { webhookId } = c.req.valid('param');
+        const data = await sendTestWebhookService(orgId, webhookId);
+
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to send test webhook');
+      }
+    }
+  )
   .get(
     '/:webhookId/deliveries',
     authMiddleware,
@@ -105,14 +164,31 @@ export const webhooksRouter = new Hono()
     zValidator('query', ZWebhookDeliveryListQuery),
     async (c) => {
       try {
-        const organizationId = c.get('orgId')!;
+        const orgId = c.req.header('cio-org-id')!;
         const { webhookId } = c.req.valid('param');
-        const { page, limit } = c.req.valid('query');
-        const deliveries = await getOrganizationWebhookDeliveries(organizationId, webhookId, page, limit);
+        const query = c.req.valid('query');
+        const { items, pagination } = await listWebhookDeliveriesService(orgId, webhookId, query);
 
-        return c.json({ success: true, data: deliveries }, 200);
+        return c.json({ success: true, data: items, pagination }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to list webhook deliveries');
+      }
+    }
+  )
+  .get(
+    '/:webhookId/deliveries/:deliveryId',
+    authMiddleware,
+    orgAdminMiddleware,
+    zValidator('param', ZRedeliverWebhookDeliveryParams),
+    async (c) => {
+      try {
+        const orgId = c.req.header('cio-org-id')!;
+        const { webhookId, deliveryId } = c.req.valid('param');
+        const data = await getWebhookDeliveryService(orgId, webhookId, deliveryId);
+
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to load webhook delivery');
       }
     }
   )
@@ -120,14 +196,15 @@ export const webhooksRouter = new Hono()
     '/:webhookId/deliveries/:deliveryId/redeliver',
     authMiddleware,
     orgAdminMiddleware,
-    zValidator('param', ZWebhookDeliveryParams),
+    webhookTestRateLimit,
+    zValidator('param', ZRedeliverWebhookDeliveryParams),
     async (c) => {
       try {
-        const organizationId = c.get('orgId')!;
+        const orgId = c.req.header('cio-org-id')!;
         const { webhookId, deliveryId } = c.req.valid('param');
-        const delivery = await redeliverOrganizationWebhook(organizationId, webhookId, deliveryId);
+        const data = await redeliverWebhookService(orgId, webhookId, deliveryId);
 
-        return c.json({ success: true, data: delivery }, 202);
+        return c.json({ success: true, data }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to redeliver webhook');
       }

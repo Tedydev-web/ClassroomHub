@@ -61,12 +61,12 @@ import {
 import { canAccessCourseSubmissions, getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
+import { emitCourseWebhookEvent } from '@cio/core/services/webhook/emit';
 import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUrls } from '@cio/core/utils/s3';
 import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExerciseCompletedForMember } from '@cio/db/queries/course/progression';
 import { createNotification } from '@cio/db/queries/notifications';
-import { emitWebhookEvent } from '@api/services/webhook';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { lockExerciseAssignmentState } from '@cio/db/queries/exercise';
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
@@ -74,6 +74,8 @@ import {
   EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS,
   getExerciseSubmissionPayloadCharacterCount
 } from '@cio/utils/validation/exercise';
+import type { TEventSource } from '@cio/core/services/posthog';
+import { captureExerciseSubmitted } from '@api/services/product-events';
 import { prepareSubmissionAnswers, type SubmissionAnswerPayload } from './submission-answer-processing';
 import { prepareSubmissionGrades } from './submission-grading-validation';
 import { getCourseSubmissionOrThrow, lockCourseSubmissionOrThrow } from './submission-ownership';
@@ -130,7 +132,7 @@ function projectLegacyStatusId(gradingState: SubmissionGradingState): number {
   return GRADING_STATE_TO_LEGACY_STATUS[gradingState];
 }
 
-function resolveSubmissionGradingState(submission: Partial<TSubmission>): SubmissionGradingState {
+export function resolveSubmissionGradingState(submission: Partial<TSubmission>): SubmissionGradingState {
   const rawState = typeof submission.gradingState === 'string' ? submission.gradingState : '';
   if (rawState && rawState in GRADING_STATE_TO_LEGACY_STATUS) {
     return rawState as SubmissionGradingState;
@@ -217,6 +219,22 @@ async function loadAttemptedDefinitions(
   }
 
   return definitionByQuestionId;
+}
+
+/** The stored overall status, or the one the exercise's question types imply when none is stored. */
+export function resolveSubmissionOverallStatus(
+  storedOverallStatus: unknown,
+  questionTypeIds: number[]
+): SubmissionOverallStatus {
+  if (
+    storedOverallStatus === 'auto_graded' ||
+    storedOverallStatus === 'manual_required' ||
+    storedOverallStatus === 'hybrid'
+  ) {
+    return storedOverallStatus;
+  }
+
+  return resolveOverallStatusFromQuestionTypeIds(questionTypeIds);
 }
 
 function resolveOverallStatusFromQuestionTypeIds(questionTypeIds: number[]): SubmissionOverallStatus {
@@ -674,6 +692,9 @@ export async function listSubmissionsForGrading(courseId: string) {
       isEarly: boolean;
       feedback: string | null;
       submittedAt: string;
+      createdAt: string | null;
+      memberId: string | null;
+      total: number | null;
       exercise: {
         id: string;
         title: string;
@@ -729,18 +750,10 @@ export async function listSubmissionsForGrading(courseId: string) {
     for (const submission of rawSubmissions) {
       const gradingState = resolveSubmissionGradingState(submission);
       const statusId = projectLegacyStatusId(gradingState);
-      const storedOverallStatus = typeof submission.overallStatus === 'string' ? submission.overallStatus : '';
-      const fallbackOverallStatus = resolveOverallStatusFromQuestionTypeIds(
-        (submission.exercise.questions || [])
-          .map((question) => Number(question.questionTypeId))
-          .filter((questionTypeId) => Number.isFinite(questionTypeId))
-      );
-      const overallStatus: SubmissionOverallStatus =
-        storedOverallStatus === 'auto_graded' ||
-        storedOverallStatus === 'manual_required' ||
-        storedOverallStatus === 'hybrid'
-          ? (storedOverallStatus as SubmissionOverallStatus)
-          : fallbackOverallStatus;
+      const questionTypeIds = (submission.exercise.questions || [])
+        .map((question) => Number(question.questionTypeId))
+        .filter((questionTypeId) => Number.isFinite(questionTypeId));
+      const overallStatus = resolveSubmissionOverallStatus(submission.overallStatus, questionTypeIds);
       const isEarly = submission.exercise.dueBy
         ? new Date(submission.createdAt!).getTime() <= new Date(submission.exercise.dueBy).getTime()
         : true;
@@ -823,6 +836,9 @@ export async function listSubmissionsForGrading(courseId: string) {
         isEarly,
         feedback: submission.feedback,
         submittedAt,
+        createdAt: submission.createdAt ?? null,
+        memberId: submission.submittedBy ?? null,
+        total: submission.total ?? null,
         exercise: {
           id: submission.exercise.id,
           title: submission.exercise.title
@@ -893,26 +909,102 @@ export async function listSubmissionsForGrading(courseId: string) {
   }
 }
 
+export type CreateSubmissionOptions = {
+  idempotencyKey?: string;
+  /** Reject unknown questions, undecodable answers, foreign options and non-number values instead of skipping them. */
+  strict?: boolean;
+  allowUploads?: boolean;
+  source?: TEventSource;
+};
+
+const UPLOAD_QUESTION_TYPE_IDS = new Set([QUESTION_TYPE_IDS.FILE_UPLOAD, QUESTION_TYPE_IDS.VIDEO_RECORDING]);
+
 /**
- * Creates a new submission with question answers
- * @param courseId Course ID
- * @param exerciseId Exercise ID
- * @param submittedBy Group member ID
- * @param answers Array of question answers
- * @returns Created submission (with `answers` when auto-graded on the server)
+ * Creates a submission with its answers, saving nothing if an answer is invalid. Throws 409 for a second attempt on a
+ * one-attempt exercise. Returns the submission, with `answers` when auto-graded.
  */
+async function buildSubmissionWebhookData(
+  submission: TSubmission & { courseId: string },
+  overrides: { statusId?: number | null; gradingState?: string | null } = {}
+) {
+  const profile = submission.submittedBy ? await getProfileByGroupMemberId(submission.submittedBy) : null;
+
+  return {
+    submissionId: submission.id,
+    exerciseId: submission.exerciseId,
+    memberId: submission.submittedBy,
+    profileId: profile?.id ?? null,
+    statusId: overrides.statusId === undefined ? submission.statusId : overrides.statusId,
+    gradingState: overrides.gradingState === undefined ? submission.gradingState : overrides.gradingState,
+    total: submission.total
+  };
+}
+
+async function emitSubmissionCreatedWebhookEvent(
+  submission: TSubmission,
+  overrides: { statusId?: number | null; gradingState?: string | null } = {}
+) {
+  if (!submission.courseId) return;
+
+  const data = await buildSubmissionWebhookData({ ...submission, courseId: submission.courseId }, overrides);
+
+  await emitCourseWebhookEvent(submission.courseId, 'course.submission.created', data);
+}
+
+async function emitSubmissionStatusChangedWebhookEvent(
+  submission: TSubmission,
+  previous: { statusId: number; gradingState: string },
+  actorProfileId: string | null = null
+) {
+  if (!submission.courseId) return;
+
+  const submissionData = await buildSubmissionWebhookData({ ...submission, courseId: submission.courseId });
+
+  await emitCourseWebhookEvent(submission.courseId, 'course.submission.status_changed', {
+    ...submissionData,
+    previousStatusId: previous.statusId,
+    previousGradingState: previous.gradingState,
+    actorProfileId
+  });
+}
+
+async function wasExerciseCompleteForMember(exerciseId: string | null, groupMemberId: string | null) {
+  if (!exerciseId || !groupMemberId) return false;
+
+  return isExerciseCompletedForMember(exerciseId, groupMemberId);
+}
+
+async function emitExerciseCompletionIfReached(submission: TSubmission, wasCompleteBefore: boolean) {
+  if (!submission.courseId || !submission.exerciseId || !submission.submittedBy || wasCompleteBefore) return;
+
+  const isCompleteNow = await isExerciseCompletedForMember(submission.exerciseId, submission.submittedBy);
+
+  if (!isCompleteNow) return;
+
+  const profile = await getProfileByGroupMemberId(submission.submittedBy);
+
+  await emitCourseWebhookEvent(submission.courseId, 'exercise.completion.updated', {
+    exerciseId: submission.exerciseId,
+    memberId: submission.submittedBy,
+    profileId: profile?.id ?? null,
+    isComplete: true
+  });
+}
+
 export async function createSubmissionService(
   courseId: string,
   exerciseId: string,
   submittedBy: string,
   answers: SubmissionAnswerPayload[],
-  idempotencyKey?: string
+  options: CreateSubmissionOptions = {}
 ): Promise<TSubmission & { answers?: TQuestionAnswer[] }> {
   try {
+    const { idempotencyKey } = options;
     const totalAnswerCharacters = getExerciseSubmissionPayloadCharacterCount(answers);
     if (totalAnswerCharacters > EXERCISE_SUBMISSION_MAX_TOTAL_ANSWER_CHARACTERS) {
       throw new AppError('Submission answers are too large', ErrorCodes.VALIDATION_ERROR, 400);
     }
+    const wasCompleteBefore = await wasExerciseCompleteForMember(exerciseId, submittedBy);
 
     const transactionResult = await db.transaction(async (tx) => {
       const txClient = tx as DbOrTxClient;
@@ -952,7 +1044,7 @@ export async function createSubmissionService(
       if (!lockedExercise.allowMultipleAttempts) {
         const alreadySubmitted = await hasSubmission(exerciseId, submittedBy, txClient);
         if (alreadySubmitted) {
-          throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
+          throw new AppError('This exercise allows only one submission', ErrorCodes.CONFLICT, 409);
         }
       }
 
@@ -982,6 +1074,13 @@ export async function createSubmissionService(
         if (!question) {
           throw new AppError(
             `Question ${answer.questionId} does not belong to this exercise`,
+            ErrorCodes.VALIDATION_ERROR,
+            400
+          );
+        }
+        if (options.allowUploads === false && UPLOAD_QUESTION_TYPE_IDS.has(question.questionTypeId)) {
+          throw new AppError(
+            `Question ${answer.questionId}: needs a file or video upload, which the API does not support`,
             ErrorCodes.VALIDATION_ERROR,
             400
           );
@@ -1263,18 +1362,28 @@ export async function createSubmissionService(
 
     const { submission, answersWithPoints, includeAnswersInResponse, isReplay } = transactionResult;
     if (!isReplay) {
-      void emitSubmissionWebhook('course.submission.created', submission).catch((error) => {
+      captureExerciseSubmitted({
+        courseId,
+        exerciseId,
+        groupMemberId: submittedBy,
+        isAutoGraded: includeAnswersInResponse,
+        source: options.source ?? 'dashboard'
+      });
+      void emitSubmissionCreatedWebhookEvent(submission).catch((error) => {
         console.error('Failed to emit submission created webhook:', error);
       });
       void sendExerciseSubmissionUpdateEmail(courseId, exerciseId, submittedBy, submission.id).catch((emailError) => {
         console.error('Failed to send exercise submission update email:', emailError);
       });
 
-      void syncComplianceProgressFromSubmission(courseId, submittedBy).catch((error) => {
+      void syncComplianceProgressFromSubmission(courseId, submittedBy, exerciseId).catch((error) => {
         console.error('Failed to sync compliance after exercise submission:', error);
       });
       void triggerCertificationIfExerciseComplete(courseId, exerciseId, submittedBy).catch((error) => {
         console.error('Failed to evaluate certification after exercise submission:', error);
+      });
+      void emitExerciseCompletionIfReached(submission, wasCompleteBefore).catch((error) => {
+        console.error('Failed to emit exercise completion webhook:', error);
       });
     }
 
@@ -1306,9 +1415,10 @@ export async function createSubmissionService(
  * @returns Updated submission
  */
 export async function updateSubmissionService(
-  courseId: string,
   submissionId: string,
-  data: TSubmissionUpdate
+  courseId: string,
+  data: TSubmissionUpdate,
+  options: { actorProfileId?: string | null } = {}
 ): Promise<TSubmission> {
   try {
     const transactionResult = await db.transaction(async (tx) => {
@@ -1324,6 +1434,7 @@ export async function updateSubmissionService(
       }
 
       const previousLegacyStatusId = projectLegacyStatusId(currentGradingState);
+      const wasCompleteBefore = await wasExerciseCompleteForMember(submission.exerciseId, submission.submittedBy);
       const updatePayload: Partial<TSubmission> = { ...data };
       if (requestedGradingState) {
         updatePayload.gradingState = requestedGradingState;
@@ -1332,29 +1443,59 @@ export async function updateSubmissionService(
 
       const nextLegacyStatusId = Number(updatePayload.statusId ?? previousLegacyStatusId);
       const statusChanged = nextLegacyStatusId !== previousLegacyStatusId;
+      const gradingStateChanged = Boolean(requestedGradingState) && requestedGradingState !== currentGradingState;
       const updated = await updateSubmission(courseId, submissionId, updatePayload, txClient);
       if (!updated) {
         throw new AppError('Failed to update submission', ErrorCodes.INTERNAL_ERROR, 500);
       }
 
-      return { nextLegacyStatusId, statusChanged, updated };
+      return {
+        currentGradingState,
+        gradingStateChanged,
+        nextLegacyStatusId,
+        previousLegacyStatusId,
+        statusChanged,
+        updated,
+        wasCompleteBefore
+      };
     });
-    const { nextLegacyStatusId, statusChanged, updated } = transactionResult;
+    const {
+      currentGradingState,
+      gradingStateChanged,
+      nextLegacyStatusId,
+      previousLegacyStatusId,
+      statusChanged,
+      updated,
+      wasCompleteBefore
+    } = transactionResult;
 
     if (statusChanged) {
       void sendSubmissionUpdateEmail(submissionId, nextLegacyStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
-      void emitSubmissionWebhook('course.submission.status_changed', updated).catch((error) => {
+    }
+
+    if (statusChanged || gradingStateChanged) {
+      void emitSubmissionStatusChangedWebhookEvent(
+        updated,
+        { statusId: previousLegacyStatusId, gradingState: currentGradingState },
+        options.actorProfileId ?? null
+      ).catch((error) => {
         console.error('Failed to emit submission status changed webhook:', error);
       });
     }
 
     if (updated.gradingState === 'completed' && updated.courseId && updated.submittedBy) {
-      void syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy).catch((error) => {
-        console.error('Failed to sync compliance after submission update:', error);
-      });
+      void syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy, updated.exerciseId).catch(
+        (error) => {
+          console.error('Failed to sync compliance after submission update:', error);
+        }
+      );
     }
+
+    void emitExerciseCompletionIfReached(updated, wasCompleteBefore).catch((error) => {
+      console.error('Failed to emit exercise completion webhook:', error);
+    });
 
     return updated;
   } catch (error) {
@@ -1379,8 +1520,8 @@ export async function updateSubmissionService(
  * @returns Updated question answer
  */
 export async function updateSubmissionAnswer(
-  courseId: string,
   submissionId: string,
+  courseId: string,
   questionId: number,
   data: TSubmissionAnswerUpdate
 ): Promise<TQuestionAnswer | null> {
@@ -1456,9 +1597,10 @@ export async function updateSubmissionAnswer(
  * Submitting grades automatically transitions status to Graded (statusId 3, gradingState completed).
  */
 export async function updateSubmissionGradesBatch(
-  courseId: string,
   submissionId: string,
-  data: TSubmissionGradesUpdate
+  courseId: string,
+  data: TSubmissionGradesUpdate,
+  options: { actorProfileId?: string | null } = {}
 ): Promise<TSubmission> {
   try {
     const transactionResult = await db.transaction(async (tx) => {
@@ -1490,6 +1632,7 @@ export async function updateSubmissionGradesBatch(
 
       const previousLegacyStatusId = projectLegacyStatusId(currentGradingState);
       const statusChanged = targetStatusId !== previousLegacyStatusId;
+      const wasCompleteBefore = await wasExerciseCompleteForMember(submission.exerciseId, submission.submittedBy);
       const updated = await updateSubmissionGrades(
         courseId,
         submissionId,
@@ -1498,7 +1641,8 @@ export async function updateSubmissionGradesBatch(
           total: preparedGrades.total,
           feedback: data.feedback,
           statusId: targetStatusId,
-          gradingState: targetGradingState
+          gradingState: targetGradingState,
+          gradedBy: options.actorProfileId ?? null
         },
         txClient
       );
@@ -1506,29 +1650,58 @@ export async function updateSubmissionGradesBatch(
         throw new AppError('Failed to update grades', ErrorCodes.INTERNAL_ERROR, 500);
       }
 
-      return { statusChanged, targetStatusId, updated };
+      return {
+        currentGradingState,
+        previousLegacyStatusId,
+        statusChanged,
+        targetGradingState,
+        targetStatusId,
+        updated,
+        wasCompleteBefore
+      };
     });
-    const { statusChanged, targetStatusId, updated } = transactionResult;
+    const {
+      currentGradingState,
+      previousLegacyStatusId,
+      statusChanged,
+      targetGradingState,
+      targetStatusId,
+      updated,
+      wasCompleteBefore
+    } = transactionResult;
 
     if (statusChanged) {
       void sendSubmissionUpdateEmail(submissionId, targetStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
-      void emitSubmissionWebhook('course.submission.status_changed', updated).catch((error) => {
+    }
+
+    if (statusChanged || currentGradingState !== targetGradingState) {
+      void emitSubmissionStatusChangedWebhookEvent(
+        updated,
+        { statusId: previousLegacyStatusId, gradingState: currentGradingState },
+        options.actorProfileId ?? null
+      ).catch((error) => {
         console.error('Failed to emit submission status changed webhook:', error);
       });
     }
 
     if (updated.courseId && updated.submittedBy) {
-      void syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy).catch((error) => {
-        console.error('Failed to sync compliance after submission grading:', error);
-      });
+      void syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy, updated.exerciseId).catch(
+        (error) => {
+          console.error('Failed to sync compliance after submission grading:', error);
+        }
+      );
       void triggerCertificationIfExerciseComplete(updated.courseId, updated.exerciseId, updated.submittedBy).catch(
         (error) => {
           console.error('Failed to evaluate certification after submission grading:', error);
         }
       );
     }
+
+    void emitExerciseCompletionIfReached(updated, wasCompleteBefore).catch((error) => {
+      console.error('Failed to emit exercise completion webhook:', error);
+    });
 
     return updated;
   } catch (error) {
@@ -1544,32 +1717,13 @@ export async function updateSubmissionGradesBatch(
   }
 }
 
-async function emitSubmissionWebhook(
-  eventType: 'course.submission.created' | 'course.submission.status_changed',
-  submission: TSubmission
-) {
-  if (!submission.courseId) return;
-
-  const course = await getCourseWithOrgData(submission.courseId);
-  if (!course?.orgId) return;
-
-  await emitWebhookEvent(course.orgId, eventType, {
-    courseId: submission.courseId,
-    exerciseId: submission.exerciseId,
-    gradingState: submission.gradingState,
-    statusId: submission.statusId,
-    submissionId: submission.id,
-    submittedByGroupMemberId: submission.submittedBy
-  });
-}
-
 /**
  * Deletes a submission
  * @param submissionId Submission ID
  * @param courseId Course the caller is allowed to grade
  * @returns Deleted submission
  */
-export async function deleteSubmissionService(courseId: string, submissionId: string): Promise<TSubmission> {
+export async function deleteSubmissionService(submissionId: string, courseId: string): Promise<TSubmission> {
   try {
     const deleted = await db.transaction(async (tx) => {
       const txClient = tx as DbOrTxClient;

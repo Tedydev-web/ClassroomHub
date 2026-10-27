@@ -6,6 +6,7 @@
   import AudienceMemberRow from './audience-member-row.svelte';
   import AudienceSkeletonRow from './audience-skeleton-row.svelte';
   import { resolve } from '$app/paths';
+  import type { ResolvedPathname } from '$app/types';
 
   interface Header {
     key: string;
@@ -47,7 +48,7 @@
     onDeleteRow
   }: Props = $props();
 
-  function memberHref(row: OrganizationAudienceMember): string | null {
+  function memberHref(row: OrganizationAudienceMember): ResolvedPathname | null {
     if (!row.profileId) return null;
     return resolve(`${window.location.pathname}/${row.profileId}`, {});
   }
