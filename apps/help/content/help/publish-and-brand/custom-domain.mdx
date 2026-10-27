@@ -10,42 +10,29 @@ Every organization gets a default site at `https://<siteName>.classroom.io.vn`. 
 When ClassroomHub builds a link for your organization, it resolves the host in this order:
 
 1. **Verified custom domain** → `https://<your-domain>`
-2. **Academy URL** → `https://<siteName>.classroom.io.vn`
-3. **Fallback** → `https://hub.classroom.io.vn`
+2. **Development** → `http://localhost:5173`
+3. **Academy URL** → `https://<siteName>.classroom.io.vn`
+4. **Fallback** → `https://hub.classroom.io.vn`
 
-Most customer-facing course links use your org context and stop at step 1 or 2. The `hub.classroom.io.vn` fallback applies when no academy URL is available.
+Most customer-facing course links use your org context and stop at step 1 or 3. The `hub.classroom.io.vn` fallback applies when no academy URL is available.
 
 ## Set up your domain
 
-<Steps>
-<Step>
-### Open domain settings
+### 1. Open domain settings
 
-From the admin dashboard, go to **Settings → Organization**, then click **Edit domain** in the Custom Domain section.
+From the admin dashboard, go to **Settings → Domains**, then click **Edit domain**.
 
-</Step>
-
-<Step>
-### Enter your domain
+### 2. Enter your domain
 
 Add the hostname you want (for example `learn.yourcompany.com`). Follow the DNS instructions ClassroomHub shows to verify ownership.
 
-</Step>
-
-<Step>
-### Wait for verification
+### 3. Wait for verification
 
 Verification can take time while DNS propagates. The domain must show as verified before links use it.
 
-</Step>
-
-<Step>
-### Test on the live site
+### 4. Test on the live site
 
 Open your custom domain in a browser. Sign in, open a course landing page, and confirm URLs stay on your domain.
-
-</Step>
-</Steps>
 
 :::warning[Verification required]
 An unverified custom domain is not used for generated links. Until verification succeeds, ClassroomHub keeps using `<siteName>.classroom.io.vn`.
@@ -60,7 +47,7 @@ An unverified custom domain is not used for generated links. Until verification 
 | Org site landing page and course catalog | Yes                                            |
 | Organization team invite (some flows)    | May still use platform URL until fully aligned |
 
-Course invites are documented in [How to Invite Students](/manage-students/invite-students). Those links should point at your academy, not `hub.classroom.io.vn`, when your domain is verified.
+Course invites are documented in [Invite Students](/manage-students/invite-students). Those links should point at your academy, not `hub.classroom.io.vn`, when your domain is verified.
 
 ## Email sender address
 
@@ -74,6 +61,6 @@ Students should sign in on your academy so sessions and redirects stay on your a
 
 - [Customize Your Organization](/organization-and-team/customize-organization) — org profile and default subdomain
 - [Customize Your Academy Landing Page](/publish-and-brand/org-landing-page) — public homepage on your domain
-- [How to Invite Students](/manage-students/invite-students) — enrollment links on your academy
+- [Invite Students](/manage-students/invite-students) — enrollment links on your academy
 - [How Course Enrollment Works](/manage-students/course-enrollment) — enrollment paths and org signup
 - [Organization](/reference/organization) — org settings overview

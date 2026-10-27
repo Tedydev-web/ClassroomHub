@@ -1,21 +1,17 @@
 ---
 title: Set Up Enterprise SSO
 description: Connect Google Workspace, Okta, or Auth0 to ClassroomHub and configure OIDC-based Single Sign-On for your organization.
-sidebar:
-  order: 5
 ---
 
 This guide walks through connecting an identity provider (IdP) to ClassroomHub over OIDC. Pick the section for your provider (Google Workspace, Okta, or Auth0) and follow its steps. The ClassroomHub side of the setup is the same across all three; only the IdP-side steps differ.
 
 :::info[Enterprise feature]
-SSO requires an **Enterprise** plan. See [Enterprise SSO](/reference/enterprise-sso) for what SSO does and how access policies work before you start.
+See [Enterprise SSO](/reference/enterprise-sso) for what SSO does and how access policies work before you start.
 :::
 
 ## Google Workspace
 
-<Steps>
-<Step>
-### Create an OAuth app in Google Cloud Console
+### 1. Create an OAuth app in Google Cloud Console
 
 Go to [Google Cloud Console](https://console.cloud.google.com/) and navigate to **APIs & Services** → **Credentials**. Click **Create Credentials** → **OAuth client ID**, then configure the OAuth consent screen (choose "External" for testing).
 
@@ -25,51 +21,34 @@ Create the OAuth client ID with:
 - Name: `ClassroomHub SSO`
 - Authorized redirect URIs: leave empty for now. You'll add this after the next step
 
-</Step>
+### 2. Configure the connection in ClassroomHub
 
-<Step>
-### Configure the connection in ClassroomHub
-
-Go to **Settings** → **SSO** and select **Google Workspace**. Fill in:
+Go to **Settings** → **Authentication** → **SSO** and select **Google Workspace**. Fill in:
 
 - **Issuer URL**: `https://accounts.google.com`
-- **Email Domain**: your workspace domain (e.g. `yourcompany.com`)
+- **Email Domain**: your Google Workspace domain (e.g. `yourcompany.com`)
 - **Client ID**: from Google Cloud Console
 - **Client Secret**: from Google Cloud Console
 
 Click **Create Connection**.
 
-</Step>
-
-<Step>
-### Complete the IdP configuration
+### 3. Complete the IdP configuration
 
 Copy the **Callback URL** shown in ClassroomHub. Back in Google Cloud Console, edit your OAuth client and add that Callback URL to **Authorized redirect URIs**, then save.
 
-</Step>
+### 4. Activate the connection
 
-<Step>
-### Activate the connection
-
-Return to **Settings** → **SSO** in ClassroomHub and activate the connection.
-
-</Step>
-</Steps>
+Return to **Settings** → **Authentication** → **SSO** in ClassroomHub and activate the connection.
 
 ## Okta
 
-<Steps>
-<Step>
-### Create an OIDC app in Okta Admin
+### 1. Create an OIDC app in Okta Admin
 
 In the Okta Admin Dashboard, go to **Applications** → **Create App Integration** and select **OIDC - OpenID Connect**. Choose **Web Application** as the type, leave sign-in redirect URIs empty for now, and set the grant type to **Authorization Code**.
 
-</Step>
+### 2. Configure the connection in ClassroomHub
 
-<Step>
-### Configure the connection in ClassroomHub
-
-Go to **Settings** → **SSO** and select **Okta**. Fill in:
+Go to **Settings** → **Authentication** → **SSO** and select **Okta**. Fill in:
 
 - **Issuer URL**: your Okta domain (e.g. `https://your-org.okta.com`)
 - **Email Domain**: your company domain
@@ -78,37 +57,23 @@ Go to **Settings** → **SSO** and select **Okta**. Fill in:
 
 Click **Create Connection**.
 
-</Step>
-
-<Step>
-### Complete the IdP configuration
+### 3. Complete the IdP configuration
 
 Copy the **Callback URL** from ClassroomHub. In Okta, edit your app and add that URL to **Sign-in redirect URIs**. Confirm the app allows the `openid`, `email`, and `profile` scopes.
 
-</Step>
+### 4. Activate the connection
 
-<Step>
-### Activate the connection
-
-Return to **Settings** → **SSO** in ClassroomHub and activate the connection.
-
-</Step>
-</Steps>
+Return to **Settings** → **Authentication** → **SSO** in ClassroomHub and activate the connection.
 
 ## Auth0
 
-<Steps>
-<Step>
-### Create an application in Auth0
+### 1. Create an application in Auth0
 
 In the Auth0 Dashboard, go to **Applications** → **Create Application**. Name it `ClassroomHub SSO`, choose **Regular Web Application** as the type, and leave allowed callback URLs empty for now.
 
-</Step>
+### 2. Configure the connection in ClassroomHub
 
-<Step>
-### Configure the connection in ClassroomHub
-
-Go to **Settings** → **SSO** and select **Auth0**. Fill in:
+Go to **Settings** → **Authentication** → **SSO** and select **Auth0**. Fill in:
 
 - **Issuer URL**: your Auth0 domain (e.g. `https://your-tenant.auth0.com`)
 - **Email Domain**: your company domain
@@ -117,22 +82,13 @@ Go to **Settings** → **SSO** and select **Auth0**. Fill in:
 
 Click **Create Connection**.
 
-</Step>
-
-<Step>
-### Complete the IdP configuration
+### 3. Complete the IdP configuration
 
 Copy the **Callback URL** from ClassroomHub. In Auth0, add that URL to **Allowed Callback URLs** and confirm **OIDC Conformant** is enabled.
 
-</Step>
+### 4. Activate the connection
 
-<Step>
-### Activate the connection
-
-Return to **Settings** → **SSO** in ClassroomHub and activate the connection.
-
-</Step>
-</Steps>
+Return to **Settings** → **Authentication** → **SSO** in ClassroomHub and activate the connection.
 
 ## Configuration summary
 

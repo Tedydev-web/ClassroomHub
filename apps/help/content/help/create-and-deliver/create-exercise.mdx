@@ -1,126 +1,52 @@
 ---
-title: How to Create an Exercise
-description: Learn how to create exercises in ClassroomHub.
+title: Create an exercise
+description: Create an assessment, add questions and instructions, and configure how students complete it.
+last_reviewed: '2026-10-21'
 ---
 
-In ClassroomHub, exercises are a great way to assess students' understanding through practice activities. Once you've [set up your organization](/organization-and-team/customize-organization), [created a course](/get-started/create-first-course), and [added a lesson](/get-started/create-first-course#adding-lessons), you can start creating exercises. Follow the process below to create your first exercise.
+Create an exercise from your course’s **Content → Add content** control. Add questions, answer keys, and points, then save and preview the assessment before students use it.
 
-<Steps>
-<Step>
-### Go to the Courses Page
+![Exercise creation dialog with the exercise title field](./images/create-exercise/overview.webp)
 
-Access the courses page from the dashboard by clicking on **Courses** via the sidebar menu.
+## Create the exercise
 
-![Organization dashboard displaying a sidebar menu](/organization-dashboard.webp)
+### 1. Open Add content
 
-</Step>
+Open **Courses**, choose your course, and select **Content**. Select **Add content**, choose **Exercise**, and select **Continue**. To put it in a section, use that section's add control instead. Administrators and tutors with course access can create exercises; a lesson is not required first.
 
-<Step>
-### Select a Course
+### 2. Choose a starting point
 
-On the courses page, click on a course to go to the course page.
+Select **From Scratch**, then **Next**. Enter the exercise title and select **Finish**. For prepared questions, select **Use a Template** instead and choose a template.
 
-![Courses page for organization displaying a sidebar menu and a course card component](/courses-page.webp)
+**Use AI** in this dialog is marked **Coming soon**. For other starting methods, see [Create an exercise with AI or a template](/build-courses/create-an-exercise-with-ai-or-a-template).
 
-</Step>
+### 3. Add instructions and questions
 
-<Step>
-### Select a Lesson
+Open the exercise and select **Questions**. Update its title and instructions, then select **Add question**. Choose the question type, write the question, and configure the response options and correct answers where supported. Set the point value for each question.
 
-On the course page, click on **Lessons** via the left sidebar menu and select the lesson you want to create an exercise for.
+Use the menu beside **Add question** to add question sections when the assessment needs separate groups. These are different from sections in the course outline.
 
-> Alternatively, you can click on the **⌄** icon next to the **Lessons** option to select a lesson.
+See [question types](/build-courses/choose-an-exercise-question-type) and [answers, points, and grading](/build-courses/set-answers-points-and-automatic-grading) for the scoring requirements.
 
-![Course page displaying sidebar menu with the lesson page open](/course-page.webp)
+### 4. Save and check the result
 
-</Step>
+Select **Save**, resolve any validation errors, then select **Preview**. Return with **Edit** if you need changes. Reordering questions and editing answers require saving the exercise.
 
-<Step>
-### Add an Exercise
+## Set completion and availability
 
-Locate the tabs at the top of the page and select the **Exercises** tab. Then click on the **Add** button. On the modal, select a method to create an exercise. You can create an exercise:
+Open the exercise's **Settings** to choose whether students may make multiple attempts, and whether completion requires submission or passing. Set the passing threshold when needed and save the settings.
 
-![Course page displaying sidebar menu with the exercise tab open](/exercise.webp)
+Check the exercise's lock state in **Content**. Publishing the course does not unlock a locked exercise, and sequential progression may require earlier work first.
 
-1. **From scratch**: Create an exercise by adding the questions yourself. This is handy if you've prepared your questions.
-   - Enter the exercise name and click on the **Finish** button.
-   - Click on the newly created exercise and provide the exercise description, due date, and question details.
+Test the saved exercise with an enrolled demo student before sharing it. For a public course, test the signed-out public exercise instead.
 
-![A pop-up displaying new exercise with an empty field](/from-scratch.webp)
+## Notify enrolled students
 
-2. **Using a template**: You can select from an array of templates with predefined exercises complete with questions and options.
-   - Select a template and click on the **Finish** button.
-
-![A pop-up displaying new exercise with an array of exercise templates](/using-a-template.webp)
-
-3. **Using AI**: AI helps you generate exercises directly from lesson notes.
-   - Enter the number of questions and options. Next, click on the **Generate** button.
-
-![A pop-up displaying new exercise with two questions about the exercise content](/using-AI.webp)
-
-</Step>
-
-<Step>
-### Preview Exercise
-
-To preview the exercise, click on the **preview icon**. This is to ensure the exercise looks and functions as expected.
-
-![Exercise content edit page](/preview.webp)
-
-</Step>
-
-<Step>
-### Add Questions
-
-To add a question, click on the **add icon**.
-
-![Exercise content edit page with a red box highlight on the add icon](/add-question.webp)
-
-</Step>
-
-<Step>
-### Reorder Questions
-
-To reorder questions, click on the **three dots** > **Reorder Questions**, then drag and drop the questions.
-
-![A pop-up showing the question order for exercise](/reorder-questions.webp)
-
-</Step>
-
-<Step>
-### Save Changes
-
-After previewing, adding, and rearranging questions, ensure to save your changes by clicking on the **Save** button. This will apply your modifications to the exercise.
-
-</Step>
-
-<Step>
-### Your Exercise Is Ready
-
-You've successfully created your first exercise and it is now accessible to students enrolled in the course. Move on to the next section to start grading your exercise.
-
-![Course page displaying sidebar menu with the exercise tab open showing the newly created exercise](/new-exercise.webp)
-
-</Step>
-</Steps>
-
-## Notify students about a quiz
-
-When a quiz is ready, you can email every enrolled student a one-click link to take it. On the exercise page, open the
-**⋯** menu at the top and choose **Notify students**.
-
-![Exercise menu showing the Notify students option](/notify-students-menu.webp)
-
-The send runs in the background. A progress indicator appears while emails go out, then confirms when it is done. You can
-run it again at any time to nudge students who have not taken the quiz yet.
-
-:::info
-Notifying students is handy after a live session: schedule the quiz, then send the notification so attendees know to
-complete it. See [Run a Live Class](/create-and-deliver/live-class).
-:::
+When the saved exercise is ready and available, open its more-actions menu and select **Notify students** if you want to email enrolled students a link. This sends real email, so check the content and recipients before using it. Watch the progress indicator for the send result.
 
 ## Related guides
 
-- [How to Grade an Exercise](/create-and-deliver/grade-exercise): review and score submissions
-- [Control Course Progression](/create-and-deliver/course-progression): require a passing score before the next item unlocks
-- [How to Create Certificates](/build-a-course/certificates): issue certificates on completion
+- [Set answers, points, and automatic grading](/build-courses/set-answers-points-and-automatic-grading) — configure scoring before students submit
+- [Reorder exercise questions](/build-courses/reorder-exercise-questions) — arrange the assessment
+- [Preview an exercise before publishing](/build-courses/preview-an-exercise-before-publishing) — test layout and student access
+- [Control progression and completion](/create-and-deliver/course-progression) — choose when students can continue
