@@ -15,6 +15,9 @@ declare global {
           fetch: typeof fetch;
         };
       };
+      ctx: {
+        waitUntil(promise: Promise<unknown>): void;
+      };
     }
   }
 }
