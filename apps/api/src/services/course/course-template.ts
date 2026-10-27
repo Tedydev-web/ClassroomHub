@@ -18,6 +18,7 @@ import {
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { generateUniqueCourseSlug } from '@cio/core/services/course/landing-page';
 import { env } from '@cio/core/config/env';
+import { hasFullProductEntitlements } from '@cio/core/config/deployment';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
@@ -29,6 +30,8 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { cloneCourse } from '@api/services/course/clone';
 
 async function assertTemplateCapacity(orgId: string, dbClient: DbOrTxClient = db) {
+  if (hasFullProductEntitlements) return;
+
   const plan = await getActiveOrganizationPlan(orgId, dbClient);
   const limit = getPlanLimit('templates', plan?.planName);
   if (!Number.isFinite(limit)) return;
