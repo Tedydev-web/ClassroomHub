@@ -30,6 +30,23 @@ export default defineConfig({
     site: 'https://classroom.io.vn',
     base: '/help'
   },
+  integrations: [
+    {
+      name: 'near-lossless-content-images',
+      hooks: {
+        'astro:config:setup': ({ updateConfig }) => {
+          updateConfig({
+            image: {
+              service: {
+                entrypoint: 'astro/assets/services/sharp',
+                config: { webp: { nearLossless: true, quality: 60 } }
+              }
+            }
+          });
+        }
+      }
+    }
+  ],
   github: {
     owner: 'Tedydev-web',
     repo: 'classroomhub',
